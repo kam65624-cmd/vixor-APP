@@ -20,15 +20,15 @@ const ScenarioSchema = z.object({
 });
 
 export const AnalysisSchema = z.object({
-  pair: z.string().describe("Trading pair detected on the chart, e.g. BTC/USDT, EUR/USD"),
-  timeframe: z.string().describe("Chart timeframe, e.g. 1H, 4H, 1D"),
+  pair: z.string().describe("Trading pair detected on the chart, e.g. BTC/USDT, EUR/USD, XAU/USD"),
+  timeframe: z.string().describe("Chart timeframe detected from the chart axis, e.g. 1H, 4H, 1D, 15M"),
   trend: z.enum(["BULLISH", "BEARISH", "NEUTRAL"]).describe("Overall trend of the asset on this timeframe"),
   risk_level: z.enum(["LOW", "MEDIUM", "HIGH"]).describe("Risk assessment for the current setup"),
   risk_reasons: z.array(z.string()).min(1).max(3).describe("Reasons justifying the risk level"),
-  invalidation_level: z.number().describe("Price level where this thesis becomes completely invalid"),
+  invalidation_level: z.number().describe("Price level where this thesis becomes completely invalid — MUST be a realistic price visible on or near the chart"),
   liquidity_zones: z.object({
-    buySide: z.array(z.number()).describe("Buy-side liquidity zones (resistance/highs)"),
-    sellSide: z.array(z.number()).describe("Sell-side liquidity zones (support/lows)")
+    buySide: z.array(z.number()).describe("Buy-side liquidity zones (resistance/highs) — MUST be actual price levels visible on the chart"),
+    sellSide: z.array(z.number()).describe("Sell-side liquidity zones (support/lows) — MUST be actual price levels visible on the chart")
   }),
   market_structure: z.object({
     direction: z.enum(["BULLISH", "BEARISH", "SIDEWAYS"]),
@@ -36,16 +36,16 @@ export const AnalysisSchema = z.object({
     bos: z.number().optional().describe("Price level of the recent Break of Structure (BOS) if any")
   }),
   key_levels: z.object({
-    resistance: z.array(z.number()),
-    support: z.array(z.number()),
+    resistance: z.array(z.number()).describe("Resistance levels — MUST be actual price levels read from the chart Y-axis"),
+    support: z.array(z.number()).describe("Support levels — MUST be actual price levels read from the chart Y-axis"),
     pivot: z.number().optional()
   }),
   recommendation: z.enum(["BUY", "SELL", "WAIT"]),
   confidence: z.number().min(0).max(100).describe("Internal confidence score (used for setup_strength derivation, not shown to user)"),
   setup_strength: z.enum(["STRONG", "MODERATE", "WEAK"]).describe("Setup quality based on confluence: STRONG (3+ confluences + clean structure), MODERATE (2 confluences or minor noise), WEAK (1 confluence or conflicting signals)"),
-  entry: z.number().describe("Recommended entry price"),
-  stop_loss: z.number().describe("Stop loss price"),
-  take_profit: z.array(z.number()).length(3).describe("Three take-profit levels, conservative to aggressive"),
+  entry: z.number().describe("Recommended entry price — MUST be a price level that matches the current price action on the chart"),
+  stop_loss: z.number().describe("Stop loss price — MUST be a realistic level visible on the chart"),
+  take_profit: z.array(z.number()).length(3).describe("Three take-profit levels — MUST be realistic price targets based on chart structure"),
   rr: z.string().describe("Approx risk-reward ratio for the balanced target, e.g. '1:2.5'"),
   pattern: z.string().describe("Short summary of detected pattern, e.g. 'Bullish Engulfing + Support Hold'"),
   reasons: z.array(z.string()).min(3).max(5).describe("3-5 concise reasons supporting the trade"),
@@ -83,6 +83,64 @@ export const AnalysisSchema = z.object({
 export type AnalysisResult = z.infer<typeof AnalysisSchema>;
 
 // ═══════════════════════════════════════════════
+// LIVE PRICE FETCHER — Get current market prices
+// ═══════════════════════════════════════════════
+
+interface PriceData {
+  currentPrice: number | null;
+  dailyChange: number | null;
+  source: string;
+}
+
+async function fetchCurrentPrice(pair: string): Promise<PriceData> {
+  const key = process.env.FINNHUB_API_KEY;
+  if (!key) return { currentPrice: null, dailyChange: null, source: "unavailable" };
+
+  try {
+    // Map common pair formats to Finnhub symbols
+    const symbolMap: Record<string, string> = {
+      "XAU/USD": "OANDA:XAU_USD",
+      "XAUUSD": "OANDA:XAU_USD",
+      "GOLD": "OANDA:XAU_USD",
+      "EUR/USD": "OANDA:EUR_USD",
+      "GBP/JPY": "OANDA:GBP_JPY",
+      "GBP/USD": "OANDA:GBP_USD",
+      "USD/JPY": "OANDA:USD_JPY",
+      "USD/CHF": "OANDA:USD_CHF",
+      "AUD/USD": "OANDA:AUD_USD",
+      "NZD/USD": "OANDA:NZD_USD",
+      "USD/CAD": "OANDA:USD_CAD",
+      "EUR/GBP": "OANDA:EUR_GBP",
+      "BTC/USD": "BINANCE:BTCUSDT",
+      "BTC/USDT": "BINANCE:BTCUSDT",
+      "ETH/USD": "BINANCE:ETHUSDT",
+      "ETH/USDT": "BINANCE:ETHUSDT",
+      "SOL/USDT": "BINANCE:SOLUSDT",
+    };
+
+    const symbol = symbolMap[pair.toUpperCase()] || symbolMap[pair] || `OANDA:${pair.replace("/", "_")}`;
+
+    const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${key}`);
+    if (!res.ok) return { currentPrice: null, dailyChange: null, source: "api_error" };
+
+    const data = await res.json();
+    // Finnhub quote returns: { c: currentPrice, h: high, l: low, o: open, pc: previousClose }
+    if (data.c && data.c > 0) {
+      return {
+        currentPrice: data.c,
+        dailyChange: data.pc ? ((data.c - data.pc) / data.pc) * 100 : null,
+        source: "finnhub_live"
+      };
+    }
+
+    return { currentPrice: null, dailyChange: null, source: "no_data" };
+  } catch (e) {
+    console.error("[PriceFetcher] Error:", e);
+    return { currentPrice: null, dailyChange: null, source: "error" };
+  }
+}
+
+// ═══════════════════════════════════════════════
 // LIVE NEWS FETCHER
 // ═══════════════════════════════════════════════
 
@@ -94,7 +152,7 @@ async function fetchLatestNewsForPrompt(): Promise<string> {
       fetch(`https://finnhub.io/api/v1/news?category=general&token=${key}`),
       fetch(`https://finnhub.io/api/v1/news?category=forex&token=${key}`)
     ]);
-    
+
     let newsList: any[] = [];
     if (genRes.ok) {
       const data = await genRes.json();
@@ -104,12 +162,12 @@ async function fetchLatestNewsForPrompt(): Promise<string> {
       const data = await forexRes.json();
       if (Array.isArray(data)) newsList = newsList.concat(data.slice(0, 10));
     }
-    
+
     if (newsList.length === 0) return "No news items fetched.";
-    
+
     const uniqueNews = Array.from(new Map(newsList.map(item => [item.id, item])).values());
-    
-    return uniqueNews.slice(0, 15).map(n => 
+
+    return uniqueNews.slice(0, 15).map(n =>
       `- Source: ${n.source}\n  Headline: ${n.headline}\n  Summary: ${n.summary}`
     ).join("\n\n");
   } catch (e) {
@@ -119,29 +177,42 @@ async function fetchLatestNewsForPrompt(): Promise<string> {
 }
 
 // ═══════════════════════════════════════════════
-// AI ANALYSIS ENGINE
+// AI ANALYSIS ENGINE — V2 Enhanced with Price Context
 // ═══════════════════════════════════════════════
 
 export async function runChartAnalysis(
-  imageBytes: Uint8Array, 
+  imageBytes: Uint8Array,
   mimeType: string,
   fileName?: string,
   selectedPair?: string,
   trading_style?: string
 ): Promise<AnalysisResult> {
   const apiKey = process.env.GEMINI_API_KEY;
-  
+
   if (!apiKey) {
-    console.warn("Missing GEMINI_API_KEY. Using dynamic mock analysis.");
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    console.warn("[Vixor] GEMINI_API_KEY not set. Using dynamic mock analysis.");
+    await new Promise(resolve => setTimeout(resolve, 2000));
     return generateDynamicMock(fileName, selectedPair, trading_style);
+  }
+
+  // Fetch live price context if pair is specified
+  let priceContext = "";
+  if (selectedPair && selectedPair !== "auto") {
+    const priceData = await fetchCurrentPrice(selectedPair);
+    if (priceData.currentPrice) {
+      priceContext = `\n\nCRITICAL LIVE PRICE CONTEXT:\n` +
+        `- The current live market price for ${selectedPair} is: ${priceData.currentPrice}\n` +
+        `- Daily change: ${priceData.dailyChange?.toFixed(2) || "N/A"}%\n` +
+        `- You MUST use this price as the reference point. The entry, stop loss, and take profit levels MUST be realistic relative to this current price.\n` +
+        `- If the chart shows a significantly different price than the live price, the chart may be from a different time. Analyze what you SEE on the chart, but use the live price to contextualize the analysis.`;
+    }
   }
 
   const newsContext = await fetchLatestNewsForPrompt();
 
-  const assetGuidance = selectedPair && selectedPair !== "auto" 
-    ? `The user has specified that this chart is for the asset: ${selectedPair}. Analyze the chart for this specific asset.` 
-    : "";
+  const assetGuidance = selectedPair && selectedPair !== "auto"
+    ? `The user has specified that this chart is for the asset: ${selectedPair}. You MUST analyze the chart for this specific asset. Do NOT guess a different pair.`
+    : "You must identify the trading pair from the chart. Look at the chart title, axis labels, or price scale to determine the pair.";
 
   const { object } = await generateObject({
     model: google("gemini-2.5-pro"),
@@ -152,50 +223,68 @@ export async function runChartAnalysis(
         content:
           "You are Vixor, an elite trading intelligence engine built for professional traders. " +
           "You do NOT give blind signals. You provide structured market intelligence that helps traders make informed decisions.\n\n" +
-          
+
+          "═══ CRITICAL: CHART READING ACCURACY ═══\n" +
+          "You are analyzing a REAL chart screenshot. You MUST:\n" +
+          "1. READ the Y-axis price scale carefully to determine the actual price levels shown on the chart\n" +
+          "2. IDENTIFY the trading pair from the chart title, pair label, or price range context\n" +
+          "3. MATCH your analysis to the ACTUAL prices visible on the chart — entry, SL, TP must be at levels that exist on or near the chart\n" +
+          "4. DO NOT invent or hallucinate price levels. Every price level you provide MUST correspond to something visible on the chart\n" +
+          "5. The current candle's price IS the area where the chart ends (rightmost candle). Your entry price should be near this area for active setups.\n" +
+          "6. If the chart shows XAU/USD at 3300+, your entry must be around 3300+, NOT 2350. READ THE CHART.\n" +
+          "7. If the chart shows BTC at 100k+, your entry must be around 100k+, NOT 64k. READ THE CHART.\n" +
+          "8. SUPPORT and RESISTANCE levels must be at prices where you can actually see horizontal levels, swing highs/lows, or consolidation zones on the chart.\n\n" +
+
           "CORE METHODOLOGY: Smart Money Concepts (SMC) and Inner Circle Trader (ICT). " +
           "Focus on Order Blocks, Fair Value Gaps, Liquidity Sweeps, Break of Structure, Change of Character.\n\n" +
-          
+
           "SETUP STRENGTH RULES:\n" +
           "- STRONG: 3+ confluences aligning, clean market structure, clear liquidity targets, no major news conflicts\n" +
           "- MODERATE: 2 confluences, some noise or conflicting signals, minor news risk\n" +
           "- WEAK: 1 confluence, choppy structure, conflicting news, or unclear price action\n" +
           "NEVER default to STRONG. Be honest about setup quality.\n\n" +
-          
+
           "THESIS RULES:\n" +
-          "- 'why': Explain the core market narrative that created this setup. Be specific, not generic.\n" +
-          "- 'confirms': List specific, observable triggers the trader can watch for (price levels, candle patterns, volume).\n" +
-          "- 'invalidates': List specific, observable red flags that prove the thesis wrong.\n\n" +
-          
+          "- 'why': Explain the core market narrative that created this setup. Be specific about the chart structure, not generic.\n" +
+          "- 'confirms': List specific, observable triggers the trader can watch for (exact price levels, candle patterns, volume).\n" +
+          "- 'invalidates': List specific, observable red flags that prove the thesis wrong (exact price levels).\n\n" +
+
           "SCENARIO ENGINE RULES (CRITICAL):\n" +
           "- 'primary': The most likely scenario aligned with your recommendation. Include a narrative story.\n" +
           "- 'alternative': A different path the market could take (e.g. pullback before continuation, consolidation before breakout).\n" +
           "- 'counter': What happens if you are WRONG. For bullish setups, show the bearish case. For bearish, show the bullish case.\n" +
           "- Each scenario MUST have: story (why this could happen), trigger (what confirms it), invalidation_trigger (what kills it)\n" +
           "- Probabilities should sum to roughly 100% and be realistic.\n" +
-          "- The counter scenario should ALWAYS have probability >= 10%. Never ignore the risk.\n\n" +
-          
+          "- The counter scenario should ALWAYS have probability >= 10%. Never ignore the risk.\n" +
+          "- ALL price levels in scenarios (entry, sl, tp) must be REALISTIC for the chart's actual price range.\n\n" +
+
           "FUNDAMENTAL ANALYSIS:\n" +
           "Compare the technical setup with the provided recent market news. " +
           "Filter the news for items relevant to the detected asset. " +
           "Provide a final fundamental + technical verdict.\n\n" +
-          
+
           "TONE: Confident and authoritative, but NOT reckless. You're a trading intelligence tool, not a signal service. " +
           "Help the trader THINK, not just follow. Do not use generic AI caveats.",
       },
       {
         role: "user",
         content: [
-          { 
-            type: "text", 
-            text: `Analyze this chart and provide a complete trading intelligence report.\n\n` +
+          {
+            type: "text",
+            text: `Analyze this chart image carefully and provide a complete trading intelligence report.\n\n` +
+                  `═══ IMPORTANT INSTRUCTIONS ═══\n` +
+                  `1. LOOK at the chart Y-axis to determine the actual price range shown\n` +
+                  `2. READ any pair label, title, or symbol shown on the chart\n` +
+                  `3. ALL your price levels (entry, SL, TP, support, resistance) MUST match the chart's price scale\n` +
+                  `4. DO NOT use generic or outdated prices — READ THE CHART\n\n` +
                   (assetGuidance ? `${assetGuidance}\n\n` : "") +
                   (trading_style ? `The user's trading style is: ${trading_style}. Adjust your targets, timeframes, and stop-loss logic accordingly.\n\n` : "") +
-                  `Here is the latest live financial news from Finnhub:\n` +
+                  priceContext +
+                  `\n\nHere is the latest live financial news from Finnhub:\n` +
                   `${newsContext}\n\n` +
-                  `Provide: pair, timeframe, trend, risk assessment, setup strength, trade thesis (why/confirm/invalidates), ` +
-                  `3 market scenarios (primary/alternative/counter with stories and triggers), key SMC levels, news confluence, ` +
-                  `and management plan. Be specific with price levels and triggers.`
+                  `Provide: pair (from chart), timeframe (from chart), trend, risk assessment, setup strength, trade thesis (why/confirm/invalidates), ` +
+                  `3 market scenarios (primary/alternative/counter with stories and triggers), key SMC levels at ACTUAL chart prices, news confluence, ` +
+                  `and management plan. Be EXACT with price levels — every number you output must correspond to the chart.`
           },
           { type: "image", image: imageBytes, mediaType: mimeType },
         ],
@@ -217,50 +306,57 @@ function detectPairFromFileName(fileName?: string): string | undefined {
   if (name.includes("eur") || name.includes("euro")) return "EUR/USD";
   if (name.includes("btc") || name.includes("bitcoin")) return "BTC/USD";
   if (name.includes("eth") || name.includes("ethereum")) return "ETH/USDT";
-  if (name.includes("gbp") || name.includes("jpy") || name.includes("pound")) return "GBP/JPY";
+  if (name.includes("gbp") || name.includes("pound")) return "GBP/JPY";
+  if (name.includes("jpy") || name.includes("yen")) return "USD/JPY";
   if (name.includes("aapl") || name.includes("apple")) return "AAPL";
   if (name.includes("nasdaq") || name.includes("ndx") || name.includes("us100")) return "NASDAQ";
   return undefined;
 }
 
-function generateDynamicMock(fileName?: string, selectedPair?: string, tradingStyle?: string): AnalysisResult {
-  const pairs = ["BTC/USD", "ETH/USDT", "EUR/USD", "XAU/USD", "GBP/JPY", "AAPL", "NASDAQ"];
-  const timeframes = ["15M", "1H", "4H", "1D"];
-  const directions = ["BULLISH", "BEARISH", "SIDEWAYS"];
-  
+async function generateDynamicMock(fileName?: string, selectedPair?: string, tradingStyle?: string): Promise<AnalysisResult> {
+  // Try to get live price for more accurate mock data
   let pair = selectedPair && selectedPair !== "auto" ? selectedPair : undefined;
   if (!pair) pair = detectPairFromFileName(fileName);
-  if (!pair) pair = pairs[Math.floor(Math.random() * pairs.length)];
-  
-  const timeframe = timeframes[Math.floor(Math.random() * timeframes.length)];
-  const direction = directions[Math.floor(Math.random() * directions.length)] as "BULLISH" | "BEARISH" | "SIDEWAYS";
-  
+  if (!pair) pair = "XAU/USD"; // Default to gold if nothing specified
+
+  // Fetch live price for mock accuracy
+  const priceData = await fetchCurrentPrice(pair);
+
+  const timeframes = ["15M", "1H", "4H", "1D"];
+  const timeframe = tradingStyle === "Scalping" ? "5M" : tradingStyle === "Swing Trading" ? "4H" : "1H";
+  const directions: ("BULLISH" | "BEARISH" | "SIDEWAYS")[] = ["BULLISH", "BEARISH", "SIDEWAYS"];
+  const direction = directions[Math.floor(Math.random() * directions.length)];
+
+  // Use live price if available, otherwise use hardcoded but updated base prices
   const basePrices: Record<string, number> = {
-    "BTC/USD": 64000, "ETH/USDT": 3500, "EUR/USD": 1.0850, "XAU/USD": 2350, 
-    "GBP/JPY": 190.50, "AAPL": 175.50, "NASDAQ": 18200
+    "XAU/USD": 3350, "EUR/USD": 1.1350, "GBP/JPY": 195.50, "USD/JPY": 144.50,
+    "GBP/USD": 1.3450, "BTC/USD": 105000, "BTC/USDT": 105000,
+    "ETH/USD": 2600, "ETH/USDT": 2600, "AAPL": 200, "NASDAQ": 21500
   };
-  const base = basePrices[pair] || 100;
-  
-  const variance = base * 0.05;
+
+  const base = priceData.currentPrice || basePrices[pair] || 100;
+
+  const variance = base * 0.005; // 0.5% variance around current price
   const entry = base + (Math.random() * variance) - (variance / 2);
-  
+
   const isBullish = direction === "BULLISH";
   const trend = direction === "SIDEWAYS" ? "NEUTRAL" : direction;
   const rec = direction === "SIDEWAYS" ? "WAIT" : (isBullish ? "BUY" : "SELL");
-  
-  const spread = base * 0.01;
+
+  const spread = base * 0.008;
   const tp1 = isBullish ? entry + spread : entry - spread;
   const tp2 = isBullish ? entry + (spread * 2) : entry - (spread * 2);
   const tp3 = isBullish ? entry + (spread * 3) : entry - (spread * 3);
   const sl = isBullish ? entry - (spread * 1.5) : entry + (spread * 1.5);
-  const invalidation = isBullish ? sl - (base * 0.005) : sl + (base * 0.005);
-  
-  const p = (n: number) => pair === "EUR/USD" ? Number(n.toFixed(4)) : Number(n.toFixed(2));
+  const invalidation = isBullish ? sl - (base * 0.003) : sl + (base * 0.003);
 
-  const patterns = isBullish 
+  const decimalPlaces = pair.includes("JPY") ? 2 : pair.includes("USD") && !pair.includes("XAU") && !pair.includes("BTC") && !pair.includes("ETH") && !pair.includes("AAPL") && !pair.includes("NASDAQ") ? (base < 10 ? 4 : 2) : 2;
+  const p = (n: number) => Number(n.toFixed(decimalPlaces));
+
+  const patterns = isBullish
     ? ["Bullish Order Block Mitigation", "Liquidity Sweep & BOS", "Fair Value Gap (FVG) Fill", "Change of Character (ChoCh)"]
     : ["Bearish Order Block Rejection", "Buy-Side Liquidity Sweep", "Bearish FVG Mitigation", "Bearish ChoCh"];
-    
+
   const setupStrength: "STRONG" | "MODERATE" | "WEAK" = direction === "SIDEWAYS" ? "WEAK" : (Math.random() > 0.4 ? "STRONG" : "MODERATE");
 
   const thesisMap = {
@@ -379,15 +475,15 @@ function generateDynamicMock(fileName?: string, selectedPair?: string, tradingSt
 
   const mockNewsByPair: Record<string, Array<{headline: string, source: string, impact: "POSITIVE" | "NEGATIVE" | "NEUTRAL", explanation: string}>> = {
     "XAU/USD": [
-      { headline: "US Treasury Yields Slide on Lower Inflation Expectations", source: "Bloomberg", impact: "POSITIVE", explanation: "Lower yields reduce the opportunity cost of holding non-yielding Gold, reinforcing the technical support at $2350." },
-      { headline: "Dollar Index Strengthens After Robust Services PMI", source: "Reuters", impact: "NEGATIVE", explanation: "A stronger Dollar pressures Gold prices, potentially delaying the breakout above key resistance at $2370." }
+      { headline: "US Treasury Yields Slide on Lower Inflation Expectations", source: "Bloomberg", impact: "POSITIVE", explanation: "Lower yields reduce the opportunity cost of holding non-yielding Gold, reinforcing the technical support." },
+      { headline: "Dollar Index Strengthens After Robust Services PMI", source: "Reuters", impact: "NEGATIVE", explanation: "A stronger Dollar pressures Gold prices, potentially delaying the breakout above key resistance." }
     ],
     "EUR/USD": [
       { headline: "ECB Signals Potential Rate Cut in June Meeting", source: "Reuters", impact: "NEGATIVE", explanation: "Divergence between ECB's dovish tone and Fed's hawkish stance puts fundamental downward pressure on the Euro." },
-      { headline: "US Jobless Claims Rise More Than Expected", source: "MarketWatch", impact: "POSITIVE", explanation: "Weak labor data weakens the Dollar, supporting a potential technical bounce from the 1.0840 support area." }
+      { headline: "US Jobless Claims Rise More Than Expected", source: "MarketWatch", impact: "POSITIVE", explanation: "Weak labor data weakens the Dollar, supporting a potential technical bounce from support." }
     ],
     "BTC/USD": [
-      { headline: "Institutional Inflows to Spot Bitcoin ETFs Accelerate", source: "Coindesk", impact: "POSITIVE", explanation: "Consistent spot buying pressure aligns with the bullish pattern, raising the probability of a breakout above $65,000." },
+      { headline: "Institutional Inflows to Spot Bitcoin ETFs Accelerate", source: "Coindesk", impact: "POSITIVE", explanation: "Consistent spot buying pressure aligns with the bullish pattern, raising the probability of a breakout." },
       { headline: "Regulatory Concerns Re-emerge as SEC Review Guidelines", source: "Bloomberg", impact: "NEUTRAL", explanation: "Short-term regulatory noise is causing consolidation, matching the sideways market structure detected on the chart." }
     ]
   };
@@ -466,8 +562,8 @@ function generateDynamicMock(fileName?: string, selectedPair?: string, tradingSt
       take_profit: `${p(tp2)}`,
       rr: "1:2.5"
     },
-    vixor_message: direction === "SIDEWAYS" 
-      ? "Market is currently sweeping liquidity in a tight range. Sit on your hands until a clear Break of Structure." 
+    vixor_message: direction === "SIDEWAYS"
+      ? "Market is currently sweeping liquidity in a tight range. Sit on your hands until a clear Break of Structure."
       : `I have detected a ${setupStrength === "STRONG" ? "high-conviction" : setupStrength === "MODERATE" ? "developing" : "speculative"} ${isBullish ? 'bullish' : 'bearish'} setup with key confluences. Enter with discipline and respect the invalidation level.`
   };
 }
