@@ -93,12 +93,18 @@ function RootComponent() {
     let mounted = true;
     import("@/integrations/supabase/client").then(({ supabase }) => {
       if (!mounted) return;
-      const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-        if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-        router.invalidate();
-        if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-      });
-      (window as unknown as { __vxAuthSub?: { unsubscribe(): void } }).__vxAuthSub = sub.subscription;
+      try {
+        const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+          if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+          router.invalidate();
+          if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+        });
+        (window as unknown as { __vxAuthSub?: { unsubscribe(): void } }).__vxAuthSub = sub.subscription;
+      } catch (e) {
+        console.warn("[Auth] Could not subscribe to auth state changes:", e);
+      }
+    }).catch((e) => {
+      console.warn("[Auth] Could not load Supabase client:", e);
     });
     return () => { mounted = false; };
   }, [router, queryClient]);
