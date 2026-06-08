@@ -1,0 +1,209 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Upload, Camera, Sparkles, X, Loader2, ArrowLeft, Image as ImageIcon } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { createAnalysis, getMe } from "@/lib/vixor.functions";
+import { useQuery } from "@tanstack/react-query";
+
+export const Route = createFileRoute("/_authenticated/analyze")({
+  head: () => ({ meta: [{ title: "Analyze — Vixor" }] }),
+  component: Analyze,
+});
+
+const TRADING_STYLES = [
+  { id: "Scalping", icon: "⚡", label: "Scalping" },
+  { id: "Day Trading", icon: "☀️", label: "Day Trading" },
+  { id: "Swing Trading", icon: "🌊", label: "Swing Trading" },
+];
+
+const STEPS = ["Connecting to Engine", "Extracting Price Action", "Computing Market Structure", "Generating Signal"];
+
+function Analyze() {
+  const navigate = useNavigate();
+  const fetchMe = useServerFn(getMe);
+  const create = useServerFn(createAnalysis);
+  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const [stage, setStage] = useState<"upload" | "preview" | "analyzing">("upload");
+  const [progress, setProgress] = useState(0);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [selectedPair, setSelectedPair] = useState<string>("auto");
+  const [tradingStyle, setTradingStyle] = useState<string>("Day Trading");
+
+  const points = me.data?.balance.balance ?? 0;
+  const isPremium = !!me.data?.isPremium;
+
+  function pickFile(f: File | null) {
+    if (!f) return;
+    if (!/^image\/(png|jpe?g|webp)$/.test(f.type)) { setErr("PNG, JPG, or WebP only"); return; }
+    if (f.size > 8 * 1024 * 1024) { setErr("Max 8 MB"); return; }
+    setErr(null);
+    setFile(f);
+
+    const name = f.name.toLowerCase();
+    if (name.includes("gold") || name.includes("xau")) setSelectedPair("XAU/USD");
+    else if (name.includes("eur")) setSelectedPair("EUR/USD");
+    else if (name.includes("btc")) setSelectedPair("BTC/USD");
+    else setSelectedPair("auto");
+
+    const reader = new FileReader();
+    reader.onload = () => { setPreview(reader.result as string); setStage("preview"); };
+    reader.readAsDataURL(f);
+  }
+
+  async function handlePaste() {
+    try {
+      const items = await navigator.clipboard.read();
+      for (const it of items) {
+        const type = it.types.find(t => t.startsWith("image/"));
+        if (type) {
+          const blob = await it.getType(type);
+          pickFile(new File([blob], "pasted.png", { type }));
+          return;
+        }
+      }
+      setErr("No image found on clipboard");
+    } catch {
+      setErr("Clipboard access denied. Please paste manually (Ctrl+V)");
+    }
+  }
+
+  useEffect(() => {
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const blob = items[i].getAsFile();
+          if (blob) pickFile(blob);
+          break;
+        }
+      }
+    };
+    window.addEventListener("paste", handleGlobalPaste);
+    return () => window.removeEventListener("paste", handleGlobalPaste);
+  }, []);
+
+  async function startAnalysis() {
+    if (!file || !preview) return;
+    if (!isPremium && points < 10) { setErr("Need at least 10 points. Check your profile."); return; }
+    setStage("analyzing"); setProgress(0); setErr(null);
+    
+    const ticker = setInterval(() => setProgress(p => Math.min(p + 1, STEPS.length - 1)), 2000);
+    
+    try {
+      const { id } = await create({ 
+        data: { 
+          imageBase64: preview, 
+          mimeType: file.type as any,
+          fileName: file.name,
+          selectedPair: selectedPair === "auto" ? undefined : selectedPair
+        } 
+      });
+      clearInterval(ticker);
+      navigate({ to: "/analysis/$id", params: { id } });
+    } catch (e) {
+      clearInterval(ticker);
+      setErr(e instanceof Error ? e.message : "Failed to analyze");
+      setStage("preview");
+    }
+  }
+
+  return (
+    <div className="space-y-5 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      
+      <div className="flex items-center gap-3 mb-2">
+        <button onClick={() => navigate({ to: "/" })} className="size-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors">
+          <ArrowLeft className="size-5" />
+        </button>
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Vixor Engine</div>
+          <h1 className="text-xl font-bold tracking-tight leading-none">Analyze Chart</h1>
+        </div>
+      </div>
+
+      {err && (
+        <div className="p-3 bg-bearish/10 border border-bearish/30 text-bearish text-xs font-bold rounded-xl animate-in shake">
+          {err}
+        </div>
+      )}
+
+      {stage === "upload" && (
+        <>
+          <label className="block w-full aspect-[4/3] rounded-2xl border-2 border-dashed border-border bg-card/50 hover:bg-card/80 transition-colors cursor-pointer relative overflow-hidden group">
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+              <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Upload className="size-8 text-primary" />
+              </div>
+              <div className="font-bold text-lg mb-1">Tap to Upload Chart</div>
+              <div className="text-xs text-muted-foreground">PNG, JPG, WebP (Max 8MB)</div>
+            </div>
+            <input type="file" ref={fileRef} className="hidden" accept="image/png, image/jpeg, image/webp" onChange={e => pickFile(e.target.files?.[0] || null)} />
+          </label>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={() => fileRef.current?.click()} className="h-14 rounded-xl bg-card border border-border flex flex-col items-center justify-center gap-1 hover:bg-card-hover transition-colors">
+              <ImageIcon className="size-5 text-muted-foreground" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Gallery</span>
+            </button>
+            <button onClick={handlePaste} className="h-14 rounded-xl bg-card border border-border flex flex-col items-center justify-center gap-1 hover:bg-card-hover transition-colors">
+              <Clipboard className="size-5 text-muted-foreground" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Paste</span>
+            </button>
+          </div>
+        </>
+      )}
+
+      {stage === "preview" && preview && (
+        <div className="space-y-4">
+          <div className="relative rounded-2xl overflow-hidden border border-border aspect-[4/3] bg-black group">
+            <img src={preview} alt="Preview" className="w-full h-full object-contain" />
+            <button onClick={() => { setFile(null); setPreview(null); setStage("upload"); }} className="absolute top-3 right-3 size-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center border border-white/20 hover:scale-110 transition-transform text-white">
+              <X className="size-4" />
+            </button>
+          </div>
+
+          <div className="vixor-card p-4 space-y-4">
+            <div>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">Trading Style</label>
+              <div className="grid grid-cols-3 gap-2">
+                {TRADING_STYLES.map(s => (
+                  <button key={s.id} onClick={() => setTradingStyle(s.id)}
+                    className={`h-12 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${tradingStyle === s.id ? "bg-primary text-primary-foreground border-primary glow-primary" : "bg-card border-border text-muted-foreground hover:bg-card-hover"}`}>
+                    <span className="text-base">{s.icon}</span> <span className="hidden sm:inline">{s.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button onClick={startAnalysis} disabled={!isPremium && points < 10} className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-bold text-lg flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50">
+              <Sparkles className="size-5" /> Start Analysis
+              {!isPremium && <span className="ml-2 text-xs bg-black/20 px-2 py-0.5 rounded-full">-10 pts</span>}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {stage === "analyzing" && (
+        <div className="h-[60vh] flex flex-col items-center justify-center text-center">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 rounded-3xl bg-primary/20 animate-ping" />
+            <div className="relative size-24 rounded-3xl gradient-primary glow-primary flex items-center justify-center">
+              <Loader2 className="size-10 text-white animate-spin" strokeWidth={2.5} />
+            </div>
+          </div>
+          
+          <h2 className="text-xl font-bold tracking-tight mb-2">Analyzing Chart...</h2>
+          <div className="text-sm font-mono text-primary font-bold">{STEPS[progress]}</div>
+          
+          <div className="w-48 h-1.5 bg-muted rounded-full mt-6 overflow-hidden">
+            <div className="h-full gradient-primary transition-all duration-500 ease-out" style={{ width: `${((progress + 1) / STEPS.length) * 100}%` }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
