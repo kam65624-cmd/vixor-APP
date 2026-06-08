@@ -4,9 +4,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ===== Vixor Design System =====
- * Dark-first (default). Emerald accent, trading semantics.
- * Per the Vixor product spec (Phase 4).
+/* ===== Vixor Design System V2 =====
+ * Dark-first (default). Bloomberg Professional style.
+ * No glow, no neon. Clean data-dense terminal aesthetic.
  */
 
 @theme inline {
@@ -192,4 +192,117 @@
   background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--color-foreground) 8%, transparent), transparent);
   background-size: 200% 100%;
   animation: shimmer 1.6s linear infinite;
+}
+
+/* ====== Bloomberg Professional Utilities ====== */
+@layer utilities {
+  /* Professional terminal-style cards - no glow, no neon */
+  .terminal-card {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .terminal-card-accent {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    border-left: 3px solid var(--color-primary);
+  }
+  .terminal-section {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+  .terminal-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  /* Data grid - Bloomberg style */
+  .data-grid {
+    display: grid;
+    gap: 1px;
+    background: var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .data-grid > * {
+    background: var(--color-card);
+    padding: 0.75rem;
+  }
+
+  /* Setup strength indicators */
+  .strength-strong {
+    color: var(--color-bullish);
+    background: color-mix(in oklab, var(--color-bullish) 12%, transparent);
+    border-color: color-mix(in oklab, var(--color-bullish) 30%, transparent);
+  }
+  .strength-moderate {
+    color: var(--color-neutral-wait);
+    background: color-mix(in oklab, var(--color-neutral-wait) 12%, transparent);
+    border-color: color-mix(in oklab, var(--color-neutral-wait) 30%, transparent);
+  }
+  .strength-weak {
+    color: var(--color-bearish);
+    background: color-mix(in oklab, var(--color-bearish) 12%, transparent);
+    border-color: color-mix(in oklab, var(--color-bearish) 30%, transparent);
+  }
+
+  /* Professional scenario cards */
+  .scenario-primary {
+    border-left: 3px solid var(--color-primary);
+    background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 6%, var(--color-card)), var(--color-card));
+  }
+  .scenario-alternative {
+    border-left: 3px solid var(--color-info);
+    background: linear-gradient(135deg, color-mix(in oklab, var(--color-info) 6%, var(--color-card)), var(--color-card));
+  }
+  .scenario-counter {
+    border-left: 3px solid var(--color-bearish);
+    background: linear-gradient(135deg, color-mix(in oklab, var(--color-bearish) 6%, var(--color-card)), var(--color-card));
+  }
+
+  /* Subtle divider */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+    margin: 1.5rem 0;
+  }
+
+  /* Education term highlight */
+  .term-highlight {
+    color: var(--color-primary);
+    font-weight: 600;
+    background: color-mix(in oklab, var(--color-primary) 10%, transparent);
+    padding: 0 3px;
+    border-radius: 3px;
+    cursor: help;
+    transition: background-color 150ms ease;
+  }
+  .term-highlight:hover {
+    background: color-mix(in oklab, var(--color-primary) 20%, transparent);
+  }
+
+  /* Collapsible section */
+  .collapsible-trigger {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 150ms ease;
+  }
+  .collapsible-trigger:hover {
+    background: var(--color-card-hover);
+  }
+  .collapsible-content {
+    overflow: hidden;
+    transition: max-height 300ms ease-out, opacity 200ms ease-out;
+  }
+  .collapsible-content[data-state="closed"] {
+    max-height: 0;
+    opacity: 0;
+  }
+  .collapsible-content[data-state="open"] {
+    max-height: 2000px;
+    opacity: 1;
+  }
 }
