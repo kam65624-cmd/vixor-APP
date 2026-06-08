@@ -25,7 +25,7 @@ function Journal() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Overview");
   
   const fetchAnalyses = useServerFn(listAnalyses);
-  const analysesQuery = useQuery({ queryKey: ["analyses-journal"], queryFn: () => fetchAnalyses({ limit: 20 }) });
+  const analysesQuery = useQuery({ queryKey: ["analyses-journal"], queryFn: () => fetchAnalyses({ data: { limit: 20 } }) });
 
   return (
     <div className="space-y-6 pb-6 animate-in fade-in duration-500">

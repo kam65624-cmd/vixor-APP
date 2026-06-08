@@ -72,7 +72,7 @@ export const createAdmin = (() => {
         const { error } = await supabaseAdmin.auth.admin.createUser({
           email,
           password,
-          email_confirmed_at: new Date().toISOString(), // mark as confirmed
+          email_confirm: true, // mark as confirmed
         });
         if (error) throw new Error(`Failed to create admin user: ${error.message}`);
         return { email, password };

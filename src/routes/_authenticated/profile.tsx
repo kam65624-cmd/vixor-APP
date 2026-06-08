@@ -50,7 +50,7 @@ function Profile() {
 
   const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
   const refs = useQuery({ queryKey: ["refs"], queryFn: () => fetchRef({}) });
-  const analyses = useQuery({ queryKey: ["analyses-profile"], queryFn: () => fetchAnalyses({ limit: 50 }) });
+  const analyses = useQuery({ queryKey: ["analyses-profile"], queryFn: () => fetchAnalyses({ data: { limit: 50 } }) });
 
   const display = me.data?.profile?.display_name ?? "Trader";
   const tgPhoto = (me.data?.profile as any)?.telegram_photo_url;

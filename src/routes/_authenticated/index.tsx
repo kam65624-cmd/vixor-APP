@@ -18,7 +18,7 @@ function CommandCenter() {
   const fetchRecent = useServerFn(listAnalyses);
 
   const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
-  const recent = useQuery({ queryKey: ["analyses", 5], queryFn: () => fetchRecent({ limit: 5 }) });
+  const recent = useQuery({ queryKey: ["analyses", 5], queryFn: () => fetchRecent({ data: { limit: 5 } }) });
 
   const name = me.data?.profile?.display_name?.split(" ")[0] || "Trader";
   const xp = (me.data?.profile as any)?.xp ?? 1250;

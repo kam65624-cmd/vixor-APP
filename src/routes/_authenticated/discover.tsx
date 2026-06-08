@@ -42,7 +42,7 @@ function DiscoverNews() {
 
   const { data: news = [], isLoading, error } = useQuery({
     queryKey: ["marketNews", category],
-    queryFn: () => fetchMarketNews({ category }),
+    queryFn: () => fetchMarketNews({ data: { category } }),
     refetchInterval: 60000,
   });
 
