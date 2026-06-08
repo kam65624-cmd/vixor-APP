@@ -106,6 +106,7 @@ const CreateAnalysisInput = z.object({
   mimeType: z.string().regex(/^image\/(png|jpeg|jpg|webp)$/),
   fileName: z.string().optional(),
   selectedPair: z.string().optional(),
+  tradingStyle: z.string().optional(),
 });
 
 export const createAnalysis = createServerFn({ method: "POST" })
@@ -162,7 +163,7 @@ export const createAnalysis = createServerFn({ method: "POST" })
 
     // Run AI analysis
     try {
-      const result = await runChartAnalysis(bytes, data.mimeType, data.fileName, data.selectedPair);
+      const result = await runChartAnalysis(bytes, data.mimeType, data.fileName, data.selectedPair, data.tradingStyle);
 
       await supabaseAdmin
         .from("analyses")
@@ -188,7 +189,7 @@ export const createAnalysis = createServerFn({ method: "POST" })
           scenarios: result.scenarios,
           management: result.management,
           news: (result as any).news_impact,
-          raw_ai_response: result,
+          raw_ai_response: result as any,
         })
         .eq("id", row.id)
         .throwOnError();

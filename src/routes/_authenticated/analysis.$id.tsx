@@ -5,7 +5,7 @@ import {
   Loader2, Maximize2, Zap, BrainCircuit, Activity, BarChart2, TrendingUp,
   Newspaper, ShieldCheck, TrendingDown, CheckCircle, ChevronRight, X
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getAnalysis } from "@/lib/vixor.functions";
 import { useQuery } from "@tanstack/react-query";
@@ -36,10 +36,14 @@ function AnalysisResult() {
   const fetchFn = useServerFn(getAnalysis);
   const q = useQuery({
     queryKey: ["analysis", id],
-    queryFn: () => fetchFn({ data: { id } }),
+    queryFn: async () => {
+      const result = await fetchFn({ data: { id } });
+      return result;
+    },
+    staleTime: 10_000,
     refetchInterval: (query) => {
       const s = query.state.data?.status;
-      return s === "complete" || s === "failed" ? false : 1200;
+      return s === "complete" || s === "failed" ? false : 2000;
     },
   });
   const [tab, setTab] = useState<(typeof TABS)[number]>("Trade Setup");
@@ -70,9 +74,12 @@ function AnalysisResult() {
 
   if (a.status !== "complete") return <Loading label="Vixor AI is generating your signal…" />;
 
-  const signal = a.signal_badge as { direction: "BUY" | "SELL" | "WAIT"; entry: string; stop_loss: string; take_profit: string; rr: string } | null;
-  const scenarios = a.scenarios as { conservative: Scenario; balanced: Scenario; aggressive: Scenario } | null;
-  const management = (a.management ?? []) as string[];
+  // signal_badge may be in a top-level column or inside raw_ai_response
+  const raw = (a.raw_ai_response ?? {}) as Record<string, any>;
+  const signalBadge = (a.signal_badge ?? raw.signal_badge ?? null) as { direction: "BUY" | "SELL" | "WAIT"; entry: string; stop_loss: string; take_profit: string; rr: string } | null;
+  const vixorMsg = a.vixor_message ?? raw.vixor_message ?? null;
+  const scenarios = (a.scenarios ?? raw.scenarios ?? null) as { conservative: Scenario; balanced: Scenario; aggressive: Scenario } | null;
+  const management = (a.management ?? raw.management ?? []) as string[];
   const isBullish = a.recommendation === "BUY";
   const isBearish = a.recommendation === "SELL";
   const isWait = a.recommendation === "WAIT";
@@ -126,28 +133,28 @@ function AnalysisResult() {
         </div>
 
         {/* Signal Prices — the core data */}
-        {signal && (
+        {signalBadge && (
           <div className="grid grid-cols-3 gap-2 mb-4">
             <div className="bg-card/70 backdrop-blur p-3 rounded-xl border border-border text-center">
               <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">Entry</div>
-              <div className="font-mono font-bold text-base text-foreground">{signal.entry}</div>
+              <div className="font-mono font-bold text-base text-foreground">{signalBadge.entry}</div>
             </div>
             <div className="bg-bearish/5 p-3 rounded-xl border border-bearish/30 text-center">
               <div className="text-[9px] font-bold uppercase tracking-widest text-bearish mb-1.5">Stop Loss</div>
-              <div className="font-mono font-bold text-base text-bearish">{signal.stop_loss}</div>
+              <div className="font-mono font-bold text-base text-bearish">{signalBadge.stop_loss}</div>
             </div>
             <div className="bg-bullish/5 p-3 rounded-xl border border-bullish/30 text-center">
               <div className="text-[9px] font-bold uppercase tracking-widest text-bullish mb-1.5">Target</div>
-              <div className="font-mono font-bold text-base text-bullish">{signal.take_profit}</div>
+              <div className="font-mono font-bold text-base text-bullish">{signalBadge.take_profit}</div>
             </div>
           </div>
         )}
 
         {/* RR + Confidence row */}
         <div className="flex items-center gap-3">
-          {signal && (
+          {signalBadge && (
             <div className={`px-3 py-1.5 rounded-lg border font-mono font-bold text-sm ${recBg} ${recColor}`}>
-              R:R {signal.rr}
+              R:R {signalBadge.rr}
             </div>
           )}
           <div className="flex-1">
@@ -168,14 +175,14 @@ function AnalysisResult() {
       {/* ═══════════════════════════════════════
           VIXOR VERDICT BOX
       ═══════════════════════════════════════ */}
-      {a.vixor_message && (
+      {vixorMsg && (
         <div className={`vixor-card p-4 border-l-4 ${isBullish ? "border-l-bullish" : isBearish ? "border-l-bearish" : "border-l-neutral-wait"}`}>
           <div className="flex items-center gap-2 mb-2">
             <BrainCircuit className={`size-5 shrink-0 ${isBullish ? "text-bullish" : isBearish ? "text-bearish" : "text-neutral-wait"}`} />
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">Vixor Verdict</span>
           </div>
           <p className="text-sm font-medium leading-relaxed text-foreground/90">
-            {highlightSMC(a.vixor_message)}
+            {highlightSMC(vixorMsg)}
           </p>
         </div>
       )}

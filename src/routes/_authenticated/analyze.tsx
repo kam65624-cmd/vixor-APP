@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Upload, Camera, Sparkles, X, Loader2, ArrowLeft, Image as ImageIcon } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { Upload, Camera, Sparkles, X, Loader2, ArrowLeft, Image as ImageIcon, Clipboard } from "lucide-react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { createAnalysis, getMe } from "@/lib/vixor.functions";
 import { useQuery } from "@tanstack/react-query";
@@ -22,7 +22,7 @@ function Analyze() {
   const navigate = useNavigate();
   const fetchMe = useServerFn(getMe);
   const create = useServerFn(createAnalysis);
-  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
+  const me = useQuery({ queryKey: ["me"], queryFn: async () => fetchMe({}), staleTime: 30_000 });
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [stage, setStage] = useState<"upload" | "preview" | "analyzing">("upload");
@@ -100,7 +100,8 @@ function Analyze() {
           imageBase64: preview, 
           mimeType: file.type as any,
           fileName: file.name,
-          selectedPair: selectedPair === "auto" ? undefined : selectedPair
+          selectedPair: selectedPair === "auto" ? undefined : selectedPair,
+          tradingStyle: tradingStyle
         } 
       });
       clearInterval(ticker);
