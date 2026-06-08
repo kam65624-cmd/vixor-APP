@@ -20,75 +20,73 @@ function consumeLastCapturedError() {
   lastCapturedError = void 0;
   return error;
 }
-function renderErrorPage() {
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>This page didn't load</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      body { font: 15px/1.5 system-ui, -apple-system, sans-serif; background: #fafafa; color: #111; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 1.5rem; }
-      .card { max-width: 28rem; width: 100%; text-align: center; padding: 2rem; }
-      h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
-      p { color: #4b5563; margin: 0 0 1.5rem; }
-      .actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
-      a, button { padding: 0.5rem 1rem; border-radius: 0.375rem; font: inherit; cursor: pointer; text-decoration: none; border: 1px solid transparent; }
-      .primary { background: #111; color: #fff; }
-      .secondary { background: #fff; color: #111; border-color: #d1d5db; }
-    </style>
-  </head>
-  <body>
-    <div class="card">
-      <h1>This page didn't load</h1>
-      <p>Something went wrong on our end. You can try refreshing or head back home.</p>
-      <div class="actions">
-        <button class="primary" onclick="location.reload()">Try again</button>
-        <a class="secondary" href="/">Go home</a>
-      </div>
-    </div>
-  </body>
-</html>`;
-}
 let serverEntryPromise;
 async function getServerEntry() {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("./server-DgZVuMzr.mjs").then((n) => n.s).then(
+    serverEntryPromise = import("./server-YJcowFjo.mjs").then((n) => n.s).then(
       (m) => m.default ?? m
     );
   }
   return serverEntryPromise;
+}
+function renderDebugError(title, errorMsg, errorStack) {
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${title}</title><style>body{font:14px/1.5 monospace;background:#1a1a2e;color:#e0e0e0;padding:2rem;max-width:900px;margin:0 auto}h1{color:#ff6b6b;font-size:1.2rem;margin-bottom:1rem}.info{background:#16213e;padding:0.75rem;border-radius:8px;margin-bottom:1rem;font-size:12px;color:#a8d8ea}.stack{white-space:pre-wrap;background:#0d1117;padding:1rem;border-radius:8px;overflow-x:auto;font-size:11px;color:#c9d1d9;border:1px solid #30363d}h2{color:#ffa657;font-size:1rem;margin-top:1.5rem;margin-bottom:0.5rem}</style></head><body><h1>${title}</h1><div class="info"><strong>Time:</strong> ${(/* @__PURE__ */ new Date()).toISOString()} | <strong>Node:</strong> ${typeof process !== "undefined" ? process.version : "unknown"} | <strong>ENV vars:</strong> SUPABASE_URL=${!!process.env.SUPABASE_URL} SUPABASE_PUBLISHABLE_KEY=${!!process.env.SUPABASE_PUBLISHABLE_KEY} SUPABASE_SERVICE_ROLE_KEY=${!!process.env.SUPABASE_SERVICE_ROLE_KEY} VITE_SUPABASE_URL=${!!process.env.VITE_SUPABASE_URL} GEMINI_API_KEY=${!!process.env.GEMINI_API_KEY}</div><h2>Error Message</h2><div class="stack">${errorMsg || "No error message"}</div><h2>Stack Trace</h2><div class="stack">${errorStack || "No stack trace available"}</div></body></html>`;
+  return new Response(html, {
+    status: 500,
+    headers: { "content-type": "text/html; charset=utf-8" }
+  });
 }
 async function normalizeCatastrophicSsrResponse(response) {
   if (response.status < 500) return response;
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) return response;
   const body = await response.clone().text();
+  console.error(`[Vixor] h3 500 response body: ${body.substring(0, 500)}`);
   if (!body.includes('"unhandled":true') || !body.includes('"message":"HTTPError"')) {
-    return response;
+    const captured2 = consumeLastCapturedError();
+    const capturedMsg = captured2 instanceof Error ? captured2.message : captured2 ? String(captured2) : "";
+    const capturedStack = captured2 instanceof Error ? captured2.stack : "";
+    const combinedMsg = `${body}
+
+Captured error: ${capturedMsg}`;
+    return renderDebugError("Vixor Server Error (Non-h3 500)", combinedMsg, capturedStack);
   }
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
-  return new Response(renderErrorPage(), {
-    status: 500,
-    headers: { "content-type": "text/html; charset=utf-8" }
-  });
+  const captured = consumeLastCapturedError();
+  const errorMsg = captured instanceof Error ? captured.message : captured ? String(captured) : `h3 swallowed SSR error: ${body}`;
+  const errorStack = captured instanceof Error ? captured.stack : "";
+  console.error(captured ?? new Error(`h3 swallowed SSR error: ${body}`));
+  return renderDebugError("Vixor Server Error (h3 Swallowed)", errorMsg, errorStack);
 }
 const server = {
   async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    console.log(`[Vixor] Request: ${url.pathname}${url.search}`);
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      if (response.status >= 500) {
+        console.error(`[Vixor] 500 error on ${url.pathname}`);
+        const contentType = response.headers.get("content-type") ?? "";
+        if (contentType.includes("application/json")) {
+          return await normalizeCatastrophicSsrResponse(response);
+        }
+        const body = await response.clone().text();
+        const captured = consumeLastCapturedError();
+        const capturedMsg = captured instanceof Error ? captured.message : captured ? String(captured) : "";
+        const capturedStack = captured instanceof Error ? captured.stack : "";
+        return renderDebugError("Vixor Server Error (Non-JSON 500)", `${body}
+
+Captured: ${capturedMsg}`, capturedStack);
+      }
+      return response;
     } catch (error) {
-      console.error(error);
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" }
-      });
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : "";
+      console.error("[Vixor] Fatal server error:", errorMsg, errorStack);
+      return renderDebugError("Vixor Fatal Server Error", errorMsg, errorStack || "");
     }
   }
 };
 export {
-  server as default,
-  renderErrorPage as r
+  server as default
 };
