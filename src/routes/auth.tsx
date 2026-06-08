@@ -32,14 +32,27 @@ function AuthPage() {
 
   useEffect(() => {
     let active = true;
+
+    // Helper: wait up to 3s for Telegram.WebApp to be injected by the SDK
+    const waitForTelegram = (): Promise<any> =>
+      new Promise((resolve) => {
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg) { resolve(tg); return; }
+        let attempts = 0;
+        const iv = setInterval(() => {
+          const t = (window as any).Telegram?.WebApp;
+          if (t || attempts++ > 30) { clearInterval(iv); resolve(t ?? null); }
+        }, 100);
+      });
+
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (data.user && active) { navigate({ to: "/" }); return; }
 
-      const tg = (window as any).Telegram?.WebApp;
+      const tg = await waitForTelegram();
       const initData: string | undefined = tg?.initData;
       if (initData && initData.length > 10) {
-        setBusy(true);
+        if (active) setBusy(true);
         try {
           const { email, password } = await tgSignIn({ data: { initData } });
           const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -55,6 +68,7 @@ function AuthPage() {
     })();
     return () => { active = false; };
   }, [navigate, router, tgSignIn]);
+
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

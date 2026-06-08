@@ -62,7 +62,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
-    scripts: [{ src: "https://telegram.org/js/telegram-web-app.js", async: true }],
+    scripts: [{ src: "https://telegram.org/js/telegram-web-app.js" }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
