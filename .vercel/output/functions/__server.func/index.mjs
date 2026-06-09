@@ -1,4 +1,10 @@
 globalThis.__nitro_main__ = import.meta.url;
+
+// ── Vixor: Force Vercel to include _ssr chunks via static imports ──
+const __vixor_ssr_chunks__ = true;
+import "./_ssr/empty-plugin-adapters-BFgPZ6_d.mjs";
+import "./_ssr/router-Ckjh48zX.mjs";
+import "./_ssr/start-6fN4pgRM.mjs";
 import { d as defineLazyEventHandler, H as HTTPError, a as H3Core } from "./_libs/h3.mjs";
 import { N as NodeResponse } from "./_libs/srvx.mjs";
 import "./_libs/rou3.mjs";

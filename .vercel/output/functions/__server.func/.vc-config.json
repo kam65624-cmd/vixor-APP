@@ -3,5 +3,10 @@
   "launcherType": "Nodejs",
   "shouldAddHelpers": false,
   "supportsResponseStreaming": true,
-  "runtime": "nodejs24.x"
+  "runtime": "nodejs24.x",
+  "includeFiles": [
+    "_ssr/empty-plugin-adapters-BFgPZ6_d.mjs",
+    "_ssr/router-Ckjh48zX.mjs",
+    "_ssr/start-6fN4pgRM.mjs"
+  ]
 }
