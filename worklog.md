@@ -1092,3 +1092,23 @@ Stage Summary:
 - Portfolio already calculates real metrics from actual analyses
 - Copilot already context-aware (reads profile, analyses, signals, alerts, strategy, watchlist, prices, events)
 - Code pushed to GitHub → Vercel auto-deploy triggered
+
+---
+Task ID: 8
+Agent: Super Z
+Task: Fix Vixor app crash - ERR_MODULE_NOT_FOUND on Vercel
+
+Work Log:
+- Investigated the HTTPError crash on https://vixor-app.vercel.app/
+- Found root cause: Vercel's serverless runtime can't resolve code-split chunks (start-*.mjs, router-*.mjs) because they use dynamic import() which Vercel's file tracer doesn't follow
+- The existing fix-vercel-bundle.mjs only looked for `server-*.mjs` chunks but the actual chunk was `start-6fN4pgRM.mjs`
+- Updated fix-vercel-bundle.mjs to find ALL dynamically imported chunks (start-*, server-*, router-*, empty-plugin-adapters-*) and convert them to static imports
+- Fixed TypeScript errors in server.ts (consumeLastCapturedError returns unknown, needed type cast)
+- Rebuilt and verified the patch works: all 3 chunks (empty-plugin-adapters, router, start) now statically imported
+- Pushed fix to GitHub, Vercel deployment triggered
+
+Stage Summary:
+- Root cause identified: ERR_MODULE_NOT_FOUND for start-6fN4pgRM.mjs
+- Fix: Convert dynamic import() to static imports + Promise.resolve() in _ssr/index.mjs
+- TypeScript errors in server.ts fixed
+- Deployment pushed, awaiting verification
