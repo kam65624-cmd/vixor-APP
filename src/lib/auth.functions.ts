@@ -7,7 +7,7 @@ import { z } from "zod";
  * credentials using the standard Supabase client to establish a real session.
  */
 export const telegramSignIn = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => z.object({ initData: z.string().min(1).max(8192) }).parse(d))
+  .validator((d: unknown) => z.object({ initData: z.string().min(1).max(8192) }).parse(d))
   .handler(async ({ data }) => {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     if (!botToken) throw new Error("TELEGRAM_BOT_TOKEN not configured");
