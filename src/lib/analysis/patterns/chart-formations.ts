@@ -50,6 +50,15 @@ export function detectChartFormations(
     detectRisingWedge,
     detectFallingWedge,
     detectCupAndHandle,
+    detectSymmetricalTriangle,
+    detectRectangleBullish,
+    detectRectangleBearish,
+    detectBroadeningTop,
+    detectBroadeningBottom,
+    detectMegaphoneTop,
+    detectRoundingTop,
+    detectRoundingBottom,
+    detectDiamondTop,
   ];
 
   const results: ChartFormation[] = [];
@@ -831,4 +840,696 @@ function detectCupAndHandle(swings: SwingPoint[], bars: OHLCVBar[]): ChartFormat
     };
   }
   return null;
+}
+
+// ─── 12. Symmetrical Triangle ───────────────────────────────────────────────
+
+function detectSymmetricalTriangle(swings: SwingPoint[], bars: OHLCVBar[]): ChartFormation | null {
+  const highs = swingsByType(swings, "HIGH");
+  const lows = swingsByType(swings, "LOW");
+
+  if (highs.length < 2 || lows.length < 2) return null;
+
+  // Use recent swing points to fit trendlines
+  const recentHighs = highs.slice(-4);
+  const recentLows = lows.slice(-4);
+
+  if (recentHighs.length < 2 || recentLows.length < 2) return null;
+
+  const highSlope = trendlineSlope(recentHighs);
+  const lowSlope = trendlineSlope(recentLows);
+
+  // Highs must have a negative slope (descending resistance)
+  if (highSlope >= 0) return null;
+
+  // Lows must have a positive slope (rising support)
+  if (lowSlope <= 0) return null;
+
+  // Must span enough bars
+  const startIndex = Math.min(recentHighs[0].index, recentLows[0].index);
+  const endIndex = Math.max(
+    recentHighs[recentHighs.length - 1].index,
+    recentLows[recentLows.length - 1].index,
+  );
+  if (endIndex - startIndex < MIN_SWING_DISTANCE * 2) return null;
+
+  // Convergence: the gap between the trendlines is narrowing
+  const firstHighPrice = recentHighs[0].price;
+  const firstLowPrice = recentLows[0].price;
+  const lastHighPrice = recentHighs[recentHighs.length - 1].price;
+  const lastLowPrice = recentLows[recentLows.length - 1].price;
+
+  const initialWidth = firstHighPrice - firstLowPrice;
+  const finalWidth = lastHighPrice - lastLowPrice;
+
+  if (initialWidth <= 0 || finalWidth <= 0) return null;
+  if (finalWidth >= initialWidth) return null; // must converge
+
+  // Determine breakout direction from prior trend
+  const priorTrend = shortTermTrend(bars, startIndex, 12);
+  const isBullish = priorTrend === "UP";
+  const isBearish = priorTrend === "DOWN";
+
+  // If no clear prior trend, default to measuring the triangle width
+  const type: "BULLISH" | "BEARISH" = isBullish ? "BULLISH" : "BEARISH";
+
+  const triangleHeight = initialWidth;
+  const lastHigh = lastHighPrice;
+  const lastLow = lastLowPrice;
+
+  const target = isBullish
+    ? lastHigh + triangleHeight
+    : lastLow - triangleHeight;
+
+  let reliability = 55;
+
+  // More convergent = more reliable
+  const convergenceRatio = finalWidth / initialWidth;
+  if (convergenceRatio < 0.3) reliability += 15;
+  else if (convergenceRatio < 0.5) reliability += 10;
+  else if (convergenceRatio < 0.7) reliability += 5;
+
+  // More touches on each trendline
+  const totalHighs = recentHighs.length;
+  const totalLows = recentLows.length;
+  if (totalHighs >= 3 && totalLows >= 3) reliability += 10;
+  else if (totalHighs >= 2 && totalLows >= 2) reliability += 5;
+
+  // Prior trend alignment improves confidence
+  if (isBullish || isBearish) reliability += 5;
+
+  return {
+    name: "Symmetrical Triangle",
+    type,
+    reliability: Math.min(reliability, 100),
+    startIndex,
+    endIndex,
+    targetPrice: target,
+    stopPrice: isBullish ? lastLow : lastHigh,
+  };
+}
+
+// ─── 13. Rectangle (Bullish) ────────────────────────────────────────────────
+
+function detectRectangleBullish(swings: SwingPoint[], bars: OHLCVBar[]): ChartFormation | null {
+  const highs = swingsByType(swings, "HIGH");
+  const lows = swingsByType(swings, "LOW");
+
+  if (highs.length < 2 || lows.length < 2) return null;
+
+  // Find flat resistance (two highs at same level)
+  for (let i = 0; i < highs.length - 1; i++) {
+    for (let j = i + 1; j < highs.length; j++) {
+      const h1 = highs[i];
+      const h2 = highs[j];
+
+      if (!sameLevel(h1.price, h2.price)) continue;
+      if (h2.index - h1.index < MIN_SWING_DISTANCE) continue;
+
+      // Find flat support (two lows at same level) within the same range
+      const rangeLows = lows.filter(
+        (l) => l.index >= h1.index && l.index <= h2.index,
+      );
+      if (rangeLows.length < 2) continue;
+
+      const lowSlope = trendlineSlope(rangeLows);
+      // Support should be flat
+      const avgLowPrice = rangeLows.reduce((s, l) => s + l.price, 0) / rangeLows.length;
+      const lowPctSlope = Math.abs((lowSlope / avgLowPrice) * 100);
+      if (lowPctSlope > 0.1) continue; // too sloped
+
+      // Resistance should be flat
+      const resistance = (h1.price + h2.price) / 2;
+      const highPctDiff = Math.abs(h1.price - h2.price) / resistance;
+      if (highPctDiff > LEVEL_TOLERANCE * 2) continue;
+
+      // Support level
+      const support = avgLowPrice;
+
+      // Check support is flat by verifying lows are at same level
+      let allLowsSameLevel = true;
+      for (let k = 0; k < rangeLows.length - 1; k++) {
+        if (!sameLevel(rangeLows[k].price, rangeLows[k + 1].price, 0.025)) {
+          allLowsSameLevel = false;
+          break;
+        }
+      }
+      if (!allLowsSameLevel) continue;
+
+      // At least 4 total touches (2 highs + 2 lows minimum)
+      const totalTouches = 2 + rangeLows.filter(
+        (l) => sameLevel(l.price, support, 0.015),
+      ).length;
+      if (totalTouches < 4) continue;
+
+      // Prior uptrend
+      if (shortTermTrend(bars, h1.index, 10) !== "UP") continue;
+
+      const rectangleHeight = resistance - support;
+      if (rectangleHeight / support < 0.02) continue; // too narrow
+
+      const target = resistance + rectangleHeight;
+
+      let reliability = 60;
+
+      // More touches = more reliable
+      if (totalTouches >= 6) reliability += 15;
+      else if (totalTouches >= 5) reliability += 10;
+
+      // How flat is the range
+      if (highPctDiff < 0.005) reliability += 10;
+      else if (highPctDiff < 0.01) reliability += 5;
+
+      return {
+        name: "Rectangle (Bullish)",
+        type: "BULLISH",
+        reliability: Math.min(reliability, 100),
+        startIndex: h1.index,
+        endIndex: h2.index,
+        targetPrice: target,
+        stopPrice: support,
+      };
+    }
+  }
+  return null;
+}
+
+// ─── 14. Rectangle (Bearish) ────────────────────────────────────────────────
+
+function detectRectangleBearish(swings: SwingPoint[], bars: OHLCVBar[]): ChartFormation | null {
+  const highs = swingsByType(swings, "HIGH");
+  const lows = swingsByType(swings, "LOW");
+
+  if (highs.length < 2 || lows.length < 2) return null;
+
+  // Find flat support (two lows at same level)
+  for (let i = 0; i < lows.length - 1; i++) {
+    for (let j = i + 1; j < lows.length; j++) {
+      const l1 = lows[i];
+      const l2 = lows[j];
+
+      if (!sameLevel(l1.price, l2.price)) continue;
+      if (l2.index - l1.index < MIN_SWING_DISTANCE) continue;
+
+      // Find flat resistance within the same range
+      const rangeHighs = highs.filter(
+        (h) => h.index >= l1.index && h.index <= l2.index,
+      );
+      if (rangeHighs.length < 2) continue;
+
+      const highSlope = trendlineSlope(rangeHighs);
+      const avgHighPrice = rangeHighs.reduce((s, h) => s + h.price, 0) / rangeHighs.length;
+      const highPctSlope = Math.abs((highSlope / avgHighPrice) * 100);
+      if (highPctSlope > 0.1) continue;
+
+      const support = (l1.price + l2.price) / 2;
+      const lowPctDiff = Math.abs(l1.price - l2.price) / support;
+      if (lowPctDiff > LEVEL_TOLERANCE * 2) continue;
+
+      const resistance = avgHighPrice;
+
+      // Verify highs are at same level
+      let allHighsSameLevel = true;
+      for (let k = 0; k < rangeHighs.length - 1; k++) {
+        if (!sameLevel(rangeHighs[k].price, rangeHighs[k + 1].price, 0.025)) {
+          allHighsSameLevel = false;
+          break;
+        }
+      }
+      if (!allHighsSameLevel) continue;
+
+      const totalTouches = 2 + rangeHighs.filter(
+        (h) => sameLevel(h.price, resistance, 0.015),
+      ).length;
+      if (totalTouches < 4) continue;
+
+      // Prior downtrend
+      if (shortTermTrend(bars, l1.index, 10) !== "DOWN") continue;
+
+      const rectangleHeight = resistance - support;
+      if (rectangleHeight / support < 0.02) continue;
+
+      const target = support - rectangleHeight;
+
+      let reliability = 60;
+
+      if (totalTouches >= 6) reliability += 15;
+      else if (totalTouches >= 5) reliability += 10;
+
+      if (lowPctDiff < 0.005) reliability += 10;
+      else if (lowPctDiff < 0.01) reliability += 5;
+
+      return {
+        name: "Rectangle (Bearish)",
+        type: "BEARISH",
+        reliability: Math.min(reliability, 100),
+        startIndex: l1.index,
+        endIndex: l2.index,
+        targetPrice: target,
+        stopPrice: resistance,
+      };
+    }
+  }
+  return null;
+}
+
+// ─── 15. Broadening Top ─────────────────────────────────────────────────────
+
+function detectBroadeningTop(swings: SwingPoint[], bars: OHLCVBar[]): ChartFormation | null {
+  const highs = swingsByType(swings, "HIGH");
+  const lows = swingsByType(swings, "LOW");
+
+  if (highs.length < 2 || lows.length < 2) return null;
+
+  // Use recent swings
+  const recentHighs = highs.slice(-4);
+  const recentLows = lows.slice(-4);
+
+  if (recentHighs.length < 2 || recentLows.length < 2) return null;
+
+  const highSlope = trendlineSlope(recentHighs);
+  const lowSlope = trendlineSlope(recentLows);
+
+  // Highs must be rising (positive slope)
+  if (highSlope <= 0) return null;
+
+  // Lows must be falling (negative slope) — diverging
+  if (lowSlope >= 0) return null;
+
+  // Must span enough bars
+  const startIndex = Math.min(recentHighs[0].index, recentLows[0].index);
+  const endIndex = Math.max(
+    recentHighs[recentHighs.length - 1].index,
+    recentLows[recentLows.length - 1].index,
+  );
+  if (endIndex - startIndex < MIN_SWING_DISTANCE * 2) return null;
+
+  // Preceded by uptrend (reversal pattern)
+  if (shortTermTrend(bars, startIndex, 10) !== "UP") return null;
+
+  const lastHigh = recentHighs[recentHighs.length - 1].price;
+  const lastLow = recentLows[recentLows.length - 1].price;
+  const patternWidth = lastHigh - lastLow;
+
+  const target = lastLow - patternWidth;
+
+  let reliability = 55;
+
+  // Divergence quality: how clearly the lines spread apart
+  const divergenceStrength = Math.abs(highSlope) + Math.abs(lowSlope);
+  const avgPrice = (lastHigh + lastLow) / 2;
+  const divergencePct = (divergenceStrength / avgPrice) * 100;
+  if (divergencePct > 0.3) reliability += 10;
+  else if (divergencePct > 0.15) reliability += 5;
+
+  // More swing points touching each trendline
+  if (recentHighs.length >= 3 && recentLows.length >= 3) reliability += 10;
+
+  return {
+    name: "Broadening Top",
+    type: "BEARISH",
+    reliability: Math.min(reliability, 100),
+    startIndex,
+    endIndex,
+    targetPrice: target,
+    stopPrice: lastHigh,
+  };
+}
+
+// ─── 16. Broadening Bottom ──────────────────────────────────────────────────
+
+function detectBroadeningBottom(swings: SwingPoint[], bars: OHLCVBar[]): ChartFormation | null {
+  const highs = swingsByType(swings, "HIGH");
+  const lows = swingsByType(swings, "LOW");
+
+  if (highs.length < 2 || lows.length < 2) return null;
+
+  const recentHighs = highs.slice(-4);
+  const recentLows = lows.slice(-4);
+
+  if (recentHighs.length < 2 || recentLows.length < 2) return null;
+
+  const highSlope = trendlineSlope(recentHighs);
+  const lowSlope = trendlineSlope(recentLows);
+
+  // Highs must be rising (positive slope) — diverging
+  if (highSlope <= 0) return null;
+
+  // Lows must be falling (negative slope) — diverging
+  if (lowSlope >= 0) return null;
+
+  // Must span enough bars
+  const startIndex = Math.min(recentHighs[0].index, recentLows[0].index);
+  const endIndex = Math.max(
+    recentHighs[recentHighs.length - 1].index,
+    recentLows[recentLows.length - 1].index,
+  );
+  if (endIndex - startIndex < MIN_SWING_DISTANCE * 2) return null;
+
+  // Preceded by downtrend (bullish reversal pattern)
+  if (shortTermTrend(bars, startIndex, 10) !== "DOWN") return null;
+
+  const lastHigh = recentHighs[recentHighs.length - 1].price;
+  const lastLow = recentLows[recentLows.length - 1].price;
+  const patternWidth = lastHigh - lastLow;
+
+  const target = lastHigh + patternWidth;
+
+  let reliability = 55;
+
+  const divergenceStrength = Math.abs(highSlope) + Math.abs(lowSlope);
+  const avgPrice = (lastHigh + lastLow) / 2;
+  const divergencePct = (divergenceStrength / avgPrice) * 100;
+  if (divergencePct > 0.3) reliability += 10;
+  else if (divergencePct > 0.15) reliability += 5;
+
+  if (recentHighs.length >= 3 && recentLows.length >= 3) reliability += 10;
+
+  return {
+    name: "Broadening Bottom",
+    type: "BULLISH",
+    reliability: Math.min(reliability, 100),
+    startIndex,
+    endIndex,
+    targetPrice: target,
+    stopPrice: lastLow,
+  };
+}
+
+// ─── 17. Megaphone Top ──────────────────────────────────────────────────────
+
+function detectMegaphoneTop(swings: SwingPoint[], bars: OHLCVBar[]): ChartFormation | null {
+  const highs = swingsByType(swings, "HIGH");
+  const lows = swingsByType(swings, "LOW");
+
+  // Need at least 3 highs and 3 lows for a 5-point pattern
+  if (highs.length < 3 || lows.length < 3) return null;
+
+  const recentHighs = highs.slice(-4);
+  const recentLows = lows.slice(-4);
+
+  if (recentHighs.length < 3 || recentLows.length < 3) return null;
+
+  const highSlope = trendlineSlope(recentHighs);
+  const lowSlope = trendlineSlope(recentLows);
+
+  // Diverging trendlines: highs rising, lows falling
+  if (highSlope <= 0) return null;
+  if (lowSlope >= 0) return null;
+
+  // Need at least 5 swing points total in the pattern
+  if (recentHighs.length + recentLows.length < 5) return null;
+
+  // Must span enough bars
+  const startIndex = Math.min(recentHighs[0].index, recentLows[0].index);
+  const endIndex = Math.max(
+    recentHighs[recentHighs.length - 1].index,
+    recentLows[recentLows.length - 1].index,
+  );
+  if (endIndex - startIndex < MIN_SWING_DISTANCE * 3) return null;
+
+  // Preceded by uptrend
+  if (shortTermTrend(bars, startIndex, 12) !== "UP") return null;
+
+  // Check for increasing volume/spikes in the pattern area
+  // (as a proxy, check that bar ranges are expanding)
+  const patternBars = bars.slice(startIndex, endIndex + 1);
+  if (patternBars.length < 6) return null;
+
+  const firstHalfRanges = patternBars.slice(0, Math.floor(patternBars.length / 2));
+  const secondHalfRanges = patternBars.slice(Math.floor(patternBars.length / 2));
+  const avgFirstHalfRange = firstHalfRanges.reduce((s, b) => s + (b.high - b.low), 0) / firstHalfRanges.length;
+  const avgSecondHalfRange = secondHalfRanges.reduce((s, b) => s + (b.high - b.low), 0) / secondHalfRanges.length;
+
+  // Ranges should be expanding (increasing volatility characteristic of megaphone)
+  if (avgSecondHalfRange <= avgFirstHalfRange) return null;
+
+  const lastHigh = recentHighs[recentHighs.length - 1].price;
+  const lastLow = recentLows[recentLows.length - 1].price;
+  const patternWidth = lastHigh - lastLow;
+
+  const target = lastLow - patternWidth;
+
+  let reliability = 55;
+
+  // More swing points = clearer 5-point structure
+  const totalPoints = recentHighs.length + recentLows.length;
+  if (totalPoints >= 7) reliability += 15;
+  else if (totalPoints >= 6) reliability += 10;
+  else if (totalPoints >= 5) reliability += 5;
+
+  // Range expansion adds to reliability
+  const rangeExpansion = avgSecondHalfRange / avgFirstHalfRange;
+  if (rangeExpansion > 1.5) reliability += 10;
+  else if (rangeExpansion > 1.2) reliability += 5;
+
+  return {
+    name: "Megaphone Top",
+    type: "BEARISH",
+    reliability: Math.min(reliability, 100),
+    startIndex,
+    endIndex,
+    targetPrice: target,
+    stopPrice: lastHigh,
+  };
+}
+
+// ─── 18. Rounding Top ───────────────────────────────────────────────────────
+
+function detectRoundingTop(swings: SwingPoint[], bars: OHLCVBar[]): ChartFormation | null {
+  const highs = swingsByType(swings, "HIGH");
+
+  if (highs.length < 3) return null;
+
+  // Look for a dome shape: highs rise then fall gradually
+  for (let i = 0; i < highs.length - 2; i++) {
+    const h1 = highs[i];
+    const h2 = highs[i + 1];
+    const h3 = highs[i + 2];
+
+    // Spacing
+    if (h2.index - h1.index < MIN_SWING_DISTANCE) continue;
+    if (h3.index - h2.index < MIN_SWING_DISTANCE) continue;
+
+    // Dome shape: h1 < h2 > h3 (middle is the apex)
+    if (h2.price <= h1.price || h2.price <= h3.price) continue;
+
+    // Apex should be in the middle portion of the formation
+    const totalSpan = h3.index - h1.index;
+    const apexPosition = (h2.index - h1.index) / totalSpan;
+    if (apexPosition < 0.25 || apexPosition > 0.75) continue;
+
+    // Preceded by uptrend
+    if (shortTermTrend(bars, h1.index, 10) !== "UP") continue;
+
+    // Check that the dome is gradual (not a sharp spike)
+    const leftSlope = (h2.price - h1.price) / (h2.index - h1.index);
+    const rightSlope = (h3.price - h2.price) / (h3.index - h2.index);
+
+    // Slopes should be gentle (not too steep)
+    const avgPrice = (h1.price + h2.price + h3.price) / 3;
+    const leftPctSlope = Math.abs((leftSlope / avgPrice) * 100);
+    const rightPctSlope = Math.abs((rightSlope / avgPrice) * 100);
+
+    if (leftPctSlope > 1.0 || rightPctSlope > 1.0) continue; // too steep for rounding
+
+    // Check for more highs forming the dome shape
+    const domeHighs = highs.filter((h) => h.index >= h1.index && h.index <= h3.index);
+
+    // Symmetry: left rise should be roughly equal to right fall
+    const leftRise = h2.price - h1.price;
+    const rightFall = h2.price - h3.price;
+    const symmetryRatio = Math.min(leftRise, rightFall) / Math.max(leftRise, rightFall);
+
+    const trough = troughBetween(bars, h1.index, h3.index);
+    const domeHeight = h2.price - trough.price;
+    const target = trough.price - domeHeight;
+
+    let reliability = 55;
+
+    // More points forming the dome
+    if (domeHighs.length >= 5) reliability += 15;
+    else if (domeHighs.length >= 4) reliability += 10;
+    else if (domeHighs.length >= 3) reliability += 5;
+
+    // Better symmetry
+    if (symmetryRatio > 0.8) reliability += 10;
+    else if (symmetryRatio > 0.6) reliability += 5;
+
+    return {
+      name: "Rounding Top",
+      type: "BEARISH",
+      reliability: Math.min(reliability, 100),
+      startIndex: h1.index,
+      endIndex: h3.index,
+      targetPrice: target,
+      stopPrice: h2.price,
+    };
+  }
+  return null;
+}
+
+// ─── 19. Rounding Bottom ────────────────────────────────────────────────────
+
+function detectRoundingBottom(swings: SwingPoint[], bars: OHLCVBar[]): ChartFormation | null {
+  const lows = swingsByType(swings, "LOW");
+
+  if (lows.length < 3) return null;
+
+  // Look for a bowl shape: lows fall then rise gradually
+  for (let i = 0; i < lows.length - 2; i++) {
+    const l1 = lows[i];
+    const l2 = lows[i + 1];
+    const l3 = lows[i + 2];
+
+    // Spacing
+    if (l2.index - l1.index < MIN_SWING_DISTANCE) continue;
+    if (l3.index - l2.index < MIN_SWING_DISTANCE) continue;
+
+    // Bowl shape: l1 > l2 < l3 (middle is the lowest point)
+    if (l2.price >= l1.price || l2.price >= l3.price) continue;
+
+    // Bottom should be in the middle portion
+    const totalSpan = l3.index - l1.index;
+    const bottomPosition = (l2.index - l1.index) / totalSpan;
+    if (bottomPosition < 0.25 || bottomPosition > 0.75) continue;
+
+    // Preceded by downtrend
+    if (shortTermTrend(bars, l1.index, 10) !== "DOWN") continue;
+
+    // Check that the bowl is gradual (not a sharp V)
+    const leftSlope = (l2.price - l1.price) / (l2.index - l1.index);
+    const rightSlope = (l3.price - l2.price) / (l3.index - l2.index);
+
+    const avgPrice = (l1.price + l2.price + l3.price) / 3;
+    const leftPctSlope = Math.abs((leftSlope / avgPrice) * 100);
+    const rightPctSlope = Math.abs((rightSlope / avgPrice) * 100);
+
+    if (leftPctSlope > 1.0 || rightPctSlope > 1.0) continue;
+
+    // Check for more lows forming the bowl
+    const bowlLows = lows.filter((l) => l.index >= l1.index && l.index <= l3.index);
+
+    // Symmetry
+    const leftFall = l1.price - l2.price;
+    const rightRise = l3.price - l2.price;
+    const symmetryRatio = Math.min(leftFall, rightRise) / Math.max(leftFall, rightRise);
+
+    const peak = peakBetween(bars, l1.index, l3.index);
+    const bowlDepth = peak.price - l2.price;
+    const target = peak.price + bowlDepth;
+
+    let reliability = 55;
+
+    if (bowlLows.length >= 5) reliability += 15;
+    else if (bowlLows.length >= 4) reliability += 10;
+    else if (bowlLows.length >= 3) reliability += 5;
+
+    if (symmetryRatio > 0.8) reliability += 10;
+    else if (symmetryRatio > 0.6) reliability += 5;
+
+    return {
+      name: "Rounding Bottom",
+      type: "BULLISH",
+      reliability: Math.min(reliability, 100),
+      startIndex: l1.index,
+      endIndex: l3.index,
+      targetPrice: target,
+      stopPrice: l2.price,
+    };
+  }
+  return null;
+}
+
+// ─── 20. Diamond Top ────────────────────────────────────────────────────────
+
+function detectDiamondTop(swings: SwingPoint[], bars: OHLCVBar[]): ChartFormation | null {
+  const highs = swingsByType(swings, "HIGH");
+  const lows = swingsByType(swings, "LOW");
+
+  // Need sufficient swing points
+  if (highs.length < 3 || lows.length < 3) return null;
+
+  // A diamond pattern: broadening then narrowing after an uptrend
+  // The shape looks like: wider in the middle, narrowing at top and bottom
+  // We need to find:
+  //   - An initial broadening phase (highs rising, lows falling)
+  //   - Followed by a converging phase (highs falling, lows rising)
+
+  const recentHighs = highs.slice(-5);
+  const recentLows = lows.slice(-5);
+
+  if (recentHighs.length < 3 || recentLows.length < 3) return null;
+
+  // Must span enough bars
+  const startIndex = Math.min(recentHighs[0].index, recentLows[0].index);
+  const endIndex = Math.max(
+    recentHighs[recentHighs.length - 1].index,
+    recentLows[recentLows.length - 1].index,
+  );
+  if (endIndex - startIndex < MIN_SWING_DISTANCE * 3) return null;
+
+  // Preceded by uptrend
+  if (shortTermTrend(bars, startIndex, 12) !== "UP") return null;
+
+  // Split swings into first half (broadening) and second half (narrowing)
+  const midIndex = Math.floor((startIndex + endIndex) / 2);
+
+  const firstHalfHighs = recentHighs.filter((h) => h.index <= midIndex);
+  const secondHalfHighs = recentHighs.filter((h) => h.index > midIndex);
+  const firstHalfLows = recentLows.filter((l) => l.index <= midIndex);
+  const secondHalfLows = recentLows.filter((l) => l.index > midIndex);
+
+  // Need swings in both halves
+  if (firstHalfHighs.length < 2 || secondHalfHighs.length < 1) return null;
+  if (firstHalfLows.length < 2 || secondHalfLows.length < 1) return null;
+
+  // First half: broadening (highs rising, lows falling)
+  const firstHighSlope = trendlineSlope(firstHalfHighs);
+  const firstLowSlope = trendlineSlope(firstHalfLows);
+
+  if (firstHighSlope <= 0) return null; // highs should rise in first half
+  if (firstLowSlope >= 0) return null;  // lows should fall in first half
+
+  // Second half: converging (highs falling, lows rising)
+  if (secondHalfHighs.length >= 2) {
+    const secondHighSlope = trendlineSlope(secondHalfHighs);
+    if (secondHighSlope >= 0) return null; // highs should fall in second half
+  }
+  if (secondHalfLows.length >= 2) {
+    const secondLowSlope = trendlineSlope(secondHalfLows);
+    if (secondLowSlope <= 0) return null; // lows should rise in second half
+  }
+
+  // Calculate pattern dimensions
+  const peakPrice = Math.max(...recentHighs.map((h) => h.price));
+  const troughPrice = Math.min(...recentLows.map((l) => l.price));
+  const patternHeight = peakPrice - troughPrice;
+
+  const target = troughPrice - patternHeight;
+
+  let reliability = 55;
+
+  // More swings forming the diamond shape
+  const totalSwings = recentHighs.length + recentLows.length;
+  if (totalSwings >= 8) reliability += 15;
+  else if (totalSwings >= 6) reliability += 10;
+  else if (totalSwings >= 5) reliability += 5;
+
+  // Clear broadening then converging shape
+  const broadeningStrength = Math.abs(firstHighSlope) + Math.abs(firstLowSlope);
+  const avgPrice = (peakPrice + troughPrice) / 2;
+  const broadeningPct = (broadeningStrength / avgPrice) * 100;
+  if (broadeningPct > 0.2) reliability += 10;
+  else if (broadeningPct > 0.1) reliability += 5;
+
+  return {
+    name: "Diamond Top",
+    type: "BEARISH",
+    reliability: Math.min(reliability, 100),
+    startIndex,
+    endIndex,
+    targetPrice: target,
+    stopPrice: peakPrice,
+  };
 }

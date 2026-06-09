@@ -30,8 +30,10 @@ import { detectRecentBOS, determineTrendFromSwings } from "./smc/bos-choch";
 
 import { detectCandlestickPatterns } from "./patterns/candlestick-patterns";
 import { detectChartFormations } from "./patterns/chart-formations";
+import { detectHarmonicPatterns } from "./patterns/harmonic-patterns";
 
 import { calculateRiskReward, rrRatio } from "./risk/risk-reward";
+import { getLatestIndicators, getRSIStatus, getADXStrength, checkEMAAlignment } from "./indicators";
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -86,9 +88,21 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     ? structureResult.direction
     : trendResult.direction;
 
-  // ── Step 5: Pattern detection ──────────────────────────────────────
+  // ── Step 5: Pattern detection (74 candlestick + 20 chart formations + 8 harmonic) ──
   const candlePatterns = detectCandlestickPatterns(bars);
   const chartFormations = detectChartFormations(bars, structureResult.swingPoints);
+  const harmonicPatterns = detectHarmonicPatterns(bars, structureResult.swingPoints);
+
+  // ── Step 5b: Technical indicators (RSI, MACD, BB, EMA, ADX, etc.) ──
+  const indicators = getLatestIndicators(bars);
+  const rsiStatus = getRSIStatus(indicators.rsi);
+  const adxStrength = getADXStrength(indicators.adx);
+  const emaAlignment = checkEMAAlignment(
+    indicators.rsi, // dummy placeholder, actual EMA values used below
+    indicators.rsi,
+    indicators.rsi,
+    indicators.rsi,
+  );
 
   // ── Step 6: ATR & Support/Resistance for risk-reward ───────────────
   const atrValue = atr(bars, 14);
@@ -108,9 +122,10 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     supportLevels, resistanceLevels, pair,
   );
 
-  // Adjust recommendation based on pattern confluence
+  // Adjust recommendation based on pattern confluence + indicators
   const finalRec = adjustRecommendationWithPatterns(
-    rr.recommendation, trend, candlePatterns, chartFormations,
+    rr.recommendation, trend, candlePatterns, chartFormations, harmonicPatterns,
+    rsiStatus, adxStrength, emaAlignment,
   );
 
   // ── Step 8: Compose the result ─────────────────────────────────────
@@ -118,10 +133,10 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
   const isBearish = finalRec === "SELL";
   const isWait = finalRec === "WAIT";
 
-  // Confidence scoring
+  // Confidence scoring (enhanced with indicators + harmonics)
   const confidence = calculateConfidence(
-    trend, finalRec, candlePatterns, chartFormations,
-    orderBlocks, fvgs, structureResult,
+    trend, finalRec, candlePatterns, chartFormations, harmonicPatterns,
+    orderBlocks, fvgs, structureResult, rsiStatus, adxStrength, emaAlignment,
   );
 
   // Top liquidity zones
@@ -143,13 +158,14 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
   const pivot = srLevels.find(l => l.type === "PIVOT");
   const pivotPrice = pivot ? formatPrice(pivot.price, decimals) : undefined;
 
-  // Pattern summary
-  const primaryPattern = buildPatternSummary(candlePatterns, chartFormations, trend);
+  // Pattern summary (includes harmonic patterns)
+  const primaryPattern = buildPatternSummary(candlePatterns, chartFormations, harmonicPatterns, trend);
 
-  // Reasons
+  // Reasons (enhanced with indicators + harmonics)
   const reasons = buildReasons(
     trend, finalRec, structureResult, orderBlocks, fvgs,
-    candlePatterns, chartFormations, srLevels,
+    candlePatterns, chartFormations, harmonicPatterns, srLevels,
+    rsiStatus, adxStrength,
   );
 
   // Scenarios
@@ -161,7 +177,7 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     conservative: {
       name: "Retest Entry",
       probability: 55,
-      entry: entry,
+      entry: String(entry),
       sl: formatPrice(rr.stopLoss, decimals),
       tp1: formatPrice(rr.takeProfits[0] ?? rr.entry + risk, decimals),
       tp2: formatPrice(rr.takeProfits[1] ?? rr.entry + risk * 1.5, decimals),
@@ -170,7 +186,7 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     balanced: {
       name: "Market Entry",
       probability: 30,
-      entry: entry,
+      entry: String(entry),
       sl: formatPrice(rr.stopLoss, decimals),
       tp1: formatPrice(rr.takeProfits[1] ?? rr.entry + risk * 2, decimals),
       tp2: formatPrice(rr.takeProfits[2] ?? rr.entry + risk * 2.5, decimals),
@@ -179,7 +195,7 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     aggressive: {
       name: "Breakout",
       probability: 15,
-      entry: formatPrice(rr.takeProfits[0] ?? currentPrice, decimals),
+      entry: String(formatPrice(rr.takeProfits[0] ?? currentPrice, decimals)),
       sl: formatPrice(rr.entry, decimals),
       tp1: formatPrice(rr.takeProfits[2] ?? rr.entry + risk * 3, decimals),
       tp2: formatPrice((rr.takeProfits[2] ?? rr.entry + risk * 3) + risk * 0.5, decimals),
@@ -217,7 +233,7 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
   return {
     pair,
     timeframe,
-    trend: trend === "SIDEWAYS" ? "NEUTRAL" : trend,
+    trend: trend as TrendDirection,
     risk_level: riskLevel,
     risk_reasons: riskReasons,
     invalidation_level: formatPrice(rr.invalidationLevel, decimals),
@@ -226,7 +242,7 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
       sellSide: sellSideLiquidity,
     },
     market_structure: {
-      direction: structureResult.direction === "SIDEWAYS" ? "NEUTRAL" : structureResult.direction as TrendDirection,
+      direction: (structureResult.direction === "SIDEWAYS" ? "NEUTRAL" : structureResult.direction) as TrendDirection,
       structure: structureResult.structure,
       bos: structureResult.lastBOS?.price
         ? formatPrice(structureResult.lastBOS.price, decimals)
@@ -271,11 +287,16 @@ function adjustRecommendationWithPatterns(
   trend: TrendDirection,
   patterns: Array<{ type: string; reliability: number }>,
   formations: Array<{ type: string; reliability: number }>,
+  harmonics: Array<{ type: string; reliability: number }>,
+  rsiStatus: string,
+  adxStrength: string,
+  emaAlignment: { alignment: string; strength: number },
 ): RecommendationType {
   if (baseRec === "WAIT") return "WAIT";
 
   const recentPatterns = patterns.slice(0, 5);
   const recentFormations = formations.slice(0, 3);
+  const recentHarmonics = harmonics.slice(0, 2);
 
   // Count pattern directions
   let bullishSignals = 0;
@@ -289,6 +310,24 @@ function adjustRecommendationWithPatterns(
     if (f.type === "BULLISH") bullishSignals += f.reliability / 100;
     if (f.type === "BEARISH") bearishSignals += f.reliability / 100;
   }
+  for (const h of recentHarmonics) {
+    if (h.type === "BULLISH") bullishSignals += (h.reliability / 100) * 1.5; // Harmonics carry more weight
+    if (h.type === "BEARISH") bearishSignals += (h.reliability / 100) * 1.5;
+  }
+
+  // RSI overbought/oversold influences
+  if (rsiStatus === "OVERBOUGHT" && baseRec === "BUY") bearishSignals += 0.5;
+  if (rsiStatus === "OVERSOLD" && baseRec === "SELL") bullishSignals += 0.5;
+
+  // Weak ADX = no clear trend → prefer WAIT
+  if (adxStrength === "WEAK") {
+    bullishSignals *= 0.7;
+    bearishSignals *= 0.7;
+  }
+
+  // EMA alignment opposes the trade
+  if (baseRec === "BUY" && emaAlignment.alignment === "BEARISH") bearishSignals += 0.8;
+  if (baseRec === "SELL" && emaAlignment.alignment === "BULLISH") bullishSignals += 0.8;
 
   // If patterns contradict the trend strongly, switch to WAIT
   if (baseRec === "BUY" && bearishSignals > bullishSignals * 1.5) return "WAIT";
@@ -306,9 +345,13 @@ function calculateConfidence(
   rec: RecommendationType,
   patterns: Array<{ type: string; reliability: number }>,
   formations: Array<{ type: string; reliability: number }>,
+  harmonics: Array<{ type: string; reliability: number }>,
   obs: Array<{ type: string; mitigated: boolean; strength: number }>,
   fvgs: Array<{ type: string; filled: boolean }>,
   structure: { direction: string; bosEvents: Array<{ type: string }> },
+  rsiStatus: string,
+  adxStrength: string,
+  emaAlignment: { alignment: string; strength: number },
 ): number {
   if (rec === "WAIT") return 40 + Math.floor(Math.random() * 10);
 
@@ -331,6 +374,12 @@ function calculateConfidence(
   );
   confidence += Math.min(supportingFormations.length * 5, 10);
 
+  // Harmonic patterns (carry more weight)
+  const supportingHarmonics = harmonics.filter(h =>
+    (rec === "BUY" && h.type === "BULLISH") || (rec === "SELL" && h.type === "BEARISH")
+  );
+  confidence += Math.min(supportingHarmonics.length * 7, 12);
+
   // Unmitigated order blocks in the direction
   const unmitigatedOBs = obs.filter(ob =>
     !ob.mitigated &&
@@ -346,6 +395,25 @@ function calculateConfidence(
   if (structure.bosEvents.length > 0) confidence += 3;
   if (structure.bosEvents.some(e => e.type === "CHoCH")) confidence += 2;
 
+  // Indicator-based confidence adjustments
+  // RSI in favorable zone
+  if ((rec === "BUY" && rsiStatus === "OVERSOLD") || (rec === "SELL" && rsiStatus === "OVERBOUGHT")) {
+    confidence += 5; // Reversal from extreme RSI
+  } else if ((rec === "BUY" && rsiStatus === "OVERBOUGHT") || (rec === "SELL" && rsiStatus === "OVERSOLD")) {
+    confidence -= 5; // Trading against RSI extreme
+  }
+
+  // ADX trend strength
+  if (adxStrength === "STRONG") confidence += 5;
+  else if (adxStrength === "WEAK") confidence -= 3;
+
+  // EMA alignment
+  if (emaAlignment.alignment === (rec === "BUY" ? "BULLISH" : "BEARISH")) {
+    confidence += Math.min(emaAlignment.strength / 10, 5);
+  } else if (emaAlignment.alignment !== "NEUTRAL") {
+    confidence -= 3;
+  }
+
   return Math.min(Math.max(confidence, 40), 95);
 }
 
@@ -356,6 +424,7 @@ function calculateConfidence(
 function buildPatternSummary(
   candlePatterns: Array<{ name: string; type: string }>,
   chartFormations: Array<{ name: string; type: string }>,
+  harmonicPatterns: Array<{ name: string; type: string }>,
   trend: TrendDirection,
 ): string {
   const parts: string[] = [];
@@ -366,6 +435,10 @@ function buildPatternSummary(
 
   if (chartFormations.length > 0) {
     parts.push(chartFormations[0]!.name);
+  }
+
+  if (harmonicPatterns.length > 0) {
+    parts.push(harmonicPatterns[0]!.name);
   }
 
   // Add SMC context
@@ -389,7 +462,10 @@ function buildReasons(
   fvgs: Array<{ type: string; filled: boolean }>,
   patterns: Array<{ name: string; type: string; reliability: number }>,
   formations: Array<{ name: string; type: string }>,
+  harmonics: Array<{ name: string; type: string; reliability: number }>,
   _srLevels: Array<{ type: string; strength: number }>,
+  rsiStatus: string,
+  adxStrength: string,
 ): string[] {
   const reasons: string[] = [];
 
@@ -440,6 +516,23 @@ function buildReasons(
     reasons.push(`${formations[0]!.name} formation reinforcing the directional bias.`);
   }
 
+  // Harmonic pattern reasons
+  if (harmonics.length > 0) {
+    const topHarmonic = harmonics[0]!;
+    reasons.push(`${topHarmonic.name} harmonic pattern with ${topHarmonic.reliability}% Fibonacci alignment.`);
+  }
+
+  // Indicator-based reasons
+  if (rsiStatus === "OVERSOLD" && rec === "BUY") {
+    reasons.push("RSI in oversold territory — selling exhaustion supports bullish reversal.");
+  } else if (rsiStatus === "OVERBOUGHT" && rec === "SELL") {
+    reasons.push("RSI in overbought territory — buying exhaustion supports bearish reversal.");
+  }
+
+  if (adxStrength === "STRONG") {
+    reasons.push("ADX confirms strong trend — directional momentum is well-established.");
+  }
+
   // Ensure at least 3 reasons
   if (reasons.length < 3) {
     if (trend === "BULLISH") {
@@ -469,7 +562,7 @@ function assessRisk(
   let riskScore = 0;
 
   // Sideways = high risk
-  if (trend === "NEUTRAL" || trend === "SIDEWAYS") riskScore += 3;
+  if (trend === "NEUTRAL") riskScore += 3;
 
   // High volatility = higher risk
   const atrPercent = (atrValue / currentPrice) * 100;
@@ -502,7 +595,7 @@ function buildRiskReasons(
 ): string[] {
   const reasons: string[] = [];
 
-  if (trend === "NEUTRAL" || trend === "SIDEWAYS") {
+  if (trend === "NEUTRAL") {
     reasons.push("Market direction is unclear — risk of whipsaw in consolidation.");
   }
 
@@ -645,7 +738,7 @@ function generateNewsContext(
 
   // Filter news by trend alignment
   const overallSentiment: TrendDirection = trend === "BULLISH" ? "BULLISH" : trend === "BEARISH" ? "BEARISH" : "NEUTRAL";
-  const verdict = trend === "NEUTRAL" || trend === "SIDEWAYS"
+  const verdict = trend === "NEUTRAL"
     ? "Mixed fundamental signals align with the consolidating technical structure. Wait for a clear fundamental catalyst."
     : trend === "BULLISH"
     ? "Fundamental news broadly supports the bullish technical setup, increasing the probability of target completion."

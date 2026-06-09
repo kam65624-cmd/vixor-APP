@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { telegramSignIn } from "@/lib/auth.functions";
 import { useServerFn } from "@tanstack/react-start";
@@ -29,6 +29,12 @@ function AuthPage() {
   const [err, setErr] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const tgSignIn = useServerFn(telegramSignIn);
+  const tgSignInRef = useRef(tgSignIn);
+  tgSignInRef.current = tgSignIn;
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+  const routerRef = useRef(router);
+  routerRef.current = router;
 
   useEffect(() => {
     let active = true;
@@ -47,18 +53,18 @@ function AuthPage() {
 
     (async () => {
       const { data } = await supabase.auth.getUser();
-      if (data.user && active) { navigate({ to: "/" }); return; }
+      if (data.user && active) { navigateRef.current({ to: "/" }); return; }
 
       const tg = await waitForTelegram();
       const initData: string | undefined = tg?.initData;
       if (initData && initData.length > 10) {
         if (active) setBusy(true);
         try {
-          const { email, password } = await tgSignIn({ data: { initData } });
+          const { email, password } = await tgSignInRef.current({ data: { initData } });
           const { error } = await supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
-          router.invalidate();
-          navigate({ to: "/" });
+          routerRef.current.invalidate();
+          navigateRef.current({ to: "/" });
         } catch (e) {
           if (active) setErr(e instanceof Error ? e.message : "Telegram sign-in failed");
         } finally {
@@ -67,7 +73,7 @@ function AuthPage() {
       }
     })();
     return () => { active = false; };
-  }, [navigate, router, tgSignIn]);
+  }, []);
 
 
   const submit = async (e: React.FormEvent) => {

@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AppShell } from "@/components/vixor/AppShell";
@@ -82,6 +82,10 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const routerRef = useRef(router);
+  routerRef.current = router;
+  const queryClientRef = useRef(queryClient);
+  queryClientRef.current = queryClient;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -95,13 +99,13 @@ function RootComponent() {
       if (!mounted) return;
       const { data: sub } = supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-        router.invalidate();
-        if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+        routerRef.current.invalidate();
+        if (event !== "SIGNED_OUT") queryClientRef.current.invalidateQueries();
       });
       (window as unknown as { __vxAuthSub?: { unsubscribe(): void } }).__vxAuthSub = sub.subscription;
     });
     return () => { mounted = false; };
-  }, [router, queryClient]);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

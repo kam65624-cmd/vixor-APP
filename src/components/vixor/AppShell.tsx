@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Compass, Plus, LayoutDashboard, BookOpen, Bell, BarChart3 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { OnboardingModal } from "./OnboardingModal";
 import { supabase } from "@/integrations/supabase/client";
 import { getTelegramInitData } from "@/lib/telegram";
@@ -30,6 +30,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, []);
 
   const linkTelegram = useServerFn(linkTelegramAccount);
+  const linkTelegramRef = useRef(linkTelegram);
+  linkTelegramRef.current = linkTelegram;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -39,13 +41,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       if (!localStorage.getItem("vixor-tg-linked")) {
         const initData = getTelegramInitData();
         if (initData) {
-          linkTelegram({ data: { initData } })
+          linkTelegramRef.current({ data: { initData } })
             .then(() => { localStorage.setItem("vixor-tg-linked", "1"); })
             .catch(err => console.error("Failed to link Telegram:", err));
         }
       }
     }
-  }, [signedIn, linkTelegram]);
+  }, [signedIn]);
 
   // Hide shell on /auth
   if (path === "/auth" || signedIn === false) {

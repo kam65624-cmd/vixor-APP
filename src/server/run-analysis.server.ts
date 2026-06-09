@@ -87,21 +87,10 @@ export async function runChartAnalysis(
 ): Promise<AnalysisResult> {
   const pair = selectedPair || detectPairFromFileName(fileName) || "EUR/USD";
 
-  // ── Strategy: Try Gemini vision first (if API key available), then local engine ──
+  // ── Strategy: LOCAL ENGINE first (always available, zero API keys), Gemini as optional fallback ──
   const apiKey = process.env.GEMINI_API_KEY;
   
-  if (apiKey) {
-    try {
-      console.log("[Vixor] Attempting Gemini AI vision analysis...");
-      const geminiResult = await runGeminiAnalysis(imageBytes, mimeType, fileName, pair, trading_style);
-      console.log("[Vixor] Gemini analysis completed successfully.");
-      return geminiResult;
-    } catch (geminiError) {
-      console.warn("[Vixor] Gemini analysis failed, falling back to local engine:", geminiError instanceof Error ? geminiError.message : String(geminiError));
-    }
-  }
-
-  // ── LOCAL ENGINE — Always available, zero API keys needed ──
+  // ── LOCAL ENGINE — Always runs first. Deterministic, zero API keys needed. ──
   console.log("[Vixor] Running local SMC/ICT analysis engine...");
   const localResult = runLocalAnalysis({
     pair,
@@ -110,9 +99,42 @@ export async function runChartAnalysis(
     imageBytes,
   });
 
-  // Convert LocalAnalysisResult to AnalysisResult (they're structurally identical)
-  // The `market_structure.direction` might be "NEUTRAL" in local but schema expects "SIDEWAYS"
-  const result: AnalysisResult = {
+  // If local engine produced a high-confidence result, use it directly
+  if (localResult.confidence >= 60 || !apiKey) {
+    console.log(`[Vixor] Local analysis complete: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`);
+    const result: AnalysisResult = {
+      ...localResult,
+      market_structure: {
+        ...localResult.market_structure,
+        direction: localResult.market_structure.direction === "NEUTRAL" 
+          ? "SIDEWAYS" 
+          : localResult.market_structure.direction,
+      },
+      news_impact: {
+        ...localResult.news_impact,
+        overall_sentiment: localResult.news_impact.overall_sentiment === "NEUTRAL"
+          ? "NEUTRAL"
+          : localResult.news_impact.overall_sentiment,
+      },
+    };
+    return result;
+  }
+
+  // ── GEMINI AI — Optional fallback for low-confidence local results when image analysis is needed ──
+  if (apiKey) {
+    try {
+      console.log("[Vixor] Local confidence low, attempting Gemini AI vision analysis...");
+      const geminiResult = await runGeminiAnalysis(imageBytes, mimeType, fileName, pair, trading_style);
+      console.log("[Vixor] Gemini analysis completed successfully.");
+      return geminiResult;
+    } catch (geminiError) {
+      console.warn("[Vixor] Gemini analysis failed, using local engine result:", geminiError instanceof Error ? geminiError.message : String(geminiError));
+    }
+  }
+
+  // Use local result even with lower confidence
+  console.log(`[Vixor] Using local analysis result: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`);
+  const fallbackResult: AnalysisResult = {
     ...localResult,
     market_structure: {
       ...localResult.market_structure,
@@ -127,9 +149,7 @@ export async function runChartAnalysis(
         : localResult.news_impact.overall_sentiment,
     },
   };
-
-  console.log(`[Vixor] Local analysis complete: ${result.pair} ${result.timeframe} → ${result.recommendation} @ ${result.confidence}%`);
-  return result;
+  return fallbackResult;
 }
 
 // ---------------------------------------------------------------------------
