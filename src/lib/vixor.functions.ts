@@ -713,3 +713,125 @@ export const updateUserStrategy = createServerFn({ method: "POST" })
       return { ok: true };
     }
   });
+
+// ---------- TWELVE DATA: EXCHANGE RATE ----------
+export const getExchangeRate = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({ symbol: z.string().min(1) }).parse(d))
+  .handler(async ({ data }) => {
+    const { fetchExchangeRate } = await import("@/server/twelvedata.server");
+    const result = await fetchExchangeRate(data.symbol);
+    if (!result) throw new Error("Failed to fetch exchange rate");
+    return result;
+  });
+
+// ---------- TWELVE DATA: CURRENCY CONVERSION ----------
+export const convertCurrency = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({
+    symbol: z.string().min(1),
+    amount: z.number().positive(),
+  }).parse(d))
+  .handler(async ({ data }) => {
+    const { convertCurrency: tdConvert } = await import("@/server/twelvedata.server");
+    const result = await tdConvert(data.symbol, data.amount);
+    if (!result) throw new Error("Failed to convert currency");
+    return result;
+  });
+
+// ---------- TWELVE DATA: ETFs DIRECTORY ----------
+export const getETFsDirectory = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({
+    country: z.string().optional(),
+    fund_family: z.string().optional(),
+    fund_type: z.string().optional(),
+    page: z.number().min(1).default(1).optional(),
+    outputsize: z.number().min(1).max(50).default(20).optional(),
+  }).parse(d ?? {}))
+  .handler(async ({ data }) => {
+    const { fetchETFsDirectory } = await import("@/server/twelvedata.server");
+    const result = await fetchETFsDirectory(data);
+    if (!result) return { count: 0, list: [] };
+    return result;
+  });
+
+// ---------- TWELVE DATA: ETF SUMMARY ----------
+export const getETFSummary = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({ symbol: z.string().min(1) }).parse(d))
+  .handler(async ({ data }) => {
+    const { fetchETFSummary } = await import("@/server/twelvedata.server");
+    const result = await fetchETFSummary(data.symbol);
+    if (!result) throw new Error("Failed to fetch ETF summary");
+    return result;
+  });
+
+// ---------- TWELVE DATA: ETF PERFORMANCE ----------
+export const getETFPerformance = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({ symbol: z.string().min(1) }).parse(d))
+  .handler(async ({ data }) => {
+    const { fetchETFPerformance } = await import("@/server/twelvedata.server");
+    const result = await fetchETFPerformance(data.symbol);
+    if (!result) throw new Error("Failed to fetch ETF performance");
+    return result;
+  });
+
+// ---------- TWELVE DATA: ETF FULL DATA ----------
+export const getETFFullData = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({ symbol: z.string().min(1) }).parse(d))
+  .handler(async ({ data }) => {
+    const { fetchETFFullData } = await import("@/server/twelvedata.server");
+    const result = await fetchETFFullData(data.symbol);
+    if (!result) throw new Error("Failed to fetch ETF full data");
+    return result;
+  });
+
+// ---------- TWELVE DATA: CASH FLOW ----------
+export const getCashFlow = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({
+    symbol: z.string().min(1),
+    period: z.enum(["annual", "quarterly"]).default("quarterly"),
+    outputsize: z.number().min(1).max(40).default(4),
+  }).parse(d))
+  .handler(async ({ data }) => {
+    const { fetchCashFlow } = await import("@/server/twelvedata.server");
+    const result = await fetchCashFlow(data);
+    if (!result) throw new Error("Failed to fetch cash flow data");
+    return result;
+  });
+
+// ---------- TWELVE DATA: EARNINGS ESTIMATE ----------
+export const getEarningsEstimate = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({ symbol: z.string().min(1) }).parse(d))
+  .handler(async ({ data }) => {
+    const { fetchEarningsEstimate } = await import("@/server/twelvedata.server");
+    const result = await fetchEarningsEstimate(data.symbol);
+    if (!result) throw new Error("Failed to fetch earnings estimate");
+    return result;
+  });
+
+// ---------- TWELVE DATA: EPS TREND ----------
+export const getEPSTrend = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({ symbol: z.string().min(1) }).parse(d))
+  .handler(async ({ data }) => {
+    const { fetchEPSTrend } = await import("@/server/twelvedata.server");
+    const result = await fetchEPSTrend(data.symbol);
+    if (!result) throw new Error("Failed to fetch EPS trend");
+    return result;
+  });
+
+// ---------- TWELVE DATA: GROWTH ESTIMATES ----------
+export const getGrowthEstimates = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({ symbol: z.string().min(1) }).parse(d))
+  .handler(async ({ data }) => {
+    const { fetchGrowthEstimates } = await import("@/server/twelvedata.server");
+    const result = await fetchGrowthEstimates(data.symbol);
+    if (!result) throw new Error("Failed to fetch growth estimates");
+    return result;
+  });
+
+// ---------- TWELVE DATA: STOCK FUNDAMENTALS (combined) ----------
+export const getStockFundamentals = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({ symbol: z.string().min(1) }).parse(d))
+  .handler(async ({ data }) => {
+    const { fetchStockFundamentals } = await import("@/server/twelvedata.server");
+    const result = await fetchStockFundamentals(data.symbol);
+    return result;
+  });

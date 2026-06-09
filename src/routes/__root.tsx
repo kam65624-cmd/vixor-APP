@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, Component, type ErrorInfo } from "react";
 
 import appCss from "../styles.css?url";
 import { AppShell } from "@/components/vixor/AppShell";
@@ -30,19 +30,36 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
-  const router = useRouter();
+  console.error("[Vixor] Error caught by route error boundary:", error);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
+        <div className="size-16 rounded-2xl bg-bearish/10 flex items-center justify-center mx-auto mb-4">
+          <svg className="size-8 text-bearish" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+        </div>
         <h1 className="text-xl font-semibold text-foreground">Something went wrong</h1>
         <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
-        <button
-          onClick={() => { router.invalidate(); reset(); }}
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-        >
-          Try again
-        </button>
+        <div className="flex gap-3 justify-center mt-6">
+          <button
+            onClick={() => {
+              // ── CRITICAL FIX for React #310 ──
+              // Do NOT call router.invalidate() — it triggers beforeLoad → getSession()
+              // → onAuthStateChange → query invalidation → re-render → potential infinite loop.
+              // Instead, just reset the error boundary and let React reconcile naturally.
+              reset();
+            }}
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground active:scale-95 transition-transform"
+          >
+            Try again
+          </button>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-md bg-card border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover transition-colors"
+          >
+            Go Home
+          </Link>
+        </div>
       </div>
     </div>
   );

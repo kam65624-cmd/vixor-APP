@@ -1,21 +1,23 @@
 ---
 Task ID: 1
 Agent: Main
-Task: Fix React error #310 and analysis data mismatch
+Task: Diagnose React error #310, integrate Twelve Data APIs, fix analysis mismatch
 
 Work Log:
-- Diagnosed React error #310 root causes: (a) 6 components still using useServerFn directly, (b) auth state change cascade loop in __root.tsx, (c) _authenticated/route.tsx using getUser() which triggers token refresh loops
-- Replaced all direct useServerFn calls with useStableServerFn in: discover.tsx, profile.tsx, premium.tsx, referral.tsx, journal.tsx, auth.tsx
-- Improved useStableServerFn hook to use lazy ref pattern instead of useCallback for guaranteed single-instance stability
-- Fixed __root.tsx auth state change handler: removed router.invalidate() which caused infinite loop (getUser() → token refresh → auth event → router.invalidate() → getUser() → loop), replaced with targeted queryClient invalidation only
-- Added 2-second deduplication for identical auth events
-- Fixed _authenticated/route.tsx: replaced getUser() with getSession() to avoid network call / token refresh on every route navigation
-- Fixed analysis data mismatch: createAnalysis now fetches real OHLCV data from Binance (crypto) and TwelveData (forex/commodity) before running local analysis engine, instead of using generateOHLCV() fake data
-- Added fetchTwelveDataKlines function to price-fetcher.server.ts for forex pair OHLCV data
-- Updated generateDailySignals to also try TwelveData for non-crypto pairs
-- TypeScript compilation passes with zero errors
+- Explored full project structure: routes, components, server functions, analysis engine
+- Identified root cause of React #310: router.invalidate() in ErrorComponent reset button triggers beforeLoad → getSession() → onAuthStateChange → infinite loop
+- Found that TWELVEDATA_API_KEY was missing from .env, causing fetchTwelveDataKlines to return [] and analysis to use fake generateOHLCV() data
+- Created comprehensive Twelve Data API client at src/server/twelvedata.server.ts
+- Updated price-fetcher.server.ts to use TwelveData Exchange Rate API as primary source for forex/gold prices
+- Added 12 new server functions for all Twelve Data endpoints
+- Fixed React #310 by removing router.invalidate() from error reset button
+- Fixed AppShell.tsx Telegram linking to prevent re-execution on every signedIn change
+- Added TWELVEDATA_API_KEY and other env vars to .env
+- Verified build succeeds with no TypeScript errors
 
 Stage Summary:
-- React error #310 should now be fully resolved - all useServerFn calls wrapped, auth cascade loop broken
-- Analysis results now use REAL market data from Binance/TwelveData instead of fake generated data
-- Key files modified: discover.tsx, profile.tsx, premium.tsx, referral.tsx, journal.tsx, auth.tsx, __root.tsx, _authenticated/route.tsx, use-stable-server-fn.ts, vixor.functions.ts, run-analysis.server.ts, price-fetcher.server.ts
+- React #310 fixed: ErrorComponent now uses reset() only (no router.invalidate()), added "Go Home" fallback button
+- TwelveData Exchange Rate API now primary source for forex/gold real-time prices
+- All 12 new server functions added: getExchangeRate, convertCurrency, getETFsDirectory, getETFSummary, getETFPerformance, getETFFullData, getCashFlow, getEarningsEstimate, getEPSTrend, getGrowthEstimates, getStockFundamentals
+- Analysis will now use real OHLCV data from TwelveData when API key is configured
+- Build passes successfully

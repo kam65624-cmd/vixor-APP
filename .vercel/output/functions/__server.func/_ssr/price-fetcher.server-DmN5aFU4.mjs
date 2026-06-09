@@ -1,26 +1,4 @@
-// ============================================================================
-// Vixor Price Fetcher — Fetches real-time prices from free APIs
-// ============================================================================
-//
-// Supports:
-//   - Crypto pairs (Binance API)
-//   - Forex pairs (Exchange rate APIs or Finnhub)
-//   - Commodities (Finnhub or fallback)
-//
-// Used by the alert-checker cron and the dashboard market pulse widget.
-// ============================================================================
-
-export interface PriceResult {
-  symbol: string;
-  pair: string;
-  price: number;
-  change24h?: number;
-  source: string;
-  timestamp: number;
-}
-
-// Map user-friendly pair names to Binance symbols
-const BINANCE_SYMBOLS: Record<string, string> = {
+const BINANCE_SYMBOLS = {
   "BTC/USDT": "BTCUSDT",
   "ETH/USDT": "ETHUSDT",
   "SOL/USDT": "SOLUSDT",
@@ -32,11 +10,9 @@ const BINANCE_SYMBOLS: Record<string, string> = {
   "ADA/USDT": "ADAUSDT",
   "DOGE/USDT": "DOGEUSDT",
   "AVAX/USDT": "AVAXUSDT",
-  "DOT/USDT": "DOTUSDT",
+  "DOT/USDT": "DOTUSDT"
 };
-
-// Forex pair to Finnhub symbol mapping
-const FOREX_SYMBOLS: Record<string, string> = {
+const FOREX_SYMBOLS = {
   "EUR/USD": "EURUSD",
   "GBP/USD": "GBPUSD",
   "USD/JPY": "USDJPY",
@@ -46,94 +22,70 @@ const FOREX_SYMBOLS: Record<string, string> = {
   "USD/CAD": "USDCAD",
   "USD/CHF": "USDCHF",
   "EUR/GBP": "EURGBP",
-  "EUR/JPY": "EURJPY",
+  "EUR/JPY": "EURJPY"
 };
-
-// Known price ranges for fallback
-const FALLBACK_PRICES: Record<string, { price: number; volatility: number }> = {
-  "BTC/USDT": { price: 68000, volatility: 0.03 },
+const FALLBACK_PRICES = {
+  "BTC/USDT": { price: 68e3, volatility: 0.03 },
   "ETH/USDT": { price: 3700, volatility: 0.028 },
   "SOL/USDT": { price: 170, volatility: 0.04 },
   "XAU/USD": { price: 2340, volatility: 0.012 },
-  "EUR/USD": { price: 1.085, volatility: 0.005 },
-  "GBP/USD": { price: 1.27, volatility: 0.006 },
-  "USD/JPY": { price: 157.5, volatility: 0.007 },
-  "GBP/JPY": { price: 200.3, volatility: 0.008 },
-  "AUD/USD": { price: 0.665, volatility: 0.006 },
-  "NZD/USD": { price: 0.615, volatility: 0.007 },
-  "USD/CAD": { price: 1.37, volatility: 0.005 },
-  "USD/CHF": { price: 0.89, volatility: 0.005 },
+  "EUR/USD": { price: 1.085, volatility: 5e-3 },
+  "GBP/USD": { price: 1.27, volatility: 6e-3 },
+  "USD/JPY": { price: 157.5, volatility: 7e-3 },
+  "GBP/JPY": { price: 200.3, volatility: 8e-3 },
+  "AUD/USD": { price: 0.665, volatility: 6e-3 },
+  "NZD/USD": { price: 0.615, volatility: 7e-3 },
+  "USD/CAD": { price: 1.37, volatility: 5e-3 },
+  "USD/CHF": { price: 0.89, volatility: 5e-3 }
 };
-
-/**
- * Determine if a pair is crypto (Binance) or forex/commodity
- */
-function isCryptoPair(pair: string): boolean {
+function isCryptoPair(pair) {
   return pair in BINANCE_SYMBOLS || pair.includes("USDT") || pair.includes("BTC") || pair.includes("ETH") || pair.includes("SOL");
 }
-
-function isForexPair(pair: string): boolean {
+function isForexPair(pair) {
   return pair in FOREX_SYMBOLS;
 }
-
-/**
- * Fetch current price for a crypto pair from Binance
- */
-async function fetchBinancePrice(pair: string): Promise<PriceResult | null> {
+async function fetchBinancePrice(pair) {
   const binanceSymbol = BINANCE_SYMBOLS[pair];
   if (!binanceSymbol) return null;
-
   try {
-    // Get current price
     const priceRes = await fetch(
       `https://api.binance.com/api/v3/ticker/price?symbol=${binanceSymbol}`,
-      { signal: AbortSignal.timeout(8000) }
+      { signal: AbortSignal.timeout(8e3) }
     );
     if (!priceRes.ok) return null;
     const priceData = await priceRes.json();
     const price = parseFloat(priceData.price);
     if (isNaN(price)) return null;
-
-    // Get 24h change
-    let change24h: number | undefined;
+    let change24h;
     try {
       const statsRes = await fetch(
         `https://api.binance.com/api/v3/ticker/24hr?symbol=${binanceSymbol}`,
-        { signal: AbortSignal.timeout(8000) }
+        { signal: AbortSignal.timeout(8e3) }
       );
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         change24h = parseFloat(statsData.priceChangePercent);
       }
     } catch {
-      // Non-fatal
     }
-
     return {
       symbol: `BINANCE:${binanceSymbol}`,
       pair,
       price,
       change24h,
       source: "binance",
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
   } catch (err) {
     console.warn(`[PriceFetcher] Binance fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
     return null;
   }
 }
-
-/**
- * Fetch current price for a forex pair using TwelveData Exchange Rate API (primary)
- * Falls back to Finnhub, then exchangerate-api.com
- */
-async function fetchForexPrice(pair: string): Promise<PriceResult | null> {
+async function fetchForexPrice(pair) {
   const forexSymbol = FOREX_SYMBOLS[pair];
   if (!forexSymbol) return null;
-
-  // ── Primary: TwelveData Exchange Rate API (1 credit, most accurate) ──
   try {
-    const { fetchExchangeRate } = await import("@/server/twelvedata.server");
+    const { fetchExchangeRate } = await import("./twelvedata.server-CsSmrfI3.mjs");
     const result = await fetchExchangeRate(pair);
     if (result && result.rate > 0) {
       return {
@@ -141,20 +93,17 @@ async function fetchForexPrice(pair: string): Promise<PriceResult | null> {
         pair,
         price: result.rate,
         source: "twelvedata",
-        timestamp: result.timestamp * 1000,
+        timestamp: result.timestamp * 1e3
       };
     }
   } catch {
-    // Non-fatal, try next source
   }
-
-  // ── Fallback 1: Finnhub ──
   const finnhubKey = process.env.FINNHUB_API_KEY;
   if (finnhubKey) {
     try {
       const res = await fetch(
         `https://finnhub.io/api/v1/forex/rates?base=${forexSymbol.slice(0, 3)}&token=${finnhubKey}`,
-        { signal: AbortSignal.timeout(8000) }
+        { signal: AbortSignal.timeout(8e3) }
       );
       if (res.ok) {
         const data = await res.json();
@@ -165,22 +114,19 @@ async function fetchForexPrice(pair: string): Promise<PriceResult | null> {
             pair,
             price: parseFloat(quote),
             source: "finnhub",
-            timestamp: Date.now(),
+            timestamp: Date.now()
           };
         }
       }
     } catch {
-      // Non-fatal, try next fallback
     }
   }
-
-  // ── Fallback 2: ExchangeRate API ──
   try {
     const base = forexSymbol.slice(0, 3);
     const quote = forexSymbol.slice(3);
     const res = await fetch(
       `https://api.exchangerate-api.com/v4/latest/${base}`,
-      { signal: AbortSignal.timeout(8000) }
+      { signal: AbortSignal.timeout(8e3) }
     );
     if (res.ok) {
       const data = await res.json();
@@ -191,24 +137,17 @@ async function fetchForexPrice(pair: string): Promise<PriceResult | null> {
           pair,
           price: parseFloat(rate),
           source: "exchangerate-api",
-          timestamp: Date.now(),
+          timestamp: Date.now()
         };
       }
     }
   } catch {
-    // Non-fatal
   }
-
   return null;
 }
-
-/**
- * Fetch current price for XAU/USD (Gold) — TwelveData primary, Finnhub fallback
- */
-async function fetchGoldPrice(): Promise<PriceResult | null> {
-  // ── Primary: TwelveData Exchange Rate API ──
+async function fetchGoldPrice() {
   try {
-    const { fetchExchangeRate } = await import("@/server/twelvedata.server");
+    const { fetchExchangeRate } = await import("./twelvedata.server-CsSmrfI3.mjs");
     const result = await fetchExchangeRate("XAU/USD");
     if (result && result.rate > 0) {
       return {
@@ -216,20 +155,17 @@ async function fetchGoldPrice(): Promise<PriceResult | null> {
         pair: "XAU/USD",
         price: result.rate,
         source: "twelvedata",
-        timestamp: result.timestamp * 1000,
+        timestamp: result.timestamp * 1e3
       };
     }
   } catch {
-    // Non-fatal, try next source
   }
-
-  // ── Fallback: Finnhub ──
   const finnhubKey = process.env.FINNHUB_API_KEY;
   if (finnhubKey) {
     try {
       const res = await fetch(
         `https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=${finnhubKey}`,
-        { signal: AbortSignal.timeout(8000) }
+        { signal: AbortSignal.timeout(8e3) }
       );
       if (res.ok) {
         const data = await res.json();
@@ -240,96 +176,58 @@ async function fetchGoldPrice(): Promise<PriceResult | null> {
             price: data.c,
             change24h: data.dp,
             source: "finnhub",
-            timestamp: Date.now(),
+            timestamp: Date.now()
           };
         }
       }
     } catch {
-      // Non-fatal
     }
   }
-
   return null;
 }
-
-/**
- * Generate a deterministic fallback price for when APIs are unavailable
- */
-function getFallbackPrice(pair: string): PriceResult {
+function getFallbackPrice(pair) {
   const config = FALLBACK_PRICES[pair];
   const basePrice = config?.price ?? 100;
   const vol = config?.volatility ?? 0.02;
-  
-  // Deterministic "current" price based on time of day
-  const now = new Date();
+  const now = /* @__PURE__ */ new Date();
   const timeSeed = now.getHours() * 60 + now.getMinutes();
   const variation = Math.sin(timeSeed * 0.1) * vol * basePrice;
   const price = basePrice + variation;
-
   return {
     symbol: pair.includes("USDT") ? `BINANCE:${pair.replace("/", "")}` : `FX:${pair.replace("/", "")}`,
     pair,
     price: Number(price.toFixed(pair.includes("JPY") || pair === "XAU/USD" || pair.includes("USDT") || pair.includes("USD") ? 2 : 4)),
     change24h: Number((Math.sin(timeSeed * 0.05) * 2).toFixed(2)),
     source: "fallback",
-    timestamp: Date.now(),
+    timestamp: Date.now()
   };
 }
-
-/**
- * Main entry point: fetch the current price for a given pair.
- * Tries real APIs first, falls back to deterministic prices.
- */
-export async function fetchPrice(pair: string): Promise<PriceResult> {
-  // Special case for Gold
+async function fetchPrice(pair) {
   if (pair === "XAU/USD") {
     const result = await fetchGoldPrice();
     if (result) return result;
     return getFallbackPrice(pair);
   }
-
-  // Crypto pairs
   if (isCryptoPair(pair)) {
     const result = await fetchBinancePrice(pair);
     if (result) return result;
     return getFallbackPrice(pair);
   }
-
-  // Forex pairs
   if (isForexPair(pair)) {
     const result = await fetchForexPrice(pair);
     if (result) return result;
     return getFallbackPrice(pair);
   }
-
-  // Unknown pair, use fallback
   return getFallbackPrice(pair);
 }
-
-/**
- * Fetch prices for multiple pairs in parallel.
- */
-export async function fetchPrices(pairs: string[]): Promise<PriceResult[]> {
+async function fetchPrices(pairs) {
   const results = await Promise.allSettled(pairs.map(fetchPrice));
-  return results
-    .filter((r): r is PromiseFulfilledResult<PriceResult> => r.status === "fulfilled")
-    .map(r => r.value);
+  return results.filter((r) => r.status === "fulfilled").map((r) => r.value);
 }
-
-/**
- * Fetch OHLCV candle data from Binance for crypto pairs.
- * Returns array of [openTime, open, high, low, close, volume]
- */
-export async function fetchBinanceKlines(
-  pair: string,
-  interval: string = "1h",
-  limit: number = 200,
-): Promise<Array<{ time: number; open: number; high: number; low: number; close: number; volume: number }>> {
+async function fetchBinanceKlines(pair, interval = "1h", limit = 200) {
   const binanceSymbol = BINANCE_SYMBOLS[pair];
   if (!binanceSymbol) return [];
-
-  // Map timeframe strings to Binance interval format
-  const intervalMap: Record<string, string> = {
+  const intervalMap = {
     "1M": "1m",
     "5M": "5m",
     "15M": "15m",
@@ -337,60 +235,42 @@ export async function fetchBinanceKlines(
     "1H": "1h",
     "4H": "4h",
     "1D": "1d",
-    "1W": "1w",
+    "1W": "1w"
   };
   const binanceInterval = intervalMap[interval] || "1h";
-
   try {
     const res = await fetch(
       `https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=${binanceInterval}&limit=${limit}`,
-      { signal: AbortSignal.timeout(15000) }
+      { signal: AbortSignal.timeout(15e3) }
     );
     if (!res.ok) return [];
-
     const data = await res.json();
     if (!Array.isArray(data)) return [];
-
-    return data.map((k: unknown[]) => ({
-      time: Math.floor(Number(k[0]) / 1000),
+    return data.map((k) => ({
+      time: Math.floor(Number(k[0]) / 1e3),
       open: parseFloat(String(k[1])),
       high: parseFloat(String(k[2])),
       low: parseFloat(String(k[3])),
       close: parseFloat(String(k[4])),
-      volume: parseFloat(String(k[5])),
+      volume: parseFloat(String(k[5]))
     }));
   } catch (err) {
     console.warn(`[PriceFetcher] Binance klines fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
     return [];
   }
 }
-
-/**
- * Popular pairs for quick access
- */
-export const POPULAR_PAIRS = [
+const POPULAR_PAIRS = [
   { pair: "BTC/USDT", icon: "₿" },
   { pair: "ETH/USDT", icon: "Ξ" },
   { pair: "XAU/USD", icon: "Au" },
   { pair: "EUR/USD", icon: "€" },
   { pair: "GBP/JPY", icon: "£" },
-  { pair: "SOL/USDT", icon: "◎" },
+  { pair: "SOL/USDT", icon: "◎" }
 ];
-
-/**
- * Fetch OHLCV candle data from TwelveData API for forex/commodity pairs.
- * Returns array of OHLCV bars with time, open, high, low, close, volume.
- */
-export async function fetchTwelveDataKlines(
-  pair: string,
-  interval: string = "1h",
-  outputsize: number = 200,
-): Promise<Array<{ time: number; open: number; high: number; low: number; close: number; volume: number }>> {
+async function fetchTwelveDataKlines(pair, interval = "1h", outputsize = 200) {
   const apiKey = process.env.TWELVEDATA_API_KEY;
   if (!apiKey) return [];
-
-  // Map pair to TwelveData symbol format
-  const symbolMap: Record<string, string> = {
+  const symbolMap = {
     "XAU/USD": "XAU/USD",
     "EUR/USD": "EUR/USD",
     "GBP/USD": "GBP/USD",
@@ -401,14 +281,11 @@ export async function fetchTwelveDataKlines(
     "USD/CAD": "USD/CAD",
     "USD/CHF": "USD/CHF",
     "EUR/GBP": "EUR/GBP",
-    "EUR/JPY": "EUR/JPY",
+    "EUR/JPY": "EUR/JPY"
   };
-
   const symbol = symbolMap[pair];
   if (!symbol) return [];
-
-  // Map timeframe to TwelveData interval
-  const intervalMap: Record<string, string> = {
+  const intervalMap = {
     "1M": "1min",
     "5M": "5min",
     "15M": "15min",
@@ -416,33 +293,34 @@ export async function fetchTwelveDataKlines(
     "1H": "1h",
     "4H": "4h",
     "1D": "1day",
-    "1W": "1week",
+    "1W": "1week"
   };
   const tdInterval = intervalMap[interval] || "1h";
-
   try {
     const res = await fetch(
       `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(symbol)}&interval=${tdInterval}&outputsize=${outputsize}&apikey=${apiKey}`,
-      { signal: AbortSignal.timeout(15000) }
+      { signal: AbortSignal.timeout(15e3) }
     );
     if (!res.ok) return [];
-
     const data = await res.json();
     if (!data.values || !Array.isArray(data.values)) return [];
-
-    return data.values
-      .filter((v: any) => v.open && v.high && v.low && v.close)
-      .map((v: any) => ({
-        time: Math.floor(new Date(v.datetime).getTime() / 1000),
-        open: parseFloat(v.open),
-        high: parseFloat(v.high),
-        low: parseFloat(v.low),
-        close: parseFloat(v.close),
-        volume: parseFloat(v.volume || "0"),
-      }))
-      .reverse(); // TwelveData returns newest first, we need oldest first
+    return data.values.filter((v) => v.open && v.high && v.low && v.close).map((v) => ({
+      time: Math.floor(new Date(v.datetime).getTime() / 1e3),
+      open: parseFloat(v.open),
+      high: parseFloat(v.high),
+      low: parseFloat(v.low),
+      close: parseFloat(v.close),
+      volume: parseFloat(v.volume || "0")
+    })).reverse();
   } catch (err) {
     console.warn(`[PriceFetcher] TwelveData fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
     return [];
   }
 }
+export {
+  POPULAR_PAIRS,
+  fetchBinanceKlines,
+  fetchPrice,
+  fetchPrices,
+  fetchTwelveDataKlines
+};

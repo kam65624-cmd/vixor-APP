@@ -44,15 +44,24 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return;
     if (signedIn) {
       if (!localStorage.getItem("vixor-onboarded")) setShowOnboarding(true);
-      
-      if (!localStorage.getItem("vixor-tg-linked")) {
-        const initData = getTelegramInitData();
-        if (initData) {
-          linkTelegram({ data: { initData } })
-            .then(() => { localStorage.setItem("vixor-tg-linked", "1"); })
-            .catch(err => console.error("Failed to link Telegram:", err));
-        }
-      }
+    }
+  }, [signedIn]);
+
+  // Link Telegram in a separate effect that only runs once (not on every signedIn change)
+  const telegramLinkedRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!signedIn || telegramLinkedRef.current) return;
+    if (localStorage.getItem("vixor-tg-linked")) {
+      telegramLinkedRef.current = true;
+      return;
+    }
+    const initData = getTelegramInitData();
+    if (initData) {
+      telegramLinkedRef.current = true;
+      linkTelegram({ data: { initData } })
+        .then(() => { localStorage.setItem("vixor-tg-linked", "1"); })
+        .catch(err => console.error("Failed to link Telegram:", err));
     }
   }, [signedIn]);
 
