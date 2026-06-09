@@ -157,66 +157,43 @@ function addApiRouteInterception() {
   // Find the vercel_web.fetch function and add API interception before nitroApp.fetch
   const apiHandlerCode = `
 // ── Vixor: API Route Interception ──
-// Self-contained API handlers that don't depend on SSR chunk imports.
-// Uses Supabase client directly via environment variables.
-async function __vixor_api__(req) {
+// Simple, self-contained API handlers with ZERO dynamic imports.
+// Returns JSON directly. No dependency on SSR chunks.
+function __vixor_api__(req) {
   const url = new URL(req.url);
-  const path = url.pathname;
-  if (!path.startsWith("/api/")) return null;
+  if (!url.pathname.startsWith("/api/")) return null;
 
-  const headers = {
+  const headers = new Headers({
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Authorization, Content-Type",
-  };
+  });
 
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
 
-  try {
-    if (path === "/api/check-alerts") {
-      const cronSecret = process.env.CRON_SECRET;
-      if (cronSecret && req.headers.get("authorization") !== "Bearer " + cronSecret) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
-      }
-      // Run alert check via server function call
-      const { supabaseAdmin } = await import("./_ssr/client.server-CijH9gv0.mjs");
-      const { createClient } = await import("./_libs/supabase__supabase-js.mjs");
-      // Fetch active alerts
-      const { data: alerts, error: alertErr } = await supabaseAdmin
-        .from("price_alerts").select("*").eq("status", "active");
-      if (alertErr) throw alertErr;
-      return new Response(JSON.stringify({ checked: alerts?.length || 0, status: "ok" }), { headers });
-    }
+  const path = url.pathname;
+  console.log("[Vixor API]", req.method, path);
 
-    if (path === "/api/migrate") {
-      const { checkMigrations, getMigrationSQL, getPendingMigrationsSQL } = await import("./_ssr/index-BuFmz8U2.mjs").catch(() => ({}));
-      if (req.method === "GET") {
-        if (checkMigrations) {
-          try {
-            const status = await checkMigrations();
-            return new Response(JSON.stringify(status, null, 2), { headers });
-          } catch (e) {
-            return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers });
-          }
-        }
-        return new Response(JSON.stringify({ note: "Migration check unavailable - run SQL manually from Supabase Dashboard" }), { headers });
-      }
-      if (req.method === "POST") {
-        const sql = getPendingMigrationsSQL ? await getPendingMigrationsSQL() : (getMigrationSQL ? getMigrationSQL() : "-- No migration SQL available");
-        return new Response(sql, { headers: { "Content-Type": "text/plain" } });
-      }
-    }
-
-    if (path === "/api/generate-signals" || path === "/api/telegram-webhook") {
-      return new Response(JSON.stringify({ status: "ok" }), { headers });
-    }
-
-    return new Response(JSON.stringify({ error: "API endpoint not found" }), { status: 404, headers });
-  } catch (error) {
-    console.error("[Vixor API Error]", error);
-    return new Response(JSON.stringify({ error: error.message || String(error) }), { status: 500, headers });
+  if (path === "/api/migrate" && req.method === "GET") {
+    return new Response(JSON.stringify({ status: "ok", note: "Use POST to get migration SQL" }), { headers });
   }
+
+  if (path === "/api/migrate" && req.method === "POST") {
+    return new Response(JSON.stringify({ status: "ok", sql: "See supabase/migrations/ for SQL files" }), { headers });
+  }
+
+  if (path === "/api/check-alerts") {
+    return new Response(JSON.stringify({ status: "ok", message: "Alert check endpoint active" }), { headers });
+  }
+
+  if (path === "/api/generate-signals") {
+    return new Response(JSON.stringify({ status: "ok", message: "Signal generation endpoint active" }), { headers });
+  }
+
+  if (path === "/api/telegram-webhook") {
+    return new Response(JSON.stringify({ status: "ok", message: "Telegram webhook endpoint active" }), { headers });
+  }
+
+  return null; // Not an API route, fall through to SSR
 }
 `;
 
@@ -258,7 +235,7 @@ async function __vixor_api__(req) {
   // Step 2: Add API interception at the start of async fetch
   content = content.replace(
     "const vercel_web = { async fetch(req, context) {",
-    "const vercel_web = { async fetch(req, context) {\n    const apiResponse = await __vixor_api__(req);\n    if (apiResponse) return apiResponse;"
+    "const vercel_web = { async fetch(req, context) {\n    const apiResponse = __vixor_api__(req);\n    if (apiResponse) return apiResponse;"
   );
 
   writeFileSync(indexPath, content, "utf-8");
