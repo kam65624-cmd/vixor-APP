@@ -21,10 +21,17 @@ import {
   CheckCircle,
   ChevronRight,
   X,
+  StickyNote,
+  Plus,
+  Pin,
+  Trash2,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { getAnalysis } from "@/lib/vixor.functions";
-import { useQuery } from "@tanstack/react-query";
+import { getNotesByAnalysis, deleteNote } from "@/domains/notes/functions";
+import type { TradingNote, Mood } from "@/domains/notes/types";
+import { NoteEditorDialog } from "@/components/vixor/NoteEditorDialog";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/analysis/$id")({
@@ -329,7 +336,7 @@ function AnalysisResult() {
       )}
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <Link
           to="/trade-desk"
           className="h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 glow-primary active:scale-95 transition-transform"
@@ -340,8 +347,9 @@ function AnalysisResult() {
           to="/journal"
           className="h-12 rounded-xl bg-card border border-border font-bold text-sm flex items-center justify-center gap-2 hover:bg-card-hover active:scale-95 transition-all"
         >
-          <BookOpen className="size-4 text-muted-foreground" /> Add to Journal
+          <BookOpen className="size-4 text-muted-foreground" /> Journal
         </Link>
+        <AnalysisNotesSection analysisId={id} pair={a.pair} />
       </div>
 
       {/* ═══ TABS ═══ */}
@@ -718,6 +726,174 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
         ))}
       </div>
     </div>
+  );
+}
+
+// ═══ ANALYSIS NOTES SECTION ═══
+const MOOD_EMOJI: Record<Mood, string> = {
+  confident: "💪",
+  cautious: "⚠️",
+  anxious: "😰",
+  neutral: "😐",
+};
+
+function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: string | null }) {
+  const queryClient = useQueryClient();
+  const [noteEditorOpen, setNoteEditorOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<TradingNote | null>(null);
+  const [showNotes, setShowNotes] = useState(false);
+
+  const fetchNotes = useStableServerFn(getNotesByAnalysis);
+  const notesQuery = useQuery({
+    queryKey: ["analysis-notes", analysisId],
+    queryFn: () => fetchNotes({ data: { analysisId } }),
+    enabled: showNotes,
+  });
+
+  const deleteNoteFn = useStableServerFn(deleteNote);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const notes = (notesQuery.data ?? []) as TradingNote[];
+
+  const handleDelete = async (noteId: string) => {
+    try {
+      await deleteNoteFn({ data: { noteId } });
+      setDeleteTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["analysis-notes", analysisId] });
+    } catch (err) {
+      console.error("Failed to delete note:", err);
+    }
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          setShowNotes(!showNotes);
+          if (!showNotes) {
+            queryClient.invalidateQueries({ queryKey: ["analysis-notes", analysisId] });
+          }
+        }}
+        className="h-12 rounded-xl bg-card border border-border font-bold text-sm flex items-center justify-center gap-2 hover:bg-card-hover active:scale-95 transition-all"
+      >
+        <StickyNote className="size-4 text-primary" /> Notes
+      </button>
+
+      {/* Notes panel below the action buttons */}
+      {showNotes && (
+        <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300 col-span-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              Notes for this analysis
+            </h3>
+            <button
+              onClick={() => {
+                setEditingNote(null);
+                setNoteEditorOpen(true);
+              }}
+              className="h-7 px-3 rounded-lg gradient-primary text-primary-foreground text-[11px] font-bold flex items-center gap-1 hover:scale-[1.02] active:scale-95 transition-transform"
+            >
+              <Plus className="size-3" /> Add Note
+            </button>
+          </div>
+
+          {notesQuery.isLoading ? (
+            <div className="vixor-card p-4 text-center">
+              <Loader2 className="size-4 text-primary animate-spin mx-auto" />
+            </div>
+          ) : notes.length > 0 ? (
+            <div className="space-y-2">
+              {notes.map((note) => (
+                <div
+                  key={note.id}
+                  className="vixor-card p-3 transition-colors hover:bg-card-hover cursor-pointer"
+                  onClick={() => {
+                    setEditingNote(note);
+                    setNoteEditorOpen(true);
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        {note.is_pinned && <Pin className="size-3 text-primary shrink-0" />}
+                        <span className="font-bold text-sm text-foreground truncate">
+                          {note.title || "Untitled"}
+                        </span>
+                        <span className="text-sm shrink-0">{MOOD_EMOJI[note.mood]}</span>
+                      </div>
+                      {note.content && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-1.5 leading-relaxed">
+                          {note.content}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {note.tags?.map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-muted text-muted-foreground"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                        <span className="text-[10px] font-mono text-muted-foreground ml-auto">
+                          {relTime(note.created_at)}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(note.id);
+                      }}
+                      className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-bearish hover:bg-bearish/10 transition-all shrink-0"
+                    >
+                      <Trash2 className="size-3" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="vixor-card p-6 text-center">
+              <StickyNote className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+              <div className="text-xs text-muted-foreground">No notes for this analysis yet</div>
+            </div>
+          )}
+
+          {/* Delete confirmation */}
+          {deleteTarget && (
+            <div className="vixor-card p-3 flex items-center justify-between border-bearish/30 bg-bearish/5">
+              <span className="text-xs text-muted-foreground">Delete this note?</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  className="h-7 px-3 rounded-lg bg-card border border-border text-xs font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDelete(deleteTarget)}
+                  className="h-7 px-3 rounded-lg bg-bearish text-white text-xs font-bold"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          )}
+
+          <NoteEditorDialog
+            open={noteEditorOpen}
+            onOpenChange={setNoteEditorOpen}
+            existingNote={editingNote}
+            prefillPair={pair}
+            prefillAnalysisId={analysisId}
+            onSuccess={() =>
+              queryClient.invalidateQueries({ queryKey: ["analysis-notes", analysisId] })
+            }
+          />
+        </div>
+      )}
+    </>
   );
 }
 

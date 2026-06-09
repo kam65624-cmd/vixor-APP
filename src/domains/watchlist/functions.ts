@@ -155,3 +155,88 @@ export const reorderWatchlist = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+export const createWatchlist = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) => z.object({
+    name: z.string().min(1).max(50),
+    isDefault: z.boolean().optional().default(false),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
+
+    // Get the next sort order
+    const { data: existing } = await supabase
+      .from("watchlists")
+      .select("sort_order")
+      .eq("user_id", userId)
+      .order("sort_order", { ascending: false })
+      .limit(1);
+    const nextOrder = (existing?.[0]?.sort_order ?? -1) + 1;
+
+    const { data: watchlist, error } = await supabase
+      .from("watchlists")
+      .insert({
+        user_id: userId,
+        name: data.name,
+        is_default: data.isDefault,
+        sort_order: nextOrder,
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return watchlist;
+  });
+
+export const deleteWatchlist = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) => z.object({
+    watchlistId: z.string().uuid(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
+
+    // Verify the watchlist belongs to the user and is not default
+    const { data: watchlist, error: fetchErr } = await supabase
+      .from("watchlists")
+      .select("id, is_default")
+      .eq("id", data.watchlistId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (fetchErr) throw new Error(fetchErr.message);
+    if (!watchlist) throw new Error("Watchlist not found");
+    if (watchlist.is_default) throw new Error("CANNOT_DELETE_DEFAULT");
+
+    // Delete all items first (cascade should handle this, but be safe)
+    await supabase
+      .from("watchlist_items")
+      .delete()
+      .eq("watchlist_id", data.watchlistId);
+
+    // Delete the watchlist
+    const { error } = await supabase
+      .from("watchlists")
+      .delete()
+      .eq("id", data.watchlistId)
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const renameWatchlist = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) => z.object({
+    watchlistId: z.string().uuid(),
+    name: z.string().min(1).max(50),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
+
+    const { error } = await supabase
+      .from("watchlists")
+      .update({ name: data.name })
+      .eq("id", data.watchlistId)
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

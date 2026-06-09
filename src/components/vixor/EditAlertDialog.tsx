@@ -1,0 +1,254 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Pencil, Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { updateAlert } from "@/lib/vixor.functions";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+
+interface AlertData {
+  id: string;
+  pair: string;
+  condition: "above" | "below" | "crosses_up" | "crosses_down";
+  target_price: number;
+  timeframe: string;
+  note: string | null;
+}
+
+interface EditAlertDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  alert: AlertData | null;
+  onSuccess?: () => void;
+}
+
+const CONDITIONS = [
+  { value: "above", label: "Price goes above" },
+  { value: "below", label: "Price goes below" },
+  { value: "crosses_up", label: "Price crosses up" },
+  { value: "crosses_down", label: "Price crosses down" },
+];
+
+export function EditAlertDialog({
+  open,
+  onOpenChange,
+  alert,
+  onSuccess,
+}: EditAlertDialogProps) {
+  const [condition, setCondition] = useState("above");
+  const [targetPrice, setTargetPrice] = useState("");
+  const [note, setNote] = useState("");
+  const [timeframe, setTimeframe] = useState("1H");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateAlertFn = useStableServerFn(updateAlert);
+
+  // Pre-populate form when alert data changes
+  useEffect(() => {
+    if (alert) {
+      setCondition(alert.condition);
+      setTargetPrice(String(alert.target_price));
+      setNote(alert.note ?? "");
+      setTimeframe(alert.timeframe ?? "1H");
+      setError(null);
+    }
+  }, [alert]);
+
+  const handleSave = async () => {
+    if (!alert) return;
+
+    const price = parseFloat(targetPrice);
+    if (isNaN(price) || price <= 0) {
+      setError("Please enter a valid price");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await updateAlertFn({
+        data: {
+          alertId: alert.id,
+          condition: condition as "above" | "below" | "crosses_up" | "crosses_down",
+          targetPrice: price,
+          timeframe,
+          note: note || null,
+        },
+      });
+      onOpenChange(false);
+      onSuccess?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update alert");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Format suggested price based on pair
+  const formatSuggestedPrice = (p: number) => {
+    if (alert?.pair?.includes("JPY") || alert?.pair === "XAU/USD" || alert?.pair?.includes("USDT")) {
+      return p.toFixed(2);
+    }
+    return p.toFixed(4);
+  };
+
+  // Quick price suggestions based on condition
+  const currentTarget = parseFloat(targetPrice) || 0;
+  const suggestedPrices = currentTarget > 0
+    ? condition === "above"
+      ? [currentTarget * 1.01, currentTarget * 1.02, currentTarget * 1.05]
+      : condition === "below"
+        ? [currentTarget * 0.99, currentTarget * 0.98, currentTarget * 0.95]
+        : [currentTarget * 1.01, currentTarget * 0.99, currentTarget * 1.02]
+    : [];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm rounded-2xl bg-card border-border">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-foreground">
+            <Pencil className="size-5 text-primary" />
+            Edit Alert
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Update alert for {alert?.pair}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Pair display (read-only) */}
+          <div className="vixor-card p-3 flex items-center justify-between">
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Pair
+              </div>
+              <div className="text-xl font-bold font-mono text-foreground">
+                {alert?.pair}
+              </div>
+            </div>
+            <div className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs font-bold">
+              Cannot change
+            </div>
+          </div>
+
+          {/* Condition select */}
+          <div>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+              Condition
+            </label>
+            <Select value={condition} onValueChange={setCondition}>
+              <SelectTrigger className="bg-background border-border rounded-xl h-11">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CONDITIONS.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Target price input */}
+          <div>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+              Target Price
+            </label>
+            <input
+              type="number"
+              value={targetPrice}
+              onChange={(e) => setTargetPrice(e.target.value)}
+              placeholder="0.00"
+              step={alert?.pair?.includes("JPY") ? "0.01" : alert?.pair === "XAU/USD" ? "0.01" : "0.0001"}
+              className="w-full h-11 px-3 rounded-xl bg-background border border-border text-foreground font-mono text-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            {suggestedPrices.length > 0 && (
+              <div className="flex gap-1.5 mt-2">
+                {suggestedPrices.map((p, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setTargetPrice(formatSuggestedPrice(p))}
+                    className="flex-1 h-8 rounded-lg bg-muted text-xs font-mono font-semibold text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
+                  >
+                    ${formatSuggestedPrice(p)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Timeframe */}
+          <div>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+              Timeframe
+            </label>
+            <div className="flex gap-1.5">
+              {["15M", "1H", "4H", "1D"].map((tf) => (
+                <button
+                  key={tf}
+                  onClick={() => setTimeframe(tf)}
+                  className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all ${
+                    timeframe === tf
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-card-hover"
+                  }`}
+                >
+                  {tf}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Note */}
+          <div>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+              Note (optional)
+            </label>
+            <input
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="e.g. Breakout play"
+              maxLength={200}
+              className="w-full h-9 px-3 rounded-xl bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+
+          {error && (
+            <div className="p-3 bg-bearish/10 border border-bearish/30 text-bearish text-xs font-bold rounded-xl">
+              {error}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <button
+            onClick={handleSave}
+            disabled={loading || !targetPrice}
+            className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="size-5 animate-spin" /> : <Pencil className="size-5" />}
+            Save Changes
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

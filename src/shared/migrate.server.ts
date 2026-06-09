@@ -22,6 +22,7 @@ export interface MigrationStatus {
   price_alerts: boolean;
   daily_signals: boolean;
   user_strategies: boolean;
+  trading_notes: boolean;
   allComplete: boolean;
   sql: string;
 }
@@ -97,6 +98,49 @@ DO $$ BEGIN
   CREATE POLICY "Users can manage their own strategies" ON user_strategies FOR ALL USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
+-- 4. Trading Notes Table
+CREATE TABLE IF NOT EXISTS trading_notes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  pair TEXT,
+  analysis_id UUID REFERENCES analyses(id) ON DELETE SET NULL,
+  title TEXT NOT NULL DEFAULT '',
+  content TEXT NOT NULL DEFAULT '',
+  tags TEXT[] DEFAULT '{}',
+  mood TEXT CHECK (mood IN ('confident', 'cautious', 'anxious', 'neutral')) DEFAULT 'neutral',
+  is_pinned BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_trading_notes_user_id ON trading_notes(user_id);
+CREATE INDEX IF NOT EXISTS idx_trading_notes_pair ON trading_notes(pair) WHERE pair IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_trading_notes_analysis_id ON trading_notes(analysis_id) WHERE analysis_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_trading_notes_pinned ON trading_notes(user_id, is_pinned) WHERE is_pinned = true;
+
+ALTER TABLE trading_notes ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can view own notes" ON trading_notes FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Users can insert own notes" ON trading_notes FOR INSERT WITH CHECK (auth.uid() = user_id);
+  CREATE POLICY "Users can update own notes" ON trading_notes FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "Users can delete own notes" ON trading_notes FOR DELETE USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Auto-update updated_at trigger
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trading_notes_updated_at ON trading_notes;
+CREATE TRIGGER trading_notes_updated_at
+  BEFORE UPDATE ON trading_notes
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 `;
 }
 
@@ -104,22 +148,25 @@ export async function checkMigrations(): Promise<MigrationStatus> {
   const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
   // Check each table by attempting a select
-  const [alertsRes, signalsRes, strategiesRes] = await Promise.all([
+  const [alertsRes, signalsRes, strategiesRes, notesRes] = await Promise.all([
     supabaseAdmin.from("price_alerts").select("id").limit(1),
     supabaseAdmin.from("daily_signals").select("id").limit(1),
     supabaseAdmin.from("user_strategies").select("id").limit(1),
+    supabaseAdmin.from("trading_notes").select("id").limit(1),
   ]);
 
   const priceAlerts = !alertsRes.error || alertsRes.error.code !== "42P01";
   const dailySignals = !signalsRes.error || signalsRes.error.code !== "42P01";
   const userStrategies = !strategiesRes.error || strategiesRes.error.code !== "42P01";
+  const tradingNotes = !notesRes.error || notesRes.error.code !== "42P01";
 
-  const allComplete = priceAlerts && dailySignals && userStrategies;
+  const allComplete = priceAlerts && dailySignals && userStrategies && tradingNotes;
 
   return {
     price_alerts: priceAlerts,
     daily_signals: dailySignals,
     user_strategies: userStrategies,
+    trading_notes: tradingNotes,
     allComplete,
     sql: allComplete ? "" : getMigrationSQL(),
   };

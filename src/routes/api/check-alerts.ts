@@ -24,8 +24,19 @@ export const APIRoute = createAPIFileRoute("/api/check-alerts")({
       });
     }
   },
-  GET: async () => {
+  GET: async ({ request }) => {
     try {
+      // Vercel Cron sends GET requests with the CRON_SECRET in the
+      // Authorization header, just like the POST handler.
+      // When CRON_SECRET is set, validate it to prevent unauthorized access.
+      const cronSecret = process.env.CRON_SECRET;
+      if (cronSecret) {
+        const authHeader = request.headers.get("authorization");
+        if (authHeader !== `Bearer ${cronSecret}`) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+      }
+
       const result = await checkAllAlerts();
       return new Response(JSON.stringify(result), {
         headers: { "Content-Type": "application/json" },

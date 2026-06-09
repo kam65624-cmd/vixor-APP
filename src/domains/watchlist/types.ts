@@ -22,3 +22,13 @@ export interface WatchlistItem {
   sort_order: number;
   added_at: string;
 }
+
+export interface CreateWatchlistInput {
+  name: string;
+  isDefault?: boolean;
+}
+
+export interface RenameWatchlistInput {
+  watchlistId: string;
+  name: string;
+}

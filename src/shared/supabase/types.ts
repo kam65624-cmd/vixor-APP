@@ -572,6 +572,63 @@ export type Database = {
           },
         ];
       };
+      trading_notes: {
+        Row: {
+          id: string;
+          user_id: string;
+          pair: string | null;
+          analysis_id: string | null;
+          title: string;
+          content: string;
+          tags: string[];
+          mood: "confident" | "cautious" | "anxious" | "neutral";
+          is_pinned: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          pair?: string | null;
+          analysis_id?: string | null;
+          title?: string;
+          content?: string;
+          tags?: string[];
+          mood?: "confident" | "cautious" | "anxious" | "neutral";
+          is_pinned?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          pair?: string | null;
+          analysis_id?: string | null;
+          title?: string;
+          content?: string;
+          tags?: string[];
+          mood?: "confident" | "cautious" | "anxious" | "neutral";
+          is_pinned?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "trading_notes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trading_notes_analysis_id_fkey";
+            columns: ["analysis_id"];
+            isOneToOne: false;
+            referencedRelation: "analyses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -616,9 +673,9 @@ export type Database = {
   };
 };
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+export type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
+export type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends

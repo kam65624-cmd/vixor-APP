@@ -2,10 +2,11 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listAlerts, deleteAlert } from "@/lib/vixor.functions";
-import { Bell, X, Clock, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
-import { useMemo } from "react";
+import { Bell, X, Clock, TrendingUp, TrendingDown, ArrowUpDown, Pencil } from "lucide-react";
+import { useMemo, useState } from "react";
 import { SectionTitle } from "./atoms";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { EditAlertDialog } from "./EditAlertDialog";
 
 interface AlertsListProps {
   pair?: string;
@@ -32,6 +33,16 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
   const listAlertsFn = useStableServerFn(listAlerts);
   const deleteAlertFn = useStableServerFn(deleteAlert);
 
+  const [editAlert, setEditAlert] = useState<{
+    id: string;
+    pair: string;
+    condition: "above" | "below" | "crosses_up" | "crosses_down";
+    target_price: number;
+    timeframe: string;
+    note: string | null;
+  } | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+
   const { data: alerts, isLoading } = useQuery(
     useMemo(
       () => ({
@@ -51,6 +62,23 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
     } catch (err) {
       console.error("Failed to cancel alert:", err);
     }
+  };
+
+  const handleEdit = (alert: any) => {
+    setEditAlert({
+      id: alert.id,
+      pair: alert.pair,
+      condition: alert.condition,
+      target_price: alert.target_price,
+      timeframe: alert.timeframe,
+      note: alert.note,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["alerts"] });
+    onRefresh?.();
   };
 
   if (isLoading) {
@@ -134,12 +162,22 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
                         </div>
                       )}
                     </div>
-                    <button
-                      onClick={() => handleDelete(alert.id)}
-                      className="size-8 rounded-lg bg-muted flex items-center justify-center hover:bg-bearish/10 hover:text-bearish transition-colors shrink-0"
-                    >
-                      <X className="size-3.5" />
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => handleEdit(alert)}
+                        className="size-8 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-colors"
+                        title="Edit alert"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(alert.id)}
+                        className="size-8 rounded-lg bg-muted flex items-center justify-center hover:bg-bearish/10 hover:text-bearish transition-colors"
+                        title="Cancel alert"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -185,6 +223,13 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
           </div>
         </div>
       )}
+
+      <EditAlertDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        alert={editAlert}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 }

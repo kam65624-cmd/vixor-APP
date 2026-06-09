@@ -16,6 +16,9 @@ import {
   MessageSquare,
   StickyNote,
   CalendarClock,
+  Pencil,
+  ListPlus,
+  MoreHorizontal,
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,16 +26,43 @@ import {
   getMarketNews,
   getMarketPrices,
   getDailySignals,
-  getDefaultWatchlist,
+  getWatchlists,
   addToWatchlist,
   removeFromWatchlist,
   updateWatchlistItem,
   getEconomicCalendar,
+  createWatchlist,
+  deleteWatchlist,
+  renameWatchlist,
 } from "@/lib/vixor.functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecBadge } from "@/components/vixor/atoms";
 import { useI18n } from "@/shared/i18n";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/discover")({
   head: () => ({ meta: [{ title: "Discover — Vixor" }] }),
@@ -189,21 +219,34 @@ function DiscoverWatchlist() {
   const { t } = useI18n();
   const queryClient = useQueryClient();
 
-  // Fetch watchlist data
-  const fetchWatchlist = useStableServerFn(getDefaultWatchlist);
+  // Selected watchlist state
+  const [selectedWatchlistId, setSelectedWatchlistId] = useState<string | null>(null);
+
+  // Dialog states
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newWatchlistName, setNewWatchlistName] = useState("");
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [renameWatchlistName, setRenameWatchlistName] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Fetch all watchlists with their items
+  const fetchWatchlists = useStableServerFn(getWatchlists);
   const fetchPrices = useStableServerFn(getMarketPrices);
   const addFn = useStableServerFn(addToWatchlist);
   const removeFn = useStableServerFn(removeFromWatchlist);
   const updateFn = useStableServerFn(updateWatchlistItem);
+  const createFn = useStableServerFn(createWatchlist);
+  const deleteFn = useStableServerFn(deleteWatchlist);
+  const renameFn = useStableServerFn(renameWatchlist);
 
-  const { data: watchlist, isLoading: watchlistLoading } = useQuery(
+  const { data: watchlists = [], isLoading: watchlistsLoading } = useQuery(
     useMemo(
       () => ({
-        queryKey: ["default-watchlist"] as const,
-        queryFn: () => fetchWatchlist({}),
+        queryKey: ["user-watchlists"] as const,
+        queryFn: () => fetchWatchlists({}),
         staleTime: 30_000,
       }),
-      [fetchWatchlist],
+      [fetchWatchlists],
     ),
   );
 
@@ -228,15 +271,62 @@ function DiscoverWatchlist() {
     return map;
   }, [prices]);
 
-  const items = (watchlist as any)?.items ?? [];
+  // Derive the current watchlist from selected ID or default
+  const currentWatchlist = useMemo(() => {
+    if (!watchlists || watchlists.length === 0) return null;
+    if (selectedWatchlistId) {
+      return watchlists.find((w: any) => w.id === selectedWatchlistId) ?? null;
+    }
+    // Auto-select default watchlist
+    const defaultWl = watchlists.find((w: any) => w.is_default) ?? watchlists[0];
+    return defaultWl;
+  }, [watchlists, selectedWatchlistId]);
+
+  const items = (currentWatchlist as any)?.items ?? [];
   const addedPairs = new Set(items.map((i: any) => i.pair));
+
+  // Create watchlist mutation
+  const createMutation = useMutation({
+    mutationFn: (vars: { name: string; isDefault?: boolean }) =>
+      createFn({ data: vars }),
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
+      setShowCreateDialog(false);
+      setNewWatchlistName("");
+      if (data?.id) {
+        setSelectedWatchlistId(data.id);
+      }
+    },
+  });
+
+  // Delete watchlist mutation
+  const deleteMutation = useMutation({
+    mutationFn: (vars: { watchlistId: string }) =>
+      deleteFn({ data: vars }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
+      setSelectedWatchlistId(null);
+      setShowDeleteDialog(false);
+    },
+  });
+
+  // Rename watchlist mutation
+  const renameMutation = useMutation({
+    mutationFn: (vars: { watchlistId: string; name: string }) =>
+      renameFn({ data: vars }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
+      setShowRenameDialog(false);
+      setRenameWatchlistName("");
+    },
+  });
 
   // Add mutation
   const addMutation = useMutation({
-    mutationFn: (vars: { pair: string; category: string }) =>
+    mutationFn: (vars: { watchlistId?: string; pair: string; category: string }) =>
       addFn({ data: vars }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["default-watchlist"] });
+      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
     },
   });
 
@@ -245,7 +335,7 @@ function DiscoverWatchlist() {
     mutationFn: (vars: { itemId: string }) =>
       removeFn({ data: vars }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["default-watchlist"] });
+      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
     },
   });
 
@@ -254,7 +344,7 @@ function DiscoverWatchlist() {
     mutationFn: (vars: { itemId: string; notes?: string; sortOrder?: number }) =>
       updateFn({ data: vars }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["default-watchlist"] });
+      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
     },
   });
 
@@ -287,7 +377,11 @@ function DiscoverWatchlist() {
   };
 
   const handleAddPair = (pair: string, category: string) => {
-    addMutation.mutate({ pair, category });
+    addMutation.mutate({
+      pair,
+      category,
+      watchlistId: currentWatchlist?.id,
+    });
   };
 
   const handleRemove = (itemId: string) => {
@@ -313,21 +407,117 @@ function DiscoverWatchlist() {
     updateMutation.mutate({ itemId: nextItem.id, sortOrder: item.sort_order });
   };
 
-  const isLoading = watchlistLoading || pricesLoading;
+  const handleCreateWatchlist = () => {
+    if (!newWatchlistName.trim()) return;
+    createMutation.mutate({ name: newWatchlistName.trim() });
+  };
+
+  const handleDeleteWatchlist = () => {
+    if (!currentWatchlist) return;
+    deleteMutation.mutate({ watchlistId: currentWatchlist.id });
+  };
+
+  const handleRenameWatchlist = () => {
+    if (!currentWatchlist || !renameWatchlistName.trim()) return;
+    renameMutation.mutate({ watchlistId: currentWatchlist.id, name: renameWatchlistName.trim() });
+  };
+
+  const isLoading = watchlistsLoading || pricesLoading;
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-bold text-lg">{t("discover.yourWatchlist")}</h2>
-          {items.length > 0 && (
-            <p className="text-xs text-muted-foreground">
-              {items.length} {items.length === 1 ? "pair" : "pairs"}
-            </p>
+      {/* Header with Watchlist Switcher */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {/* Watchlist Switcher Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-1.5 min-w-0 group">
+                <h2 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
+                  {currentWatchlist?.name ?? t("discover.yourWatchlist")}
+                </h2>
+                <ChevronDown className="size-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {watchlists.map((wl: any) => (
+                <DropdownMenuItem
+                  key={wl.id}
+                  onClick={() => setSelectedWatchlistId(wl.id)}
+                  className={currentWatchlist?.id === wl.id ? "bg-primary/10" : ""}
+                >
+                  <span className="truncate">{wl.name}</span>
+                  {wl.is_default && (
+                    <span className="ml-auto text-[9px] font-bold text-muted-foreground">
+                      {t("discover.default") ?? "Default"}
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
+                <ListPlus className="size-3.5 mr-2" />
+                <span>{t("discover.newWatchlist") ?? "New Watchlist"}</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Watchlist Actions */}
+        <div className="flex items-center gap-1 shrink-0">
+          {currentWatchlist && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="size-8 rounded-lg flex items-center justify-center bg-card border border-border hover:border-primary/30 hover:text-primary transition-colors">
+                  <MoreHorizontal className="size-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => {
+                    setRenameWatchlistName(currentWatchlist.name ?? "");
+                    setShowRenameDialog(true);
+                  }}
+                >
+                  <Pencil className="size-3.5 mr-2" />
+                  <span>{t("discover.renameWatchlist") ?? "Rename"}</span>
+                </DropdownMenuItem>
+                {!currentWatchlist.is_default && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setShowDeleteDialog(true)}
+                      className="text-bearish focus:text-bearish"
+                    >
+                      <Trash2 className="size-3.5 mr-2" />
+                      <span>{t("discover.deleteWatchlist") ?? "Delete Watchlist"}</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
+          <button
+            onClick={() => setShowCreateDialog(true)}
+            className="size-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+            title={t("discover.newWatchlist") ?? "New Watchlist"}
+          >
+            <Plus className="size-4" />
+          </button>
         </div>
       </div>
+
+      {/* Subtitle with item count */}
+      {currentWatchlist && items.length > 0 && (
+        <p className="text-xs text-muted-foreground -mt-2">
+          {items.length} {items.length === 1 ? "pair" : "pairs"}
+          {!currentWatchlist.is_default && (
+            <span className="ml-2 text-[9px] font-bold px-1.5 py-0.5 rounded border bg-card border-border text-muted-foreground">
+              {currentWatchlist.name}
+            </span>
+          )}
+        </p>
+      )}
 
       {/* Watchlist Items */}
       {isLoading ? (
@@ -577,6 +767,110 @@ function DiscoverWatchlist() {
           })}
         </div>
       </div>
+
+      {/* Create Watchlist Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>{t("discover.createWatchlist") ?? "Create Watchlist"}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <input
+              type="text"
+              value={newWatchlistName}
+              onChange={(e) => setNewWatchlistName(e.target.value)}
+              placeholder={t("discover.watchlistNamePlaceholder") ?? "Watchlist name"}
+              className="w-full h-10 px-3 bg-card border border-border rounded-lg text-sm outline-none focus:border-primary transition-colors"
+              maxLength={50}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleCreateWatchlist();
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setShowCreateDialog(false)}
+              className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("common.cancel") ?? "Cancel"}
+            </button>
+            <button
+              onClick={handleCreateWatchlist}
+              disabled={!newWatchlistName.trim() || createMutation.isPending}
+              className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {createMutation.isPending ? "..." : (t("common.create") ?? "Create")}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rename Watchlist Dialog */}
+      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>{t("discover.renameWatchlist") ?? "Rename Watchlist"}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <input
+              type="text"
+              value={renameWatchlistName}
+              onChange={(e) => setRenameWatchlistName(e.target.value)}
+              placeholder={t("discover.watchlistNamePlaceholder") ?? "Watchlist name"}
+              className="w-full h-10 px-3 bg-card border border-border rounded-lg text-sm outline-none focus:border-primary transition-colors"
+              maxLength={50}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleRenameWatchlist();
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setShowRenameDialog(false)}
+              className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("common.cancel") ?? "Cancel"}
+            </button>
+            <button
+              onClick={handleRenameWatchlist}
+              disabled={!renameWatchlistName.trim() || renameMutation.isPending}
+              className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {renameMutation.isPending ? "..." : (t("common.save") ?? "Save")}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Watchlist Confirmation */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("discover.deleteWatchlistTitle") ?? "Delete Watchlist?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("discover.deleteWatchlistDescription") ?? 
+                `Are you sure you want to delete "${currentWatchlist?.name ?? ""}"? All items in this watchlist will be permanently removed. This action cannot be undone.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {t("common.cancel") ?? "Cancel"}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteWatchlist}
+              disabled={deleteMutation.isPending}
+              className="bg-bearish text-white hover:bg-bearish/90"
+            >
+              {deleteMutation.isPending ? "..." : (t("discover.deleteWatchlist") ?? "Delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

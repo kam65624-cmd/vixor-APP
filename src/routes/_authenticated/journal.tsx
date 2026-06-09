@@ -2,26 +2,52 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   BookOpen,
   AlertTriangle,
-  TrendingUp,
-  TrendingDown,
-  Target,
-  Search,
   BarChart3,
-  Filter,
-  Clock,
+  Plus,
+  StickyNote,
+  Pin,
+  Trash2,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listAnalyses } from "@/lib/vixor.functions";
+import {
+  listNotes,
+  deleteNote,
+} from "@/domains/notes/functions";
+import type { TradingNote, Mood } from "@/domains/notes/types";
+import { NoteEditorDialog } from "@/components/vixor/NoteEditorDialog";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/journal")({
   head: () => ({ meta: [{ title: "Journal — Vixor" }] }),
   component: Journal,
 });
 
-const TABS = ["journal.overview", "journal.history", "journal.reports"] as const;
+const TABS = ["journal.overview", "journal.history", "journal.notes", "journal.reports"] as const;
+
+const MOOD_EMOJI: Record<Mood, string> = {
+  confident: "💪",
+  cautious: "⚠️",
+  anxious: "😰",
+  neutral: "😐",
+};
+
+const AVAILABLE_PAIRS = [
+  "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT",
+  "EUR/USD", "GBP/USD", "USD/JPY", "GBP/JPY", "AUD/USD",
+  "XAU/USD", "USD/CHF",
+];
 
 function getMostAnalyzedPair(analyses: any[]): string {
   const counts: Record<string, number> = {};
@@ -68,12 +94,12 @@ function Journal() {
       </div>
 
       {/* TABS */}
-      <div className="flex gap-1 p-1 bg-card border border-border rounded-xl">
+      <div className="flex gap-1 p-1 bg-card border border-border rounded-xl overflow-x-auto no-scrollbar">
         {TABS.map((tabKey) => (
           <button
             key={tabKey}
             onClick={() => setTab(tabKey)}
-            className={`flex-1 h-9 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${tab === tabKey ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            className={`flex-1 h-9 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap px-2 ${tab === tabKey ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
           >
             {t(tabKey)}
           </button>
@@ -244,6 +270,8 @@ function Journal() {
         </div>
       )}
 
+      {tab === "journal.notes" && <NotesTab />}
+
       {tab === "journal.reports" && (
         <div className="vixor-card p-8 text-center border-dashed">
           <BarChart3 className="size-10 text-muted-foreground/50 mx-auto mb-3" />
@@ -255,6 +283,304 @@ function Journal() {
   );
 }
 
+// ═══════════════════════════════════════════════════════════
+// NOTES TAB
+// ═══════════════════════════════════════════════════════════
+function NotesTab() {
+  const { t } = useI18n();
+  const queryClient = useQueryClient();
+
+  // Filters
+  const [filterPair, setFilterPair] = useState<string>("");
+  const [filterMood, setFilterMood] = useState<string>("");
+  const [filterPinnedOnly, setFilterPinnedOnly] = useState(false);
+
+  // Dialog state
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<TradingNote | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  // Fetch notes
+  const fetchNotes = useStableServerFn(listNotes);
+  const notesQuery = useQuery({
+    queryKey: ["trading-notes", filterPair, filterMood, filterPinnedOnly],
+    queryFn: () =>
+      fetchNotes({
+        data: {
+          pair: filterPair || undefined,
+          mood: (filterMood || undefined) as Mood | undefined,
+          pinnedOnly: filterPinnedOnly || undefined,
+        },
+      }),
+  });
+
+  const notes = (notesQuery.data ?? []) as TradingNote[];
+
+  // Delete note
+  const deleteNoteFn = useStableServerFn(deleteNote);
+
+  const handleDelete = async (noteId: string) => {
+    setDeleting(true);
+    try {
+      await deleteNoteFn({ data: { noteId } });
+      setDeleteConfirm(null);
+      queryClient.invalidateQueries({ queryKey: ["trading-notes"] });
+    } catch (err) {
+      console.error("Failed to delete note:", err);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleEdit = (note: TradingNote) => {
+    setEditingNote(note);
+    setEditorOpen(true);
+  };
+
+  const handleCreateNew = () => {
+    setEditingNote(null);
+    setEditorOpen(true);
+  };
+
+  const handleSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["trading-notes"] });
+  };
+
+  // Collect unique pairs and tags from notes for filter options
+  const uniquePairs = useMemo(() => {
+    const pairs = new Set<string>();
+    notes.forEach((n) => {
+      if (n.pair) pairs.add(n.pair);
+    });
+    return Array.from(pairs).sort();
+  }, [notes]);
+
+  const uniqueTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    notes.forEach((n) => {
+      n.tags?.forEach((tag) => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, [notes]);
+
+  return (
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      {/* Filters */}
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          {/* Pair filter */}
+          <select
+            value={filterPair}
+            onChange={(e) => setFilterPair(e.target.value)}
+            className="flex-1 h-8 px-2 rounded-lg bg-card border border-border text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="">{t("journal.allPairs")}</option>
+            {AVAILABLE_PAIRS.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+
+          {/* Mood filter */}
+          <select
+            value={filterMood}
+            onChange={(e) => setFilterMood(e.target.value)}
+            className="flex-1 h-8 px-2 rounded-lg bg-card border border-border text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="">{t("journal.allMoods")}</option>
+            <option value="confident">💪 Confident</option>
+            <option value="cautious">⚠️ Cautious</option>
+            <option value="anxious">😰 Anxious</option>
+            <option value="neutral">😐 Neutral</option>
+          </select>
+
+          {/* Pinned only toggle */}
+          <button
+            onClick={() => setFilterPinnedOnly(!filterPinnedOnly)}
+            className={`h-8 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              filterPinnedOnly
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border border-border text-muted-foreground"
+            }`}
+          >
+            <Pin className="size-3" />
+          </button>
+        </div>
+
+        {/* Clear filters */}
+        {(filterPair || filterMood || filterPinnedOnly) && (
+          <button
+            onClick={() => {
+              setFilterPair("");
+              setFilterMood("");
+              setFilterPinnedOnly(false);
+            }}
+            className="text-[10px] font-bold text-primary hover:underline"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
+      {/* Notes list */}
+      {notesQuery.isLoading ? (
+        <div className="vixor-card p-8 text-center">
+          <Loader2 className="size-6 text-primary animate-spin mx-auto mb-2" />
+          <div className="text-xs text-muted-foreground">Loading notes...</div>
+        </div>
+      ) : notes.length > 0 ? (
+        <div className="space-y-2">
+          {notes.map((note) => (
+            <div
+              key={note.id}
+              className="vixor-card p-3.5 transition-colors hover:bg-card-hover cursor-pointer"
+              onClick={() => handleEdit(note)}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  {/* Title row */}
+                  <div className="flex items-center gap-2 mb-1">
+                    {note.is_pinned && <Pin className="size-3 text-primary shrink-0" />}
+                    <span className="font-bold text-sm text-foreground truncate">{note.title || "Untitled"}</span>
+                    <span className="text-sm shrink-0">{MOOD_EMOJI[note.mood]}</span>
+                  </div>
+
+                  {/* Content preview */}
+                  {note.content && (
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2 leading-relaxed">
+                      {note.content}
+                    </p>
+                  )}
+
+                  {/* Meta row */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {note.pair && (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary border border-primary/20">
+                        {note.pair}
+                      </span>
+                    )}
+                    {note.analysis_id && (
+                      <a
+                        href={`/analysis/${note.analysis_id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-muted text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        📎 Analysis
+                      </a>
+                    )}
+                    {note.tags?.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-muted text-muted-foreground"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                    <span className="text-[10px] font-mono text-muted-foreground ml-auto">
+                      {relTime(note.created_at)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteConfirm(note.id);
+                  }}
+                  className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-bearish hover:bg-bearish/10 transition-all shrink-0"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="vixor-card p-8 text-center">
+          <StickyNote className="size-8 text-muted-foreground/30 mx-auto mb-3" />
+          <h3 className="text-sm font-bold mb-1">{t("journal.noNotes")}</h3>
+          <p className="text-xs text-muted-foreground">{t("journal.noNotesDesc")}</p>
+        </div>
+      )}
+
+      {/* FAB — New Note */}
+      <button
+        onClick={handleCreateNew}
+        className="fixed bottom-24 right-6 z-30 size-14 rounded-2xl gradient-primary text-primary-foreground shadow-lg glow-primary flex items-center justify-center hover:scale-105 active:scale-95 transition-transform sm:right-8"
+      >
+        <Plus className="size-6" />
+      </button>
+
+      {/* Note Editor Dialog */}
+      <NoteEditorDialog
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        existingNote={editingNote}
+        onSuccess={handleSuccess}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
+        loading={deleting}
+        message={t("journal.confirmDelete")}
+      />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIRM DELETE DIALOG
+// ═══════════════════════════════════════════════════════════
+function ConfirmDeleteDialog({
+  open,
+  onOpenChange,
+  onConfirm,
+  loading,
+  message,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+  loading: boolean;
+  message: string;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm rounded-2xl bg-card border-border">
+        <DialogHeader>
+          <DialogTitle className="text-foreground">Delete Note</DialogTitle>
+          <DialogDescription className="text-muted-foreground">{message}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex-row gap-3">
+          <button
+            onClick={() => onOpenChange(false)}
+            className="flex-1 h-11 rounded-xl bg-card border border-border font-bold text-sm hover:bg-card-hover transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex-1 h-11 rounded-xl bg-bearish text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-bearish/90 active:scale-95 transition-all disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+            Delete
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
 function relTime(iso: string): string {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
   if (diff < 60) return "now";

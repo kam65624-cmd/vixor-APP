@@ -85,6 +85,58 @@ export const deleteAlert = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const updateAlert = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) =>
+    z
+      .object({
+        alertId: z.string().uuid(),
+        condition: z.enum(["above", "below", "crosses_up", "crosses_down"]).optional(),
+        targetPrice: z.number().positive().optional(),
+        timeframe: z.string().optional(),
+        note: z.string().max(200).nullable().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
+
+    // Verify alert exists, belongs to user, and is active
+    const { data: existing, error: fetchError } = await supabase
+      .from("price_alerts")
+      .select("id, status")
+      .eq("id", data.alertId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (fetchError) throw new Error(fetchError.message);
+    if (!existing) throw new Error("Alert not found");
+    if (existing.status !== "active") throw new Error("Only active alerts can be edited");
+
+    // Build update object from provided fields
+    const updateData: {
+      condition?: "above" | "below" | "crosses_up" | "crosses_down";
+      target_price?: number;
+      timeframe?: string;
+      note?: string | null;
+    } = {};
+    if (data.condition !== undefined) updateData.condition = data.condition;
+    if (data.targetPrice !== undefined) updateData.target_price = data.targetPrice;
+    if (data.timeframe !== undefined) updateData.timeframe = data.timeframe;
+    if (data.note !== undefined) updateData.note = data.note;
+
+    const { data: updated, error } = await supabase
+      .from("price_alerts")
+      .update(updateData)
+      .eq("id", data.alertId)
+      .eq("user_id", userId)
+      .select("*")
+      .single();
+
+    if (error) throw new Error(error.message);
+    return updated;
+  });
+
 export const runAlertCheck = createServerFn({ method: "POST" }).handler(async () => {
   const { checkAllAlerts } = await import("@/domains/trading/server/alert-checker");
   return await checkAllAlerts();

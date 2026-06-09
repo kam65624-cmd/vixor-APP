@@ -40,6 +40,7 @@ export {
   createAlert,
   listAlerts,
   deleteAlert,
+  updateAlert,
   runAlertCheck,
   generateDailySignals,
   getDailySignals,
@@ -61,7 +62,20 @@ export {
   removeFromWatchlist,
   updateWatchlistItem,
   reorderWatchlist,
+  createWatchlist,
+  deleteWatchlist,
+  renameWatchlist,
 } from "@/domains/watchlist/functions";
+
+// ── Notes Domain ──
+export {
+  createNote,
+  listNotes,
+  updateNote,
+  deleteNote,
+  getNotesByPair,
+  getNotesByAnalysis,
+} from "@/domains/notes/functions";
 
 // ── User Domain ──
 export {
