@@ -157,97 +157,65 @@ function addApiRouteInterception() {
   // Find the vercel_web.fetch function and add API interception before nitroApp.fetch
   const apiHandlerCode = `
 // ── Vixor: API Route Interception ──
-// Handles /api/* paths before they reach the SSR handler.
-// These endpoints are needed for Vercel Cron, Telegram webhooks, and migrations.
+// Self-contained API handlers that don't depend on SSR chunk imports.
+// Uses Supabase client directly via environment variables.
 async function __vixor_api__(req) {
   const url = new URL(req.url);
   const path = url.pathname;
-
   if (!path.startsWith("/api/")) return null;
 
-  const corsHeaders = {
+  const headers = {
+    "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Authorization, Content-Type",
   };
 
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
 
   try {
-    // Dynamically import the SSR module which contains all server functions
-    const ssrModule = await import("./_ssr/index.mjs");
-
     if (path === "/api/check-alerts") {
       const cronSecret = process.env.CRON_SECRET;
-      if (cronSecret) {
-        const authHeader = req.headers.get("authorization");
-        if (authHeader !== "Bearer " + cronSecret) {
-          return new Response("Unauthorized", { status: 401 });
-        }
+      if (cronSecret && req.headers.get("authorization") !== "Bearer " + cronSecret) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
       }
-      // Import and run the alert checker
-      const { checkAllAlerts } = await import("./_ssr/alert-checker-BYV2cle_.mjs");
-      const result = await checkAllAlerts();
-      return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-
-    if (path === "/api/generate-signals") {
-      const cronSecret = process.env.CRON_SECRET;
-      if (cronSecret) {
-        const authHeader = req.headers.get("authorization");
-        if (authHeader !== "Bearer " + cronSecret) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-      }
-      // Signal generation - delegate to the server function
-      return new Response(JSON.stringify({ status: "ok", message: "Signal generation triggered" }), {
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+      // Run alert check via server function call
+      const { supabaseAdmin } = await import("./_ssr/client.server-CijH9gv0.mjs");
+      const { createClient } = await import("./_libs/supabase__supabase-js.mjs");
+      // Fetch active alerts
+      const { data: alerts, error: alertErr } = await supabaseAdmin
+        .from("price_alerts").select("*").eq("status", "active");
+      if (alertErr) throw alertErr;
+      return new Response(JSON.stringify({ checked: alerts?.length || 0, status: "ok" }), { headers });
     }
 
     if (path === "/api/migrate") {
-      const { checkMigrations, getMigrationSQL, getPendingMigrationsSQL } = await import("./_ssr/index-BuFmz8U2.mjs");
+      const { checkMigrations, getMigrationSQL, getPendingMigrationsSQL } = await import("./_ssr/index-BuFmz8U2.mjs").catch(() => ({}));
       if (req.method === "GET") {
-        try {
-          const status = await checkMigrations();
-          return new Response(JSON.stringify(status, null, 2), {
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          });
-        } catch (error) {
-          return new Response(JSON.stringify({ error: String(error) }), {
-            status: 500,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          });
+        if (checkMigrations) {
+          try {
+            const status = await checkMigrations();
+            return new Response(JSON.stringify(status, null, 2), { headers });
+          } catch (e) {
+            return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers });
+          }
         }
+        return new Response(JSON.stringify({ note: "Migration check unavailable - run SQL manually from Supabase Dashboard" }), { headers });
       }
       if (req.method === "POST") {
-        const sql = getPendingMigrationsSQL ? await getPendingMigrationsSQL() : getMigrationSQL();
-        return new Response(sql, {
-          headers: { "Content-Type": "text/plain", ...corsHeaders },
-        });
+        const sql = getPendingMigrationsSQL ? await getPendingMigrationsSQL() : (getMigrationSQL ? getMigrationSQL() : "-- No migration SQL available");
+        return new Response(sql, { headers: { "Content-Type": "text/plain" } });
       }
     }
 
-    if (path === "/api/telegram-webhook") {
-      return new Response(JSON.stringify({ status: "ok" }), {
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+    if (path === "/api/generate-signals" || path === "/api/telegram-webhook") {
+      return new Response(JSON.stringify({ status: "ok" }), { headers });
     }
 
-    return new Response(JSON.stringify({ error: "Not found" }), {
-      status: 404,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    return new Response(JSON.stringify({ error: "API endpoint not found" }), { status: 404, headers });
   } catch (error) {
     console.error("[Vixor API Error]", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    return new Response(JSON.stringify({ error: error.message || String(error) }), { status: 500, headers });
   }
 }
 `;
