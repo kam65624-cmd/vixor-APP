@@ -1,17 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getDailySignals, getUserStrategy, updateUserStrategy,
   generateDailySignals, createAlert,
 } from "@/lib/vixor.functions";
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 import {
   TrendingUp, TrendingDown, Minus, Bell, Sparkles, Settings2,
   RefreshCw, Loader2, Target, Shield, Zap, BarChart3,
 } from "lucide-react";
 import { RecBadge, ConfidenceBar } from "@/components/vixor/atoms";
 import { toTradingViewSymbol } from "@/components/vixor/TradingViewChart";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/signals")({
   head: () => ({ meta: [{ title: "Daily Signals — Vixor" }] }),
@@ -41,45 +41,35 @@ function DailySignals() {
   const [filterRec, setFilterRec] = useState<string | null>(null);
 
   // Fetch signals
-  const signalsFn = useServerFn(getDailySignals);
-  const signalsRef = useRef(signalsFn);
-  signalsRef.current = signalsFn;
-  const signalsQueryFn = useCallback(async () => signalsRef.current({ data: {} }), []);
+  const signalsFn = useStableServerFn(getDailySignals);
   const signalsQuery = useQuery({
     queryKey: ["daily-signals"],
-    queryFn: signalsQueryFn,
+    queryFn: () => signalsFn({ data: {} }),
     staleTime: 120_000,
   });
 
   // Fetch user strategy
-  const strategyFn = useServerFn(getUserStrategy);
-  const strategyRef = useRef(strategyFn);
-  strategyRef.current = strategyFn;
-  const strategyQueryFn = useCallback(async () => strategyRef.current({}), []);
+  const strategyFn = useStableServerFn(getUserStrategy);
   const strategyQuery = useQuery({
     queryKey: ["user-strategy"],
-    queryFn: strategyQueryFn,
+    queryFn: () => strategyFn({}),
     staleTime: 60_000,
   });
 
   // Generate signals mutation
-  const generateFn = useServerFn(generateDailySignals);
-  const generateRef = useRef(generateFn);
-  generateRef.current = generateFn;
+  const generateFn = useStableServerFn(generateDailySignals);
   const generateMutation = useMutation({
-    mutationFn: async () => generateRef.current({}),
+    mutationFn: () => generateFn({}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["daily-signals"] });
     },
   });
 
   // Create alert from signal
-  const createAlertFn = useServerFn(createAlert);
-  const createAlertRef = useRef(createAlertFn);
-  createAlertRef.current = createAlertFn;
+  const createAlertFn = useStableServerFn(createAlert);
   const alertMutation = useMutation({
-    mutationFn: async (data: { pair: string; entry: number }) =>
-      createAlertRef.current({
+    mutationFn: (data: { pair: string; entry: number }) =>
+      createAlertFn({
         data: {
           symbol: toTradingViewSymbol(data.pair),
           pair: data.pair,
@@ -319,9 +309,7 @@ function SignalCard({ signal, onSetAlert, isAlertLoading }: { signal: any; onSet
 
 // Strategy Configuration Component
 function StrategyConfig({ strategy, onUpdate }: { strategy: any; onUpdate: () => void }) {
-  const updateFn = useServerFn(updateUserStrategy);
-  const updateRef = useRef(updateFn);
-  updateRef.current = updateFn;
+  const updateFn = useStableServerFn(updateUserStrategy);
 
   const [pairs, setPairs] = useState<string[]>(strategy?.pairs || ["BTC/USDT", "ETH/USDT", "XAU/USD", "EUR/USD"]);
   const [tradingStyle, setTradingStyle] = useState(strategy?.trading_style || "Day Trading");
@@ -331,7 +319,7 @@ function StrategyConfig({ strategy, onUpdate }: { strategy: any; onUpdate: () =>
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateRef.current({
+      await updateFn({
         data: {
           pairs,
           tradingStyle: tradingStyle as "Scalping" | "Day Trading" | "Swing Trading",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 import { Bell, Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -17,9 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useServerFn } from "@tanstack/react-start";
 import { createAlert } from "@/lib/vixor.functions";
 import { toTradingViewSymbol } from "./TradingViewChart";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 interface CreateAlertDialogProps {
   open: boolean;
@@ -50,11 +50,9 @@ export function CreateAlertDialog({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createAlertFn = useServerFn(createAlert);
-  const createAlertRef = useRef(createAlertFn);
-  createAlertRef.current = createAlertFn;
+  const createAlertFn = useStableServerFn(createAlert);
 
-  const handleCreate = useCallback(async () => {
+  const handleCreate = async () => {
     const price = parseFloat(targetPrice);
     if (isNaN(price) || price <= 0) {
       setError("Please enter a valid price");
@@ -65,7 +63,7 @@ export function CreateAlertDialog({
     setError(null);
 
     try {
-      await createAlertRef.current({
+      await createAlertFn({
         data: {
           symbol: toTradingViewSymbol(pair),
           pair,
@@ -86,7 +84,7 @@ export function CreateAlertDialog({
     } finally {
       setLoading(false);
     }
-  }, [targetPrice, condition, pair, currentPrice, note, timeframe, onOpenChange, onSuccess]);
+  }; 
 
   // Quick price suggestions based on condition
   const suggestedPrices = condition === "above"

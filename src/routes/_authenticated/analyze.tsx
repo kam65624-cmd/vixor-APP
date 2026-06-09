@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Upload, Camera, Sparkles, X, Loader2, ArrowLeft, Image as ImageIcon, Clipboard } from "lucide-react";
-import { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { createAnalysis, getMe } from "@/lib/vixor.functions";
 import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/analyze")({
   head: () => ({ meta: [{ title: "Analyze — Vixor" }] }),
@@ -20,17 +20,11 @@ const STEPS = ["Connecting to Engine", "Extracting Price Action", "Computing Mar
 
 function Analyze() {
   const navigate = useNavigate();
-  const fetchMe = useServerFn(getMe);
-  const create = useServerFn(createAnalysis);
+  // Use stable server function references to prevent infinite re-render loop (React error #310)
+  const fetchMe = useStableServerFn(getMe);
+  const create = useStableServerFn(createAnalysis);
 
-  // Stabilize server function references to prevent infinite re-render loop (React error #310)
-  const fetchMeRef = useRef(fetchMe);
-  fetchMeRef.current = fetchMe;
-  const createRef = useRef(create);
-  createRef.current = create;
-
-  const meQueryFn = useCallback(async () => fetchMeRef.current({}), []);
-  const me = useQuery({ queryKey: ["me"], queryFn: meQueryFn, staleTime: 30_000 });
+  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}), staleTime: 30_000 });
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [stage, setStage] = useState<"upload" | "preview" | "analyzing">("upload");
@@ -103,7 +97,7 @@ function Analyze() {
     const ticker = setInterval(() => setProgress(p => Math.min(p + 1, STEPS.length - 1)), 2000);
     
     try {
-      const { id } = await createRef.current({ 
+      const { id } = await create({ 
         data: { 
           imageBase64: preview, 
           mimeType: file.type as any,

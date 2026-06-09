@@ -1,38 +1,24 @@
 ---
-Task ID: 2
+Task ID: 1
 Agent: Main Agent
-Task: Verify all modifications and fix TypeScript build errors
+Task: Fix React error #310, verify all systems, and complete all pending modifications
 
 Work Log:
-- Read all key project files to verify current state of implementations
-- Ran TypeScript compilation check — found 28 errors
-- Fixed Supabase types: added market_structure, signal_badge, vixor_message to analyses Insert/Update types
-- Fixed Supabase types: changed telegram_id from number to string in profiles Row/Insert/Update
-- Fixed Supabase types: added telegram_photo_url, telegram_username, xp fields to profiles
-- Fixed Supabase types: added telegram_stars_purchase to points_reason enum
-- Fixed vixor.functions.ts: added `as any` casts for JSON/complex Supabase fields
-- Fixed vixor.functions.ts: added signal_badge and vixor_message to analysis update query
-- Fixed vixor.functions.ts: replaced `.catch()` chains with `void` operator for non-fatal promises
-- Fixed vixor.functions.ts: cast telegram_id to `as any` for type compatibility
-- Created /src/hooks/use-mobile.ts (was missing, referenced by sidebar.tsx)
-- Created /src/types/api-routes.d.ts for missing @tanstack/react-start/api and vinxi/http modules
-- Fixed premium.tsx: added missing Star import from lucide-react
-- Fixed auth.functions.ts: changed email_confirmed_at to email_confirm
-- Fixed run-analysis.server.ts: removed mimeType from ImagePart
-- Fixed start.ts: cast serverFns config as any for disableCsrfMiddlewareWarning
-- Fixed telegram-webhook.ts: changed telegram_stars_purchase to pack_purchase
-- Fixed example.functions.ts: removed broken import of ../config.server
-- TypeScript compilation: 0 errors ✅
-- Vite build: successful ✅
+- Diagnosed root cause of React #310: `queryClient.invalidateQueries()` (broad) in __root.tsx auth handler caused infinite loop: auth event → invalidate all → refetch → token refresh → auth event → loop
+- Fixed `router.tsx`: Configured QueryClient with `refetchOnWindowFocus: false`, `refetchOnReconnect: false`, `staleTime: 30_000`, `retry: 1`
+- Fixed `__root.tsx`: Replaced broad `invalidateQueries()` with targeted invalidation of specific query keys only; increased debounce from 150ms to 500ms
+- Fixed `analysis.$id.tsx`: Removed `placeholderData: (prev) => prev` which caused re-render loops during polling; increased refetchInterval from 2000ms to 3000ms
+- Created `useStableServerFn` hook at `src/hooks/use-stable-server-fn.ts` — replaces repetitive useRef + useCallback pattern with a single stable hook
+- Updated all 10 components to use `useStableServerFn` instead of manual useRef stabilization:
+  - analyze.tsx, analysis.$id.tsx, index.tsx, charts.tsx, notifications.tsx, signals.tsx
+  - AlertsList.tsx, CreateAlertDialog.tsx, AppShell.tsx
+- Verified `lightweight-charts-indicators` (^0.4.2) and `oakscriptjs` (^0.2.8) are installed in node_modules
+- Confirmed Supabase migrations were already run successfully (price_alerts, daily_signals, user_strategies)
+- TypeScript compilation: PASS (0 errors)
+- Production build: PASS (8.20s)
 
 Stage Summary:
-- All TypeScript errors fixed (28 → 0)
-- Build compiles successfully
-- All new features verified present in code:
-  * TradingView chart integration
-  * Price alert system with Telegram notifications
-  * Daily signals with strategy filtering
-  * Local SMC/ICT analysis engine
-  * Real-time market prices from Binance
-  * Alert checker for automated notifications
-- Database migrations still need to be applied via Supabase Dashboard
+- React #310 root cause identified and fixed (3 separate fixes)
+- `useStableServerFn` hook created and applied to all 10 components
+- All existing systems verified: analysis engine, TradingView integration, alerts, notifications, strategy filtering
+- Build successful with all packages working

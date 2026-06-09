@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useCallback } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listAlerts, deleteAlert } from "@/lib/vixor.functions";
 import { Bell, X, Clock, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
 import { SectionTitle } from "./atoms";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 interface AlertsListProps {
   pair?: string;
@@ -28,34 +27,25 @@ const conditionLabels: Record<string, string> = {
 
 export function AlertsList({ pair, onRefresh }: AlertsListProps) {
   const queryClient = useQueryClient();
-  const listAlertsFn = useServerFn(listAlerts);
-  const deleteAlertFn = useServerFn(deleteAlert);
-
-  // Stabilize server function references
-  const listAlertsRef = useRef(listAlertsFn);
-  listAlertsRef.current = listAlertsFn;
-  const deleteAlertRef = useRef(deleteAlertFn);
-  deleteAlertRef.current = deleteAlertFn;
-
-  const queryFn = useCallback(async () => {
-    return listAlertsRef.current({ data: { pair, status: undefined } });
-  }, [pair]);
+  // Use stable server function references to prevent infinite re-render loop (React error #310)
+  const listAlertsFn = useStableServerFn(listAlerts);
+  const deleteAlertFn = useStableServerFn(deleteAlert);
 
   const { data: alerts, isLoading } = useQuery({
     queryKey: ["alerts", pair],
-    queryFn,
+    queryFn: () => listAlertsFn({ data: { pair, status: undefined } }),
     staleTime: 15_000,
   });
 
-  const handleDelete = useCallback(async (alertId: string) => {
+  const handleDelete = async (alertId: string) => {
     try {
-      await deleteAlertRef.current({ data: { alertId } });
+      await deleteAlertFn({ data: { alertId } });
       queryClient.invalidateQueries({ queryKey: ["alerts"] });
       onRefresh?.();
     } catch (err) {
       console.error("Failed to cancel alert:", err);
     }
-  }, [queryClient, onRefresh]);
+  };
 
   if (isLoading) {
     return (

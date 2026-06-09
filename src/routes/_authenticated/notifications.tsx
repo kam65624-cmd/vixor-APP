@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, TrendingUp, Gift, Users, Sparkles, Check } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
 import { listNotifications, markAllNotificationsRead } from "@/lib/vixor.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef } from "react";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 const iconMap: Record<string, typeof TrendingUp> = { TrendingUp, Gift, Users, Sparkles };
 
@@ -14,16 +13,12 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 
 function NotificationsPage() {
   const qc = useQueryClient();
-  const fetch = useServerFn(listNotifications);
-  const markAll = useServerFn(markAllNotificationsRead);
+  // Use stable server function references to prevent infinite re-render loop (React error #310)
+  const fetch = useStableServerFn(listNotifications);
+  const markAll = useStableServerFn(markAllNotificationsRead);
 
-  // Stabilize server function references to prevent infinite re-render loop (React error #310)
-  const fetchRef = useRef(fetch); fetchRef.current = fetch;
-  const markAllRef = useRef(markAll); markAllRef.current = markAll;
-
-  const notifsQueryFn = useCallback(async () => fetchRef.current({}), []);
-  const q = useQuery({ queryKey: ["notifs"], queryFn: notifsQueryFn });
-  const m = useMutation({ mutationFn: () => markAllRef.current({}), onSuccess: () => qc.invalidateQueries({ queryKey: ["notifs"] }) });
+  const q = useQuery({ queryKey: ["notifs"], queryFn: () => fetch({}) });
+  const m = useMutation({ mutationFn: () => markAll({}), onSuccess: () => qc.invalidateQueries({ queryKey: ["notifs"] }) });
 
   return (
     <div className="space-y-4">

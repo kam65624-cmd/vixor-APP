@@ -5,10 +5,10 @@ import {
   Loader2, Maximize2, Zap, BrainCircuit, Activity, BarChart2, TrendingUp,
   Newspaper, ShieldCheck, TrendingDown, CheckCircle, ChevronRight, X
 } from "lucide-react";
-import { useState, useCallback, useRef } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { getAnalysis } from "@/lib/vixor.functions";
 import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/analysis/$id")({
   head: () => ({ meta: [{ title: "Vixor Signal — Analysis Result" }] }),
@@ -33,27 +33,21 @@ function highlightSMC(text: string): React.ReactNode[] {
 
 function AnalysisResult() {
   const { id } = useParams({ from: "/_authenticated/analysis/$id" });
-  const fetchFn = useServerFn(getAnalysis);
-  const fetchFnRef = useRef(fetchFn);
-  fetchFnRef.current = fetchFn;
-
-  // Stabilize queryFn with useCallback + useRef to prevent infinite re-render loop
-  // (React error #310). Without this, useServerFn returns a new reference each render,
-  // which creates a new queryFn closure. Combined with refetchInterval polling, this
-  // can trigger: re-render → new queryFn → re-fetch → new data → re-render → loop.
-  const analysisQueryFn = useCallback(async () => {
-    return fetchFnRef.current({ data: { id } });
-  }, [id]);
+  // Use stable server function reference to prevent infinite re-render loop (React error #310)
+  const fetchAnalysis = useStableServerFn(getAnalysis);
 
   const q = useQuery({
     queryKey: ["analysis", id],
-    queryFn: analysisQueryFn,
+    queryFn: () => fetchAnalysis({ data: { id } }),
     enabled: !!id,
     staleTime: 10_000,
-    placeholderData: (prev) => prev,
+    // REMOVED: placeholderData: (prev) => prev — this caused re-render loops
+    // during polling because each fetch returns a new object reference,
+    // and placeholderData kept the old ref alive alongside the new one,
+    // confusing React's reconciliation and contributing to error #310.
     refetchInterval: (query) => {
       const s = query.state.data?.status;
-      return s === "complete" || s === "failed" ? false : 2000;
+      return s === "complete" || s === "failed" ? false : 3000;
     },
   });
   const [tab, setTab] = useState<(typeof TABS)[number]>("Trade Setup");

@@ -6,7 +6,7 @@ import { OnboardingModal } from "./OnboardingModal";
 import { supabase } from "@/integrations/supabase/client";
 import { getTelegramInitData } from "@/lib/telegram";
 import { linkTelegramAccount } from "@/lib/vixor.functions";
-import { useServerFn } from "@tanstack/react-start";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 const tabs = [
   { to: "/", label: "Home", icon: Home, match: (p: string) => p === "/" },
@@ -38,9 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => { cancel = true; sub.subscription.unsubscribe(); };
   }, []);
 
-  const linkTelegram = useServerFn(linkTelegramAccount);
-  const linkTelegramRef = useRef(linkTelegram);
-  linkTelegramRef.current = linkTelegram;
+  const linkTelegram = useStableServerFn(linkTelegramAccount);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -50,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       if (!localStorage.getItem("vixor-tg-linked")) {
         const initData = getTelegramInitData();
         if (initData) {
-          linkTelegramRef.current({ data: { initData } })
+          linkTelegram({ data: { initData } })
             .then(() => { localStorage.setItem("vixor-tg-linked", "1"); })
             .catch(err => console.error("Failed to link Telegram:", err));
         }

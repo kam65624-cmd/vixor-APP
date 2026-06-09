@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import {
   getMe,
   listAnalyses,
@@ -22,7 +21,7 @@ import {
   TrendingUp,
   Bell,
 } from "lucide-react";
-import { useCallback, useRef } from "react";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 import { RecBadge } from "@/components/vixor/atoms";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -32,46 +31,29 @@ export const Route = createFileRoute("/_authenticated/")({
 
 function CommandCenter() {
   const navigate = useNavigate();
-  const fetchMe = useServerFn(getMe);
-  const fetchRecent = useServerFn(listAnalyses);
-  const fetchPrices = useServerFn(getMarketPrices);
-  const fetchSignals = useServerFn(getDailySignals);
-  const fetchAlerts = useServerFn(listAlerts);
+  // Use stable server function references to prevent infinite re-render loop (React error #310)
+  const fetchMe = useStableServerFn(getMe);
+  const fetchRecent = useStableServerFn(listAnalyses);
+  const fetchPrices = useStableServerFn(getMarketPrices);
+  const fetchSignals = useStableServerFn(getDailySignals);
+  const fetchAlerts = useStableServerFn(listAlerts);
 
-  // Stabilize server function references to prevent infinite re-render loop (React error #310)
-  const fetchMeRef = useRef(fetchMe);
-  fetchMeRef.current = fetchMe;
-  const fetchRecentRef = useRef(fetchRecent);
-  fetchRecentRef.current = fetchRecent;
-  const fetchPricesRef = useRef(fetchPrices);
-  fetchPricesRef.current = fetchPrices;
-  const fetchSignalsRef = useRef(fetchSignals);
-  fetchSignalsRef.current = fetchSignals;
-  const fetchAlertsRef = useRef(fetchAlerts);
-  fetchAlertsRef.current = fetchAlerts;
-
-  const meQueryFn = useCallback(async () => fetchMeRef.current({}), []);
-  const recentQueryFn = useCallback(async () => fetchRecentRef.current({ data: { limit: 5 } }), []);
-  const pricesQueryFn = useCallback(async () => fetchPricesRef.current({}), []);
-  const signalsQueryFn = useCallback(async () => fetchSignalsRef.current({ data: {} }), []);
-  const alertsQueryFn = useCallback(async () => fetchAlertsRef.current({ data: {} }), []);
-
-  const me = useQuery({ queryKey: ["me"], queryFn: meQueryFn });
-  const recent = useQuery({ queryKey: ["analyses", 5], queryFn: recentQueryFn, staleTime: 60_000 });
+  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
+  const recent = useQuery({ queryKey: ["analyses", 5], queryFn: () => fetchRecent({ data: { limit: 5 } }), staleTime: 60_000 });
   const prices = useQuery({
     queryKey: ["market-prices"],
-    queryFn: pricesQueryFn,
+    queryFn: () => fetchPrices({}),
     staleTime: 60_000,
     refetchInterval: 120_000,
   });
   const signals = useQuery({
     queryKey: ["daily-signals"],
-    queryFn: signalsQueryFn,
+    queryFn: () => fetchSignals({ data: {} }),
     staleTime: 120_000,
   });
   const alerts = useQuery({
     queryKey: ["alerts-dashboard"],
-    queryFn: alertsQueryFn,
+    queryFn: () => fetchAlerts({ data: {} }),
     staleTime: 30_000,
   });
 

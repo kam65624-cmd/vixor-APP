@@ -100,13 +100,36 @@ function RootComponent() {
       if (!mounted) return;
       const { data: sub } = supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-        // Debounce rapid auth events to prevent cascading re-renders (React error #310)
+
+        // ── CRITICAL FIX: React error #310 prevention ──
+        // Debounce rapid auth events (500ms) to prevent cascading re-renders.
+        // The previous 150ms debounce + broad invalidateQueries() caused an infinite loop:
+        //   auth event → invalidate ALL queries → getMe refetch → token refresh →
+        //   another auth event → invalidate ALL queries → loop → CRASH
+        //
+        // FIX: Only invalidate SPECIFIC queries that actually depend on auth,
+        // NOT all queries. This prevents the cascade.
         if (authDebounce) clearTimeout(authDebounce);
         authDebounce = setTimeout(() => {
           if (!mounted) return;
+          // Only invalidate the router (which re-runs beforeLoad guards)
           routerRef.current.invalidate();
-          if (event !== "SIGNED_OUT") queryClientRef.current.invalidateQueries();
-        }, 150);
+
+          // Only invalidate auth-dependent queries, NOT all queries
+          if (event === "SIGNED_OUT") {
+            // On sign out, remove all user-specific data
+            queryClientRef.current.removeQueries({ queryKey: ["me"] });
+            queryClientRef.current.removeQueries({ queryKey: ["analyses"] });
+            queryClientRef.current.removeQueries({ queryKey: ["alerts"] });
+            queryClientRef.current.removeQueries({ queryKey: ["alerts-dashboard"] });
+            queryClientRef.current.removeQueries({ queryKey: ["daily-signals"] });
+            queryClientRef.current.removeQueries({ queryKey: ["user-strategy"] });
+            queryClientRef.current.removeQueries({ queryKey: ["notifs"] });
+          } else {
+            // On sign in / user update, only refetch profile data
+            queryClientRef.current.invalidateQueries({ queryKey: ["me"] });
+          }
+        }, 500);
       });
       (window as unknown as { __vxAuthSub?: { unsubscribe(): void } }).__vxAuthSub = sub.subscription;
     });

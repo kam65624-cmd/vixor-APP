@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { Search, Bell, Sparkles, Plus } from "lucide-react";
-import { useState, useRef, useCallback, useMemo } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMarketPrices } from "@/lib/vixor.functions";
 import {
@@ -13,6 +12,7 @@ import {
 import { CreateAlertDialog } from "@/components/vixor/CreateAlertDialog";
 import { AlertsList } from "@/components/vixor/AlertsList";
 import { SectionTitle } from "@/components/vixor/atoms";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/charts")({
   head: () => ({ meta: [{ title: "Charts — Vixor" }] }),
@@ -47,14 +47,11 @@ function Charts() {
   const currentSymbol = useMemo(() => toTradingViewSymbol(currentPair), [currentPair]);
 
   // Fetch market prices for the quick-select buttons
-  const fetchPrices = useServerFn(getMarketPrices);
-  const fetchPricesRef = useRef(fetchPrices);
-  fetchPricesRef.current = fetchPrices;
+  const fetchPrices = useStableServerFn(getMarketPrices);
 
-  const pricesQueryFn = useCallback(async () => fetchPricesRef.current({}), []);
   const pricesQuery = useQuery({
     queryKey: ["market-prices"],
-    queryFn: pricesQueryFn,
+    queryFn: () => fetchPrices({}),
     staleTime: 60_000,
     refetchInterval: 120_000,
   });
