@@ -18,10 +18,10 @@ export const SYMBOL_MAP: Record<string, string> = {
   "NZD/USD": "FX:NZDUSD",
   "USD/CAD": "FX:USDCAD",
   "USD/CHF": "FX:USDCHF",
-  "AAPL": "NASDAQ:AAPL",
-  "TSLA": "NASDAQ:TSLA",
-  "SPX500": "SP:SPX",
-  "NASDAQ": "NASDAQ:NDX",
+  AAPL: "NASDAQ:AAPL",
+  TSLA: "NASDAQ:TSLA",
+  SPX500: "SP:SPX",
+  NASDAQ: "NASDAQ:NDX",
 };
 
 // Reverse map for display
@@ -52,10 +52,10 @@ export const PAIR_DISPLAY_NAMES: Record<string, string> = {
   "NZD/USD": "New Zealand Dollar / U.S. Dollar",
   "USD/CAD": "U.S. Dollar / Canadian Dollar",
   "USD/CHF": "U.S. Dollar / Swiss Franc",
-  "AAPL": "Apple Inc.",
-  "TSLA": "Tesla Inc.",
-  "SPX500": "S&P 500 Index",
-  "NASDAQ": "NASDAQ Composite",
+  AAPL: "Apple Inc.",
+  TSLA: "Tesla Inc.",
+  SPX500: "S&P 500 Index",
+  NASDAQ: "NASDAQ Composite",
 };
 
 // Interval mapping for TradingView
@@ -110,7 +110,8 @@ function TradingViewChartInner({
   // Sync the internal ref to the external ref for screenshot capture
   useEffect(() => {
     if (chartContainerRef && "current" in chartContainerRef) {
-      (chartContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = containerRef.current;
+      (chartContainerRef as React.MutableRefObject<HTMLDivElement | null>).current =
+        containerRef.current;
     }
   });
 
@@ -182,7 +183,7 @@ function TradingViewChartInner({
     } else {
       // Remove any previously added script
       const existingScript = document.querySelector(
-        'script[src="https://s3.tradingview.com/tv.js"]'
+        'script[src="https://s3.tradingview.com/tv.js"]',
       );
       if (existingScript) {
         existingScript.remove();

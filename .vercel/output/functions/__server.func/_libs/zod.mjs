@@ -4666,6 +4666,14 @@ function object(shape, params) {
   };
   return new ZodObject(def);
 }
+function looseObject(shape, params) {
+  return new ZodObject({
+    type: "object",
+    shape,
+    catchall: unknown(),
+    ...normalizeParams(params)
+  });
+}
 const ZodUnion = /* @__PURE__ */ $constructor("ZodUnion", (inst, def) => {
   $ZodUnion.init(inst, def);
   ZodType.init(inst, def);
@@ -5054,6 +5062,7 @@ export {
   custom as h,
   lazy as i,
   _null as j,
+  looseObject as k,
   literal as l,
   number as n,
   object as o,

@@ -222,7 +222,9 @@ export const getAnalysis = createServerFn({ method: "GET" })
 
 export const listAnalyses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ limit: z.number().min(1).max(100).default(20) }).parse(d ?? {}))
+  .inputValidator((d: unknown) =>
+    z.object({ limit: z.number().min(1).max(100).default(20) }).parse(d ?? {}),
+  )
   .handler(async ({ data, context }) => {
     const { data: rows } = await context.supabase
       .from("analyses")
@@ -257,11 +259,25 @@ export const markAllNotificationsRead = createServerFn({ method: "POST" })
 // ---------- REFERRALS ----------
 export const claimReferral = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ code: z.string().min(4).max(16).regex(/^[A-Z0-9]+$/) }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        code: z
+          .string()
+          .min(4)
+          .max(16)
+          .regex(/^[A-Z0-9]+$/),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: me } = await supabase.from("profiles").select("referred_by").eq("id", userId).maybeSingle();
+    const { data: me } = await supabase
+      .from("profiles")
+      .select("referred_by")
+      .eq("id", userId)
+      .maybeSingle();
     if (me?.referred_by) throw new Error("Referral already applied");
 
     const { data: ref } = await supabaseAdmin
@@ -272,8 +288,18 @@ export const claimReferral = createServerFn({ method: "POST" })
     if (!ref || ref.id === userId) throw new Error("Invalid code");
 
     await supabaseAdmin.from("profiles").update({ referred_by: ref.id }).eq("id", userId);
-    await supabaseAdmin.rpc("credit_points", { _user: userId, _amount: 15, _reason: "referral_bonus", _meta: { from: ref.id } });
-    await supabaseAdmin.rpc("credit_points", { _user: ref.id, _amount: 25, _reason: "referral_bonus", _meta: { from: userId } });
+    await supabaseAdmin.rpc("credit_points", {
+      _user: userId,
+      _amount: 15,
+      _reason: "referral_bonus",
+      _meta: { from: ref.id },
+    });
+    await supabaseAdmin.rpc("credit_points", {
+      _user: ref.id,
+      _amount: 25,
+      _reason: "referral_bonus",
+      _meta: { from: userId },
+    });
     return { ok: true };
   });
 

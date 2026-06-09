@@ -9,21 +9,33 @@ export const AnalysisSchema = z.object({
   confidence: z.number().min(0).max(100).describe("0-100 confidence in the recommendation"),
   entry: z.number().describe("Recommended entry price"),
   stop_loss: z.number().describe("Stop loss price"),
-  take_profit: z.array(z.number()).length(3).describe("Three take-profit levels, conservative to aggressive"),
+  take_profit: z
+    .array(z.number())
+    .length(3)
+    .describe("Three take-profit levels, conservative to aggressive"),
   rr: z.string().describe("Approx risk-reward ratio for the balanced target, e.g. '1:2.5'"),
-  pattern: z.string().describe("Short summary of detected pattern, e.g. 'Bullish Engulfing + Support Hold'"),
+  pattern: z
+    .string()
+    .describe("Short summary of detected pattern, e.g. 'Bullish Engulfing + Support Hold'"),
   reasons: z.array(z.string()).min(3).max(5).describe("3-5 concise reasons supporting the trade"),
   scenarios: z.object({
     conservative: z.object({ entry: z.number(), target: z.number(), rr: z.string() }),
     balanced: z.object({ entry: z.number(), target: z.number(), rr: z.string() }),
     aggressive: z.object({ entry: z.number(), target: z.number(), rr: z.string() }),
   }),
-  management: z.array(z.string()).min(3).max(6).describe("Step-by-step trade management instructions"),
+  management: z
+    .array(z.string())
+    .min(3)
+    .max(6)
+    .describe("Step-by-step trade management instructions"),
 });
 
 export type AnalysisResult = z.infer<typeof AnalysisSchema>;
 
-export async function runChartAnalysis(imageBytes: Uint8Array, mimeType: string): Promise<AnalysisResult> {
+export async function runChartAnalysis(
+  imageBytes: Uint8Array,
+  mimeType: string,
+): Promise<AnalysisResult> {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) throw new Error("Missing LOVABLE_API_KEY");
 

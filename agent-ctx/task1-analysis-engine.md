@@ -7,6 +7,7 @@ Created 3 production-ready TypeScript files for the Vixor local trading analysis
 ## Files Created/Updated
 
 ### 1. `/src/lib/analysis/patterns/candlestick-patterns.ts`
+
 - **20 candlestick pattern detectors** with full mathematical implementations
 - Each pattern returns `{ name, index, type, reliability, description }`
 - Uses existing `CandlePattern` interface from core/types (type: "BULLISH" | "BEARISH" | "NEUTRAL")
@@ -21,6 +22,7 @@ Created 3 production-ready TypeScript files for the Vixor local trading analysis
 **Continuation/Indecision (6):** Rising Three Methods, Falling Three Methods, Spinning Top, Marubozu Bullish, Marubozu Bearish, Tweezer Top/Bottom
 
 ### 2. `/src/lib/analysis/patterns/chart-formations.ts`
+
 - **11 chart formation detectors** using swing point analysis and trendline fitting
 - Conforms to existing `ChartFormation` interface (type: "BULLISH" | "BEARISH", targetPrice?, stopPrice?)
 - Local helpers: `sameLevel()`, `troughBetween()`, `peakBetween()`, `linearSlope()`, `trendlineSlope()`, `shortTermTrend()`
@@ -29,6 +31,7 @@ Created 3 production-ready TypeScript files for the Vixor local trading analysis
 **Formations:** Double Top, Double Bottom, Head and Shoulders, Inverse Head and Shoulders, Ascending Triangle, Descending Triangle, Bull Flag, Bear Flag, Rising Wedge, Falling Wedge, Cup and Handle
 
 ### 3. `/src/lib/analysis/risk/risk-reward.ts`
+
 - **Risk-reward calculator** with ATR-based stops and S/R validation
 - **Position sizing calculator** using fixed-percentage risk model
 - Entry: slight limit order offset (0.1 ATR from current price)
@@ -39,6 +42,7 @@ Created 3 production-ready TypeScript files for the Vixor local trading analysis
 - Exports: `calculateRiskReward()`, `calculatePositionSize()`, `rrRatio()`
 
 ## Key Design Decisions
+
 - Adapted to existing project types (`CandlePattern.type: "BULLISH"|"BEARISH"|"NEUTRAL"`, `ChartFormation` with `targetPrice?`/`stopPrice?`)
 - `shortTermTrend()` implemented locally in both pattern files since it's not in candle-utils
 - Used `avgBodySize(bars, period, endIdx?)` with correct 2-3 argument signature

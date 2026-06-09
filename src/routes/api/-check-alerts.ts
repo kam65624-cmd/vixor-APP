@@ -1,5 +1,5 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
-import { checkAllAlerts } from "@/server/alert-checker.server";
+import { checkAllAlerts } from "@/domains/trading/server/alert-checker";
 
 export const APIRoute = createAPIFileRoute("/api/check-alerts")({
   POST: async ({ request }) => {

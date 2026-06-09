@@ -1,353 +1,341 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
+    PostgrestVersion: "14.5";
+  };
   public: {
     Tables: {
       analyses: {
         Row: {
-          confidence: number | null
-          created_at: string
-          entry: number | null
-          error_message: string | null
-          id: string
-          image_path: string | null
-          management: string[] | null
-          news: Json | null
-          pair: string | null
-          pattern: string | null
-          raw_ai_response: Json | null
-          reasons: string[] | null
-          recommendation:
-            | Database["public"]["Enums"]["recommendation_type"]
-            | null
-          rr: string | null
-          scenarios: Json | null
-          status: Database["public"]["Enums"]["analysis_status"]
-          stop_loss: number | null
-          take_profit: number[] | null
-          timeframe: string | null
-          updated_at: string
-          user_id: string
-        }
+          confidence: number | null;
+          created_at: string;
+          entry: number | null;
+          error_message: string | null;
+          id: string;
+          image_path: string | null;
+          management: string[] | null;
+          news: Json | null;
+          pair: string | null;
+          pattern: string | null;
+          raw_ai_response: Json | null;
+          reasons: string[] | null;
+          recommendation: Database["public"]["Enums"]["recommendation_type"] | null;
+          rr: string | null;
+          scenarios: Json | null;
+          status: Database["public"]["Enums"]["analysis_status"];
+          stop_loss: number | null;
+          take_profit: number[] | null;
+          timeframe: string | null;
+          updated_at: string;
+          user_id: string;
+        };
         Insert: {
-          confidence?: number | null
-          created_at?: string
-          entry?: number | null
-          error_message?: string | null
-          id?: string
-          image_path?: string | null
-          management?: string[] | null
-          news?: Json | null
-          pair?: string | null
-          pattern?: string | null
-          raw_ai_response?: Json | null
-          reasons?: string[] | null
-          recommendation?:
-            | Database["public"]["Enums"]["recommendation_type"]
-            | null
-          rr?: string | null
-          scenarios?: Json | null
-          status?: Database["public"]["Enums"]["analysis_status"]
-          stop_loss?: number | null
-          take_profit?: number[] | null
-          timeframe?: string | null
-          updated_at?: string
-          user_id: string
-        }
+          confidence?: number | null;
+          created_at?: string;
+          entry?: number | null;
+          error_message?: string | null;
+          id?: string;
+          image_path?: string | null;
+          management?: string[] | null;
+          news?: Json | null;
+          pair?: string | null;
+          pattern?: string | null;
+          raw_ai_response?: Json | null;
+          reasons?: string[] | null;
+          recommendation?: Database["public"]["Enums"]["recommendation_type"] | null;
+          rr?: string | null;
+          scenarios?: Json | null;
+          status?: Database["public"]["Enums"]["analysis_status"];
+          stop_loss?: number | null;
+          take_profit?: number[] | null;
+          timeframe?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
         Update: {
-          confidence?: number | null
-          created_at?: string
-          entry?: number | null
-          error_message?: string | null
-          id?: string
-          image_path?: string | null
-          management?: string[] | null
-          news?: Json | null
-          pair?: string | null
-          pattern?: string | null
-          raw_ai_response?: Json | null
-          reasons?: string[] | null
-          recommendation?:
-            | Database["public"]["Enums"]["recommendation_type"]
-            | null
-          rr?: string | null
-          scenarios?: Json | null
-          status?: Database["public"]["Enums"]["analysis_status"]
-          stop_loss?: number | null
-          take_profit?: number[] | null
-          timeframe?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+          confidence?: number | null;
+          created_at?: string;
+          entry?: number | null;
+          error_message?: string | null;
+          id?: string;
+          image_path?: string | null;
+          management?: string[] | null;
+          news?: Json | null;
+          pair?: string | null;
+          pattern?: string | null;
+          raw_ai_response?: Json | null;
+          reasons?: string[] | null;
+          recommendation?: Database["public"]["Enums"]["recommendation_type"] | null;
+          rr?: string | null;
+          scenarios?: Json | null;
+          status?: Database["public"]["Enums"]["analysis_status"];
+          stop_loss?: number | null;
+          take_profit?: number[] | null;
+          timeframe?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       notifications: {
         Row: {
-          body: string | null
-          created_at: string
-          id: string
-          read_at: string | null
-          title: string
-          type: string
-          user_id: string
-        }
+          body: string | null;
+          created_at: string;
+          id: string;
+          read_at: string | null;
+          title: string;
+          type: string;
+          user_id: string;
+        };
         Insert: {
-          body?: string | null
-          created_at?: string
-          id?: string
-          read_at?: string | null
-          title: string
-          type?: string
-          user_id: string
-        }
+          body?: string | null;
+          created_at?: string;
+          id?: string;
+          read_at?: string | null;
+          title: string;
+          type?: string;
+          user_id: string;
+        };
         Update: {
-          body?: string | null
-          created_at?: string
-          id?: string
-          read_at?: string | null
-          title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+          body?: string | null;
+          created_at?: string;
+          id?: string;
+          read_at?: string | null;
+          title?: string;
+          type?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       point_packs: {
         Row: {
-          badge: string | null
-          bonus_points: number
-          id: string
-          is_active: boolean
-          name: string
-          points: number
-          price_cents: number
-          sort_order: number
-        }
+          badge: string | null;
+          bonus_points: number;
+          id: string;
+          is_active: boolean;
+          name: string;
+          points: number;
+          price_cents: number;
+          sort_order: number;
+        };
         Insert: {
-          badge?: string | null
-          bonus_points?: number
-          id: string
-          is_active?: boolean
-          name: string
-          points: number
-          price_cents: number
-          sort_order?: number
-        }
+          badge?: string | null;
+          bonus_points?: number;
+          id: string;
+          is_active?: boolean;
+          name: string;
+          points: number;
+          price_cents: number;
+          sort_order?: number;
+        };
         Update: {
-          badge?: string | null
-          bonus_points?: number
-          id?: string
-          is_active?: boolean
-          name?: string
-          points?: number
-          price_cents?: number
-          sort_order?: number
-        }
-        Relationships: []
-      }
+          badge?: string | null;
+          bonus_points?: number;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          points?: number;
+          price_cents?: number;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       points_balances: {
         Row: {
-          balance: number
-          lifetime_earned: number
-          updated_at: string
-          user_id: string
-        }
+          balance: number;
+          lifetime_earned: number;
+          updated_at: string;
+          user_id: string;
+        };
         Insert: {
-          balance?: number
-          lifetime_earned?: number
-          updated_at?: string
-          user_id: string
-        }
+          balance?: number;
+          lifetime_earned?: number;
+          updated_at?: string;
+          user_id: string;
+        };
         Update: {
-          balance?: number
-          lifetime_earned?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+          balance?: number;
+          lifetime_earned?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       points_transactions: {
         Row: {
-          created_at: string
-          delta: number
-          id: string
-          metadata: Json
-          reason: Database["public"]["Enums"]["points_reason"]
-          user_id: string
-        }
+          created_at: string;
+          delta: number;
+          id: string;
+          metadata: Json;
+          reason: Database["public"]["Enums"]["points_reason"];
+          user_id: string;
+        };
         Insert: {
-          created_at?: string
-          delta: number
-          id?: string
-          metadata?: Json
-          reason: Database["public"]["Enums"]["points_reason"]
-          user_id: string
-        }
+          created_at?: string;
+          delta: number;
+          id?: string;
+          metadata?: Json;
+          reason: Database["public"]["Enums"]["points_reason"];
+          user_id: string;
+        };
         Update: {
-          created_at?: string
-          delta?: number
-          id?: string
-          metadata?: Json
-          reason?: Database["public"]["Enums"]["points_reason"]
-          user_id?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          delta?: number;
+          id?: string;
+          metadata?: Json;
+          reason?: Database["public"]["Enums"]["points_reason"];
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       premium_plans: {
         Row: {
-          badge: string | null
-          features: Json
-          id: string
-          interval: string
-          is_active: boolean
-          name: string
-          price_cents: number
-          sort_order: number
-        }
+          badge: string | null;
+          features: Json;
+          id: string;
+          interval: string;
+          is_active: boolean;
+          name: string;
+          price_cents: number;
+          sort_order: number;
+        };
         Insert: {
-          badge?: string | null
-          features?: Json
-          id: string
-          interval: string
-          is_active?: boolean
-          name: string
-          price_cents: number
-          sort_order?: number
-        }
+          badge?: string | null;
+          features?: Json;
+          id: string;
+          interval: string;
+          is_active?: boolean;
+          name: string;
+          price_cents: number;
+          sort_order?: number;
+        };
         Update: {
-          badge?: string | null
-          features?: Json
-          id?: string
-          interval?: string
-          is_active?: boolean
-          name?: string
-          price_cents?: number
-          sort_order?: number
-        }
-        Relationships: []
-      }
+          badge?: string | null;
+          features?: Json;
+          id?: string;
+          interval?: string;
+          is_active?: boolean;
+          name?: string;
+          price_cents?: number;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       premium_subscriptions: {
         Row: {
-          created_at: string
-          current_period_end: string
-          id: string
-          plan_id: string
-          status: string
-          user_id: string
-        }
+          created_at: string;
+          current_period_end: string;
+          id: string;
+          plan_id: string;
+          status: string;
+          user_id: string;
+        };
         Insert: {
-          created_at?: string
-          current_period_end: string
-          id?: string
-          plan_id: string
-          status?: string
-          user_id: string
-        }
+          created_at?: string;
+          current_period_end: string;
+          id?: string;
+          plan_id: string;
+          status?: string;
+          user_id: string;
+        };
         Update: {
-          created_at?: string
-          current_period_end?: string
-          id?: string
-          plan_id?: string
-          status?: string
-          user_id?: string
-        }
+          created_at?: string;
+          current_period_end?: string;
+          id?: string;
+          plan_id?: string;
+          status?: string;
+          user_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "premium_subscriptions_plan_id_fkey"
-            columns: ["plan_id"]
-            isOneToOne: false
-            referencedRelation: "premium_plans"
-            referencedColumns: ["id"]
+            foreignKeyName: "premium_subscriptions_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "premium_plans";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       profiles: {
         Row: {
-          avatar_url: string | null
-          created_at: string
-          display_name: string | null
-          id: string
-          last_active_at: string
-          referral_code: string
-          referred_by: string | null
-          streak_days: number
-          telegram_id: number | null
-          updated_at: string
-          username: string | null
-        }
+          avatar_url: string | null;
+          created_at: string;
+          display_name: string | null;
+          id: string;
+          last_active_at: string;
+          referral_code: string;
+          referred_by: string | null;
+          streak_days: number;
+          telegram_id: number | null;
+          updated_at: string;
+          username: string | null;
+        };
         Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          display_name?: string | null
-          id: string
-          last_active_at?: string
-          referral_code: string
-          referred_by?: string | null
-          streak_days?: number
-          telegram_id?: number | null
-          updated_at?: string
-          username?: string | null
-        }
+          avatar_url?: string | null;
+          created_at?: string;
+          display_name?: string | null;
+          id: string;
+          last_active_at?: string;
+          referral_code: string;
+          referred_by?: string | null;
+          streak_days?: number;
+          telegram_id?: number | null;
+          updated_at?: string;
+          username?: string | null;
+        };
         Update: {
-          avatar_url?: string | null
-          created_at?: string
-          display_name?: string | null
-          id?: string
-          last_active_at?: string
-          referral_code?: string
-          referred_by?: string | null
-          streak_days?: number
-          telegram_id?: number | null
-          updated_at?: string
-          username?: string | null
-        }
+          avatar_url?: string | null;
+          created_at?: string;
+          display_name?: string | null;
+          id?: string;
+          last_active_at?: string;
+          referral_code?: string;
+          referred_by?: string | null;
+          streak_days?: number;
+          telegram_id?: number | null;
+          updated_at?: string;
+          username?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "profiles_referred_by_fkey"
-            columns: ["referred_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            foreignKeyName: "profiles_referred_by_fkey";
+            columns: ["referred_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
           },
-        ]
-      }
-    }
+        ];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
       credit_points: {
         Args: {
-          _amount: number
-          _meta?: Json
-          _reason: Database["public"]["Enums"]["points_reason"]
-          _user: string
-        }
-        Returns: number
-      }
-      gen_referral_code: { Args: never; Returns: string }
+          _amount: number;
+          _meta?: Json;
+          _reason: Database["public"]["Enums"]["points_reason"];
+          _user: string;
+        };
+        Returns: number;
+      };
+      gen_referral_code: { Args: never; Returns: string };
       spend_points: {
         Args: {
-          _amount: number
-          _meta?: Json
-          _reason: Database["public"]["Enums"]["points_reason"]
-          _user: string
-        }
-        Returns: number
-      }
-    }
+          _amount: number;
+          _meta?: Json;
+          _reason: Database["public"]["Enums"]["points_reason"];
+          _user: string;
+        };
+        Returns: number;
+      };
+    };
     Enums: {
-      analysis_status: "queued" | "processing" | "complete" | "failed"
+      analysis_status: "queued" | "processing" | "complete" | "failed";
       points_reason:
         | "signup_bonus"
         | "analysis_cost"
@@ -355,131 +343,129 @@ export type Database = {
         | "referral_bonus"
         | "daily_streak"
         | "premium_grant"
-        | "admin_adjust"
-      recommendation_type: "BUY" | "SELL" | "WAIT"
-    }
+        | "admin_adjust";
+      recommendation_type: "BUY" | "SELL" | "WAIT";
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer R;
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
   public: {
@@ -497,4 +483,4 @@ export const Constants = {
       recommendation_type: ["BUY", "SELL", "WAIT"],
     },
   },
-} as const
+} as const;

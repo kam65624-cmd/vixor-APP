@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/shared/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -14,9 +14,12 @@ export const Route = createFileRoute("/_authenticated")({
       return { user: data.session.user };
     } catch (err) {
       // If it's a redirect, re-throw it
-      if (err && typeof err === 'object' && 'to' in err) throw err;
+      if (err && typeof err === "object" && "to" in err) throw err;
       // If Supabase client is not configured, redirect to auth
-      console.warn("[Auth Guard] Session check failed, redirecting to auth:", err instanceof Error ? err.message : String(err));
+      console.warn(
+        "[Auth Guard] Session check failed, redirecting to auth:",
+        err instanceof Error ? err.message : String(err),
+      );
       throw redirect({ to: "/auth" });
     }
   },

@@ -1,7 +1,7 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { fetchPrice, fetchBinanceKlines } from "@/server/price-fetcher.server";
-import { runLocalAnalysis } from "@/lib/analysis/engine";
+import { supabaseAdmin } from "@/shared/supabase/client.server";
+import { fetchBinanceKlines, fetchTwelveDataKlines } from "@/domains/market/server/price-fetcher";
+import { runLocalAnalysis } from "@/domains/analysis/engine/engine";
 
 export const APIRoute = createAPIFileRoute("/api/generate-signals")({
   POST: async ({ request }) => {
@@ -29,6 +29,11 @@ export const APIRoute = createAPIFileRoute("/api/generate-signals")({
             if (pair.includes("USDT")) {
               bars = await fetchBinanceKlines(pair, tf, 200);
             }
+            // Try TwelveData for forex/commodity pairs
+            if (!bars || bars.length <= 20) {
+              const tdBars = await fetchTwelveDataKlines(pair, tf, 200);
+              if (tdBars.length > 20) bars = tdBars;
+            }
 
             // Run local analysis (with real data if available)
             const result = runLocalAnalysis({
@@ -39,26 +44,27 @@ export const APIRoute = createAPIFileRoute("/api/generate-signals")({
             });
 
             // Insert signal
-            const { error } = await supabaseAdmin
-              .from("daily_signals")
-              .insert({
-                pair,
-                timeframe: tf,
-                recommendation: result.recommendation,
-                confidence: result.confidence,
-                entry: result.entry,
-                stop_loss: result.stop_loss,
-                take_profit: result.take_profit,
-                reasons: result.reasons,
-                pattern: result.pattern,
-                market_structure: result.market_structure as any,
-                liquidity_zones: result.liquidity_zones as any,
-                signal_date: today,
-              });
+            const { error } = await supabaseAdmin.from("daily_signals").insert({
+              pair,
+              timeframe: tf,
+              recommendation: result.recommendation,
+              confidence: result.confidence,
+              entry: result.entry,
+              stop_loss: result.stop_loss,
+              take_profit: result.take_profit,
+              reasons: result.reasons,
+              pattern: result.pattern,
+              market_structure: result.market_structure as any,
+              liquidity_zones: result.liquidity_zones as any,
+              signal_date: today,
+            });
 
             if (!error) generated++;
           } catch (err) {
-            console.warn(`[Signals API] Failed for ${pair}/${tf}:`, err instanceof Error ? err.message : String(err));
+            console.warn(
+              `[Signals API] Failed for ${pair}/${tf}:`,
+              err instanceof Error ? err.message : String(err),
+            );
           }
         }
       }

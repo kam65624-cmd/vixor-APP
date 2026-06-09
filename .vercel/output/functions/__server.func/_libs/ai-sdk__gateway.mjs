@@ -1703,5 +1703,6 @@ async function getGatewayAuthToken(options) {
 export {
   GatewayAuthenticationError as G,
   GatewayError as a,
+  createGatewayProvider as c,
   gateway as g
 };

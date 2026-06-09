@@ -26,14 +26,23 @@ export const telegramSignIn = createServerFn({ method: "POST" })
     const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1 });
     let userId: string | null = null;
     for (const u of list?.users ?? []) {
-      if (u.email === email) { userId = u.id; break; }
+      if (u.email === email) {
+        userId = u.id;
+        break;
+      }
     }
 
     if (!userId) {
       // Try direct lookup via filter
-      const { data: bySearch } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+      const { data: bySearch } = await supabaseAdmin.auth.admin.listUsers({
+        page: 1,
+        perPage: 200,
+      });
       for (const u of bySearch?.users ?? []) {
-        if (u.email === email) { userId = u.id; break; }
+        if (u.email === email) {
+          userId = u.id;
+          break;
+        }
       }
     }
 
@@ -44,7 +53,8 @@ export const telegramSignIn = createServerFn({ method: "POST" })
         email_confirm: true,
         user_metadata: {
           telegram_id: tgUser.id,
-          display_name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") || tgUser.username,
+          display_name:
+            [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") || tgUser.username,
           username: tgUser.username,
           avatar_url: tgUser.photo_url,
         },

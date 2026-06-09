@@ -12,6 +12,6 @@ declare module "@tanstack/react-start/api" {
 
 declare module "vinxi/http" {
   export function defineEventHandler(
-    handler: (event: { method: string; [key: string]: any }) => Promise<Response> | Response
+    handler: (event: { method: string; [key: string]: any }) => Promise<Response> | Response,
   ): any;
 }

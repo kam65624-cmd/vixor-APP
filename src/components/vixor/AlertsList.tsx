@@ -5,7 +5,7 @@ import { listAlerts, deleteAlert } from "@/lib/vixor.functions";
 import { Bell, X, Clock, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
 import { useMemo } from "react";
 import { SectionTitle } from "./atoms";
-import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 
 interface AlertsListProps {
   pair?: string;
@@ -32,11 +32,16 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
   const listAlertsFn = useStableServerFn(listAlerts);
   const deleteAlertFn = useStableServerFn(deleteAlert);
 
-  const { data: alerts, isLoading } = useQuery(useMemo(() => ({
-    queryKey: ["alerts", pair] as const,
-    queryFn: () => listAlertsFn({ data: { pair, status: undefined } }),
-    staleTime: 15_000,
-  }), [listAlertsFn, pair]));
+  const { data: alerts, isLoading } = useQuery(
+    useMemo(
+      () => ({
+        queryKey: ["alerts", pair] as const,
+        queryFn: () => listAlertsFn({ data: { pair, status: undefined } }),
+        staleTime: 15_000,
+      }),
+      [listAlertsFn, pair],
+    ),
+  );
 
   const handleDelete = async (alertId: string) => {
     try {
@@ -60,8 +65,12 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
     return (
       <div className="vixor-card p-6 text-center">
         <Bell className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-        <div className="text-sm text-muted-foreground">No active alerts{pair ? ` for ${pair}` : ""}</div>
-        <div className="text-xs text-muted-foreground/60 mt-1">Set an alert to get notified when price hits your target</div>
+        <div className="text-sm text-muted-foreground">
+          No active alerts{pair ? ` for ${pair}` : ""}
+        </div>
+        <div className="text-xs text-muted-foreground/60 mt-1">
+          Set an alert to get notified when price hits your target
+        </div>
       </div>
     );
   }
@@ -78,36 +87,51 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
             {activeAlerts.map((alert: any) => {
               const Icon = conditionIcons[alert.condition] || Bell;
               return (
-                <div key={alert.id} className="vixor-card p-3.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div
+                  key={alert.id}
+                  className="vixor-card p-3.5 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                >
                   <div className="flex items-center gap-3">
-                    <div className={`size-9 rounded-xl flex items-center justify-center ${
-                      alert.condition === "above" || alert.condition === "crosses_up"
-                        ? "bg-bullish/10"
-                        : "bg-bearish/10"
-                    }`}>
-                      <Icon className={`size-4 ${
+                    <div
+                      className={`size-9 rounded-xl flex items-center justify-center ${
                         alert.condition === "above" || alert.condition === "crosses_up"
-                          ? "text-bullish"
-                          : "text-bearish"
-                      }`} />
+                          ? "bg-bullish/10"
+                          : "bg-bearish/10"
+                      }`}
+                    >
+                      <Icon
+                        className={`size-4 ${
+                          alert.condition === "above" || alert.condition === "crosses_up"
+                            ? "text-bullish"
+                            : "text-bearish"
+                        }`}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm font-mono">{alert.pair}</span>
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
-                          alert.condition === "above" || alert.condition === "crosses_up"
-                            ? "bg-bullish/10 text-bullish"
-                            : "bg-bearish/10 text-bearish"
-                        }`}>
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                            alert.condition === "above" || alert.condition === "crosses_up"
+                              ? "bg-bullish/10 text-bullish"
+                              : "bg-bearish/10 text-bearish"
+                          }`}
+                        >
                           {conditionLabels[alert.condition]}
                         </span>
                       </div>
                       <div className="text-xs text-muted-foreground font-mono mt-0.5">
-                        ${Number(alert.target_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: alert.pair?.includes("JPY") ? 2 : 4 })}
+                        $
+                        {Number(alert.target_price).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: alert.pair?.includes("JPY") ? 2 : 4,
+                        })}
                         {alert.timeframe && <span className="ml-2">{alert.timeframe}</span>}
                       </div>
                       {alert.note && (
-                        <div className="text-xs text-muted-foreground/70 mt-0.5 truncate">{alert.note}</div>
+                        <div className="text-xs text-muted-foreground/70 mt-0.5 truncate">
+                          {alert.note}
+                        </div>
                       )}
                     </div>
                     <button
@@ -142,10 +166,16 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
                       </span>
                     </div>
                     <div className="text-xs text-muted-foreground font-mono mt-0.5">
-                      ${Number(alert.target_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      $
+                      {Number(alert.target_price).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                       <span className="ml-2">
-                        <Clock className="size-3 inline -mt-0.5" />
-                        {" "}{alert.triggered_at ? new Date(alert.triggered_at).toLocaleTimeString() : ""}
+                        <Clock className="size-3 inline -mt-0.5" />{" "}
+                        {alert.triggered_at
+                          ? new Date(alert.triggered_at).toLocaleTimeString()
+                          : ""}
                       </span>
                     </div>
                   </div>

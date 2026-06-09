@@ -1,5 +1,5 @@
 import { defineEventHandler } from "vinxi/http";
-import { checkMigrations, getMigrationSQL } from "@/server/migrate.server";
+import { checkMigrations, getMigrationSQL } from "@/shared/migrate.server";
 
 export default defineEventHandler(async (event) => {
   const method = event.method;
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     } catch (error) {
       return new Response(
         JSON.stringify({ error: "Failed to check migrations", detail: String(error) }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+        { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
   }

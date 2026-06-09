@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useState, useCallback } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { ChevronDown } from "lucide-react";
 
 // ═══════════════════════════════════════════════

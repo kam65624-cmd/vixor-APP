@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { telegramSignIn } from "@/lib/auth.functions";
-import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { supabase } from "@/shared/supabase/client";
+import { telegramSignIn } from "@/domains/user/auth.functions";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { BarChart3, Sparkles, Loader2, Eye, EyeOff, TrendingUp, Shield, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
@@ -37,17 +37,26 @@ function AuthPage() {
     const waitForTelegram = (): Promise<any> =>
       new Promise((resolve) => {
         const tg = (window as any).Telegram?.WebApp;
-        if (tg) { resolve(tg); return; }
+        if (tg) {
+          resolve(tg);
+          return;
+        }
         let attempts = 0;
         const iv = setInterval(() => {
           const t = (window as any).Telegram?.WebApp;
-          if (t || attempts++ > 30) { clearInterval(iv); resolve(t ?? null); }
+          if (t || attempts++ > 30) {
+            clearInterval(iv);
+            resolve(t ?? null);
+          }
         }, 100);
       });
 
     (async () => {
       const { data } = await supabase.auth.getUser();
-      if (data.user && active) { navigateRef.current({ to: "/" }); return; }
+      if (data.user && active) {
+        navigateRef.current({ to: "/" });
+        return;
+      }
 
       const tg = await waitForTelegram();
       const initData: string | undefined = tg?.initData;
@@ -69,13 +78,16 @@ function AuthPage() {
         }
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
-
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBusy(true); setErr(null); setSuccess(null);
+    setBusy(true);
+    setErr(null);
+    setSuccess(null);
     try {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -131,7 +143,6 @@ function AuthPage() {
 
       <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm space-y-7">
-
           {/* Logo + Brand */}
           <div className="text-center space-y-4">
             <div className="relative inline-flex">
@@ -169,13 +180,20 @@ function AuthPage() {
 
           {/* Mode tabs */}
           <div className="flex gap-1 p-1 bg-card border border-border rounded-2xl">
-            {(["signin", "signup"] as const).map(m => (
-              <button key={m} onClick={() => { setMode(m); setErr(null); setSuccess(null); }}
+            {(["signin", "signup"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => {
+                  setMode(m);
+                  setErr(null);
+                  setSuccess(null);
+                }}
                 className={`flex-1 h-9 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   mode === m
                     ? "gradient-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
-                }`}>
+                }`}
+              >
                 {m === "signin" ? "Sign in" : "Create account"}
               </button>
             ))}
@@ -184,28 +202,40 @@ function AuthPage() {
           {/* Form */}
           <form onSubmit={submit} className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Email
+              </label>
               <input
-                type="email" required autoComplete="email"
+                type="email"
+                required
+                autoComplete="email"
                 placeholder="you@example.com"
-                value={email} onChange={e => setEmail(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-card border border-border outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm transition-all"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Password</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={showPass ? "text" : "password"}
-                  required minLength={8}
+                  required
+                  minLength={8}
                   autoComplete={mode === "signin" ? "current-password" : "new-password"}
                   placeholder="Min 8 characters"
-                  value={password} onChange={e => setPassword(e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full h-12 pl-4 pr-12 rounded-xl bg-card border border-border outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm transition-all"
                 />
-                <button type="button" onClick={() => setShowPass(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition">
+                <button
+                  type="button"
+                  onClick={() => setShowPass((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
+                >
                   {showPass ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
               </div>
@@ -225,18 +255,27 @@ function AuthPage() {
               </div>
             )}
 
-            <button type="submit" disabled={busy}
-              className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 glow-primary disabled:opacity-60 disabled:cursor-not-allowed transition-all active:scale-[0.98]">
-              {busy
-                ? <><Loader2 className="size-4 animate-spin" /> Processing…</>
-                : <><Sparkles className="size-4" /> {mode === "signin" ? "Sign in" : "Create account"}</>
-              }
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 glow-primary disabled:opacity-60 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+            >
+              {busy ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" /> Processing…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" /> {mode === "signin" ? "Sign in" : "Create account"}
+                </>
+              )}
             </button>
           </form>
 
           {/* Footer note */}
           <p className="text-[10px] text-center text-muted-foreground leading-relaxed">
-            By continuing you agree to our Terms of Service.<br />
+            By continuing you agree to our Terms of Service.
+            <br />
             Already in Telegram? Vixor signs you in automatically.
           </p>
         </div>

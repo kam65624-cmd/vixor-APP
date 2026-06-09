@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { askCopilot } from "@/lib/vixor.functions";
-import { useStableServerFn } from "@/hooks/use-stable-server-fn";
-import { useI18n } from "@/lib/i18n";
+import { askCopilot, getConsensus } from "@/lib/vixor.functions";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { useI18n } from "@/shared/i18n";
 import {
   Bot,
   Send,
@@ -16,6 +16,8 @@ import {
   ChevronDown,
   User,
   RotateCcw,
+  Zap,
+  Users,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/copilot")({
@@ -25,50 +27,75 @@ export const Route = createFileRoute("/_authenticated/copilot")({
 
 // ─── Types ───
 
+type AgentId = "market_analyst" | "risk_manager" | "news_analyst" | "strategy_builder" | "auto";
+
 interface ChatMessage {
   id: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "consensus";
   content: string;
   agent?: string;
+  consensusData?: {
+    responses: { agent: AgentId; response: string }[];
+    synthesis: string;
+  };
   timestamp: number;
 }
 
-type AgentId = "market_analyst" | "risk_manager" | "news_analyst" | "strategy_builder";
-
-const AGENTS: {
+interface AgentConfig {
   id: AgentId;
   label: string;
   icon: typeof BarChart3;
   color: string;
+  bgColor: string;
   desc: string;
-}[] = [
+  capabilities: string[];
+}
+
+const AGENTS: AgentConfig[] = [
+  {
+    id: "auto",
+    label: "Auto",
+    icon: Zap,
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    desc: "AI Picks Best Agent",
+    capabilities: ["Auto-detects question type", "Routes to the best agent"],
+  },
   {
     id: "market_analyst",
     label: "Market Analyst",
     icon: BarChart3,
     color: "text-emerald-400",
+    bgColor: "bg-emerald-500/10",
     desc: "SMC/ICT Technical Analysis",
+    capabilities: ["Market structure (BOS/ChoCh)", "Order Blocks & FVGs", "Entry/SL/TP levels", "Liquidity mapping"],
   },
   {
     id: "risk_manager",
     label: "Risk Manager",
     icon: Shield,
     color: "text-amber-400",
+    bgColor: "bg-amber-500/10",
     desc: "Position Sizing & Risk Control",
+    capabilities: ["Position sizing", "Risk-reward optimization", "Exposure analysis", "Stop loss placement"],
   },
   {
     id: "news_analyst",
     label: "News Analyst",
     icon: Newspaper,
     color: "text-sky-400",
+    bgColor: "bg-sky-500/10",
     desc: "Fundamental News Impact",
+    capabilities: ["Economic calendar", "Central bank analysis", "Sentiment scoring", "Event timing"],
   },
   {
     id: "strategy_builder",
     label: "Strategy Builder",
     icon: Wrench,
     color: "text-violet-400",
+    bgColor: "bg-violet-500/10",
     desc: "Trading Plans & Systems",
+    capabilities: ["Daily routines", "Trading plans", "Backtesting ideas", "Psychology coaching"],
   },
 ];
 
@@ -104,10 +131,10 @@ const QUICK_ACTIONS: { label: string; prompt: string; agent: AgentId }[] = [
     agent: "market_analyst",
   },
   {
-    label: "Optimize my stop losses",
+    label: "Full consensus: Gold trade",
     prompt:
-      "Review my recent analyses and suggest how I could optimize my stop loss placement using SMC concepts like liquidity sweeps and invalidation levels.",
-    agent: "risk_manager",
+      "Should I trade XAU/USD right now? I want all perspectives — technical, risk, fundamental, and strategic.",
+    agent: "auto",
   },
 ];
 
@@ -117,12 +144,14 @@ function CopilotPage() {
   const { t } = useI18n();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const [activeAgent, setActiveAgent] = useState<AgentId>("market_analyst");
+  const [activeAgent, setActiveAgent] = useState<AgentId>("auto");
   const [showAgents, setShowAgents] = useState(false);
+  const [consensusMode, setConsensusMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const askCopilotFn = useStableServerFn(askCopilot);
+  const getConsensusFn = useStableServerFn(getConsensus);
 
   const copilotMutation = useMutation({
     mutationFn: (data: {
@@ -139,6 +168,7 @@ function CopilotPage() {
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
+      setConsensusMode(false);
     },
     onError: (error) => {
       const errorMsg: ChatMessage = {
@@ -149,13 +179,41 @@ function CopilotPage() {
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, errorMsg]);
+      setConsensusMode(false);
+    },
+  });
+
+  const consensusMutation = useMutation({
+    mutationFn: (data: { message: string }) => getConsensusFn({ data }),
+    onSuccess: (result) => {
+      const consensusMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "consensus",
+        content: "",
+        agent: "consensus",
+        consensusData: result,
+        timestamp: Date.now(),
+      };
+      setMessages((prev) => [...prev, consensusMsg]);
+      setConsensusMode(false);
+    },
+    onError: (error) => {
+      const errorMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: `⚠️ ${error.message || "Failed to get consensus. Please try again."}`,
+        agent: "error",
+        timestamp: Date.now(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+      setConsensusMode(false);
     },
   });
 
   const sendMessage = useCallback(
     (text: string, agentOverride?: AgentId) => {
       const trimmed = text.trim();
-      if (!trimmed || copilotMutation.isPending) return;
+      if (!trimmed || copilotMutation.isPending || consensusMutation.isPending) return;
       const agent = agentOverride || activeAgent;
       const userMsg: ChatMessage = {
         id: crypto.randomUUID(),
@@ -164,10 +222,15 @@ function CopilotPage() {
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, userMsg]);
-      const history = messages.slice(-10).map((m) => ({ role: m.role, content: m.content }));
-      copilotMutation.mutate({ message: trimmed, history, agent });
+      const history = messages.slice(-10).map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+
+      if (consensusMode) {
+        consensusMutation.mutate({ message: trimmed });
+      } else {
+        copilotMutation.mutate({ message: trimmed, history, agent });
+      }
     },
-    [activeAgent, copilotMutation, messages],
+    [activeAgent, copilotMutation, consensusMutation, messages, consensusMode],
   );
 
   const handleSubmit = useCallback(
@@ -192,6 +255,7 @@ function CopilotPage() {
 
   const clearChat = useCallback(() => {
     setMessages([]);
+    setConsensusMode(false);
   }, []);
 
   useEffect(() => {
@@ -202,6 +266,7 @@ function CopilotPage() {
   }, []);
 
   const currentAgentConfig = AGENTS.find((a) => a.id === activeAgent)!;
+  const isPending = copilotMutation.isPending || consensusMutation.isPending;
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -216,32 +281,61 @@ function CopilotPage() {
               {t("copilot.title") || "AI Copilot"}
             </h1>
           </div>
-          {messages.length > 0 && (
-            <button
-              onClick={clearChat}
-              className="size-9 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors"
-              title="Clear chat"
-            >
-              <RotateCcw className="size-4 text-muted-foreground" />
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {messages.length > 0 && (
+              <button
+                onClick={clearChat}
+                className="size-9 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors"
+                title="Clear chat"
+              >
+                <RotateCcw className="size-4 text-muted-foreground" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* ─── Agent Selector ─── */}
-        <div className="mt-3">
-          <button
-            onClick={() => setShowAgents(!showAgents)}
-            className="flex items-center gap-2 px-3 h-9 rounded-xl bg-card border border-border hover:bg-card-hover transition-colors w-full sm:w-auto"
-          >
-            <currentAgentConfig.icon className={`size-4 ${currentAgentConfig.color}`} />
-            <span className="text-xs font-bold">{currentAgentConfig.label}</span>
-            <ChevronDown
-              className={`size-3.5 text-muted-foreground transition-transform ${showAgents ? "rotate-180" : ""}`}
-            />
-          </button>
+        {/* ─── Agent Selector + Consensus Toggle ─── */}
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAgents(!showAgents)}
+              className="flex items-center gap-2 px-3 h-9 rounded-xl bg-card border border-border hover:bg-card-hover transition-colors flex-1 sm:flex-none"
+            >
+              <currentAgentConfig.icon className={`size-4 ${currentAgentConfig.color}`} />
+              <span className="text-xs font-bold">{currentAgentConfig.label}</span>
+              <ChevronDown
+                className={`size-3.5 text-muted-foreground transition-transform ${showAgents ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            <button
+              onClick={() => setConsensusMode(!consensusMode)}
+              className={`flex items-center gap-2 px-3 h-9 rounded-xl border text-xs font-bold transition-all ${
+                consensusMode
+                  ? "bg-primary/15 border-primary/40 text-primary"
+                  : "bg-card border-border text-muted-foreground hover:bg-card-hover"
+              }`}
+            >
+              <Users className="size-4" />
+              <span className="hidden sm:inline">{t("copilot.consensusMode") || "Consensus"}</span>
+              <span className="sm:hidden">{t("copilot.consensusShort") || "All"}</span>
+            </button>
+          </div>
+
+          {consensusMode && (
+            <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/20 animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="flex items-center gap-2 text-xs text-primary font-bold">
+                <Users className="size-3.5" />
+                {t("copilot.consensusMode") || "Multi-Agent Consensus"}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
+              </p>
+            </div>
+          )}
 
           {showAgents && (
-            <div className="mt-2 grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
               {AGENTS.map((agent) => {
                 const Icon = agent.icon;
                 const isActive = activeAgent === agent.id;
@@ -251,18 +345,36 @@ function CopilotPage() {
                     onClick={() => {
                       setActiveAgent(agent.id);
                       setShowAgents(false);
+                      if (agent.id === "auto") setConsensusMode(false);
                     }}
-                    className={`p-3 rounded-xl border text-left transition-all ${isActive ? "bg-primary/10 border-primary/30" : "bg-card border-border hover:bg-card-hover"}`}
+                    className={`w-full p-3 rounded-xl border text-left transition-all ${
+                      isActive ? "bg-primary/10 border-primary/30" : "bg-card border-border hover:bg-card-hover"
+                    }`}
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Icon className={`size-4 ${agent.color}`} />
-                      <span
-                        className={`text-xs font-bold ${isActive ? "text-primary" : "text-foreground"}`}
-                      >
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className={`size-6 rounded-lg ${agent.bgColor} flex items-center justify-center`}>
+                        <Icon className={`size-3.5 ${agent.color}`} />
+                      </div>
+                      <span className={`text-xs font-bold ${isActive ? "text-primary" : "text-foreground"}`}>
                         {agent.label}
                       </span>
+                      {agent.id === "auto" && (
+                        <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-bold">
+                          {t("copilot.autoMode")?.split(" ")[0] || "AUTO"}
+                        </span>
+                      )}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">{agent.desc}</div>
+                    <div className="text-[10px] text-muted-foreground mb-1.5">{agent.desc}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {agent.capabilities.slice(0, 4).map((cap, i) => (
+                        <span
+                          key={i}
+                          className="text-[9px] bg-card border border-border px-1.5 py-0.5 rounded-md text-muted-foreground"
+                        >
+                          {cap}
+                        </span>
+                      ))}
+                    </div>
                   </button>
                 );
               })}
@@ -274,9 +386,9 @@ function CopilotPage() {
       {/* ─── Messages Area ─── */}
       <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
         {messages.length === 0 ? (
-          <EmptyState onQuickAction={sendMessage} />
+          <EmptyState onQuickAction={sendMessage} onConsensus={setConsensusMode} />
         ) : (
-          messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)
+          messages.map((msg) => <MessageBubble key={msg.id} message={msg} onConsultAgent={(agent) => { setActiveAgent(agent); setShowAgents(false); sendMessage(msg.role === "user" ? msg.content : "", agent); }} />)
         )}
 
         {copilotMutation.isPending && (
@@ -287,7 +399,31 @@ function CopilotPage() {
             <div className="vixor-card p-4 flex-1">
               <div className="flex items-center gap-2">
                 <Loader2 className="size-4 animate-spin text-primary" />
-                <span className="text-xs text-muted-foreground">Vixor is thinking...</span>
+                <span className="text-xs text-muted-foreground">
+                  {consensusMode ? "Getting consensus from all agents..." : "Vixor is thinking..."}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {consensusMutation.isPending && (
+          <div className="flex items-start gap-3 animate-in fade-in duration-300">
+            <div className="size-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Users className="size-4 text-primary" />
+            </div>
+            <div className="vixor-card p-4 flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Loader2 className="size-4 animate-spin text-primary" />
+                <span className="text-xs text-muted-foreground">Consulting all 4 agents...</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {AGENTS.filter(a => a.id !== "auto").map((agent, i) => (
+                  <div key={agent.id} className="flex items-center gap-1.5 text-[10px] text-muted-foreground animate-pulse" style={{ animationDelay: `${i * 300}ms` }}>
+                    <agent.icon className={`size-3 ${agent.color}`} />
+                    {agent.label}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -305,7 +441,11 @@ function CopilotPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={t("copilot.placeholder") || "Ask Vixor anything about trading..."}
+              placeholder={
+                consensusMode
+                  ? t("copilot.consensusPlaceholder") || "Ask all 4 agents for their perspective..."
+                  : t("copilot.placeholder") || "Ask Vixor anything about trading..."
+              }
               rows={1}
               className="w-full resize-none rounded-xl bg-card border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all max-h-32 min-h-[44px]"
               style={{ height: "auto" }}
@@ -314,16 +454,22 @@ function CopilotPage() {
                 target.style.height = "auto";
                 target.style.height = Math.min(target.scrollHeight, 128) + "px";
               }}
-              disabled={copilotMutation.isPending}
+              disabled={isPending}
             />
           </div>
           <button
             type="submit"
-            disabled={!input.trim() || copilotMutation.isPending}
-            className="size-11 rounded-xl gradient-primary text-primary-foreground flex items-center justify-center glow-primary disabled:opacity-40 disabled:cursor-not-allowed shrink-0 transition-all hover:scale-105 active:scale-95"
+            disabled={!input.trim() || isPending}
+            className={`size-11 rounded-xl flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${
+              consensusMode
+                ? "bg-gradient-to-r from-emerald-500 via-amber-500 to-violet-500 text-white"
+                : "gradient-primary text-primary-foreground glow-primary"
+            }`}
           >
-            {copilotMutation.isPending ? (
+            {isPending ? (
               <Loader2 className="size-5 animate-spin" />
+            ) : consensusMode ? (
+              <Users className="size-5" />
             ) : (
               <Send className="size-5" />
             )}
@@ -343,8 +489,10 @@ function CopilotPage() {
 
 function EmptyState({
   onQuickAction,
+  onConsensus,
 }: {
   onQuickAction: (prompt: string, agent: AgentId) => void;
+  onConsensus: (v: boolean) => void;
 }) {
   const { t } = useI18n();
 
@@ -362,10 +510,26 @@ function EmptyState({
       <h2 className="text-lg font-bold mb-1">
         {t("copilot.welcomeTitle") || "How can I help you today?"}
       </h2>
-      <p className="text-sm text-muted-foreground text-center max-w-xs mb-6">
+      <p className="text-sm text-muted-foreground text-center max-w-xs mb-4">
         {t("copilot.welcomeDesc") ||
           "I'm your context-aware AI trading assistant. I know your recent analyses, signals, and alerts."}
       </p>
+
+      {/* Consensus CTA */}
+      <button
+        onClick={() => onConsensus(true)}
+        className="w-full max-w-lg mb-4 p-3 rounded-xl bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-violet-500/10 border border-primary/20 hover:border-primary/40 transition-all group"
+      >
+        <div className="flex items-center gap-2 justify-center">
+          <Users className="size-4 text-primary" />
+          <span className="text-xs font-bold text-primary">
+            {t("copilot.getConsensus") || "Get Multi-Agent Consensus"}
+          </span>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1 text-center">
+          {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
+        </p>
+      </button>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
         {QUICK_ACTIONS.map((action, i) => {
@@ -394,9 +558,22 @@ function EmptyState({
 
 // ─── Message Bubble ───
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({
+  message,
+  onConsultAgent,
+}: {
+  message: ChatMessage;
+  onConsultAgent: (agent: AgentId) => void;
+}) {
+  const { t } = useI18n();
   const isUser = message.role === "user";
   const isError = message.agent === "error";
+  const isConsensus = message.role === "consensus";
+
+  if (isConsensus && message.consensusData) {
+    return <ConsensusBubble data={message.consensusData} timestamp={message.timestamp} onConsultAgent={onConsultAgent} />;
+  }
+
   const agentConfig = AGENTS.find((a) => a.id === message.agent);
   const Icon = isUser ? User : agentConfig?.icon || Bot;
   const iconColor = isError
@@ -405,17 +582,28 @@ function MessageBubble({ message }: { message: ChatMessage }) {
       ? "text-muted-foreground"
       : agentConfig?.color || "text-primary";
 
+  // Detect agent handoff suggestions in the message
+  const handoffAgents = detectHandoffAgents(message.content);
+
   return (
     <div
       className={`flex items-start gap-3 animate-in fade-in slide-in-from-bottom-1 duration-300 ${isUser ? "flex-row-reverse" : ""}`}
     >
       <div
-        className={`size-8 rounded-xl flex items-center justify-center shrink-0 ${isUser ? "bg-card border border-border" : isError ? "bg-bearish/10 border border-bearish/20" : "bg-primary/10 border border-primary/20"}`}
+        className={`size-8 rounded-xl flex items-center justify-center shrink-0 ${
+          isUser
+            ? "bg-card border border-border"
+            : isError
+              ? "bg-bearish/10 border border-bearish/20"
+              : `bg-primary/10 border border-primary/20`
+        }`}
       >
         <Icon className={`size-4 ${iconColor}`} />
       </div>
       <div
-        className={`max-w-[85%] vixor-card p-4 ${isUser ? "bg-primary/5 border-primary/15" : isError ? "border-bearish/20 bg-bearish/5" : ""}`}
+        className={`max-w-[85%] vixor-card p-4 ${
+          isUser ? "bg-primary/5 border-primary/15" : isError ? "border-bearish/20 bg-bearish/5" : ""
+        }`}
       >
         {!isUser && !isError && agentConfig && (
           <div className="flex items-center gap-1.5 mb-2">
@@ -427,6 +615,30 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         <div className="text-sm leading-relaxed prose-sm">
           <FormattedContent content={message.content} />
         </div>
+
+        {/* Agent handoff buttons */}
+        {!isUser && handoffAgents.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-border/50">
+            {handoffAgents.map((hAgent) => {
+              const hConfig = AGENTS.find((a) => a.id === hAgent);
+              if (!hConfig) return null;
+              const HIcon = hConfig.icon;
+              return (
+                <button
+                  key={hAgent}
+                  onClick={() => onConsultAgent(hAgent)}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-[10px] font-bold hover:bg-card-hover hover:border-primary/30 transition-all"
+                >
+                  <HIcon className={`size-3 ${hConfig.color}`} />
+                  <span className={hConfig.color}>
+                    {t("copilot.consultAgent", { agent: hConfig.label }) || `Consult ${hConfig.label}`}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className={`text-[9px] text-muted-foreground/50 mt-2 ${isUser ? "text-right" : ""}`}>
           {new Date(message.timestamp).toLocaleTimeString([], {
             hour: "2-digit",
@@ -436,6 +648,113 @@ function MessageBubble({ message }: { message: ChatMessage }) {
       </div>
     </div>
   );
+}
+
+// ─── Consensus Bubble ───
+
+function ConsensusBubble({
+  data,
+  timestamp,
+  onConsultAgent,
+}: {
+  data: { responses: { agent: AgentId; response: string }[]; synthesis: string };
+  timestamp: number;
+  onConsultAgent: (agent: AgentId) => void;
+}) {
+  const { t } = useI18n();
+  const [expandedAgent, setExpandedAgent] = useState<AgentId | null>(null);
+
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-1 duration-300">
+      {/* Synthesis section */}
+      <div className="flex items-start gap-3 mb-3">
+        <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500/20 via-amber-500/20 to-violet-500/20 border border-primary/20 flex items-center justify-center shrink-0">
+          <Users className="size-4 text-primary" />
+        </div>
+        <div className="vixor-card p-4 flex-1 border-primary/15">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Sparkles className="size-3 text-primary" />
+            <span className="text-[9px] font-bold uppercase tracking-widest text-primary">
+              {t("copilot.synthesis") || "AI Synthesis"}
+            </span>
+          </div>
+          <div className="text-sm leading-relaxed prose-sm">
+            <FormattedContent content={data.synthesis} />
+          </div>
+        </div>
+      </div>
+
+      {/* Individual agent responses */}
+      <div className="ml-11 space-y-2">
+        {data.responses.map((r) => {
+          const agentConfig = AGENTS.find((a) => a.id === r.agent);
+          if (!agentConfig) return null;
+          const AIcon = agentConfig.icon;
+          const isExpanded = expandedAgent === r.agent;
+
+          return (
+            <div key={r.agent} className="vixor-card overflow-hidden">
+              <button
+                onClick={() => setExpandedAgent(isExpanded ? null : r.agent)}
+                className="w-full flex items-center gap-2 p-3 hover:bg-card-hover transition-colors"
+              >
+                <div className={`size-6 rounded-lg ${agentConfig.bgColor} flex items-center justify-center`}>
+                  <AIcon className={`size-3 ${agentConfig.color}`} />
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${agentConfig.color}`}>
+                  {agentConfig.label}
+                </span>
+                <ChevronDown
+                  className={`size-3 text-muted-foreground ml-auto transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                />
+              </button>
+              {isExpanded && (
+                <div className="px-3 pb-3 pt-0 animate-in fade-in duration-200">
+                  <div className="text-xs leading-relaxed prose-sm">
+                    <FormattedContent content={r.response} />
+                  </div>
+                  <button
+                    onClick={() => onConsultAgent(r.agent)}
+                    className="mt-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-[10px] font-bold hover:bg-card-hover transition-all"
+                  >
+                    <AIcon className={`size-3 ${agentConfig.color}`} />
+                    <span className={agentConfig.color}>
+                      {t("copilot.consultAgent", { agent: agentConfig.label }) || `Consult ${agentConfig.label}`}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="text-[9px] text-muted-foreground/50 mt-2 ml-11">
+        {new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Detect handoff suggestions in agent responses ───
+function detectHandoffAgents(content: string): AgentId[] {
+  const agents: AgentId[] = [];
+  const lower = content.toLowerCase();
+
+  if (lower.includes("consult the risk manager") || lower.includes("consult risk manager")) {
+    if (!agents.includes("risk_manager")) agents.push("risk_manager");
+  }
+  if (lower.includes("consult the market analyst") || lower.includes("consult market analyst")) {
+    if (!agents.includes("market_analyst")) agents.push("market_analyst");
+  }
+  if (lower.includes("consult the news analyst") || lower.includes("consult news analyst")) {
+    if (!agents.includes("news_analyst")) agents.push("news_analyst");
+  }
+  if (lower.includes("consult the strategy builder") || lower.includes("consult strategy builder")) {
+    if (!agents.includes("strategy_builder")) agents.push("strategy_builder");
+  }
+
+  return agents;
 }
 
 // ─── Formatted Content (Markdown-like rendering) ───

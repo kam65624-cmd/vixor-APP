@@ -1,4 +1,4 @@
-import { I as InvalidArgumentError, T as TypeValidationError, J as JSONParseError, A as AISDKError, L as LoadAPIKeyError, a as APICallError, E as EmptyResponseBodyError } from "./ai-sdk__provider.mjs";
+import { T as TypeValidationError, I as InvalidArgumentError, J as JSONParseError, A as AISDKError, L as LoadAPIKeyError, a as APICallError, E as EmptyResponseBodyError } from "./ai-sdk__provider.mjs";
 import { E as EventSourceParserStream } from "./eventsource-parser.mjs";
 import { s as safeParseAsync, t as toJSONSchema, Z as ZodFirstPartyTypeKind } from "./zod.mjs";
 function combineHeaders(...headers) {
@@ -56,6 +56,28 @@ function convertUint8ArrayToBase64(array) {
 }
 function convertToBase64(value) {
   return value instanceof Uint8Array ? convertUint8ArrayToBase64(value) : value;
+}
+function convertToFormData(input, options = {}) {
+  const { useArrayBrackets = true } = options;
+  const formData = new FormData();
+  for (const [key, value] of Object.entries(input)) {
+    if (value == null) {
+      continue;
+    }
+    if (Array.isArray(value)) {
+      if (value.length === 1) {
+        formData.append(key, value[0]);
+        continue;
+      }
+      const arrayKey = useArrayBrackets ? `${key}[]` : key;
+      for (const item of value) {
+        formData.append(arrayKey, item);
+      }
+      continue;
+    }
+    formData.append(key, value);
+  }
+  return formData;
 }
 var name = "AI_DownloadError";
 var marker = `vercel.ai.error.${name}`;
@@ -228,6 +250,37 @@ function isPrivateIPv6(ip) {
   if (normalized.startsWith("fc") || normalized.startsWith("fd")) return true;
   if (normalized.startsWith("fe80")) return true;
   return false;
+}
+async function downloadBlob(url, options) {
+  var _a2, _b2;
+  validateDownloadUrl(url);
+  try {
+    const response = await fetch(url, {
+      signal: options == null ? void 0 : options.abortSignal
+    });
+    if (response.redirected) {
+      validateDownloadUrl(response.url);
+    }
+    if (!response.ok) {
+      throw new DownloadError({
+        url,
+        statusCode: response.status,
+        statusText: response.statusText
+      });
+    }
+    const data = await readResponseWithSizeLimit({
+      response,
+      url,
+      maxBytes: (_a2 = options == null ? void 0 : options.maxBytes) != null ? _a2 : DEFAULT_MAX_DOWNLOAD_SIZE
+    });
+    const contentType = (_b2 = response.headers.get("content-type")) != null ? _b2 : void 0;
+    return new Blob([data], contentType ? { type: contentType } : void 0);
+  } catch (error) {
+    if (DownloadError.isInstance(error)) {
+      throw error;
+    }
+    throw new DownloadError({ url, cause: error });
+  }
 }
 var createIdGenerator = ({
   prefix,
@@ -1843,6 +1896,14 @@ async function safeParseJSON({
     };
   }
 }
+function isParsableJson(input) {
+  try {
+    secureJsonParse(input);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 function parseJsonEventStream({
   stream,
   schema
@@ -1897,6 +1958,26 @@ var postJsonToApi = async ({
   body: {
     content: JSON.stringify(body),
     values: body
+  },
+  failedResponseHandler,
+  successfulResponseHandler,
+  abortSignal,
+  fetch: fetch2
+});
+var postFormDataToApi = async ({
+  url,
+  headers,
+  formData,
+  failedResponseHandler,
+  successfulResponseHandler,
+  abortSignal,
+  fetch: fetch2
+}) => postToApi({
+  url,
+  headers,
+  body: {
+    content: formData,
+    values: Object.fromEntries(formData.entries())
   },
   failedResponseHandler,
   successfulResponseHandler,
@@ -2131,15 +2212,42 @@ var createJsonResponseHandler = (responseSchema) => async ({ response, url, requ
 function withoutTrailingSlash(url) {
   return url == null ? void 0 : url.replace(/\/$/, "");
 }
+function isAsyncIterable(obj) {
+  return obj != null && typeof obj[Symbol.asyncIterator] === "function";
+}
+async function* executeTool({
+  execute,
+  input,
+  options
+}) {
+  const result = execute(input, options);
+  if (isAsyncIterable(result)) {
+    let lastOutput;
+    for await (const output of result) {
+      lastOutput = output;
+      yield { type: "preliminary", output };
+    }
+    yield { type: "final", output: lastOutput };
+  } else {
+    yield { type: "final", output: await result };
+  }
+}
 export {
-  DEFAULT_MAX_DOWNLOAD_SIZE as A,
-  convertBase64ToUint8Array as B,
-  generateId as C,
+  getRuntimeEnvironmentUserAgent as A,
+  readResponseWithSizeLimit as B,
+  DEFAULT_MAX_DOWNLOAD_SIZE as C,
   DownloadError as D,
-  parseProviderOptions as E,
-  loadApiKey as F,
-  convertToBase64 as G,
-  createProviderToolFactory as H,
+  generateId as E,
+  jsonSchema as F,
+  tool as G,
+  parseProviderOptions as H,
+  loadApiKey as I,
+  convertToBase64 as J,
+  createProviderToolFactory as K,
+  isParsableJson as L,
+  postFormDataToApi as M,
+  convertToFormData as N,
+  downloadBlob as O,
   createJsonResponseHandler as a,
   combineHeaders as b,
   createJsonErrorResponseHandler as c,
@@ -2150,20 +2258,20 @@ export {
   createEventSourceResponseHandler as h,
   createProviderToolFactoryWithOutputSchema as i,
   lazySchema as j,
-  createIdGenerator as k,
+  getErrorMessage as k,
   loadOptionalSetting as l,
   asSchema as m,
-  isUrlSupported as n,
+  createIdGenerator as n,
   safeParseJSON as o,
   postJsonToApi as p,
-  isAbortError as q,
+  executeTool as q,
   resolve as r,
   safeValidateTypes as s,
-  getErrorMessage as t,
-  delay as u,
-  validateDownloadUrl as v,
+  isUrlSupported as t,
+  convertBase64ToUint8Array as u,
+  isAbortError as v,
   withoutTrailingSlash as w,
-  getRuntimeEnvironmentUserAgent as x,
-  readResponseWithSizeLimit as y,
+  delay as x,
+  validateDownloadUrl as y,
   zodSchema as z
 };

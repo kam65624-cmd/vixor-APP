@@ -26,7 +26,10 @@ function AuthPage() {
     let active = true;
     (async () => {
       const { data } = await supabase.auth.getUser();
-      if (data.user && active) { navigate({ to: "/" }); return; }
+      if (data.user && active) {
+        navigate({ to: "/" });
+        return;
+      }
 
       const tg = (window as any).Telegram?.WebApp;
       const initData: string | undefined = tg?.initData;
@@ -45,16 +48,24 @@ function AuthPage() {
         }
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [navigate, router, tgSignIn]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBusy(true); setErr(null);
+    setBusy(true);
+    setErr(null);
     try {
-      const fn = mode === "signin"
-        ? supabase.auth.signInWithPassword({ email, password })
-        : supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
+      const fn =
+        mode === "signin"
+          ? supabase.auth.signInWithPassword({ email, password })
+          : supabase.auth.signUp({
+              email,
+              password,
+              options: { emailRedirectTo: window.location.origin },
+            });
       const { error } = await fn;
       if (error) throw error;
       router.invalidate();
@@ -78,24 +89,43 @@ function AuthPage() {
         </div>
 
         <div className="flex gap-1 vixor-card p-1">
-          {(["signin", "signup"] as const).map(m => (
-            <button key={m} onClick={() => setMode(m)}
-              className={`flex-1 h-9 rounded-lg text-xs font-semibold transition ${mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+          {(["signin", "signup"] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`flex-1 h-9 rounded-lg text-xs font-semibold transition ${mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+            >
               {m === "signin" ? "Sign in" : "Create account"}
             </button>
           ))}
         </div>
 
         <form onSubmit={submit} className="space-y-3">
-          <input type="email" required autoComplete="email" placeholder="you@example.com"
-            value={email} onChange={e => setEmail(e.target.value)}
-            className="w-full h-12 px-4 rounded-xl bg-card border border-border outline-none focus:border-primary text-sm" />
-          <input type="password" required minLength={8} autoComplete={mode === "signin" ? "current-password" : "new-password"} placeholder="Password (min 8 chars)"
-            value={password} onChange={e => setPassword(e.target.value)}
-            className="w-full h-12 px-4 rounded-xl bg-card border border-border outline-none focus:border-primary text-sm" />
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full h-12 px-4 rounded-xl bg-card border border-border outline-none focus:border-primary text-sm"
+          />
+          <input
+            type="password"
+            required
+            minLength={8}
+            autoComplete={mode === "signin" ? "current-password" : "new-password"}
+            placeholder="Password (min 8 chars)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full h-12 px-4 rounded-xl bg-card border border-border outline-none focus:border-primary text-sm"
+          />
           {err && <div className="text-xs text-bearish px-1">{err}</div>}
-          <button type="submit" disabled={busy}
-            className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 glow-primary disabled:opacity-50">
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 glow-primary disabled:opacity-50"
+          >
             {busy ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
             {mode === "signin" ? "Sign in" : "Create account"}
           </button>

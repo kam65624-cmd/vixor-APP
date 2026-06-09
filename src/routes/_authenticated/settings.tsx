@@ -1,12 +1,28 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
-  ArrowLeft, Moon, Sun, Globe, Volume2, Smartphone,
-  FileText, LogOut, ChevronRight, Shield, Bell, Palette,
-  TrendingUp, Zap, Info, Key, HelpCircle, Star, Check
+  ArrowLeft,
+  Moon,
+  Sun,
+  Globe,
+  Volume2,
+  Smartphone,
+  FileText,
+  LogOut,
+  ChevronRight,
+  Shield,
+  Bell,
+  Palette,
+  TrendingUp,
+  Zap,
+  Info,
+  Key,
+  HelpCircle,
+  Star,
+  Check,
 } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useI18n } from "@/lib/i18n";
+import { supabase } from "@/shared/supabase/client";
+import { useI18n } from "@/shared/i18n";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Vixor" }] }),
@@ -39,7 +55,10 @@ function SettingsPage() {
     <div className="space-y-5 pb-8">
       {/* Header */}
       <div className="flex items-center justify-between pt-2">
-        <Link to="/profile" className="size-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors">
+        <Link
+          to="/profile"
+          className="size-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors"
+        >
           <ArrowLeft className="size-4" />
         </Link>
         <h1 className="font-bold text-lg tracking-tight">{t("settings.settings")}</h1>
@@ -48,14 +67,20 @@ function SettingsPage() {
 
       {/* Language Picker Modal */}
       {showLangPicker && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowLangPicker(false)}>
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowLangPicker(false)}
+        >
           <div
             className="w-full max-w-md bg-card border border-border rounded-t-3xl p-6 animate-in slide-in-from-bottom-4 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold text-lg">{t("settings.selectLanguage")}</h2>
-              <button onClick={() => setShowLangPicker(false)} className="size-8 rounded-full bg-muted flex items-center justify-center hover:bg-card-hover transition-colors">
+              <button
+                onClick={() => setShowLangPicker(false)}
+                className="size-8 rounded-full bg-muted flex items-center justify-center hover:bg-card-hover transition-colors"
+              >
                 <span className="text-sm">✕</span>
               </button>
             </div>
@@ -74,9 +99,15 @@ function SettingsPage() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Globe className={`size-5 ${lang === l.code ? "text-primary" : "text-muted-foreground"}`} />
+                    <Globe
+                      className={`size-5 ${lang === l.code ? "text-primary" : "text-muted-foreground"}`}
+                    />
                     <div className="text-left">
-                      <div className={`font-bold text-sm ${lang === l.code ? "text-primary" : "text-foreground"}`}>{l.nativeLabel}</div>
+                      <div
+                        className={`font-bold text-sm ${lang === l.code ? "text-primary" : "text-foreground"}`}
+                      >
+                        {l.nativeLabel}
+                      </div>
                       <div className="text-[11px] text-muted-foreground">{l.label}</div>
                     </div>
                   </div>
@@ -90,7 +121,9 @@ function SettingsPage() {
             </div>
             {lang === "ar" && (
               <div className="mt-4 p-3 rounded-xl bg-primary/5 border border-primary/15 text-xs text-muted-foreground text-center">
-                {isRTL ? "سيتم عكس اتجاه التطبيق بالكامل" : "The app direction will fully reverse to RTL"}
+                {isRTL
+                  ? "سيتم عكس اتجاه التطبيق بالكامل"
+                  : "The app direction will fully reverse to RTL"}
               </div>
             )}
           </div>
@@ -100,10 +133,13 @@ function SettingsPage() {
       {/* Appearance */}
       <Section title={t("settings.appearance")} icon={Palette}>
         <Row icon={dark ? Moon : Sun} label={t("settings.darkMode")} iconColor="text-info">
-          <Toggle on={dark} onChange={v => {
-            setDark(v);
-            document.documentElement.classList.toggle("light", !v);
-          }} />
+          <Toggle
+            on={dark}
+            onChange={(v) => {
+              setDark(v);
+              document.documentElement.classList.toggle("light", !v);
+            }}
+          />
         </Row>
         <Row
           icon={Globe}
@@ -116,9 +152,24 @@ function SettingsPage() {
 
       {/* Trading Profile */}
       <Section title={t("settings.tradingProfile")} icon={TrendingUp}>
-        <Row icon={TrendingUp} label={t("settings.riskTolerance")} value={t("settings.moderate")} iconColor="text-neutral-wait" />
-        <Row icon={Star} label={t("settings.preferredPairs")} value="BTC, ETH, EUR/USD" iconColor="text-primary" />
-        <Row icon={Zap} label={t("settings.tradingStyle")} value={t("settings.swing")} iconColor="text-bullish" />
+        <Row
+          icon={TrendingUp}
+          label={t("settings.riskTolerance")}
+          value={t("settings.moderate")}
+          iconColor="text-neutral-wait"
+        />
+        <Row
+          icon={Star}
+          label={t("settings.preferredPairs")}
+          value="BTC, ETH, EUR/USD"
+          iconColor="text-primary"
+        />
+        <Row
+          icon={Zap}
+          label={t("settings.tradingStyle")}
+          value={t("settings.swing")}
+          iconColor="text-bullish"
+        />
       </Section>
 
       {/* Notifications */}
@@ -139,16 +190,36 @@ function SettingsPage() {
 
       {/* Security */}
       <Section title={t("settings.security")} icon={Shield}>
-        <Row icon={Shield} label={t("settings.twoFactorAuth")} value={t("settings.off")} iconColor="text-bearish" />
-        <Row icon={Key} label={t("settings.activeSessions")} value={t("settings.oneDevice")} iconColor="text-neutral-wait" />
+        <Row
+          icon={Shield}
+          label={t("settings.twoFactorAuth")}
+          value={t("settings.off")}
+          iconColor="text-bearish"
+        />
+        <Row
+          icon={Key}
+          label={t("settings.activeSessions")}
+          value={t("settings.oneDevice")}
+          iconColor="text-neutral-wait"
+        />
       </Section>
 
       {/* About */}
       <Section title={t("settings.about")} icon={Info}>
-        <Row icon={FileText} label={t("settings.termsOfService")} iconColor="text-muted-foreground" />
+        <Row
+          icon={FileText}
+          label={t("settings.termsOfService")}
+          iconColor="text-muted-foreground"
+        />
         <Row icon={Shield} label={t("settings.privacyPolicy")} iconColor="text-muted-foreground" />
         <Row icon={HelpCircle} label={t("settings.helpSupport")} iconColor="text-info" />
-        <Row icon={Info} label={t("settings.version")} value="2.0.0 · build 42" iconColor="text-muted-foreground" noArrow />
+        <Row
+          icon={Info}
+          label={t("settings.version")}
+          value="2.0.0 · build 42"
+          iconColor="text-muted-foreground"
+          noArrow
+        />
       </Section>
 
       {/* Sign Out */}
@@ -165,7 +236,9 @@ function SettingsPage() {
 }
 
 function Section({
-  title, icon: Icon, children
+  title,
+  icon: Icon,
+  children,
 }: {
   title: string;
   icon?: React.ElementType;
@@ -175,7 +248,9 @@ function Section({
     <div>
       <div className="flex items-center gap-1.5 mb-2 px-1">
         {Icon && <Icon className="size-3 text-muted-foreground" />}
-        <div className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground">{title}</div>
+        <div className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground">
+          {title}
+        </div>
       </div>
       <div className="vixor-card divide-y divide-border overflow-hidden">{children}</div>
     </div>
@@ -183,7 +258,13 @@ function Section({
 }
 
 function Row({
-  icon: Icon, label, value, children, iconColor = "text-muted-foreground", noArrow, onClick
+  icon: Icon,
+  label,
+  value,
+  children,
+  iconColor = "text-muted-foreground",
+  noArrow,
+  onClick,
 }: {
   icon?: React.ElementType;
   label: string;
@@ -222,7 +303,9 @@ function Toggle({ on, onChange }: { on: boolean; onChange?: (v: boolean) => void
       onClick={() => onChange?.(!on)}
       className={`w-11 h-6 rounded-full transition-all duration-300 shrink-0 relative ${on ? "bg-primary" : "bg-muted"}`}
     >
-      <div className={`absolute top-0.5 size-5 rounded-full bg-white shadow-sm transition-all duration-300 ${on ? (document.documentElement.dir === "rtl" ? "right-[22px]" : "left-[22px]") : (document.documentElement.dir === "rtl" ? "right-0.5" : "left-0.5")}`} />
+      <div
+        className={`absolute top-0.5 size-5 rounded-full bg-white shadow-sm transition-all duration-300 ${on ? (document.documentElement.dir === "rtl" ? "right-[22px]" : "left-[22px]") : document.documentElement.dir === "rtl" ? "right-0.5" : "left-0.5"}`}
+      />
     </button>
   );
 }

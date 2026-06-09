@@ -19,10 +19,10 @@ import {
   Globe,
 } from "lucide-react";
 import { listAnalyses } from "@/lib/vixor.functions";
-import { useStableServerFn } from "@/hooks/use-stable-server-fn";
-import { useI18n } from "@/lib/i18n";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { useI18n } from "@/shared/i18n";
 import { ExpandableWidget, WidgetGroup, MiniWidget } from "@/components/vixor/ExpandableWidget";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 export const Route = createFileRoute("/_authenticated/portfolio")({
   head: () => ({ meta: [{ title: "Portfolio Intelligence — Vixor" }] }),

@@ -56,15 +56,15 @@
 :root {
   --radius: 0.875rem;
 
-  --background: oklch(0.16 0.012 260);             /* #08090C */
+  --background: oklch(0.16 0.012 260); /* #08090C */
   --foreground: oklch(0.97 0.005 250);
-  --card: oklch(0.205 0.014 260);                  /* #0F1117 */
+  --card: oklch(0.205 0.014 260); /* #0F1117 */
   --card-foreground: oklch(0.97 0.005 250);
-  --card-hover: oklch(0.235 0.016 260);            /* #151821 */
+  --card-hover: oklch(0.235 0.016 260); /* #151821 */
   --popover: oklch(0.205 0.014 260);
   --popover-foreground: oklch(0.97 0.005 250);
 
-  --primary: oklch(0.72 0.17 162);                 /* Emerald #10B981 */
+  --primary: oklch(0.72 0.17 162); /* Emerald #10B981 */
   --primary-foreground: oklch(0.16 0.012 260);
   --primary-glow: oklch(0.82 0.18 162);
 
@@ -74,23 +74,31 @@
   --muted-foreground: oklch(0.68 0.018 255);
   --accent: oklch(0.27 0.016 260);
   --accent-foreground: oklch(0.97 0.005 250);
-  --destructive: oklch(0.65 0.24 25);              /* #EF4444 */
+  --destructive: oklch(0.65 0.24 25); /* #EF4444 */
   --destructive-foreground: oklch(0.98 0 0);
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 10%);
   --ring: oklch(0.72 0.17 162 / 40%);
 
-  --bullish: oklch(0.72 0.17 162);                 /* #10B981 */
-  --bearish: oklch(0.65 0.24 25);                  /* #EF4444 */
-  --neutral-wait: oklch(0.78 0.17 75);             /* #F59E0B */
-  --info: oklch(0.65 0.18 255);                    /* #3B82F6 */
+  --bullish: oklch(0.72 0.17 162); /* #10B981 */
+  --bearish: oklch(0.65 0.24 25); /* #EF4444 */
+  --neutral-wait: oklch(0.78 0.17 75); /* #F59E0B */
+  --info: oklch(0.65 0.18 255); /* #3B82F6 */
   --tp1: oklch(0.72 0.17 162);
   --tp2: oklch(0.81 0.16 162);
   --tp3: oklch(0.88 0.13 162);
 
   --gradient-primary: linear-gradient(135deg, oklch(0.72 0.17 162), oklch(0.82 0.18 162));
-  --gradient-bullish: linear-gradient(135deg, oklch(0.65 0.18 162 / 0.18), oklch(0.65 0.18 162 / 0.02));
-  --gradient-bearish: linear-gradient(135deg, oklch(0.65 0.24 25 / 0.18), oklch(0.65 0.24 25 / 0.02));
+  --gradient-bullish: linear-gradient(
+    135deg,
+    oklch(0.65 0.18 162 / 0.18),
+    oklch(0.65 0.18 162 / 0.02)
+  );
+  --gradient-bearish: linear-gradient(
+    135deg,
+    oklch(0.65 0.24 25 / 0.18),
+    oklch(0.65 0.24 25 / 0.02)
+  );
   --gradient-glass: linear-gradient(135deg, oklch(1 0 0 / 0.04), oklch(1 0 0 / 0.01));
   --shadow-glow: 0 0 32px -8px oklch(0.72 0.17 162 / 0.5);
   --shadow-card: 0 4px 24px -8px oklch(0 0 0 / 0.4);
@@ -124,8 +132,14 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body { background: var(--color-background); color: var(--color-foreground); }
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+  }
   body {
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -153,43 +167,90 @@
     box-shadow: var(--shadow-card);
   }
   .vixor-card-hover {
-    transition: background-color 200ms ease, transform 200ms ease, border-color 200ms ease;
+    transition:
+      background-color 200ms ease,
+      transform 200ms ease,
+      border-color 200ms ease;
   }
   .vixor-card-hover:hover {
     background: var(--color-card-hover);
     border-color: color-mix(in oklab, var(--color-primary) 30%, var(--color-border));
   }
-  .text-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-  .glow-primary { box-shadow: var(--shadow-glow); }
-  .gradient-primary { background: var(--gradient-primary); }
-  .gradient-bullish { background: var(--gradient-bullish); }
-  .gradient-bearish { background: var(--gradient-bearish); }
+  .text-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .glow-primary {
+    box-shadow: var(--shadow-glow);
+  }
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  .gradient-bullish {
+    background: var(--gradient-bullish);
+  }
+  .gradient-bearish {
+    background: var(--gradient-bearish);
+  }
 
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { scrollbar-width: none; }
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 
   /* Safe area padding for Telegram chrome */
-  .pt-safe { padding-top: max(env(safe-area-inset-top), 0px); }
-  .pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top), 0px);
+  }
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
 
   /* Gradient for info color */
-  .gradient-info { background: linear-gradient(135deg, oklch(0.65 0.18 255), oklch(0.72 0.20 255)); }
+  .gradient-info {
+    background: linear-gradient(135deg, oklch(0.65 0.18 255), oklch(0.72 0.2 255));
+  }
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.8); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.8);
+  }
 }
-.pulse-dot { animation: pulse-dot 1.8s ease-in-out infinite; }
+.pulse-dot {
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 .shimmer {
-  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--color-foreground) 8%, transparent), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--color-foreground) 8%, transparent),
+    transparent
+  );
   background-size: 200% 100%;
   animation: shimmer 1.6s linear infinite;
 }
@@ -252,15 +313,27 @@
   /* Professional scenario cards */
   .scenario-primary {
     border-left: 3px solid var(--color-primary);
-    background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 6%, var(--color-card)), var(--color-card));
+    background: linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-primary) 6%, var(--color-card)),
+      var(--color-card)
+    );
   }
   .scenario-alternative {
     border-left: 3px solid var(--color-info);
-    background: linear-gradient(135deg, color-mix(in oklab, var(--color-info) 6%, var(--color-card)), var(--color-card));
+    background: linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-info) 6%, var(--color-card)),
+      var(--color-card)
+    );
   }
   .scenario-counter {
     border-left: 3px solid var(--color-bearish);
-    background: linear-gradient(135deg, color-mix(in oklab, var(--color-bearish) 6%, var(--color-card)), var(--color-card));
+    background: linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-bearish) 6%, var(--color-card)),
+      var(--color-card)
+    );
   }
 
   /* Subtle divider */
@@ -295,7 +368,9 @@
   }
   .collapsible-content {
     overflow: hidden;
-    transition: max-height 300ms ease-out, opacity 200ms ease-out;
+    transition:
+      max-height 300ms ease-out,
+      opacity 200ms ease-out;
   }
   .collapsible-content[data-state="closed"] {
     max-height: 0;
@@ -314,17 +389,29 @@
   .rtl .scenario-primary {
     border-left: none;
     border-right: 3px solid var(--color-primary);
-    background: linear-gradient(225deg, color-mix(in oklab, var(--color-primary) 6%, var(--color-card)), var(--color-card));
+    background: linear-gradient(
+      225deg,
+      color-mix(in oklab, var(--color-primary) 6%, var(--color-card)),
+      var(--color-card)
+    );
   }
   .rtl .scenario-alternative {
     border-left: none;
     border-right: 3px solid var(--color-info);
-    background: linear-gradient(225deg, color-mix(in oklab, var(--color-info) 6%, var(--color-card)), var(--color-card));
+    background: linear-gradient(
+      225deg,
+      color-mix(in oklab, var(--color-info) 6%, var(--color-card)),
+      var(--color-card)
+    );
   }
   .rtl .scenario-counter {
     border-left: none;
     border-right: 3px solid var(--color-bearish);
-    background: linear-gradient(225deg, color-mix(in oklab, var(--color-bearish) 6%, var(--color-card)), var(--color-card));
+    background: linear-gradient(
+      225deg,
+      color-mix(in oklab, var(--color-bearish) 6%, var(--color-card)),
+      var(--color-card)
+    );
   }
   .rtl .bg-gradient-to-r {
     background-image: linear-gradient(to left, var(--tw-gradient-stops));

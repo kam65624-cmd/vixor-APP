@@ -25,8 +25,8 @@ import {
 import { CreateAlertDialog } from "@/components/vixor/CreateAlertDialog";
 import { AlertsList } from "@/components/vixor/AlertsList";
 import { SectionTitle } from "@/components/vixor/atoms";
-import { useStableServerFn } from "@/hooks/use-stable-server-fn";
-import { useI18n } from "@/lib/i18n";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { useI18n } from "@/shared/i18n";
 
 export const Route = createFileRoute("/_authenticated/charts")({
   head: () => ({ meta: [{ title: "Charts — Vixor" }] }),
@@ -60,7 +60,6 @@ function Charts() {
   const search = useSearch({ strict: false }) as { symbol?: string };
   const queryClient = useQueryClient();
   const { t } = useI18n();
-  const { t } = useI18n();
 
   // Current symbol state
   const [currentPair, setCurrentPair] = useState(() => {
@@ -77,7 +76,7 @@ function Charts() {
   // Cooldown timer — prevents rapid re-analysis of the same pair
   useEffect(() => {
     if (cooldownSeconds <= 0) return;
-    const timer = setTimeout(() => setCooldownSeconds(prev => prev - 1), 1000);
+    const timer = setTimeout(() => setCooldownSeconds((prev) => prev - 1), 1000);
     return () => clearTimeout(timer);
   }, [cooldownSeconds]);
 
@@ -190,7 +189,9 @@ function Charts() {
   // Handle ANALYZE button — directly run analysis with real OHLCV data
   const handleAnalyze = useCallback(async () => {
     if (cooldownSeconds > 0) {
-      setAnalyzeError(`Please wait ${cooldownSeconds}s before analyzing again. Market data needs time to refresh.`);
+      setAnalyzeError(
+        `Please wait ${cooldownSeconds}s before analyzing again. Market data needs time to refresh.`,
+      );
       return;
     }
     setIsAnalyzing(true);
@@ -198,8 +199,7 @@ function Charts() {
 
     try {
       // Map TradingView interval to our timeframe format
-      const tf =
-        Object.entries(INTERVAL_MAP).find(([, tv]) => tv === currentInterval)?.[0] || "1H";
+      const tf = Object.entries(INTERVAL_MAP).find(([, tv]) => tv === currentInterval)?.[0] || "1H";
 
       const { id } = await analyzeFn({
         data: {
@@ -230,8 +230,7 @@ function Charts() {
   };
 
   // Get active timeframe label
-  const activeTfLabel =
-    TIMEFRAMES.find((tf) => tf.tv === currentInterval)?.label || "4h";
+  const activeTfLabel = TIMEFRAMES.find((tf) => tf.tv === currentInterval)?.label || "4h";
 
   return (
     <div className="flex flex-col gap-3 animate-in fade-in duration-500">
@@ -305,8 +304,7 @@ function Charts() {
               </div>
             )}
           </div>
-          {pricesQuery.data?.find((p: any) => p.pair === currentPair)?.change24h !==
-            undefined && (
+          {pricesQuery.data?.find((p: any) => p.pair === currentPair)?.change24h !== undefined && (
             <div
               className={`text-sm font-semibold font-mono px-2 py-0.5 rounded-lg ${
                 (pricesQuery.data.find((p: any) => p.pair === currentPair)?.change24h ?? 0) >= 0
@@ -331,8 +329,7 @@ function Charts() {
               O: <span className="text-foreground">{ohlcvQuery.data.open?.toFixed(decimals)}</span>
             </span>
             <span className="text-muted-foreground">
-              H:{" "}
-              <span className="text-bullish">{ohlcvQuery.data.high?.toFixed(decimals)}</span>
+              H: <span className="text-bullish">{ohlcvQuery.data.high?.toFixed(decimals)}</span>
             </span>
             <span className="text-muted-foreground">
               L: <span className="text-bearish">{ohlcvQuery.data.low?.toFixed(decimals)}</span>
@@ -342,8 +339,7 @@ function Charts() {
             </span>
             {ohlcvQuery.data.volume > 0 && (
               <span className="text-muted-foreground">
-                Vol:{" "}
-                <span className="text-foreground">{formatVolume(ohlcvQuery.data.volume)}</span>
+                Vol: <span className="text-foreground">{formatVolume(ohlcvQuery.data.volume)}</span>
               </span>
             )}
           </div>
@@ -415,7 +411,9 @@ function Charts() {
           disabled={isAnalyzing || cooldownSeconds > 0}
           className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover relative"
         >
-          <div className={`size-9 rounded-xl flex items-center justify-center ${cooldownSeconds > 0 ? 'bg-muted' : 'gradient-primary glow-primary'}`}>
+          <div
+            className={`size-9 rounded-xl flex items-center justify-center ${cooldownSeconds > 0 ? "bg-muted" : "gradient-primary glow-primary"}`}
+          >
             {isAnalyzing ? (
               <Loader2 className="size-4 text-primary-foreground animate-spin" />
             ) : cooldownSeconds > 0 ? (
@@ -425,7 +423,11 @@ function Charts() {
             )}
           </div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            {isAnalyzing ? t("charts.analyzing") : cooldownSeconds > 0 ? t("charts.wait", { seconds: cooldownSeconds }) : t("charts.analyze")}
+            {isAnalyzing
+              ? t("charts.analyzing")
+              : cooldownSeconds > 0
+                ? t("charts.wait", { seconds: cooldownSeconds })
+                : t("charts.analyze")}
           </span>
         </button>
 

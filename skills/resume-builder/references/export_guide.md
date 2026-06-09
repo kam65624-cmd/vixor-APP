@@ -8,11 +8,13 @@
 ## docx 导出（默认）
 
 调用 docx skill。模板优先级：
+
 1. 用户提供模板 → 用用户的
 2. `assets/resume_template.docx` 存在 → 用本 skill 的
 3. 都没有 → 用 docx skill 的默认样式（注意控制字体、行距、margin）
 
 样式参数（推荐默认）：
+
 - 中文字体：思源宋体 / 宋体 / 微软雅黑（HR 电脑大概率有）
 - 英文字体：Arial / Helvetica / Calibri
 - 字号：正文 10.5~11pt，标题 12~14pt，姓名 16~18pt

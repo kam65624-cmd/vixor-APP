@@ -129,6 +129,23 @@ var InvalidPromptError = class extends (_b5 = AISDKError, _a5 = symbol5, _b5) {
     return AISDKError.hasMarker(error, marker5);
   }
 };
+var name5 = "AI_InvalidResponseDataError";
+var marker6 = `vercel.ai.error.${name5}`;
+var symbol6 = Symbol.for(marker6);
+var _a6, _b6;
+var InvalidResponseDataError = class extends (_b6 = AISDKError, _a6 = symbol6, _b6) {
+  constructor({
+    data,
+    message = `Invalid response data: ${JSON.stringify(data)}.`
+  }) {
+    super({ name: name5, message });
+    this[_a6] = true;
+    this.data = data;
+  }
+  static isInstance(error) {
+    return AISDKError.hasMarker(error, marker6);
+  }
+};
 var name6 = "AI_JSONParseError";
 var marker7 = `vercel.ai.error.${name6}`;
 var symbol7 = Symbol.for(marker7);
@@ -294,6 +311,8 @@ export {
   APICallError as a,
   InvalidPromptError as b,
   isJSONArray as c,
-  TooManyEmbeddingValuesForCallError as d,
+  InvalidResponseDataError as d,
+  TooManyEmbeddingValuesForCallError as e,
+  getErrorMessage as g,
   isJSONObject as i
 };

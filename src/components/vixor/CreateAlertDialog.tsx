@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { createAlert } from "@/lib/vixor.functions";
 import { toTradingViewSymbol } from "./TradingViewChart";
-import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 
 interface CreateAlertDialogProps {
   open: boolean;
@@ -84,14 +84,15 @@ export function CreateAlertDialog({
     } finally {
       setLoading(false);
     }
-  }; 
+  };
 
   // Quick price suggestions based on condition
-  const suggestedPrices = condition === "above"
-    ? [currentPrice * 1.01, currentPrice * 1.02, currentPrice * 1.05]
-    : condition === "below"
-    ? [currentPrice * 0.99, currentPrice * 0.98, currentPrice * 0.95]
-    : [currentPrice * 1.01, currentPrice * 0.99, currentPrice * 1.02];
+  const suggestedPrices =
+    condition === "above"
+      ? [currentPrice * 1.01, currentPrice * 1.02, currentPrice * 1.05]
+      : condition === "below"
+        ? [currentPrice * 0.99, currentPrice * 0.98, currentPrice * 0.95]
+        : [currentPrice * 1.01, currentPrice * 0.99, currentPrice * 1.02];
 
   const formatSuggestedPrice = (p: number) => {
     if (pair.includes("JPY") || pair === "XAU/USD" || pair.includes("USDT")) {
@@ -117,24 +118,36 @@ export function CreateAlertDialog({
           {/* Current price display */}
           <div className="vixor-card p-3 flex items-center justify-between">
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Current Price</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Current Price
+              </div>
               <div className="text-xl font-bold font-mono text-foreground">
-                ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: pair.includes("JPY") ? 2 : 4 })}
+                $
+                {currentPrice.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: pair.includes("JPY") ? 2 : 4,
+                })}
               </div>
             </div>
-            <div className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-bold">{pair}</div>
+            <div className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-bold">
+              {pair}
+            </div>
           </div>
 
           {/* Condition select */}
           <div>
-            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">Condition</label>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+              Condition
+            </label>
             <Select value={condition} onValueChange={setCondition}>
               <SelectTrigger className="bg-background border-border rounded-xl h-11">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {CONDITIONS.map(c => (
-                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                {CONDITIONS.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -142,11 +155,13 @@ export function CreateAlertDialog({
 
           {/* Target price input */}
           <div>
-            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">Target Price</label>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+              Target Price
+            </label>
             <input
               type="number"
               value={targetPrice}
-              onChange={e => setTargetPrice(e.target.value)}
+              onChange={(e) => setTargetPrice(e.target.value)}
               placeholder="0.00"
               step={pair.includes("JPY") ? "0.01" : pair === "XAU/USD" ? "0.01" : "0.0001"}
               className="w-full h-11 px-3 rounded-xl bg-background border border-border text-foreground font-mono text-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -166,9 +181,11 @@ export function CreateAlertDialog({
 
           {/* Timeframe */}
           <div>
-            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">Timeframe</label>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+              Timeframe
+            </label>
             <div className="flex gap-1.5">
-              {["15M", "1H", "4H", "1D"].map(tf => (
+              {["15M", "1H", "4H", "1D"].map((tf) => (
                 <button
                   key={tf}
                   onClick={() => setTimeframe(tf)}
@@ -186,11 +203,13 @@ export function CreateAlertDialog({
 
           {/* Note */}
           <div>
-            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">Note (optional)</label>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+              Note (optional)
+            </label>
             <input
               type="text"
               value={note}
-              onChange={e => setNote(e.target.value)}
+              onChange={(e) => setNote(e.target.value)}
               placeholder="e.g. Breakout play"
               maxLength={200}
               className="w-full h-9 px-3 rounded-xl bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"

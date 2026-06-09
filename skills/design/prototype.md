@@ -36,10 +36,10 @@ fidelity: medium
 
 ## Default deliverables (two files, always together)
 
-| File | Owns | Does NOT own |
-|------|------|--------------|
-| **`prototype.html`** | Clickable, end-to-end, states complete — running JS, happy path first, reachable states, feedback | — |
-| **`flow.html`** | How main tasks connect — key screens, triggers, mini-screen showing result | Exhaustive state inventory; status tag clouds |
+| File                 | Owns                                                                                              | Does NOT own                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| **`prototype.html`** | Clickable, end-to-end, states complete — running JS, happy path first, reachable states, feedback | —                                             |
+| **`flow.html`**      | How main tasks connect — key screens, triggers, mini-screen showing result                        | Exhaustive state inventory; status tag clouds |
 
 **Consistency:** flow canvas nodes/edges must match prototype screens/transitions. Screens not on canvas stay prototype-only. Separate flow node for loading/error only when needed to show task completion/failure; otherwise inline note.
 
@@ -49,12 +49,12 @@ Produce both by default. Only drop flow if user **explicitly** asks for a single
 
 ## 1. Decide what to build (four axes)
 
-| Axis | Values | Default |
-|------|--------|---------|
+| Axis         | Values                                                  | Default                            |
+| ------------ | ------------------------------------------------------- | ---------------------------------- |
 | **Platform** | web app · mobile app · dashboard/admin · responsive web | infer; if unclear → responsive web |
-| **Scope** | single screen · single flow · multi-flow product | single flow |
-| **Fidelity** | wireframe · medium · high | medium |
-| **Mode** | default · copy · patch | default |
+| **Scope**    | single screen · single flow · multi-flow product        | single flow                        |
+| **Fidelity** | wireframe · medium · high                               | medium                             |
+| **Mode**     | default · copy · patch                                  | default                            |
 
 - **default**: from scratch
 - **copy**: replicate style from reference, keep unchanged
@@ -129,24 +129,36 @@ Declare viewport per platform (`data-viewport="390x844"`).
 
 ```css
 body {
-  display: flex; align-items: center; justify-content: center;
-  min-height: 100vh; margin: 0;
-  background: #E8E8E4; /* HARDCODED canvas — NOT derived from prototype tokens.
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+  background: #e8e8e4; /* HARDCODED canvas — NOT derived from prototype tokens.
                           Dark-theme prototypes keep this light background;
                           the contrast frames the phone shell. */
 }
 .phone-shell {
-  width: 390px; height: 844px;
+  width: 390px;
+  height: 844px;
   max-height: calc(100vh - 40px);
   max-width: calc(100vw - 40px);
   overflow-x: hidden; /* prevent horizontal scroll inside frame */
 }
 /* Hide native scrollbars inside phone frame — mandatory */
-.phone-shell * { scrollbar-width: none; }
-.phone-shell *::-webkit-scrollbar { display: none; }
+.phone-shell * {
+  scrollbar-width: none;
+}
+.phone-shell *::-webkit-scrollbar {
+  display: none;
+}
 
 @media (max-height: 900px) {
-  .phone-shell { width: auto; height: calc(100vh - 40px); aspect-ratio: 390/844; }
+  .phone-shell {
+    width: auto;
+    height: calc(100vh - 40px);
+    aspect-ratio: 390/844;
+  }
 }
 ```
 
@@ -163,15 +175,15 @@ Before drawing UI, select a visual direction that fits the product scenario:
 
 **Matching guide:**
 
-| Product type | Recommended styles (pick one) |
-|-------------|------------------------------|
-| Consumer / lifestyle | `clean` · `friendly` · `warm-editorial` · `cafe` · `colorful` |
-| Finance / data | `dashboard` · `trading-terminal` · `enterprise` · `professional` |
-| Tool / productivity | `minimal` · `application` · `sleek` · `modern` |
-| Social / community | `vibrant` · `bold` · `energetic` · `colorful` |
-| Creative / portfolio | `editorial` · `artistic` · `expressive` · `paper` |
-| Premium / luxury | `luxury` · `elegant` · `refined` · `premium` |
-| Admin / B2B | `enterprise` · `corporate` · `ant` · `shadcn` |
+| Product type         | Recommended styles (pick one)                                    |
+| -------------------- | ---------------------------------------------------------------- |
+| Consumer / lifestyle | `clean` · `friendly` · `warm-editorial` · `cafe` · `colorful`    |
+| Finance / data       | `dashboard` · `trading-terminal` · `enterprise` · `professional` |
+| Tool / productivity  | `minimal` · `application` · `sleek` · `modern`                   |
+| Social / community   | `vibrant` · `bold` · `energetic` · `colorful`                    |
+| Creative / portfolio | `editorial` · `artistic` · `expressive` · `paper`                |
+| Premium / luxury     | `luxury` · `elegant` · `refined` · `premium`                     |
+| Admin / B2B          | `enterprise` · `corporate` · `ant` · `shadcn`                    |
 
 3. **Apply the style** — load the selected style's `DESIGN.md`, extract its tokens (colors, typography, spacing, radius), and use them as `:root` variables. Adapt to the product context, don't blindly copy.
 4. **When user specifies a style or brand**: that takes priority over the matching guide — load via `design-system-reference.md`.
@@ -196,6 +208,7 @@ When admin/dashboard/B2B without explicit scope: filter bar · data table with s
 ## 4. The interaction flow document (mandatory, separate file)
 
 **CRITICAL — exact class names and structure below are LOCKED. Do NOT rename, abbreviate, or substitute:**
+
 - `.flow-node` → `.flow-node__title` + `.flow-node-visual` + `.flow-node__note`
 - `.flow-node__title` content = **page name** (e.g. "餐厅列表页"), NEVER "Screen A", "Step 1", or step numbers
 - `.flow-node-visual` = mini-screen with phone chrome (status bar, content, tab bar), NOT desktop window dots
@@ -226,6 +239,7 @@ flow.html
 ```
 
 **Layout rules:**
+
 - **Canvas**: CSS Grid with explicit columns or absolute positioning. **`flex-wrap` is strictly forbidden** — nodes must stay in one row per task, with horizontal scroll if needed (`overflow-x: auto` on flow-row).
 - **All text elements** (page title, task title, task subtitle, node title, node note) are **left-aligned**.
 - **flow-node** width = flow-node-visual width (per platform size table §4.6).
@@ -233,15 +247,16 @@ flow.html
 
 ### 4.2 Flow concepts
 
-| Concept | Definition | Example |
-|---------|------------|---------|
-| **Jump Map** | Screen navigation topology | `Home → Chat` |
-| **Interaction Flow** | User actions and state changes | `Send → typing indicator → reply` |
-| **State Flow** | Entity lifecycle when it defines the task | `Draft → Submitting → Done` |
+| Concept              | Definition                                | Example                           |
+| -------------------- | ----------------------------------------- | --------------------------------- |
+| **Jump Map**         | Screen navigation topology                | `Home → Chat`                     |
+| **Interaction Flow** | User actions and state changes            | `Send → typing indicator → reply` |
+| **State Flow**       | Entity lifecycle when it defines the task | `Draft → Submitting → Done`       |
 
 **Arrangement patterns:**
 
 - Single-branch: linear horizontal (left → right)
+
   ```
   [Node 1] →label→ [Node 2] →label→ [Node 3] →label→ [Node 4]
   ```
@@ -267,24 +282,24 @@ Flow canvas is **completely independent** from prototype visual style.
 
 ### 4.5 Node naming rules
 
-| Element | Content | Example |
-|---------|---------|---------|
-| **flow-task-title** | 任务名称 | "任务1：快速分账" |
-| **flow-task-subtitle** | 步骤流程串联 | "添加成员 → 拍票录入 → 勾选分摊 → 一键清算" |
-| **flow-node__title** | 该节点对应的**页面名称** | "团队创建页"、"排班总览"、"换班申请页" |
-| **flow-node__note** | 操作引起的页面关键变化，2-3行 | "选择要换的班次和目标同事；填写原因；点击'提交申请'进入待确认状态" |
+| Element                | Content                       | Example                                                            |
+| ---------------------- | ----------------------------- | ------------------------------------------------------------------ |
+| **flow-task-title**    | 任务名称                      | "任务1：快速分账"                                                  |
+| **flow-task-subtitle** | 步骤流程串联                  | "添加成员 → 拍票录入 → 勾选分摊 → 一键清算"                        |
+| **flow-node\_\_title** | 该节点对应的**页面名称**      | "团队创建页"、"排班总览"、"换班申请页"                             |
+| **flow-node\_\_note**  | 操作引起的页面关键变化，2-3行 | "选择要换的班次和目标同事；填写原因；点击'提交申请'进入待确认状态" |
 
-- **flow-node__title 是页面名称**，不是步骤编号（不要写"1. 创建团队"，而是"团队创建页"）
-- **flow-node__note 要具体**：描述用户做什么操作 → 页面怎么变化（如出现弹窗、展开面板、跳转新页），可以用分号或换行分点
+- **flow-node\_\_title 是页面名称**，不是步骤编号（不要写"1. 创建团队"，而是"团队创建页"）
+- **flow-node\_\_note 要具体**：描述用户做什么操作 → 页面怎么变化（如出现弹窗、展开面板、跳转新页），可以用分号或换行分点
 
 ### 4.6 Node sizing (fixed per platform)
 
-| Platform | Viewport | Node size (w × h) |
-|----------|----------|-------------------|
-| Mobile app / 小程序 | 390×844 | **220 × 476 px** |
-| Mobile small | 375×812 | **210 × 454 px** |
-| Desktop web | 1440×900 | **640 × 400 px** |
-| Dashboard | 1440×1024 | **640 × 456 px** |
+| Platform            | Viewport  | Node size (w × h) |
+| ------------------- | --------- | ----------------- |
+| Mobile app / 小程序 | 390×844   | **220 × 476 px**  |
+| Mobile small        | 375×812   | **210 × 454 px**  |
+| Desktop web         | 1440×900  | **640 × 400 px**  |
+| Dashboard           | 1440×1024 | **640 × 456 px**  |
 
 > Escape: if ≤ 3 nodes AND page content is simple (single form / single illustration), Desktop/Dashboard may use half size (320 × 200 / 320 × 228).
 
@@ -294,9 +309,12 @@ Flow canvas is **completely independent** from prototype visual style.
 
 ```css
 /* Example for mobile 390x844 */
-.flow-node { width: 220px; }
+.flow-node {
+  width: 220px;
+}
 .flow-node-visual {
-  width: 220px; height: 476px;
+  width: 220px;
+  height: 476px;
   border: 1px solid var(--border, #e5e5e5);
   border-radius: 12px;
   overflow: hidden;
@@ -309,11 +327,11 @@ Flow canvas is **completely independent** from prototype visual style.
 
 **Full-structure**: every major structural region of the prototype screen (status bar, header, content area, tab bar, floating actions) MUST be present. No region may be omitted.
 
-| Target | Rule |
-|--------|------|
-| Structural regions | 100% present |
+| Target                | Rule                                                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Structural regions    | 100% present                                                                                                                                                  |
 | Flow-critical details | 100% accurate — labels, position, visual weight of CTAs/tabs/fields. **Buttons/CTAs must show real text** (e.g. "提交申请", "保存"), not blank colored blocks |
-| Non-critical details | Simplified (fewer items, placeholder blocks, abbreviated text) |
+| Non-critical details  | Simplified (fewer items, placeholder blocks, abbreviated text)                                                                                                |
 
 **Forbidden**: text-only cards, gray-bar-only placeholders, abstract boxes, pure text nodes with no visual reconstruction.
 
@@ -321,11 +339,11 @@ Flow canvas is **completely independent** from prototype visual style.
 
 **Text scaling rule — proportion over readability:**
 
-| Prototype text | Mini-screen equivalent | Role |
-|---------------|----------------------|------|
-| 18-22px title | 10-12px | Section/page titles |
-| 13-15px body | 7-8px | Main content |
-| 11-12px meta | 6-7px | Captions, timestamps |
+| Prototype text | Mini-screen equivalent | Role                 |
+| -------------- | ---------------------- | -------------------- |
+| 18-22px title  | 10-12px                | Section/page titles  |
+| 13-15px body   | 7-8px                  | Main content         |
+| 11-12px meta   | 6-7px                  | Captions, timestamps |
 
 - Prioritize proportional sizing over readability.
 - If too dense → reduce content items, do NOT enlarge font size.
@@ -348,46 +366,80 @@ Flow canvas is **completely independent** from prototype visual style.
       <span class="active">排班</span><span>消息</span><span>我的</span>
     </div>
   </div>
-  <p class="flow-node__note">选择要换的班次和目标同事；填写换班原因；点击'提交申请'后进入待确认状态</p>
+  <p class="flow-node__note">
+    选择要换的班次和目标同事；填写换班原因；点击'提交申请'后进入待确认状态
+  </p>
 </div>
 ```
 
 ```css
 /* Mini-screen shapes */
 .mini-status-bar {
-  height: 6%; display: flex; align-items: center; justify-content: space-between;
-  padding: 0 8px; font-size: 6px; font-weight: 600;
+  height: 6%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-size: 6px;
+  font-weight: 600;
 }
-.mini-header { padding: 4px 8px; }
-.mini-page-title { font-size: 9px; font-weight: 700; }
-.mini-content { padding: 6px 8px; flex: 1; }
+.mini-header {
+  padding: 4px 8px;
+}
+.mini-page-title {
+  font-size: 9px;
+  font-weight: 700;
+}
+.mini-content {
+  padding: 6px 8px;
+  flex: 1;
+}
 .mini-card {
-  height: 40px; border-radius: 6px;
-  background: var(--surface-2, #f0f0f0); margin-bottom: 6px;
+  height: 40px;
+  border-radius: 6px;
+  background: var(--surface-2, #f0f0f0);
+  margin-bottom: 6px;
 }
 .mini-button {
-  height: 24px; border-radius: 12px;
-  background: var(--accent, #333); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 7px; font-weight: 600;  /* MUST have text label */
+  height: 24px;
+  border-radius: 12px;
+  background: var(--accent, #333);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  font-weight: 600; /* MUST have text label */
 }
 .mini-form-field {
-  height: 16px; background: var(--surface-2, #f0f0f0);
-  border-radius: 4px; margin-bottom: 4px;
+  height: 16px;
+  background: var(--surface-2, #f0f0f0);
+  border-radius: 4px;
+  margin-bottom: 4px;
 }
 .mini-list-row {
-  height: 12px; width: 80%; background: var(--surface-2, #eee);
-  border-radius: 3px; margin-bottom: 4px;
+  height: 12px;
+  width: 80%;
+  background: var(--surface-2, #eee);
+  border-radius: 3px;
+  margin-bottom: 4px;
 }
 .mini-tab-bar {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  height: 7%; display: flex; justify-content: space-around;
-  align-items: center; font-size: 6px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 7%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-size: 6px;
   border-top: 1px solid var(--border, #e5e5e5);
 }
 ```
 
 **Rules:**
+
 - `.flow-node`: no border/shadow/background (invisible wrapper, width = visual width)
 - `.flow-node-visual`: the only bordered element (device chrome, border-radius 12px). **Must have `position: relative`** so pinned children can anchor to it.
 - **Buttons and CTAs inside mini-screen MUST contain their text label** — never a blank color block
@@ -407,8 +459,8 @@ Flow canvas is **completely independent** from prototype visual style.
   <div class="flow-arrow">
     <div class="flow-arrow__label">点击'提交申请'</div>
     <svg width="48" height="16" viewBox="0 0 48 16">
-      <path d="M0 8 L38 8" stroke="#999" stroke-width="1.5" fill="none"/>
-      <path d="M36 4 L42 8 L36 12" stroke="#999" stroke-width="1.5" fill="none"/>
+      <path d="M0 8 L38 8" stroke="#999" stroke-width="1.5" fill="none" />
+      <path d="M36 4 L42 8 L36 12" stroke="#999" stroke-width="1.5" fill="none" />
     </svg>
   </div>
 
@@ -419,16 +471,20 @@ Flow canvas is **completely independent** from prototype visual style.
 ```css
 .flow-arrow {
   flex-shrink: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 64px;
   /* height must match flow-node-visual so arrow centers at visual midpoint */
   height: 476px; /* mobile — match §4.6 node-visual height */
   padding-top: 24px; /* offset for flow-node__title above visual */
 }
 .flow-arrow__label {
-  font-size: 11px; color: #666;
-  margin-bottom: 6px; white-space: nowrap;
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 6px;
+  white-space: nowrap;
 }
 ```
 
@@ -459,6 +515,7 @@ Flow canvas is **completely independent** from prototype visual style.
 ## 6. Validation checklist (BLOCKING)
 
 **Prototype:**
+
 - [ ] Each core task happy path works end-to-end (entry → action → normal result)
 - [ ] Every interactive-looking element responds per §2.2
 - [ ] No dead-end screens
@@ -469,17 +526,19 @@ Flow canvas is **completely independent** from prototype visual style.
 - [ ] Every off-path interactive element has toast or visible feedback (not just CSS class toggle)
 
 **Flow:**
+
 - [ ] Mini-screens contain all structural regions of corresponding prototype screen
 - [ ] All nodes same outer size per §4.6; flow-node width = flow-node-visual width
 - [ ] Every button/CTA inside mini-screen has real text label (not blank block)
 - [ ] Every arrow has a `.flow-arrow__label` describing the triggering action
 - [ ] Arrows are flex children between nodes in flow-row (scroll with nodes)
 - [ ] Arrows vertically centered on node-visual (flow-arrow height = node-visual height)
-- [ ] flow-node__title = page name (not step number)
-- [ ] flow-node__note = 2-3 lines describing what changes
+- [ ] flow-node\_\_title = page name (not step number)
+- [ ] flow-node\_\_note = 2-3 lines describing what changes
 - [ ] Pinned elements (tab bar, cart bar, FAB) use absolute positioning inside flow-node-visual, not in document flow
 
 **Consistency:**
+
 - [ ] Every flow node → reachable prototype screen
 - [ ] Every flow edge → working prototype transition
 
@@ -488,10 +547,12 @@ Flow canvas is **completely independent** from prototype visual style.
 ## 7. References, editing & handoff
 
 **Load by default:**
+
 - `horizontal-craft/state-coverage.md` — state completeness in prototype
 - `horizontal-craft/anti-ai-slop.md` — anti-generic visual
 
 **Load when relevant:**
+
 - `design-system-reference.md` · `horizontal-craft/chinese-typography.md` · `export.md` · `version-management/SKILL.md`
 
 Before generation, use `SKILL.md` Creative Context Completion (creative_positioning, first_impression, anti_default).

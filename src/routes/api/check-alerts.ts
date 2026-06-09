@@ -1,10 +1,9 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
-import { checkAllAlerts } from "@/server/alert-checker.server";
+import { checkAllAlerts } from "@/domains/trading/server/alert-checker";
 
 export const APIRoute = createAPIFileRoute("/api/check-alerts")({
   POST: async ({ request }) => {
     try {
-      // Simple auth: check for a cron secret or just allow it
       const cronSecret = process.env.CRON_SECRET;
       if (cronSecret) {
         const authHeader = request.headers.get("authorization");
@@ -26,7 +25,6 @@ export const APIRoute = createAPIFileRoute("/api/check-alerts")({
     }
   },
   GET: async () => {
-    // Allow GET for easy cron service invocation (e.g., UptimeRobot)
     try {
       const result = await checkAllAlerts();
       return new Response(JSON.stringify(result), {

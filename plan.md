@@ -1,4 +1,3 @@
-
 ## Scope
 
 Replace mock data with real backend, add real auth (email/password + Telegram WebApp), and run real AI analysis on uploaded charts. Drop the "match the screenshot" item — no screenshot was attached; ping me with one later and I'll do a pixel pass.
@@ -43,7 +42,7 @@ All use `requireSupabaseAuth` middleware. Bearer attacher already wired.
 
 ## 4. AI analysis
 
-Lovable AI Gateway via AI SDK (`@ai-sdk/openai-compatible` + `ai`), model `google/gemini-2.5-pro` (vision). 
+Lovable AI Gateway via AI SDK (`@ai-sdk/openai-compatible` + `ai`), model `google/gemini-2.5-pro` (vision).
 
 `runAnalysis.server.ts`: takes image URL, calls Gemini with structured output (Zod schema for recommendation/confidence/entry/SL/TP[3]/RR/pattern/reasons[3-5]/scenarios{conservative,balanced,aggressive}/management[]). Writes results back to `analyses` row.
 
@@ -54,6 +53,7 @@ Cost: 10 points per analysis, deducted on success. Premium users: free.
 ## 5. Frontend wiring
 
 Replace all `mockUser`, `mockAnalyses`, `mockPacks`, etc. imports:
+
 - `/` (Dashboard) → `useSuspenseQuery(getMe + listAnalyses(5))`
 - `/analyze` → real upload + `createAnalysis` mutation → navigate to `/analysis/$id`
 - `/analysis/$id` → polled `getAnalysis`; show real chart image + real AI levels overlay

@@ -1,6 +1,7 @@
-import { w as withoutTrailingSlash, C as generateId, E as parseProviderOptions, b as combineHeaders, r as resolve, p as postJsonToApi, d as withUserAgentSuffix, F as loadApiKey, G as convertToBase64, a as createJsonResponseHandler, h as createEventSourceResponseHandler, j as lazySchema, c as createJsonErrorResponseHandler, z as zodSchema, i as createProviderToolFactoryWithOutputSchema, H as createProviderToolFactory, f as convertUint8ArrayToBase64, u as delay, g as getFromApi, q as isAbortError, x as getRuntimeEnvironmentUserAgent } from "./ai-sdk__provider-utils.mjs";
-import { U as UnsupportedFunctionalityError, d as TooManyEmbeddingValuesForCallError, A as AISDKError } from "./ai-sdk__provider.mjs";
+import { w as withoutTrailingSlash, E as generateId, H as parseProviderOptions, b as combineHeaders, r as resolve, p as postJsonToApi, d as withUserAgentSuffix, I as loadApiKey, J as convertToBase64, a as createJsonResponseHandler, h as createEventSourceResponseHandler, j as lazySchema, c as createJsonErrorResponseHandler, z as zodSchema, i as createProviderToolFactoryWithOutputSchema, K as createProviderToolFactory, f as convertUint8ArrayToBase64, x as delay, g as getFromApi, v as isAbortError, A as getRuntimeEnvironmentUserAgent } from "./ai-sdk__provider-utils.mjs";
+import { U as UnsupportedFunctionalityError, e as TooManyEmbeddingValuesForCallError, A as AISDKError } from "./ai-sdk__provider.mjs";
 import { o as object, c as string, n as number, e as union, _ as _enum, f as boolean, r as record, b as array, u as unknown, l as literal } from "./zod.mjs";
+import "./eventsource-parser.mjs";
 var VERSION = "3.0.80";
 var googleErrorDataSchema = lazySchema(
   () => zodSchema(
@@ -5898,5 +5899,7 @@ function createGoogleGenerativeAI(options = {}) {
 }
 var google = createGoogleGenerativeAI();
 export {
-  google as g
+  VERSION,
+  createGoogleGenerativeAI,
+  google
 };

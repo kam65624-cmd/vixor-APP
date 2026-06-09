@@ -1,18 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getDailySignals, getUserStrategy, updateUserStrategy,
-  generateDailySignals, createAlert,
+  getDailySignals,
+  getUserStrategy,
+  updateUserStrategy,
+  generateDailySignals,
+  createAlert,
 } from "@/lib/vixor.functions";
 import { useState, useMemo } from "react";
 import {
-  TrendingUp, TrendingDown, Minus, Bell, Sparkles, Settings2,
-  RefreshCw, Loader2, Target, Shield, Zap, BarChart3,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Bell,
+  Sparkles,
+  Settings2,
+  RefreshCw,
+  Loader2,
+  Target,
+  Shield,
+  Zap,
+  BarChart3,
 } from "lucide-react";
 import { RecBadge, ConfidenceBar } from "@/components/vixor/atoms";
 import { toTradingViewSymbol } from "@/components/vixor/TradingViewChart";
-import { useStableServerFn } from "@/hooks/use-stable-server-fn";
-import { useI18n } from "@/lib/i18n";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { useI18n } from "@/shared/i18n";
 
 export const Route = createFileRoute("/_authenticated/signals")({
   head: () => ({ meta: [{ title: "Daily Signals — Vixor" }] }),
@@ -20,8 +33,16 @@ export const Route = createFileRoute("/_authenticated/signals")({
 });
 
 const ALL_PAIRS = [
-  "BTC/USDT", "ETH/USDT", "XAU/USD", "EUR/USD", "GBP/JPY", "SOL/USDT",
-  "GBP/USD", "USD/JPY", "AUD/USD", "BNB/USDT",
+  "BTC/USDT",
+  "ETH/USDT",
+  "XAU/USD",
+  "EUR/USD",
+  "GBP/JPY",
+  "SOL/USDT",
+  "GBP/USD",
+  "USD/JPY",
+  "AUD/USD",
+  "BNB/USDT",
 ];
 
 const TRADING_STYLES = [
@@ -44,19 +65,29 @@ function DailySignals() {
 
   // Fetch signals
   const signalsFn = useStableServerFn(getDailySignals);
-  const signalsQuery = useQuery(useMemo(() => ({
-    queryKey: ["daily-signals"] as const,
-    queryFn: () => signalsFn({ data: {} }),
-    staleTime: 120_000,
-  }), [signalsFn]));
+  const signalsQuery = useQuery(
+    useMemo(
+      () => ({
+        queryKey: ["daily-signals"] as const,
+        queryFn: () => signalsFn({ data: {} }),
+        staleTime: 120_000,
+      }),
+      [signalsFn],
+    ),
+  );
 
   // Fetch user strategy
   const strategyFn = useStableServerFn(getUserStrategy);
-  const strategyQuery = useQuery(useMemo(() => ({
-    queryKey: ["user-strategy"] as const,
-    queryFn: () => strategyFn({}),
-    staleTime: 60_000,
-  }), [strategyFn]));
+  const strategyQuery = useQuery(
+    useMemo(
+      () => ({
+        queryKey: ["user-strategy"] as const,
+        queryFn: () => strategyFn({}),
+        staleTime: 60_000,
+      }),
+      [strategyFn],
+    ),
+  );
 
   // Generate signals mutation
   const generateFn = useStableServerFn(generateDailySignals);
@@ -96,7 +127,9 @@ function DailySignals() {
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">{t("signals.vixorIntelligence")}</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+            {t("signals.vixorIntelligence")}
+          </div>
           <h1 className="text-2xl font-bold tracking-tight">{t("signals.dailySignals")}</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -124,7 +157,9 @@ function DailySignals() {
       {showStrategy && (
         <StrategyConfig
           strategy={strategy}
-          onUpdate={() => queryClient.invalidateQueries({ queryKey: ["user-strategy", "daily-signals"] })}
+          onUpdate={() =>
+            queryClient.invalidateQueries({ queryKey: ["user-strategy", "daily-signals"] })
+          }
         />
       )}
 
@@ -132,23 +167,37 @@ function DailySignals() {
       <div className="vixor-card p-4">
         <div className="flex items-center gap-2 mb-2">
           <Zap className="size-4 text-primary" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{t("signals.yourStrategy")}</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+            {t("signals.yourStrategy")}
+          </span>
         </div>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <div className="text-[10px] text-muted-foreground uppercase font-bold">{t("signals.style")}</div>
+            <div className="text-[10px] text-muted-foreground uppercase font-bold">
+              {t("signals.style")}
+            </div>
             <div className="text-sm font-bold">{strategy?.trading_style || "Day Trading"}</div>
           </div>
           <div>
-            <div className="text-[10px] text-muted-foreground uppercase font-bold">{t("signals.risk")}</div>
-            <div className={`text-sm font-bold ${
-              strategy?.risk_tolerance === "LOW" ? "text-bullish" : strategy?.risk_tolerance === "HIGH" ? "text-bearish" : "text-neutral-wait"
-            }`}>
+            <div className="text-[10px] text-muted-foreground uppercase font-bold">
+              {t("signals.risk")}
+            </div>
+            <div
+              className={`text-sm font-bold ${
+                strategy?.risk_tolerance === "LOW"
+                  ? "text-bullish"
+                  : strategy?.risk_tolerance === "HIGH"
+                    ? "text-bearish"
+                    : "text-neutral-wait"
+              }`}
+            >
               {strategy?.risk_tolerance || "MEDIUM"}
             </div>
           </div>
           <div>
-            <div className="text-[10px] text-muted-foreground uppercase font-bold">{t("signals.pairs")}</div>
+            <div className="text-[10px] text-muted-foreground uppercase font-bold">
+              {t("signals.pairs")}
+            </div>
             <div className="text-sm font-bold">{strategy?.pairs?.length ?? 4}</div>
           </div>
         </div>
@@ -161,7 +210,7 @@ function DailySignals() {
           { value: "BUY", label: t("signals.buy") },
           { value: "SELL", label: t("signals.sell") },
           { value: "WAIT", label: t("signals.wait") },
-        ].map(f => (
+        ].map((f) => (
           <button
             key={f.label}
             onClick={() => setFilterRec(f.value)}
@@ -210,7 +259,9 @@ function DailySignals() {
       {generateMutation.isSuccess && generateMutation.data && (
         <div className="vixor-card p-3 border-l-4 border-l-primary">
           <div className="text-xs text-muted-foreground">
-            Generated <span className="text-primary font-bold">{generateMutation.data.generated}</span> signals for {generateMutation.data.date}
+            Generated{" "}
+            <span className="text-primary font-bold">{generateMutation.data.generated}</span>{" "}
+            signals for {generateMutation.data.date}
           </div>
         </div>
       )}
@@ -219,7 +270,15 @@ function DailySignals() {
 }
 
 // Signal Card Component
-function SignalCard({ signal, onSetAlert, isAlertLoading }: { signal: any; onSetAlert: (pair: string, entry: number) => void; isAlertLoading: boolean }) {
+function SignalCard({
+  signal,
+  onSetAlert,
+  isAlertLoading,
+}: {
+  signal: any;
+  onSetAlert: (pair: string, entry: number) => void;
+  isAlertLoading: boolean;
+}) {
   const { t } = useI18n();
   const isBuy = signal.recommendation === "BUY";
   const isSell = signal.recommendation === "SELL";
@@ -229,12 +288,18 @@ function SignalCard({ signal, onSetAlert, isAlertLoading }: { signal: any; onSet
       {/* Header row */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2.5">
-          <div className={`size-10 rounded-xl flex items-center justify-center ${
-            isBuy ? "bg-bullish/10" : isSell ? "bg-bearish/10" : "bg-neutral-wait/10"
-          }`}>
-            {isBuy ? <TrendingUp className="size-5 text-bullish" /> :
-             isSell ? <TrendingDown className="size-5 text-bearish" /> :
-             <Minus className="size-5 text-neutral-wait" />}
+          <div
+            className={`size-10 rounded-xl flex items-center justify-center ${
+              isBuy ? "bg-bullish/10" : isSell ? "bg-bearish/10" : "bg-neutral-wait/10"
+            }`}
+          >
+            {isBuy ? (
+              <TrendingUp className="size-5 text-bullish" />
+            ) : isSell ? (
+              <TrendingDown className="size-5 text-bearish" />
+            ) : (
+              <Minus className="size-5 text-neutral-wait" />
+            )}
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -245,7 +310,9 @@ function SignalCard({ signal, onSetAlert, isAlertLoading }: { signal: any; onSet
           </div>
         </div>
         <div className="text-right">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{t("signals.confidence")}</div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+            {t("signals.confidence")}
+          </div>
           <div className="text-lg font-bold font-mono">{signal.confidence}%</div>
         </div>
       </div>
@@ -256,17 +323,35 @@ function SignalCard({ signal, onSetAlert, isAlertLoading }: { signal: any; onSet
       {/* Price levels */}
       <div className="grid grid-cols-3 gap-3 mt-3">
         <div className="p-2 rounded-lg bg-background">
-          <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">{t("signals.entry")}</div>
-          <div className="text-sm font-bold font-mono">{signal.entry ? Number(signal.entry).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—"}</div>
+          <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+            {t("signals.entry")}
+          </div>
+          <div className="text-sm font-bold font-mono">
+            {signal.entry
+              ? Number(signal.entry).toLocaleString(undefined, { maximumFractionDigits: 2 })
+              : "—"}
+          </div>
         </div>
         <div className="p-2 rounded-lg bg-background">
-          <div className="text-[9px] uppercase tracking-wider text-bearish font-bold">{t("signals.stopLoss")}</div>
-          <div className="text-sm font-bold font-mono text-bearish">{signal.stop_loss ? Number(signal.stop_loss).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—"}</div>
+          <div className="text-[9px] uppercase tracking-wider text-bearish font-bold">
+            {t("signals.stopLoss")}
+          </div>
+          <div className="text-sm font-bold font-mono text-bearish">
+            {signal.stop_loss
+              ? Number(signal.stop_loss).toLocaleString(undefined, { maximumFractionDigits: 2 })
+              : "—"}
+          </div>
         </div>
         <div className="p-2 rounded-lg bg-background">
-          <div className="text-[9px] uppercase tracking-wider text-bullish font-bold">{t("signals.takeProfit")}</div>
+          <div className="text-[9px] uppercase tracking-wider text-bullish font-bold">
+            {t("signals.takeProfit")}
+          </div>
           <div className="text-sm font-bold font-mono text-bullish">
-            {signal.take_profit?.[1] ? Number(signal.take_profit[1]).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—"}
+            {signal.take_profit?.[1]
+              ? Number(signal.take_profit[1]).toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                })
+              : "—"}
           </div>
         </div>
       </div>
@@ -315,7 +400,9 @@ function StrategyConfig({ strategy, onUpdate }: { strategy: any; onUpdate: () =>
   const { t } = useI18n();
   const updateFn = useStableServerFn(updateUserStrategy);
 
-  const [pairs, setPairs] = useState<string[]>(strategy?.pairs || ["BTC/USDT", "ETH/USDT", "XAU/USD", "EUR/USD"]);
+  const [pairs, setPairs] = useState<string[]>(
+    strategy?.pairs || ["BTC/USDT", "ETH/USDT", "XAU/USD", "EUR/USD"],
+  );
   const [tradingStyle, setTradingStyle] = useState(strategy?.trading_style || "Day Trading");
   const [riskTolerance, setRiskTolerance] = useState(strategy?.risk_tolerance || "MEDIUM");
   const [saving, setSaving] = useState(false);
@@ -328,7 +415,12 @@ function StrategyConfig({ strategy, onUpdate }: { strategy: any; onUpdate: () =>
           pairs,
           tradingStyle: tradingStyle as "Scalping" | "Day Trading" | "Swing Trading",
           riskTolerance: riskTolerance as "LOW" | "MEDIUM" | "HIGH",
-          preferredTimeframes: tradingStyle === "Scalping" ? ["5M", "15M", "1H"] : tradingStyle === "Day Trading" ? ["1H", "4H"] : ["4H", "1D"],
+          preferredTimeframes:
+            tradingStyle === "Scalping"
+              ? ["5M", "15M", "1H"]
+              : tradingStyle === "Day Trading"
+                ? ["1H", "4H"]
+                : ["4H", "1D"],
         },
       });
       onUpdate();
@@ -340,7 +432,7 @@ function StrategyConfig({ strategy, onUpdate }: { strategy: any; onUpdate: () =>
   };
 
   const togglePair = (pair: string) => {
-    setPairs(prev => prev.includes(pair) ? prev.filter(p => p !== pair) : [...prev, pair]);
+    setPairs((prev) => (prev.includes(pair) ? prev.filter((p) => p !== pair) : [...prev, pair]));
   };
 
   return (
@@ -352,9 +444,11 @@ function StrategyConfig({ strategy, onUpdate }: { strategy: any; onUpdate: () =>
 
       {/* Trading Style */}
       <div>
-        <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">{t("signals.tradingStyle")}</label>
+        <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+          {t("signals.tradingStyle")}
+        </label>
         <div className="grid grid-cols-3 gap-2">
-          {TRADING_STYLES.map(s => (
+          {TRADING_STYLES.map((s) => (
             <button
               key={s.id}
               onClick={() => setTradingStyle(s.id)}
@@ -373,9 +467,11 @@ function StrategyConfig({ strategy, onUpdate }: { strategy: any; onUpdate: () =>
 
       {/* Risk Tolerance */}
       <div>
-        <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">{t("signals.riskTolerance")}</label>
+        <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+          {t("signals.riskTolerance")}
+        </label>
         <div className="grid grid-cols-3 gap-2">
-          {RISK_LEVELS.map(r => (
+          {RISK_LEVELS.map((r) => (
             <button
               key={r.id}
               onClick={() => setRiskTolerance(r.id)}
@@ -394,9 +490,11 @@ function StrategyConfig({ strategy, onUpdate }: { strategy: any; onUpdate: () =>
 
       {/* Preferred Pairs */}
       <div>
-        <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">{t("signals.preferredPairs")}</label>
+        <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+          {t("signals.preferredPairs")}
+        </label>
         <div className="flex flex-wrap gap-1.5">
-          {ALL_PAIRS.map(pair => (
+          {ALL_PAIRS.map((pair) => (
             <button
               key={pair}
               onClick={() => togglePair(pair)}
