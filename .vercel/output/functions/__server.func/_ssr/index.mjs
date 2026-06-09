@@ -1996,6 +1996,7 @@ function renderDebugErrorPage(message, stack) {
     ${safeStack ? `<details><summary>Stack Trace</summary><div class="stack">${safeStack}</div></details>` : ""}
     <div class="env-info">
       Node: ${typeof process !== "undefined" ? process.version : "N/A"} |
+      BUILD_FIX: v3 |
       SUPABASE_URL: ${su2} |
       ANON_KEY: ${sk}
     </div>

@@ -23,8 +23,8 @@ export default defineConfig({
     nitro({
       preset: "vercel",
       // Ensure all SSR chunks are included in the Vercel serverless function.
-      // Without this, the server-*.mjs chunk is excluded and causes
-      // ERR_MODULE_NOT_FOUND at runtime on Vercel.
+      // @vercel/nft doesn't trace imports within dynamically-loaded modules,
+      // so code-split chunks in _ssr/ get excluded from the deployment.
       includeFiles: ["_ssr/**"],
     }),
     viteReact(),
