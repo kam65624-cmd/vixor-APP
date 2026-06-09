@@ -77,6 +77,16 @@ export {
   getNotesByAnalysis,
 } from "@/domains/notes/functions";
 
+// ── Trades Domain ──
+export {
+  createTrade,
+  listTrades,
+  updateTrade,
+  deleteTrade,
+  getTradeStats,
+  getEquityCurve,
+} from "@/domains/trades/functions";
+
 // ── User Domain ──
 export {
   getMe,

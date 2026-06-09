@@ -23,6 +23,7 @@ export interface MigrationStatus {
   daily_signals: boolean;
   user_strategies: boolean;
   trading_notes: boolean;
+  trades: boolean;
   allComplete: boolean;
   sql: string;
 }
@@ -141,6 +142,51 @@ DROP TRIGGER IF EXISTS trading_notes_updated_at ON trading_notes;
 CREATE TRIGGER trading_notes_updated_at
   BEFORE UPDATE ON trading_notes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- 5. Trades Table
+CREATE TABLE IF NOT EXISTS trades (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  pair TEXT NOT NULL,
+  direction TEXT NOT NULL CHECK (direction IN ('long', 'short')),
+  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'closed', 'cancelled')),
+  entry_price NUMERIC NOT NULL,
+  entry_date TIMESTAMPTZ NOT NULL DEFAULT now(),
+  quantity NUMERIC,
+  exit_price NUMERIC,
+  exit_date TIMESTAMPTZ,
+  stop_loss NUMERIC,
+  take_profit NUMERIC,
+  notes TEXT,
+  tags TEXT[] DEFAULT '{}',
+  strategy TEXT,
+  analysis_id UUID REFERENCES analyses(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Note: Generated columns (pnl, pnl_pips, r_multiple) require raw SQL execution
+-- in the Supabase Dashboard. See supabase/migrations/20260610010000_add_trades.sql
+-- for the full migration with generated columns.
+
+CREATE INDEX IF NOT EXISTS idx_trades_user_id ON trades(user_id);
+CREATE INDEX IF NOT EXISTS idx_trades_status ON trades(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_trades_pair ON trades(user_id, pair);
+CREATE INDEX IF NOT EXISTS idx_trades_dates ON trades(user_id, entry_date DESC);
+
+ALTER TABLE trades ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can view own trades" ON trades FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Users can insert own trades" ON trades FOR INSERT WITH CHECK (auth.uid() = user_id);
+  CREATE POLICY "Users can update own trades" ON trades FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "Users can delete own trades" ON trades FOR DELETE USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DROP TRIGGER IF EXISTS trades_updated_at ON trades;
+CREATE TRIGGER trades_updated_at
+  BEFORE UPDATE ON trades
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 `;
 }
 
@@ -148,25 +194,28 @@ export async function checkMigrations(): Promise<MigrationStatus> {
   const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
   // Check each table by attempting a select
-  const [alertsRes, signalsRes, strategiesRes, notesRes] = await Promise.all([
+  const [alertsRes, signalsRes, strategiesRes, notesRes, tradesRes] = await Promise.all([
     supabaseAdmin.from("price_alerts").select("id").limit(1),
     supabaseAdmin.from("daily_signals").select("id").limit(1),
     supabaseAdmin.from("user_strategies").select("id").limit(1),
     supabaseAdmin.from("trading_notes").select("id").limit(1),
+    supabaseAdmin.from("trades").select("id").limit(1),
   ]);
 
   const priceAlerts = !alertsRes.error || alertsRes.error.code !== "42P01";
   const dailySignals = !signalsRes.error || signalsRes.error.code !== "42P01";
   const userStrategies = !strategiesRes.error || strategiesRes.error.code !== "42P01";
   const tradingNotes = !notesRes.error || notesRes.error.code !== "42P01";
+  const tradesTable = !tradesRes.error || tradesRes.error.code !== "42P01";
 
-  const allComplete = priceAlerts && dailySignals && userStrategies && tradingNotes;
+  const allComplete = priceAlerts && dailySignals && userStrategies && tradingNotes && tradesTable;
 
   return {
     price_alerts: priceAlerts,
     daily_signals: dailySignals,
     user_strategies: userStrategies,
     trading_notes: tradingNotes,
+    trades: tradesTable,
     allComplete,
     sql: allComplete ? "" : getMigrationSQL(),
   };

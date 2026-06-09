@@ -629,6 +629,87 @@ export type Database = {
           },
         ];
       };
+      trades: {
+        Row: {
+          id: string;
+          user_id: string;
+          pair: string;
+          direction: "long" | "short";
+          status: "open" | "closed" | "cancelled";
+          entry_price: number;
+          entry_date: string;
+          quantity: number | null;
+          exit_price: number | null;
+          exit_date: string | null;
+          stop_loss: number | null;
+          take_profit: number | null;
+          pnl: number | null;
+          pnl_pips: number | null;
+          r_multiple: number | null;
+          notes: string | null;
+          tags: string[];
+          strategy: string | null;
+          analysis_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          pair: string;
+          direction: "long" | "short";
+          status?: "open" | "closed" | "cancelled";
+          entry_price: number;
+          entry_date?: string;
+          quantity?: number | null;
+          exit_price?: number | null;
+          exit_date?: string | null;
+          stop_loss?: number | null;
+          take_profit?: number | null;
+          notes?: string | null;
+          tags?: string[];
+          strategy?: string | null;
+          analysis_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          pair?: string;
+          direction?: "long" | "short";
+          status?: "open" | "closed" | "cancelled";
+          entry_price?: number;
+          entry_date?: string;
+          quantity?: number | null;
+          exit_price?: number | null;
+          exit_date?: string | null;
+          stop_loss?: number | null;
+          take_profit?: number | null;
+          notes?: string | null;
+          tags?: string[];
+          strategy?: string | null;
+          analysis_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "trades_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trades_analysis_id_fkey";
+            columns: ["analysis_id"];
+            isOneToOne: false;
+            referencedRelation: "analyses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

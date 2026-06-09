@@ -1,6 +1,8 @@
+"use client";
+
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   TrendingUp,
   TrendingDown,
@@ -10,15 +12,40 @@ import {
   ShieldAlert,
   ShieldCheck,
   Shield,
-  Activity,
   Target,
   Layers,
   ArrowRight,
-  Camera,
   LineChart,
-  Globe,
+  Plus,
+  ArrowUpRight,
+  ArrowDownRight,
+  X,
+  DollarSign,
+  Activity,
+  Loader2,
+  Camera,
+  Save,
 } from "lucide-react";
-import { listAnalyses } from "@/lib/vixor.functions";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { listTrades, createTrade, updateTrade, getTradeStats, getEquityCurve } from "@/domains/trades/functions";
+import type { Trade, TradeStats, TradeDirection, EquityCurvePoint } from "@/domains/trades/types";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
 import { ExpandableWidget, WidgetGroup, MiniWidget } from "@/components/vixor/ExpandableWidget";
@@ -30,236 +57,13 @@ export const Route = createFileRoute("/_authenticated/portfolio")({
 });
 
 // ═══════════════════════════════════════════════
-// TYPES
+// PAIRS (for the trade form)
 // ═══════════════════════════════════════════════
-
-interface AnalysisRow {
-  id: string;
-  pair: string | null;
-  timeframe: string | null;
-  recommendation: string | null;
-  confidence: number | null;
-  pattern: string | null;
-  status: string;
-  created_at: string;
-}
-
-interface PortfolioMetrics {
-  totalAnalyses: number;
-  completedAnalyses: number;
-  signalAnalyses: number;
-  winRate: number;
-  avgConfidence: number;
-  avgRR: string;
-  profitFactor: string;
-  drawdown: string;
-  riskScore: number;
-  riskLevel: "low" | "medium" | "high";
-  pairDistribution: { pair: string; count: number; avgConfidence: number }[];
-  sessionDistribution: {
-    session: string;
-    count: number;
-    avgConfidence: number;
-  }[];
-  dayDistribution: { day: string; count: number; avgConfidence: number }[];
-  buyCount: number;
-  sellCount: number;
-  waitCount: number;
-}
-
-// ═══════════════════════════════════════════════
-// METRICS CALCULATION (ALL FROM REAL DATA)
-// ═══════════════════════════════════════════════
-
-function calculatePortfolioMetrics(analyses: AnalysisRow[]): PortfolioMetrics {
-  const completed = analyses.filter((a) => a.status === "complete");
-  const withRec = completed.filter((a) => a.recommendation && a.recommendation !== "WAIT");
-
-  const buyCount = completed.filter((a) => a.recommendation === "BUY").length;
-  const sellCount = completed.filter((a) => a.recommendation === "SELL").length;
-  const waitCount = completed.filter((a) => a.recommendation === "WAIT").length;
-
-  // Win Rate: % of directional signals (BUY/SELL) with confidence >= 65%
-  // This is a quality proxy — high-confidence signals are more likely to be winners
-  const highConfidenceSignals = withRec.filter((a) => (a.confidence ?? 0) >= 65).length;
-  const winRate =
-    withRec.length > 0 ? Math.round((highConfidenceSignals / withRec.length) * 100) : 0;
-
-  // Average confidence across all completed analyses
-  const avgConfidence =
-    completed.length > 0
-      ? Math.round(completed.reduce((sum, a) => sum + (a.confidence ?? 0), 0) / completed.length)
-      : 0;
-
-  // Average R:R — derived from confidence quality tiers
-  // High confidence (>=70) → 1:3+, Medium (50-69) → 1:2, Low (<50) → 1:1
-  const avgRR =
-    withRec.length > 0
-      ? (() => {
-          const totalRR = withRec.reduce((sum, a) => {
-            const c = a.confidence ?? 50;
-            if (c >= 70) return sum + 3;
-            if (c >= 50) return sum + 2;
-            return sum + 1;
-          }, 0);
-          return `1:${(totalRR / withRec.length).toFixed(1)}`;
-        })()
-      : "—";
-
-  // Profit Factor: ratio of high-confidence signals to low-confidence ones
-  // Real proxy: (sum of confidence for BUY+SELL) / (sum of 100-confidence for BUY+SELL)
-  const profitFactor =
-    withRec.length > 0
-      ? (() => {
-          const gains = withRec.reduce((sum, a) => sum + (a.confidence ?? 0), 0);
-          const losses = withRec.reduce((sum, a) => sum + (100 - (a.confidence ?? 50)), 0);
-          return losses > 0 ? (gains / losses).toFixed(2) : "—";
-        })()
-      : "—";
-
-  // Drawdown proxy: based on WAIT percentage and low-confidence ratio
-  // More WAITs and low-confidence = higher potential drawdown
-  const lowConfRatio =
-    completed.length > 0
-      ? completed.filter((a) => (a.confidence ?? 0) < 40).length / completed.length
-      : 0;
-  const waitRatio = completed.length > 0 ? waitCount / completed.length : 0;
-  const drawdownValue = Math.round((lowConfRatio * 15 + waitRatio * 8) * 10) / 10;
-  const drawdown = completed.length > 0 ? `${drawdownValue}%` : "—";
-
-  // Risk Score (0-100): based on concentration, confidence variance, and signal quality
-  const riskScore = (() => {
-    if (completed.length < 3) return 50; // Not enough data = medium risk
-    let score = 30; // Base
-
-    // High concentration in one pair = riskier
-    const pairCounts = new Map<string, number>();
-    completed.forEach((a) => {
-      if (a.pair) pairCounts.set(a.pair, (pairCounts.get(a.pair) ?? 0) + 1);
-    });
-    const maxConcentration = Math.max(...pairCounts.values(), 0) / completed.length;
-    if (maxConcentration > 0.6) score += 25;
-    else if (maxConcentration > 0.4) score += 15;
-    else score += 5;
-
-    // Low average confidence = riskier
-    if (avgConfidence < 40) score += 20;
-    else if (avgConfidence < 60) score += 10;
-    else score += 0;
-
-    // High WAIT ratio = uncertainty
-    if (waitRatio > 0.5) score += 15;
-    else if (waitRatio > 0.3) score += 5;
-
-    return Math.min(100, Math.max(0, score));
-  })();
-
-  const riskLevel: "low" | "medium" | "high" =
-    riskScore < 35 ? "low" : riskScore < 65 ? "medium" : "high";
-
-  // Pair distribution
-  const pairMap = new Map<string, { count: number; totalConf: number }>();
-  completed.forEach((a) => {
-    const pair = a.pair || "Unknown";
-    const existing = pairMap.get(pair) ?? { count: 0, totalConf: 0 };
-    pairMap.set(pair, {
-      count: existing.count + 1,
-      totalConf: existing.totalConf + (a.confidence ?? 0),
-    });
-  });
-  const pairDistribution = Array.from(pairMap.entries())
-    .map(([pair, { count, totalConf }]) => ({
-      pair,
-      count,
-      avgConfidence: Math.round(totalConf / count),
-    }))
-    .sort((a, b) => b.count - a.count);
-
-  // Session distribution (UTC-based market sessions)
-  const sessionMap = new Map<string, { count: number; totalConf: number }>();
-  completed.forEach((a) => {
-    const hour = new Date(a.created_at).getUTCHours();
-    let session: string;
-    if (hour >= 7 && hour < 16) session = "London";
-    else if (hour >= 12 && hour < 21) session = "New York";
-    else session = "Asian";
-    const existing = sessionMap.get(session) ?? {
-      count: 0,
-      totalConf: 0,
-    };
-    sessionMap.set(session, {
-      count: existing.count + 1,
-      totalConf: existing.totalConf + (a.confidence ?? 0),
-    });
-  });
-  const sessionOrder = ["London", "New York", "Asian"];
-  const sessionDistribution = sessionOrder
-    .map((session) => {
-      const data = sessionMap.get(session);
-      return data
-        ? {
-            session,
-            count: data.count,
-            avgConfidence: Math.round(data.totalConf / data.count),
-          }
-        : { session, count: 0, avgConfidence: 0 };
-    })
-    .filter((s) => s.count > 0);
-
-  // Day of week distribution
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const dayMap = new Map<string, { count: number; totalConf: number }>();
-  completed.forEach((a) => {
-    const day = dayNames[new Date(a.created_at).getUTCDay()];
-    const existing = dayMap.get(day) ?? { count: 0, totalConf: 0 };
-    dayMap.set(day, {
-      count: existing.count + 1,
-      totalConf: existing.totalConf + (a.confidence ?? 0),
-    });
-  });
-  const tradingDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
-  const dayDistribution = tradingDays
-    .map((day) => {
-      const data = dayMap.get(day);
-      return data
-        ? {
-            day,
-            count: data.count,
-            avgConfidence: Math.round(data.totalConf / data.count),
-          }
-        : { day, count: 0, avgConfidence: 0 };
-    })
-    .filter((d) => d.count > 0);
-
-  return {
-    totalAnalyses: analyses.length,
-    completedAnalyses: completed.length,
-    signalAnalyses: withRec.length,
-    winRate,
-    avgConfidence,
-    avgRR,
-    profitFactor,
-    drawdown,
-    riskScore,
-    riskLevel,
-    pairDistribution,
-    sessionDistribution,
-    dayDistribution,
-    buyCount,
-    sellCount,
-    waitCount,
-  };
-}
-
-// ═══════════════════════════════════════════════
-// SESSION ICON HELPER
-// ═══════════════════════════════════════════════
-
-function SessionIcon({ session }: { session: string }) {
-  if (session === "London") return <Globe className="size-3.5 text-info" />;
-  if (session === "New York") return <Activity className="size-3.5 text-bullish" />;
-  return <Clock className="size-3.5 text-neutral-wait" />;
-}
+const PAIRS = [
+  "XAUUSD", "EURUSD", "GBPUSD", "USDJPY", "GBPJPY",
+  "BTCUSD", "ETHUSD", "SOLUSD", "AUDUSD", "NZDUSD",
+  "USDCAD", "USDCHF", "EURGBP", "EURJPY",
+];
 
 // ═══════════════════════════════════════════════
 // MAIN COMPONENT
@@ -267,42 +71,105 @@ function SessionIcon({ session }: { session: string }) {
 
 function Portfolio() {
   const { t } = useI18n();
+  const queryClient = useQueryClient();
+  const [showNewTradeDialog, setShowNewTradeDialog] = useState(false);
+  const [closeTradeDialog, setCloseTradeDialog] = useState<Trade | null>(null);
 
-  const fetchAnalyses = useStableServerFn(listAnalyses);
-  const analysesQuery = useQuery({
-    queryKey: ["analyses-portfolio"],
-    queryFn: () => fetchAnalyses({ data: { limit: 100 } }),
-    staleTime: 60_000,
+  // Stable server fn refs
+  const fetchStats = useStableServerFn(getTradeStats);
+  const fetchCurve = useStableServerFn(getEquityCurve);
+  const fetchOpenTrades = useStableServerFn(listTrades);
+  const fetchRecentTrades = useStableServerFn(listTrades);
+  const createTradeFn = useStableServerFn(createTrade);
+  const updateTradeFn = useStableServerFn(updateTrade);
+
+  // Queries
+  const statsQuery = useQuery({
+    queryKey: ["trade-stats"],
+    queryFn: () => fetchStats({}),
+    staleTime: 30_000,
   });
 
-  const analyses = useMemo(() => (analysesQuery.data ?? []) as AnalysisRow[], [analysesQuery.data]);
+  const curveQuery = useQuery({
+    queryKey: ["equity-curve"],
+    queryFn: () => fetchCurve({}),
+    staleTime: 30_000,
+  });
 
-  const metrics = useMemo(() => calculatePortfolioMetrics(analyses), [analyses]);
+  const openTradesQuery = useQuery({
+    queryKey: ["open-trades"],
+    queryFn: () => fetchOpenTrades({ data: { status: "open", limit: 50 } }),
+    staleTime: 15_000,
+  });
 
-  const isLoading = analysesQuery.isLoading;
-  const hasData = analyses.length > 0 && metrics.completedAnalyses > 0;
+  const recentTradesQuery = useQuery({
+    queryKey: ["recent-closed-trades"],
+    queryFn: () => fetchRecentTrades({ data: { status: "closed", limit: 20 } }),
+    staleTime: 30_000,
+  });
 
-  // Risk widget variant
-  const riskVariant =
-    metrics.riskLevel === "high"
-      ? "bearish"
-      : metrics.riskLevel === "medium"
-        ? "neutral"
-        : "bullish";
+  const stats = statsQuery.data as TradeStats | undefined;
+  const curve = (curveQuery.data ?? []) as EquityCurvePoint[];
+  const openTrades = (openTradesQuery.data ?? []) as Trade[];
+  const recentTrades = (recentTradesQuery.data ?? []) as Trade[];
+
+  const isLoading = statsQuery.isLoading;
+  const hasData = (stats?.closedTrades ?? 0) > 0 || (stats?.totalTrades ?? 0) > 0;
+
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: (data: { pair: string; direction: TradeDirection; entry_price: number; quantity?: number | null; stop_loss?: number | null; take_profit?: number | null; notes?: string | null; tags?: string[]; strategy?: string | null; analysis_id?: string | null }) => createTradeFn({ data }),
+    onSuccess: () => {
+      setShowNewTradeDialog(false);
+      queryClient.invalidateQueries({ queryKey: ["trade-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["equity-curve"] });
+      queryClient.invalidateQueries({ queryKey: ["open-trades"] });
+      queryClient.invalidateQueries({ queryKey: ["recent-closed-trades"] });
+    },
+  });
+
+  const closeMutation = useMutation({
+    mutationFn: (data: { tradeId: string; exit_price: number; status: "closed"; exit_date: string }) => updateTradeFn({ data }),
+    onSuccess: () => {
+      setCloseTradeDialog(null);
+      queryClient.invalidateQueries({ queryKey: ["trade-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["equity-curve"] });
+      queryClient.invalidateQueries({ queryKey: ["open-trades"] });
+      queryClient.invalidateQueries({ queryKey: ["recent-closed-trades"] });
+    },
+  });
+
+  const invalidateAll = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["trade-stats"] });
+    queryClient.invalidateQueries({ queryKey: ["equity-curve"] });
+    queryClient.invalidateQueries({ queryKey: ["open-trades"] });
+    queryClient.invalidateQueries({ queryKey: ["recent-closed-trades"] });
+  }, [queryClient]);
 
   return (
     <div className="space-y-6 pb-6 animate-in fade-in duration-500">
       {/* ── HEADER ── */}
-      <div className="flex items-center gap-3">
-        <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center">
-          <BarChart3 className="size-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight leading-none">{t("portfolio.title")}</h1>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
-            {t("portfolio.subtitle")}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center">
+            <BarChart3 className="size-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight leading-none">{t("portfolio.title")}</h1>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
+              {t("portfolio.subtitle")}
+            </div>
           </div>
         </div>
+
+        {/* New Trade Button */}
+        <button
+          onClick={() => setShowNewTradeDialog(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg gradient-primary text-primary-foreground text-xs font-bold glow-primary transition-transform active:scale-95"
+        >
+          <Plus className="size-3.5" />
+          <span className="hidden sm:inline">New Trade</span>
+        </button>
       </div>
 
       {/* ── LOADING STATE ── */}
@@ -328,10 +195,28 @@ function Portfolio() {
             </div>
             <h2 className="text-lg font-bold mb-2">{t("portfolio.noData")}</h2>
             <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed mb-6">
-              {t("portfolio.noDataDesc")}
+              Start logging your trades to see real performance metrics, equity curves, and trade breakdowns here.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-sm mx-auto text-left">
+              <button
+                onClick={() => setShowNewTradeDialog(true)}
+                className="vixor-card p-4 flex items-start gap-3 vixor-card-hover group"
+              >
+                <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Plus className="size-4 text-primary" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold mb-0.5 group-hover:text-primary transition-colors">
+                    Log a Trade
+                  </div>
+                  <div className="text-[10px] text-muted-foreground leading-relaxed">
+                    Record your first trade to start tracking performance
+                  </div>
+                </div>
+                <ArrowRight className="size-3.5 text-muted-foreground shrink-0 mt-1 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+              </button>
+
               <a
                 href="/analyze"
                 className="vixor-card p-4 flex items-start gap-3 vixor-card-hover group"
@@ -344,33 +229,14 @@ function Portfolio() {
                     Analyze Charts
                   </div>
                   <div className="text-[10px] text-muted-foreground leading-relaxed">
-                    Upload chart screenshots to generate AI signals
+                    Get AI signals then save them as trades
                   </div>
                 </div>
                 <ArrowRight className="size-3.5 text-muted-foreground shrink-0 mt-1 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
               </a>
-
-              <a
-                href="/journal"
-                className="vixor-card p-4 flex items-start gap-3 vixor-card-hover group"
-              >
-                <div className="size-9 rounded-lg bg-info/10 flex items-center justify-center shrink-0">
-                  <Layers className="size-4 text-info" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold mb-0.5 group-hover:text-info transition-colors">
-                    Log Trades
-                  </div>
-                  <div className="text-[10px] text-muted-foreground leading-relaxed">
-                    Track executions to build your performance history
-                  </div>
-                </div>
-                <ArrowRight className="size-3.5 text-muted-foreground shrink-0 mt-1 group-hover:text-info group-hover:translate-x-0.5 transition-all" />
-              </a>
             </div>
           </div>
 
-          {/* Show placeholder widgets in collapsed state to hint at what's coming */}
           <WidgetGroup title="Coming Soon">
             <ExpandableWidget
               title="Performance Overview"
@@ -381,20 +247,7 @@ function Portfolio() {
               metricLabel={t("portfolio.winRate")}
             >
               <div className="text-xs text-muted-foreground text-center py-4">
-                Start analyzing charts to see your performance metrics here.
-              </div>
-            </ExpandableWidget>
-
-            <ExpandableWidget
-              title={t("portfolio.riskScore")}
-              icon={Shield}
-              variant="neutral"
-              defaultExpanded={false}
-              metric="—"
-              metricLabel="N/A"
-            >
-              <div className="text-xs text-muted-foreground text-center py-4">
-                Risk assessment will be calculated from your analysis patterns.
+                Log your first trade to see real performance metrics.
               </div>
             </ExpandableWidget>
           </WidgetGroup>
@@ -402,56 +255,56 @@ function Portfolio() {
       )}
 
       {/* ── MAIN CONTENT (has data) ── */}
-      {!isLoading && hasData && (
+      {!isLoading && hasData && stats && (
         <div className="space-y-4">
           {/* ═══ TOP METRICS GRID ═══ */}
           <div className="grid grid-cols-2 gap-3">
             <MiniWidget
               title={t("portfolio.winRate")}
-              value={`${metrics.winRate}%`}
-              variant="bullish"
+              value={`${stats.winRate}%`}
+              variant={stats.winRate >= 50 ? "bullish" : "bearish"}
               icon={TrendingUp}
             />
             <MiniWidget
+              title="Total P&L"
+              value={formatPnl(stats.totalPnl)}
+              variant={stats.totalPnl >= 0 ? "bullish" : "bearish"}
+              icon={DollarSign}
+            />
+            <MiniWidget
               title={t("portfolio.profitFactor")}
-              value={metrics.profitFactor}
-              variant={Number(metrics.profitFactor) >= 1.5 ? "bullish" : "neutral"}
+              value={stats.profitFactor !== null ? stats.profitFactor.toFixed(2) : "—"}
+              variant={(stats.profitFactor ?? 0) >= 1.5 ? "bullish" : (stats.profitFactor ?? 0) >= 1 ? "neutral" : "bearish"}
               icon={BarChart3}
             />
             <MiniWidget
-              title={t("portfolio.avgRR")}
-              value={metrics.avgRR}
-              variant="info"
+              title="Avg R"
+              value={stats.avgRMultiple !== null ? `${stats.avgRMultiple}R` : "—"}
+              variant={(stats.avgRMultiple ?? 0) >= 1 ? "bullish" : (stats.avgRMultiple ?? 0) >= 0 ? "neutral" : "bearish"}
               icon={Target}
-            />
-            <MiniWidget
-              title={t("portfolio.drawdown")}
-              value={metrics.drawdown}
-              variant={metrics.riskLevel === "high" ? "bearish" : "neutral"}
-              icon={TrendingDown}
             />
           </div>
 
-          {/* ═══ SIGNAL BREAKDOWN MINI STATS ═══ */}
+          {/* ═══ SECONDARY STATS ROW ═══ */}
           <div className="grid grid-cols-3 gap-2">
             <div className="vixor-card p-3 text-center">
               <div className="text-[9px] font-bold uppercase tracking-widest text-bullish mb-1">
-                BUY
+                WINS
               </div>
-              <div className="text-lg font-bold font-mono text-bullish">{metrics.buyCount}</div>
+              <div className="text-lg font-bold font-mono text-bullish">{stats.winCount}</div>
             </div>
             <div className="vixor-card p-3 text-center">
               <div className="text-[9px] font-bold uppercase tracking-widest text-bearish mb-1">
-                SELL
+                LOSSES
               </div>
-              <div className="text-lg font-bold font-mono text-bearish">{metrics.sellCount}</div>
+              <div className="text-lg font-bold font-mono text-bearish">{stats.lossCount}</div>
             </div>
             <div className="vixor-card p-3 text-center">
               <div className="text-[9px] font-bold uppercase tracking-widest text-neutral-wait mb-1">
-                WAIT
+                MAX DD
               </div>
               <div className="text-lg font-bold font-mono text-neutral-wait">
-                {metrics.waitCount}
+                {stats.maxDrawdown > 0 ? formatPnl(-stats.maxDrawdown) : "$0"}
               </div>
             </div>
           </div>
@@ -459,25 +312,86 @@ function Portfolio() {
           {/* ═══ PERFORMANCE OVERVIEW ═══ */}
           <ExpandableWidget
             title="Performance Overview"
-            subtitle={`${metrics.completedAnalyses} analyses · ${metrics.signalAnalyses} signals`}
+            subtitle={`${stats.closedTrades} closed trades · ${stats.totalTrades} total`}
             icon={Target}
             variant="bullish"
             defaultExpanded={true}
-            metric={`${metrics.winRate}%`}
+            metric={`${stats.winRate}%`}
             metricLabel={t("portfolio.winRate")}
-            badge="LIVE"
+            badge="REAL"
           >
             <div className="space-y-4">
-              {/* Equity Curve — Real data only, no fake sparklines */}
-              <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
-                <LineChart className="size-8 text-muted-foreground/40 mx-auto mb-3" />
-                <div className="text-xs font-bold text-muted-foreground mb-1">
-                  {t("portfolio.equityCurve")}
+              {/* Equity Curve */}
+              {curve.length >= 2 ? (
+                <div className="rounded-lg border border-border bg-card-hover p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {t("portfolio.equityCurve")}
+                    </span>
+                    <span className={cn(
+                      "text-xs font-mono font-bold",
+                      curve[curve.length - 1]?.cumulative_pnl >= 0 ? "text-bullish" : "text-bearish"
+                    )}>
+                      {formatPnl(curve[curve.length - 1]?.cumulative_pnl ?? 0)}
+                    </span>
+                  </div>
+                  <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={curve} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="pnlGradientPos" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-bullish)" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="var(--color-bullish)" stopOpacity={0} />
+                          </linearGradient>
+                          <linearGradient id="pnlGradientNeg" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-bearish)" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="var(--color-bearish)" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+                          tickFormatter={(v: string) => v.slice(5)}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+                          tickFormatter={(v: number) => `$${v.toFixed(0)}`}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "var(--color-card)",
+                            border: "1px solid var(--color-border)",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                          }}
+                          formatter={(value: number) => [formatPnl(value), "Cumulative P&L"]}
+                        />
+                        <ReferenceLine y={0} stroke="var(--color-muted-foreground)" strokeDasharray="3 3" />
+                        <Area
+                          type="monotone"
+                          dataKey="cumulative_pnl"
+                          stroke={curve[curve.length - 1]?.cumulative_pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"}
+                          fill={curve[curve.length - 1]?.cumulative_pnl >= 0 ? "url(#pnlGradientPos)" : "url(#pnlGradientNeg)"}
+                          strokeWidth={2}
+                          dot={false}
+                          activeDot={{ r: 4, strokeWidth: 0 }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-                <div className="text-[10px] text-muted-foreground/70">
-                  Equity tracking will appear here as you log more trades.
+              ) : (
+                <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
+                  <LineChart className="size-8 text-muted-foreground/40 mx-auto mb-3" />
+                  <div className="text-xs font-bold text-muted-foreground mb-1">
+                    {t("portfolio.equityCurve")}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground/70">
+                    Close at least 2 trades to see your equity curve.
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Detailed Metrics */}
               <div className="data-grid grid-cols-2">
@@ -486,9 +400,9 @@ function Portfolio() {
                     {t("portfolio.winRate")}
                   </span>
                   <span className="text-mono text-sm font-bold text-bullish">
-                    {metrics.winRate}%
+                    {stats.winRate}%
                   </span>
-                  <span className="text-[9px] text-muted-foreground">High-confidence signals</span>
+                  <span className="text-[9px] text-muted-foreground">{stats.winCount}W / {stats.lossCount}L</span>
                 </div>
                 <div className="flex flex-col gap-0.5 p-3">
                   <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -497,271 +411,205 @@ function Portfolio() {
                   <span
                     className={cn(
                       "text-mono text-sm font-bold",
-                      Number(metrics.profitFactor) >= 1.5
+                      (stats.profitFactor ?? 0) >= 1.5
                         ? "text-bullish"
-                        : Number(metrics.profitFactor) >= 1.0
+                        : (stats.profitFactor ?? 0) >= 1.0
                           ? "text-neutral-wait"
                           : "text-bearish",
                     )}
                   >
-                    {metrics.profitFactor}
+                    {stats.profitFactor !== null ? stats.profitFactor.toFixed(2) : "—"}
                   </span>
-                  <span className="text-[9px] text-muted-foreground">Gains / Losses ratio</span>
+                  <span className="text-[9px] text-muted-foreground">Gross profit / |Gross loss|</span>
                 </div>
                 <div className="flex flex-col gap-0.5 p-3">
                   <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                    {t("portfolio.avgRR")}
+                    Avg R-Multiple
                   </span>
-                  <span className="text-mono text-sm font-bold text-info">{metrics.avgRR}</span>
-                  <span className="text-[9px] text-muted-foreground">Derived from confidence</span>
+                  <span className="text-mono text-sm font-bold text-info">
+                    {stats.avgRMultiple !== null ? `${stats.avgRMultiple}R` : "—"}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">Risk-adjusted returns</span>
                 </div>
                 <div className="flex flex-col gap-0.5 p-3">
                   <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                    Avg Confidence
+                    {t("portfolio.drawdown")}
                   </span>
-                  <span
-                    className={cn(
-                      "text-mono text-sm font-bold",
-                      metrics.avgConfidence >= 65
-                        ? "text-bullish"
-                        : metrics.avgConfidence >= 45
-                          ? "text-neutral-wait"
-                          : "text-bearish",
-                    )}
-                  >
-                    {metrics.avgConfidence}%
+                  <span className="text-mono text-sm font-bold text-bearish">
+                    {stats.maxDrawdown > 0 ? formatPnl(-stats.maxDrawdown) : "$0"}
                   </span>
-                  <span className="text-[9px] text-muted-foreground">
-                    Across {metrics.completedAnalyses} analyses
+                  <span className="text-[9px] text-muted-foreground">Peak-to-trough decline</span>
+                </div>
+                <div className="flex flex-col gap-0.5 p-3">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Avg P&L / Trade
                   </span>
+                  <span className={cn(
+                    "text-mono text-sm font-bold",
+                    stats.avgPnl >= 0 ? "text-bullish" : "text-bearish",
+                  )}>
+                    {formatPnl(stats.avgPnl)}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">Per closed trade</span>
+                </div>
+                <div className="flex flex-col gap-0.5 p-3">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Avg Hold Time
+                  </span>
+                  <span className="text-mono text-sm font-bold text-foreground">
+                    {stats.avgHoldingTimeHours !== null ? formatDuration(stats.avgHoldingTimeHours) : "—"}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">From entry to exit</span>
                 </div>
               </div>
+
+              {/* Best / Worst */}
+              {(stats.bestTrade || stats.worstTrade) && (
+                <div className="grid grid-cols-2 gap-2">
+                  {stats.bestTrade && (
+                    <div className="flex items-center gap-2 p-2.5 rounded-lg bg-bullish/5 border border-bullish/20">
+                      <ArrowUpRight className="size-3.5 text-bullish shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-[9px] font-bold uppercase tracking-widest text-bullish">Best Trade</div>
+                        <div className="text-xs font-bold font-mono text-bullish truncate">
+                          {formatPnl(stats.bestTrade.pnl)} · {stats.bestTrade.pair}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {stats.worstTrade && (
+                    <div className="flex items-center gap-2 p-2.5 rounded-lg bg-bearish/5 border border-bearish/20">
+                      <ArrowDownRight className="size-3.5 text-bearish shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-[9px] font-bold uppercase tracking-widest text-bearish">Worst Trade</div>
+                        <div className="text-xs font-bold font-mono text-bearish truncate">
+                          {formatPnl(stats.worstTrade.pnl)} · {stats.worstTrade.pair}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </ExpandableWidget>
 
-          {/* ═══ RISK SCORE ═══ */}
+          {/* ═══ OPEN POSITIONS ═══ */}
           <ExpandableWidget
-            title={t("portfolio.riskScore")}
-            subtitle={`Based on ${metrics.completedAnalyses} analyses`}
-            icon={
-              metrics.riskLevel === "high"
-                ? ShieldAlert
-                : metrics.riskLevel === "medium"
-                  ? Shield
-                  : ShieldCheck
-            }
-            variant={riskVariant}
-            defaultExpanded={true}
-            metric={`${metrics.riskScore}`}
-            metricLabel={metrics.riskLevel.toUpperCase()}
-            badge={
-              metrics.riskLevel === "high" ? "HIGH" : metrics.riskLevel === "medium" ? "MED" : "LOW"
-            }
-          >
-            <div className="space-y-4">
-              {/* Risk gauge visualization */}
-              <div className="relative">
-                <div className="h-3 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all duration-1000",
-                      metrics.riskLevel === "high"
-                        ? "bg-gradient-to-r from-bearish/80 to-bearish"
-                        : metrics.riskLevel === "medium"
-                          ? "bg-gradient-to-r from-neutral-wait/80 to-neutral-wait"
-                          : "bg-gradient-to-r from-bullish/80 to-bullish",
-                    )}
-                    style={{ width: `${metrics.riskScore}%` }}
-                  />
-                </div>
-                <div className="flex justify-between mt-1.5">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-bullish">
-                    Low
-                  </span>
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-wait">
-                    Medium
-                  </span>
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-bearish">
-                    High
-                  </span>
-                </div>
-              </div>
-
-              {/* Risk factors breakdown */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border">
-                  <div className="flex items-center gap-2">
-                    <Layers className="size-3.5 text-muted-foreground" />
-                    <span className="text-[11px] font-medium">Concentration</span>
-                  </div>
-                  <span
-                    className={cn(
-                      "text-[11px] font-bold font-mono",
-                      metrics.pairDistribution.length <= 2
-                        ? "text-bearish"
-                        : metrics.pairDistribution.length <= 4
-                          ? "text-neutral-wait"
-                          : "text-bullish",
-                    )}
-                  >
-                    {metrics.pairDistribution.length} pairs
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border">
-                  <div className="flex items-center gap-2">
-                    <Target className="size-3.5 text-muted-foreground" />
-                    <span className="text-[11px] font-medium">Signal Quality</span>
-                  </div>
-                  <span
-                    className={cn(
-                      "text-[11px] font-bold font-mono",
-                      metrics.avgConfidence >= 65
-                        ? "text-bullish"
-                        : metrics.avgConfidence >= 45
-                          ? "text-neutral-wait"
-                          : "text-bearish",
-                    )}
-                  >
-                    {metrics.avgConfidence}% avg
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border">
-                  <div className="flex items-center gap-2">
-                    <TrendingDown className="size-3.5 text-muted-foreground" />
-                    <span className="text-[11px] font-medium">{t("portfolio.drawdown")}</span>
-                  </div>
-                  <span
-                    className={cn(
-                      "text-[11px] font-bold font-mono",
-                      metrics.riskLevel === "high" ? "text-bearish" : "text-neutral-wait",
-                    )}
-                  >
-                    {metrics.drawdown}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </ExpandableWidget>
-
-          {/* ═══ BY ASSET ═══ */}
-          <ExpandableWidget
-            title={t("portfolio.byAsset")}
-            subtitle={`${metrics.pairDistribution.length} instruments tracked`}
-            icon={BarChart3}
+            title="Open Positions"
+            subtitle={`${openTrades.length} active`}
+            icon={Activity}
             variant="info"
-            defaultExpanded={true}
-            metric={`${metrics.pairDistribution.length}`}
-            metricLabel="PAIRS"
+            defaultExpanded={openTrades.length > 0}
+            metric={`${openTrades.length}`}
+            metricLabel="OPEN"
+            badge={openTrades.length > 0 ? "ACTIVE" : undefined}
           >
-            <div className="space-y-2">
-              {metrics.pairDistribution.map((item) => {
-                const maxCount = metrics.pairDistribution[0]?.count ?? 1;
-                const barWidth = Math.round((item.count / maxCount) * 100);
-                const confColor =
-                  item.avgConfidence >= 65
-                    ? "bg-bullish"
-                    : item.avgConfidence >= 45
-                      ? "bg-neutral-wait"
-                      : "bg-bearish";
-
-                return (
+            {openTrades.length === 0 ? (
+              <div className="text-xs text-muted-foreground text-center py-4">
+                No open positions. Click "New Trade" to log one.
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto scrollbar-thin">
+                {openTrades.map((trade) => (
                   <div
-                    key={item.pair}
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
+                    key={trade.id}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border"
                   >
-                    <div className="w-20 shrink-0">
-                      <div className="text-xs font-bold font-mono truncate">{item.pair}</div>
+                    <div className={cn(
+                      "size-8 rounded-lg flex items-center justify-center shrink-0",
+                      trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+                    )}>
+                      {trade.direction === "long" ? (
+                        <ArrowUpRight className="size-4 text-bullish" />
+                      ) : (
+                        <ArrowDownRight className="size-4 text-bearish" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="h-2 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className={cn(
-                            "h-full rounded-full transition-all duration-700",
-                            confColor,
-                          )}
-                          style={{ width: `${barWidth}%` }}
-                        />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold font-mono">{trade.pair}</span>
+                        <span className={cn(
+                          "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded",
+                          trade.direction === "long"
+                            ? "bg-bullish/15 text-bullish"
+                            : "bg-bearish/15 text-bearish",
+                        )}>
+                          {trade.direction.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                        Entry: {trade.entry_price}
+                        {trade.stop_loss && ` · SL: ${trade.stop_loss}`}
+                        {trade.take_profit && ` · TP: ${trade.take_profit}`}
                       </div>
                     </div>
-                    <div className="shrink-0 text-right">
-                      <div className="text-[11px] font-bold font-mono">{item.count}</div>
-                      <div
-                        className={cn(
-                          "text-[9px] font-mono",
-                          item.avgConfidence >= 65
-                            ? "text-bullish"
-                            : item.avgConfidence >= 45
-                              ? "text-neutral-wait"
-                              : "text-bearish",
-                        )}
-                      >
-                        {item.avgConfidence}% avg
-                      </div>
-                    </div>
+                    <button
+                      onClick={() => setCloseTradeDialog(trade)}
+                      className="text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors shrink-0"
+                    >
+                      Close
+                    </button>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            )}
           </ExpandableWidget>
 
-          {/* ═══ BY SESSION ═══ */}
-          {metrics.sessionDistribution.length > 0 && (
+          {/* ═══ BY PAIR ═══ */}
+          {stats.winRateByPair.length > 0 && (
             <ExpandableWidget
-              title={t("portfolio.bySession")}
-              subtitle="Based on analysis timestamps (UTC)"
-              icon={Clock}
-              variant="neutral"
-              defaultExpanded={false}
-              metric={getBestSession(metrics.sessionDistribution)}
-              metricLabel="BEST"
+              title={t("portfolio.byAsset")}
+              subtitle={`${stats.winRateByPair.length} instruments tracked`}
+              icon={BarChart3}
+              variant="info"
+              defaultExpanded={true}
+              metric={`${stats.winRateByPair.length}`}
+              metricLabel="PAIRS"
             >
               <div className="space-y-2">
-                {metrics.sessionDistribution.map((item) => {
-                  const isBest =
-                    item.avgConfidence ===
-                    Math.max(...metrics.sessionDistribution.map((s) => s.avgConfidence));
+                {stats.winRateByPair.map((item) => {
+                  const maxCount = stats.winRateByPair[0]?.count ?? 1;
+                  const barWidth = Math.round((item.count / maxCount) * 100);
+                  const confColor =
+                    item.winRate >= 55
+                      ? "bg-bullish"
+                      : item.winRate >= 40
+                        ? "bg-neutral-wait"
+                        : "bg-bearish";
 
                   return (
                     <div
-                      key={item.session}
-                      className={cn(
-                        "flex items-center gap-3 p-3 rounded-lg border",
-                        isBest ? "bg-primary/5 border-primary/20" : "bg-card border-border",
-                      )}
+                      key={item.pair}
+                      className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
                     >
-                      <div
-                        className={cn(
-                          "size-8 rounded-lg flex items-center justify-center shrink-0",
-                          isBest ? "bg-primary/10" : "bg-muted",
-                        )}
-                      >
-                        <SessionIcon session={item.session} />
+                      <div className="w-20 shrink-0">
+                        <div className="text-xs font-bold font-mono truncate">{item.pair}</div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold">{item.session}</span>
-                          {isBest && (
-                            <span className="text-[8px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                              BEST
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[10px] text-muted-foreground">
-                          {item.count} analyses
+                        <div className="h-2 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={cn("h-full rounded-full transition-all duration-700", confColor)}
+                            style={{ width: `${barWidth}%` }}
+                          />
                         </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <div
-                          className={cn(
-                            "text-sm font-bold font-mono",
-                            item.avgConfidence >= 65
-                              ? "text-bullish"
-                              : item.avgConfidence >= 45
-                                ? "text-neutral-wait"
-                                : "text-bearish",
-                          )}
-                        >
-                          {item.avgConfidence}%
+                      <div className="shrink-0 text-right">
+                        <div className="text-[11px] font-bold font-mono">{item.count}</div>
+                        <div className={cn(
+                          "text-[9px] font-mono",
+                          item.winRate >= 55
+                            ? "text-bullish"
+                            : item.winRate >= 40
+                              ? "text-neutral-wait"
+                              : "text-bearish",
+                        )}>
+                          {item.winRate}% WR
+                        </div>
+                        <div className={cn(
+                          "text-[9px] font-mono",
+                          item.totalPnl >= 0 ? "text-bullish" : "text-bearish",
+                        )}>
+                          {formatPnl(item.totalPnl)}
                         </div>
                       </div>
                     </div>
@@ -771,24 +619,72 @@ function Portfolio() {
             </ExpandableWidget>
           )}
 
+          {/* ═══ BY DIRECTION ═══ */}
+          {stats.winRateByDirection.length > 0 && (
+            <ExpandableWidget
+              title="By Direction"
+              subtitle="Long vs Short breakdown"
+              icon={Layers}
+              variant="neutral"
+              defaultExpanded={false}
+            >
+              <div className="space-y-2">
+                {stats.winRateByDirection.map((item) => (
+                  <div
+                    key={item.direction}
+                    className="flex items-center gap-3 p-3 rounded-lg border bg-card border-border"
+                  >
+                    <div className={cn(
+                      "size-8 rounded-lg flex items-center justify-center shrink-0",
+                      item.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+                    )}>
+                      {item.direction === "long" ? (
+                        <ArrowUpRight className="size-4 text-bullish" />
+                      ) : (
+                        <ArrowDownRight className="size-4 text-bearish" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-bold">{item.direction.toUpperCase()}</div>
+                      <div className="text-[10px] text-muted-foreground">{item.count} trades</div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className={cn(
+                        "text-sm font-bold font-mono",
+                        item.winRate >= 55 ? "text-bullish" : item.winRate >= 40 ? "text-neutral-wait" : "text-bearish",
+                      )}>
+                        {item.winRate}%
+                      </div>
+                      <div className={cn(
+                        "text-[10px] font-mono",
+                        item.totalPnl >= 0 ? "text-bullish" : "text-bearish",
+                      )}>
+                        {formatPnl(item.totalPnl)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ExpandableWidget>
+          )}
+
           {/* ═══ BY DAY OF WEEK ═══ */}
-          {metrics.dayDistribution.length > 0 && (
+          {stats.winRateByDay.length > 0 && (
             <ExpandableWidget
               title={t("portfolio.byDay")}
-              subtitle="Weekly activity pattern"
+              subtitle="Weekly performance pattern"
               icon={CalendarDays}
               variant="neutral"
               defaultExpanded={false}
-              metric={getBestDay(metrics.dayDistribution)}
+              metric={getBestDay(stats.winRateByDay)}
               metricLabel="BEST DAY"
             >
               <div className="space-y-1.5">
-                {metrics.dayDistribution.map((item) => {
-                  const maxCount = Math.max(...metrics.dayDistribution.map((d) => d.count));
+                {stats.winRateByDay.map((item) => {
+                  const maxCount = Math.max(...stats.winRateByDay.map((d) => d.count));
                   const barWidth = Math.round((item.count / (maxCount || 1)) * 100);
                   const isBest =
-                    item.avgConfidence ===
-                    Math.max(...metrics.dayDistribution.map((d) => d.avgConfidence));
+                    item.winRate === Math.max(...stats.winRateByDay.map((d) => d.winRate));
 
                   return (
                     <div
@@ -796,12 +692,7 @@ function Portfolio() {
                       className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
                     >
                       <div className="w-10 shrink-0">
-                        <span
-                          className={cn(
-                            "text-xs font-bold",
-                            isBest ? "text-primary" : "text-foreground",
-                          )}
-                        >
+                        <span className={cn("text-xs font-bold", isBest ? "text-primary" : "text-foreground")}>
                           {item.day}
                         </span>
                       </div>
@@ -817,20 +708,12 @@ function Portfolio() {
                         </div>
                       </div>
                       <div className="shrink-0 text-right flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          {item.count}
-                        </span>
-                        <span
-                          className={cn(
-                            "text-[11px] font-bold font-mono min-w-[36px]",
-                            item.avgConfidence >= 65
-                              ? "text-bullish"
-                              : item.avgConfidence >= 45
-                                ? "text-neutral-wait"
-                                : "text-bearish",
-                          )}
-                        >
-                          {item.avgConfidence}%
+                        <span className="text-[10px] text-muted-foreground font-mono">{item.count}</span>
+                        <span className={cn(
+                          "text-[11px] font-bold font-mono min-w-[36px]",
+                          item.winRate >= 55 ? "text-bullish" : item.winRate >= 40 ? "text-neutral-wait" : "text-bearish",
+                        )}>
+                          {item.winRate}%
                         </span>
                       </div>
                     </div>
@@ -840,7 +723,73 @@ function Portfolio() {
             </ExpandableWidget>
           )}
 
-          {/* ═══ RAW DATA SUMMARY ═══ */}
+          {/* ═══ RECENT TRADES ═══ */}
+          {recentTrades.length > 0 && (
+            <ExpandableWidget
+              title="Recent Trades"
+              subtitle={`Last ${Math.min(recentTrades.length, 20)} closed trades`}
+              icon={Clock}
+              variant="neutral"
+              defaultExpanded={true}
+            >
+              <div className="space-y-1.5 max-h-96 overflow-y-auto scrollbar-thin">
+                {recentTrades.map((trade) => (
+                  <div
+                    key={trade.id}
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
+                  >
+                    <div className={cn(
+                      "size-7 rounded-lg flex items-center justify-center shrink-0",
+                      trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+                    )}>
+                      {trade.direction === "long" ? (
+                        <ArrowUpRight className="size-3.5 text-bullish" />
+                      ) : (
+                        <ArrowDownRight className="size-3.5 text-bearish" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold font-mono">{trade.pair}</span>
+                        <span className={cn(
+                          "text-[8px] font-bold uppercase px-1 py-0.5 rounded",
+                          trade.direction === "long"
+                            ? "bg-bullish/15 text-bullish"
+                            : "bg-bearish/15 text-bearish",
+                        )}>
+                          {trade.direction.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground font-mono">
+                        {trade.entry_price} → {trade.exit_price ?? "—"}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className={cn(
+                        "text-xs font-bold font-mono",
+                        (trade.pnl ?? 0) >= 0 ? "text-bullish" : "text-bearish",
+                      )}>
+                        {formatPnl(trade.pnl ?? 0)}
+                      </div>
+                      {trade.r_multiple !== null && (
+                        <div className={cn(
+                          "text-[9px] font-mono",
+                          trade.r_multiple >= 1 ? "text-bullish" : trade.r_multiple >= 0 ? "text-neutral-wait" : "text-bearish",
+                        )}>
+                          {trade.r_multiple >= 0 ? "+" : ""}{trade.r_multiple.toFixed(2)}R
+                        </div>
+                      )}
+                      <div className="text-[9px] text-muted-foreground font-mono">
+                        {trade.exit_date ? new Date(trade.exit_date).toLocaleDateString() : "—"}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ExpandableWidget>
+          )}
+
+          {/* ═══ DATA SUMMARY ═══ */}
           <div className="vixor-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <Activity className="size-3.5 text-muted-foreground" />
@@ -848,28 +797,370 @@ function Portfolio() {
                 Data Summary
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div className="text-center">
-                <div className="text-lg font-bold font-mono text-foreground">
-                  {metrics.totalAnalyses}
-                </div>
-                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
-                  Total Analyses
-                </div>
+                <div className="text-lg font-bold font-mono text-foreground">{stats.totalTrades}</div>
+                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Total</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold font-mono text-foreground">
-                  {metrics.completedAnalyses}
-                </div>
-                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
-                  Completed
-                </div>
+                <div className="text-lg font-bold font-mono text-bullish">{stats.closedTrades}</div>
+                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Closed</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold font-mono text-info">{openTrades.length}</div>
+                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Open</div>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* ── NEW TRADE DIALOG ── */}
+      <NewTradeDialog
+        open={showNewTradeDialog}
+        onOpenChange={setShowNewTradeDialog}
+        onSubmit={(data) => createMutation.mutate(data)}
+        isLoading={createMutation.isPending}
+      />
+
+      {/* ── CLOSE TRADE DIALOG ── */}
+      {closeTradeDialog && (
+        <CloseTradeDialog
+          trade={closeTradeDialog}
+          open={!!closeTradeDialog}
+          onOpenChange={(open) => { if (!open) setCloseTradeDialog(null); }}
+          onSubmit={(exitPrice) => closeMutation.mutate({
+            tradeId: closeTradeDialog.id,
+            exit_price: exitPrice,
+            status: "closed",
+            exit_date: new Date().toISOString(),
+          })}
+          isLoading={closeMutation.isPending}
+        />
+      )}
     </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// NEW TRADE DIALOG
+// ═══════════════════════════════════════════════
+
+function NewTradeDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  isLoading,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (data: {
+    pair: string;
+    direction: TradeDirection;
+    entry_price: number;
+    quantity?: number | null;
+    stop_loss?: number | null;
+    take_profit?: number | null;
+    notes?: string | null;
+    strategy?: string | null;
+  }) => void;
+  isLoading: boolean;
+}) {
+  const [pair, setPair] = useState("XAUUSD");
+  const [direction, setDirection] = useState<TradeDirection>("long");
+  const [entryPrice, setEntryPrice] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [stopLoss, setStopLoss] = useState("");
+  const [takeProfit, setTakeProfit] = useState("");
+  const [notes, setNotes] = useState("");
+  const [strategy, setStrategy] = useState("");
+
+  const handleSubmit = useCallback(() => {
+    if (!entryPrice || !pair) return;
+    onSubmit({
+      pair,
+      direction,
+      entry_price: parseFloat(entryPrice),
+      quantity: quantity ? parseFloat(quantity) : null,
+      stop_loss: stopLoss ? parseFloat(stopLoss) : null,
+      take_profit: takeProfit ? parseFloat(takeProfit) : null,
+      notes: notes || null,
+      strategy: strategy || null,
+    });
+  }, [pair, direction, entryPrice, quantity, stopLoss, takeProfit, notes, strategy, onSubmit]);
+
+  // Reset form when dialog opens
+  const handleOpenChange = useCallback((nextOpen: boolean) => {
+    if (nextOpen) {
+      setPair("XAUUSD");
+      setDirection("long");
+      setEntryPrice("");
+      setQuantity("");
+      setStopLoss("");
+      setTakeProfit("");
+      setNotes("");
+      setStrategy("");
+    }
+    onOpenChange(nextOpen);
+  }, [onOpenChange]);
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Plus className="size-4 text-primary" />
+            New Trade
+          </DialogTitle>
+          <DialogDescription>
+            Log a new trade entry. You can close it later from the open positions list.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          {/* Pair */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase font-bold text-muted-foreground">Pair</label>
+            <select
+              value={pair}
+              onChange={(e) => setPair(e.target.value)}
+              className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors cursor-pointer"
+            >
+              {PAIRS.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Direction */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase font-bold text-muted-foreground">Direction</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setDirection("long")}
+                className={cn(
+                  "h-10 rounded-lg border text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-colors",
+                  direction === "long"
+                    ? "bg-bullish/15 border-bullish/40 text-bullish"
+                    : "bg-card-hover border-border text-muted-foreground hover:border-bullish/30",
+                )}
+              >
+                <ArrowUpRight className="size-3.5" />
+                Long
+              </button>
+              <button
+                onClick={() => setDirection("short")}
+                className={cn(
+                  "h-10 rounded-lg border text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-colors",
+                  direction === "short"
+                    ? "bg-bearish/15 border-bearish/40 text-bearish"
+                    : "bg-card-hover border-border text-muted-foreground hover:border-bearish/30",
+                )}
+              >
+                <ArrowDownRight className="size-3.5" />
+                Short
+              </button>
+            </div>
+          </div>
+
+          {/* Entry Price & Quantity */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase font-bold text-muted-foreground">Entry Price *</label>
+              <input
+                type="number"
+                step="any"
+                value={entryPrice}
+                onChange={(e) => setEntryPrice(e.target.value)}
+                placeholder="0.00"
+                className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase font-bold text-muted-foreground">Quantity</label>
+              <input
+                type="number"
+                step="any"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                placeholder="1"
+                className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* SL & TP */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase font-bold text-muted-foreground">Stop Loss</label>
+              <input
+                type="number"
+                step="any"
+                value={stopLoss}
+                onChange={(e) => setStopLoss(e.target.value)}
+                placeholder="—"
+                className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase font-bold text-muted-foreground">Take Profit</label>
+              <input
+                type="number"
+                step="any"
+                value={takeProfit}
+                onChange={(e) => setTakeProfit(e.target.value)}
+                placeholder="—"
+                className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Strategy */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase font-bold text-muted-foreground">Strategy</label>
+            <input
+              type="text"
+              value={strategy}
+              onChange={(e) => setStrategy(e.target.value)}
+              placeholder="e.g., Breakout, Mean Reversion"
+              maxLength={100}
+              className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm outline-none focus:border-primary transition-colors"
+            />
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase font-bold text-muted-foreground">Notes</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Trade rationale, observations..."
+              rows={2}
+              maxLength={5000}
+              className="w-full px-3 py-2 bg-card-hover border border-border rounded-lg text-sm outline-none focus:border-primary transition-colors resize-none"
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <button
+            onClick={handleSubmit}
+            disabled={!entryPrice || isLoading}
+            className={cn(
+              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+              entryPrice && !isLoading
+                ? "gradient-primary text-primary-foreground glow-primary active:scale-95"
+                : "bg-muted text-muted-foreground cursor-not-allowed",
+            )}
+          >
+            {isLoading ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Save className="size-3.5" />
+            )}
+            Open Trade
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// CLOSE TRADE DIALOG
+// ═══════════════════════════════════════════════
+
+function CloseTradeDialog({
+  trade,
+  open,
+  onOpenChange,
+  onSubmit,
+  isLoading,
+}: {
+  trade: Trade;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (exitPrice: number) => void;
+  isLoading: boolean;
+}) {
+  const [exitPrice, setExitPrice] = useState(trade.exit_price?.toString() ?? "");
+
+  const handleSubmit = useCallback(() => {
+    if (!exitPrice) return;
+    onSubmit(parseFloat(exitPrice));
+  }, [exitPrice, onSubmit]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <X className="size-4 text-bearish" />
+            Close Trade
+          </DialogTitle>
+          <DialogDescription>
+            Close {trade.pair} {trade.direction} position entered at {trade.entry_price}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          {/* Trade summary */}
+          <div className="vixor-card p-3 flex items-center gap-3">
+            <div className={cn(
+              "size-8 rounded-lg flex items-center justify-center shrink-0",
+              trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+            )}>
+              {trade.direction === "long" ? (
+                <ArrowUpRight className="size-4 text-bullish" />
+              ) : (
+                <ArrowDownRight className="size-4 text-bearish" />
+              )}
+            </div>
+            <div>
+              <div className="text-xs font-bold font-mono">{trade.pair} · {trade.direction.toUpperCase()}</div>
+              <div className="text-[10px] text-muted-foreground font-mono">
+                Entry: {trade.entry_price}
+                {trade.stop_loss && ` · SL: ${trade.stop_loss}`}
+                {trade.take_profit && ` · TP: ${trade.take_profit}`}
+              </div>
+            </div>
+          </div>
+
+          {/* Exit price */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase font-bold text-muted-foreground">Exit Price *</label>
+            <input
+              type="number"
+              step="any"
+              value={exitPrice}
+              onChange={(e) => setExitPrice(e.target.value)}
+              placeholder="0.00"
+              className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors"
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <button
+            onClick={handleSubmit}
+            disabled={!exitPrice || isLoading}
+            className={cn(
+              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+              exitPrice && !isLoading
+                ? "bg-bearish/20 text-bearish border border-bearish/40 hover:bg-bearish/30 active:scale-95"
+                : "bg-muted text-muted-foreground cursor-not-allowed",
+            )}
+          >
+            {isLoading ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <X className="size-3.5" />
+            )}
+            Close Trade
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -877,14 +1168,20 @@ function Portfolio() {
 // HELPERS
 // ═══════════════════════════════════════════════
 
-function getBestSession(sessions: { session: string; avgConfidence: number }[]): string {
-  if (sessions.length === 0) return "—";
-  const best = sessions.reduce((a, b) => (a.avgConfidence > b.avgConfidence ? a : b));
-  return best.session;
+function formatPnl(value: number): string {
+  const prefix = value >= 0 ? "+" : "";
+  return `${prefix}$${Math.abs(value).toFixed(2)}`;
 }
 
-function getBestDay(days: { day: string; avgConfidence: number }[]): string {
+function formatDuration(hours: number): string {
+  if (hours < 1) return `${Math.round(hours * 60)}m`;
+  if (hours < 24) return `${Math.round(hours * 10) / 10}h`;
+  const days = Math.round((hours / 24) * 10) / 10;
+  return `${days}d`;
+}
+
+function getBestDay(days: { day: string; winRate: number }[]): string {
   if (days.length === 0) return "—";
-  const best = days.reduce((a, b) => (a.avgConfidence > b.avgConfidence ? a : b));
+  const best = days.reduce((a, b) => (a.winRate > b.winRate ? a : b));
   return best.day;
 }

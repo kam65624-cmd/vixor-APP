@@ -1,85 +1,108 @@
-# Worklog — P1b: Enhanced Notes System
+# Worklog — P2: Real Portfolio Intelligence
 
-**Date**: 2026-03-04
-**Task**: P1b — Enhanced Notes System for Vixor Trading Platform
+**Date:** 2026-03-05
+**Task:** Replace proxy metrics with real trade data on the portfolio page
 
 ## Summary
 
-Implemented a full-featured trading notes system that allows users to create, edit, delete, and manage free-form trading notes. Notes can be linked to trading pairs and/or analysis results, tagged with custom tags, annotated with mood, and pinned for quick access.
+Replaced all proxy metrics (confidence-based win rate, derived profit factor, estimated drawdown) with real trade data from a new `trades` table. The portfolio page now shows actual P&L, real equity curves, and genuine trade breakdowns.
 
-## Files Created
+## Changes Made
 
-### 1. SQL Migration
-- **`supabase/migrations/20260610000000_add_trading_notes.sql`**
-  - Creates `trading_notes` table with: id, user_id, pair, analysis_id, title, content, tags, mood, is_pinned, created_at, updated_at
-  - RLS policies for user-scoped CRUD
-  - Indexes on user_id, pair, analysis_id, and is_pinned
-  - Auto-update trigger for updated_at
+### 1. SQL Migration — `supabase/migrations/20260610010000_add_trades.sql`
+- Created `trades` table with:
+  - Entry/exit fields (price, date, quantity)
+  - Risk management fields (stop_loss, take_profit)
+  - Generated columns: `pnl`, `pnl_pips`, `r_multiple`
+  - Metadata: notes, tags, strategy, analysis_id
+  - RLS policies for user-scoped access
+  - Indexes on user_id, status, pair, entry_date
+  - Auto-update trigger for `updated_at`
 
-### 2. Notes Domain
-- **`src/domains/notes/types.ts`** — TypeScript types: TradingNote, CreateNoteInput, UpdateNoteInput, ListNotesFilters, Mood
-- **`src/domains/notes/functions.ts`** — Server functions using createServerFn + requireSupabaseAuth:
-  - `createNote` (POST) — Create a new trading note
-  - `listNotes` (GET) — List notes with filters (pair, analysis_id, tags, pinnedOnly, mood)
-  - `updateNote` (POST) — Update note fields
-  - `deleteNote` (POST) — Delete a note
-  - `getNotesByPair` (GET) — Get notes for a specific pair
-  - `getNotesByAnalysis` (GET) — Get notes linked to an analysis
-- **`src/domains/notes/index.ts`** — Barrel export
+### 2. Supabase Types — `src/shared/supabase/types.ts`
+- Added `trades` table definition with Row, Insert, Update types
+- Added relationships to profiles and analyses
 
-### 3. Note Editor Dialog Component
-- **`src/components/vixor/NoteEditorDialog.tsx`**
-  - Full note editor with: title, content (multi-line), pair selector (from AVAILABLE_PAIRS or custom), mood selector (confident/cautious/anxious/neutral with emoji), preset + custom tags, pin toggle
-  - Supports both create and edit modes
-  - Pre-fills pair and analysis_id when opened from analysis page
+### 3. Migration Utility — `src/shared/migrate.server.ts`
+- Added `trades` field to `MigrationStatus` interface
+- Added trades table check in `checkMigrations()`
+- Added CREATE TABLE SQL for trades in `getMigrationSQL()`
+- Updated `allComplete` logic to include trades table
+
+### 4. Trades Domain — `src/domains/trades/`
+
+**types.ts:**
+- `Trade` — full trade row type
+- `CreateTradeInput` — for opening new trades
+- `UpdateTradeInput` — for closing/updating trades
+- `ListTradesFilters` — status, pair, date range filters
+- `TradeStats` — comprehensive portfolio statistics
+- `EquityCurvePoint` — for chart data
+
+**functions.ts:**
+- `createTrade` (POST) — Open a new trade with validation
+- `listTrades` (GET) — List trades with filters
+- `updateTrade` (POST) — Update/close trade
+- `deleteTrade` (POST) — Delete a trade
+- `getTradeStats` (GET) — Calculate real portfolio stats:
+  - Win rate, P&L, profit factor, max drawdown
+  - Average R-multiple, best/worst trade
+  - Average holding time
+  - Breakdown by pair, direction, day of week
+- `getEquityCurve` (GET) — Cumulative P&L over time
+
+**index.ts:**
+- Barrel exports for all functions and types
+
+### 5. Barrel Export — `src/lib/vixor.functions.ts`
+- Added trades domain exports (createTrade, listTrades, updateTrade, deleteTrade, getTradeStats, getEquityCurve)
+
+### 6. Portfolio Page Rewrite — `src/routes/_authenticated/portfolio.tsx`
+
+**Before:** Used proxy metrics from analyses (confidence-based win rate, derived profit factor, estimated drawdown, placeholder equity curve)
+
+**After:** Uses real trade data:
+- **Performance Overview:** Real win rate (closed wins/total closed), Total P&L (sum of closed trade P&L), Profit Factor (gross profit/|gross loss|), Avg R-Multiple, Max Drawdown (peak-to-trough)
+- **Equity Curve:** Real AreaChart using recharts with cumulative P&L from closed trades, green/red gradient based on profitability
+- **Open Positions Widget:** Shows currently open trades with entry price, direction, SL/TP, "Close Trade" button
+- **New Trade Dialog:** Full form for pair, direction, entry price, quantity, SL, TP, strategy, notes
+- **Close Trade Dialog:** Quick close with exit price entry
+- **Trade Breakdown:** By Pair (win rate + P&L), By Direction (Long vs Short), By Day of Week
+- **Recent Trades:** Last 20 closed trades with P&L and R-multiple
+- **Empty State:** Helpful onboarding when no trades exist
+
+### 7. Trade Desk Page Update — `src/routes/_authenticated/trade-desk.tsx`
+
+**Added:**
+- Direction selector (Long/Short)
+- Entry price input
+- "Save as Trade" button that creates a real trade in the trades table
+- Pre-fills pair from the calculator, calculates SL price from pips
+- Shows real open positions from trades table (replaces static empty state)
+- Success feedback animation
+
+## Technical Decisions
+
+1. **Generated columns for P&L calculation:** The `pnl`, `pnl_pips`, and `r_multiple` columns are GENERATED ALWAYS AS STORED in PostgreSQL, ensuring consistent calculation at the DB level. However, the migration utility includes a simpler version without generated columns since it can't execute the full SQL through PostgREST.
+
+2. **Stats calculation on the server:** All statistical calculations (win rate, profit factor, max drawdown, etc.) are done server-side in `getTradeStats`, ensuring consistent results and keeping the client lightweight.
+
+3. **Client-side charting with recharts:** The equity curve uses recharts `AreaChart` with dynamic gradient colors (green for positive, red for negative cumulative P&L).
+
+4. **Consistent patterns:** All server functions follow the same patterns as existing domains (notes, trading) — using `createServerFn`, `requireSupabaseAuth` middleware, zod validators, and `useStableServerFn` on the client.
 
 ## Files Modified
+- `supabase/migrations/20260610010000_add_trades.sql` (new)
+- `src/shared/supabase/types.ts`
+- `src/shared/migrate.server.ts`
+- `src/domains/trades/types.ts` (new)
+- `src/domains/trades/functions.ts` (new)
+- `src/domains/trades/index.ts` (new)
+- `src/lib/vixor.functions.ts`
+- `src/routes/_authenticated/portfolio.tsx`
+- `src/routes/_authenticated/trade-desk.tsx`
 
-### 4. Supabase Types
-- **`src/shared/supabase/types.ts`**
-  - Added `trading_notes` table to Database type with Row/Insert/Update types
-  - Exported `DatabaseWithoutInternals` and `DefaultSchema` types (previously unexported)
-
-### 5. Barrel Exports
-- **`src/lib/vixor.functions.ts`** — Added re-exports for all notes domain functions
-
-### 6. i18n Translations
-- **`src/shared/i18n/translations/en.ts`** — Added journal.notes and 20+ notes-related translation keys
-- **`src/shared/i18n/translations/ar.ts`** — Added matching Arabic translations
-
-### 7. Journal Page
-- **`src/routes/_authenticated/journal.tsx`**
-  - Added "Notes" tab (journal.notes) to the tab bar (now: Overview, History, Notes, Reports)
-  - New `NotesTab` component with:
-    - Filter bar: pair dropdown, mood dropdown, pinned-only toggle, clear filters
-    - Notes list with: title, content preview, pair badge, mood emoji, tags, pinned indicator, relative date, delete button
-    - Click to edit note in NoteEditorDialog
-    - FAB (floating action button) to create new note
-    - ConfirmDeleteDialog for safe deletion
-  - Uses useQuery + useStableServerFn for data fetching
-  - Uses useQueryClient for cache invalidation
-
-### 8. Analysis Detail Page
-- **`src/routes/_authenticated/analysis.$id.tsx`**
-  - Added imports for notes functions, types, and NoteEditorDialog
-  - Changed action buttons from 2-col to 3-col grid, replaced "Add to Journal" with "Journal" and added "Notes" button
-  - New `AnalysisNotesSection` component with:
-    - Toggle button to show/hide notes panel
-    - "Add Note" button that opens editor with analysis_id and pair pre-filled
-    - List of existing notes linked to the analysis
-    - Inline delete confirmation
-    - NoteEditorDialog integration
-
-## TypeScript Compilation
-
-- Ran `npx tsc --noEmit` — all code-related errors resolved
-- Only remaining error is pre-existing `vite.config.ts` type issue (unrelated to this task)
-
-## Architecture Decisions
-
-1. **Followed existing patterns**: Used `createServerFn` with `requireSupabaseAuth` middleware, zod validation, consistent error handling
-2. **All DB queries have user_id filter**: RLS + explicit filter for defense-in-depth
-3. **Notes sorted by pinned first, then created_at descending**: Pinned notes always appear at top
-4. **Filter params are optional**: listNotes accepts optional filters; when empty, returns all notes
-5. **Reused available pairs**: Same pair list used in discover.tsx for consistency
-6. **Dialog-based editor**: Matches CreateAlertDialog pattern from existing codebase
+## Verification
+- TypeScript compilation passes (`npx tsc --noEmit` — only pre-existing vite.config.ts error)
+- All imports verified
+- All server function signatures match expected patterns
