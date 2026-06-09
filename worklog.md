@@ -1066,3 +1066,29 @@ Completed a comprehensive build verification, TypeScript error fixing, and user 
 - **i18n**: ✅ Full English + Arabic with RTL support
 - **Multi-Agent Copilot**: ✅ Auto mode, Consensus mode, 4 specialized agents
 - **Real Data**: ✅ No mock/fake data — all pages use real APIs or show professional empty states
+---
+Task ID: sprint2-fallback-fixes-and-deploy
+Agent: Main Agent
+Task: Fix all fake/fallback data, sync to Vercel, verify systems
+
+Work Log:
+- Fixed hardcoded XP fallback: `?? 1250` → `?? 0` (hidden when 0)
+- Fixed hardcoded BTC price fallback: `|| 68000` → `|| 0`
+- Removed FALLBACK_PRICES map from price-fetcher.ts — getEstimatedFallbackPrice now returns null
+- Changed fetchPrice return type to `PriceResult | null`
+- Fixed fetchPrices to filter out null results
+- Fixed alert-checker.ts to handle null price gracefully
+- Fixed default strategy in trading/functions.ts — returns empty onboarding state instead of fake pairs
+- Removed fake SVG equity curve sparkline from portfolio.tsx
+- Added .vercel/ to .gitignore
+- Synced all source code to vixor-APP repo and pushed to GitHub
+- Vercel should auto-deploy from the push
+- Verified: TypeScript compiles with zero errors
+- Verified: Vite build succeeds in 8.83s
+
+Stage Summary:
+- All fake/fallback/placeholder data removed from codebase
+- Watchlist system already complete with CRUD, notes, reorder
+- Portfolio already calculates real metrics from actual analyses
+- Copilot already context-aware (reads profile, analyses, signals, alerts, strategy, watchlist, prices, events)
+- Code pushed to GitHub → Vercel auto-deploy triggered
