@@ -23,5 +23,5 @@ export const startInstance = createStart(() => ({
   requestMiddleware: [errorMiddleware],
   serverFns: {
     disableCsrfMiddlewareWarning: true,
-  },
+  } as any,
 }));

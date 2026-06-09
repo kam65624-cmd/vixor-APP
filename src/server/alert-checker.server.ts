@@ -25,7 +25,7 @@ interface AlertRow {
 
 interface ProfileRow {
   id: string;
-  telegram_id: number | null;
+  telegram_id: string | number | null;
   display_name: string | null;
 }
 

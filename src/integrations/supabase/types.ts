@@ -26,6 +26,7 @@ export type Database = {
           key_levels: Json | null
           liquidity_zones: Json | null
           management: string[] | null
+          market_structure: Json | null
           news: Json | null
           pair: string | null
           pattern: string | null
@@ -38,6 +39,7 @@ export type Database = {
             | null
           rr: string | null
           scenarios: Json | null
+          signal_badge: Json | null
           source: string | null
           status: Database["public"]["Enums"]["analysis_status"]
           stop_loss: number | null
@@ -46,6 +48,7 @@ export type Database = {
           trend: string | null
           updated_at: string
           user_id: string
+          vixor_message: string | null
         }
         Insert: {
           confidence?: number | null
@@ -58,6 +61,7 @@ export type Database = {
           key_levels?: Json | null
           liquidity_zones?: Json | null
           management?: string[] | null
+          market_structure?: Json | null
           news?: Json | null
           pair?: string | null
           pattern?: string | null
@@ -70,6 +74,7 @@ export type Database = {
             | null
           rr?: string | null
           scenarios?: Json | null
+          signal_badge?: Json | null
           source?: string | null
           status?: Database["public"]["Enums"]["analysis_status"]
           stop_loss?: number | null
@@ -78,6 +83,7 @@ export type Database = {
           trend?: string | null
           updated_at?: string
           user_id: string
+          vixor_message?: string | null
         }
         Update: {
           confidence?: number | null
@@ -90,6 +96,7 @@ export type Database = {
           key_levels?: Json | null
           liquidity_zones?: Json | null
           management?: string[] | null
+          market_structure?: Json | null
           news?: Json | null
           pair?: string | null
           pattern?: string | null
@@ -102,6 +109,7 @@ export type Database = {
             | null
           rr?: string | null
           scenarios?: Json | null
+          signal_badge?: Json | null
           source?: string | null
           status?: Database["public"]["Enums"]["analysis_status"]
           stop_loss?: number | null
@@ -110,6 +118,7 @@ export type Database = {
           trend?: string | null
           updated_at?: string
           user_id?: string
+          vixor_message?: string | null
         }
         Relationships: []
       }
@@ -450,7 +459,10 @@ export type Database = {
           referral_code: string
           referred_by: string | null
           streak_days: number
-          telegram_id: number | null
+          telegram_id: string | null
+          telegram_photo_url: string | null
+          telegram_username: string | null
+          xp: number | null
           updated_at: string
           username: string | null
         }
@@ -460,10 +472,13 @@ export type Database = {
           display_name?: string | null
           id: string
           last_active_at?: string
-          referral_code: string
+          referral_code?: string
           referred_by?: string | null
           streak_days?: number
-          telegram_id?: number | null
+          telegram_id?: string | null
+          telegram_photo_url?: string | null
+          telegram_username?: string | null
+          xp?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -476,7 +491,10 @@ export type Database = {
           referral_code?: string
           referred_by?: string | null
           streak_days?: number
-          telegram_id?: number | null
+          telegram_id?: string | null
+          telegram_photo_url?: string | null
+          telegram_username?: string | null
+          xp?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -525,6 +543,7 @@ export type Database = {
         | "daily_streak"
         | "premium_grant"
         | "admin_adjust"
+        | "telegram_stars_purchase"
       recommendation_type: "BUY" | "SELL" | "WAIT"
     }
     CompositeTypes: {
@@ -662,6 +681,7 @@ export const Constants = {
         "daily_streak",
         "premium_grant",
         "admin_adjust",
+        "telegram_stars_purchase",
       ],
       recommendation_type: ["BUY", "SELL", "WAIT"],
     },

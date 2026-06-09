@@ -1,5 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from "../_libs/react.mjs";
-import { L as LayoutDashboard, c as Calculator, A as Activity } from "../_libs/lucide-react.mjs";
+import { l as LayoutDashboard, c as Calculator, A as Activity } from "../_libs/lucide-react.mjs";
 const mockPositions = [{
   pair: "XAU/USD",
   type: "LONG",

@@ -202,7 +202,7 @@ async function runGeminiAnalysis(
                   `${newsContext}\n\n` +
                   `Identify the pair, analyze the technicals using SMC/ICT, filter the news for articles relevant to this pair, and explain their positive/negative impact.` 
           },
-          { type: "image", image: imageBytes, mimeType },
+          { type: "image", image: imageBytes },
         ],
       },
     ],

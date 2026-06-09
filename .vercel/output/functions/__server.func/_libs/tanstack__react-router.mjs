@@ -1182,7 +1182,8 @@ export {
   createRouter as c,
   useRouterState as d,
   useNavigate as e,
-  useParams as f,
+  useSearch as f,
+  useParams as g,
   lazyRouteComponent as l,
   renderRouterToStream as r,
   useRouter as u

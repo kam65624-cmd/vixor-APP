@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Crown, Sparkles, Zap, ShieldCheck, Bell, BarChart3, Loader2 } from "lucide-react";
+import { ArrowLeft, Check, Crown, Sparkles, Zap, ShieldCheck, Bell, BarChart3, Loader2, Star } from "lucide-react";
 import { useState, useCallback, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getPremiumPlans, getPointPacks, subscribePremium, purchasePack, getMe, createStarsInvoice } from "@/lib/vixor.functions";

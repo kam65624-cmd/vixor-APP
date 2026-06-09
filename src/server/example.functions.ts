@@ -1,8 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { getServerConfig } from "../config.server";
-
 // Example createServerFn. Server-side handler invoked from the client:
 //   const result = await getGreeting({ data: { name: "Ada" } })
 // The .handler body runs server-only — imports used only inside it (like
@@ -14,9 +12,9 @@ import { getServerConfig } from "../config.server";
 export const getGreeting = createServerFn({ method: "POST" })
   .inputValidator(z.object({ name: z.string().min(1) }))
   .handler(async ({ data }) => {
-    const config = getServerConfig();
+    const nodeEnv = process.env.NODE_ENV ?? "unknown";
     return {
       greeting: `Hello, ${data.name}!`,
-      mode: config.nodeEnv ?? "unknown",
+      mode: nodeEnv,
     };
   });

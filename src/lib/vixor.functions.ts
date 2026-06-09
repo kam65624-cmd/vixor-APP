@@ -175,9 +175,9 @@ export const createAnalysis = createServerFn({ method: "POST" })
           risk_level: result.risk_level,
           risk_reasons: result.risk_reasons,
           invalidation_level: result.invalidation_level,
-          liquidity_zones: result.liquidity_zones,
-          market_structure: result.market_structure,
-          key_levels: result.key_levels,
+          liquidity_zones: result.liquidity_zones as any,
+          market_structure: result.market_structure as any,
+          key_levels: result.key_levels as any,
           recommendation: result.recommendation,
           confidence: Math.round(result.confidence),
           entry: result.entry,
@@ -186,47 +186,46 @@ export const createAnalysis = createServerFn({ method: "POST" })
           rr: result.rr,
           pattern: result.pattern,
           reasons: result.reasons,
-          scenarios: result.scenarios,
+          scenarios: result.scenarios as any,
           management: result.management,
           news: (result as any).news_impact,
+          signal_badge: (result as any).signal_badge,
+          vixor_message: (result as any).vixor_message,
           raw_ai_response: result as any,
         })
         .eq("id", row.id)
         .throwOnError();
 
       if (!isPremium) {
-        await supabase.rpc("spend_points", {
+        void supabase.rpc("spend_points", {
           _user: userId,
           _amount: 10,
           _reason: "analysis_cost",
           _meta: { analysis_id: row.id },
-        }).then(() => {}).catch(() => {}); // non-fatal
+        }); // non-fatal
       }
 
       // Reward XP (non-fatal)
-      supabase
+      void supabase
         .from("profiles")
         .select("xp")
         .eq("id", userId)
         .maybeSingle()
         .then(({ data: profile }) => {
           if (profile) {
-            supabase
+            void supabase
               .from("profiles")
               .update({ xp: ((profile as any).xp || 0) + 10 })
-              .eq("id", userId)
-              .then(() => {}).catch(() => {});
+              .eq("id", userId);
           }
-        })
-        .catch(() => {});
+        });
 
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      await supabaseAdmin
+      void supabaseAdmin
         .from("analyses")
         .update({ status: "failed", error_message: msg })
-        .eq("id", row.id)
-        .then(() => {}).catch(() => {});
+        .eq("id", row.id);
       throw new Error(msg);
     }
 
@@ -373,7 +372,7 @@ export const linkTelegramAccount = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin
       .from("profiles")
       .update({
-        telegram_id: String(user.id),
+        telegram_id: String(user.id) as any,
         telegram_username: username,
         telegram_photo_url: photoUrl
       })

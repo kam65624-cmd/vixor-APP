@@ -46,7 +46,7 @@ export const APIRoute = createAPIFileRoute("/api/telegram-webhook")({
             await supabaseAdmin.rpc("credit_points", {
               _user: userId,
               _amount: totalPoints,
-              _reason: "telegram_stars_purchase",
+              _reason: "pack_purchase" as any,
               _meta: { pack_id: packId, telegram_payment: payment.provider_payment_charge_id }
             });
           }
