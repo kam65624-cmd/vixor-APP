@@ -20,7 +20,10 @@ import {
   TrendDirection, RecommendationType, RiskLevel, SwingPoint,
 } from "./core/types";
 
-import { generateOHLCV, atr, formatPrice, avgRange } from "./core/candle-utils";
+import { atr, formatPrice, avgRange } from "./core/candle-utils";
+// NOTE: generateOHLCV is intentionally NOT imported here. It should only be
+// used for testing/development, never for real analysis. If no real bars are
+// provided, we return a WAIT result instead of generating fake data.
 import { analyzeMarketStructure } from "./core/market-structure";
 
 import { detectOrderBlocks } from "./smc/order-blocks";
@@ -63,10 +66,13 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
   const decimals = config.decimals;
 
   // ── Step 1: Get OHLCV data ──────────────────────────────────────────
-  const bars = input.bars ?? generateOHLCV(pair, timeframe, 200);
-  if (bars.length < 20) {
+  // CRITICAL: We NEVER use generateOHLCV() for real analysis.
+  // If no real bars are provided, we return a WAIT result instead of fake data.
+  // generateOHLCV() is only for testing/development.
+  if (!input.bars || input.bars.length < 20) {
     return generateFallbackResult(pair, timeframe, config);
   }
+  const bars = input.bars;
 
   // ── Step 2: Market structure (SMC/ICT) ──────────────────────────────
   const structureResult = analyzeMarketStructure(bars);
@@ -842,27 +848,36 @@ function generateFallbackResult(
     timeframe,
     trend: "NEUTRAL",
     risk_level: "HIGH",
-    risk_reasons: ["Insufficient data for reliable analysis.", "Market direction is unclear."],
+    risk_reasons: [
+      "Real market data is not available. Analysis requires live market data.",
+      "Data source is currently unreachable. Please try again in a few moments.",
+    ],
     invalidation_level: formatPrice(price, d),
     liquidity_zones: { buySide: [formatPrice(price + spread * 2, d)], sellSide: [formatPrice(price - spread * 2, d)] },
     market_structure: { direction: "NEUTRAL", structure: "CONSOLIDATION" },
     key_levels: { resistance: [formatPrice(price + spread, d)], support: [formatPrice(price - spread, d)] },
     recommendation: "WAIT",
-    confidence: 30,
+    confidence: 15,
     entry: formatPrice(price, d),
     stop_loss: formatPrice(price - spread * 1.5, d),
     take_profit: [formatPrice(price + spread, d), formatPrice(price + spread * 2, d), formatPrice(price + spread * 3, d)],
-    rr: "1:1.0",
-    pattern: "Insufficient Data",
-    reasons: ["Not enough candles for structural analysis.", "Wait for more price data to form."],
+    rr: "1:0",
+    pattern: "No Data Available",
+    reasons: [
+      "Real market data is not available. Analysis requires live market data.",
+      "The data source is currently unavailable. Please try again in a few moments.",
+    ],
     scenarios: {
-      conservative: { name: "No Trade", probability: 80, entry: String(formatPrice(price, d)), sl: formatPrice(price, d), tp1: formatPrice(price, d), tp2: formatPrice(price, d), rr: "1:0" },
-      balanced: { name: "No Trade", probability: 15, entry: String(formatPrice(price, d)), sl: formatPrice(price, d), tp1: formatPrice(price, d), tp2: formatPrice(price, d), rr: "1:0" },
-      aggressive: { name: "No Trade", probability: 5, entry: String(formatPrice(price, d)), sl: formatPrice(price, d), tp1: formatPrice(price, d), tp2: formatPrice(price, d), rr: "1:0" },
+      conservative: { name: "No Trade — No Data", probability: 0, entry: String(formatPrice(price, d)), sl: formatPrice(price, d), tp1: formatPrice(price, d), tp2: formatPrice(price, d), rr: "1:0" },
+      balanced: { name: "No Trade — No Data", probability: 0, entry: String(formatPrice(price, d)), sl: formatPrice(price, d), tp1: formatPrice(price, d), tp2: formatPrice(price, d), rr: "1:0" },
+      aggressive: { name: "No Trade — No Data", probability: 0, entry: String(formatPrice(price, d)), sl: formatPrice(price, d), tp1: formatPrice(price, d), tp2: formatPrice(price, d), rr: "1:0" },
     },
-    management: ["Wait for sufficient data before entering any position."],
+    management: [
+      "Do not enter any position without real market data.",
+      "Wait for the data source to become available and try again.",
+    ],
     news_impact: { relevant_news: [], overall_sentiment: "NEUTRAL", verdict: "Insufficient data for fundamental analysis." },
     signal_badge: { direction: "WAIT", entry: String(formatPrice(price, d)), stop_loss: String(formatPrice(price, d)), take_profit: String(formatPrice(price, d)), rr: "1:0" },
-    vixor_message: "I cannot perform a reliable analysis with the current data. Wait for more price action to form before seeking a signal.",
+    vixor_message: "I need real market data to perform a reliable analysis. The data source is currently unavailable. Please try again in a few moments.",
   };
 }

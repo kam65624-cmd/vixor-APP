@@ -198,7 +198,15 @@ export const createAnalysis = createServerFn({ method: "POST" })
           }
         }
       } catch (fetchErr) {
-        console.warn("[Vixor] Failed to fetch real OHLCV data, using generated data:", fetchErr instanceof Error ? fetchErr.message : String(fetchErr));
+        console.warn("[Vixor] Failed to fetch real OHLCV data:", fetchErr instanceof Error ? fetchErr.message : String(fetchErr));
+      }
+
+      // HARD CHECK: If we couldn't fetch real OHLCV data from any source, throw an error.
+      // We NEVER proceed with fake/generated data for analysis.
+      if (!realBars) {
+        const errMsg = `Unable to fetch real market data for ${data.selectedPair || "EUR/USD"}. Please try again in a moment.`;
+        console.error(`[Vixor] ${errMsg}`);
+        throw new Error(errMsg);
       }
 
       const result = await runChartAnalysis(bytes, data.mimeType, data.fileName, data.selectedPair, data.tradingStyle, realBars);
@@ -659,6 +667,14 @@ export const quickAnalyze = createServerFn({ method: "POST" })
         }
       }
 
+      // HARD CHECK: If we couldn't fetch real OHLCV data from any source, throw an error.
+      // We NEVER proceed with fake/generated data for analysis.
+      if (!realBars) {
+        const errMsg = `Unable to fetch real market data for ${pair}. Please try again in a moment.`;
+        console.error(`[Vixor] QuickAnalyze: ${errMsg}`);
+        throw new Error(errMsg);
+      }
+
       const result = runLocalAnalysis({
         pair,
         timeframe,
@@ -911,15 +927,20 @@ export const getOHLCV = createServerFn({ method: "GET" })
       console.warn("[OHLCV] TwelveData fetch failed:", err instanceof Error ? err.message : String(err));
     }
 
-    // Fallback: return price data from market prices
+    // Fallback: return price data from market prices (deterministic — no Math.random())
     try {
       const { fetchPrice } = await import("@/server/price-fetcher.server");
       const priceData = await fetchPrice(pair);
       if (priceData) {
+        // Deterministic offsets based on pair name hash (no Math.random)
+        const hash = pair.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+        const openOff = ((hash % 20) - 10) * 0.0001; // -0.1% to +0.1%
+        const highOff = ((hash % 50) + 10) * 0.0001;  // +0.1% to +0.5%
+        const lowOff = -((hash % 50) + 10) * 0.0001;  // -0.1% to -0.5%
         return {
-          open: priceData.price * (1 - Math.random() * 0.002),
-          high: priceData.price * (1 + Math.random() * 0.005),
-          low: priceData.price * (1 - Math.random() * 0.005),
+          open: priceData.price * (1 + openOff),
+          high: priceData.price * (1 + highOff),
+          low: priceData.price * (1 + lowOff),
           close: priceData.price,
           volume: 0,
           source: priceData.source,

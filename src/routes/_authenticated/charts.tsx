@@ -69,6 +69,14 @@ function Charts() {
   const [currentInterval, setCurrentInterval] = useState("240"); // Default 4h
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+
+  // Cooldown timer — prevents rapid re-analysis of the same pair
+  useEffect(() => {
+    if (cooldownSeconds <= 0) return;
+    const timer = setTimeout(() => setCooldownSeconds(prev => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldownSeconds]);
 
   const currentSymbol = useMemo(() => toTradingViewSymbol(currentPair), [currentPair]);
 
@@ -178,6 +186,10 @@ function Charts() {
 
   // Handle ANALYZE button — directly run analysis with real OHLCV data
   const handleAnalyze = useCallback(async () => {
+    if (cooldownSeconds > 0) {
+      setAnalyzeError(`Please wait ${cooldownSeconds}s before analyzing again. Market data needs time to refresh.`);
+      return;
+    }
     setIsAnalyzing(true);
     setAnalyzeError(null);
 
@@ -194,6 +206,9 @@ function Charts() {
         },
       });
 
+      // Set cooldown — 60 seconds to prevent rapid re-analysis
+      setCooldownSeconds(60);
+
       // Navigate to the analysis result page
       navigate({ to: "/analysis/$id", params: { id } });
     } catch (err) {
@@ -201,7 +216,7 @@ function Charts() {
       setAnalyzeError(msg);
       setIsAnalyzing(false);
     }
-  }, [analyzeFn, currentPair, currentInterval, navigate]);
+  }, [analyzeFn, currentPair, currentInterval, navigate, cooldownSeconds]);
 
   // Format volume
   const formatVolume = (vol: number) => {
@@ -394,18 +409,20 @@ function Charts() {
 
         <button
           onClick={handleAnalyze}
-          disabled={isAnalyzing}
+          disabled={isAnalyzing || cooldownSeconds > 0}
           className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover relative"
         >
-          <div className="size-9 rounded-xl gradient-primary flex items-center justify-center glow-primary">
+          <div className={`size-9 rounded-xl flex items-center justify-center ${cooldownSeconds > 0 ? 'bg-muted' : 'gradient-primary glow-primary'}`}>
             {isAnalyzing ? (
               <Loader2 className="size-4 text-primary-foreground animate-spin" />
+            ) : cooldownSeconds > 0 ? (
+              <span className="text-xs font-bold text-muted-foreground">{cooldownSeconds}s</span>
             ) : (
               <Sparkles className="size-4 text-primary-foreground" />
             )}
           </div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            {isAnalyzing ? "Analyzing…" : "Analyze"}
+            {isAnalyzing ? "Analyzing…" : cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s` : "Analyze"}
           </span>
         </button>
 

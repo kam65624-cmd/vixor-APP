@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Compass, Search, Flame, ArrowUpRight, ArrowDownRight, Layers, BarChart2, ExternalLink } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getMarketNews } from "@/lib/vixor.functions";
+import { getMarketNews, getMarketPrices, getDailySignals } from "@/lib/vixor.functions";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RecBadge } from "@/components/vixor/atoms";
 
 export const Route = createFileRoute("/_authenticated/discover")({
   head: () => ({ meta: [{ title: "Discover — Vixor" }] }),
@@ -13,17 +14,7 @@ export const Route = createFileRoute("/_authenticated/discover")({
 
 const TABS = ["Watchlist", "Scanner", "News", "Heatmap"] as const;
 
-const mockScanner = [
-  { pair: "GBP/JPY", signal: "Breakout", time: "1H", up: true },
-  { pair: "SPX500", signal: "Trend Cont.", time: "4H", up: true },
-  { pair: "USDCAD", signal: "Reversal", time: "1D", up: false },
-];
 
-const mockWatchlist = [
-  { pair: "XAU/USD", price: "2368.10", change: "+1.2%", chart: [2, 3, 5, 4, 7, 6, 8] },
-  { pair: "EUR/USD", price: "1.0845", change: "-0.3%", chart: [8, 7, 5, 6, 4, 3, 2] },
-  { pair: "BTC/USD", price: "64230", change: "+4.5%", chart: [1, 2, 4, 3, 6, 8, 9] },
-];
 
 function formatTimeAgo(timestamp: number) {
   const diff = Date.now() - timestamp;
@@ -141,6 +132,209 @@ function DiscoverNews() {
   );
 }
 
+function DiscoverWatchlist() {
+  const fetchPrices = useStableServerFn(getMarketPrices);
+  const { data: prices = [], isLoading } = useQuery(useMemo(() => ({
+    queryKey: ["market-prices"] as const,
+    queryFn: () => fetchPrices({}),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  }), [fetchPrices]));
+
+  return (
+    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="vixor-card p-4 flex items-center justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <Skeleton className="h-8 w-16 rounded" />
+            </div>
+          ))}
+        </div>
+      ) : prices.length === 0 ? (
+        <div className="vixor-card p-6 text-center">
+          <Search className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+          <div className="text-xs text-muted-foreground">No market data available</div>
+        </div>
+      ) : (
+        prices.map((p: any) => (
+          <div key={p.pair} className="vixor-card p-4 flex items-center justify-between group cursor-pointer hover:border-primary/50 transition-colors">
+            <div>
+              <div className="font-bold text-lg font-mono">{p.pair}</div>
+              <div className="text-sm font-medium font-mono text-muted-foreground">
+                $
+                {Number(p.price).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: p.pair?.includes("JPY") ? 2 : 4,
+                })}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {(p.change24h ?? 0) >= 0 ? (
+                <ArrowUpRight className="size-4 text-bullish" />
+              ) : (
+                <ArrowDownRight className="size-4 text-bearish" />
+              )}
+              <div className={`text-sm font-bold font-mono px-2 py-1 rounded ${
+                (p.change24h ?? 0) >= 0 ? "bg-bullish/10 text-bullish" : "bg-bearish/10 text-bearish"
+              }`}>
+                {(p.change24h ?? 0) >= 0 ? "+" : ""}{(p.change24h ?? 0).toFixed(2)}%
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+
+      <button className="w-full h-12 rounded-xl border border-dashed border-border text-muted-foreground font-bold text-sm hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
+        <Search className="size-4" /> Add to Watchlist
+      </button>
+    </div>
+  );
+}
+
+function DiscoverScanner() {
+  const fetchSignals = useStableServerFn(getDailySignals);
+  const { data: signals = [], isLoading } = useQuery(useMemo(() => ({
+    queryKey: ["daily-signals"] as const,
+    queryFn: () => fetchSignals({ data: {} }),
+    staleTime: 120_000,
+  }), [fetchSignals]));
+
+  const activeSignals = signals.filter((s: any) => s.recommendation !== "WAIT");
+
+  return (
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="grid grid-cols-2 gap-3 mb-2">
+        <button className="h-10 rounded-lg bg-primary/10 text-primary font-bold text-xs flex items-center justify-center gap-1.5 border border-primary/20"><Flame className="size-4"/> Hot Breakouts</button>
+        <button className="h-10 rounded-lg bg-card text-muted-foreground font-bold text-xs flex items-center justify-center gap-1.5 border border-border"><Layers className="size-4"/> Volume Spikes</button>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="vixor-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-4 w-10" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : activeSignals.length === 0 ? (
+        <div className="vixor-card p-6 text-center">
+          <Flame className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+          <div className="text-xs text-muted-foreground">No active signals right now</div>
+          <div className="text-[10px] text-muted-foreground mt-1">Signals are generated daily — check back later</div>
+        </div>
+      ) : (
+        activeSignals.map((s: any) => {
+          const isBuy = s.recommendation === "BUY";
+          return (
+            <div key={s.id} className="vixor-card p-4 border-l-4" style={{ borderLeftColor: isBuy ? "var(--color-bullish)" : "var(--color-bearish)" }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-lg font-mono">{s.pair}</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-muted text-muted-foreground rounded">{s.timeframe}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm font-bold">
+                <RecBadge rec={s.recommendation} />
+                <span className="text-muted-foreground font-medium">{s.confidence}% confidence</span>
+                <a href={`/charts?symbol=BINANCE:${s.pair.replace("/", "")}`} className="ml-auto text-xs font-bold text-primary hover:underline">Analyze</a>
+              </div>
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
+function DiscoverHeatmap() {
+  const fetchPrices = useStableServerFn(getMarketPrices);
+  const { data: prices = [], isLoading } = useQuery(useMemo(() => ({
+    queryKey: ["market-prices"] as const,
+    queryFn: () => fetchPrices({}),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  }), [fetchPrices]));
+
+  return (
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-sm">Market Heatmap</h3>
+          <p className="text-[10px] text-muted-foreground">24h change across popular pairs</p>
+        </div>
+        <div className="flex items-center gap-2 text-[9px] font-bold text-muted-foreground">
+          <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-bullish" /> Gain</span>
+          <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-bearish" /> Loss</span>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="grid grid-cols-3 gap-2">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="rounded-lg h-20 shimmer" />
+          ))}
+        </div>
+      ) : prices.length === 0 ? (
+        <div className="vixor-card p-6 text-center">
+          <BarChart2 className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+          <div className="text-xs text-muted-foreground">No heatmap data available</div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          {prices.map((p: any) => {
+            const change = p.change24h ?? 0;
+            const isPositive = change >= 0;
+            const intensity = Math.min(Math.abs(change) / 3, 1); // normalize: 3% = max intensity
+            return (
+              <div
+                key={p.pair}
+                className={`rounded-lg p-3 text-center border transition-all cursor-pointer hover:scale-[1.02] ${
+                  isPositive
+                    ? "bg-bullish/5 border-bullish/20 hover:border-bullish/40"
+                    : "bg-bearish/5 border-bearish/20 hover:border-bearish/40"
+                }`}
+                style={{
+                  backgroundColor: isPositive
+                    ? `rgba(34, 197, 94, ${0.05 + intensity * 0.2})`
+                    : `rgba(239, 68, 68, ${0.05 + intensity * 0.2})`,
+                }}
+              >
+                <div className="font-bold text-xs font-mono mb-1">{p.pair}</div>
+                <div className={`text-sm font-bold font-mono ${isPositive ? "text-bullish" : "text-bearish"}`}>
+                  {isPositive ? "+" : ""}{change.toFixed(2)}%
+                </div>
+                <div className="text-[9px] text-muted-foreground font-mono mt-0.5">
+                  ${Number(p.price).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: p.pair?.includes("JPY") ? 2 : 4,
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="vixor-card p-4 flex flex-col items-center justify-center text-center border-dashed">
+        <BarChart2 className="size-6 text-muted-foreground/30 mb-2" />
+        <div className="text-xs text-muted-foreground font-medium">Interactive heatmap coming soon</div>
+        <div className="text-[10px] text-muted-foreground">With sector analysis & historical comparison</div>
+      </div>
+    </div>
+  );
+}
+
 function Discover() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Watchlist");
 
@@ -176,76 +370,16 @@ function Discover() {
       </div>
 
       {/* Watchlist Tab */}
-      {tab === "Watchlist" && (
-        <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          {mockWatchlist.map(w => (
-            <div key={w.pair} className="vixor-card p-4 flex items-center justify-between group cursor-pointer hover:border-primary/50 transition-colors">
-              <div>
-                <div className="font-bold text-lg text-mono">{w.pair}</div>
-                <div className="text-sm font-medium text-muted-foreground">{w.price}</div>
-              </div>
-              
-              {/* Mini Sparkline Mock */}
-              <div className="w-20 h-8 flex items-end gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
-                {w.chart.map((h, i) => (
-                  <div key={i} className={`flex-1 rounded-t-sm ${w.change.startsWith("+") ? "bg-bullish" : "bg-bearish"}`} style={{ height: `${h * 10}%` }} />
-                ))}
-              </div>
-
-              <div className={`text-sm font-bold text-mono px-2 py-1 rounded ${w.change.startsWith("+") ? "bg-bullish/10 text-bullish" : "bg-bearish/10 text-bearish"}`}>
-                {w.change}
-              </div>
-            </div>
-          ))}
-          
-          <button className="w-full h-12 rounded-xl border border-dashed border-border text-muted-foreground font-bold text-sm hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
-            <Search className="size-4" /> Add to Watchlist
-          </button>
-        </div>
-      )}
+      {tab === "Watchlist" && <DiscoverWatchlist />}
 
       {/* Scanner Tab */}
-      {tab === "Scanner" && (
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="grid grid-cols-2 gap-3 mb-2">
-            <button className="h-10 rounded-lg bg-primary/10 text-primary font-bold text-xs flex items-center justify-center gap-1.5 border border-primary/20"><Flame className="size-4"/> Hot Breakouts</button>
-            <button className="h-10 rounded-lg bg-card text-muted-foreground font-bold text-xs flex items-center justify-center gap-1.5 border border-border"><Layers className="size-4"/> Volume Spikes</button>
-          </div>
-          
-          {mockScanner.map(s => (
-            <div key={s.pair} className="vixor-card p-4 border-l-4" style={{ borderLeftColor: s.up ? "var(--color-bullish)" : "var(--color-bearish)" }}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-lg text-mono">{s.pair}</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-muted text-muted-foreground rounded">{s.time}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm font-bold">
-                {s.up ? <ArrowUpRight className="size-4 text-bullish"/> : <ArrowDownRight className="size-4 text-bearish"/>}
-                <span>{s.signal} detected</span>
-                <button className="ml-auto text-xs font-bold text-primary hover:underline">Analyze</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {tab === "Scanner" && <DiscoverScanner />}
 
       {/* News Tab */}
-      {tab === "News" && (
-        <DiscoverNews />
-      )}
+      {tab === "News" && <DiscoverNews />}
 
       {/* Heatmap Tab */}
-      {tab === "Heatmap" && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="vixor-card p-4 flex flex-col items-center justify-center h-64 text-center">
-            <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              <BarChart2 className="size-8 text-primary" />
-            </div>
-            <h3 className="font-bold text-lg mb-1">Interactive Heatmap</h3>
-            <p className="text-sm text-muted-foreground mb-4">Visualize market strength across sectors in real-time.</p>
-            <button className="px-6 h-10 rounded-lg gradient-primary text-primary-foreground font-bold text-sm glow-primary">Unlock Feature</button>
-          </div>
-        </div>
-      )}
+      {tab === "Heatmap" && <DiscoverHeatmap />}
 
     </div>
   );

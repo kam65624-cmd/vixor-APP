@@ -5,6 +5,7 @@ import {
   getMarketPrices,
   getDailySignals,
   listAlerts,
+  getMarketNews,
 } from "@/lib/vixor.functions";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -13,7 +14,6 @@ import {
   Activity,
   Zap,
   AlertTriangle,
-  Clock,
   ArrowUpRight,
   ArrowDownRight,
   Newspaper,
@@ -40,6 +40,7 @@ function CommandCenter() {
   const fetchPrices = useStableServerFn(getMarketPrices);
   const fetchSignals = useStableServerFn(getDailySignals);
   const fetchAlerts = useStableServerFn(listAlerts);
+  const fetchNews = useStableServerFn(getMarketNews);
 
   const me = useQuery(useMemo(() => ({ queryKey: ["me"] as const, queryFn: () => fetchMe({}) }), [fetchMe]));
   const recent = useQuery(useMemo(() => ({ queryKey: ["analyses", 5] as const, queryFn: () => fetchRecent({ data: { limit: 5 } }), staleTime: 60_000 }), [fetchRecent]));
@@ -59,6 +60,12 @@ function CommandCenter() {
     queryFn: () => fetchAlerts({ data: {} }),
     staleTime: 30_000,
   }), [fetchAlerts]));
+  const news = useQuery(useMemo(() => ({
+    queryKey: ["market-news-forex"] as const,
+    queryFn: () => fetchNews({ data: { category: "forex" } }),
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  }), [fetchNews]));
 
   const name = me.data?.profile?.display_name?.split(" ")[0] || "Trader";
   const xp = (me.data?.profile as any)?.xp ?? 1250;
@@ -78,7 +85,7 @@ function CommandCenter() {
       <div className="flex items-start justify-between">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            Good Evening, Trader
+            {new Date().getHours() < 12 ? "Good Morning" : new Date().getHours() < 17 ? "Good Afternoon" : "Good Evening"}, Trader
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             {name} <span className="animate-wave origin-bottom-right inline-block">👋</span>
@@ -151,10 +158,16 @@ function CommandCenter() {
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="text-xs font-bold text-foreground">{p.pair}</div>
-                  {p.source === "fallback" ? (
-                    <span className="text-[8px] font-bold text-muted-foreground bg-muted px-1 py-0.5 rounded">EST</span>
-                  ) : (
+                  {p.source && (p.source.includes("binance") || p.source.includes("twelvedata")) ? (
                     <span className="text-[8px] font-bold text-primary bg-primary/10 px-1 py-0.5 rounded">LIVE</span>
+                  ) : p.source && p.source.includes("cache") ? (
+                    <span className="text-[8px] font-bold text-amber-600 bg-amber-500/10 px-1 py-0.5 rounded">CACHED</span>
+                  ) : p.source && p.source.includes("ESTIMATED") ? (
+                    <span className="text-[8px] font-bold text-red-500 bg-red-500/10 px-1 py-0.5 rounded">EST</span>
+                  ) : p.source && p.source.includes("exchangerate-api") ? (
+                    <span className="text-[8px] font-bold text-blue-500 bg-blue-500/10 px-1 py-0.5 rounded">DELAYED</span>
+                  ) : (
+                    <span className="text-[8px] font-bold text-muted-foreground bg-muted px-1 py-0.5 rounded">EST</span>
                   )}
                 </div>
                 <div className="font-mono text-sm font-semibold mb-1.5">
@@ -278,10 +291,13 @@ function CommandCenter() {
             </h3>
           </div>
         </div>
-        <div className="vixor-card divide-y divide-border">
-          <EventRow time="14:00" currency="USD" name="FOMC Meeting" />
-          <EventRow time="08:30" currency="USD" name="NFP Report" />
-          <EventRow time="10:45" currency="EUR" name="ECB Press Conf" />
+        <div className="vixor-card p-6 text-center">
+          <div className="size-12 rounded-full bg-bearish/5 flex items-center justify-center mx-auto mb-3">
+            <AlertTriangle className="size-5 text-muted-foreground/30" />
+          </div>
+          <p className="text-sm text-muted-foreground font-medium">
+            No high-impact events scheduled today. Check back later for updates.
+          </p>
         </div>
       </div>
 
@@ -364,23 +380,66 @@ function CommandCenter() {
             </h3>
           </div>
         </div>
-        <div className="space-y-2">
-          <NewsCard
-            source="Reuters"
-            time="2h ago"
-            headline="Gold prices hit record high as investors digest Fed minutes"
-          />
-          <NewsCard
-            source="Bloomberg"
-            time="4h ago"
-            headline="Euro struggles to maintain momentum ahead of critical ECB decision"
-          />
-          <NewsCard
-            source="CoinDesk"
-            time="5h ago"
-            headline="Bitcoin liquidations surpass $200M after sudden price swing"
-          />
-        </div>
+        {news.isLoading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="vixor-card p-3.5 flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="h-4 w-14 rounded bg-muted shimmer" />
+                    <span className="h-3 w-10 rounded bg-muted shimmer" />
+                  </div>
+                  <div className="h-4 w-full rounded bg-muted shimmer mb-1" />
+                  <div className="h-4 w-3/4 rounded bg-muted shimmer" />
+                </div>
+                <div className="size-14 rounded-lg bg-muted shimmer shrink-0" />
+              </div>
+            ))}
+          </div>
+        ) : !news.data || news.data.length === 0 ? (
+          <div className="vixor-card p-6 text-center">
+            <Newspaper className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+            <div className="text-xs text-muted-foreground">No market news available right now</div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {news.data.slice(0, 3).map((item: any) => (
+              <a
+                key={item.id}
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="vixor-card p-3.5 flex items-start gap-3 active:scale-[0.98] transition-transform cursor-pointer hover:border-primary/50"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                      {item.source}
+                    </span>
+                    <span className="text-[10px] font-bold text-muted-foreground">
+                      {formatTimeAgo(item.time)}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold leading-snug line-clamp-2">{item.title}</h4>
+                </div>
+                <div className="size-14 rounded-lg bg-card-hover border border-border shrink-0 flex items-center justify-center overflow-hidden">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt=""
+                      className="size-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <Newspaper className="size-5 text-muted-foreground/30" />
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -388,42 +447,13 @@ function CommandCenter() {
 
 // Subcomponents
 
-function EventRow({ time, currency, name }: { time: string; currency: string; name: string }) {
-  return (
-    <div className="p-3.5 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className="size-8 rounded-full bg-bearish/10 flex items-center justify-center">
-          <Clock className="size-4 text-bearish" />
-        </div>
-        <div>
-          <div className="font-bold text-sm">{name}</div>
-          <div className="text-[10px] font-mono text-muted-foreground">
-            {time} | {currency}
-          </div>
-        </div>
-      </div>
-      <div className="px-2 py-0.5 rounded text-[9px] font-bold bg-bearish/10 text-bearish border border-bearish/20">
-        HIGH
-      </div>
-    </div>
-  );
-}
-
-function NewsCard({ source, headline, time }: { source: string; headline: string; time: string }) {
-  return (
-    <div className="vixor-card p-3.5 flex items-start gap-3 active:scale-[0.98] transition-transform cursor-pointer">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-            {source}
-          </span>
-          <span className="text-[10px] font-bold text-muted-foreground">{time}</span>
-        </div>
-        <h4 className="text-sm font-bold leading-snug line-clamp-2">{headline}</h4>
-      </div>
-      <div className="size-14 rounded-lg bg-card-hover border border-border shrink-0 flex items-center justify-center">
-        <Newspaper className="size-5 text-muted-foreground/30" />
-      </div>
-    </div>
-  );
+function formatTimeAgo(timestamp: number) {
+  const diff = Date.now() - timestamp;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }

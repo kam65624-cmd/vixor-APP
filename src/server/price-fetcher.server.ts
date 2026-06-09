@@ -49,21 +49,27 @@ const FOREX_SYMBOLS: Record<string, string> = {
   "EUR/JPY": "EURJPY",
 };
 
-// Known price ranges for fallback
+// Known price ranges for ESTIMATED fallback (only used when no cache exists)
 const FALLBACK_PRICES: Record<string, { price: number; volatility: number }> = {
-  "BTC/USDT": { price: 68000, volatility: 0.03 },
-  "ETH/USDT": { price: 3700, volatility: 0.028 },
+  "BTC/USDT": { price: 105000, volatility: 0.03 },
+  "ETH/USDT": { price: 2600, volatility: 0.028 },
   "SOL/USDT": { price: 170, volatility: 0.04 },
-  "XAU/USD": { price: 2340, volatility: 0.012 },
-  "EUR/USD": { price: 1.085, volatility: 0.005 },
-  "GBP/USD": { price: 1.27, volatility: 0.006 },
-  "USD/JPY": { price: 157.5, volatility: 0.007 },
-  "GBP/JPY": { price: 200.3, volatility: 0.008 },
+  "XAU/USD": { price: 3300, volatility: 0.012 },
+  "EUR/USD": { price: 1.13, volatility: 0.005 },
+  "GBP/USD": { price: 1.34, volatility: 0.006 },
+  "USD/JPY": { price: 145, volatility: 0.007 },
+  "GBP/JPY": { price: 195, volatility: 0.008 },
   "AUD/USD": { price: 0.665, volatility: 0.006 },
   "NZD/USD": { price: 0.615, volatility: 0.007 },
   "USD/CAD": { price: 1.37, volatility: 0.005 },
   "USD/CHF": { price: 0.89, volatility: 0.005 },
 };
+
+// ── Price Cache: stores last successfully fetched price for each pair ──
+const priceCache = new Map<string, { price: number; change24h: number; timestamp: number }>();
+
+// ── Klines Cache: stores fetched kline data with TTL ──
+const klinesCache = new Map<string, { data: Array<{ time: number; open: number; high: number; low: number; close: number; volume: number }>; timestamp: number }>();
 
 /**
  * Determine if a pair is crypto (Binance) or forex/commodity
@@ -256,57 +262,182 @@ async function fetchGoldPrice(): Promise<PriceResult | null> {
 }
 
 /**
- * Generate a deterministic fallback price for when APIs are unavailable
+ * Get a cached price for a pair, or return null if no cache exists.
+ * Cache is populated whenever a real API call succeeds.
  */
-function getFallbackPrice(pair: string): PriceResult {
-  const config = FALLBACK_PRICES[pair];
-  const basePrice = config?.price ?? 100;
-  const vol = config?.volatility ?? 0.02;
-  
-  // Deterministic "current" price based on time of day
-  const now = new Date();
-  const timeSeed = now.getHours() * 60 + now.getMinutes();
-  const variation = Math.sin(timeSeed * 0.1) * vol * basePrice;
-  const price = basePrice + variation;
+function getCachedPrice(pair: string): PriceResult | null {
+  const cached = priceCache.get(pair);
+  if (!cached) return null;
+
+  const ageMs = Date.now() - cached.timestamp;
+  const ageMinutes = Math.floor(ageMs / 60000);
+  const ageHours = Math.floor(ageMinutes / 60);
+  const ageDesc = ageHours > 0 ? `${ageHours}h ${ageMinutes % 60}m ago` : `${ageMinutes}m ago`;
+
+  console.log(`[PriceFetcher] Using cached price for ${pair} (last real price ${ageDesc})`);
 
   return {
     symbol: pair.includes("USDT") ? `BINANCE:${pair.replace("/", "")}` : `FX:${pair.replace("/", "")}`,
     pair,
-    price: Number(price.toFixed(pair.includes("JPY") || pair === "XAU/USD" || pair.includes("USDT") || pair.includes("USD") ? 2 : 4)),
-    change24h: Number((Math.sin(timeSeed * 0.05) * 2).toFixed(2)),
-    source: "fallback",
+    price: cached.price,
+    change24h: cached.change24h,
+    source: `cache (${ageDesc})`,
+    timestamp: cached.timestamp,
+  };
+}
+
+/**
+ * Store a successfully fetched price in the cache.
+ */
+function cachePrice(pair: string, price: number, change24h: number): void {
+  priceCache.set(pair, { price, change24h: change24h ?? 0, timestamp: Date.now() });
+}
+
+/**
+ * Generate a deterministic ESTIMATED fallback price for when APIs are unavailable AND no cache exists.
+ * This is clearly marked as ESTIMATED so users know the price is not real.
+ */
+function getEstimatedFallbackPrice(pair: string): PriceResult {
+  const config = FALLBACK_PRICES[pair];
+  const basePrice = config?.price ?? 100;
+
+  console.warn(`[PriceFetcher] ⚠️ No real price available for ${pair}. Returning ESTIMATED fallback price. This should be investigated.`);
+
+  return {
+    symbol: pair.includes("USDT") ? `BINANCE:${pair.replace("/", "")}` : `FX:${pair.replace("/", "")}`,
+    pair,
+    price: basePrice,
+    change24h: 0,
+    source: "ESTIMATED — no real data available",
     timestamp: Date.now(),
   };
 }
 
 /**
+ * Fetch price from Twelve Data batch quote endpoint.
+ * Supports all pairs (crypto, forex, commodities).
+ * Returns null if the API key is not configured or the call fails.
+ */
+async function fetchTwelveDataQuote(pair: string): Promise<PriceResult | null> {
+  const apiKey = process.env.TWELVEDATA_API_KEY;
+  if (!apiKey) {
+    console.warn(`[PriceFetcher] Twelve Data quote: no API key configured`);
+    return null;
+  }
+
+  try {
+    const res = await fetch(
+      `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(pair)}&apikey=${apiKey}`,
+      { signal: AbortSignal.timeout(10000) }
+    );
+    if (!res.ok) {
+      console.warn(`[PriceFetcher] Twelve Data quote API returned ${res.status} for ${pair}`);
+      return null;
+    }
+
+    const data = await res.json();
+    if (data.status === "error") {
+      console.warn(`[PriceFetcher] Twelve Data quote error for ${pair}: ${data.message}`);
+      return null;
+    }
+
+    const price = parseFloat(data.close);
+    if (isNaN(price) || price <= 0) {
+      console.warn(`[PriceFetcher] Twelve Data quote: invalid price for ${pair}: ${data.close}`);
+      return null;
+    }
+
+    const change24h = parseFloat(data.percent_change);
+    const symbol = data.symbol || pair;
+
+    return {
+      symbol,
+      pair,
+      price,
+      change24h: isNaN(change24h) ? undefined : change24h,
+      source: "twelvedata-quote",
+      timestamp: Date.now(),
+    };
+  } catch (err) {
+    console.warn(`[PriceFetcher] Twelve Data quote fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
+    return null;
+  }
+}
+
+/**
  * Main entry point: fetch the current price for a given pair.
- * Tries real APIs first, falls back to deterministic prices.
+ * Tries real APIs first, then cached price, then estimated fallback.
  */
 export async function fetchPrice(pair: string): Promise<PriceResult> {
   // Special case for Gold
   if (pair === "XAU/USD") {
     const result = await fetchGoldPrice();
-    if (result) return result;
-    return getFallbackPrice(pair);
+    if (result) {
+      cachePrice(pair, result.price, result.change24h ?? 0);
+      return result;
+    }
+    // Try Twelve Data quote as additional source
+    const tdResult = await fetchTwelveDataQuote(pair);
+    if (tdResult) {
+      cachePrice(pair, tdResult.price, tdResult.change24h ?? 0);
+      return tdResult;
+    }
+    // Try cached price
+    const cached = getCachedPrice(pair);
+    if (cached) return cached;
+    // Last resort: estimated fallback
+    return getEstimatedFallbackPrice(pair);
   }
 
   // Crypto pairs
   if (isCryptoPair(pair)) {
     const result = await fetchBinancePrice(pair);
-    if (result) return result;
-    return getFallbackPrice(pair);
+    if (result) {
+      cachePrice(pair, result.price, result.change24h ?? 0);
+      return result;
+    }
+    // Try Twelve Data quote as additional source (supports crypto too)
+    const tdResult = await fetchTwelveDataQuote(pair);
+    if (tdResult) {
+      cachePrice(pair, tdResult.price, tdResult.change24h ?? 0);
+      return tdResult;
+    }
+    // Try cached price
+    const cached = getCachedPrice(pair);
+    if (cached) return cached;
+    // Last resort: estimated fallback
+    return getEstimatedFallbackPrice(pair);
   }
 
   // Forex pairs
   if (isForexPair(pair)) {
     const result = await fetchForexPrice(pair);
-    if (result) return result;
-    return getFallbackPrice(pair);
+    if (result) {
+      cachePrice(pair, result.price, result.change24h ?? 0);
+      return result;
+    }
+    // Try Twelve Data quote as additional source
+    const tdResult = await fetchTwelveDataQuote(pair);
+    if (tdResult) {
+      cachePrice(pair, tdResult.price, tdResult.change24h ?? 0);
+      return tdResult;
+    }
+    // Try cached price
+    const cached = getCachedPrice(pair);
+    if (cached) return cached;
+    // Last resort: estimated fallback
+    return getEstimatedFallbackPrice(pair);
   }
 
-  // Unknown pair, use fallback
-  return getFallbackPrice(pair);
+  // Unknown pair — try Twelve Data quote anyway
+  const tdResult = await fetchTwelveDataQuote(pair);
+  if (tdResult) {
+    cachePrice(pair, tdResult.price, tdResult.change24h ?? 0);
+    return tdResult;
+  }
+  const cached = getCachedPrice(pair);
+  if (cached) return cached;
+  return getEstimatedFallbackPrice(pair);
 }
 
 /**
@@ -383,6 +514,7 @@ export const POPULAR_PAIRS = [
 /**
  * Fetch OHLCV candle data from TwelveData API for forex/commodity pairs.
  * Returns array of OHLCV bars with time, open, high, low, close, volume.
+ * Results are cached in-memory with TTL to prevent redundant API calls.
  */
 export async function fetchTwelveDataKlines(
   pair: string,
@@ -423,17 +555,38 @@ export async function fetchTwelveDataKlines(
   };
   const tdInterval = intervalMap[interval] || "1h";
 
+  // ── Check cache first ──
+  const cacheKey = `${pair}:${interval}`;
+  const cached = klinesCache.get(cacheKey);
+  // TTL: 60s for timeframes <= 1H, 300s for 4H+
+  const ttlMs = (interval === "4H" || interval === "1D" || interval === "1W") ? 300_000 : 60_000;
+  if (cached && (Date.now() - cached.timestamp) < ttlMs) {
+    console.log(`[PriceFetcher] Using cached klines for ${cacheKey} (age: ${Math.floor((Date.now() - cached.timestamp) / 1000)}s)`);
+    // Return cached data, possibly sliced to requested outputsize
+    return cached.data.slice(-outputsize);
+  }
+
   try {
     const res = await fetch(
       `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(symbol)}&interval=${tdInterval}&outputsize=${outputsize}&apikey=${apiKey}`,
       { signal: AbortSignal.timeout(15000) }
     );
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.warn(`[PriceFetcher] TwelveData klines API returned ${res.status} for ${pair}/${interval}`);
+      return [];
+    }
 
     const data = await res.json();
-    if (!data.values || !Array.isArray(data.values)) return [];
+    if (data.status === "error") {
+      console.warn(`[PriceFetcher] TwelveData klines error for ${pair}: ${data.message}`);
+      return [];
+    }
+    if (!data.values || !Array.isArray(data.values)) {
+      console.warn(`[PriceFetcher] TwelveData klines: no values array for ${pair}/${interval}`);
+      return [];
+    }
 
-    return data.values
+    const result = data.values
       .filter((v: any) => v.open && v.high && v.low && v.close)
       .map((v: any) => ({
         time: Math.floor(new Date(v.datetime).getTime() / 1000),
@@ -444,8 +597,15 @@ export async function fetchTwelveDataKlines(
         volume: parseFloat(v.volume || "0"),
       }))
       .reverse(); // TwelveData returns newest first, we need oldest first
+
+    // Store in cache
+    if (result.length > 0) {
+      klinesCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    }
+
+    return result;
   } catch (err) {
-    console.warn(`[PriceFetcher] TwelveData fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
+    console.warn(`[PriceFetcher] TwelveData klines fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
     return [];
   }
 }
