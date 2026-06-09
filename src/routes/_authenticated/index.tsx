@@ -6,6 +6,7 @@ import {
   Sparkles, Camera, Activity, Zap, AlertTriangle, Clock, 
   ArrowUpRight, ArrowDownRight, Newspaper, ChevronRight, TrendingUp, BarChart2 
 } from "lucide-react";
+import { useCallback, useRef } from "react";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Command Center — Vixor" }] }),
@@ -17,8 +18,17 @@ function CommandCenter() {
   const fetchMe = useServerFn(getMe);
   const fetchRecent = useServerFn(listAnalyses);
 
-  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
-  const recent = useQuery({ queryKey: ["analyses", 5], queryFn: () => fetchRecent({ limit: 5 }) });
+  // Stabilize server function references to prevent infinite re-render loop (React error #310)
+  const fetchMeRef = useRef(fetchMe);
+  fetchMeRef.current = fetchMe;
+  const fetchRecentRef = useRef(fetchRecent);
+  fetchRecentRef.current = fetchRecent;
+
+  const meQueryFn = useCallback(async () => fetchMeRef.current({}), []);
+  const recentQueryFn = useCallback(async () => fetchRecentRef.current({ data: { limit: 5 } }), []);
+
+  const me = useQuery({ queryKey: ["me"], queryFn: meQueryFn });
+  const recent = useQuery({ queryKey: ["analyses", 5], queryFn: recentQueryFn });
 
   const name = me.data?.profile?.display_name?.split(" ")[0] || "Trader";
   const xp = (me.data?.profile as any)?.xp ?? 1250;

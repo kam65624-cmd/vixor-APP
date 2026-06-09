@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BookOpen, AlertTriangle, TrendingUp, TrendingDown, Target, Search, BarChart3, Filter, Clock } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listAnalyses } from "@/lib/vixor.functions";
@@ -25,7 +25,12 @@ function Journal() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Overview");
   
   const fetchAnalyses = useServerFn(listAnalyses);
-  const analysesQuery = useQuery({ queryKey: ["analyses-journal"], queryFn: () => fetchAnalyses({ limit: 20 }) });
+  const fetchAnalysesRef = useRef(fetchAnalyses);
+  fetchAnalysesRef.current = fetchAnalyses;
+
+  // Stabilize queryFn to prevent infinite re-render loop (React error #310)
+  const analysesQueryFn = useCallback(async () => fetchAnalysesRef.current({ data: { limit: 20 } }), []);
+  const analysesQuery = useQuery({ queryKey: ["analyses-journal"], queryFn: analysesQueryFn });
 
   return (
     <div className="space-y-6 pb-6 animate-in fade-in duration-500">

@@ -5,7 +5,7 @@ import {
   Loader2, Maximize2, Zap, BrainCircuit, Activity, BarChart2, TrendingUp,
   Newspaper, ShieldCheck, TrendingDown, CheckCircle, ChevronRight, X
 } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getAnalysis } from "@/lib/vixor.functions";
 import { useQuery } from "@tanstack/react-query";
@@ -34,13 +34,23 @@ function highlightSMC(text: string): React.ReactNode[] {
 function AnalysisResult() {
   const { id } = useParams({ from: "/_authenticated/analysis/$id" });
   const fetchFn = useServerFn(getAnalysis);
+  const fetchFnRef = useRef(fetchFn);
+  fetchFnRef.current = fetchFn;
+
+  // Stabilize queryFn with useCallback + useRef to prevent infinite re-render loop
+  // (React error #310). Without this, useServerFn returns a new reference each render,
+  // which creates a new queryFn closure. Combined with refetchInterval polling, this
+  // can trigger: re-render → new queryFn → re-fetch → new data → re-render → loop.
+  const analysisQueryFn = useCallback(async () => {
+    return fetchFnRef.current({ data: { id } });
+  }, [id]);
+
   const q = useQuery({
     queryKey: ["analysis", id],
-    queryFn: async () => {
-      const result = await fetchFn({ data: { id } });
-      return result;
-    },
+    queryFn: analysisQueryFn,
+    enabled: !!id,
     staleTime: 10_000,
+    placeholderData: (prev) => prev,
     refetchInterval: (query) => {
       const s = query.state.data?.status;
       return s === "complete" || s === "failed" ? false : 2000;

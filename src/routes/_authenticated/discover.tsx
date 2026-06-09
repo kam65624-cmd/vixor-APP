@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Compass, Search, Flame, ArrowUpRight, ArrowDownRight, Layers, BarChart2, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMarketNews } from "@/lib/vixor.functions";
@@ -38,11 +38,17 @@ function formatTimeAgo(timestamp: number) {
 
 function DiscoverNews() {
   const fetchMarketNews = useServerFn(getMarketNews);
+  const fetchMarketNewsRef = useRef(fetchMarketNews);
+  fetchMarketNewsRef.current = fetchMarketNews;
+
   const [category, setCategory] = useState<"forex" | "general" | "crypto" | "merger">("forex");
+
+  // Stabilize queryFn to prevent infinite re-render loop (React error #310)
+  const newsQueryFn = useCallback(async () => fetchMarketNewsRef.current({ data: { category } }), [category]);
 
   const { data: news = [], isLoading, error } = useQuery({
     queryKey: ["marketNews", category],
-    queryFn: () => fetchMarketNews({ category }),
+    queryFn: newsQueryFn,
     refetchInterval: 60000,
   });
 

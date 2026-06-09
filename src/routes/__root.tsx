@@ -95,16 +95,25 @@ function RootComponent() {
       try { tg.ready(); tg.expand(); tg.setHeaderColor?.("#08090C"); } catch { /* noop */ }
     }
     let mounted = true;
+    let authDebounce: ReturnType<typeof setTimeout> | null = null;
     import("@/integrations/supabase/client").then(({ supabase }) => {
       if (!mounted) return;
       const { data: sub } = supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-        routerRef.current.invalidate();
-        if (event !== "SIGNED_OUT") queryClientRef.current.invalidateQueries();
+        // Debounce rapid auth events to prevent cascading re-renders (React error #310)
+        if (authDebounce) clearTimeout(authDebounce);
+        authDebounce = setTimeout(() => {
+          if (!mounted) return;
+          routerRef.current.invalidate();
+          if (event !== "SIGNED_OUT") queryClientRef.current.invalidateQueries();
+        }, 150);
       });
       (window as unknown as { __vxAuthSub?: { unsubscribe(): void } }).__vxAuthSub = sub.subscription;
     });
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+      if (authDebounce) clearTimeout(authDebounce);
+    };
   }, []);
 
   return (

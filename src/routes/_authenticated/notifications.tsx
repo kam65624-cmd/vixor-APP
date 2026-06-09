@@ -3,6 +3,7 @@ import { ArrowLeft, TrendingUp, Gift, Users, Sparkles, Check } from "lucide-reac
 import { useServerFn } from "@tanstack/react-start";
 import { listNotifications, markAllNotificationsRead } from "@/lib/vixor.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useRef } from "react";
 
 const iconMap: Record<string, typeof TrendingUp> = { TrendingUp, Gift, Users, Sparkles };
 
@@ -15,8 +16,14 @@ function NotificationsPage() {
   const qc = useQueryClient();
   const fetch = useServerFn(listNotifications);
   const markAll = useServerFn(markAllNotificationsRead);
-  const q = useQuery({ queryKey: ["notifs"], queryFn: () => fetch({}) });
-  const m = useMutation({ mutationFn: () => markAll({}), onSuccess: () => qc.invalidateQueries({ queryKey: ["notifs"] }) });
+
+  // Stabilize server function references to prevent infinite re-render loop (React error #310)
+  const fetchRef = useRef(fetch); fetchRef.current = fetch;
+  const markAllRef = useRef(markAll); markAllRef.current = markAll;
+
+  const notifsQueryFn = useCallback(async () => fetchRef.current({}), []);
+  const q = useQuery({ queryKey: ["notifs"], queryFn: notifsQueryFn });
+  const m = useMutation({ mutationFn: () => markAllRef.current({}), onSuccess: () => qc.invalidateQueries({ queryKey: ["notifs"] }) });
 
   return (
     <div className="space-y-4">

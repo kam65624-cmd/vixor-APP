@@ -1,0 +1,1 @@
+import{j as e}from"./index-g5egrTkE.js";function n({title:t,action:s}){return e.jsxs("div",{className:"flex items-end justify-between mb-3",children:[e.jsx("h2",{className:"text-base font-semibold tracking-tight",children:t}),s]})}export{n as S};

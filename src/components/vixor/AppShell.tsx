@@ -24,8 +24,17 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancel = false;
-    supabase.auth.getSession().then(({ data }) => { if (!cancel) setSignedIn(!!data.session); });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setSignedIn(!!session));
+    // Get initial session once — no duplicate onAuthStateChange listener needed
+    // because __root.tsx already handles auth changes with router.invalidate()
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancel) setSignedIn(!!data.session);
+    });
+    // Single lightweight listener just to toggle signedIn state
+    // (router.invalidate in __root.tsx handles full re-validation)
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION") return; // Already handled by getSession above
+      setSignedIn(!!session);
+    });
     return () => { cancel = true; sub.subscription.unsubscribe(); };
   }, []);
 

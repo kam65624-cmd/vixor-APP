@@ -4,7 +4,7 @@ import { SectionTitle } from "@/components/vixor/atoms";
 import { useServerFn } from "@tanstack/react-start";
 import { getMe, getReferralStats, claimReferral } from "@/lib/vixor.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export const Route = createFileRoute("/_authenticated/referral")({
   head: () => ({ meta: [{ title: "Referrals — Vixor" }] }),
@@ -23,13 +23,22 @@ function Referral() {
   const fetchMe = useServerFn(getMe);
   const fetchRef = useServerFn(getReferralStats);
   const claim = useServerFn(claimReferral);
-  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
-  const refs = useQuery({ queryKey: ["refs"], queryFn: () => fetchRef({}) });
+
+  // Stabilize server function references to prevent infinite re-render loop (React error #310)
+  const fetchMeRef = useRef(fetchMe); fetchMeRef.current = fetchMe;
+  const fetchRefRef = useRef(fetchRef); fetchRefRef.current = fetchRef;
+  const claimRef = useRef(claim); claimRef.current = claim;
+
+  const meQueryFn = useCallback(async () => fetchMeRef.current({}), []);
+  const refsQueryFn = useCallback(async () => fetchRefRef.current({}), []);
+
+  const me = useQuery({ queryKey: ["me"], queryFn: meQueryFn });
+  const refs = useQuery({ queryKey: ["refs"], queryFn: refsQueryFn });
   const [code, setCode] = useState("");
   const [copied, setCopied] = useState(false);
 
   const m = useMutation({
-    mutationFn: (c: string) => claim({ data: { code: c.toUpperCase() } }),
+    mutationFn: (c: string) => claimRef.current({ data: { code: c.toUpperCase() } }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["me"] }); setCode(""); },
   });
 

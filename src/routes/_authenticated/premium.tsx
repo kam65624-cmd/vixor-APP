@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, Crown, Sparkles, Zap, ShieldCheck, Bell, BarChart3, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getPremiumPlans, getPointPacks, subscribePremium, purchasePack, getMe, createStarsInvoice } from "@/lib/vixor.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,13 +28,25 @@ function Premium() {
   const buy = useServerFn(purchasePack);
   const buyStars = useServerFn(createStarsInvoice);
 
-  const plans = useQuery({ queryKey: ["plans"], queryFn: () => fetchPlans({}) });
-  const packs = useQuery({ queryKey: ["packs"], queryFn: () => fetchPacks({}) });
-  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
+  // Stabilize server function references to prevent infinite re-render loop (React error #310)
+  const fetchPlansRef = useRef(fetchPlans); fetchPlansRef.current = fetchPlans;
+  const fetchPacksRef = useRef(fetchPacks); fetchPacksRef.current = fetchPacks;
+  const fetchMeRef = useRef(fetchMe); fetchMeRef.current = fetchMe;
+  const subscribeRef = useRef(subscribe); subscribeRef.current = subscribe;
+  const buyRef = useRef(buy); buyRef.current = buy;
+  const buyStarsRef = useRef(buyStars); buyStarsRef.current = buyStars;
+
+  const plansQueryFn = useCallback(async () => fetchPlansRef.current({}), []);
+  const packsQueryFn = useCallback(async () => fetchPacksRef.current({}), []);
+  const meQueryFn = useCallback(async () => fetchMeRef.current({}), []);
+
+  const plans = useQuery({ queryKey: ["plans"], queryFn: plansQueryFn });
+  const packs = useQuery({ queryKey: ["packs"], queryFn: packsQueryFn });
+  const me = useQuery({ queryKey: ["me"], queryFn: meQueryFn });
 
   const [planId, setPlanId] = useState<string>("yearly");
   const subMut = useMutation({
-    mutationFn: (id: string) => subscribe({ data: { planId: id } }),
+    mutationFn: (id: string) => subscribeRef.current({ data: { planId: id } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["me"] }),
   });
   const packMut = useMutation({
@@ -42,11 +54,11 @@ function Premium() {
       if (isInsideTelegram()) {
         const pack = packs.data?.find(p => p.id === id);
         const amountStars = Math.max(1, Math.floor((pack?.price_cents ?? 0) / 2));
-        const res = await buyStars({ data: { packId: id, amountStars } });
+        const res = await buyStarsRef.current({ data: { packId: id, amountStars } });
         openTelegramInvoice(res.invoiceUrl);
         return;
       } else {
-        return buy({ data: { packId: id } });
+        return buyRef.current({ data: { packId: id } });
       }
     },
     onSuccess: () => {

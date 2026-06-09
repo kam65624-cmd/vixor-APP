@@ -98,10 +98,10 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
   const rsiStatus = getRSIStatus(indicators.rsi);
   const adxStrength = getADXStrength(indicators.adx);
   const emaAlignment = checkEMAAlignment(
-    indicators.rsi, // dummy placeholder, actual EMA values used below
-    indicators.rsi,
-    indicators.rsi,
-    indicators.rsi,
+    indicators.ema9,
+    indicators.ema21,
+    indicators.ema50,
+    indicators.ema200,
   );
 
   // ── Step 6: ATR & Support/Resistance for risk-reward ───────────────

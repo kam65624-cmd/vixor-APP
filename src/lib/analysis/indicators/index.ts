@@ -256,6 +256,10 @@ export function getLatestIndicators(bars: OHLCVBar[]): {
   rsi: number;
   macdHistogram: number;
   bollingerPosition: number; // 0-1 where price is within bands
+  ema9: number;
+  ema21: number;
+  ema50: number;
+  ema200: number;
   emaTrend: "BULLISH" | "BEARISH" | "NEUTRAL";
   adx: number;
   stochK: number;
@@ -269,6 +273,10 @@ export function getLatestIndicators(bars: OHLCVBar[]): {
       rsi: NaN,
       macdHistogram: NaN,
       bollingerPosition: NaN,
+      ema9: NaN,
+      ema21: NaN,
+      ema50: NaN,
+      ema200: NaN,
       emaTrend: "NEUTRAL",
       adx: NaN,
       stochK: NaN,
@@ -349,6 +357,10 @@ export function getLatestIndicators(bars: OHLCVBar[]): {
     rsi: indicators.rsi[last],
     macdHistogram: indicators.macd.histogram[last],
     bollingerPosition,
+    ema9: ema9Val,
+    ema21: ema21Val,
+    ema50: ema50Val,
+    ema200: ema200Val,
     emaTrend,
     adx: indicators.adx[last],
     stochK: indicators.stochRSI.k[last],

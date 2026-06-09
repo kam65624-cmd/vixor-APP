@@ -22,7 +22,15 @@ function Analyze() {
   const navigate = useNavigate();
   const fetchMe = useServerFn(getMe);
   const create = useServerFn(createAnalysis);
-  const me = useQuery({ queryKey: ["me"], queryFn: async () => fetchMe({}), staleTime: 30_000 });
+
+  // Stabilize server function references to prevent infinite re-render loop (React error #310)
+  const fetchMeRef = useRef(fetchMe);
+  fetchMeRef.current = fetchMe;
+  const createRef = useRef(create);
+  createRef.current = create;
+
+  const meQueryFn = useCallback(async () => fetchMeRef.current({}), []);
+  const me = useQuery({ queryKey: ["me"], queryFn: meQueryFn, staleTime: 30_000 });
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [stage, setStage] = useState<"upload" | "preview" | "analyzing">("upload");
@@ -95,7 +103,7 @@ function Analyze() {
     const ticker = setInterval(() => setProgress(p => Math.min(p + 1, STEPS.length - 1)), 2000);
     
     try {
-      const { id } = await create({ 
+      const { id } = await createRef.current({ 
         data: { 
           imageBase64: preview, 
           mimeType: file.type as any,

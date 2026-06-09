@@ -9,6 +9,7 @@ import { getMe, getReferralStats, listAnalyses } from "@/lib/vixor.functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCallback, useRef } from "react";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — Vixor" }] }),
@@ -48,9 +49,21 @@ function Profile() {
   const fetchRef = useServerFn(getReferralStats);
   const fetchAnalyses = useServerFn(listAnalyses);
 
-  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
-  const refs = useQuery({ queryKey: ["refs"], queryFn: () => fetchRef({}) });
-  const analyses = useQuery({ queryKey: ["analyses-profile"], queryFn: () => fetchAnalyses({ limit: 50 }) });
+  // Stabilize server function references to prevent infinite re-render loop (React error #310)
+  const fetchMeRef = useRef(fetchMe);
+  fetchMeRef.current = fetchMe;
+  const fetchRefRef = useRef(fetchRef);
+  fetchRefRef.current = fetchRef;
+  const fetchAnalysesRef = useRef(fetchAnalyses);
+  fetchAnalysesRef.current = fetchAnalyses;
+
+  const meQueryFn = useCallback(async () => fetchMeRef.current({}), []);
+  const refsQueryFn = useCallback(async () => fetchRefRef.current({}), []);
+  const analysesQueryFn = useCallback(async () => fetchAnalysesRef.current({ data: { limit: 50 } }), []);
+
+  const me = useQuery({ queryKey: ["me"], queryFn: meQueryFn });
+  const refs = useQuery({ queryKey: ["refs"], queryFn: refsQueryFn });
+  const analyses = useQuery({ queryKey: ["analyses-profile"], queryFn: analysesQueryFn });
 
   const display = me.data?.profile?.display_name ?? "Trader";
   const tgPhoto = (me.data?.profile as any)?.telegram_photo_url;
