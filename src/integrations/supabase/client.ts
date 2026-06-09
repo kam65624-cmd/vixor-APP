@@ -1,2 +1,2 @@
-// Backward-compatible re-export — actual code moved to @/shared/supabase/client
+// Backward-compatible re-export — actual code lives in @/shared/supabase/client
 export { supabase } from "@/shared/supabase/client";
