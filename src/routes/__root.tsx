@@ -200,8 +200,12 @@ function RootComponent() {
     };
   }, []);
 
-  // Reset function for the error boundary — navigates to home to break any render loops
+  // Reset function for the error boundary — clears ALL query cache and navigates to home
+  // to break any render loops. This prevents the #310 loop from restarting immediately
+  // after the user clicks "Try again".
   const handleErrorReset = useCallback(() => {
+    // Clear all cached query data to prevent stale state from re-triggering loops
+    queryClientRef.current.clear();
     // Use replace to avoid building up history entries
     navigateRef.current({ to: "/", replace: true });
   }, []);

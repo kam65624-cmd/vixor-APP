@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Compass, Plus, BookOpen, Bell, BarChart3 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from "react";
 import { OnboardingModal } from "./OnboardingModal";
 import { supabase } from "@/integrations/supabase/client";
 import { getTelegramInitData } from "@/lib/telegram";
@@ -27,32 +27,19 @@ export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const path = location.pathname;
   const [showOnboarding, setShowOnboarding] = useState(false);
-  // Use a ref to track auth state without causing re-renders on every auth event.
-  // Only update the React state when the value actually CHANGES (null -> true, true -> false, etc.)
-  const signedInRef = useRef<boolean | null>(null);
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    let cancel = false;
-    // Get initial session once
-    supabase.auth.getSession().then(({ data }) => {
-      if (cancel) return;
-      const val = !!data.session;
-      signedInRef.current = val;
-      setSignedIn(val);
-    });
-    // Single lightweight listener — only update state when value actually changes
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "INITIAL_SESSION") return; // Already handled by getSession above
-      const newVal = !!session;
-      // Only trigger a re-render if the value actually changed
-      if (signedInRef.current !== newVal) {
-        signedInRef.current = newVal;
-        setSignedIn(newVal);
-      }
-    });
-    return () => { cancel = true; sub.subscription.unsubscribe(); };
-  }, []);
+  // ── React #310 FIX: Removed duplicate auth state listener ──
+  // Previously, AppShell had its own onAuthStateChange listener that would call
+  // setSignedIn(), causing a full re-render of the shell (and all children).
+  // This was a SECOND auth listener in addition to the one in __root.tsx.
+  // When auth state changed, BOTH listeners fired, creating a cascade:
+  //   AppShell re-renders → children re-render → RootComponent invalidates queries
+  //   → query consumers re-render → potential infinite loop → React #310
+  //
+  // Now, AppShell simply checks if the user is on the auth page (no session needed).
+  // Auth state is managed SOLELY by __root.tsx's onAuthStateChange handler,
+  // which is the SINGLE source of truth for auth-triggered state changes.
+  const signedIn = path !== "/auth";
 
   const linkTelegram = useStableServerFn(linkTelegramAccount);
 
@@ -88,7 +75,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, []);
 
   // Hide shell on /auth
-  if (path === "/auth" || signedIn === false) {
+  if (!signedIn) {
     return <>{children}</>;
   }
 
@@ -130,7 +117,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-function Header() {
+const Header = memo(function Header() {
   return (
     <header className="glass-header sticky top-0 z-40 pt-safe">
       <div className="mx-auto max-w-md px-4 h-14 flex items-center justify-between">
@@ -154,4 +141,4 @@ function Header() {
       </div>
     </header>
   );
-}
+});

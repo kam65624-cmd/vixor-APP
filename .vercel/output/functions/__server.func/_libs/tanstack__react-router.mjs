@@ -780,12 +780,11 @@ function RouterProvider({ router, ...rest }) {
     children: /* @__PURE__ */ jsxRuntimeExports.jsx(Matches, {})
   });
 }
-function useRouterState(opts) {
-  const contextRouter = useRouter();
-  const router = contextRouter;
+function useLocation(opts) {
+  const router = useRouter();
   {
-    const state = router.stores.__store.get();
-    return state;
+    const location = router.stores.location.get();
+    return location;
   }
 }
 var noopScriptHandler = () => {
@@ -1180,11 +1179,10 @@ export {
   createRootRouteWithContext as a,
   createFileRoute as b,
   createRouter as c,
-  useRouterState as d,
-  useNavigate as e,
-  useSearch as f,
-  useParams as g,
+  useLocation as d,
+  useSearch as e,
+  useParams as f,
   lazyRouteComponent as l,
   renderRouterToStream as r,
-  useRouter as u
+  useNavigate as u
 };
