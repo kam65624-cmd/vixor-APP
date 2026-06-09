@@ -83,7 +83,8 @@ export async function runChartAnalysis(
   mimeType: string,
   fileName?: string,
   selectedPair?: string,
-  trading_style?: string
+  trading_style?: string,
+  realBars?: import("@/lib/analysis/core/types").OHLCVBar[],
 ): Promise<AnalysisResult> {
   const pair = selectedPair || detectPairFromFileName(fileName) || "EUR/USD";
 
@@ -97,6 +98,7 @@ export async function runChartAnalysis(
     timeframe: inferTimeframeFromTradingStyle(trading_style),
     tradingStyle: trading_style,
     imageBytes,
+    bars: realBars, // Pass real Binance OHLCV data if available
   });
 
   // If local engine produced a high-confidence result, use it directly

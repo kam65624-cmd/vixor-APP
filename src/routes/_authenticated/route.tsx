@@ -4,9 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
-    return { user: data.user };
+    // ── CRITICAL: Use getSession() NOT getUser() ──
+    // getUser() sends a network request to Supabase Auth which can trigger
+    // token refresh → onAuthStateChange → router.invalidate() → getUser() → LOOP → React #310
+    // getSession() only reads the local session from storage — no network call, no token refresh.
+    const { data, error } = await supabase.auth.getSession();
+    if (error || !data.session) throw redirect({ to: "/auth" });
+    return { user: data.session.user };
   },
   component: () => <Outlet />,
 });

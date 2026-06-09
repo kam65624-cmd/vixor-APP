@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Copy, Share2, Users, Crown } from "lucide-react";
 import { SectionTitle } from "@/components/vixor/atoms";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { getMe, getReferralStats, claimReferral } from "@/lib/vixor.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useCallback, useRef } from "react";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/referral")({
   head: () => ({ meta: [{ title: "Referrals — Vixor" }] }),
@@ -20,25 +20,18 @@ const tiers = [
 
 function Referral() {
   const qc = useQueryClient();
-  const fetchMe = useServerFn(getMe);
-  const fetchRef = useServerFn(getReferralStats);
-  const claim = useServerFn(claimReferral);
+  // Use stable server function references to prevent infinite re-render loop (React error #310)
+  const fetchMe = useStableServerFn(getMe);
+  const fetchRef = useStableServerFn(getReferralStats);
+  const claimFn = useStableServerFn(claimReferral);
 
-  // Stabilize server function references to prevent infinite re-render loop (React error #310)
-  const fetchMeRef = useRef(fetchMe); fetchMeRef.current = fetchMe;
-  const fetchRefRef = useRef(fetchRef); fetchRefRef.current = fetchRef;
-  const claimRef = useRef(claim); claimRef.current = claim;
-
-  const meQueryFn = useCallback(async () => fetchMeRef.current({}), []);
-  const refsQueryFn = useCallback(async () => fetchRefRef.current({}), []);
-
-  const me = useQuery({ queryKey: ["me"], queryFn: meQueryFn });
-  const refs = useQuery({ queryKey: ["refs"], queryFn: refsQueryFn });
+  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
+  const refs = useQuery({ queryKey: ["refs"], queryFn: () => fetchRef({}) });
   const [code, setCode] = useState("");
   const [copied, setCopied] = useState(false);
 
   const m = useMutation({
-    mutationFn: (c: string) => claimRef.current({ data: { code: c.toUpperCase() } }),
+    mutationFn: (c: string) => claimFn({ data: { code: c.toUpperCase() } }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["me"] }); setCode(""); },
   });
 

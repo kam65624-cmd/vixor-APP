@@ -4,12 +4,11 @@ import {
   ChevronRight, LogOut, LayoutDashboard, Zap, Target,
   TrendingUp, Award, Flame, Star
 } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
 import { getMe, getReferralStats, listAnalyses } from "@/lib/vixor.functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCallback, useRef } from "react";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — Vixor" }] }),
@@ -45,25 +44,14 @@ function XPBar({ xp }: { xp: number }) {
 function Profile() {
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const fetchMe = useServerFn(getMe);
-  const fetchRef = useServerFn(getReferralStats);
-  const fetchAnalyses = useServerFn(listAnalyses);
+  // Use stable server function references to prevent infinite re-render loop (React error #310)
+  const fetchMe = useStableServerFn(getMe);
+  const fetchRef = useStableServerFn(getReferralStats);
+  const fetchAnalyses = useStableServerFn(listAnalyses);
 
-  // Stabilize server function references to prevent infinite re-render loop (React error #310)
-  const fetchMeRef = useRef(fetchMe);
-  fetchMeRef.current = fetchMe;
-  const fetchRefRef = useRef(fetchRef);
-  fetchRefRef.current = fetchRef;
-  const fetchAnalysesRef = useRef(fetchAnalyses);
-  fetchAnalysesRef.current = fetchAnalyses;
-
-  const meQueryFn = useCallback(async () => fetchMeRef.current({}), []);
-  const refsQueryFn = useCallback(async () => fetchRefRef.current({}), []);
-  const analysesQueryFn = useCallback(async () => fetchAnalysesRef.current({ data: { limit: 50 } }), []);
-
-  const me = useQuery({ queryKey: ["me"], queryFn: meQueryFn });
-  const refs = useQuery({ queryKey: ["refs"], queryFn: refsQueryFn });
-  const analyses = useQuery({ queryKey: ["analyses-profile"], queryFn: analysesQueryFn });
+  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
+  const refs = useQuery({ queryKey: ["refs"], queryFn: () => fetchRef({}) });
+  const analyses = useQuery({ queryKey: ["analyses-profile"], queryFn: () => fetchAnalyses({ data: { limit: 50 } }) });
 
   const display = me.data?.profile?.display_name ?? "Trader";
   const tgPhoto = (me.data?.profile as any)?.telegram_photo_url;

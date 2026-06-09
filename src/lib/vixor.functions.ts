@@ -163,7 +163,39 @@ export const createAnalysis = createServerFn({ method: "POST" })
 
     // Run AI analysis
     try {
-      const result = await runChartAnalysis(bytes, data.mimeType, data.fileName, data.selectedPair, data.tradingStyle);
+      // ── Fetch real OHLCV data for the analysis ──
+      // This ensures the analysis is based on REAL market data, not generated fake data.
+      // Without this, the local engine uses generateOHLCV() which produces deterministic
+      // but FAKE prices that don't match the actual chart → user complaint: "analysis doesn't match chart"
+      let realBars: import("@/lib/analysis/core/types").OHLCVBar[] | undefined;
+      try {
+        const pair = data.selectedPair || "EUR/USD";
+        const tf = data.tradingStyle === "Scalping" ? "15M" : data.tradingStyle === "Swing Trading" ? "4H" : "1H";
+
+        // Try Binance for crypto pairs
+        if (pair.includes("USDT") || pair.includes("BTC") || pair.includes("ETH") || pair.includes("SOL")) {
+          const { fetchBinanceKlines } = await import("@/server/price-fetcher.server");
+          const klines = await fetchBinanceKlines(pair, tf, 200);
+          if (klines.length > 20) {
+            realBars = klines.map(k => ({ time: k.time, open: k.open, high: k.high, low: k.low, close: k.close, volume: k.volume }));
+            console.log(`[Vixor] Using ${realBars.length} real Binance candles for ${pair}/${tf}`);
+          }
+        }
+
+        // Try TwelveData for forex/commodity pairs (XAU/USD, EUR/USD, etc.)
+        if (!realBars && (pair.includes("USD") || pair.includes("JPY") || pair.includes("GBP") || pair.includes("EUR") || pair.includes("AUD"))) {
+          const { fetchTwelveDataKlines } = await import("@/server/price-fetcher.server");
+          const klines = await fetchTwelveDataKlines(pair, tf, 200);
+          if (klines.length > 20) {
+            realBars = klines.map(k => ({ time: k.time, open: k.open, high: k.high, low: k.low, close: k.close, volume: k.volume }));
+            console.log(`[Vixor] Using ${realBars.length} real TwelveData candles for ${pair}/${tf}`);
+          }
+        }
+      } catch (fetchErr) {
+        console.warn("[Vixor] Failed to fetch real OHLCV data, using generated data:", fetchErr instanceof Error ? fetchErr.message : String(fetchErr));
+      }
+
+      const result = await runChartAnalysis(bytes, data.mimeType, data.fileName, data.selectedPair, data.tradingStyle, realBars);
 
       await supabaseAdmin
         .from("analyses")
@@ -510,10 +542,16 @@ export const generateDailySignals = createServerFn({ method: "POST" })
     for (const pair of pairs) {
       for (const tf of timeframes) {
         try {
-          // Try to get real OHLCV data from Binance for crypto pairs
+          // Try to get real OHLCV data
           let bars;
           if (pair.includes("USDT")) {
             bars = await fetchBinanceKlines(pair, tf, 200);
+          }
+          // Try TwelveData for forex/commodity pairs
+          if (!bars || bars.length <= 20) {
+            const { fetchTwelveDataKlines } = await import("@/server/price-fetcher.server");
+            const tdBars = await fetchTwelveDataKlines(pair, tf, 200);
+            if (tdBars.length > 20) bars = tdBars;
           }
 
           // Run local analysis (with real data if available)

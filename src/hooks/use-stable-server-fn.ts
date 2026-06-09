@@ -41,13 +41,12 @@ export function useStableServerFn<T extends AnyServerFn>(fn: T): T {
   ref.current = serverFn;
 
   // Create a single stable function that always delegates to the latest ref.
-  // The type assertion is safe because the returned function has the same
-  // call signature as the input server function.
-  const stableFn = useCallback(
-    ((...args: Parameters<T>) => ref.current(...args)) as unknown as T,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  // We use a lazy ref pattern to ensure the function is created only once,
+  // even across strict-mode double-renders.
+  const stableRef = useRef<((...args: Parameters<T>) => ReturnType<T>) | null>(null);
+  if (!stableRef.current) {
+    stableRef.current = (...args: Parameters<T>) => ref.current(...args);
+  }
 
-  return stableFn;
+  return stableRef.current as unknown as T;
 }

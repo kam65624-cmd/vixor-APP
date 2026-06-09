@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BookOpen, AlertTriangle, TrendingUp, TrendingDown, Target, Search, BarChart3, Filter, Clock } from "lucide-react";
-import { useState, useCallback, useRef } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { listAnalyses } from "@/lib/vixor.functions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/journal")({
   head: () => ({ meta: [{ title: "Journal — Vixor" }] }),
@@ -23,14 +23,10 @@ const mockHistory = [
 
 function Journal() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Overview");
-  
-  const fetchAnalyses = useServerFn(listAnalyses);
-  const fetchAnalysesRef = useRef(fetchAnalyses);
-  fetchAnalysesRef.current = fetchAnalyses;
 
-  // Stabilize queryFn to prevent infinite re-render loop (React error #310)
-  const analysesQueryFn = useCallback(async () => fetchAnalysesRef.current({ data: { limit: 20 } }), []);
-  const analysesQuery = useQuery({ queryKey: ["analyses-journal"], queryFn: analysesQueryFn });
+  // Use stable server function references to prevent infinite re-render loop (React error #310)
+  const fetchAnalyses = useStableServerFn(listAnalyses);
+  const analysesQuery = useQuery({ queryKey: ["analyses-journal"], queryFn: () => fetchAnalyses({ data: { limit: 20 } }) });
 
   return (
     <div className="space-y-6 pb-6 animate-in fade-in duration-500">

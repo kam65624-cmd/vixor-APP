@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router"
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { telegramSignIn } from "@/lib/auth.functions";
-import { useServerFn } from "@tanstack/react-start";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 import { BarChart3, Sparkles, Loader2, Eye, EyeOff, TrendingUp, Shield, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
@@ -28,9 +28,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const tgSignIn = useServerFn(telegramSignIn);
-  const tgSignInRef = useRef(tgSignIn);
-  tgSignInRef.current = tgSignIn;
+  const tgSignIn = useStableServerFn(telegramSignIn);
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
   const routerRef = useRef(router);
@@ -60,7 +58,7 @@ function AuthPage() {
       if (initData && initData.length > 10) {
         if (active) setBusy(true);
         try {
-          const { email, password } = await tgSignInRef.current({ data: { initData } });
+          const { email, password } = await tgSignIn({ data: { initData } });
           const { error } = await supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
           routerRef.current.invalidate();

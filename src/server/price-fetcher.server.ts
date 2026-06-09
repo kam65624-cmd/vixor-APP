@@ -341,3 +341,73 @@ export const POPULAR_PAIRS = [
   { pair: "GBP/JPY", icon: "£" },
   { pair: "SOL/USDT", icon: "◎" },
 ];
+
+/**
+ * Fetch OHLCV candle data from TwelveData API for forex/commodity pairs.
+ * Returns array of OHLCV bars with time, open, high, low, close, volume.
+ */
+export async function fetchTwelveDataKlines(
+  pair: string,
+  interval: string = "1h",
+  outputsize: number = 200,
+): Promise<Array<{ time: number; open: number; high: number; low: number; close: number; volume: number }>> {
+  const apiKey = process.env.TWELVEDATA_API_KEY;
+  if (!apiKey) return [];
+
+  // Map pair to TwelveData symbol format
+  const symbolMap: Record<string, string> = {
+    "XAU/USD": "XAU/USD",
+    "EUR/USD": "EUR/USD",
+    "GBP/USD": "GBP/USD",
+    "USD/JPY": "USD/JPY",
+    "GBP/JPY": "GBP/JPY",
+    "AUD/USD": "AUD/USD",
+    "NZD/USD": "NZD/USD",
+    "USD/CAD": "USD/CAD",
+    "USD/CHF": "USD/CHF",
+    "EUR/GBP": "EUR/GBP",
+    "EUR/JPY": "EUR/JPY",
+  };
+
+  const symbol = symbolMap[pair];
+  if (!symbol) return [];
+
+  // Map timeframe to TwelveData interval
+  const intervalMap: Record<string, string> = {
+    "1M": "1min",
+    "5M": "5min",
+    "15M": "15min",
+    "30M": "30min",
+    "1H": "1h",
+    "4H": "4h",
+    "1D": "1day",
+    "1W": "1week",
+  };
+  const tdInterval = intervalMap[interval] || "1h";
+
+  try {
+    const res = await fetch(
+      `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(symbol)}&interval=${tdInterval}&outputsize=${outputsize}&apikey=${apiKey}`,
+      { signal: AbortSignal.timeout(15000) }
+    );
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    if (!data.values || !Array.isArray(data.values)) return [];
+
+    return data.values
+      .filter((v: any) => v.open && v.high && v.low && v.close)
+      .map((v: any) => ({
+        time: Math.floor(new Date(v.datetime).getTime() / 1000),
+        open: parseFloat(v.open),
+        high: parseFloat(v.high),
+        low: parseFloat(v.low),
+        close: parseFloat(v.close),
+        volume: parseFloat(v.volume || "0"),
+      }))
+      .reverse(); // TwelveData returns newest first, we need oldest first
+  } catch (err) {
+    console.warn(`[PriceFetcher] TwelveData fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
+    return [];
+  }
+}

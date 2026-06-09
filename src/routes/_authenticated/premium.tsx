@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, Crown, Sparkles, Zap, ShieldCheck, Bell, BarChart3, Loader2, Star } from "lucide-react";
-import { useState, useCallback, useRef } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { getPremiumPlans, getPointPacks, subscribePremium, purchasePack, getMe, createStarsInvoice } from "@/lib/vixor.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isInsideTelegram, openTelegramInvoice } from "@/lib/telegram";
+import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/premium")({
   head: () => ({ meta: [{ title: "Premium — Vixor" }] }),
@@ -21,32 +21,21 @@ const features = [
 
 function Premium() {
   const qc = useQueryClient();
-  const fetchPlans = useServerFn(getPremiumPlans);
-  const fetchPacks = useServerFn(getPointPacks);
-  const fetchMe = useServerFn(getMe);
-  const subscribe = useServerFn(subscribePremium);
-  const buy = useServerFn(purchasePack);
-  const buyStars = useServerFn(createStarsInvoice);
+  // Use stable server function references to prevent infinite re-render loop (React error #310)
+  const fetchPlans = useStableServerFn(getPremiumPlans);
+  const fetchPacks = useStableServerFn(getPointPacks);
+  const fetchMe = useStableServerFn(getMe);
+  const subscribe = useStableServerFn(subscribePremium);
+  const buy = useStableServerFn(purchasePack);
+  const buyStars = useStableServerFn(createStarsInvoice);
 
-  // Stabilize server function references to prevent infinite re-render loop (React error #310)
-  const fetchPlansRef = useRef(fetchPlans); fetchPlansRef.current = fetchPlans;
-  const fetchPacksRef = useRef(fetchPacks); fetchPacksRef.current = fetchPacks;
-  const fetchMeRef = useRef(fetchMe); fetchMeRef.current = fetchMe;
-  const subscribeRef = useRef(subscribe); subscribeRef.current = subscribe;
-  const buyRef = useRef(buy); buyRef.current = buy;
-  const buyStarsRef = useRef(buyStars); buyStarsRef.current = buyStars;
-
-  const plansQueryFn = useCallback(async () => fetchPlansRef.current({}), []);
-  const packsQueryFn = useCallback(async () => fetchPacksRef.current({}), []);
-  const meQueryFn = useCallback(async () => fetchMeRef.current({}), []);
-
-  const plans = useQuery({ queryKey: ["plans"], queryFn: plansQueryFn });
-  const packs = useQuery({ queryKey: ["packs"], queryFn: packsQueryFn });
-  const me = useQuery({ queryKey: ["me"], queryFn: meQueryFn });
+  const plans = useQuery({ queryKey: ["plans"], queryFn: () => fetchPlans({}) });
+  const packs = useQuery({ queryKey: ["packs"], queryFn: () => fetchPacks({}) });
+  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
 
   const [planId, setPlanId] = useState<string>("yearly");
   const subMut = useMutation({
-    mutationFn: (id: string) => subscribeRef.current({ data: { planId: id } }),
+    mutationFn: (id: string) => subscribe({ data: { planId: id } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["me"] }),
   });
   const packMut = useMutation({
@@ -54,11 +43,11 @@ function Premium() {
       if (isInsideTelegram()) {
         const pack = packs.data?.find(p => p.id === id);
         const amountStars = Math.max(1, Math.floor((pack?.price_cents ?? 0) / 2));
-        const res = await buyStarsRef.current({ data: { packId: id, amountStars } });
+        const res = await buyStars({ data: { packId: id, amountStars } });
         openTelegramInvoice(res.invoiceUrl);
         return;
       } else {
-        return buyRef.current({ data: { packId: id } });
+        return buy({ data: { packId: id } });
       }
     },
     onSuccess: () => {

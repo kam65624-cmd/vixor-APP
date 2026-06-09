@@ -96,28 +96,31 @@ function RootComponent() {
     }
     let mounted = true;
     let authDebounce: ReturnType<typeof setTimeout> | null = null;
+    let lastAuthEvent = "";
+    let lastAuthTime = 0;
+
     import("@/integrations/supabase/client").then(({ supabase }) => {
       if (!mounted) return;
       const { data: sub } = supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
 
         // ── CRITICAL FIX: React error #310 prevention ──
-        // Debounce rapid auth events (500ms) to prevent cascading re-renders.
-        // The previous 150ms debounce + broad invalidateQueries() caused an infinite loop:
-        //   auth event → invalidate ALL queries → getMe refetch → token refresh →
-        //   another auth event → invalidate ALL queries → loop → CRASH
-        //
-        // FIX: Only invalidate SPECIFIC queries that actually depend on auth,
-        // NOT all queries. This prevents the cascade.
+        // 1. Deduplicate rapid identical auth events within 2 seconds
+        //    (Supabase can fire TOKEN_REFRESHED → USER_UPDATED in quick succession)
+        const now = Date.now();
+        if (event === lastAuthEvent && now - lastAuthTime < 2000) return;
+        lastAuthEvent = event;
+        lastAuthTime = now;
+
+        // 2. Debounce remaining events (500ms) to prevent cascading re-renders.
         if (authDebounce) clearTimeout(authDebounce);
         authDebounce = setTimeout(() => {
           if (!mounted) return;
-          // Only invalidate the router (which re-runs beforeLoad guards)
-          routerRef.current.invalidate();
 
-          // Only invalidate auth-dependent queries, NOT all queries
+          // Only invalidate auth-dependent queries — NOT router.invalidate()
+          // router.invalidate() re-runs beforeLoad which calls getUser() → token refresh →
+          // another auth event → infinite loop. Instead, just refresh the data queries.
           if (event === "SIGNED_OUT") {
-            // On sign out, remove all user-specific data
             queryClientRef.current.removeQueries({ queryKey: ["me"] });
             queryClientRef.current.removeQueries({ queryKey: ["analyses"] });
             queryClientRef.current.removeQueries({ queryKey: ["alerts"] });
@@ -125,6 +128,8 @@ function RootComponent() {
             queryClientRef.current.removeQueries({ queryKey: ["daily-signals"] });
             queryClientRef.current.removeQueries({ queryKey: ["user-strategy"] });
             queryClientRef.current.removeQueries({ queryKey: ["notifs"] });
+            // Navigate to auth page on sign out
+            routerRef.current.navigate({ to: "/auth" });
           } else {
             // On sign in / user update, only refetch profile data
             queryClientRef.current.invalidateQueries({ queryKey: ["me"] });
