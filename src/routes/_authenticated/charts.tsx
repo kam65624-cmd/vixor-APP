@@ -1,102 +1,282 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Search, Plus, Bell, Layers, Sparkles } from "lucide-react";
-import { watchlist } from "@/lib/vixor-mock";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { Search, Bell, Sparkles, Plus } from "lucide-react";
+import { useState, useRef, useCallback, useMemo } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getMarketPrices } from "@/lib/vixor.functions";
+import {
+  TradingViewChart,
+  toTradingViewSymbol,
+  SYMBOL_MAP,
+  getDisplayPair,
+} from "@/components/vixor/TradingViewChart";
+import { CreateAlertDialog } from "@/components/vixor/CreateAlertDialog";
+import { AlertsList } from "@/components/vixor/AlertsList";
 import { SectionTitle } from "@/components/vixor/atoms";
-import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/charts")({
   head: () => ({ meta: [{ title: "Charts — Vixor" }] }),
   component: Charts,
+  validateSearch: (search: Record<string, unknown>) => ({
+    symbol: (search.symbol as string) || "BINANCE:BTCUSDT",
+  }),
 });
 
-const timeframes = ["1m","5m","15m","1H","4H","1D","1W"];
+const POPULAR = [
+  { pair: "BTC/USDT", icon: "₿" },
+  { pair: "ETH/USDT", icon: "Ξ" },
+  { pair: "XAU/USD", icon: "Au" },
+  { pair: "EUR/USD", icon: "€" },
+  { pair: "GBP/JPY", icon: "£" },
+  { pair: "SOL/USDT", icon: "◎" },
+];
 
 function Charts() {
-  const [tf, setTf] = useState("4H");
-  const [sym, setSym] = useState(watchlist[0]);
+  const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as { symbol?: string };
+  const queryClient = useQueryClient();
+
+  // Current symbol state
+  const [currentPair, setCurrentPair] = useState(() => {
+    const sym = search.symbol || "BINANCE:BTCUSDT";
+    return getDisplayPair(sym);
+  });
+  const [searchInput, setSearchInput] = useState("");
+  const [showAlertDialog, setShowAlertDialog] = useState(false);
+
+  const currentSymbol = useMemo(() => toTradingViewSymbol(currentPair), [currentPair]);
+
+  // Fetch market prices for the quick-select buttons
+  const fetchPrices = useServerFn(getMarketPrices);
+  const fetchPricesRef = useRef(fetchPrices);
+  fetchPricesRef.current = fetchPrices;
+
+  const pricesQueryFn = useCallback(async () => fetchPricesRef.current({}), []);
+  const pricesQuery = useQuery({
+    queryKey: ["market-prices"],
+    queryFn: pricesQueryFn,
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  });
+
+  // Get current price for the selected pair
+  const currentPrice = useMemo(() => {
+    const priceData = pricesQuery.data?.find((p: any) => p.pair === currentPair);
+    return priceData?.price ?? 0;
+  }, [pricesQuery.data, currentPair]);
+
+  // Handle symbol change
+  const changePair = useCallback(
+    (pair: string) => {
+      setCurrentPair(pair);
+      const symbol = toTradingViewSymbol(pair);
+      navigate({ to: "/charts", search: { symbol } } as any);
+    },
+    [navigate],
+  );
+
+  // Handle search
+  const handleSearch = useCallback(() => {
+    if (!searchInput.trim()) return;
+
+    // Check if it's a known pair
+    const normalizedInput = searchInput.trim().toUpperCase();
+
+    // Try direct match first
+    if (SYMBOL_MAP[normalizedInput]) {
+      changePair(normalizedInput);
+      setSearchInput("");
+      return;
+    }
+
+    // Try without slash
+    for (const [pair] of Object.entries(SYMBOL_MAP)) {
+      if (pair.replace("/", "").toUpperCase() === normalizedInput) {
+        changePair(pair);
+        setSearchInput("");
+        return;
+      }
+    }
+
+    // Try partial match
+    for (const [pair] of Object.entries(SYMBOL_MAP)) {
+      if (pair.toUpperCase().includes(normalizedInput)) {
+        changePair(pair);
+        setSearchInput("");
+        return;
+      }
+    }
+
+    // Try using it directly as a TradingView symbol
+    if (normalizedInput.includes(":")) {
+      setCurrentPair(getDisplayPair(normalizedInput));
+      navigate({ to: "/charts", search: { symbol: normalizedInput } } as any);
+      setSearchInput("");
+    }
+  }, [searchInput, changePair, navigate]);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-in fade-in duration-500">
+      {/* Search bar */}
       <div className="flex items-center gap-2">
         <div className="flex-1 flex items-center gap-2 px-3 h-10 rounded-xl bg-card border border-border">
           <Search className="size-4 text-muted-foreground" />
-          <input placeholder="Search pair…" className="bg-transparent flex-1 text-sm outline-none" />
+          <input
+            placeholder="Search pair… (e.g. BTC/USDT)"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="bg-transparent flex-1 text-sm outline-none text-foreground placeholder:text-muted-foreground"
+          />
         </div>
-        <button className="size-10 rounded-xl bg-card border border-border flex items-center justify-center">
-          <Plus className="size-4" />
+        <button
+          onClick={handleSearch}
+          className="size-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors"
+        >
+          <Search className="size-4 text-muted-foreground" />
         </button>
+      </div>
+
+      {/* Popular pairs quick-select */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+        {POPULAR.map((p) => {
+          const priceData = pricesQuery.data?.find((d: any) => d.pair === p.pair);
+          const isActive = currentPair === p.pair;
+          return (
+            <button
+              key={p.pair}
+              onClick={() => changePair(p.pair)}
+              className={`flex items-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
+                isActive
+                  ? "gradient-primary text-primary-foreground glow-primary"
+                  : "bg-card border border-border text-muted-foreground hover:bg-card-hover hover:text-foreground"
+              }`}
+            >
+              <span className="text-sm">{p.icon}</span>
+              {p.pair}
+              {priceData && (
+                <span className="font-mono text-[10px] opacity-70">
+                  $
+                  {Number(priceData.price).toLocaleString(undefined, {
+                    maximumFractionDigits: priceData.pair?.includes("JPY") ? 2 : 2,
+                  })}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Symbol header */}
       <div className="vixor-card p-4">
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-xs text-muted-foreground">{sym.pair}</div>
-            <div className="text-3xl font-bold text-mono">${sym.price.toLocaleString()}</div>
-            <div className={`text-sm font-semibold text-mono ${sym.change >= 0 ? "text-bullish" : "text-bearish"}`}>
-              {sym.change >= 0 ? "+" : ""}{sym.change}%
-            </div>
+            <div className="text-xs text-muted-foreground font-semibold">{currentPair}</div>
+            {currentPrice > 0 && (
+              <>
+                <div className="text-3xl font-bold font-mono">
+                  $
+                  {currentPrice.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: currentPair.includes("JPY") ? 2 : 4,
+                  })}
+                </div>
+                {pricesQuery.data?.find((p: any) => p.pair === currentPair)?.change24h !==
+                  undefined && (
+                  <div
+                    className={`text-sm font-semibold font-mono ${
+                      (pricesQuery.data.find((p: any) => p.pair === currentPair)?.change24h ?? 0) >=
+                      0
+                        ? "text-bullish"
+                        : "text-bearish"
+                    }`}
+                  >
+                    {(pricesQuery.data.find((p: any) => p.pair === currentPair)?.change24h ?? 0) >=
+                    0
+                      ? "+"
+                      : ""}
+                    {(
+                      pricesQuery.data.find((p: any) => p.pair === currentPair)?.change24h ?? 0
+                    ).toFixed(2)}
+                    %
+                  </div>
+                )}
+              </>
+            )}
           </div>
-          <button className="size-9 rounded-xl bg-muted flex items-center justify-center">
+          <button
+            onClick={() => setShowAlertDialog(true)}
+            className="size-9 rounded-xl bg-muted flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-colors"
+          >
             <Bell className="size-4" />
           </button>
         </div>
+      </div>
 
-        {/* Mock chart */}
-        <div className="h-44 mt-3">
-          <svg className="w-full h-full" viewBox="0 0 400 180" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="cg" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="oklch(0.72 0.17 162)" stopOpacity="0.4"/>
-                <stop offset="100%" stopColor="oklch(0.72 0.17 162)" stopOpacity="0"/>
-              </linearGradient>
-            </defs>
-            {[40,80,120].map(y => <line key={y} x1="0" x2="400" y1={y} y2={y} stroke="oklch(1 0 0 / 0.05)" />)}
-            <path d="M 0 140 L 30 130 L 60 135 L 90 110 L 120 115 L 150 90 L 180 100 L 210 70 L 240 80 L 270 50 L 300 65 L 330 40 L 360 55 L 400 35 L 400 180 L 0 180 Z" fill="url(#cg)"/>
-            <path d="M 0 140 L 30 130 L 60 135 L 90 110 L 120 115 L 150 90 L 180 100 L 210 70 L 240 80 L 270 50 L 300 65 L 330 40 L 360 55 L 400 35" fill="none" stroke="oklch(0.72 0.17 162)" strokeWidth="2"/>
-          </svg>
-        </div>
+      {/* TradingView Chart */}
+      <TradingViewChart symbol={currentSymbol} interval="240" theme="dark" height="65vh" />
 
-        <div className="flex items-center gap-1 mt-3 overflow-x-auto scrollbar-hide">
-          {timeframes.map(t => (
-            <button key={t} onClick={() => setTf(t)}
-              className={`px-3 h-7 rounded-md text-xs font-semibold whitespace-nowrap transition ${tf === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-              {t}
-            </button>
-          ))}
-          <div className="flex-1" />
-          <button className="size-8 rounded-md bg-muted flex items-center justify-center">
-            <Layers className="size-4 text-muted-foreground" />
-          </button>
-        </div>
+      {/* Action buttons */}
+      <div className="grid grid-cols-3 gap-2">
+        <button
+          onClick={() => setShowAlertDialog(true)}
+          className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover"
+        >
+          <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Bell className="size-4 text-primary" />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Set Alert
+          </span>
+        </button>
 
-        <button className="mt-3 w-full h-11 rounded-xl gradient-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 glow-primary">
-          <Sparkles className="size-4" /> Analyze this chart
+        <button
+          onClick={() => navigate({ to: "/analyze" })}
+          className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover"
+        >
+          <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Sparkles className="size-4 text-primary" />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Analyze
+          </span>
+        </button>
+
+        <button
+          onClick={() => {
+            queryClient.invalidateQueries({ queryKey: ["alerts"] });
+          }}
+          className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover"
+        >
+          <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Plus className="size-4 text-primary" />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Watchlist
+          </span>
         </button>
       </div>
 
-      {/* Watchlist */}
+      {/* My Alerts for this pair */}
       <div>
-        <SectionTitle title="Watchlist" />
-        <div className="vixor-card divide-y divide-border">
-          {watchlist.map(w => (
-            <button key={w.pair} onClick={() => setSym(w)} className="w-full p-3 flex items-center gap-3 vixor-card-hover">
-              <div className="size-9 rounded-lg bg-muted flex items-center justify-center text-[10px] font-bold text-mono">
-                {w.pair.split("/")[0].slice(0,3)}
-              </div>
-              <div className="flex-1 text-left">
-                <div className="font-semibold text-sm text-mono">{w.pair}</div>
-                <div className="text-xs text-muted-foreground">Live</div>
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-semibold text-mono">${w.price.toLocaleString()}</div>
-                <div className={`text-xs text-mono ${w.change >= 0 ? "text-bullish" : "text-bearish"}`}>
-                  {w.change >= 0 ? "+" : ""}{w.change}%
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
+        <SectionTitle title="My Alerts" />
+        <AlertsList pair={currentPair} />
       </div>
+
+      {/* All Alerts */}
+      <div>
+        <SectionTitle title="All Alerts" />
+        <AlertsList />
+      </div>
+
+      {/* Create Alert Dialog */}
+      <CreateAlertDialog
+        open={showAlertDialog}
+        onOpenChange={setShowAlertDialog}
+        pair={currentPair}
+        currentPrice={currentPrice || 68000}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ["alerts"] })}
+      />
     </div>
   );
 }

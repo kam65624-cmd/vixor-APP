@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Compass, Plus, LayoutDashboard, BookOpen, Bell, BarChart3 } from "lucide-react";
+import { Home, Compass, Plus, BookOpen, Bell, BarChart3 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { OnboardingModal } from "./OnboardingModal";
@@ -12,7 +12,7 @@ const tabs = [
   { to: "/", label: "Home", icon: Home, match: (p: string) => p === "/" },
   { to: "/discover", label: "Discover", icon: Compass, match: (p: string) => p.startsWith("/discover") },
   { to: "/analyze", label: "Analyze", icon: Plus, match: (p: string) => p.startsWith("/analyze") || p.startsWith("/analysis") },
-  { to: "/trade-desk", label: "Trade", icon: LayoutDashboard, match: (p: string) => p.startsWith("/trade-desk") },
+  { to: "/charts", label: "Charts", icon: BarChart3, match: (p: string) => p.startsWith("/charts") || p.startsWith("/signals") || p.startsWith("/trade-desk") },
   { to: "/journal", label: "Journal", icon: BookOpen, match: (p: string) => p.startsWith("/journal") || p.startsWith("/profile") },
 ] as const;
 

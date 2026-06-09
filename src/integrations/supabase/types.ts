@@ -292,6 +292,154 @@ export type Database = {
           },
         ]
       }
+      price_alerts: {
+        Row: {
+          id: string
+          user_id: string
+          symbol: string
+          pair: string
+          condition: "above" | "below" | "crosses_up" | "crosses_down"
+          target_price: number
+          current_price: number | null
+          status: "active" | "triggered" | "cancelled"
+          triggered_at: string | null
+          created_at: string
+          note: string | null
+          timeframe: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          symbol: string
+          pair: string
+          condition: "above" | "below" | "crosses_up" | "crosses_down"
+          target_price: number
+          current_price?: number | null
+          status?: "active" | "triggered" | "cancelled"
+          triggered_at?: string | null
+          created_at?: string
+          note?: string | null
+          timeframe?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          symbol?: string
+          pair?: string
+          condition?: "above" | "below" | "crosses_up" | "crosses_down"
+          target_price?: number
+          current_price?: number | null
+          status?: "active" | "triggered" | "cancelled"
+          triggered_at?: string | null
+          created_at?: string
+          note?: string | null
+          timeframe?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_alerts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_signals: {
+        Row: {
+          id: string
+          pair: string
+          timeframe: string
+          recommendation: "BUY" | "SELL" | "WAIT"
+          confidence: number
+          entry: number | null
+          stop_loss: number | null
+          take_profit: number[] | null
+          reasons: string[] | null
+          pattern: string | null
+          market_structure: Json | null
+          liquidity_zones: Json | null
+          signal_date: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          pair: string
+          timeframe: string
+          recommendation: "BUY" | "SELL" | "WAIT"
+          confidence: number
+          entry?: number | null
+          stop_loss?: number | null
+          take_profit?: number[] | null
+          reasons?: string[] | null
+          pattern?: string | null
+          market_structure?: Json | null
+          liquidity_zones?: Json | null
+          signal_date?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          pair?: string
+          timeframe?: string
+          recommendation?: "BUY" | "SELL" | "WAIT"
+          confidence?: number
+          entry?: number | null
+          stop_loss?: number | null
+          take_profit?: number[] | null
+          reasons?: string[] | null
+          pattern?: string | null
+          market_structure?: Json | null
+          liquidity_zones?: Json | null
+          signal_date?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_strategies: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          pairs: string[]
+          trading_style: string
+          risk_tolerance: string
+          preferred_timeframes: string[]
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name?: string
+          pairs?: string[]
+          trading_style?: string
+          risk_tolerance?: string
+          preferred_timeframes?: string[]
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          pairs?: string[]
+          trading_style?: string
+          risk_tolerance?: string
+          preferred_timeframes?: string[]
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_strategies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
