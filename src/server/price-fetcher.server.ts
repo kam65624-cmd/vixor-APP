@@ -78,109 +78,111 @@ function isForexPair(pair: string): boolean {
 
 /**
  * Fetch current price for a crypto pair from Binance
+ * With retry logic for better reliability on serverless environments
  */
 async function fetchBinancePrice(pair: string): Promise<PriceResult | null> {
   const binanceSymbol = BINANCE_SYMBOLS[pair];
   if (!binanceSymbol) return null;
 
-  try {
-    // Get current price
-    const priceRes = await fetch(
-      `https://api.binance.com/api/v3/ticker/price?symbol=${binanceSymbol}`,
-      { signal: AbortSignal.timeout(8000) }
-    );
-    if (!priceRes.ok) return null;
-    const priceData = await priceRes.json();
-    const price = parseFloat(priceData.price);
-    if (isNaN(price)) return null;
-
-    // Get 24h change
-    let change24h: number | undefined;
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
+      // Get current price + 24h stats in one request
       const statsRes = await fetch(
         `https://api.binance.com/api/v3/ticker/24hr?symbol=${binanceSymbol}`,
-        { signal: AbortSignal.timeout(8000) }
+        { signal: AbortSignal.timeout(12000) }
       );
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        change24h = parseFloat(statsData.priceChangePercent);
+      if (!statsRes.ok) {
+        if (attempt === 0) continue; // Retry once
+        return null;
       }
-    } catch {
-      // Non-fatal
-    }
+      const statsData = await statsRes.json();
+      const price = parseFloat(statsData.lastPrice);
+      const change24h = parseFloat(statsData.priceChangePercent);
+      if (isNaN(price)) {
+        if (attempt === 0) continue;
+        return null;
+      }
 
-    return {
-      symbol: `BINANCE:${binanceSymbol}`,
-      pair,
-      price,
-      change24h,
-      source: "binance",
-      timestamp: Date.now(),
-    };
-  } catch (err) {
-    console.warn(`[PriceFetcher] Binance fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
-    return null;
+      return {
+        symbol: `BINANCE:${binanceSymbol}`,
+        pair,
+        price,
+        change24h: isNaN(change24h) ? undefined : change24h,
+        source: "binance",
+        timestamp: Date.now(),
+      };
+    } catch (err) {
+      if (attempt === 0) {
+        console.warn(`[PriceFetcher] Binance fetch retry for ${pair}:`, err instanceof Error ? err.message : String(err));
+        continue; // Retry once
+      }
+      console.warn(`[PriceFetcher] Binance fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
+      return null;
+    }
   }
+  return null;
 }
 
 /**
  * Fetch current price for a forex pair using TwelveData Exchange Rate API (primary)
- * Falls back to Finnhub, then exchangerate-api.com
+ * Also fetches 24h change percentage
+ * Falls back to exchangerate-api.com if TwelveData fails
  */
 async function fetchForexPrice(pair: string): Promise<PriceResult | null> {
   const forexSymbol = FOREX_SYMBOLS[pair];
   if (!forexSymbol) return null;
 
   // ── Primary: TwelveData Exchange Rate API (1 credit, most accurate) ──
-  try {
-    const { fetchExchangeRate } = await import("@/server/twelvedata.server");
-    const result = await fetchExchangeRate(pair);
-    if (result && result.rate > 0) {
-      return {
-        symbol: `FX:${forexSymbol}`,
-        pair,
-        price: result.rate,
-        source: "twelvedata",
-        timestamp: result.timestamp * 1000,
-      };
-    }
-  } catch {
-    // Non-fatal, try next source
-  }
-
-  // ── Fallback 1: Finnhub ──
-  const finnhubKey = process.env.FINNHUB_API_KEY;
-  if (finnhubKey) {
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const res = await fetch(
-        `https://finnhub.io/api/v1/forex/rates?base=${forexSymbol.slice(0, 3)}&token=${finnhubKey}`,
-        { signal: AbortSignal.timeout(8000) }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        const quote = data.quote?.[forexSymbol.slice(3)];
-        if (quote) {
-          return {
-            symbol: `FX:${forexSymbol}`,
-            pair,
-            price: parseFloat(quote),
-            source: "finnhub",
-            timestamp: Date.now(),
-          };
+      const { fetchExchangeRate } = await import("@/server/twelvedata.server");
+      const result = await fetchExchangeRate(pair);
+      if (result && result.rate > 0) {
+        // Try to get 24h change from TwelveData time_series (1 credit)
+        let change24h: number | undefined;
+        try {
+          const apiKey = process.env.TWELVEDATA_API_KEY;
+          if (apiKey) {
+            const tsRes = await fetch(
+              `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(pair)}&interval=1day&outputsize=2&apikey=${apiKey}`,
+              { signal: AbortSignal.timeout(10000) }
+            );
+            if (tsRes.ok) {
+              const tsData = await tsRes.json();
+              if (tsData.values && tsData.values.length >= 2) {
+                const currentClose = parseFloat(tsData.values[0].close);
+                const prevClose = parseFloat(tsData.values[1].close);
+                if (!isNaN(currentClose) && !isNaN(prevClose) && prevClose > 0) {
+                  change24h = ((currentClose - prevClose) / prevClose) * 100;
+                }
+              }
+            }
+          }
+        } catch {
+          // Non-fatal — change data is optional
         }
+
+        return {
+          symbol: `FX:${forexSymbol}`,
+          pair,
+          price: result.rate,
+          change24h,
+          source: "twelvedata",
+          timestamp: result.timestamp * 1000,
+        };
       }
     } catch {
-      // Non-fatal, try next fallback
+      if (attempt === 0) continue; // Retry once
     }
   }
 
-  // ── Fallback 2: ExchangeRate API ──
+  // ── Fallback: ExchangeRate API ──
   try {
     const base = forexSymbol.slice(0, 3);
     const quote = forexSymbol.slice(3);
     const res = await fetch(
       `https://api.exchangerate-api.com/v4/latest/${base}`,
-      { signal: AbortSignal.timeout(8000) }
+      { signal: AbortSignal.timeout(10000) }
     );
     if (res.ok) {
       const data = await res.json();
@@ -203,49 +205,50 @@ async function fetchForexPrice(pair: string): Promise<PriceResult | null> {
 }
 
 /**
- * Fetch current price for XAU/USD (Gold) — TwelveData primary, Finnhub fallback
+ * Fetch current price for XAU/USD (Gold) — TwelveData primary with retry
  */
 async function fetchGoldPrice(): Promise<PriceResult | null> {
   // ── Primary: TwelveData Exchange Rate API ──
-  try {
-    const { fetchExchangeRate } = await import("@/server/twelvedata.server");
-    const result = await fetchExchangeRate("XAU/USD");
-    if (result && result.rate > 0) {
-      return {
-        symbol: "OANDA:XAUUSD",
-        pair: "XAU/USD",
-        price: result.rate,
-        source: "twelvedata",
-        timestamp: result.timestamp * 1000,
-      };
-    }
-  } catch {
-    // Non-fatal, try next source
-  }
-
-  // ── Fallback: Finnhub ──
-  const finnhubKey = process.env.FINNHUB_API_KEY;
-  if (finnhubKey) {
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const res = await fetch(
-        `https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=${finnhubKey}`,
-        { signal: AbortSignal.timeout(8000) }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        if (data.c && data.c > 0) {
-          return {
-            symbol: "OANDA:XAUUSD",
-            pair: "XAU/USD",
-            price: data.c,
-            change24h: data.dp,
-            source: "finnhub",
-            timestamp: Date.now(),
-          };
+      const { fetchExchangeRate } = await import("@/server/twelvedata.server");
+      const result = await fetchExchangeRate("XAU/USD");
+      if (result && result.rate > 0) {
+        // Try to get 24h change
+        let change24h: number | undefined;
+        try {
+          const apiKey = process.env.TWELVEDATA_API_KEY;
+          if (apiKey) {
+            const tsRes = await fetch(
+              `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1day&outputsize=2&apikey=${apiKey}`,
+              { signal: AbortSignal.timeout(10000) }
+            );
+            if (tsRes.ok) {
+              const tsData = await tsRes.json();
+              if (tsData.values && tsData.values.length >= 2) {
+                const currentClose = parseFloat(tsData.values[0].close);
+                const prevClose = parseFloat(tsData.values[1].close);
+                if (!isNaN(currentClose) && !isNaN(prevClose) && prevClose > 0) {
+                  change24h = ((currentClose - prevClose) / prevClose) * 100;
+                }
+              }
+            }
+          }
+        } catch {
+          // Non-fatal
         }
+
+        return {
+          symbol: "OANDA:XAUUSD",
+          pair: "XAU/USD",
+          price: result.rate,
+          change24h,
+          source: "twelvedata",
+          timestamp: result.timestamp * 1000,
+        };
       }
     } catch {
-      // Non-fatal
+      if (attempt === 0) continue; // Retry
     }
   }
 

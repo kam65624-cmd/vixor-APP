@@ -123,21 +123,39 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
   );
 
   // Adjust recommendation based on pattern confluence + indicators
-  const finalRec = adjustRecommendationWithPatterns(
-    rr.recommendation, trend, candlePatterns, chartFormations, harmonicPatterns,
-    rsiStatus, adxStrength, emaAlignment,
+  // CRITICAL: Confluence scoring ensures consistency — the same data must produce
+  // the same recommendation every time. No Math.random() anywhere.
+  const confluence = calculateConfluenceScore(
+    trend, rr.recommendation, candlePatterns, chartFormations, harmonicPatterns,
+    rsiStatus, adxStrength, emaAlignment, indicators, currentPrice, orderBlocks, fvgs,
   );
+
+  // Require minimum confluence to issue BUY/SELL — otherwise WAIT
+  // This prevents the engine from flipping between BUY and SELL on minor data changes
+  const MIN_CONFLUENCE_FOR_TRADE = 3; // Need at least 3 aligned signals
+  let finalRec: RecommendationType;
+
+  if (rr.recommendation === "WAIT" || confluence.score < MIN_CONFLUENCE_FOR_TRADE) {
+    finalRec = "WAIT";
+  } else if (confluence.direction === "BUY" && rr.recommendation === "BUY") {
+    finalRec = "BUY";
+  } else if (confluence.direction === "SELL" && rr.recommendation === "SELL") {
+    finalRec = "SELL";
+  } else {
+    // Confluence direction disagrees with RR recommendation → WAIT
+    finalRec = "WAIT";
+  }
 
   // ── Step 8: Compose the result ─────────────────────────────────────
   const isBullish = finalRec === "BUY";
   const isBearish = finalRec === "SELL";
   const isWait = finalRec === "WAIT";
 
-  // Confidence scoring (enhanced with indicators + harmonics)
-  const confidence = calculateConfidence(
-    trend, finalRec, candlePatterns, chartFormations, harmonicPatterns,
-    orderBlocks, fvgs, structureResult, rsiStatus, adxStrength, emaAlignment,
-  );
+  // Confidence scoring — based on confluence score (deterministic, no Math.random())
+  // Higher confluence = higher confidence. WAIT always gets lower confidence.
+  const confidence = finalRec === "WAIT"
+    ? (trend === "NEUTRAL" ? 42 : 48)
+    : Math.min(35 + confluence.score * 7, 92); // 3 signals=56%, 4=63%, 5=70%, 6=77%, 7=84%, 8+=92%
 
   // Top liquidity zones
   const buySideLiquidity = liquidityZones
@@ -161,11 +179,11 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
   // Pattern summary (includes harmonic patterns)
   const primaryPattern = buildPatternSummary(candlePatterns, chartFormations, harmonicPatterns, trend);
 
-  // Reasons (enhanced with indicators + harmonics)
+  // Reasons — now include confluence signals for meaningful, specific analysis
   const reasons = buildReasons(
     trend, finalRec, structureResult, orderBlocks, fvgs,
     candlePatterns, chartFormations, harmonicPatterns, srLevels,
-    rsiStatus, adxStrength,
+    rsiStatus, adxStrength, confluence,
   );
 
   // Scenarios
@@ -279,61 +297,146 @@ function detectPairFromImage(_imageBytes?: Uint8Array): string | undefined {
 }
 
 // ---------------------------------------------------------------------------
-// Helper: Adjust recommendation with pattern confluence
+// Helper: Confluence scoring — requires multiple independent signals to agree
 // ---------------------------------------------------------------------------
 
-function adjustRecommendationWithPatterns(
-  baseRec: RecommendationType,
+interface ConfluenceResult {
+  direction: "BUY" | "SELL" | "NONE";
+  score: number; // Number of independent signals that agree
+  signals: string[]; // Names of agreeing signals for transparency
+}
+
+/**
+ * Calculate confluence score from multiple independent analysis signals.
+ * This is the KEY to consistency: we don't just look at one indicator,
+ * we require at least 3 independent signals to agree before issuing a trade.
+ *
+ * Signals counted:
+ * 1. Market structure trend (HH+HL = bullish, LH+LL = bearish)
+ * 2. Risk-Reward direction (BUY or SELL from ATR-based levels)
+ * 3. Candlestick patterns (recent bullish/bearish patterns)
+ * 4. Chart formations (triangles, channels, etc.)
+ * 5. Harmonic patterns (Gartley, Bat, etc.)
+ * 6. RSI status (overbought → bearish, oversold → bullish)
+ * 7. ADX trend strength (strong trend = confirms direction)
+ * 8. EMA alignment (9/21/50/200)
+ * 9. MACD histogram direction
+ * 10. Order block confluence (unmitigated OBs in direction)
+ * 11. FVG confluence (unfilled gaps in direction)
+ * 12. Price position relative to key EMAs
+ */
+function calculateConfluenceScore(
   trend: TrendDirection,
+  rrDirection: RecommendationType,
   patterns: Array<{ type: string; reliability: number }>,
   formations: Array<{ type: string; reliability: number }>,
   harmonics: Array<{ type: string; reliability: number }>,
   rsiStatus: string,
   adxStrength: string,
   emaAlignment: { alignment: string; strength: number },
-): RecommendationType {
-  if (baseRec === "WAIT") return "WAIT";
+  indicators: { rsi: number; macdHistogram: number; ema9: number; ema21: number; ema50: number; ema200: number; adx: number; bollingerPosition: number; stochK: number; stochD: number; volumeTrend: string; emaTrend: string },
+  currentPrice: number,
+  obs: Array<{ type: string; mitigated: boolean; strength: number }>,
+  fvgs: Array<{ type: string; filled: boolean }>,
+): ConfluenceResult {
+  let bullSignals = 0;
+  let bearSignals = 0;
+  const bullReasons: string[] = [];
+  const bearReasons: string[] = [];
 
+  // 1. Market structure trend
+  if (trend === "BULLISH") { bullSignals++; bullReasons.push("Bullish market structure (HH+HL)"); }
+  if (trend === "BEARISH") { bearSignals++; bearReasons.push("Bearish market structure (LH+LL)"); }
+
+  // 2. Risk-Reward direction
+  if (rrDirection === "BUY") { bullSignals++; bullReasons.push("RR calculation favors long"); }
+  if (rrDirection === "SELL") { bearSignals++; bearReasons.push("RR calculation favors short"); }
+
+  // 3. Candlestick patterns (last 5)
   const recentPatterns = patterns.slice(0, 5);
-  const recentFormations = formations.slice(0, 3);
-  const recentHarmonics = harmonics.slice(0, 2);
-
-  // Count pattern directions
-  let bullishSignals = 0;
-  let bearishSignals = 0;
-
+  let patternBull = 0, patternBear = 0;
   for (const p of recentPatterns) {
-    if (p.type === "BULLISH") bullishSignals += p.reliability / 100;
-    if (p.type === "BEARISH") bearishSignals += p.reliability / 100;
+    if (p.type === "BULLISH") patternBull += p.reliability / 100;
+    if (p.type === "BEARISH") patternBear += p.reliability / 100;
   }
+  if (patternBull > patternBear + 0.3) { bullSignals++; bullReasons.push("Bullish candlestick patterns"); }
+  if (patternBear > patternBull + 0.3) { bearSignals++; bearReasons.push("Bearish candlestick patterns"); }
+
+  // 4. Chart formations
+  const recentFormations = formations.slice(0, 3);
+  let formBull = 0, formBear = 0;
   for (const f of recentFormations) {
-    if (f.type === "BULLISH") bullishSignals += f.reliability / 100;
-    if (f.type === "BEARISH") bearishSignals += f.reliability / 100;
+    if (f.type === "BULLISH") formBull += f.reliability / 100;
+    if (f.type === "BEARISH") formBear += f.reliability / 100;
   }
+  if (formBull > formBear) { bullSignals++; bullReasons.push("Bullish chart formation"); }
+  if (formBear > formBull) { bearSignals++; bearReasons.push("Bearish chart formation"); }
+
+  // 5. Harmonic patterns (high weight)
+  const recentHarmonics = harmonics.slice(0, 2);
+  let harmBull = 0, harmBear = 0;
   for (const h of recentHarmonics) {
-    if (h.type === "BULLISH") bullishSignals += (h.reliability / 100) * 1.5; // Harmonics carry more weight
-    if (h.type === "BEARISH") bearishSignals += (h.reliability / 100) * 1.5;
+    if (h.type === "BULLISH") harmBull += (h.reliability / 100) * 1.5;
+    if (h.type === "BEARISH") harmBear += (h.reliability / 100) * 1.5;
   }
+  if (harmBull > harmBear) { bullSignals++; bullReasons.push("Bullish harmonic pattern"); }
+  if (harmBear > harmBull) { bearSignals++; bearReasons.push("Bearish harmonic pattern"); }
 
-  // RSI overbought/oversold influences
-  if (rsiStatus === "OVERBOUGHT" && baseRec === "BUY") bearishSignals += 0.5;
-  if (rsiStatus === "OVERSOLD" && baseRec === "SELL") bullishSignals += 0.5;
+  // 6. RSI status
+  if (rsiStatus === "OVERSOLD") { bullSignals++; bullReasons.push("RSI oversold — reversal zone"); }
+  if (rsiStatus === "OVERBOUGHT") { bearSignals++; bearReasons.push("RSI overbought — reversal zone"); }
 
-  // Weak ADX = no clear trend → prefer WAIT
+  // 7. ADX strength — only counts if there's a direction
+  if (adxStrength === "STRONG" && trend === "BULLISH") { bullSignals++; bullReasons.push("Strong ADX confirms bullish trend"); }
+  if (adxStrength === "STRONG" && trend === "BEARISH") { bearSignals++; bearReasons.push("Strong ADX confirms bearish trend"); }
   if (adxStrength === "WEAK") {
-    bullishSignals *= 0.7;
-    bearishSignals *= 0.7;
+    // Weak ADX reduces confidence in any direction — no signal added
   }
 
-  // EMA alignment opposes the trade
-  if (baseRec === "BUY" && emaAlignment.alignment === "BEARISH") bearishSignals += 0.8;
-  if (baseRec === "SELL" && emaAlignment.alignment === "BULLISH") bullishSignals += 0.8;
+  // 8. EMA alignment
+  if (emaAlignment.alignment === "BULLISH" && emaAlignment.strength >= 60) {
+    bullSignals++; bullReasons.push(`Bullish EMA alignment (${emaAlignment.strength}%)`);
+  }
+  if (emaAlignment.alignment === "BEARISH" && emaAlignment.strength >= 60) {
+    bearSignals++; bearReasons.push(`Bearish EMA alignment (${emaAlignment.strength}%)`);
+  }
 
-  // If patterns contradict the trend strongly, switch to WAIT
-  if (baseRec === "BUY" && bearishSignals > bullishSignals * 1.5) return "WAIT";
-  if (baseRec === "SELL" && bullishSignals > bearishSignals * 1.5) return "WAIT";
+  // 9. MACD histogram direction (deterministic based on value)
+  const macdH = indicators.macdHistogram;
+  if (!isNaN(macdH)) {
+    if (macdH > 0) { bullSignals++; bullReasons.push("MACD histogram positive"); }
+    if (macdH < 0) { bearSignals++; bearReasons.push("MACD histogram negative"); }
+  }
 
-  return baseRec;
+  // 10. Order block confluence
+  const unmitigated = obs.filter(o => !o.mitigated);
+  const bullOBs = unmitigated.filter(o => o.type === "BULLISH").length;
+  const bearOBs = unmitigated.filter(o => o.type === "BEARISH").length;
+  if (bullOBs > bearOBs + 1) { bullSignals++; bullReasons.push(`${bullOBs} unmitigated bullish OBs`); }
+  if (bearOBs > bullOBs + 1) { bearSignals++; bearReasons.push(`${bearOBs} unmitigated bearish OBs`); }
+
+  // 11. FVG confluence
+  const activeFVGs = fvgs.filter(f => !f.filled);
+  const bullFVGs = activeFVGs.filter(f => f.type === "BULLISH").length;
+  const bearFVGs = activeFVGs.filter(f => f.type === "BEARISH").length;
+  if (bullFVGs > bearFVGs) { bullSignals++; bullReasons.push(`${bullFVGs} unfilled bullish FVGs`); }
+  if (bearFVGs > bullFVGs) { bearSignals++; bearReasons.push(`${bearFVGs} unfilled bearish FVGs`); }
+
+  // 12. Price position relative to EMA200 (if available)
+  const ema200 = indicators.ema200;
+  if (!isNaN(ema200)) {
+    if (currentPrice > ema200) { bullSignals++; bullReasons.push("Price above EMA200"); }
+    if (currentPrice < ema200) { bearSignals++; bearReasons.push("Price below EMA200"); }
+  }
+
+  // Determine dominant direction
+  if (bullSignals > bearSignals) {
+    return { direction: "BUY", score: bullSignals, signals: bullReasons };
+  } else if (bearSignals > bullSignals) {
+    return { direction: "SELL", score: bearSignals, signals: bearReasons };
+  } else {
+    return { direction: "NONE", score: 0, signals: [] };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -353,7 +456,12 @@ function calculateConfidence(
   adxStrength: string,
   emaAlignment: { alignment: string; strength: number },
 ): number {
-  if (rec === "WAIT") return 40 + Math.floor(Math.random() * 10);
+  if (rec === "WAIT") {
+    // Deterministic confidence for WAIT based on trend clarity
+    // No Math.random() — must be reproducible across runs
+    const waitConfidence = trend === "NEUTRAL" ? 42 : 48;
+    return waitConfidence;
+  }
 
   let confidence = 55;
 
@@ -466,71 +574,38 @@ function buildReasons(
   _srLevels: Array<{ type: string; strength: number }>,
   rsiStatus: string,
   adxStrength: string,
+  confluence: ConfluenceResult,
 ): string[] {
   const reasons: string[] = [];
 
-  // SMC reasons
-  if (structure.lastBOS?.type === "BOS") {
-    reasons.push(
-      trend === "BULLISH"
-        ? "Break of Structure (BOS) confirming bullish continuation with higher highs."
-        : "Break of Structure (BOS) confirming bearish continuation with lower lows."
-    );
-  } else if (structure.lastBOS?.type === "CHoCH") {
-    reasons.push(
-      "Change of Character (CHoCH) detected — potential trend reversal with institutional sponsorship."
-    );
-  }
-
-  // Order Block reasons
-  const unmitigated = obs.filter(o => !o.mitigated);
-  if (unmitigated.length > 0) {
-    const bullOBs = unmitigated.filter(o => o.type === "BULLISH").length;
-    const bearOBs = unmitigated.filter(o => o.type === "BEARISH").length;
-    if (rec === "BUY" && bullOBs > 0) {
-      reasons.push(`${bullOBs} unmitigated Bullish Order Block(s) providing institutional demand zone.`);
-    } else if (rec === "SELL" && bearOBs > 0) {
-      reasons.push(`${bearOBs} unmitigated Bearish Order Block(s) providing institutional supply zone.`);
+  // If WAIT, explain why
+  if (rec === "WAIT") {
+    if (confluence.score < 3) {
+      reasons.push(`Insufficient confluence — only ${confluence.score} signal(s) aligned. Need at least 3 for a trade.`);
+    } else {
+      reasons.push("Conflicting signals — bullish and bearish confluences are balanced. Wait for clear direction.");
     }
-  }
-
-  // FVG reasons
-  const activeFVGs = fvgs.filter(f => !f.filled);
-  if (activeFVGs.length > 0) {
-    const bullFVGs = activeFVGs.filter(f => f.type === "BULLISH").length;
-    const bearFVGs = activeFVGs.filter(f => f.type === "BEARISH").length;
-    if (rec === "BUY" && bullFVGs > 0) {
-      reasons.push(`${bullFVGs} unfilled Bullish Fair Value Gap(s) acting as price magnet for retracement.`);
-    } else if (rec === "SELL" && bearFVGs > 0) {
-      reasons.push(`${bearFVGs} unfilled Bearish Fair Value Gap(s) acting as price magnet for retracement.`);
+    if (trend === "NEUTRAL") {
+      reasons.push("Market is consolidating with no clear trend structure. Wait for a BOS or CHoCH.");
     }
+    if (adxStrength === "WEAK") {
+      reasons.push("ADX shows weak trend momentum — no directional conviction from institutions.");
+    }
+    return reasons.slice(0, 5);
   }
 
-  // Pattern reasons
-  if (patterns.length > 0) {
-    const topPattern = patterns[0]!;
-    reasons.push(`${topPattern.name} pattern detected with ${topPattern.reliability}% reliability score.`);
+  // Use confluence signals as the primary reasons — these are the REAL reasons
+  // the engine is making this call, not generic SMC terminology
+  const relevantSignals = rec === "BUY" ? confluence.signals : confluence.signals;
+  for (let i = 0; i < Math.min(relevantSignals.length, 3); i++) {
+    reasons.push(relevantSignals[i]!);
   }
 
-  if (formations.length > 0) {
-    reasons.push(`${formations[0]!.name} formation reinforcing the directional bias.`);
-  }
-
-  // Harmonic pattern reasons
-  if (harmonics.length > 0) {
-    const topHarmonic = harmonics[0]!;
-    reasons.push(`${topHarmonic.name} harmonic pattern with ${topHarmonic.reliability}% Fibonacci alignment.`);
-  }
-
-  // Indicator-based reasons
-  if (rsiStatus === "OVERSOLD" && rec === "BUY") {
-    reasons.push("RSI in oversold territory — selling exhaustion supports bullish reversal.");
-  } else if (rsiStatus === "OVERBOUGHT" && rec === "SELL") {
-    reasons.push("RSI in overbought territory — buying exhaustion supports bearish reversal.");
-  }
-
-  if (adxStrength === "STRONG") {
-    reasons.push("ADX confirms strong trend — directional momentum is well-established.");
+  // Add SMC-specific context if BOS/CHoCH exists
+  if (structure.lastBOS?.type === "CHoCH") {
+    reasons.push("Change of Character (CHoCH) confirms institutional reversal intent.");
+  } else if (structure.lastBOS?.type === "BOS" && reasons.length < 5) {
+    reasons.push("Break of Structure (BOS) confirms trend continuation.");
   }
 
   // Ensure at least 3 reasons
@@ -539,8 +614,6 @@ function buildReasons(
       reasons.push("Price is showing higher-timeframe bullish structure with orderly pullbacks.");
     } else if (trend === "BEARISH") {
       reasons.push("Price is showing lower-timeframe bearish structure with orderly pullbacks.");
-    } else {
-      reasons.push("Market is consolidating — wait for a clear structural break before committing.");
     }
   }
 

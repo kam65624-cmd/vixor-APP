@@ -149,7 +149,14 @@ function CommandCenter() {
                 href={`/charts?symbol=${p.symbol}`}
                 className="p-3 rounded-xl bg-card border border-border vixor-card-hover block"
               >
-                <div className="text-xs font-bold text-foreground mb-1">{p.pair}</div>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-xs font-bold text-foreground">{p.pair}</div>
+                  {p.source === "fallback" ? (
+                    <span className="text-[8px] font-bold text-muted-foreground bg-muted px-1 py-0.5 rounded">EST</span>
+                  ) : (
+                    <span className="text-[8px] font-bold text-primary bg-primary/10 px-1 py-0.5 rounded">LIVE</span>
+                  )}
+                </div>
                 <div className="font-mono text-sm font-semibold mb-1.5">
                   $
                   {Number(p.price).toLocaleString(undefined, {

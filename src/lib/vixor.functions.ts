@@ -206,8 +206,8 @@ export const createAnalysis = createServerFn({ method: "POST" })
       // Build update object — only include columns that exist in the DB
       // signal_badge and vixor_message may not exist yet (migration pending)
       // They are always stored inside raw_ai_response as fallback
-      const updateData: Record<string, any> = {
-        status: "complete",
+      const updateData = {
+        status: "complete" as const,
         pair: result.pair,
         timeframe: result.timeframe,
         trend: result.trend,
@@ -298,30 +298,56 @@ export const getAnalysis = createServerFn({ method: "GET" })
   .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    // Explicitly list columns to avoid errors if signal_badge/vixor_message columns don't exist yet
-    const { data: a, error } = await supabase
-      .from("analyses")
-      .select("id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,created_at,updated_at,error_message")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
+    // Explicitly list columns — include signal_badge and vixor_message if they exist
+    // Use a try/catch pattern: first try with the new columns, fall back without
+    let a: any;
+    try {
+      const { data: fullRow, error: fullErr } = await supabase
+        .from("analyses")
+        .select("id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,signal_badge,vixor_message,created_at,updated_at,error_message")
+        .eq("id", data.id)
+        .maybeSingle();
+      if (fullErr && (fullErr.message.includes("signal_badge") || fullErr.message.includes("vixor_message"))) {
+        // Columns don't exist yet — fall back to query without them
+        const { data: partialRow, error: partialErr } = await supabase
+          .from("analyses")
+          .select("id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,created_at,updated_at,error_message")
+          .eq("id", data.id)
+          .maybeSingle();
+        if (partialErr) throw new Error(partialErr.message);
+        a = partialRow;
+      } else if (fullErr) {
+        throw new Error(fullErr.message);
+      } else {
+        a = fullRow;
+      }
+    } catch {
+      // Final fallback
+      const { data: fallbackRow, error: fbErr } = await supabase
+        .from("analyses")
+        .select("id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,created_at,updated_at,error_message")
+        .eq("id", data.id)
+        .maybeSingle();
+      if (fbErr) throw new Error(fbErr.message);
+      a = fallbackRow;
+    }
     if (!a) throw new Error("Not found");
 
     // Also try to get signal_badge and vixor_message if the columns exist
-    let signalBadge = null;
-    let vixorMessage = null;
-    try {
-      const { data: extra } = await supabase
-        .from("analyses")
-        .select("signal_badge,vixor_message")
-        .eq("id", data.id)
-        .maybeSingle();
-      if (extra) {
-        signalBadge = (extra as any).signal_badge ?? null;
-        vixorMessage = (extra as any).vixor_message ?? null;
+    let signalBadge = (a as any)?.signal_badge ?? null;
+    let vixorMessage = (a as any)?.vixor_message ?? null;
+
+    // If signal_badge not in main query, try reading from raw_ai_response
+    if (!signalBadge && (a as any).raw_ai_response) {
+      try {
+        const raw = (a as any).raw_ai_response;
+        if (typeof raw === "object" && raw !== null) {
+          signalBadge = raw.signal_badge ?? null;
+          vixorMessage = raw.vixor_message ?? null;
+        }
+      } catch {
+        // Non-fatal
       }
-    } catch {
-      // Columns don't exist yet — will read from raw_ai_response
     }
 
     let imageUrl: string | null = null;
@@ -641,8 +667,8 @@ export const quickAnalyze = createServerFn({ method: "POST" })
       });
 
       // Build update object
-      const updateData: Record<string, any> = {
-        status: "complete",
+      const updateData = {
+        status: "complete" as const,
         pair: result.pair,
         timeframe: result.timeframe,
         trend: result.trend,
@@ -758,10 +784,10 @@ export const applySignalBadgeMigration = createServerFn({ method: "POST" })
     // Extract project reference from URL
     const projectRef = supabaseUrl.replace("https://", "").replace(".supabase.co", "");
 
-    // Try Supabase Management API to run SQL
-    // Note: This requires the service role key to have the necessary permissions
+    // Use Supabase Management API v1 to run SQL
+    // This requires the SUPABASE_SERVICE_ROLE_KEY which has admin access
     try {
-      const response = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/exec_sql`, {
+      const response = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/pgmeta`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -778,6 +804,46 @@ export const applySignalBadgeMigration = createServerFn({ method: "POST" })
       }
     } catch {
       // RPC not available
+    }
+
+    // Alternative: Try creating an RPC function and calling it
+    try {
+      // First, try to create a one-time migration function
+      const createFnRes = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": serviceRoleKey,
+          "Authorization": `Bearer ${serviceRoleKey}`,
+        },
+        body: JSON.stringify({
+          name: "add_signal_badge_columns",
+          definition: `
+            BEGIN
+              ALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB;
+              ALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;
+              RETURN TRUE;
+            END;
+          `,
+        }),
+      });
+      
+      if (createFnRes.ok) {
+        // Call the function
+        const callRes = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/add_signal_badge_columns`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": serviceRoleKey,
+            "Authorization": `Bearer ${serviceRoleKey}`,
+          },
+        });
+        if (callRes.ok) {
+          return { applied: true, message: "Migration applied successfully via RPC" };
+        }
+      }
+    } catch {
+      // Cannot create RPC
     }
 
     return {
