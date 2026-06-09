@@ -85,24 +85,37 @@ function defaultHandler(error, event) {
   };
 }
 function __vixor_debug__(error, event) {
-  const unhandled = error.unhandled ?? !(error && (error.statusCode || error.status));
-  if (!unhandled && (error.statusCode || error.status || 999) < 500) return null;
-  const status = unhandled ? 500 : (error.statusCode || error.status || 500);
-  const errMsg = (error instanceof Error ? error.message : String(error || 'Unknown error'));
-  const errStack = (error instanceof Error ? error.stack : '') || '';
-  const su = process.env.SUPABASE_URL ? 'set' : 'missing';
-  const sk = (process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY) ? 'set' : 'missing';
-  const safeMsg = errMsg.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const safeStack = errStack.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const html = '<!doctype html><html><head><meta charset=utf-8><title>Vixor Error</title>' +
-    '<style>body{font:13px/1.5 monospace;background:#0a0a0f;color:#e0e0e0;padding:2rem;max-width:900px;margin:0 auto}' +
-    'h1{color:#ff6b6b;font-size:1.1rem}.msg{background:#1a1a2e;padding:1rem;border-radius:8px;border-left:3px solid #ff6b6b;margin-bottom:1rem;word-break:break-word}' +
-    '.stk{white-space:pre-wrap;background:#16213e;padding:1rem;border-radius:8px;font-size:11px;color:#a8d8ea;max-height:400px;overflow:auto}' +
-    '.env{background:#16213e;padding:.75rem;border-radius:8px;font-size:11px;color:#888;margin-top:1rem}</style></head>' +
-    '<body><h1>Vixor Server Error</h1><div class=msg>' + safeMsg + '</div>' +
-    (safeStack ? '<details><summary>Stack</summary><div class=stk>' + safeStack + '</div></details>' : '') +
-    '<div class=env>Node:' + process.version + ' | SUPABASE_URL:' + su + ' | ANON_KEY:' + sk + '</div></body></html>';
-  return new NodeResponse(html, { status, headers: new Headers({'content-type':'text/html; charset=utf-8'}) });
+  try {
+    const unhandled = error.unhandled ?? !(error && (error.statusCode || error.status));
+    const status = unhandled ? 500 : (error.statusCode || error.status || 500);
+    // Extract ALL useful info from the error object
+    const parts = [];
+    parts.push('Type: ' + (error && error.constructor ? error.constructor.name : typeof error));
+    if (error instanceof Error) parts.push('Message: ' + error.message);
+    else parts.push('Value: ' + String(error));
+    if (error && error.statusCode) parts.push('Status: ' + error.statusCode);
+    if (error && error.statusMessage) parts.push('StatusText: ' + error.statusMessage);
+    if (error && error.data) parts.push('Data: ' + JSON.stringify(error.data));
+    if (error && error.path) parts.push('Path: ' + error.path);
+    // Also check the captured global error
+    const errStack = (error instanceof Error ? error.stack : '') || '';
+    const su = process.env.SUPABASE_URL ? 'set' : 'missing';
+    const sk = (process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY) ? 'set' : 'missing';
+    const safeMsg = parts.join('<br>').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const safeStack = errStack.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const html = '<!doctype html><html><head><meta charset=utf-8><title>Vixor Error</title>' +
+      '<style>body{font:13px/1.5 monospace;background:#0a0a0f;color:#e0e0e0;padding:2rem;max-width:900px;margin:0 auto}' +
+      'h1{color:#ff6b6b;font-size:1.1rem}.msg{background:#1a1a2e;padding:1rem;border-radius:8px;border-left:3px solid #ff6b6b;margin-bottom:1rem;word-break:break-word}' +
+      '.stk{white-space:pre-wrap;background:#16213e;padding:1rem;border-radius:8px;font-size:11px;color:#a8d8ea;max-height:400px;overflow:auto}' +
+      '.env{background:#16213e;padding:.75rem;border-radius:8px;font-size:11px;color:#888;margin-top:1rem}</style></head>' +
+      '<body><h1>Vixor Server Error</h1><div class=msg>' + safeMsg + '</div>' +
+      (safeStack ? '<details><summary>Stack</summary><div class=stk>' + safeStack + '</div></details>' : '') +
+      '<div class=env>Node:' + process.version + ' | SUPABASE_URL:' + su + ' | ANON_KEY:' + sk + '</div></body></html>';
+    return new NodeResponse(html, { status, headers: new Headers({'content-type':'text/html; charset=utf-8'}) });
+  } catch(e) {
+    console.error('[vixor debug handler error]', e);
+    return null;
+  }
 }
 const errorHandlers = [__vixor_debug__, errorHandler$1];
 async function errorHandler(error, event) {
