@@ -1,122 +1,26 @@
-# Vixor App Worklog
-
 ---
 Task ID: 1
 Agent: Main Agent
-Task: Fix React error #310 and build failure causing "Something went wrong" crash
+Task: Fix signal_badge column error, add real-time prices, implement direct analysis
 
 Work Log:
-- Explored full project structure and identified all React components
-- Read all critical files: __root.tsx, AppShell.tsx, index.tsx, analyze.tsx, analysis.$id.tsx, charts.tsx, signals.tsx, etc.
-- Discovered that previous React #310 fixes (useStableServerFn, useRenderGuard, removing useRouter()) were already properly applied
-- Ran `npx vite build` and found the ACTUAL root cause: build failure due to missing `RecBadge` export from `atoms.tsx`
-- The build error: "RecBadge" is not exported by "src/components/vixor/atoms.tsx"
-- This caused the entire app to fail to build → "Something went wrong" screen on every page
-- Added `RecBadge` component and `Recommendation` type to atoms.tsx
-- Fixed deprecation: `.inputValidator()` → `.validator()` in auth.functions.ts
-- Verified build succeeds after fix
-- Committed and pushed to trigger Vercel deployment
+- Analyzed full codebase to understand the signal_badge error and mock data issues
+- Found that TWELVEDATA_API_KEY was missing from Vercel env vars (only in local .env)
+- Found that signal_badge and vixor_message columns don't exist in production Supabase DB
+- Modified vixor.functions.ts createAnalysis to gracefully handle missing columns (try/catch fallback)
+- Modified vixor.functions.ts getAnalysis to use explicit column selection instead of select("*")
+- Added separate query to fetch signal_badge/vixor_message with error handling
+- Created quickAnalyze server function for direct pair/timeframe analysis (no image required)
+- Created applySignalBadgeMigration server function for future migration
+- Updated charts.tsx to use quickAnalyze instead of html2canvas screenshot capture
+- Reduced price refresh intervals (staleTime: 30s, refetchInterval: 60s)
+- Added TWELVEDATA_API_KEY to Vercel production environment
+- Deployed to Vercel (vixor-app.vercel.app) - HTTP 200
 
 Stage Summary:
-- Root cause: Missing `RecBadge` component export caused build failure, not React re-render loop
-- Fix: Added `RecBadge` component and `Recommendation` type to src/components/vixor/atoms.tsx
-- Also fixed .inputValidator() → .validator() deprecation in auth.functions.ts
-- Build now succeeds, deployment pushed to main branch
-
----
-Task ID: 2
-Agent: Main Agent
-Task: Verify existing feature completeness
-
-Work Log:
-- Reviewed all server functions in vixor.functions.ts (838 lines) - comprehensive
-- Reviewed analysis engine (engine.ts) - full 8-step SMC/ICT pipeline
-- Reviewed twelvedata.server.ts - all API endpoints implemented
-- Reviewed price-fetcher.server.ts - Binance + TwelveData + Finnhub fallbacks
-- Reviewed alert-checker.server.ts - complete with Telegram notifications
-- Reviewed run-analysis.server.ts - local engine primary + Gemini fallback
-- Reviewed all route components - all use useStableServerFn and proper hooks
-
-Stage Summary:
-- All requested features are already built and functional:
-  - Local analysis engine (SMC/ICT, patterns, indicators, risk)
-  - Twelve Data API integration (all endpoints)
-  - TradingView chart widget
-  - Price alerts (create, list, delete, auto-check)
-  - Telegram notifications
-  - Daily signals generation
-  - Strategy-based filtering
-  - Real OHLCV data from Binance/TwelveData
-- Only issue was the build failure (now fixed)
----
-Task ID: 1
-Agent: Main Agent
-Task: Fix Vixor app crash (HTTP 500 "This page didn't load") and deploy to Vercel
-
-Work Log:
-- Analyzed the error screenshot showing "This page didn't load" / "Something went wrong"
-- Explored the full project structure and identified all key files
-- Discovered the app was deployed to vixor-app.vercel.app but returning HTTP 500
-- Found critical bug: env var naming mismatch - code uses SUPABASE_PUBLISHABLE_KEY but .env has SUPABASE_ANON_KEY
-- Found auth-middleware.ts using getClaims() which may not be available in all Supabase SDK versions
-- Fixed client.ts to support both SUPABASE_PUBLISHABLE_KEY and SUPABASE_ANON_KEY naming
-- Fixed auth-middleware.ts to use getUser() instead of getClaims() for better SDK compatibility
-- Fixed client.server.ts to also support both env var names
-- Fixed auth-attacher.ts to gracefully handle errors when Supabase is not configured
-- Fixed _authenticated/route.tsx to handle errors in beforeLoad without crashing
-- Renamed API route files (check-alerts.ts, generate-signals.ts, migrate.ts) with - prefix to suppress warnings
-- Built the app successfully (vite build)
-- Installed Vercel CLI and deployed to production
-- Initially deployed to wrong project (my-project), then linked to vixor-app project
-- Successfully deployed to vixor-app.vercel.app - now returning HTTP 200
-
-Stage Summary:
-- vixor-app.vercel.app is now live and returning HTTP 200
-- All Supabase integration files now support both SUPABASE_ANON_KEY and SUPABASE_PUBLISHABLE_KEY
-- Auth middleware now uses getUser() instead of getClaims() for compatibility
-- Error handling is more resilient - won't crash on missing env vars
-- Note: Supabase env vars (URL + key) still need to be set in Vercel dashboard for full functionality
----
-Task ID: 3
-Agent: Main Agent
-Task: Fix signal_badge column missing error + Redesign Charts page with TradingView-like interface
-
-Work Log:
-
-**Task 1: Fix signal_badge column missing error**
-- Identified the issue: `createAnalysis` handler in `src/lib/vixor.functions.ts` was inserting `signal_badge` and `vixor_message` columns that don't exist in the production Supabase database
-- Removed `signal_badge: (result as any).signal_badge` and `vixor_message: (result as any).vixor_message` from the `.update()` call (lines 224-225)
-- The data is still preserved in `raw_ai_response` JSONB column, accessible via `raw_ai_response.signal_badge` and `raw_ai_response.vixor_message`
-
-**Task 2: Redesign Charts page**
-- Installed html2canvas library for screenshot capture
-- Added `getOHLCV` server function in `vixor.functions.ts` to fetch Open/High/Low/Close/Volume data from Binance (crypto) or TwelveData (forex/commodity)
-- Updated TradingViewChart component:
-  - Added `chartContainerRef` prop for screenshot capture support
-  - Added `onIntervalChange` callback prop
-  - Added `PAIR_DISPLAY_NAMES` export for human-readable pair names
-  - Added `INTERVAL_MAP` export for timeframe conversions
-  - Synced internal ref to external ref via useEffect for html2canvas access
-- Completely redesigned Charts page (`src/routes/_authenticated/charts.tsx`):
-  - Search bar with pair name + add button at top
-  - Timeframe selector (1m, 5m, 15m, 30m, 1h, 4h, 1D) that actually changes TradingView chart interval
-  - Chart tools row (fullscreen, candlestick, drawing, indicators)
-  - Price info bar with pair display name, current price, 24h change, and OHLCV data
-  - TradingView chart with dynamic interval and screenshot capture support
-  - Popular pairs quick-select still available as horizontal scroll (moved below chart)
-  - 3 action buttons: SET ALERT (opens CreateAlertDialog), ANALYZE (key feature), WATCHLIST (placeholder)
-  - ANALYZE button captures chart screenshot via html2canvas and navigates to /analyze with screenshot data and pair
-- Updated Analyze page (`src/routes/_authenticated/analyze.tsx`):
-  - Added `validateSearch` to accept `screenshot` and `pair` search params
-  - Auto-detects incoming screenshot from Charts page and goes straight to preview stage
-  - Pre-selects the pair when coming from Charts
-  - Creates File object from screenshot base64 data for analysis pipeline
-  - Cleans URL after processing screenshot data (removes large base64 from URL)
-
-Stage Summary:
-- Fixed signal_badge/vixor_message column error by removing them from the Supabase update query (data preserved in raw_ai_response)
-- Charts page fully redesigned with TradingView-like interface
-- ANALYZE feature implemented: captures chart screenshot → navigates to analyze page with pre-loaded screenshot and pair
-- OHLCV price bar shows real market data from Binance/TwelveData APIs
-- Timeframe selector dynamically changes the TradingView chart interval
-- Build verified successfully
+- App now shows real prices from Binance (crypto) and TwelveData (forex/gold/JPY pairs)
+- Analysis no longer crashes with signal_badge error (graceful fallback to raw_ai_response)
+- Charts page "Analyze" button runs analysis directly with real OHLCV data
+- Migration SQL still needs to be applied manually in Supabase Dashboard for optimal performance
+- SQL to run: ALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB; ALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;
+- Dashboard URL: https://supabase.com/dashboard/project/lrbgxrfvjxaixtzkutxn/sql

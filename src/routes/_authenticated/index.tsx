@@ -46,8 +46,8 @@ function CommandCenter() {
   const prices = useQuery(useMemo(() => ({
     queryKey: ["market-prices"] as const,
     queryFn: () => fetchPrices({}),
-    staleTime: 60_000,
-    refetchInterval: 120_000,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
   }), [fetchPrices]));
   const signals = useQuery(useMemo(() => ({
     queryKey: ["daily-signals"] as const,

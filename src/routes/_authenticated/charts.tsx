@@ -11,9 +11,9 @@ import {
   Star,
   Loader2,
 } from "lucide-react";
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getMarketPrices, getOHLCV } from "@/lib/vixor.functions";
+import { getMarketPrices, getOHLCV, quickAnalyze } from "@/lib/vixor.functions";
 import {
   TradingViewChart,
   toTradingViewSymbol,
@@ -26,7 +26,6 @@ import { CreateAlertDialog } from "@/components/vixor/CreateAlertDialog";
 import { AlertsList } from "@/components/vixor/AlertsList";
 import { SectionTitle } from "@/components/vixor/atoms";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
-import html2canvas from "html2canvas";
 
 export const Route = createFileRoute("/_authenticated/charts")({
   head: () => ({ meta: [{ title: "Charts — Vixor" }] }),
@@ -68,23 +67,23 @@ function Charts() {
   const [searchInput, setSearchInput] = useState("");
   const [showAlertDialog, setShowAlertDialog] = useState(false);
   const [currentInterval, setCurrentInterval] = useState("240"); // Default 4h
-  const [isCapturing, setIsCapturing] = useState(false);
-
-  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
   const currentSymbol = useMemo(() => toTradingViewSymbol(currentPair), [currentPair]);
 
   // Fetch market prices for the quick-select buttons
   const fetchPrices = useStableServerFn(getMarketPrices);
   const fetchOHLCVFn = useStableServerFn(getOHLCV);
+  const analyzeFn = useStableServerFn(quickAnalyze);
 
   const pricesQuery = useQuery(
     useMemo(
       () => ({
         queryKey: ["market-prices"] as const,
         queryFn: () => fetchPrices({}),
-        staleTime: 60_000,
-        refetchInterval: 120_000,
+        staleTime: 30_000,
+        refetchInterval: 60_000,
       }),
       [fetchPrices],
     ),
@@ -103,8 +102,8 @@ function Charts() {
                 Object.entries(INTERVAL_MAP).find(([, tv]) => tv === currentInterval)?.[0] || "1H",
             },
           }),
-        staleTime: 30_000,
-        refetchInterval: 60_000,
+        staleTime: 15_000,
+        refetchInterval: 30_000,
       }),
       [fetchOHLCVFn, currentPair, currentInterval],
     ),
@@ -177,37 +176,32 @@ function Charts() {
     setCurrentInterval(tvInterval);
   }, []);
 
-  // Handle ANALYZE button - capture screenshot and navigate
+  // Handle ANALYZE button — directly run analysis with real OHLCV data
   const handleAnalyze = useCallback(async () => {
-    if (!chartContainerRef.current) {
-      // Fallback: navigate to analyze without screenshot
-      navigate({ to: "/analyze" });
-      return;
-    }
+    setIsAnalyzing(true);
+    setAnalyzeError(null);
 
-    setIsCapturing(true);
     try {
-      const canvas = await html2canvas(chartContainerRef.current, {
-        backgroundColor: "#0f1117",
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
+      // Map TradingView interval to our timeframe format
+      const tf =
+        Object.entries(INTERVAL_MAP).find(([, tv]) => tv === currentInterval)?.[0] || "1H";
+
+      const { id } = await analyzeFn({
+        data: {
+          pair: currentPair,
+          timeframe: tf,
+          tradingStyle: "Day Trading",
+        },
       });
-      const imageBase64 = canvas.toDataURL("image/png");
-      // Navigate to analyze with the captured image and current pair
-      navigate({
-        to: "/analyze",
-        search: { screenshot: imageBase64, pair: currentPair },
-      } as any);
+
+      // Navigate to the analysis result page
+      navigate({ to: "/analysis/$id", params: { id } });
     } catch (err) {
-      console.error("Failed to capture chart:", err);
-      // Fallback: navigate to analyze without screenshot
-      navigate({ to: "/analyze" });
-    } finally {
-      setIsCapturing(false);
+      const msg = err instanceof Error ? err.message : "Analysis failed";
+      setAnalyzeError(msg);
+      setIsAnalyzing(false);
     }
-  }, [navigate, currentPair]);
+  }, [analyzeFn, currentPair, currentInterval, navigate]);
 
   // Format volume
   const formatVolume = (vol: number) => {
@@ -345,7 +339,6 @@ function Charts() {
         theme="dark"
         height="55vh"
         onIntervalChange={handleIntervalChange}
-        chartContainerRef={chartContainerRef}
       />
 
       {/* ── Popular pairs quick-select ── */}
@@ -378,6 +371,13 @@ function Charts() {
         })}
       </div>
 
+      {/* ── Analysis Error ── */}
+      {analyzeError && (
+        <div className="p-3 bg-bearish/10 border border-bearish/30 text-bearish text-xs font-bold rounded-xl animate-in shake">
+          {analyzeError}
+        </div>
+      )}
+
       {/* ── Action buttons ── */}
       <div className="grid grid-cols-3 gap-2">
         <button
@@ -394,18 +394,18 @@ function Charts() {
 
         <button
           onClick={handleAnalyze}
-          disabled={isCapturing}
+          disabled={isAnalyzing}
           className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover relative"
         >
           <div className="size-9 rounded-xl gradient-primary flex items-center justify-center glow-primary">
-            {isCapturing ? (
+            {isAnalyzing ? (
               <Loader2 className="size-4 text-primary-foreground animate-spin" />
             ) : (
               <Sparkles className="size-4 text-primary-foreground" />
             )}
           </div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            {isCapturing ? "Capturing…" : "Analyze"}
+            {isAnalyzing ? "Analyzing…" : "Analyze"}
           </span>
         </button>
 
