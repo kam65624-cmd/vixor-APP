@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listAlerts, deleteAlert } from "@/lib/vixor.functions";
 import { Bell, X, Clock, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
+import { useMemo } from "react";
 import { SectionTitle } from "./atoms";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
@@ -31,11 +32,11 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
   const listAlertsFn = useStableServerFn(listAlerts);
   const deleteAlertFn = useStableServerFn(deleteAlert);
 
-  const { data: alerts, isLoading } = useQuery({
-    queryKey: ["alerts", pair],
+  const { data: alerts, isLoading } = useQuery(useMemo(() => ({
+    queryKey: ["alerts", pair] as const,
     queryFn: () => listAlertsFn({ data: { pair, status: undefined } }),
     staleTime: 15_000,
-  });
+  }), [listAlertsFn, pair]));
 
   const handleDelete = async (alertId: string) => {
     try {

@@ -21,6 +21,7 @@ import {
   TrendingUp,
   Bell,
 } from "lucide-react";
+import { useMemo } from "react";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 import { RecBadge } from "@/components/vixor/atoms";
 
@@ -38,24 +39,24 @@ function CommandCenter() {
   const fetchSignals = useStableServerFn(getDailySignals);
   const fetchAlerts = useStableServerFn(listAlerts);
 
-  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}) });
-  const recent = useQuery({ queryKey: ["analyses", 5], queryFn: () => fetchRecent({ data: { limit: 5 } }), staleTime: 60_000 });
-  const prices = useQuery({
-    queryKey: ["market-prices"],
+  const me = useQuery(useMemo(() => ({ queryKey: ["me"] as const, queryFn: () => fetchMe({}) }), [fetchMe]));
+  const recent = useQuery(useMemo(() => ({ queryKey: ["analyses", 5] as const, queryFn: () => fetchRecent({ data: { limit: 5 } }), staleTime: 60_000 }), [fetchRecent]));
+  const prices = useQuery(useMemo(() => ({
+    queryKey: ["market-prices"] as const,
     queryFn: () => fetchPrices({}),
     staleTime: 60_000,
     refetchInterval: 120_000,
-  });
-  const signals = useQuery({
-    queryKey: ["daily-signals"],
+  }), [fetchPrices]));
+  const signals = useQuery(useMemo(() => ({
+    queryKey: ["daily-signals"] as const,
     queryFn: () => fetchSignals({ data: {} }),
     staleTime: 120_000,
-  });
-  const alerts = useQuery({
-    queryKey: ["alerts-dashboard"],
+  }), [fetchSignals]));
+  const alerts = useQuery(useMemo(() => ({
+    queryKey: ["alerts-dashboard"] as const,
     queryFn: () => fetchAlerts({ data: {} }),
     staleTime: 30_000,
-  });
+  }), [fetchAlerts]));
 
   const name = me.data?.profile?.display_name?.split(" ")[0] || "Trader";
   const xp = (me.data?.profile as any)?.xp ?? 1250;

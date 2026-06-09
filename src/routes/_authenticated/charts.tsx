@@ -49,12 +49,12 @@ function Charts() {
   // Fetch market prices for the quick-select buttons
   const fetchPrices = useStableServerFn(getMarketPrices);
 
-  const pricesQuery = useQuery({
-    queryKey: ["market-prices"],
+  const pricesQuery = useQuery(useMemo(() => ({
+    queryKey: ["market-prices"] as const,
     queryFn: () => fetchPrices({}),
     staleTime: 60_000,
     refetchInterval: 120_000,
-  });
+  }), [fetchPrices]));
 
   // Get current price for the selected pair
   const currentPrice = useMemo(() => {

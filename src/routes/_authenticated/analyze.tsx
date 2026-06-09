@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Upload, Camera, Sparkles, X, Loader2, ArrowLeft, Image as ImageIcon, Clipboard } from "lucide-react";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { createAnalysis, getMe } from "@/lib/vixor.functions";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
@@ -24,7 +24,7 @@ function Analyze() {
   const fetchMe = useStableServerFn(getMe);
   const create = useStableServerFn(createAnalysis);
 
-  const me = useQuery({ queryKey: ["me"], queryFn: () => fetchMe({}), staleTime: 30_000 });
+  const me = useQuery(useMemo(() => ({ queryKey: ["me"] as const, queryFn: () => fetchMe({}), staleTime: 30_000 }), [fetchMe]));
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [stage, setStage] = useState<"upload" | "preview" | "analyzing">("upload");

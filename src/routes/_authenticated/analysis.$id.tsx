@@ -5,7 +5,7 @@ import {
   Loader2, Maximize2, Zap, BrainCircuit, Activity, BarChart2, TrendingUp,
   Newspaper, ShieldCheck, TrendingDown, CheckCircle, ChevronRight, X
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { getAnalysis } from "@/lib/vixor.functions";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
@@ -36,20 +36,22 @@ function AnalysisResult() {
   // Use stable server function reference to prevent infinite re-render loop (React error #310)
   const fetchAnalysis = useStableServerFn(getAnalysis);
 
-  const q = useQuery({
-    queryKey: ["analysis", id],
+  // Memoize the query arguments to prevent re-renders from new object references
+  const queryOpts = useMemo(() => ({
+    queryKey: ["analysis", id] as const,
     queryFn: () => fetchAnalysis({ data: { id } }),
     enabled: !!id,
     staleTime: 10_000,
-    // REMOVED: placeholderData: (prev) => prev — this caused re-render loops
-    // during polling because each fetch returns a new object reference,
-    // and placeholderData kept the old ref alive alongside the new one,
-    // confusing React's reconciliation and contributing to error #310.
-    refetchInterval: (query) => {
+    // REMOVED: placeholderData: (prev) => prev — caused re-render loops
+    // because each fetch returns a new object reference, and placeholderData
+    // kept the old ref alive, confusing React's reconciliation → React #310.
+    refetchInterval: (query: { state: { data?: { status?: string } } }) => {
       const s = query.state.data?.status;
       return s === "complete" || s === "failed" ? false : 3000;
     },
-  });
+  }), [id, fetchAnalysis]);
+
+  const q = useQuery(queryOpts);
   const [tab, setTab] = useState<(typeof TABS)[number]>("Trade Setup");
   const [imgZoom, setImgZoom] = useState(false);
 

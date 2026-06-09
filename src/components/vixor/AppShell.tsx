@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Compass, Plus, BookOpen, Bell, BarChart3 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { OnboardingModal } from "./OnboardingModal";
 import { supabase } from "@/integrations/supabase/client";
 import { getTelegramInitData } from "@/lib/telegram";
@@ -20,34 +20,44 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   const path = location.pathname;
   const [showOnboarding, setShowOnboarding] = useState(false);
+  // Use a ref to track auth state without causing re-renders on every auth event.
+  // Only update the React state when the value actually CHANGES (null -> true, true -> false, etc.)
+  const signedInRef = useRef<boolean | null>(null);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
     let cancel = false;
-    // Get initial session once — no duplicate onAuthStateChange listener needed
-    // because __root.tsx already handles auth changes with router.invalidate()
+    // Get initial session once
     supabase.auth.getSession().then(({ data }) => {
-      if (!cancel) setSignedIn(!!data.session);
+      if (cancel) return;
+      const val = !!data.session;
+      signedInRef.current = val;
+      setSignedIn(val);
     });
-    // Single lightweight listener just to toggle signedIn state
-    // (router.invalidate in __root.tsx handles full re-validation)
+    // Single lightweight listener — only update state when value actually changes
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "INITIAL_SESSION") return; // Already handled by getSession above
-      setSignedIn(!!session);
+      const newVal = !!session;
+      // Only trigger a re-render if the value actually changed
+      if (signedInRef.current !== newVal) {
+        signedInRef.current = newVal;
+        setSignedIn(newVal);
+      }
     });
     return () => { cancel = true; sub.subscription.unsubscribe(); };
   }, []);
 
   const linkTelegram = useStableServerFn(linkTelegramAccount);
 
+  // Onboarding — only show once, guarded by localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (signedIn) {
-      if (!localStorage.getItem("vixor-onboarded")) setShowOnboarding(true);
+    if (signedIn && !localStorage.getItem("vixor-onboarded")) {
+      setShowOnboarding(true);
     }
   }, [signedIn]);
 
-  // Link Telegram in a separate effect that only runs once (not on every signedIn change)
+  // Link Telegram — only runs once per session, guarded by ref + localStorage
   const telegramLinkedRef = useRef(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -63,7 +73,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         .then(() => { localStorage.setItem("vixor-tg-linked", "1"); })
         .catch(err => console.error("Failed to link Telegram:", err));
     }
-  }, [signedIn]);
+  }, [signedIn, linkTelegram]);
+
+  const closeOnboarding = useCallback(() => {
+    localStorage.setItem("vixor-onboarded", "1");
+    setShowOnboarding(false);
+  }, []);
 
   // Hide shell on /auth
   if (path === "/auth" || signedIn === false) {
@@ -102,7 +117,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </nav>
 
       {showOnboarding && (
-        <OnboardingModal onClose={() => { localStorage.setItem("vixor-onboarded", "1"); setShowOnboarding(false); }} />
+        <OnboardingModal onClose={closeOnboarding} />
       )}
     </div>
   );

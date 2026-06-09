@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, TrendingUp, Gift, Users, Sparkles, Check } from "lucide-react";
 import { listNotifications, markAllNotificationsRead } from "@/lib/vixor.functions";
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 
@@ -17,7 +18,7 @@ function NotificationsPage() {
   const fetch = useStableServerFn(listNotifications);
   const markAll = useStableServerFn(markAllNotificationsRead);
 
-  const q = useQuery({ queryKey: ["notifs"], queryFn: () => fetch({}) });
+  const q = useQuery(useMemo(() => ({ queryKey: ["notifs"] as const, queryFn: () => fetch({}) }), [fetch]));
   const m = useMutation({ mutationFn: () => markAll({}), onSuccess: () => qc.invalidateQueries({ queryKey: ["notifs"] }) });
 
   return (

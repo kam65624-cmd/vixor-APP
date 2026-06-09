@@ -4,7 +4,7 @@ import {
   getDailySignals, getUserStrategy, updateUserStrategy,
   generateDailySignals, createAlert,
 } from "@/lib/vixor.functions";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   TrendingUp, TrendingDown, Minus, Bell, Sparkles, Settings2,
   RefreshCw, Loader2, Target, Shield, Zap, BarChart3,
@@ -42,19 +42,19 @@ function DailySignals() {
 
   // Fetch signals
   const signalsFn = useStableServerFn(getDailySignals);
-  const signalsQuery = useQuery({
-    queryKey: ["daily-signals"],
+  const signalsQuery = useQuery(useMemo(() => ({
+    queryKey: ["daily-signals"] as const,
     queryFn: () => signalsFn({ data: {} }),
     staleTime: 120_000,
-  });
+  }), [signalsFn]));
 
   // Fetch user strategy
   const strategyFn = useStableServerFn(getUserStrategy);
-  const strategyQuery = useQuery({
-    queryKey: ["user-strategy"],
+  const strategyQuery = useQuery(useMemo(() => ({
+    queryKey: ["user-strategy"] as const,
     queryFn: () => strategyFn({}),
     staleTime: 60_000,
-  });
+  }), [strategyFn]));
 
   // Generate signals mutation
   const generateFn = useStableServerFn(generateDailySignals);

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { telegramSignIn } from "@/lib/auth.functions";
@@ -20,7 +20,6 @@ const features = [
 
 function AuthPage() {
   const navigate = useNavigate();
-  const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,9 +29,6 @@ function AuthPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const tgSignIn = useStableServerFn(telegramSignIn);
   const navigateRef = useRef(navigate);
-  navigateRef.current = navigate;
-  const routerRef = useRef(router);
-  routerRef.current = router;
 
   useEffect(() => {
     let active = true;
@@ -61,7 +57,10 @@ function AuthPage() {
           const { email, password } = await tgSignIn({ data: { initData } });
           const { error } = await supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
-          routerRef.current.invalidate();
+          // Do NOT call router.invalidate() — it triggers beforeLoad → onAuthStateChange
+          // → query invalidation cascade → React #310.
+          // Instead, just navigate — the auth state listener in __root.tsx
+          // will handle query invalidation.
           navigateRef.current({ to: "/" });
         } catch (e) {
           if (active) setErr(e instanceof Error ? e.message : "Telegram sign-in failed");
@@ -90,7 +89,8 @@ function AuthPage() {
           }
           return;
         }
-        router.invalidate();
+        // Do NOT call router.invalidate() — it causes cascading re-renders (React #310).
+        // The auth state listener in __root.tsx handles query invalidation.
         navigate({ to: "/" });
       } else {
         // Sign up — use admin path via server fn to skip email confirmation
@@ -109,7 +109,8 @@ function AuthPage() {
           setSuccess("Account created! Check your email to confirm, then sign in.");
           setMode("signin");
         } else {
-          router.invalidate();
+          // Do NOT call router.invalidate() — causes cascading re-renders (React #310).
+          // The auth state listener in __root.tsx handles query invalidation.
           navigate({ to: "/" });
         }
       }

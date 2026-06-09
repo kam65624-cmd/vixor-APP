@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type ReactNode, Component, type ErrorInfo } from "react";
+import { useEffect, useRef, useState, useCallback, type ReactNode, Component, type ErrorInfo } from "react";
 
 import appCss from "../styles.css?url";
 import { AppShell } from "@/components/vixor/AppShell";
@@ -29,9 +29,42 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error("[Vixor] Error caught by route error boundary:", error);
+// ── Error Boundary Component ──
+// Using a class component so we can catch errors with getDerivedStateFromError
+// and properly reset without causing React #310
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
 
+class GlobalErrorBoundary extends Component<
+  { children: ReactNode; onReset: () => void },
+  ErrorBoundaryState
+> {
+  state: ErrorBoundaryState = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[Vixor] Uncaught error:", error, info.componentStack);
+  }
+
+  handleReset = () => {
+    this.setState({ hasError: false, error: null });
+    this.props.onReset();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return <ErrorView error={this.state.error} onReset={this.handleReset} />;
+    }
+    return this.props.children;
+  }
+}
+
+function ErrorView({ error, onReset }: { error: Error | null; onReset: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -39,16 +72,14 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           <svg className="size-8 text-bearish" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
         </div>
         <h1 className="text-xl font-semibold text-foreground">Something went wrong</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {error?.message?.includes("#310")
+            ? "A rendering loop was detected. This has been automatically resolved."
+            : error?.message ?? "An unexpected error occurred."}
+        </p>
         <div className="flex gap-3 justify-center mt-6">
           <button
-            onClick={() => {
-              // ── CRITICAL FIX for React #310 ──
-              // Do NOT call router.invalidate() — it triggers beforeLoad → getSession()
-              // → onAuthStateChange → query invalidation → re-render → potential infinite loop.
-              // Instead, just reset the error boundary and let React reconcile naturally.
-              reset();
-            }}
+            onClick={onReset}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground active:scale-95 transition-transform"
           >
             Try again
@@ -84,7 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
+  errorComponent: undefined,
 });
 
 function RootShell({ children }: { children: ReactNode }) {
@@ -104,6 +135,9 @@ function RootComponent() {
   const queryClientRef = useRef(queryClient);
   queryClientRef.current = queryClient;
 
+  // ── Auth state change handler ──
+  // This is the SINGLE source of truth for auth-triggered query invalidation.
+  // It does NOT call router.invalidate() which causes cascading re-renders.
   useEffect(() => {
     if (typeof window === "undefined") return;
     // Boot Telegram WebApp if present
@@ -121,9 +155,8 @@ function RootComponent() {
       const { data: sub } = supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
 
-        // ── CRITICAL FIX: React error #310 prevention ──
+        // ── React error #310 prevention ──
         // 1. Deduplicate rapid identical auth events within 2 seconds
-        //    (Supabase can fire TOKEN_REFRESHED → USER_UPDATED in quick succession)
         const now = Date.now();
         if (event === lastAuthEvent && now - lastAuthTime < 2000) return;
         lastAuthEvent = event;
@@ -135,8 +168,6 @@ function RootComponent() {
           if (!mounted) return;
 
           // Only invalidate auth-dependent queries — NOT router.invalidate()
-          // router.invalidate() re-runs beforeLoad which calls getUser() → token refresh →
-          // another auth event → infinite loop. Instead, just refresh the data queries.
           if (event === "SIGNED_OUT") {
             queryClientRef.current.removeQueries({ queryKey: ["me"] });
             queryClientRef.current.removeQueries({ queryKey: ["analyses"] });
@@ -161,11 +192,19 @@ function RootComponent() {
     };
   }, []);
 
+  // Reset function for the error boundary — navigates to home to break any render loops
+  const handleErrorReset = useCallback(() => {
+    // Use replace to avoid building up history entries
+    routerRef.current.navigate({ to: "/", replace: true });
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <AppShell>
-        <Outlet />
-      </AppShell>
+      <GlobalErrorBoundary onReset={handleErrorReset}>
+        <AppShell>
+          <Outlet />
+        </AppShell>
+      </GlobalErrorBoundary>
     </QueryClientProvider>
   );
 }

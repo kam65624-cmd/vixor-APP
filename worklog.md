@@ -1,23 +1,20 @@
 ---
-Task ID: 1
+Task ID: 2
 Agent: Main
-Task: Diagnose React error #310, integrate Twelve Data APIs, fix analysis mismatch
+Task: Fix React error #310 (Too many re-renders) - comprehensive fix
 
 Work Log:
-- Explored full project structure: routes, components, server functions, analysis engine
-- Identified root cause of React #310: router.invalidate() in ErrorComponent reset button triggers beforeLoad → getSession() → onAuthStateChange → infinite loop
-- Found that TWELVEDATA_API_KEY was missing from .env, causing fetchTwelveDataKlines to return [] and analysis to use fake generateOHLCV() data
-- Created comprehensive Twelve Data API client at src/server/twelvedata.server.ts
-- Updated price-fetcher.server.ts to use TwelveData Exchange Rate API as primary source for forex/gold prices
-- Added 12 new server functions for all Twelve Data endpoints
-- Fixed React #310 by removing router.invalidate() from error reset button
-- Fixed AppShell.tsx Telegram linking to prevent re-execution on every signedIn change
-- Added TWELVEDATA_API_KEY and other env vars to .env
-- Verified build succeeds with no TypeScript errors
+- Analyzed useServerFn implementation from @tanstack/react-start: it calls useRouter() internally, which subscribes to ALL router state changes. When 5+ components use useStableServerFn (which wraps useServerFn), any router state change triggers ALL of them to re-render simultaneously, creating cascading re-renders that hit React's limit (#310)
+- Rewrote useStableServerFn to NOT use useServerFn at all - server functions are callable directly as RPC stubs, no hook needed. This eliminates all useRouter() subscriptions from server function usage
+- Fixed AppShell.tsx: added signedInRef to only trigger setSignedIn when the value actually changes (null→true, true→false), preventing unnecessary re-renders from duplicate auth events
+- Fixed __root.tsx: replaced functional error component with class-based GlobalErrorBoundary for proper error recovery. Error reset now navigates to home (breaks render loops) instead of just resetting the boundary
+- Fixed router.tsx: added structuralSharing: true (reuses object references when data unchanged), refetchOnMount: false, defaultPreload: false to reduce unnecessary re-renders
+- Fixed auth.tsx: removed ALL router.invalidate() calls (3 instances) - this was the primary trigger for cascading re-renders. Auth state listener in __root.tsx handles query invalidation
+- Added useMemo to all useQuery calls across all pages (analysis, index, signals, charts, notifications, alerts) to prevent re-renders from new object references in query options
+- Verified TypeScript compiles with zero errors
+- Verified full build succeeds
 
 Stage Summary:
-- React #310 fixed: ErrorComponent now uses reset() only (no router.invalidate()), added "Go Home" fallback button
-- TwelveData Exchange Rate API now primary source for forex/gold real-time prices
-- All 12 new server functions added: getExchangeRate, convertCurrency, getETFsDirectory, getETFSummary, getETFPerformance, getETFFullData, getCashFlow, getEarningsEstimate, getEPSTrend, getGrowthEstimates, getStockFundamentals
-- Analysis will now use real OHLCV data from TwelveData when API key is configured
-- Build passes successfully
+- ROOT CAUSE: useServerFn() internally calls useRouter(), subscribing every component to router state changes. Multiple simultaneous subscriptions + router.invalidate() = cascading re-renders = React #310
+- FIX: Eliminated useServerFn entirely, removed all router.invalidate() calls, added structural sharing, memoized query options
+- Build passes successfully, ready for deployment
