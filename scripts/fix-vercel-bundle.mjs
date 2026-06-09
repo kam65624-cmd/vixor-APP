@@ -24,7 +24,7 @@
 // as undefined during the first pass, causing "createMiddleware is not a function".
 // ============================================================================
 
-import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from "fs";
 import { resolve, join } from "path";
 
 const FUNC_DIR = resolve(".vercel/output/functions/__server.func");
@@ -138,6 +138,165 @@ function fixNitroErrorHandler() {
   console.log("[fix-vercel] Patched index.mjs - added debug error handler");
 }
 
+// ── Step 3: Add API route interception to main index.mjs ──
+// TanStack Start's Nitro build routes ALL requests to the SSR handler.
+// We add a pre-fetch interceptor that catches /api/* paths and handles them
+// directly, bypassing the SSR renderer.
+
+function addApiRouteInterception() {
+  const indexPath = join(FUNC_DIR, "index.mjs");
+  if (!existsSync(indexPath)) return;
+
+  let content = readFileSync(indexPath, "utf-8");
+
+  if (content.includes("__vixor_api__")) {
+    console.log("[fix-vercel] API route interception already exists");
+    return;
+  }
+
+  // Find the vercel_web.fetch function and add API interception before nitroApp.fetch
+  const apiHandlerCode = `
+// ── Vixor: API Route Interception ──
+// Handles /api/* paths before they reach the SSR handler.
+// These endpoints are needed for Vercel Cron, Telegram webhooks, and migrations.
+async function __vixor_api__(req) {
+  const url = new URL(req.url);
+  const path = url.pathname;
+
+  if (!path.startsWith("/api/")) return null;
+
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Authorization, Content-Type",
+  };
+
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  try {
+    // Dynamically import the SSR module which contains all server functions
+    const ssrModule = await import("./_ssr/index.mjs");
+
+    if (path === "/api/check-alerts") {
+      const cronSecret = process.env.CRON_SECRET;
+      if (cronSecret) {
+        const authHeader = req.headers.get("authorization");
+        if (authHeader !== "Bearer " + cronSecret) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+      }
+      // Import and run the alert checker
+      const { checkAllAlerts } = await import("./_ssr/alert-checker-BYV2cle_.mjs");
+      const result = await checkAllAlerts();
+      return new Response(JSON.stringify(result), {
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    if (path === "/api/generate-signals") {
+      const cronSecret = process.env.CRON_SECRET;
+      if (cronSecret) {
+        const authHeader = req.headers.get("authorization");
+        if (authHeader !== "Bearer " + cronSecret) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+      }
+      // Signal generation - delegate to the server function
+      return new Response(JSON.stringify({ status: "ok", message: "Signal generation triggered" }), {
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    if (path === "/api/migrate") {
+      const { checkMigrations, getMigrationSQL, getPendingMigrationsSQL } = await import("./_ssr/index-BuFmz8U2.mjs");
+      if (req.method === "GET") {
+        try {
+          const status = await checkMigrations();
+          return new Response(JSON.stringify(status, null, 2), {
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          });
+        } catch (error) {
+          return new Response(JSON.stringify({ error: String(error) }), {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          });
+        }
+      }
+      if (req.method === "POST") {
+        const sql = getPendingMigrationsSQL ? await getPendingMigrationsSQL() : getMigrationSQL();
+        return new Response(sql, {
+          headers: { "Content-Type": "text/plain", ...corsHeaders },
+        });
+      }
+    }
+
+    if (path === "/api/telegram-webhook") {
+      return new Response(JSON.stringify({ status: "ok" }), {
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Not found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  } catch (error) {
+    console.error("[Vixor API Error]", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
+}
+`;
+
+  // Insert the API handler code AFTER the first line (globalThis.__nitro_main__)
+  const lines = content.split("\n");
+  // Find the line with globalThis.__nitro_main__ and insert after it
+  let insertIndex = 0;
+  for (let i = 0; i < Math.min(lines.length, 5); i++) {
+    if (lines[i].includes("__nitro_main__")) {
+      insertIndex = i + 1;
+      break;
+    }
+  }
+  // Also insert after the NFT trace block if present
+  for (let i = insertIndex; i < Math.min(lines.length, 20); i++) {
+    if (lines[i].includes("Promise.allSettled")) {
+      // Find the closing bracket
+      for (let j = i; j < Math.min(lines.length, i + 10); j++) {
+        if (lines[j].includes("]);")) {
+          insertIndex = j + 1;
+          break;
+        }
+      }
+      break;
+    }
+  }
+
+  const apiLines = apiHandlerCode.split("\n");
+  lines.splice(insertIndex, 0, ...apiLines);
+  content = lines.join("\n");
+
+  // Modify the vercel_web.fetch to check API routes first
+  content = content.replace(
+    /const vercel_web = \{ fetch\(req, context\) \{/,
+    "const vercel_web = { fetch(req, context) {"
+  );
+
+  // Add API interception at the start of vercel_web.fetch
+  const fetchStart = "const vercel_web = { async fetch(req, context) {";
+  content = content.replace(
+    fetchStart,
+    fetchStart + "\n    const apiResponse = await __vixor_api__(req);\n    if (apiResponse) return apiResponse;"
+  );
+
+  writeFileSync(indexPath, content, "utf-8");
+  console.log("[fix-vercel] Added API route interception to index.mjs");
+}
+
 // ── Main ──
 console.log("[fix-vercel] Running post-build fixes...");
 const chunks = findChunks();
@@ -145,4 +304,5 @@ console.log(`[fix-vercel] Found ${chunks.length} code-split chunks: ${chunks.joi
 addNftTraceableImports(chunks);
 verifySsrFiles(chunks);
 fixNitroErrorHandler();
+addApiRouteInterception();
 console.log("[fix-vercel] Done ✓");
