@@ -1,4 +1,14 @@
 globalThis.__nitro_main__ = import.meta.url;
+
+// ── Vixor: @vercel/nft traceable imports for _ssr chunks ──
+// @vercel/nft traces dynamic import() with static string paths from the
+// entry point. This ensures code-split chunks are included in deployment.
+// Promise.allSettled() prevents circular dep or load-order issues.
+const __vixor_nft_trace__ = Promise.allSettled([
+  import("./_ssr/empty-plugin-adapters-BFgPZ6_d.mjs"),
+  import("./_ssr/router-Ckjh48zX.mjs"),
+  import("./_ssr/start-6fN4pgRM.mjs"),
+]);
 import { d as defineLazyEventHandler, H as HTTPError, a as H3Core } from "./_libs/h3.mjs";
 import { N as NodeResponse } from "./_libs/srvx.mjs";
 import "./_libs/rou3.mjs";

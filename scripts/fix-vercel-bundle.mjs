@@ -4,16 +4,20 @@
 // ============================================================================
 //
 // ROOT CAUSE:
-// Vite/Nitro code-splits the SSR bundle into separate chunk files in _ssr/.
-// Vercel's @vercel/nft file tracer doesn't follow imports within modules
-// loaded via dynamic import, so these chunks get excluded from deployment.
+// Vite/Nitro code-splits the SSR bundle into chunk files in _ssr/.
+// Vercel's @vercel/nft file tracer traces static imports and dynamic import()
+// with static string literals from the ENTRY POINT only. Since _ssr/index.mjs
+// is loaded via lazyService(() => import("./_ssr/index.mjs")), @vercel/nft
+// includes _ssr/index.mjs but does NOT recursively trace its static imports
+// to find the code-split chunks.
 //
 // FIX:
-// 1. Convert dynamic import() in _ssr/index.mjs to static imports
-//    (so Node.js resolves them synchronously at module load time)
-// 2. Do NOT add static imports to the main index.mjs (causes circular deps)
-// 3. The key: ensure @vercel/nft can trace the _ssr/index.mjs → chunk chain
-//    by making the _ssr/index.mjs chunks reachable via static imports
+// 1. Add dynamic import() calls for the _ssr chunks in the MAIN index.mjs
+//    entry point. @vercel/nft DOES trace dynamic import() with static string
+//    literals from the entry point. These are wrapped in a Promise.allSettled()
+//    so they don't block or crash the function.
+// 2. Convert dynamic import() in _ssr/index.mjs to static imports so
+//    Node.js resolves them synchronously at module load time.
 // ============================================================================
 
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";
@@ -29,6 +33,48 @@ function findChunks() {
     (f) => /^(start|server|router|empty-plugin-adapters)-[A-Za-z0-9_-]+\.mjs$/.test(f),
   );
 }
+
+// ── Step 1: Add dynamic import() for chunks in main index.mjs ──
+// @vercel/nft traces dynamic import() with static string paths from the
+// entry point. This forces the chunk files to be included in the deployment.
+// We use Promise.allSettled() so failures don't crash the function.
+
+function addNftTraceableImports(chunks) {
+  const indexPath = join(FUNC_DIR, "index.mjs");
+  if (!existsSync(indexPath)) return;
+
+  let content = readFileSync(indexPath, "utf-8");
+
+  if (content.includes("__vixor_nft_trace__")) {
+    console.log("[fix-vercel] Main index.mjs already has NFT-traceable imports");
+    return;
+  }
+
+  // Build the traceable import block
+  const importCalls = chunks.map(
+    (chunk) => `import("./_ssr/${chunk}")`
+  );
+
+  const traceBlock = [
+    "// ── Vixor: @vercel/nft traceable imports for _ssr chunks ──",
+    "// @vercel/nft traces dynamic import() with static string paths from the",
+    "// entry point. This ensures code-split chunks are included in deployment.",
+    "// Promise.allSettled() prevents circular dep or load-order issues.",
+    "const __vixor_nft_trace__ = Promise.allSettled([",
+    ...importCalls.map((call) => `  ${call},`),
+    "]);",
+  ].join("\n");
+
+  // Insert after the first line
+  const lines = content.split("\n");
+  lines.splice(1, 0, "", traceBlock);
+  content = lines.join("\n");
+
+  writeFileSync(indexPath, content, "utf-8");
+  console.log(`[fix-vercel] Added ${chunks.length} @vercel/nft-traceable imports to main index.mjs`);
+}
+
+// ── Step 2: Convert dynamic imports to static in _ssr/index.mjs ──
 
 function fixSsrIndex(chunks) {
   const indexPath = join(SSR_DIR, "index.mjs");
@@ -75,10 +121,7 @@ function fixNitroErrorHandler() {
   if (content.includes("__vixor_debug__")) return;
 
   const marker = "const errorHandlers = [errorHandler$1];";
-  if (!content.includes(marker)) {
-    console.log("[fix-vercel] WARNING: Could not find errorHandlers marker");
-    return;
-  }
+  if (!content.includes(marker)) return;
 
   const wrapperCode = [
     "function __vixor_debug__(error, event) {",
@@ -123,6 +166,7 @@ function fixNitroErrorHandler() {
 console.log("[fix-vercel] Running post-build fixes...");
 const chunks = findChunks();
 console.log(`[fix-vercel] Found ${chunks.length} code-split chunks: ${chunks.join(", ")}`);
+addNftTraceableImports(chunks);
 fixSsrIndex(chunks);
 verifySsrFiles(chunks);
 fixNitroErrorHandler();
