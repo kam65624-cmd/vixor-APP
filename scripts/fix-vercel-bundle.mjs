@@ -12,12 +12,16 @@
 // to find the code-split chunks.
 //
 // FIX:
-// 1. Add dynamic import() calls for the _ssr chunks in the MAIN index.mjs
-//    entry point. @vercel/nft DOES trace dynamic import() with static string
-//    literals from the entry point. These are wrapped in a Promise.allSettled()
-//    so they don't block or crash the function.
-// 2. Convert dynamic import() in _ssr/index.mjs to static imports so
-//    Node.js resolves them synchronously at module load time.
+// Add dynamic import() calls for the _ssr chunks in the MAIN index.mjs
+// entry point. @vercel/nft DOES trace dynamic import() with static string
+// literals from the entry point. These are wrapped in a Promise.allSettled()
+// so they don't block or crash the function.
+//
+// IMPORTANT: Do NOT convert dynamic imports to static imports inside
+// _ssr/index.mjs. The chunks (e.g. start-*.mjs) import from index.mjs,
+// creating a circular dependency. Dynamic imports break the cycle by deferring
+// evaluation. Converting to static imports causes ESM live bindings to resolve
+// as undefined during the first pass, causing "createMiddleware is not a function".
 // ============================================================================
 
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";
@@ -72,34 +76,6 @@ function addNftTraceableImports(chunks) {
 
   writeFileSync(indexPath, content, "utf-8");
   console.log(`[fix-vercel] Added ${chunks.length} @vercel/nft-traceable imports to main index.mjs`);
-}
-
-// ── Step 2: Convert dynamic imports to static in _ssr/index.mjs ──
-
-function fixSsrIndex(chunks) {
-  const indexPath = join(SSR_DIR, "index.mjs");
-  if (!existsSync(indexPath)) return;
-
-  let content = readFileSync(indexPath, "utf-8");
-  let patchCount = 0;
-  const staticImports = [];
-
-  for (const chunkName of chunks) {
-    const dynamicImportCall = `import("./${chunkName}")`;
-    if (!content.includes(dynamicImportCall)) continue;
-
-    const varName = "__vixor_" + chunkName.replace(/[^A-Za-z0-9]/g, "_") + "__";
-    staticImports.push(`import * as ${varName} from "./${chunkName}";`);
-    content = content.replace(dynamicImportCall, `Promise.resolve(${varName})`);
-    patchCount++;
-    console.log(`[fix-vercel] Patched _ssr/index.mjs - static import for ${chunkName}`);
-  }
-
-  if (patchCount > 0) {
-    content = staticImports.join("\n") + "\n" + content;
-    writeFileSync(indexPath, content, "utf-8");
-    console.log(`[fix-vercel] Total: ${patchCount} chunks patched in _ssr/index.mjs`);
-  }
 }
 
 function verifySsrFiles(chunks) {
@@ -167,7 +143,6 @@ console.log("[fix-vercel] Running post-build fixes...");
 const chunks = findChunks();
 console.log(`[fix-vercel] Found ${chunks.length} code-split chunks: ${chunks.join(", ")}`);
 addNftTraceableImports(chunks);
-fixSsrIndex(chunks);
 verifySsrFiles(chunks);
 fixNitroErrorHandler();
 console.log("[fix-vercel] Done ✓");
