@@ -29,7 +29,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   const body = await response.clone().text();
   console.error("[Vixor] 500 JSON response body:", body.substring(0, 2000));
 
-  const captured = consumeLastCapturedError();
+  const captured = consumeLastCapturedError() as Error | undefined;
   if (captured) {
     console.error("[Vixor] Captured SSR error:", captured);
   }
@@ -38,7 +38,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   try {
     const parsed = JSON.parse(body);
     const errorMsg = parsed.message || parsed.error || body;
-    const html = renderDebugErrorPage(errorMsg, captured?.stack);
+    const html = renderDebugErrorPage(errorMsg, captured?.stack ?? undefined);
     return new Response(html, {
       status: 500,
       headers: { "content-type": "text/html; charset=utf-8" },

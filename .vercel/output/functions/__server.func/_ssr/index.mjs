@@ -1,3 +1,6 @@
+import * as __vixor_empty_plugin_adapters_BFgPZ6_d_mjs__ from "./empty-plugin-adapters-BFgPZ6_d.mjs";
+import * as __vixor_router_Ckjh48zX_mjs__ from "./router-Ckjh48zX.mjs";
+import * as __vixor_start_6fN4pgRM_mjs__ from "./start-6fN4pgRM.mjs";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { H as H3Event, t as toResponse } from "../_libs/h3-v2.mjs";
 import { y as parseRedirect, z as mergeHeaders, m as isRedirect, A as defineHandlerCallback, C as resolveManifestAssetLink, u as resolveManifestCssLink, k as rootRouteId, D as getNormalizedURL, E as getOrigin, F as normalizeSsrResponse, G as attachRouterServerSsrUtils, H as createSerializationAdapter, I as createRawStreamRPCPlugin, i as invariant, g as isNotFound, J as isResolvedRedirect, K as replaceSsrResponse, L as executeRewriteInput, M as stripSsrResponseBody, N as defaultSerovalPlugins, O as makeSerovalPlugin, s as getScriptPreloadAttrs, P as getStylesheetHref, Q as isSsrResponse } from "../_libs/tanstack__router-core.mjs";
@@ -1586,9 +1589,9 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
   const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-    import("./router-Ckjh48zX.mjs").then((n) => n.L),
-    import("./start-6fN4pgRM.mjs"),
-    import("./empty-plugin-adapters-BFgPZ6_d.mjs")
+    Promise.resolve(__vixor_router_Ckjh48zX_mjs__).then((n) => n.L),
+    Promise.resolve(__vixor_start_6fN4pgRM_mjs__),
+    Promise.resolve(__vixor_empty_plugin_adapters_BFgPZ6_d_mjs__)
   ]);
   return {
     routerEntry,
@@ -1949,7 +1952,7 @@ async function normalizeCatastrophicSsrResponse(response) {
   try {
     const parsed = JSON.parse(body);
     const errorMsg = parsed.message || parsed.error || body;
-    const html = renderDebugErrorPage(errorMsg, captured?.stack);
+    const html = renderDebugErrorPage(errorMsg, captured?.stack ?? void 0);
     return new Response(html, {
       status: 500,
       headers: { "content-type": "text/html; charset=utf-8" }

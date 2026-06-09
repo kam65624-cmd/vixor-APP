@@ -2,35 +2,119 @@
 // ============================================================================
 // fix-vercel-bundle.mjs — Post-build fix for Vercel serverless deployment
 // ============================================================================
+//
+// Vite/Nitro code-splits the SSR bundle into separate chunks (start-*.mjs,
+// server-*.mjs, router-*.mjs, etc.) but Vercel's serverless runtime can't
+// resolve these dynamic imports at runtime, causing ERR_MODULE_NOT_FOUND.
+//
+// Root cause: Vercel's Node.js runtime only includes files that are statically
+// importable from the entry point. Dynamic import() targets are NOT traced
+// by Vercel's file tracer, so they get excluded from the deployment.
+//
+// This script:
+//   1. Finds ALL dynamically imported chunks in _ssr/index.mjs
+//   2. Converts them to static imports at the top of the file
+//   3. Replaces the dynamic import() calls with Promise.resolve()
+//   4. Patches the Nitro error handler for better debug info
+// ============================================================================
 
-import { readFileSync, writeFileSync, readdirSync } from "fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";
 import { resolve, join } from "path";
 
 const FUNC_DIR = resolve(".vercel/output/functions/__server.func");
 const SSR_DIR = join(FUNC_DIR, "_ssr");
 
-function findServerChunk() {
+// ── Step 1: Find all code-split chunks that need static imports ──
+
+function findChunks() {
+  if (!existsSync(SSR_DIR)) {
+    console.log("[fix-vercel] _ssr directory not found, skipping");
+    return [];
+  }
   const files = readdirSync(SSR_DIR);
-  return files.find((f) => /^server-[A-Za-z0-9_-]+\.mjs$/.test(f)) || null;
+  // Match all hash-named chunks that are dynamically imported:
+  // start-*, server-*, router-*, empty-plugin-adapters-*
+  return files.filter(
+    (f) =>
+      /^(start|server|router|empty-plugin-adapters)-[A-Za-z0-9_-]+\.mjs$/.test(f),
+  );
 }
 
-function fixSsrIndex(serverChunkName) {
+// ── Step 2: Patch _ssr/index.mjs — convert dynamic imports to static ──
+//
+// Vercel's file tracer only follows static imports. By converting
+// import("./chunk.mjs") → static import at top + Promise.resolve(var),
+// we ensure the chunk is included in the deployment AND available at runtime.
+
+function fixSsrIndex(chunks) {
   const indexPath = join(SSR_DIR, "index.mjs");
-  let content = readFileSync(indexPath, "utf-8");
-  const dynamicImportCall = "import(\"./" + serverChunkName + "\")";
-  if (!content.includes(dynamicImportCall)) {
-    console.log("[fix-vercel] SSR index: no dynamic import found, skipping");
+  if (!existsSync(indexPath)) {
+    console.log("[fix-vercel] _ssr/index.mjs not found, skipping");
     return;
   }
-  const varName = "__vixor_se__";
-  content = "import * as " + varName + " from \"./" + serverChunkName + "\";\n" + content;
-  content = content.replace(dynamicImportCall, "Promise.resolve(" + varName + ")");
-  writeFileSync(indexPath, content, "utf-8");
-  console.log("[fix-vercel] Patched _ssr/index.mjs - static import for " + serverChunkName);
+
+  let content = readFileSync(indexPath, "utf-8");
+  let patchCount = 0;
+
+  const staticImports = [];
+
+  for (const chunkName of chunks) {
+    const dynamicImportCall = `import("./${chunkName}")`;
+
+    if (!content.includes(dynamicImportCall)) {
+      console.log(`[fix-vercel] No dynamic import for ${chunkName}, skipping`);
+      continue;
+    }
+
+    // Create a unique variable name from the chunk name
+    const varName = "__vixor_" + chunkName.replace(/[^A-Za-z0-9]/g, "_") + "__";
+
+    // Collect static imports (we'll add them all at once at the top)
+    staticImports.push(`import * as ${varName} from "./${chunkName}";`);
+
+    // Replace dynamic import with resolved promise
+    content = content.replace(dynamicImportCall, `Promise.resolve(${varName})`);
+
+    patchCount++;
+    console.log(`[fix-vercel] Patched _ssr/index.mjs - static import for ${chunkName}`);
+  }
+
+  if (patchCount > 0) {
+    // Add all static imports at the very top of the file
+    content = staticImports.join("\n") + "\n" + content;
+    writeFileSync(indexPath, content, "utf-8");
+    console.log(`[fix-vercel] Total: ${patchCount} chunks patched in _ssr/index.mjs`);
+  } else {
+    console.log("[fix-vercel] No dynamic imports needed patching");
+  }
 }
+
+// ── Step 3: Ensure _ssr chunks are included in the Vercel output ──
+// The _ssr/ directory should already be in the function output, but we verify
+// and log what's there for debugging purposes.
+
+function verifySsrFiles(chunks) {
+  console.log(`[fix-vercel] Verifying _ssr/ directory has ${chunks.length} required chunks...`);
+  for (const chunk of chunks) {
+    const chunkPath = join(SSR_DIR, chunk);
+    if (existsSync(chunkPath)) {
+      const size = readFileSync(chunkPath).length;
+      console.log(`[fix-vercel]   ✅ ${chunk} (${(size / 1024).toFixed(1)} KB)`);
+    } else {
+      console.error(`[fix-vercel]   ❌ ${chunk} MISSING!`);
+    }
+  }
+}
+
+// ── Step 4: Patch Nitro error handler for better debug info ──
 
 function fixNitroErrorHandler() {
   const indexPath = join(FUNC_DIR, "index.mjs");
+  if (!existsSync(indexPath)) {
+    console.log("[fix-vercel] Main index.mjs not found for error handler patch");
+    return;
+  }
+
   let content = readFileSync(indexPath, "utf-8");
 
   if (content.includes("__vixor_debug__")) {
@@ -44,13 +128,11 @@ function fixNitroErrorHandler() {
     return;
   }
 
-  // Debug error handler that shows ALL error properties, not just message
   const wrapperCode = [
     "function __vixor_debug__(error, event) {",
     "  try {",
     "    const unhandled = error.unhandled ?? !(error && (error.statusCode || error.status));",
     "    const status = unhandled ? 500 : (error.statusCode || error.status || 500);",
-    "    // Extract ALL useful info from the error object",
     "    const parts = [];",
     "    parts.push('Type: ' + (error && error.constructor ? error.constructor.name : typeof error));",
     "    if (error instanceof Error) parts.push('Message: ' + error.message);",
@@ -59,7 +141,6 @@ function fixNitroErrorHandler() {
     "    if (error && error.statusMessage) parts.push('StatusText: ' + error.statusMessage);",
     "    if (error && error.data) parts.push('Data: ' + JSON.stringify(error.data));",
     "    if (error && error.path) parts.push('Path: ' + error.path);",
-    "    // Also check the captured global error",
     "    const errStack = (error instanceof Error ? error.stack : '') || '';",
     "    const su = process.env.SUPABASE_URL ? 'set' : 'missing';",
     "    const sk = (process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY) ? 'set' : 'missing';",
@@ -90,13 +171,15 @@ function fixNitroErrorHandler() {
   console.log("[fix-vercel] Patched index.mjs - added debug error handler");
 }
 
-// Main
+// ── Main ──
+
 console.log("[fix-vercel] Running post-build fixes...");
-const serverChunk = findServerChunk();
-if (serverChunk) {
-  fixSsrIndex(serverChunk);
-} else {
-  console.log("[fix-vercel] No server chunk found");
-}
+
+const chunks = findChunks();
+console.log(`[fix-vercel] Found ${chunks.length} code-split chunks: ${chunks.join(", ")}`);
+
+fixSsrIndex(chunks);
+verifySsrFiles(chunks);
 fixNitroErrorHandler();
-console.log("[fix-vercel] Done");
+
+console.log("[fix-vercel] Done ✓");
