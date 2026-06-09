@@ -8,6 +8,10 @@ import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 export const Route = createFileRoute("/_authenticated/analyze")({
   head: () => ({ meta: [{ title: "Analyze — Vixor" }] }),
   component: Analyze,
+  validateSearch: (search: Record<string, unknown>) => ({
+    screenshot: (search.screenshot as string) || undefined,
+    pair: (search.pair as string) || undefined,
+  }),
 });
 
 const TRADING_STYLES = [
@@ -20,6 +24,7 @@ const STEPS = ["Connecting to Engine", "Extracting Price Action", "Computing Mar
 
 function Analyze() {
   const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as { screenshot?: string; pair?: string };
   // Use stable server function references to prevent infinite re-render loop (React error #310)
   const fetchMe = useStableServerFn(getMe);
   const create = useStableServerFn(createAnalysis);
@@ -34,9 +39,47 @@ function Analyze() {
   const [err, setErr] = useState<string | null>(null);
   const [selectedPair, setSelectedPair] = useState<string>("auto");
   const [tradingStyle, setTradingStyle] = useState<string>("Day Trading");
+  const [screenshotProcessed, setScreenshotProcessed] = useState(false);
 
   const points = me.data?.balance.balance ?? 0;
   const isPremium = !!me.data?.isPremium;
+
+  // Handle incoming screenshot from charts page
+  useEffect(() => {
+    if (screenshotProcessed) return;
+    if (search.screenshot && search.screenshot.length > 100) {
+      setScreenshotProcessed(true);
+      const screenshotData = search.screenshot;
+
+      // Set the preview directly with the screenshot base64 data
+      setPreview(screenshotData);
+      setStage("preview");
+
+      // Set the pair if provided
+      if (search.pair) {
+        setSelectedPair(search.pair);
+      }
+
+      // Create a File object from the screenshot for the analysis
+      try {
+        const b64 = screenshotData.includes(",") ? screenshotData.split(",")[1] : screenshotData;
+        const byteString = atob(b64);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: "image/png" });
+        const f = new File([blob], `chart-${search.pair || "screenshot"}.png`, { type: "image/png" });
+        setFile(f);
+      } catch (e) {
+        console.warn("[Analyze] Failed to create file from screenshot:", e);
+      }
+
+      // Clean the URL to remove the large screenshot data
+      window.history.replaceState({}, "", "/analyze");
+    }
+  }, [search.screenshot, search.pair, screenshotProcessed]);
 
   function pickFile(f: File | null) {
     if (!f) return;

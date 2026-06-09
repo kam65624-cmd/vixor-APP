@@ -76,3 +76,47 @@ Stage Summary:
 - Auth middleware now uses getUser() instead of getClaims() for compatibility
 - Error handling is more resilient - won't crash on missing env vars
 - Note: Supabase env vars (URL + key) still need to be set in Vercel dashboard for full functionality
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix signal_badge column missing error + Redesign Charts page with TradingView-like interface
+
+Work Log:
+
+**Task 1: Fix signal_badge column missing error**
+- Identified the issue: `createAnalysis` handler in `src/lib/vixor.functions.ts` was inserting `signal_badge` and `vixor_message` columns that don't exist in the production Supabase database
+- Removed `signal_badge: (result as any).signal_badge` and `vixor_message: (result as any).vixor_message` from the `.update()` call (lines 224-225)
+- The data is still preserved in `raw_ai_response` JSONB column, accessible via `raw_ai_response.signal_badge` and `raw_ai_response.vixor_message`
+
+**Task 2: Redesign Charts page**
+- Installed html2canvas library for screenshot capture
+- Added `getOHLCV` server function in `vixor.functions.ts` to fetch Open/High/Low/Close/Volume data from Binance (crypto) or TwelveData (forex/commodity)
+- Updated TradingViewChart component:
+  - Added `chartContainerRef` prop for screenshot capture support
+  - Added `onIntervalChange` callback prop
+  - Added `PAIR_DISPLAY_NAMES` export for human-readable pair names
+  - Added `INTERVAL_MAP` export for timeframe conversions
+  - Synced internal ref to external ref via useEffect for html2canvas access
+- Completely redesigned Charts page (`src/routes/_authenticated/charts.tsx`):
+  - Search bar with pair name + add button at top
+  - Timeframe selector (1m, 5m, 15m, 30m, 1h, 4h, 1D) that actually changes TradingView chart interval
+  - Chart tools row (fullscreen, candlestick, drawing, indicators)
+  - Price info bar with pair display name, current price, 24h change, and OHLCV data
+  - TradingView chart with dynamic interval and screenshot capture support
+  - Popular pairs quick-select still available as horizontal scroll (moved below chart)
+  - 3 action buttons: SET ALERT (opens CreateAlertDialog), ANALYZE (key feature), WATCHLIST (placeholder)
+  - ANALYZE button captures chart screenshot via html2canvas and navigates to /analyze with screenshot data and pair
+- Updated Analyze page (`src/routes/_authenticated/analyze.tsx`):
+  - Added `validateSearch` to accept `screenshot` and `pair` search params
+  - Auto-detects incoming screenshot from Charts page and goes straight to preview stage
+  - Pre-selects the pair when coming from Charts
+  - Creates File object from screenshot base64 data for analysis pipeline
+  - Cleans URL after processing screenshot data (removes large base64 from URL)
+
+Stage Summary:
+- Fixed signal_badge/vixor_message column error by removing them from the Supabase update query (data preserved in raw_ai_response)
+- Charts page fully redesigned with TradingView-like interface
+- ANALYZE feature implemented: captures chart screenshot → navigates to analyze page with pre-loaded screenshot and pair
+- OHLCV price bar shows real market data from Binance/TwelveData APIs
+- Timeframe selector dynamically changes the TradingView chart interval
+- Build verified successfully

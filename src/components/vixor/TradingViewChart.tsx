@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, memo } from "react";
+import { useEffect, useRef, memo, useCallback } from "react";
 
 // Symbol mapping: user-friendly pair names to TradingView symbols
 export const SYMBOL_MAP: Record<string, string> = {
@@ -36,18 +36,61 @@ export function toTradingViewSymbol(pair: string): string {
   return SYMBOL_MAP[pair] || pair;
 }
 
+// Pair display name mapping
+export const PAIR_DISPLAY_NAMES: Record<string, string> = {
+  "BTC/USDT": "Bitcoin / Tether",
+  "ETH/USDT": "Ethereum / Tether",
+  "XAU/USD": "Gold Spot / U.S. Dollar",
+  "EUR/USD": "Euro / U.S. Dollar",
+  "GBP/JPY": "British Pound / Japanese Yen",
+  "SOL/USDT": "Solana / Tether",
+  "BTC/USD": "Bitcoin / U.S. Dollar",
+  "ETH/USD": "Ethereum / U.S. Dollar",
+  "GBP/USD": "British Pound / U.S. Dollar",
+  "USD/JPY": "U.S. Dollar / Japanese Yen",
+  "AUD/USD": "Australian Dollar / U.S. Dollar",
+  "NZD/USD": "New Zealand Dollar / U.S. Dollar",
+  "USD/CAD": "U.S. Dollar / Canadian Dollar",
+  "USD/CHF": "U.S. Dollar / Swiss Franc",
+  "AAPL": "Apple Inc.",
+  "TSLA": "Tesla Inc.",
+  "SPX500": "S&P 500 Index",
+  "NASDAQ": "NASDAQ Composite",
+};
+
+// Interval mapping for TradingView
+export const INTERVAL_MAP: Record<string, string> = {
+  "1M": "1",
+  "5M": "5",
+  "15M": "15",
+  "30M": "30",
+  "1H": "60",
+  "4H": "240",
+  "1D": "D",
+  "1W": "W",
+};
+
 interface TradingViewChartProps {
   symbol: string; // TradingView symbol like "BINANCE:BTCUSDT"
   interval?: string;
   theme?: "dark" | "light";
   height?: string;
+  onIntervalChange?: (interval: string) => void;
+  chartContainerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 // Declare TradingView widget type on window
 declare global {
   interface Window {
     TradingView?: {
-      widget: new (config: Record<string, unknown>) => unknown;
+      widget: new (config: Record<string, unknown>) => {
+        activeChart: () => {
+          onIntervalChanged: () => {
+            subscribe: (null_: null, cb: () => void) => void;
+          };
+          interval: () => string;
+        };
+      };
     };
   }
 }
@@ -57,10 +100,19 @@ function TradingViewChartInner({
   interval = "240",
   theme = "dark",
   height = "65vh",
+  onIntervalChange,
+  chartContainerRef,
 }: TradingViewChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<unknown>(null);
   const scriptRef = useRef<HTMLScriptElement | null>(null);
+
+  // Sync the internal ref to the external ref for screenshot capture
+  useEffect(() => {
+    if (chartContainerRef && "current" in chartContainerRef) {
+      (chartContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = containerRef.current;
+    }
+  });
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -80,7 +132,7 @@ function TradingViewChartInner({
       if (!window.TradingView) return;
 
       try {
-        widgetRef.current = new window.TradingView.widget({
+        const widget = new window.TradingView.widget({
           autosize: true,
           symbol: symbol,
           interval: interval,
@@ -97,6 +149,28 @@ function TradingViewChartInner({
           backgroundColor: "rgba(15, 17, 23, 1)",
           gridColor: "rgba(255, 255, 255, 0.03)",
         });
+        widgetRef.current = widget;
+
+        // Listen for interval changes from the TradingView widget
+        if (onIntervalChange && widget && typeof (widget as any).activeChart === "function") {
+          try {
+            const chart = (widget as any).activeChart();
+            if (chart && chart.onIntervalChanged) {
+              chart.onIntervalChanged().subscribe(null, () => {
+                try {
+                  const currentInterval = chart.interval();
+                  if (currentInterval && onIntervalChange) {
+                    onIntervalChange(currentInterval);
+                  }
+                } catch (e) {
+                  // Ignore errors from interval subscription
+                }
+              });
+            }
+          } catch (e) {
+            // Widget may not support interval subscription
+          }
+        }
       } catch (err) {
         console.warn("[TradingView] Widget init error:", err);
       }
@@ -147,7 +221,7 @@ function TradingViewChartInner({
         scriptRef.current = null;
       }
     };
-  }, [symbol, interval, theme]);
+  }, [symbol, interval, theme, onIntervalChange]);
 
   return (
     <div
