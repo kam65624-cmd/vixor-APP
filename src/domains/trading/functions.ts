@@ -211,14 +211,16 @@ export const getUserStrategy = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
 
     if (!data) {
+      // No user strategy yet — return empty onboarding state, not fake data
       return {
         id: null,
-        name: "Default Strategy",
-        pairs: ["BTC/USDT", "ETH/USDT", "XAU/USD", "EUR/USD"],
-        trading_style: "Day Trading",
-        risk_tolerance: "MEDIUM",
-        preferred_timeframes: ["1H", "4H"],
-        is_active: true,
+        name: null,
+        pairs: [],
+        trading_style: null,
+        risk_tolerance: null,
+        preferred_timeframes: [],
+        is_active: false,
+        isOnboarding: true,
       };
     }
     return data;

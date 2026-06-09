@@ -468,35 +468,15 @@ function Portfolio() {
             badge="LIVE"
           >
             <div className="space-y-4">
-              {/* Equity Curve Placeholder */}
-              <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-bullish/3 to-transparent" />
-                <LineChart className="size-8 text-muted-foreground/40 mx-auto mb-3 relative" />
-                <div className="text-xs font-bold text-muted-foreground mb-1 relative">
+              {/* Equity Curve — Real data only, no fake sparklines */}
+              <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
+                <LineChart className="size-8 text-muted-foreground/40 mx-auto mb-3" />
+                <div className="text-xs font-bold text-muted-foreground mb-1">
                   {t("portfolio.equityCurve")}
                 </div>
-                <div className="text-[10px] text-muted-foreground/70 relative">
-                  Real equity tracking will appear here as you log more trades.
+                <div className="text-[10px] text-muted-foreground/70">
+                  Equity tracking will appear here as you log more trades.
                 </div>
-                {/* Faux sparkline decoration */}
-                <svg
-                  className="w-full h-12 mt-3 relative opacity-20"
-                  viewBox="0 0 200 40"
-                  preserveAspectRatio="none"
-                >
-                  <path
-                    d="M0,35 Q20,30 40,25 T80,20 T120,15 T160,18 T200,8"
-                    fill="none"
-                    stroke="var(--color-bullish)"
-                    strokeWidth="2"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  <path
-                    d="M0,35 Q20,30 40,25 T80,20 T120,15 T160,18 T200,8 L200,40 L0,40 Z"
-                    fill="var(--color-bullish)"
-                    fillOpacity="0.1"
-                  />
-                </svg>
               </div>
 
               {/* Detailed Metrics */}

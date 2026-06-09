@@ -125,7 +125,7 @@ function MissionControl() {
   );
 
   const name = me.data?.profile?.display_name?.split(" ")[0] || t("dashboard.trader");
-  const xp = (me.data?.profile as any)?.xp ?? 1250;
+  const xp = (me.data?.profile as any)?.total_xp ?? (me.data?.profile as any)?.xp ?? 0;
   const isPremium = !!me.data?.isPremium;
 
   // Active alerts
@@ -180,9 +180,11 @@ function MissionControl() {
               PRO
             </div>
           )}
-          <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-card border border-border text-[10px] font-bold text-foreground">
-            <Zap className="size-3 text-info" /> {xp} pts
-          </div>
+          {xp > 0 && (
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-card border border-border text-[10px] font-bold text-foreground">
+              <Zap className="size-3 text-info" /> {xp} pts
+            </div>
+          )}
         </div>
       </div>
 

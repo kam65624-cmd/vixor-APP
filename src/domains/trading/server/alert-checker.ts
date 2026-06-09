@@ -166,8 +166,13 @@ export async function checkAllAlerts(): Promise<{
     for (const [pair] of groupedByPair) {
       try {
         const result = await fetchPrice(pair);
-        priceCache.set(pair, result.price);
-        checked++;
+        if (result) {
+          priceCache.set(pair, result.price);
+          checked++;
+        } else {
+          console.warn(`[AlertChecker] No price available for ${pair}, skipping.`);
+          errors++;
+        }
       } catch (err) {
         console.warn(
           `[AlertChecker] Failed to fetch price for ${pair}:`,

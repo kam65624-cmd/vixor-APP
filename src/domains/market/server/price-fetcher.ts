@@ -64,21 +64,7 @@ const FOREX_SYMBOLS: Record<string, string> = {
   "EUR/JPY": "EURJPY",
 };
 
-// Known price ranges for ESTIMATED fallback (only used when no cache exists)
-const FALLBACK_PRICES: Record<string, { price: number; volatility: number }> = {
-  "BTC/USDT": { price: 105000, volatility: 0.03 },
-  "ETH/USDT": { price: 2600, volatility: 0.028 },
-  "SOL/USDT": { price: 170, volatility: 0.04 },
-  "XAU/USD": { price: 3300, volatility: 0.012 },
-  "EUR/USD": { price: 1.13, volatility: 0.005 },
-  "GBP/USD": { price: 1.34, volatility: 0.006 },
-  "USD/JPY": { price: 145, volatility: 0.007 },
-  "GBP/JPY": { price: 195, volatility: 0.008 },
-  "AUD/USD": { price: 0.665, volatility: 0.006 },
-  "NZD/USD": { price: 0.615, volatility: 0.007 },
-  "USD/CAD": { price: 1.37, volatility: 0.005 },
-  "USD/CHF": { price: 0.89, volatility: 0.005 },
-};
+// REMOVED: FALLBACK_PRICES — we never fabricate prices. If no real data, return null.
 
 // ── Cache is now handled by the unified cache layer (src/lib/cache.ts) ──
 // Price data → cache key: vixor:price:{pair}, TTL: 60s
@@ -342,27 +328,14 @@ async function cachePrice(pair: string, price: number, change24h: number): Promi
 }
 
 /**
- * Generate a deterministic ESTIMATED fallback price for when APIs are unavailable AND no cache exists.
- * This is clearly marked as ESTIMATED so users know the price is not real.
+ * When APIs are unavailable AND no cache exists, return null.
+ * NEVER fabricate prices. UI should show "—" or "Price unavailable" instead.
  */
-function getEstimatedFallbackPrice(pair: string): PriceResult {
-  const config = FALLBACK_PRICES[pair];
-  const basePrice = config?.price ?? 100;
-
+function getEstimatedFallbackPrice(pair: string): PriceResult | null {
   console.warn(
-    `[PriceFetcher] ⚠️ No real price available for ${pair}. Returning ESTIMATED fallback price. This should be investigated.`,
+    `[PriceFetcher] ⚠️ No real price available for ${pair}. Returning null — UI should show unavailable state.`,
   );
-
-  return {
-    symbol: pair.includes("USDT")
-      ? `BINANCE:${pair.replace("/", "")}`
-      : `FX:${pair.replace("/", "")}`,
-    pair,
-    price: basePrice,
-    change24h: 0,
-    source: "ESTIMATED — no real data available",
-    timestamp: Date.now(),
-  };
+  return null;
 }
 
 /**
@@ -423,7 +396,7 @@ async function fetchTwelveDataQuote(pair: string): Promise<PriceResult | null> {
  * Main entry point: fetch the current price for a given pair.
  * Tries real APIs first, then cached price, then estimated fallback.
  */
-export async function fetchPrice(pair: string): Promise<PriceResult> {
+export async function fetchPrice(pair: string): Promise<PriceResult | null> {
   // Special case for Gold
   if (pair === "XAU/USD") {
     const result = await fetchGoldPrice();
@@ -501,8 +474,9 @@ export async function fetchPrice(pair: string): Promise<PriceResult> {
 export async function fetchPrices(pairs: string[]): Promise<PriceResult[]> {
   const results = await Promise.allSettled(pairs.map(fetchPrice));
   return results
-    .filter((r): r is PromiseFulfilledResult<PriceResult> => r.status === "fulfilled")
-    .map((r) => r.value);
+    .filter((r): r is PromiseFulfilledResult<PriceResult | null> => r.status === "fulfilled")
+    .map((r) => r.value)
+    .filter((v): v is PriceResult => v !== null);
 }
 
 /**

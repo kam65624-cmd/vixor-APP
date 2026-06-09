@@ -463,7 +463,7 @@ function Charts() {
         open={showAlertDialog}
         onOpenChange={setShowAlertDialog}
         pair={currentPair}
-        currentPrice={currentPrice || 68000}
+        currentPrice={currentPrice || 0}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ["alerts"] })}
       />
     </div>
