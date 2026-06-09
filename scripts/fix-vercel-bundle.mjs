@@ -4,18 +4,20 @@
 // ============================================================================
 //
 // Vite/Nitro code-splits the SSR bundle into separate chunks (start-*.mjs,
-// server-*.mjs, router-*.mjs, etc.) but Vercel's serverless runtime can't
-// resolve these dynamic imports at runtime, causing ERR_MODULE_NOT_FOUND.
+// router-*.mjs, empty-plugin-adapters-*.mjs, etc.) but Vercel's serverless
+// runtime can't resolve these imports at runtime, causing ERR_MODULE_NOT_FOUND.
 //
-// Root cause: Vercel's Node.js runtime only includes files that are statically
-// importable from the entry point. Dynamic import() targets are NOT traced
-// by Vercel's file tracer, so they get excluded from the deployment.
+// Root cause: Vercel's Node.js file tracer only follows static imports from
+// the ENTRY POINT (index.mjs at the root of __server.func/). It does NOT
+// trace static imports within nested modules like _ssr/index.mjs. Since
+// the main entry point uses lazyService(() => import("./_ssr/index.mjs"))
+// (dynamic import), Vercel includes _ssr/index.mjs itself but NOT the
+// chunks it statically imports.
 //
-// This script:
-//   1. Finds ALL dynamically imported chunks in _ssr/index.mjs
-//   2. Converts them to static imports at the top of the file
-//   3. Replaces the dynamic import() calls with Promise.resolve()
-//   4. Patches the Nitro error handler for better debug info
+// Fix: Add static imports for ALL _ssr chunks directly in the main entry
+// point (index.mjs). This forces Vercel's tracer to include them in the
+// deployment. We also convert the dynamic imports in _ssr/index.mjs to
+// static imports + Promise.resolve() so the chunks are available at runtime.
 // ============================================================================
 
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";
@@ -24,7 +26,7 @@ import { resolve, join } from "path";
 const FUNC_DIR = resolve(".vercel/output/functions/__server.func");
 const SSR_DIR = join(FUNC_DIR, "_ssr");
 
-// ── Step 1: Find all code-split chunks that need static imports ──
+// ── Step 1: Find all code-split chunks that need to be included ──
 
 function findChunks() {
   if (!existsSync(SSR_DIR)) {
@@ -40,11 +42,58 @@ function findChunks() {
   );
 }
 
-// ── Step 2: Patch _ssr/index.mjs — convert dynamic imports to static ──
+// ── Step 2: Add static imports to MAIN index.mjs (the entry point) ──
 //
-// Vercel's file tracer only follows static imports. By converting
-// import("./chunk.mjs") → static import at top + Promise.resolve(var),
-// we ensure the chunk is included in the deployment AND available at runtime.
+// This is the KEY fix. Vercel's file tracer starts from the main index.mjs
+// and follows static imports. By adding static imports for all _ssr chunks
+// here, we FORCE Vercel to include them in the serverless function bundle.
+
+function addStaticImportsToMainIndex(chunks) {
+  const indexPath = join(FUNC_DIR, "index.mjs");
+  if (!existsSync(indexPath)) {
+    console.log("[fix-vercel] Main index.mjs not found, skipping");
+    return;
+  }
+
+  let content = readFileSync(indexPath, "utf-8");
+
+  // Check if we already added the static imports
+  if (content.includes("__vixor_ssr_chunks__")) {
+    console.log("[fix-vercel] Main index.mjs already has static imports for _ssr chunks");
+    return;
+  }
+
+  // Build the static import block
+  const importLines = chunks.map(
+    (chunk) => `import "./_ssr/${chunk}";`
+  );
+
+  // We need these chunks to be imported so Vercel includes them,
+  // but we don't actually USE them from this file. The import
+  // side-effect is enough for Vercel's tracer.
+  const importBlock = [
+    "// ── Vixor: Force Vercel to include _ssr chunks ──",
+    "// Vercel's file tracer only follows static imports from the entry point.",
+    "// These imports ensure all code-split chunks are included in the deployment.",
+    "const __vixor_ssr_chunks__ = true;",
+    ...importLines,
+  ].join("\n");
+
+  // Add after the first line (which sets globalThis.__nitro_main__)
+  const lines = content.split("\n");
+  const insertIndex = 1; // After the first line
+  lines.splice(insertIndex, 0, "", importBlock);
+
+  content = lines.join("\n");
+  writeFileSync(indexPath, content, "utf-8");
+  console.log(`[fix-vercel] Added ${chunks.length} static imports to main index.mjs for Vercel file tracing`);
+}
+
+// ── Step 3: Patch _ssr/index.mjs — convert dynamic imports to static ──
+//
+// Even though Vercel will now include the chunks, we also convert the
+// dynamic import() calls in _ssr/index.mjs to static imports + Promise.resolve()
+// for faster loading (no async chunk loading at runtime).
 
 function fixSsrIndex(chunks) {
   const indexPath = join(SSR_DIR, "index.mjs");
@@ -89,9 +138,7 @@ function fixSsrIndex(chunks) {
   }
 }
 
-// ── Step 3: Ensure _ssr chunks are included in the Vercel output ──
-// The _ssr/ directory should already be in the function output, but we verify
-// and log what's there for debugging purposes.
+// ── Step 4: Verify all chunks exist ──
 
 function verifySsrFiles(chunks) {
   console.log(`[fix-vercel] Verifying _ssr/ directory has ${chunks.length} required chunks...`);
@@ -106,7 +153,7 @@ function verifySsrFiles(chunks) {
   }
 }
 
-// ── Step 4: Patch Nitro error handler for better debug info ──
+// ── Step 5: Patch Nitro error handler for better debug info ──
 
 function fixNitroErrorHandler() {
   const indexPath = join(FUNC_DIR, "index.mjs");
@@ -178,6 +225,7 @@ console.log("[fix-vercel] Running post-build fixes...");
 const chunks = findChunks();
 console.log(`[fix-vercel] Found ${chunks.length} code-split chunks: ${chunks.join(", ")}`);
 
+addStaticImportsToMainIndex(chunks);
 fixSsrIndex(chunks);
 verifySsrFiles(chunks);
 fixNitroErrorHandler();
