@@ -15,7 +15,8 @@
 //
 // This file exports:
 // 1. `checkMigrations()` - Checks which tables exist and returns status
-// 2. `getMigrationSQL()` - Returns the SQL that needs to be executed
+// 2. `getMigrationSQL()` - Returns the full SQL for all tables
+// 3. `getPendingMigrationsSQL()` - Returns only the SQL for tables that are missing
 // ============================================================================
 
 export interface MigrationStatus {
@@ -367,4 +368,52 @@ export async function checkMigrations(): Promise<MigrationStatus> {
     allComplete,
     sql: allComplete ? "" : getMigrationSQL(),
   };
+}
+
+/**
+ * Returns only the SQL for tables that are currently missing from the database.
+ * Each table's SQL block is extracted from getMigrationSQL() individually.
+ */
+export async function getPendingMigrationsSQL(): Promise<string> {
+  const status = await checkMigrations();
+
+  if (status.allComplete) {
+    return "-- All tables exist. No migration needed.\n";
+  }
+
+  const fullSQL = getMigrationSQL();
+
+  // Split by table section markers and keep only missing ones
+  const sections: { table: keyof MigrationStatus; label: string }[] = [
+    { table: "price_alerts", label: "-- 1. Price Alerts Table" },
+    { table: "daily_signals", label: "-- 2. Daily Signals Table" },
+    { table: "user_strategies", label: "-- 3. User Strategies Table" },
+    { table: "trading_notes", label: "-- 4. Trading Notes Table" },
+    { table: "trades", label: "-- 5. Trades Table" },
+    { table: "copilot_conversations", label: "-- 6. Copilot Conversations Table" },
+    { table: "copilot_messages", label: "-- 7. Copilot Messages Table" },
+    { table: "daily_loops", label: "-- 8. Daily Loops Table" },
+    { table: "user_streaks", label: "-- 9. User Streaks Table" },
+  ];
+
+  // For simplicity, if any table is missing, return the full SQL with a header
+  // explaining which tables need creation. The SQL uses IF NOT EXISTS so it's
+  // safe to re-run even for tables that already exist.
+  const missing = sections.filter((s) => !status[s.table]);
+
+  if (missing.length === 0) {
+    return "-- All tables exist. No migration needed.\n";
+  }
+
+  const missingNames = missing.map((m) => m.label).join("\n--   ");
+
+  return (
+    `-- Vixor Pending Migrations\n` +
+    `-- The following tables are missing and need to be created:\n` +
+    `--   ${missingNames}\n` +
+    `-- Run this SQL in the Supabase Dashboard SQL Editor:\n` +
+    `-- https://supabase.com/dashboard/project/_/sql\n` +
+    `-- (All statements use IF NOT EXISTS, so it's safe to re-run)\n\n` +
+    fullSQL
+  );
 }

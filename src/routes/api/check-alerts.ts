@@ -1,52 +1,28 @@
-import { createAPIFileRoute } from "@tanstack/react-start/api";
+import { defineEventHandler, getMethod, getHeader, createError } from "h3";
 import { checkAllAlerts } from "@/domains/trading/server/alert-checker";
 
-export const APIRoute = createAPIFileRoute("/api/check-alerts")({
-  POST: async ({ request }) => {
-    try {
-      const cronSecret = process.env.CRON_SECRET;
-      if (cronSecret) {
-        const authHeader = request.headers.get("authorization");
-        if (authHeader !== `Bearer ${cronSecret}`) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-      }
+export default defineEventHandler(async (event) => {
+  const method = getMethod(event);
 
-      const result = await checkAllAlerts();
-      return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch (error) {
-      console.error("Alert check error:", error);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-  },
-  GET: async ({ request }) => {
-    try {
-      // Vercel Cron sends GET requests with the CRON_SECRET in the
-      // Authorization header, just like the POST handler.
-      // When CRON_SECRET is set, validate it to prevent unauthorized access.
-      const cronSecret = process.env.CRON_SECRET;
-      if (cronSecret) {
-        const authHeader = request.headers.get("authorization");
-        if (authHeader !== `Bearer ${cronSecret}`) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-      }
+  // Both GET and POST are supported so Vercel Cron and manual triggers work
+  if (method !== "GET" && method !== "POST") {
+    throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
+  }
 
-      const result = await checkAllAlerts();
-      return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch (error) {
-      console.error("Alert check error:", error);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
+  // Validate CRON_SECRET when set
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const authHeader = getHeader(event, "authorization");
+    if (authHeader !== `Bearer ${cronSecret}`) {
+      throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
-  },
+  }
+
+  try {
+    const result = await checkAllAlerts();
+    return result;
+  } catch (error) {
+    console.error("Alert check error:", error);
+    throw createError({ statusCode: 500, statusMessage: "Internal server error" });
+  }
 });

@@ -1,64 +1,99 @@
-# Work Log — P5: Daily Trader Loop
+# Worklog: P6 — Fix API Routes + Final Cleanup
 
-## Date: 2026-03-05
+## Date: 2026-06-09
 
 ## Summary
-Implemented the Daily Trader Loop feature — a guided daily workflow that helps traders build consistency through structured morning-to-evening routines with checklists, pre-market preparation, session tracking, and end-of-day review.
 
-## Files Created
+Fixed all API route files to use the correct Nitro/h3 `defineEventHandler` pattern, registered them with the Nitro plugin in `vite.config.ts`, removed dead code, and added the `getPendingMigrationsSQL()` utility.
 
-### 1. SQL Migration
-- `supabase/migrations/20260610030000_add_daily_loop.sql` — Creates `daily_loops` and `user_streaks` tables with RLS policies, indexes, and triggers.
+---
 
-### 2. Domain Layer
-- `src/domains/daily-loop/types.ts` — Type definitions for `DailyLoop`, `UserStreak`, `MarketBias`, `EmotionalState`, `TradingSession`, and input types.
-- `src/domains/daily-loop/functions.ts` — Server functions:
-  - `getTodayLoop` (GET) — Get or create today's daily loop
-  - `updateMorningPrep` (POST) — Mark morning prep complete with market bias/key levels
-  - `updateSessionTracking` (POST) — Update session (london/ny/asian) trading status
-  - `updateEodReview` (POST) — Complete end-of-day review
-  - `getLoopHistory` (GET) — Get last 30 days of loops
-  - `getStreak` (GET) — Get current streak info
-- `src/domains/daily-loop/index.ts` — Barrel export
+## Problem 1: API Routes Don't Work (FIXED)
 
-### 3. Route / Page
-- `src/routes/_authenticated/daily-loop.tsx` — Full daily loop page with:
-  - Today/History tab switcher
-  - Progress bar showing 3 phases
-  - Phase 1: Morning Prep (market bias selector, key levels input, watchlist checkbox)
-  - Phase 2: Session Tracking (3 session cards with active session detection, traded toggle, notes)
-  - Phase 3: EOD Review (P&L, trades, rules, emotional state, lessons, tomorrow plan)
-  - Streak Widget (current/longest streak, 30-day calendar heatmap)
-  - History Tab (list of past loops with expandable details)
+### Root Cause
 
-## Files Modified
+The API route files in `src/routes/api/` used `createAPIFileRoute` from `@tanstack/react-start/api`, which **does not exist** in the installed version. This caused build warnings ("Route file does not export a Route") and 404s on Vercel because Nitro never registered these handlers.
 
-### 4. Migration System
-- `src/shared/migrate.server.ts` — Added `daily_loops` and `user_streaks` to `MigrationStatus` interface, `getMigrationSQL()`, and `checkMigrations()`.
+Additionally, even after rewriting to `defineEventHandler`, the API routes still wouldn't work because **Nitro's `scanDirs` was empty** — it didn't know to look in `src/routes/api/` for route handlers.
 
-### 5. Supabase Types
-- `src/shared/supabase/types.ts` — Added `daily_loops` and `user_streaks` table type definitions with Row/Insert/Update types and relationships.
+### Changes Made
 
-### 6. Navigation
-- `src/components/vixor/AppShell.tsx` — Added `/daily-loop` to the Portfolio tab's match pattern so the bottom nav highlights correctly when on the daily-loop page.
+1. **`src/routes/api/check-alerts.ts`** — Rewrote from `createAPIFileRoute` to `defineEventHandler` from `h3`. Uses `getMethod`, `getHeader`, and `createError` from h3. Supports both GET and POST (for Vercel Cron). CRON_SECRET validation preserved.
 
-### 7. Barrel Export
-- `src/lib/vixor.functions.ts` — Added daily-loop domain exports for backward compatibility.
+2. **`src/routes/api/generate-signals.ts`** — Same rewrite. Added `fetchTwelveDataKlines` fallback that was missing in the `-` prefixed version. All business logic (pair/timeframe iteration, Binance/TwelveData fetching, analysis, Supabase insert) preserved.
 
-### 8. Dashboard Link
-- `src/routes/_authenticated/index.tsx` — Added Daily Loop CTA card with orange gradient and flame icon, linking to `/daily-loop`.
+3. **`src/routes/api/telegram-webhook.ts`** — Rewrote to `defineEventHandler`. Uses `readBody` from h3 (with `as Record<string, any>` type assertion) instead of `request.json()`. Both pre_checkout_query and successful_payment handling preserved.
 
-## Design Decisions
-- Used `Record<string, any>` for Supabase update calls to handle dynamic session field names, cast with `as any` to bypass strict type checking (consistent with other domains).
-- Completion percentage calculated from 3 phases: morning prep, session tracking (at least one session noted), EOD review.
-- Streak updates only trigger when completion hits 100%.
-- Route registered under `_authenticated` layout, accessible via Portfolio tab match and dashboard CTA.
-- TypeScript check passes with only pre-existing `vite.config.ts` error.
+4. **`src/routes/api/migrate.ts`** — Already used `defineEventHandler` from h3. Cleaned up to also import and use the new `getPendingMigrationsSQL()` function in the POST handler.
 
-## Patterns Followed
-- `createServerFn` with `requireSupabaseAuth` middleware
-- `useStableServerFn` hook for stable function references
-- `useQuery`/`useMutation` from TanStack Query
-- `ExpandableWidget`, `MiniWidget`, `WidgetGroup` Vixor components
-- Consistent Tailwind/shadcn styling with existing pages
-- RLS policies on all tables with `auth.uid() = user_id` filter
+5. **`vite.config.ts`** — **Critical fix**: Added `routes` config to the `nitro()` plugin to explicitly register all 4 API routes:
+   ```ts
+   routes: {
+     "/api/check-alerts": "./src/routes/api/check-alerts.ts",
+     "/api/generate-signals": "./src/routes/api/generate-signals.ts",
+     "/api/telegram-webhook": "./src/routes/api/telegram-webhook.ts",
+     "/api/migrate": "./src/routes/api/migrate.ts",
+   },
+   ```
+   This tells Nitro where to find the handlers at build time. Without this, Nitro's route scanner had an empty `scanDirs` and never discovered them.
+
+### Verification
+
+After rebuild, the server bundle (`index.mjs`) contains the route registration:
+```
+/api/check-alerts → handler
+/api/generate-signals → handler
+/api/telegram-webhook → handler
+/api/migrate → handler
+/** → SSR renderer (catch-all)
+```
+
+All business logic functions (`checkAllAlerts`, `fetchBinanceKlines`, `runLocalAnalysis`, `pre_checkout_query`, `checkMigrations`, `getPendingMigrationsSQL`) are present in the bundle.
+
+---
+
+## Problem 2: Apply SQL Migrations (PARTIALLY FIXED)
+
+### Changes Made
+
+1. **`src/shared/migrate.server.ts`** — Added `getPendingMigrationsSQL()` async function that:
+   - Calls `checkMigrations()` to get current table status
+   - If all tables exist, returns a "no migration needed" message
+   - If tables are missing, returns the full SQL (with `IF NOT EXISTS` clauses) plus a header listing which tables are missing and instructions to run in Supabase Dashboard SQL Editor
+
+2. **`src/server/migrate.server.ts`** — Updated re-export to include `getPendingMigrationsSQL`
+
+3. **`src/routes/api/migrate.ts`** — POST handler now calls `getPendingMigrationsSQL()` instead of `getMigrationSQL()`, returning `{ sql, instructions }` JSON
+
+### Note
+
+The actual SQL still needs to be run manually in the Supabase Dashboard SQL Editor since the Supabase JS client doesn't support raw SQL execution. The GET `/api/migrate` endpoint shows table status, and POST `/api/migrate` returns the SQL to copy-paste.
+
+---
+
+## Problem 3: Remove Dead Code (FIXED)
+
+### Files Deleted
+
+- `src/routes/api/-check-alerts.ts` — Workaround copy using `createAPIFileRoute`
+- `src/routes/api/-generate-signals.ts` — Workaround copy using `createAPIFileRoute`
+- `src/routes/api/-telegram-webhook.ts` — Workaround copy using `createAPIFileRoute`
+- `src/routes/api/-migrate.ts` — Workaround copy using `defineEventHandler` from `vinxi/http`
+- `src/types/api-routes.d.ts` — Declared non-existent `createAPIFileRoute` from `@tanstack/react-start/api` and `defineEventHandler` from `vinxi/http`
+
+### Verified
+
+- No remaining imports of `@tanstack/react-start/api` in the codebase
+- No remaining imports of `vinxi/http` in the codebase
+- No remaining `-` prefixed files in `src/routes/api/`
+- No remaining `api-routes.d.ts` references
+
+---
+
+## Verification Results
+
+- **TypeScript**: `npx tsc --noEmit` passes (only pre-existing `includeFiles` type error in `vite.config.ts`)
+- **Build**: `npm run build` succeeds
+- **Module load**: `node -e "await import('./.vercel/output/functions/__server.func/index.mjs')"` succeeds
+- **Route registration**: All 4 API routes are registered in the Nitro bundle with correct paths
+- **Business logic**: All handler functions present in the bundle

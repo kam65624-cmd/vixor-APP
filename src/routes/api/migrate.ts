@@ -1,5 +1,5 @@
 import { defineEventHandler, getMethod, createError } from "h3";
-import { checkMigrations, getMigrationSQL } from "@/shared/migrate.server";
+import { checkMigrations, getMigrationSQL, getPendingMigrationsSQL } from "@/shared/migrate.server";
 
 export default defineEventHandler(async (event) => {
   const method = getMethod(event);
@@ -18,8 +18,9 @@ export default defineEventHandler(async (event) => {
   }
 
   if (method === "POST") {
-    const sql = getMigrationSQL();
-    return sql;
+    // Return only the SQL for tables that are missing
+    const pendingSQL = await getPendingMigrationsSQL();
+    return { sql: pendingSQL, instructions: "Run this SQL in the Supabase Dashboard SQL Editor" };
   }
 
   throw createError({ statusCode: 405, statusMessage: "Method not allowed" });

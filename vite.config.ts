@@ -26,6 +26,15 @@ export default defineConfig({
       // @vercel/nft doesn't trace imports within dynamically-loaded modules,
       // so code-split chunks in _ssr/ get excluded from the deployment.
       includeFiles: ["_ssr/**"],
+      // Register API routes as Nitro event handlers.
+      // These files use `defineEventHandler` from h3 instead of
+      // the non-existent `createAPIFileRoute` from TanStack Start.
+      routes: {
+        "/api/check-alerts": "./src/routes/api/check-alerts.ts",
+        "/api/generate-signals": "./src/routes/api/generate-signals.ts",
+        "/api/telegram-webhook": "./src/routes/api/telegram-webhook.ts",
+        "/api/migrate": "./src/routes/api/migrate.ts",
+      },
     }),
     viteReact(),
   ],
