@@ -1,12 +1,13 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Compass, Plus, BookOpen, Bell, BarChart3 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { OnboardingModal } from "./OnboardingModal";
 import { supabase } from "@/integrations/supabase/client";
 import { getTelegramInitData } from "@/lib/telegram";
 import { linkTelegramAccount } from "@/lib/vixor.functions";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { useRenderGuard } from "@/hooks/use-render-guard";
 
 const tabs = [
   { to: "/", label: "Home", icon: Home, match: (p: string) => p === "/" },
@@ -17,7 +18,13 @@ const tabs = [
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { location } = useRouterState();
+  useRenderGuard("AppShell");
+  // ── React #310 FIX: useLocation() instead of useRouterState() ──
+  // useRouterState() subscribes to ALL router state changes (pending, resolved,
+  // status, etc.), causing AppShell to re-render on EVERY router event.
+  // useLocation() only subscribes to location changes, dramatically reducing
+  // re-renders. Since we only need `pathname`, this is the correct hook.
+  const location = useLocation();
   const path = location.pathname;
   const [showOnboarding, setShowOnboarding] = useState(false);
   // Use a ref to track auth state without causing re-renders on every auth event.

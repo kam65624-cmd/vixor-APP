@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft, Moon, Sun, Globe, Volume2, Smartphone,
   FileText, LogOut, ChevronRight, Shield, Bell, Palette,
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 function SettingsPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [dark, setDark] = useState(true);
   const [haptics, setHaptics] = useState(true);
   const [sound, setSound] = useState(true);
@@ -24,7 +24,7 @@ function SettingsPage() {
   const handleSignOut = async () => {
     setSigning(true);
     await supabase.auth.signOut();
-    router.navigate({ to: "/auth" });
+    navigate({ to: "/auth" });
   };
 
   return (

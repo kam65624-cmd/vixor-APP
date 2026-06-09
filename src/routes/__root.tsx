@@ -3,7 +3,7 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
-  useRouter,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -11,6 +11,7 @@ import { useEffect, useRef, useState, useCallback, type ReactNode, Component, ty
 
 import appCss from "../styles.css?url";
 import { AppShell } from "@/components/vixor/AppShell";
+import { wasRenderLoopDetected, getRenderLoopComponent, clearRenderLoopFlag } from "@/hooks/use-render-guard";
 
 function NotFoundComponent() {
   return (
@@ -52,6 +53,7 @@ class GlobalErrorBoundary extends Component<
   }
 
   handleReset = () => {
+    clearRenderLoopFlag();
     this.setState({ hasError: false, error: null });
     this.props.onReset();
   };
@@ -73,8 +75,8 @@ function ErrorView({ error, onReset }: { error: Error | null; onReset: () => voi
         </div>
         <h1 className="text-xl font-semibold text-foreground">Something went wrong</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {error?.message?.includes("#310")
-            ? "A rendering loop was detected. This has been automatically resolved."
+          {error?.message?.includes("#310") || wasRenderLoopDetected()
+            ? `A rendering loop was detected${wasRenderLoopDetected() ? ` in ${getRenderLoopComponent()}` : ""}. This has been automatically resolved.`
             : error?.message ?? "An unexpected error occurred."}
         </p>
         <div className="flex gap-3 justify-center mt-6">
@@ -129,9 +131,15 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const router = useRouter();
-  const routerRef = useRef(router);
-  routerRef.current = router;
+  // ── React #310 FIX: Removed useRouter() ──
+  // useRouter() internally calls useStore(router.__store) which subscribes
+  // to ALL router state changes. Since RootComponent wraps the ENTIRE app,
+  // every router state change caused a full app re-render.
+  // Instead, we use useNavigate() for the error reset (which is targeted),
+  // and refs for the queryClient and navigate function.
+  const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
   const queryClientRef = useRef(queryClient);
   queryClientRef.current = queryClient;
 
@@ -177,7 +185,7 @@ function RootComponent() {
             queryClientRef.current.removeQueries({ queryKey: ["user-strategy"] });
             queryClientRef.current.removeQueries({ queryKey: ["notifs"] });
             // Navigate to auth page on sign out
-            routerRef.current.navigate({ to: "/auth" });
+            navigateRef.current({ to: "/auth" });
           } else {
             // On sign in / user update, only refetch profile data
             queryClientRef.current.invalidateQueries({ queryKey: ["me"] });
@@ -195,7 +203,7 @@ function RootComponent() {
   // Reset function for the error boundary — navigates to home to break any render loops
   const handleErrorReset = useCallback(() => {
     // Use replace to avoid building up history entries
-    routerRef.current.navigate({ to: "/", replace: true });
+    navigateRef.current({ to: "/", replace: true });
   }, []);
 
   return (

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { useRenderGuard } from "@/hooks/use-render-guard";
 import { RecBadge } from "@/components/vixor/atoms";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 function CommandCenter() {
+  useRenderGuard("CommandCenter");
   const navigate = useNavigate();
   // Use stable server function references to prevent infinite re-render loop (React error #310)
   const fetchMe = useStableServerFn(getMe);

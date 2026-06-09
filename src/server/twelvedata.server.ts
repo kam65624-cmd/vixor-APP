@@ -25,7 +25,8 @@ function getApiKey(): string {
 }
 
 function isConfigured(): boolean {
-  return !!getApiKey() && getApiKey() !== "";
+  const key = getApiKey();
+  return !!key && key !== "" && key !== "demo";
 }
 
 // ---------------------------------------------------------------------------

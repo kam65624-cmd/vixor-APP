@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Compass, Search, Flame, ArrowUpRight, ArrowDownRight, Layers, BarChart2, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getMarketNews } from "@/lib/vixor.functions";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
@@ -41,11 +41,12 @@ function DiscoverNews() {
 
   const [category, setCategory] = useState<"forex" | "general" | "crypto" | "merger">("forex");
 
-  const { data: news = [], isLoading, error } = useQuery({
-    queryKey: ["marketNews", category],
+  const { data: news = [], isLoading, error } = useQuery(useMemo(() => ({
+    queryKey: ["marketNews", category] as const,
     queryFn: () => fetchMarketNews({ data: { category } }),
-    refetchInterval: 60000,
-  });
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  }), [fetchMarketNews, category]));
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
