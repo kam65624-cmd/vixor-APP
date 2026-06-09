@@ -1,3 +1,4 @@
+import * as __vixor_se__ from "./server-ywbAJf4M.mjs";
 let lastCapturedError;
 const TTL_MS = 5e3;
 function record(error) {
@@ -53,7 +54,7 @@ function renderErrorPage() {
 let serverEntryPromise;
 async function getServerEntry() {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("./server-ywbAJf4M.mjs").then((n) => n.s).then(
+    serverEntryPromise = Promise.resolve(__vixor_se__).then((n) => n.s).then(
       (m) => m.default ?? m
     );
   }
