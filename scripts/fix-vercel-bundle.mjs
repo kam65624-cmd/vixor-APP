@@ -281,16 +281,16 @@ async function __vixor_api__(req) {
   content = lines.join("\n");
 
   // Modify the vercel_web.fetch to check API routes first
+  // Step 1: Make fetch async
   content = content.replace(
-    /const vercel_web = \{ fetch\(req, context\) \{/,
-    "const vercel_web = { fetch(req, context) {"
+    "const vercel_web = { fetch(req, context) {",
+    "const vercel_web = { async fetch(req, context) {"
   );
 
-  // Add API interception at the start of vercel_web.fetch
-  const fetchStart = "const vercel_web = { async fetch(req, context) {";
+  // Step 2: Add API interception at the start of async fetch
   content = content.replace(
-    fetchStart,
-    fetchStart + "\n    const apiResponse = await __vixor_api__(req);\n    if (apiResponse) return apiResponse;"
+    "const vercel_web = { async fetch(req, context) {",
+    "const vercel_web = { async fetch(req, context) {\n    const apiResponse = await __vixor_api__(req);\n    if (apiResponse) return apiResponse;"
   );
 
   writeFileSync(indexPath, content, "utf-8");
