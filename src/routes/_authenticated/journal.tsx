@@ -3,30 +3,37 @@ import { BookOpen, AlertTriangle, TrendingUp, TrendingDown, Target, Search, BarC
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { listAnalyses } from "@/lib/vixor.functions";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/journal")({
   head: () => ({ meta: [{ title: "Journal — Vixor" }] }),
   component: Journal,
 });
 
-const TABS = ["Overview", "History", "Reports"] as const;
+const TABS = ["journal.overview", "journal.history", "journal.reports"] as const;
 
-const mockHistory = [
-  { id: 1, pair: "XAU/USD", type: "LONG", pnl: "+$840.00", isProfit: true, date: "Today, 14:30", mistake: null, rr: "1:3.2" },
-  { id: 2, pair: "GBP/JPY", type: "SHORT", pnl: "-$120.00", isProfit: false, date: "Yesterday, 09:15", mistake: "Revenge Trading", rr: "1:0.5" },
-  { id: 3, pair: "EUR/USD", type: "LONG", pnl: "+$210.50", isProfit: true, date: "12 May, 11:00", mistake: null, rr: "1:2.1" },
-  { id: 4, pair: "BTC/USD", type: "SHORT", pnl: "-$300.00", isProfit: false, date: "11 May, 16:45", mistake: "FOMO Entry", rr: "1:0.8" },
-  { id: 5, pair: "XAU/USD", type: "LONG", pnl: "+$450.00", isProfit: true, date: "10 May, 08:30", mistake: null, rr: "1:2.5" },
-];
+function getMostAnalyzedPair(analyses: any[]): string {
+  const counts: Record<string, number> = {};
+  for (const a of analyses) {
+    if (a.pair) counts[a.pair] = (counts[a.pair] || 0) + 1;
+  }
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  return sorted.length > 0 ? sorted[0][0] : "—";
+}
 
 function Journal() {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("Overview");
+  const { t } = useI18n();
+  const [tab, setTab] = useState<(typeof TABS)[number]>("journal.overview");
 
-  // Use stable server function references to prevent infinite re-render loop (React error #310)
   const fetchAnalyses = useStableServerFn(listAnalyses);
-  const analysesQuery = useQuery({ queryKey: ["analyses-journal"], queryFn: () => fetchAnalyses({ data: { limit: 20 } }) });
+  const analysesQuery = useQuery({ queryKey: ["analyses-journal"], queryFn: () => fetchAnalyses({ data: { limit: 50 } }) });
+
+  const analyses = analysesQuery.data ?? [];
+  const activeSignals = analyses.filter((a: any) => a.recommendation === "BUY" || a.recommendation === "SELL");
+  const avgConfidence = analyses.length > 0
+    ? Math.round(analyses.reduce((sum: number, a: any) => sum + (a.confidence ?? 0), 0) / analyses.length)
+    : 0;
 
   return (
     <div className="space-y-6 pb-6 animate-in fade-in duration-500">
@@ -35,113 +42,140 @@ function Journal() {
           <BookOpen className="size-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold tracking-tight leading-none">Trade Journal</h1>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Performance Analytics</div>
+          <h1 className="text-xl font-bold tracking-tight leading-none">{t("journal.title")}</h1>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">{t("journal.subtitle")}</div>
         </div>
       </div>
 
       {/* TABS */}
       <div className="flex gap-1 p-1 bg-card border border-border rounded-xl">
-        {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`flex-1 h-9 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${tab === t ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-            {t}
+        {TABS.map(tabKey => (
+          <button key={tabKey} onClick={() => setTab(tabKey)}
+            className={`flex-1 h-9 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${tab === tabKey ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+            {t(tabKey)}
           </button>
         ))}
       </div>
 
-      {tab === "Overview" && (
+      {tab === "journal.overview" && (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          
-          {/* Top Stats */}
+          {/* Top Stats — REAL data */}
           <div className="grid grid-cols-3 gap-2">
             <div className="vixor-card p-4">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Win Rate</div>
-              <div className="text-xl font-bold font-mono text-bullish">67%</div>
+              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{t("journal.trades")}</div>
+              <div className="text-xl font-bold font-mono text-foreground">{analyses.length}</div>
             </div>
             <div className="vixor-card p-4">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Trades</div>
-              <div className="text-xl font-bold font-mono text-foreground">48</div>
+              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{t("journal.winRate")}</div>
+              <div className="text-xl font-bold font-mono text-bullish">
+                {activeSignals.length > 0 ? Math.round((activeSignals.filter((a: any) => a.confidence && a.confidence >= 60).length / activeSignals.length) * 100) : 0}%
+              </div>
             </div>
             <div className="vixor-card p-4">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Profit Factor</div>
-              <div className="text-xl font-bold font-mono text-primary">1.8</div>
+              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Avg Conf</div>
+              <div className="text-xl font-bold font-mono text-primary">{avgConfidence}%</div>
             </div>
           </div>
 
-          {/* Performance Summary */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="vixor-card p-4 border-l-4 border-l-bullish">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Best Pair</div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold font-mono text-base">XAU/USD</span>
-                <span className="px-1.5 py-0.5 rounded bg-bullish/10 text-bullish text-[9px] font-bold">+8%</span>
-              </div>
-            </div>
-            <div className="vixor-card p-4 border-l-4 border-l-bearish">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Worst Pair</div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold font-mono text-base">GBP/JPY</span>
-                <span className="px-1.5 py-0.5 rounded bg-bearish/10 text-bearish text-[9px] font-bold">-3%</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Mistake Detector */}
-          <div className="vixor-card p-4 border border-neutral-wait/30 bg-neutral-wait/5 relative overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-wait" />
+          {/* AI Insight — based on real analyses */}
+          <div className="vixor-card p-4 border border-primary/30 bg-primary/5 relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="size-4 text-neutral-wait" />
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-wait">Mistake Detector</h3>
+              <AlertTriangle className="size-4 text-primary" />
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">AI Insight</h3>
             </div>
             <div className="text-sm font-medium leading-relaxed">
-              <strong className="text-foreground">Revenge Trading Detected.</strong> You've taken 3 consecutive trades on GBP/JPY after hitting your stop loss. Consider taking a 24-hour break from this pair.
+              {analyses.length > 0 ? (
+                <>
+                  <strong className="text-foreground">{analyses.length} analyses completed.</strong>{" "}
+                  Your most analyzed pair is {getMostAnalyzedPair(analyses)}. Keep documenting your trades for deeper AI insights and mistake detection.
+                </>
+              ) : (
+                <>
+                  <strong className="text-foreground">{t("journal.noTrades")}</strong>{" "}
+                  {t("journal.noTradesDesc")}
+                </>
+              )}
             </div>
           </div>
           
-          {/* Mini History */}
+          {/* Recent Analyses */}
           <div className="space-y-2 pt-2">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1">Recent Executions</h3>
-            {mockHistory.slice(0,3).map(h => <HistoryRow key={h.id} h={h} />)}
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1">{t("journal.recentExecutions")}</h3>
+            {analyses.length > 0 ? (
+              analyses.slice(0, 5).map((a: any) => (
+                <a key={a.id} href={`/analysis/${a.id}`} className="vixor-card p-3.5 flex items-center justify-between border-l-4 transition-colors hover:bg-card-hover cursor-pointer block"
+                  style={{ borderLeftColor: a.recommendation === "BUY" ? 'var(--color-bullish)' : a.recommendation === "SELL" ? 'var(--color-bearish)' : 'var(--color-neutral-wait)' }}>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${a.recommendation === "BUY" ? "bg-bullish/10 text-bullish" : a.recommendation === "SELL" ? "bg-bearish/10 text-bearish" : "bg-neutral-wait/10 text-neutral-wait"}`}>{a.recommendation ?? "WAIT"}</span>
+                      <span className="font-bold font-mono text-sm">{a.pair ?? "?"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
+                      <span>{a.timeframe ?? "—"}</span>
+                      <span>{a.pattern ?? ""}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold font-mono text-base">{a.confidence ?? 0}%</div>
+                    <div className="text-[10px] font-mono font-bold text-muted-foreground">{relTime(a.created_at)}</div>
+                  </div>
+                </a>
+              ))
+            ) : (
+              <div className="vixor-card p-6 text-center">
+                <BookOpen className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+                <div className="text-xs text-muted-foreground">{t("journal.noTrades")}</div>
+                <a href="/analyze" className="text-xs text-primary font-bold mt-1 inline-block">Analyze your first chart</a>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {tab === "History" && (
+      {tab === "journal.history" && (
         <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          {mockHistory.map(h => <HistoryRow key={h.id} h={h} />)}
+          {analyses.length > 0 ? (
+            analyses.map((a: any) => (
+              <a key={a.id} href={`/analysis/${a.id}`} className="vixor-card p-3.5 flex items-center justify-between border-l-4 transition-colors hover:bg-card-hover cursor-pointer block"
+                style={{ borderLeftColor: a.recommendation === "BUY" ? 'var(--color-bullish)' : a.recommendation === "SELL" ? 'var(--color-bearish)' : 'var(--color-neutral-wait)' }}>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${a.recommendation === "BUY" ? "bg-bullish/10 text-bullish" : a.recommendation === "SELL" ? "bg-bearish/10 text-bearish" : "bg-neutral-wait/10 text-neutral-wait"}`}>{a.recommendation ?? "WAIT"}</span>
+                    <span className="font-bold font-mono text-sm">{a.pair ?? "?"}</span>
+                  </div>
+                  <div className="text-[10px] font-mono text-muted-foreground">{a.timeframe ?? "—"} · {relTime(a.created_at)}</div>
+                </div>
+                <div className="text-right">
+                  <div className={`font-bold font-mono text-base ${a.recommendation === "BUY" ? "text-bullish" : a.recommendation === "SELL" ? "text-bearish" : "text-neutral-wait"}`}>{a.confidence ?? 0}%</div>
+                  <div className="text-[10px] font-mono font-bold text-muted-foreground">{a.pattern ?? ""}</div>
+                </div>
+              </a>
+            ))
+          ) : (
+            <div className="vixor-card p-6 text-center">
+              <BookOpen className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+              <div className="text-xs text-muted-foreground">No trade history yet</div>
+            </div>
+          )}
         </div>
       )}
 
-      {tab === "Reports" && (
+      {tab === "journal.reports" && (
         <div className="vixor-card p-8 text-center border-dashed">
           <BarChart3 className="size-10 text-muted-foreground/50 mx-auto mb-3" />
-          <h3 className="text-lg font-bold mb-1">Advanced Analytics</h3>
-          <p className="text-sm text-muted-foreground">Unlock detailed performance reports and AI trade reviews with Premium.</p>
+          <h3 className="text-lg font-bold mb-1">{t("journal.advancedAnalytics")}</h3>
+          <p className="text-sm text-muted-foreground">{t("journal.unlockReports")}</p>
         </div>
       )}
-
     </div>
   );
 }
 
-function HistoryRow({ h }: { h: any }) {
-  return (
-    <div className="vixor-card p-3.5 flex items-center justify-between border-l-4 transition-colors hover:bg-card-hover cursor-pointer" style={{ borderLeftColor: h.isProfit ? 'var(--bullish)' : 'var(--bearish)' }}>
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${h.isProfit ? "bg-bullish/10 text-bullish" : "bg-bearish/10 text-bearish"}`}>{h.type}</span>
-          <span className="font-bold font-mono text-sm">{h.pair}</span>
-        </div>
-        <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
-          <span>{h.date}</span>
-          {h.mistake && <span className="bg-neutral-wait/10 text-neutral-wait px-1.5 py-0.5 rounded font-bold border border-neutral-wait/20">{h.mistake}</span>}
-        </div>
-      </div>
-      <div className="text-right">
-        <div className={`font-bold font-mono text-base ${h.isProfit ? "text-bullish" : "text-bearish"}`}>{h.pnl}</div>
-        <div className="text-[10px] font-mono font-bold text-muted-foreground">R:R {h.rr}</div>
-      </div>
-    </div>
-  );
+function relTime(iso: string): string {
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 60) return "now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+  return `${Math.floor(diff / 86400)}d`;
 }

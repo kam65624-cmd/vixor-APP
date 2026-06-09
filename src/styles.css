@@ -305,4 +305,55 @@
     max-height: 2000px;
     opacity: 1;
   }
+
+  /* ====== RTL Support ====== */
+  .rtl .terminal-card-accent {
+    border-left: none;
+    border-right: 3px solid var(--color-primary);
+  }
+  .rtl .scenario-primary {
+    border-left: none;
+    border-right: 3px solid var(--color-primary);
+    background: linear-gradient(225deg, color-mix(in oklab, var(--color-primary) 6%, var(--color-card)), var(--color-card));
+  }
+  .rtl .scenario-alternative {
+    border-left: none;
+    border-right: 3px solid var(--color-info);
+    background: linear-gradient(225deg, color-mix(in oklab, var(--color-info) 6%, var(--color-card)), var(--color-card));
+  }
+  .rtl .scenario-counter {
+    border-left: none;
+    border-right: 3px solid var(--color-bearish);
+    background: linear-gradient(225deg, color-mix(in oklab, var(--color-bearish) 6%, var(--color-card)), var(--color-card));
+  }
+  .rtl .bg-gradient-to-r {
+    background-image: linear-gradient(to left, var(--tw-gradient-stops));
+  }
+  .rtl .text-left {
+    text-align: right;
+  }
+  .rtl .text-right {
+    text-align: left;
+  }
+  .rtl .items-start {
+    align-items: flex-start;
+  }
+
+  /* ====== Responsive Desktop Layout ====== */
+  /* On large screens, expand grid layouts to use more horizontal space */
+  @media (min-width: 1024px) {
+    .lg-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+    .lg-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .lg-span-2 {
+      grid-column: span 2;
+    }
+  }
 }

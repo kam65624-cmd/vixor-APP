@@ -4,6 +4,7 @@ import { listNotifications, markAllNotificationsRead } from "@/lib/vixor.functio
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { useI18n } from "@/lib/i18n";
 
 const iconMap: Record<string, typeof TrendingUp> = { TrendingUp, Gift, Users, Sparkles };
 
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 
 function NotificationsPage() {
   const qc = useQueryClient();
+  const { t } = useI18n();
   // Use stable server function references to prevent infinite re-render loop (React error #310)
   const fetch = useStableServerFn(listNotifications);
   const markAll = useStableServerFn(markAllNotificationsRead);
@@ -25,15 +27,15 @@ function NotificationsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Link to="/profile" className="size-9 rounded-xl bg-card border border-border flex items-center justify-center"><ArrowLeft className="size-4"/></Link>
-        <h1 className="font-semibold">Notifications</h1>
-        <button onClick={() => m.mutate()} className="text-xs text-primary font-semibold flex items-center gap-1"><Check className="size-3"/>Mark all</button>
+        <h1 className="font-semibold">{t("notifications.notifications")}</h1>
+        <button onClick={() => m.mutate()} className="text-xs text-primary font-semibold flex items-center gap-1"><Check className="size-3"/>{t("notifications.markAll")}</button>
       </div>
 
-      {q.isLoading && <div className="vixor-card p-6 text-center text-xs text-muted-foreground">Loading…</div>}
+      {q.isLoading && <div className="vixor-card p-6 text-center text-xs text-muted-foreground">{t("notifications.loading")}</div>}
       {!q.isLoading && (q.data?.length ?? 0) === 0 && (
         <div className="vixor-card p-10 text-center text-sm">
-          <div className="font-semibold">No notifications</div>
-          <div className="text-xs text-muted-foreground mt-1">You're all caught up</div>
+          <div className="font-semibold">{t("notifications.noNotifications")}</div>
+          <div className="text-xs text-muted-foreground mt-1">{t("notifications.allCaughtUp")}</div>
         </div>
       )}
 

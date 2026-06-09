@@ -176,29 +176,65 @@ export const createAnalysis = createServerFn({ method: "POST" })
       let realBars: import("@/lib/analysis/core/types").OHLCVBar[] | undefined;
       try {
         const pair = data.selectedPair || "EUR/USD";
-        const tf = data.tradingStyle === "Scalping" ? "15M" : data.tradingStyle === "Swing Trading" ? "4H" : "1H";
+        const tf =
+          data.tradingStyle === "Scalping"
+            ? "15M"
+            : data.tradingStyle === "Swing Trading"
+              ? "4H"
+              : "1H";
 
         // Try Binance for crypto pairs
-        if (pair.includes("USDT") || pair.includes("BTC") || pair.includes("ETH") || pair.includes("SOL")) {
+        if (
+          pair.includes("USDT") ||
+          pair.includes("BTC") ||
+          pair.includes("ETH") ||
+          pair.includes("SOL")
+        ) {
           const { fetchBinanceKlines } = await import("@/server/price-fetcher.server");
           const klines = await fetchBinanceKlines(pair, tf, 200);
           if (klines.length > 20) {
-            realBars = klines.map(k => ({ time: k.time, open: k.open, high: k.high, low: k.low, close: k.close, volume: k.volume }));
+            realBars = klines.map((k) => ({
+              time: k.time,
+              open: k.open,
+              high: k.high,
+              low: k.low,
+              close: k.close,
+              volume: k.volume,
+            }));
             console.log(`[Vixor] Using ${realBars.length} real Binance candles for ${pair}/${tf}`);
           }
         }
 
         // Try TwelveData for forex/commodity pairs (XAU/USD, EUR/USD, etc.)
-        if (!realBars && (pair.includes("USD") || pair.includes("JPY") || pair.includes("GBP") || pair.includes("EUR") || pair.includes("AUD"))) {
+        if (
+          !realBars &&
+          (pair.includes("USD") ||
+            pair.includes("JPY") ||
+            pair.includes("GBP") ||
+            pair.includes("EUR") ||
+            pair.includes("AUD"))
+        ) {
           const { fetchTwelveDataKlines } = await import("@/server/price-fetcher.server");
           const klines = await fetchTwelveDataKlines(pair, tf, 200);
           if (klines.length > 20) {
-            realBars = klines.map(k => ({ time: k.time, open: k.open, high: k.high, low: k.low, close: k.close, volume: k.volume }));
-            console.log(`[Vixor] Using ${realBars.length} real TwelveData candles for ${pair}/${tf}`);
+            realBars = klines.map((k) => ({
+              time: k.time,
+              open: k.open,
+              high: k.high,
+              low: k.low,
+              close: k.close,
+              volume: k.volume,
+            }));
+            console.log(
+              `[Vixor] Using ${realBars.length} real TwelveData candles for ${pair}/${tf}`,
+            );
           }
         }
       } catch (fetchErr) {
-        console.warn("[Vixor] Failed to fetch real OHLCV data:", fetchErr instanceof Error ? fetchErr.message : String(fetchErr));
+        console.warn(
+          "[Vixor] Failed to fetch real OHLCV data:",
+          fetchErr instanceof Error ? fetchErr.message : String(fetchErr),
+        );
       }
 
       // HARD CHECK: If we couldn't fetch real OHLCV data from any source, throw an error.
@@ -209,7 +245,14 @@ export const createAnalysis = createServerFn({ method: "POST" })
         throw new Error(errMsg);
       }
 
-      const result = await runChartAnalysis(bytes, data.mimeType, data.fileName, data.selectedPair, data.tradingStyle, realBars);
+      const result = await runChartAnalysis(
+        bytes,
+        data.mimeType,
+        data.fileName,
+        data.selectedPair,
+        data.tradingStyle,
+        realBars,
+      );
 
       // Build update object — only include columns that exist in the DB
       // signal_badge and vixor_message may not exist yet (migration pending)
@@ -253,13 +296,14 @@ export const createAnalysis = createServerFn({ method: "POST" })
           .throwOnError();
       } catch (colErr: any) {
         // If signal_badge column doesn't exist, try without it
-        if (String(colErr?.message || "").includes("signal_badge") || String(colErr?.message || "").includes("vixor_message")) {
-          console.warn("[Vixor] signal_badge/vixor_message columns not found, storing in raw_ai_response only");
-          await supabaseAdmin
-            .from("analyses")
-            .update(updateData)
-            .eq("id", row.id)
-            .throwOnError();
+        if (
+          String(colErr?.message || "").includes("signal_badge") ||
+          String(colErr?.message || "").includes("vixor_message")
+        ) {
+          console.warn(
+            "[Vixor] signal_badge/vixor_message columns not found, storing in raw_ai_response only",
+          );
+          await supabaseAdmin.from("analyses").update(updateData).eq("id", row.id).throwOnError();
         } else {
           throw colErr;
         }
@@ -288,7 +332,6 @@ export const createAnalysis = createServerFn({ method: "POST" })
               .eq("id", userId);
           }
         });
-
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       void supabaseAdmin
@@ -312,14 +355,21 @@ export const getAnalysis = createServerFn({ method: "GET" })
     try {
       const { data: fullRow, error: fullErr } = await supabase
         .from("analyses")
-        .select("id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,signal_badge,vixor_message,created_at,updated_at,error_message")
+        .select(
+          "id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,signal_badge,vixor_message,created_at,updated_at,error_message",
+        )
         .eq("id", data.id)
         .maybeSingle();
-      if (fullErr && (fullErr.message.includes("signal_badge") || fullErr.message.includes("vixor_message"))) {
+      if (
+        fullErr &&
+        (fullErr.message.includes("signal_badge") || fullErr.message.includes("vixor_message"))
+      ) {
         // Columns don't exist yet — fall back to query without them
         const { data: partialRow, error: partialErr } = await supabase
           .from("analyses")
-          .select("id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,created_at,updated_at,error_message")
+          .select(
+            "id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,created_at,updated_at,error_message",
+          )
           .eq("id", data.id)
           .maybeSingle();
         if (partialErr) throw new Error(partialErr.message);
@@ -333,7 +383,9 @@ export const getAnalysis = createServerFn({ method: "GET" })
       // Final fallback
       const { data: fallbackRow, error: fbErr } = await supabase
         .from("analyses")
-        .select("id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,created_at,updated_at,error_message")
+        .select(
+          "id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,created_at,updated_at,error_message",
+        )
         .eq("id", data.id)
         .maybeSingle();
       if (fbErr) throw new Error(fbErr.message);
@@ -370,7 +422,9 @@ export const getAnalysis = createServerFn({ method: "GET" })
 
 export const listAnalyses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ limit: z.number().min(1).max(100).default(20) }).parse(d ?? {}))
+  .validator((d: unknown) =>
+    z.object({ limit: z.number().min(1).max(100).default(20) }).parse(d ?? {}),
+  )
   .handler(async ({ data, context }) => {
     const { data: rows } = await context.supabase
       .from("analyses")
@@ -405,11 +459,25 @@ export const markAllNotificationsRead = createServerFn({ method: "POST" })
 // ---------- REFERRALS ----------
 export const claimReferral = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ code: z.string().min(4).max(16).regex(/^[A-Z0-9]+$/) }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        code: z
+          .string()
+          .min(4)
+          .max(16)
+          .regex(/^[A-Z0-9]+$/),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: me } = await supabase.from("profiles").select("referred_by").eq("id", userId).maybeSingle();
+    const { data: me } = await supabase
+      .from("profiles")
+      .select("referred_by")
+      .eq("id", userId)
+      .maybeSingle();
     if (me?.referred_by) throw new Error("Referral already applied");
 
     const { data: ref } = await supabaseAdmin
@@ -420,8 +488,18 @@ export const claimReferral = createServerFn({ method: "POST" })
     if (!ref || ref.id === userId) throw new Error("Invalid code");
 
     await supabaseAdmin.from("profiles").update({ referred_by: ref.id }).eq("id", userId);
-    await supabaseAdmin.rpc("credit_points", { _user: userId, _amount: 15, _reason: "referral_bonus", _meta: { from: ref.id } });
-    await supabaseAdmin.rpc("credit_points", { _user: ref.id, _amount: 25, _reason: "referral_bonus", _meta: { from: userId } });
+    await supabaseAdmin.rpc("credit_points", {
+      _user: userId,
+      _amount: 15,
+      _reason: "referral_bonus",
+      _meta: { from: ref.id },
+    });
+    await supabaseAdmin.rpc("credit_points", {
+      _user: ref.id,
+      _amount: 25,
+      _reason: "referral_bonus",
+      _meta: { from: userId },
+    });
     return { ok: true };
   });
 
@@ -442,11 +520,13 @@ export const getMarketNews = createServerFn({ method: "GET" })
     const key = process.env.FINNHUB_API_KEY;
     if (!key) return [];
     try {
-      const res = await fetch(`https://finnhub.io/api/v1/news?category=${data.category}&token=${key}`);
+      const res = await fetch(
+        `https://finnhub.io/api/v1/news?category=${data.category}&token=${key}`,
+      );
       if (!res.ok) return [];
       const dataJson = await res.json();
       if (!Array.isArray(dataJson)) return [];
-      
+
       return dataJson.slice(0, 15).map((n: any) => ({
         id: n.id,
         title: n.headline,
@@ -454,7 +534,7 @@ export const getMarketNews = createServerFn({ method: "GET" })
         url: n.url,
         source: n.source,
         time: n.datetime * 1000,
-        image: n.image
+        image: n.image,
       }));
     } catch (e) {
       console.error("Finnhub Error:", e);
@@ -473,7 +553,7 @@ export const linkTelegramAccount = createServerFn({ method: "POST" })
 
     // Dynamically import the server-only verifier to avoid Vite import protection errors in client bundle
     const { verifyTelegramInitData } = await import("@/server/telegram-verify.server");
-    
+
     const user = verifyTelegramInitData(data.initData, botToken);
     if (!user) throw new Error("Invalid Telegram signature");
 
@@ -481,13 +561,13 @@ export const linkTelegramAccount = createServerFn({ method: "POST" })
     const username = user.username || user.first_name || "Trader";
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    
+
     const { error } = await supabaseAdmin
       .from("profiles")
       .update({
         telegram_id: String(user.id) as any,
         telegram_username: username,
-        telegram_photo_url: photoUrl
+        telegram_photo_url: photoUrl,
       })
       .eq("id", userId);
 
@@ -504,7 +584,7 @@ export const createStarsInvoice = createServerFn({ method: "POST" })
     if (!botToken) throw new Error("Bot token not configured");
 
     const payload = `${context.userId}_${data.packId}_${Date.now()}`;
-    
+
     const res = await fetch(`https://api.telegram.org/bot${botToken}/createInvoiceLink`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -514,28 +594,32 @@ export const createStarsInvoice = createServerFn({ method: "POST" })
         payload: payload,
         provider_token: "", // Empty for Stars
         currency: "XTR",
-        prices: [{ label: "Points", amount: data.amountStars }]
-      })
+        prices: [{ label: "Points", amount: data.amountStars }],
+      }),
     });
-    
+
     const result = await res.json();
     if (!result.ok) throw new Error(result.description || "Failed to create invoice");
-    
+
     return { invoiceUrl: result.result };
   });
 
 // ---------- PRICE ALERTS ----------
 export const createAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({
-    symbol: z.string().min(1),
-    pair: z.string().min(1),
-    condition: z.enum(["above", "below", "crosses_up", "crosses_down"]),
-    targetPrice: z.number().positive(),
-    currentPrice: z.number().optional(),
-    note: z.string().max(200).optional(),
-    timeframe: z.string().default("1H"),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        symbol: z.string().min(1),
+        pair: z.string().min(1),
+        condition: z.enum(["above", "below", "crosses_up", "crosses_down"]),
+        targetPrice: z.number().positive(),
+        currentPrice: z.number().optional(),
+        note: z.string().max(200).optional(),
+        timeframe: z.string().default("1H"),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
     const { data: alert, error } = await supabase
@@ -559,10 +643,14 @@ export const createAlert = createServerFn({ method: "POST" })
 
 export const listAlerts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({
-    pair: z.string().optional(),
-    status: z.enum(["active", "triggered", "cancelled"]).optional(),
-  }).parse(d ?? {}))
+  .validator((d: unknown) =>
+    z
+      .object({
+        pair: z.string().optional(),
+        status: z.enum(["active", "triggered", "cancelled"]).optional(),
+      })
+      .parse(d ?? {}),
+  )
   .handler(async ({ data, context }) => {
     let query = context.supabase
       .from("price_alerts")
@@ -592,11 +680,10 @@ export const deleteAlert = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const runAlertCheck = createServerFn({ method: "POST" })
-  .handler(async () => {
-    const { checkAllAlerts } = await import("@/server/alert-checker.server");
-    return await checkAllAlerts();
-  });
+export const runAlertCheck = createServerFn({ method: "POST" }).handler(async () => {
+  const { checkAllAlerts } = await import("@/server/alert-checker.server");
+  return await checkAllAlerts();
+});
 
 // ---------- QUICK ANALYZE (no image required — uses real OHLCV data) ----------
 export const quickAnalyze = createServerFn({ method: "POST" })
@@ -640,30 +727,66 @@ export const quickAnalyze = createServerFn({ method: "POST" })
       let realBars: import("@/lib/analysis/core/types").OHLCVBar[] | undefined;
 
       // Try Binance for crypto pairs
-      if (pair.includes("USDT") || pair.includes("BTC") || pair.includes("ETH") || pair.includes("SOL")) {
+      if (
+        pair.includes("USDT") ||
+        pair.includes("BTC") ||
+        pair.includes("ETH") ||
+        pair.includes("SOL")
+      ) {
         try {
           const { fetchBinanceKlines } = await import("@/server/price-fetcher.server");
           const klines = await fetchBinanceKlines(pair, timeframe, 200);
           if (klines.length > 20) {
-            realBars = klines.map(k => ({ time: k.time, open: k.open, high: k.high, low: k.low, close: k.close, volume: k.volume }));
-            console.log(`[Vixor] QuickAnalyze: Using ${realBars.length} real Binance candles for ${pair}/${timeframe}`);
+            realBars = klines.map((k) => ({
+              time: k.time,
+              open: k.open,
+              high: k.high,
+              low: k.low,
+              close: k.close,
+              volume: k.volume,
+            }));
+            console.log(
+              `[Vixor] QuickAnalyze: Using ${realBars.length} real Binance candles for ${pair}/${timeframe}`,
+            );
           }
         } catch (err) {
-          console.warn(`[Vixor] QuickAnalyze: Binance fetch failed:`, err instanceof Error ? err.message : String(err));
+          console.warn(
+            `[Vixor] QuickAnalyze: Binance fetch failed:`,
+            err instanceof Error ? err.message : String(err),
+          );
         }
       }
 
       // Try TwelveData for forex/commodity pairs
-      if (!realBars && (pair.includes("USD") || pair.includes("JPY") || pair.includes("GBP") || pair.includes("EUR") || pair.includes("AUD"))) {
+      if (
+        !realBars &&
+        (pair.includes("USD") ||
+          pair.includes("JPY") ||
+          pair.includes("GBP") ||
+          pair.includes("EUR") ||
+          pair.includes("AUD"))
+      ) {
         try {
           const { fetchTwelveDataKlines } = await import("@/server/price-fetcher.server");
           const klines = await fetchTwelveDataKlines(pair, timeframe, 200);
           if (klines.length > 20) {
-            realBars = klines.map(k => ({ time: k.time, open: k.open, high: k.high, low: k.low, close: k.close, volume: k.volume }));
-            console.log(`[Vixor] QuickAnalyze: Using ${realBars.length} real TwelveData candles for ${pair}/${timeframe}`);
+            realBars = klines.map((k) => ({
+              time: k.time,
+              open: k.open,
+              high: k.high,
+              low: k.low,
+              close: k.close,
+              volume: k.volume,
+            }));
+            console.log(
+              `[Vixor] QuickAnalyze: Using ${realBars.length} real TwelveData candles for ${pair}/${timeframe}`,
+            );
           }
         } catch (err) {
-          console.warn(`[Vixor] QuickAnalyze: TwelveData fetch failed:`, err instanceof Error ? err.message : String(err));
+          console.warn(
+            `[Vixor] QuickAnalyze: TwelveData fetch failed:`,
+            err instanceof Error ? err.message : String(err),
+          );
         }
       }
 
@@ -720,13 +843,14 @@ export const quickAnalyze = createServerFn({ method: "POST" })
           .eq("id", row.id)
           .throwOnError();
       } catch (colErr: any) {
-        if (String(colErr?.message || "").includes("signal_badge") || String(colErr?.message || "").includes("vixor_message")) {
-          console.warn("[Vixor] signal_badge/vixor_message columns not found, storing in raw_ai_response only");
-          await supabaseAdmin
-            .from("analyses")
-            .update(updateData)
-            .eq("id", row.id)
-            .throwOnError();
+        if (
+          String(colErr?.message || "").includes("signal_badge") ||
+          String(colErr?.message || "").includes("vixor_message")
+        ) {
+          console.warn(
+            "[Vixor] signal_badge/vixor_message columns not found, storing in raw_ai_response only",
+          );
+          await supabaseAdmin.from("analyses").update(updateData).eq("id", row.id).throwOnError();
         } else {
           throw colErr;
         }
@@ -768,127 +892,140 @@ export const quickAnalyze = createServerFn({ method: "POST" })
   });
 
 // ---------- APPLY MIGRATION (add signal_badge and vixor_message columns) ----------
-export const applySignalBadgeMigration = createServerFn({ method: "POST" })
-  .handler(async () => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+export const applySignalBadgeMigration = createServerFn({ method: "POST" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Check if signal_badge column already exists by trying to select it
-    try {
-      const { error: checkErr } = await supabaseAdmin
-        .from("analyses")
-        .select("signal_badge")
-        .limit(1);
+  // Check if signal_badge column already exists by trying to select it
+  try {
+    const { error: checkErr } = await supabaseAdmin
+      .from("analyses")
+      .select("signal_badge")
+      .limit(1);
 
-      if (!checkErr) {
-        return { applied: true, message: "signal_badge column already exists" };
-      }
-    } catch {
-      // Column doesn't exist
+    if (!checkErr) {
+      return { applied: true, message: "signal_badge column already exists" };
     }
+  } catch {
+    // Column doesn't exist
+  }
 
-    // Try to apply the migration using the Supabase Management API
-    const supabaseUrl = process.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Try to apply the migration using the Supabase Management API
+  const supabaseUrl = process.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !serviceRoleKey) {
-      return {
-        applied: false,
-        message: "Run this SQL in Supabase Dashboard SQL Editor:\n\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB;\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;",
-      };
+  if (!supabaseUrl || !serviceRoleKey) {
+    return {
+      applied: false,
+      message:
+        "Run this SQL in Supabase Dashboard SQL Editor:\n\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB;\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;",
+    };
+  }
+
+  // Extract project reference from URL
+  const projectRef = supabaseUrl.replace("https://", "").replace(".supabase.co", "");
+
+  // Use Supabase Management API v1 to run SQL
+  // This requires the SUPABASE_SERVICE_ROLE_KEY which has admin access
+  try {
+    const response = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/pgmeta`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+      body: JSON.stringify({
+        query:
+          "ALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB; ALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;",
+      }),
+    });
+
+    if (response.ok) {
+      return { applied: true, message: "Migration applied successfully" };
     }
+  } catch {
+    // RPC not available
+  }
 
-    // Extract project reference from URL
-    const projectRef = supabaseUrl.replace("https://", "").replace(".supabase.co", "");
-
-    // Use Supabase Management API v1 to run SQL
-    // This requires the SUPABASE_SERVICE_ROLE_KEY which has admin access
-    try {
-      const response = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/pgmeta`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": serviceRoleKey,
-          "Authorization": `Bearer ${serviceRoleKey}`,
-        },
-        body: JSON.stringify({
-          query: "ALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB; ALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;",
-        }),
-      });
-
-      if (response.ok) {
-        return { applied: true, message: "Migration applied successfully" };
-      }
-    } catch {
-      // RPC not available
-    }
-
-    // Alternative: Try creating an RPC function and calling it
-    try {
-      // First, try to create a one-time migration function
-      const createFnRes = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": serviceRoleKey,
-          "Authorization": `Bearer ${serviceRoleKey}`,
-        },
-        body: JSON.stringify({
-          name: "add_signal_badge_columns",
-          definition: `
+  // Alternative: Try creating an RPC function and calling it
+  try {
+    // First, try to create a one-time migration function
+    const createFnRes = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+      body: JSON.stringify({
+        name: "add_signal_badge_columns",
+        definition: `
             BEGIN
               ALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB;
               ALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;
               RETURN TRUE;
             END;
           `,
-        }),
-      });
-      
-      if (createFnRes.ok) {
-        // Call the function
-        const callRes = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/add_signal_badge_columns`, {
+      }),
+    });
+
+    if (createFnRes.ok) {
+      // Call the function
+      const callRes = await fetch(
+        `https://${projectRef}.supabase.co/rest/v1/rpc/add_signal_badge_columns`,
+        {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "apikey": serviceRoleKey,
-            "Authorization": `Bearer ${serviceRoleKey}`,
+            apikey: serviceRoleKey,
+            Authorization: `Bearer ${serviceRoleKey}`,
           },
-        });
-        if (callRes.ok) {
-          return { applied: true, message: "Migration applied successfully via RPC" };
-        }
+        },
+      );
+      if (callRes.ok) {
+        return { applied: true, message: "Migration applied successfully via RPC" };
       }
-    } catch {
-      // Cannot create RPC
     }
+  } catch {
+    // Cannot create RPC
+  }
 
-    return {
-      applied: false,
-      message: "Auto-migration not available. Run this SQL manually in Supabase Dashboard:\n\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB;\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;",
-      dashboardUrl: `https://supabase.com/dashboard/project/${projectRef}/sql`,
-    };
-  });
+  return {
+    applied: false,
+    message:
+      "Auto-migration not available. Run this SQL manually in Supabase Dashboard:\n\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB;\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;",
+    dashboardUrl: `https://supabase.com/dashboard/project/${projectRef}/sql`,
+  };
+});
 
 // ---------- MARKET PRICES (for dashboard) ----------
-export const getMarketPrices = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const { fetchPrices, POPULAR_PAIRS } = await import("@/server/price-fetcher.server");
-    const pairs = POPULAR_PAIRS.map(p => p.pair);
-    const results = await fetchPrices(pairs);
-    return results;
-  });
+export const getMarketPrices = createServerFn({ method: "GET" }).handler(async () => {
+  const { fetchPrices, POPULAR_PAIRS } = await import("@/server/price-fetcher.server");
+  const pairs = POPULAR_PAIRS.map((p) => p.pair);
+  const results = await fetchPrices(pairs);
+  return results;
+});
 
 // ---------- OHLCV DATA (for charts page price bar) ----------
 export const getOHLCV = createServerFn({ method: "GET" })
-  .validator((d: unknown) => z.object({
-    pair: z.string().min(1),
-    interval: z.string().default("1H"),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        pair: z.string().min(1),
+        interval: z.string().default("1H"),
+      })
+      .parse(d),
+  )
   .handler(async ({ data }) => {
     const { pair, interval } = data;
 
     // Try Binance for crypto pairs
-    if (pair.includes("USDT") || pair.includes("BTC") || pair.includes("ETH") || pair.includes("SOL")) {
+    if (
+      pair.includes("USDT") ||
+      pair.includes("BTC") ||
+      pair.includes("ETH") ||
+      pair.includes("SOL")
+    ) {
       try {
         const { fetchBinanceKlines } = await import("@/server/price-fetcher.server");
         const klines = await fetchBinanceKlines(pair, interval, 2);
@@ -904,7 +1041,10 @@ export const getOHLCV = createServerFn({ method: "GET" })
           };
         }
       } catch (err) {
-        console.warn("[OHLCV] Binance fetch failed:", err instanceof Error ? err.message : String(err));
+        console.warn(
+          "[OHLCV] Binance fetch failed:",
+          err instanceof Error ? err.message : String(err),
+        );
       }
     }
 
@@ -924,7 +1064,10 @@ export const getOHLCV = createServerFn({ method: "GET" })
         };
       }
     } catch (err) {
-      console.warn("[OHLCV] TwelveData fetch failed:", err instanceof Error ? err.message : String(err));
+      console.warn(
+        "[OHLCV] TwelveData fetch failed:",
+        err instanceof Error ? err.message : String(err),
+      );
     }
 
     // Fallback: return price data from market prices (deterministic — no Math.random())
@@ -935,8 +1078,8 @@ export const getOHLCV = createServerFn({ method: "GET" })
         // Deterministic offsets based on pair name hash (no Math.random)
         const hash = pair.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
         const openOff = ((hash % 20) - 10) * 0.0001; // -0.1% to +0.1%
-        const highOff = ((hash % 50) + 10) * 0.0001;  // +0.1% to +0.5%
-        const lowOff = -((hash % 50) + 10) * 0.0001;  // -0.1% to -0.5%
+        const highOff = ((hash % 50) + 10) * 0.0001; // +0.1% to +0.5%
+        const lowOff = -((hash % 50) + 10) * 0.0001; // -0.1% to -0.5%
         return {
           open: priceData.price * (1 + openOff),
           high: priceData.price * (1 + highOff),
@@ -954,77 +1097,81 @@ export const getOHLCV = createServerFn({ method: "GET" })
   });
 
 // ---------- DAILY SIGNALS ----------
-export const generateDailySignals = createServerFn({ method: "POST" })
-  .handler(async () => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { fetchBinanceKlines } = await import("@/server/price-fetcher.server");
-    const { runLocalAnalysis } = await import("@/lib/analysis/engine");
+export const generateDailySignals = createServerFn({ method: "POST" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { fetchBinanceKlines } = await import("@/server/price-fetcher.server");
+  const { runLocalAnalysis } = await import("@/lib/analysis/engine");
 
-    const pairs = ["BTC/USDT", "ETH/USDT", "XAU/USD", "EUR/USD", "GBP/JPY", "SOL/USDT"];
-    const timeframes = ["1H", "4H"];
-    const today = new Date().toISOString().split("T")[0];
+  const pairs = ["BTC/USDT", "ETH/USDT", "XAU/USD", "EUR/USD", "GBP/JPY", "SOL/USDT"];
+  const timeframes = ["1H", "4H"];
+  const today = new Date().toISOString().split("T")[0];
 
-    let generated = 0;
+  let generated = 0;
 
-    for (const pair of pairs) {
-      for (const tf of timeframes) {
-        try {
-          // Try to get real OHLCV data
-          let bars;
-          if (pair.includes("USDT")) {
-            bars = await fetchBinanceKlines(pair, tf, 200);
-          }
-          // Try TwelveData for forex/commodity pairs
-          if (!bars || bars.length <= 20) {
-            const { fetchTwelveDataKlines } = await import("@/server/price-fetcher.server");
-            const tdBars = await fetchTwelveDataKlines(pair, tf, 200);
-            if (tdBars.length > 20) bars = tdBars;
-          }
-
-          // Run local analysis (with real data if available)
-          const result = runLocalAnalysis({
-            pair,
-            timeframe: tf,
-            tradingStyle: "Day Trading",
-            bars: bars && bars.length > 20 ? bars : undefined,
-          });
-
-          // Insert signal
-          const { error } = await supabaseAdmin
-            .from("daily_signals")
-            .insert({
-              pair,
-              timeframe: tf,
-              recommendation: result.recommendation,
-              confidence: result.confidence,
-              entry: result.entry,
-              stop_loss: result.stop_loss,
-              take_profit: result.take_profit,
-              reasons: result.reasons,
-              pattern: result.pattern,
-              market_structure: result.market_structure as any,
-              liquidity_zones: result.liquidity_zones as any,
-              signal_date: today,
-            });
-
-          if (!error) generated++;
-          else console.warn(`[Signals] Insert failed for ${pair}/${tf}:`, error.message);
-        } catch (err) {
-          console.warn(`[Signals] Failed for ${pair}/${tf}:`, err instanceof Error ? err.message : String(err));
+  for (const pair of pairs) {
+    for (const tf of timeframes) {
+      try {
+        // Try to get real OHLCV data
+        let bars;
+        if (pair.includes("USDT")) {
+          bars = await fetchBinanceKlines(pair, tf, 200);
         }
+        // Try TwelveData for forex/commodity pairs
+        if (!bars || bars.length <= 20) {
+          const { fetchTwelveDataKlines } = await import("@/server/price-fetcher.server");
+          const tdBars = await fetchTwelveDataKlines(pair, tf, 200);
+          if (tdBars.length > 20) bars = tdBars;
+        }
+
+        // Run local analysis (with real data if available)
+        const result = runLocalAnalysis({
+          pair,
+          timeframe: tf,
+          tradingStyle: "Day Trading",
+          bars: bars && bars.length > 20 ? bars : undefined,
+        });
+
+        // Insert signal
+        const { error } = await supabaseAdmin.from("daily_signals").insert({
+          pair,
+          timeframe: tf,
+          recommendation: result.recommendation,
+          confidence: result.confidence,
+          entry: result.entry,
+          stop_loss: result.stop_loss,
+          take_profit: result.take_profit,
+          reasons: result.reasons,
+          pattern: result.pattern,
+          market_structure: result.market_structure as any,
+          liquidity_zones: result.liquidity_zones as any,
+          signal_date: today,
+        });
+
+        if (!error) generated++;
+        else console.warn(`[Signals] Insert failed for ${pair}/${tf}:`, error.message);
+      } catch (err) {
+        console.warn(
+          `[Signals] Failed for ${pair}/${tf}:`,
+          err instanceof Error ? err.message : String(err),
+        );
       }
     }
+  }
 
-    return { generated, date: today };
-  });
+  return { generated, date: today };
+});
 
 export const getDailySignals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({
-    pair: z.string().optional(),
-    timeframe: z.string().optional(),
-    recommendation: z.enum(["BUY", "SELL", "WAIT"]).optional(),
-  }).parse(d ?? {}))
+  .validator((d: unknown) =>
+    z
+      .object({
+        pair: z.string().optional(),
+        timeframe: z.string().optional(),
+        recommendation: z.enum(["BUY", "SELL", "WAIT"]).optional(),
+      })
+      .parse(d ?? {}),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
@@ -1093,13 +1240,17 @@ export const getUserStrategy = createServerFn({ method: "GET" })
 
 export const updateUserStrategy = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({
-    name: z.string().min(1).max(50).optional(),
-    pairs: z.array(z.string()).optional(),
-    tradingStyle: z.enum(["Scalping", "Day Trading", "Swing Trading"]).optional(),
-    riskTolerance: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
-    preferredTimeframes: z.array(z.string()).optional(),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        name: z.string().min(1).max(50).optional(),
+        pairs: z.array(z.string()).optional(),
+        tradingStyle: z.enum(["Scalping", "Day Trading", "Swing Trading"]).optional(),
+        riskTolerance: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+        preferredTimeframes: z.array(z.string()).optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
 
@@ -1111,12 +1262,19 @@ export const updateUserStrategy = createServerFn({ method: "POST" })
       .eq("is_active", true)
       .maybeSingle();
 
-    const updateData: { name?: string; pairs?: string[]; trading_style?: string; risk_tolerance?: string; preferred_timeframes?: string[] } = {};
+    const updateData: {
+      name?: string;
+      pairs?: string[];
+      trading_style?: string;
+      risk_tolerance?: string;
+      preferred_timeframes?: string[];
+    } = {};
     if (data.name !== undefined) updateData.name = data.name;
     if (data.pairs !== undefined) updateData.pairs = data.pairs;
     if (data.tradingStyle !== undefined) updateData.trading_style = data.tradingStyle;
     if (data.riskTolerance !== undefined) updateData.risk_tolerance = data.riskTolerance;
-    if (data.preferredTimeframes !== undefined) updateData.preferred_timeframes = data.preferredTimeframes;
+    if (data.preferredTimeframes !== undefined)
+      updateData.preferred_timeframes = data.preferredTimeframes;
 
     if (existing) {
       const { error } = await supabase
@@ -1126,16 +1284,14 @@ export const updateUserStrategy = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       return { ok: true };
     } else {
-      const { error } = await supabase
-        .from("user_strategies")
-        .insert({
-          user_id: userId,
-          name: updateData.name,
-          pairs: updateData.pairs,
-          trading_style: updateData.trading_style,
-          risk_tolerance: updateData.risk_tolerance,
-          preferred_timeframes: updateData.preferred_timeframes,
-        });
+      const { error } = await supabase.from("user_strategies").insert({
+        user_id: userId,
+        name: updateData.name,
+        pairs: updateData.pairs,
+        trading_style: updateData.trading_style,
+        risk_tolerance: updateData.risk_tolerance,
+        preferred_timeframes: updateData.preferred_timeframes,
+      });
       if (error) throw new Error(error.message);
       return { ok: true };
     }
@@ -1153,10 +1309,14 @@ export const getExchangeRate = createServerFn({ method: "GET" })
 
 // ---------- TWELVE DATA: CURRENCY CONVERSION ----------
 export const convertCurrency = createServerFn({ method: "GET" })
-  .validator((d: unknown) => z.object({
-    symbol: z.string().min(1),
-    amount: z.number().positive(),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        symbol: z.string().min(1),
+        amount: z.number().positive(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data }) => {
     const { convertCurrency: tdConvert } = await import("@/server/twelvedata.server");
     const result = await tdConvert(data.symbol, data.amount);
@@ -1166,13 +1326,17 @@ export const convertCurrency = createServerFn({ method: "GET" })
 
 // ---------- TWELVE DATA: ETFs DIRECTORY ----------
 export const getETFsDirectory = createServerFn({ method: "GET" })
-  .validator((d: unknown) => z.object({
-    country: z.string().optional(),
-    fund_family: z.string().optional(),
-    fund_type: z.string().optional(),
-    page: z.number().min(1).default(1).optional(),
-    outputsize: z.number().min(1).max(50).default(20).optional(),
-  }).parse(d ?? {}))
+  .validator((d: unknown) =>
+    z
+      .object({
+        country: z.string().optional(),
+        fund_family: z.string().optional(),
+        fund_type: z.string().optional(),
+        page: z.number().min(1).default(1).optional(),
+        outputsize: z.number().min(1).max(50).default(20).optional(),
+      })
+      .parse(d ?? {}),
+  )
   .handler(async ({ data }) => {
     const { fetchETFsDirectory } = await import("@/server/twelvedata.server");
     const result = await fetchETFsDirectory(data);
@@ -1212,11 +1376,15 @@ export const getETFFullData = createServerFn({ method: "GET" })
 
 // ---------- TWELVE DATA: CASH FLOW ----------
 export const getCashFlow = createServerFn({ method: "GET" })
-  .validator((d: unknown) => z.object({
-    symbol: z.string().min(1),
-    period: z.enum(["annual", "quarterly"]).default("quarterly"),
-    outputsize: z.number().min(1).max(40).default(4),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        symbol: z.string().min(1),
+        period: z.enum(["annual", "quarterly"]).default("quarterly"),
+        outputsize: z.number().min(1).max(40).default(4),
+      })
+      .parse(d),
+  )
   .handler(async ({ data }) => {
     const { fetchCashFlow } = await import("@/server/twelvedata.server");
     const result = await fetchCashFlow(data);
@@ -1261,4 +1429,189 @@ export const getStockFundamentals = createServerFn({ method: "GET" })
     const { fetchStockFundamentals } = await import("@/server/twelvedata.server");
     const result = await fetchStockFundamentals(data.symbol);
     return result;
+  });
+
+// ---------- AI COPILOT ----------
+const ChatMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string(),
+});
+
+export const askCopilot = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) =>
+    z
+      .object({
+        message: z.string().min(1).max(4000),
+        history: z.array(ChatMessageSchema).max(20).optional(),
+        agent: z
+          .enum(["market_analyst", "risk_manager", "news_analyst", "strategy_builder"])
+          .default("market_analyst"),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
+    const { message, history = [], agent } = data;
+
+    // ── Fetch user context in parallel ──
+    const [
+      { data: profile },
+      { data: recentAnalyses },
+      { data: signals },
+      { data: alerts },
+      { data: strategy },
+    ] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+      supabase
+        .from("analyses")
+        .select("id,pair,timeframe,recommendation,confidence,pattern,status,created_at")
+        .order("created_at", { ascending: false })
+        .limit(5),
+      supabase
+        .from("daily_signals")
+        .select("pair,timeframe,recommendation,confidence,pattern")
+        .order("signal_date", { ascending: false })
+        .limit(5),
+      supabase
+        .from("price_alerts")
+        .select("pair,condition,target_price,status")
+        .eq("status", "active")
+        .limit(5),
+      supabase
+        .from("user_strategies")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    // ── Build context string ──
+    const contextParts: string[] = [];
+
+    if (profile) {
+      contextParts.push(
+        `User Profile: ${profile.display_name || "Trader"}, XP: ${(profile as any).xp || 0}`,
+      );
+    }
+    if (strategy) {
+      contextParts.push(
+        `Strategy: ${strategy.trading_style || "Day Trading"}, Risk: ${strategy.risk_tolerance || "MEDIUM"}, Pairs: ${(strategy as any).pairs?.join(", ") || "Default"}`,
+      );
+    }
+    if (recentAnalyses && recentAnalyses.length > 0) {
+      const summary = recentAnalyses
+        .map(
+          (a: any) =>
+            `${a.pair} ${a.timeframe} → ${a.recommendation} (${a.confidence}%) ${a.pattern || ""}`,
+        )
+        .join("; ");
+      contextParts.push(`Recent Analyses: ${summary}`);
+    }
+    if (signals && signals.length > 0) {
+      const sigSummary = signals
+        .map((s: any) => `${s.pair} ${s.recommendation} (${s.confidence}%)`)
+        .join("; ");
+      contextParts.push(`Today's Signals: ${sigSummary}`);
+    }
+    if (alerts && alerts.length > 0) {
+      const alertSummary = alerts
+        .map((a: any) => `${a.pair} ${a.condition} $${a.target_price}`)
+        .join("; ");
+      contextParts.push(`Active Alerts: ${alertSummary}`);
+    }
+
+    const userContext =
+      contextParts.length > 0 ? contextParts.join("\n") : "No specific user context available.";
+
+    // ── Agent-specific system prompts ──
+    const agentPrompts: Record<string, string> = {
+      market_analyst:
+        "You are Vixor's Market Analyst agent. You specialize in technical analysis using Smart Money Concepts (SMC) and ICT methodology. " +
+        "Analyze price action, identify Order Blocks, Fair Value Gaps, Liquidity Sweeps, Break of Structure, and Change of Character. " +
+        "Provide clear entry/exit levels with risk-reward ratios. Be authoritative and specific — never use generic disclaimers.",
+      risk_manager:
+        "You are Vixor's Risk Manager agent. You focus on position sizing, risk management, and portfolio protection. " +
+        "Calculate optimal stop-loss levels, evaluate risk-reward ratios, assess correlation risks, and recommend position sizes based on account risk. " +
+        "Always emphasize capital preservation. Be precise with numbers and percentages.",
+      news_analyst:
+        "You are Vixor's News Analyst agent. You analyze fundamental news, economic events, and their impact on trading instruments. " +
+        "Evaluate news sentiment, identify high-impact events, and explain how fundamentals align or conflict with technical setups. " +
+        "Be specific about how each news item affects the user's positions or watchlist.",
+      strategy_builder:
+        "You are Vixor's Strategy Builder agent. You help traders develop and refine their trading strategies, rules, and systems. " +
+        "Focus on creating actionable trading plans, defining clear rules for entries/exits, building checklists, and establishing daily routines. " +
+        "Help with backtesting methodology and performance tracking. Be practical and systematic.",
+    };
+
+    const systemPrompt =
+      "You are Vixor AI, an elite trading intelligence copilot. " +
+      (agentPrompts[agent] || agentPrompts.market_analyst) +
+      "\n\n" +
+      "IMPORTANT RULES:\n" +
+      "- Respond with absolute confidence. Never use phrases like 'As an AI' or 'I cannot provide financial advice'.\n" +
+      "- Use markdown formatting: **bold** for key terms, `code` for price levels, > for important callouts.\n" +
+      "- Structure responses with clear headers (## ) and bullet points when listing items.\n" +
+      "- Always provide specific price levels, percentages, and timeframes when relevant.\n" +
+      "- Reference the user's specific data, signals, and analyses when applicable.\n\n" +
+      `CURRENT USER CONTEXT:\n${userContext}`;
+
+    // ── Call AI using the Lovable AI Gateway (same pattern as run-analysis.server.ts) ──
+    const apiKey = process.env.LOVABLE_AI_GATEWAY_API_KEY;
+
+    if (!apiKey) {
+      // Fallback: try Gemini API key directly
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (!geminiKey) {
+        throw new Error("AI service is not configured. Please try again later.");
+      }
+
+      // Use @ai-sdk/google directly
+      const { generateText } = await import("ai");
+      const { google } = await import("@ai-sdk/google");
+
+      const chatHistory = history.map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      }));
+
+      const { text } = await generateText({
+        model: google("gemini-2.5-flash"),
+        system: systemPrompt,
+        messages: [...chatHistory, { role: "user" as const, content: message }],
+        maxTokens: 2048,
+        temperature: 0.7,
+      });
+
+      return { response: text, agent };
+    }
+
+    // Use Lovable AI Gateway with @ai-sdk/openai-compatible
+    const { generateText } = await import("ai");
+    const { createOpenAICompatible } = await import("@ai-sdk/openai-compatible");
+
+    const provider = createOpenAICompatible({
+      name: "lovable",
+      baseURL: "https://ai.gateway.lovable.dev/v1",
+      headers: {
+        "Lovable-API-Key": apiKey,
+        "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+      },
+    });
+
+    const chatHistory = history.map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    }));
+
+    const { text } = await generateText({
+      model: provider("google/gemini-2.5-flash"),
+      system: systemPrompt,
+      messages: [...chatHistory, { role: "user" as const, content: message }],
+      maxTokens: 2048,
+      temperature: 0.7,
+    });
+
+    return { response: text, agent };
   });

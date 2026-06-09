@@ -9,6 +9,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — Vixor" }] }),
@@ -44,6 +45,7 @@ function XPBar({ xp }: { xp: number }) {
 function Profile() {
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { t } = useI18n();
   // Use stable server function references to prevent infinite re-render loop (React error #310)
   const fetchMe = useStableServerFn(getMe);
   const fetchRef = useStableServerFn(getReferralStats);
@@ -82,12 +84,12 @@ function Profile() {
   }
 
   const links = [
-    { to: "/journal" as const, icon: BookOpen, label: "Trade Journal", desc: "History & performance", color: "bg-bullish/10 text-bullish" },
-    { to: "/trade-desk" as const, icon: LayoutDashboard, label: "Trade Desk", desc: "Positions & risk calc", color: "bg-info/10 text-info" },
-    { to: "/referral" as const, icon: Users, label: "Referrals", desc: `${refCount} friend${refCount !== 1 ? "s" : ""} invited`, color: "bg-primary/10 text-primary" },
-    { to: "/premium" as const, icon: Crown, label: "Premium", desc: isPremium ? "✅ Active" : "Unlock unlimited", color: "bg-neutral-wait/10 text-neutral-wait" },
-    { to: "/notifications" as const, icon: Bell, label: "Notifications", desc: "Alerts & reminders", color: "bg-bearish/10 text-bearish" },
-    { to: "/settings" as const, icon: Settings, label: "Settings", desc: "Account & preferences", color: "bg-muted text-muted-foreground" },
+    { to: "/journal" as const, icon: BookOpen, label: t("profile.tradeJournal"), desc: t("profile.tradeJournalDesc"), color: "bg-bullish/10 text-bullish" },
+    { to: "/trade-desk" as const, icon: LayoutDashboard, label: t("profile.tradeDesk"), desc: t("profile.tradeDeskDesc"), color: "bg-info/10 text-info" },
+    { to: "/referral" as const, icon: Users, label: t("profile.referralsLink"), desc: t("profile.referralsDesc", { count: refCount }), color: "bg-primary/10 text-primary" },
+    { to: "/premium" as const, icon: Crown, label: t("profile.premium"), desc: isPremium ? t("profile.premiumActive") : t("profile.premiumUnlock"), color: "bg-neutral-wait/10 text-neutral-wait" },
+    { to: "/notifications" as const, icon: Bell, label: t("profile.notifications"), desc: t("profile.notificationsDesc"), color: "bg-bearish/10 text-bearish" },
+    { to: "/settings" as const, icon: Settings, label: t("profile.settings"), desc: t("profile.settingsDesc"), color: "bg-muted text-muted-foreground" },
   ];
 
   return (
@@ -126,7 +128,7 @@ function Profile() {
             ) : (
               <>
                 <div className="font-bold text-lg truncate">{display}</div>
-                <div className="text-xs text-muted-foreground mb-2">Member for {joinedDays} days</div>
+                <div className="text-xs text-muted-foreground mb-2">{t("profile.memberFor", { days: joinedDays })}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {isPremium && (
                     <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/15 border border-primary/20 text-primary font-bold uppercase tracking-wider">
@@ -135,7 +137,7 @@ function Profile() {
                   )}
                   {streak > 0 && (
                     <span className="text-[9px] px-2 py-0.5 rounded-full bg-neutral-wait/10 border border-neutral-wait/20 text-neutral-wait font-bold">
-                      🔥 {streak} day streak
+                      🔥 {t("profile.dayStreak", { days: streak })}
                     </span>
                   )}
                   <span className="text-[9px] px-2 py-0.5 rounded-full bg-info/10 border border-info/20 text-info font-bold">
@@ -152,10 +154,10 @@ function Profile() {
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-2">
         {[
-          { label: "Points", value: points, color: "text-primary", icon: Zap },
-          { label: "Earned", value: earned, color: "text-bullish", icon: TrendingUp },
-          { label: "Analyses", value: totalAnalyses, color: "text-info", icon: Target },
-          { label: "Referrals", value: refCount, color: "text-neutral-wait", icon: Users },
+          { label: t("profile.points"), value: points, color: "text-primary", icon: Zap },
+          { label: t("profile.earned"), value: earned, color: "text-bullish", icon: TrendingUp },
+          { label: t("profile.analyses"), value: totalAnalyses, color: "text-info", icon: Target },
+          { label: t("profile.referrals"), value: refCount, color: "text-neutral-wait", icon: Users },
         ].map(s => (
           <div key={s.label} className="vixor-card p-3 text-center">
             <s.icon className={`size-4 mx-auto mb-1 ${s.color}`} />
@@ -169,7 +171,7 @@ function Profile() {
       <div>
         <div className="flex items-center gap-2 mb-3 px-1">
           <Award className="size-4 text-primary" />
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Badges</h2>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{t("profile.badges")}</h2>
         </div>
         <div className="grid grid-cols-2 gap-2">
           {BADGES.map(b => {
@@ -212,7 +214,7 @@ function Profile() {
         onClick={signOut}
         className="w-full h-12 rounded-2xl bg-bearish/10 border border-bearish/20 text-bearish font-bold flex items-center justify-center gap-2 hover:bg-bearish hover:text-white transition-all duration-200"
       >
-        <LogOut className="size-4" /> Sign Out
+        <LogOut className="size-4" /> {t("profile.signOut")}
       </button>
     </div>
   );

@@ -5,6 +5,7 @@ import { getPremiumPlans, getPointPacks, subscribePremium, purchasePack, getMe, 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isInsideTelegram, openTelegramInvoice } from "@/lib/telegram";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/premium")({
   head: () => ({ meta: [{ title: "Premium — Vixor" }] }),
@@ -21,6 +22,7 @@ const features = [
 
 function Premium() {
   const qc = useQueryClient();
+  const { t } = useI18n();
   // Use stable server function references to prevent infinite re-render loop (React error #310)
   const fetchPlans = useStableServerFn(getPremiumPlans);
   const fetchPacks = useStableServerFn(getPointPacks);
@@ -64,7 +66,7 @@ function Premium() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <Link to="/profile" className="size-9 rounded-xl bg-card border border-border flex items-center justify-center"><ArrowLeft className="size-4"/></Link>
-        <h1 className="font-semibold">Premium</h1>
+        <h1 className="font-semibold">{t("premium.premium")}</h1>
         <div className="size-9"/>
       </div>
 
@@ -74,9 +76,9 @@ function Premium() {
           <div className="size-16 rounded-2xl bg-gradient-to-br from-primary to-info mx-auto flex items-center justify-center mb-3 glow-primary">
             <Crown className="size-8 text-primary-foreground"/>
           </div>
-          <h2 className="text-2xl font-bold tracking-tight">Vixor Premium</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{t("premium.vixorPremium")}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {isPremium ? "Active until " + new Date(me.data?.premium?.current_period_end ?? "").toLocaleDateString() : "Unlimited analyses. Smarter setups."}
+            {isPremium ? t("premium.activeUntil", { date: new Date(me.data?.premium?.current_period_end ?? "").toLocaleDateString() }) : t("premium.unlimitedSmarter")}
           </p>
         </div>
       </div>
@@ -116,14 +118,14 @@ function Premium() {
       <button onClick={() => subMut.mutate(planId)} disabled={isPremium || subMut.isPending}
         className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold glow-primary flex items-center justify-center gap-2 disabled:opacity-50">
         {subMut.isPending && <Loader2 className="size-4 animate-spin"/>}
-        {isPremium ? "You're a Premium member" : "Upgrade now"}
+        {isPremium ? t("premium.yourePremium") : t("premium.upgradeNow")}
       </button>
       {subMut.error && <p className="text-xs text-bearish text-center">{(subMut.error as Error).message}</p>}
 
-      <p className="text-[10px] text-center text-muted-foreground">Cancel anytime. Pay with Telegram Stars or card.</p>
+      <p className="text-[10px] text-center text-muted-foreground">{t("premium.cancelAnytime")}. Pay with Telegram Stars or card.</p>
 
       <div>
-        <h2 className="text-base font-semibold tracking-tight mb-3">Or top up points</h2>
+        <h2 className="text-base font-semibold tracking-tight mb-3">{t("premium.orTopUp")}</h2>
         <div className="grid grid-cols-2 gap-3">
           {packs.data?.map(p => (
             <div key={p.id} className={`vixor-card p-4 relative ${p.badge === "Popular" ? "border-primary border-2" : ""}`}>

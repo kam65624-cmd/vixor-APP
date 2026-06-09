@@ -242,8 +242,9 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     structureResult, orderBlocks, fvgs,
   );
 
-  // News impact (deterministic based on pair/trend - no API needed)
-  const newsImpact = generateNewsContext(pair, trend);
+  // News impact — only include if real news data is available
+  // Previously used deterministic fake news — now returns undefined to avoid fabricated headlines
+  const newsImpact: LocalAnalysisResult["news_impact"] | undefined = undefined;
 
   // Signal badge
   const signalBadge = {

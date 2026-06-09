@@ -11,7 +11,7 @@ import {
   Star,
   Loader2,
 } from "lucide-react";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMarketPrices, getOHLCV, quickAnalyze } from "@/lib/vixor.functions";
 import {
@@ -26,6 +26,7 @@ import { CreateAlertDialog } from "@/components/vixor/CreateAlertDialog";
 import { AlertsList } from "@/components/vixor/AlertsList";
 import { SectionTitle } from "@/components/vixor/atoms";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/charts")({
   head: () => ({ meta: [{ title: "Charts — Vixor" }] }),
@@ -58,6 +59,8 @@ function Charts() {
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { symbol?: string };
   const queryClient = useQueryClient();
+  const { t } = useI18n();
+  const { t } = useI18n();
 
   // Current symbol state
   const [currentPair, setCurrentPair] = useState(() => {
@@ -237,7 +240,7 @@ function Charts() {
         <div className="flex-1 flex items-center gap-2 px-3 h-10 rounded-xl bg-card border border-border">
           <Search className="size-4 text-muted-foreground shrink-0" />
           <input
-            placeholder="Search pair… (e.g. BTC/USDT)"
+            placeholder={t("charts.searchPair")}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -403,7 +406,7 @@ function Charts() {
             <Bell className="size-4 text-primary" />
           </div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Set Alert
+            {t("charts.setAlert")}
           </span>
         </button>
 
@@ -422,7 +425,7 @@ function Charts() {
             )}
           </div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            {isAnalyzing ? "Analyzing…" : cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s` : "Analyze"}
+            {isAnalyzing ? t("charts.analyzing") : cooldownSeconds > 0 ? t("charts.wait", { seconds: cooldownSeconds }) : t("charts.analyze")}
           </span>
         </button>
 
@@ -436,20 +439,20 @@ function Charts() {
             <Star className="size-4 text-primary" />
           </div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Watchlist
+            {t("charts.watchlist")}
           </span>
         </button>
       </div>
 
       {/* ── My Alerts for this pair ── */}
       <div>
-        <SectionTitle title="My Alerts" />
+        <SectionTitle title={t("charts.myAlerts")} />
         <AlertsList pair={currentPair} />
       </div>
 
       {/* ── All Alerts ── */}
       <div>
-        <SectionTitle title="All Alerts" />
+        <SectionTitle title={t("charts.allAlerts")} />
         <AlertsList />
       </div>
 

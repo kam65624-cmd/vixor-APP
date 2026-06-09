@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { createAnalysis, getMe } from "@/lib/vixor.functions";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/analyze")({
   head: () => ({ meta: [{ title: "Analyze — Vixor" }] }),
@@ -20,10 +21,11 @@ const TRADING_STYLES = [
   { id: "Swing Trading", icon: "🌊", label: "Swing Trading" },
 ];
 
-const STEPS = ["Connecting to Engine", "Extracting Price Action", "Computing Market Structure", "Generating Signal"];
+const STEPS_KEYS = ["analyzing.connectingToEngine", "analyzing.extractingPriceAction", "analyzing.computingMarketStructure", "analyzing.generatingSignal"];
 
 function Analyze() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const search = useSearch({ strict: false }) as { screenshot?: string; pair?: string };
   // Use stable server function references to prevent infinite re-render loop (React error #310)
   const fetchMe = useStableServerFn(getMe);
@@ -137,7 +139,7 @@ function Analyze() {
     if (!isPremium && points < 10) { setErr("Need at least 10 points. Check your profile."); return; }
     setStage("analyzing"); setProgress(0); setErr(null);
     
-    const ticker = setInterval(() => setProgress(p => Math.min(p + 1, STEPS.length - 1)), 2000);
+    const ticker = setInterval(() => setProgress(p => Math.min(p + 1, STEPS_KEYS.length - 1)), 2000);
     
     try {
       const { id } = await create({ 
@@ -166,8 +168,8 @@ function Analyze() {
           <ArrowLeft className="size-5" />
         </button>
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Vixor Engine</div>
-          <h1 className="text-xl font-bold tracking-tight leading-none">Analyze Chart</h1>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">{t("analyze.vixorEngine")}</div>
+          <h1 className="text-xl font-bold tracking-tight leading-none">{t("analyze.analyzeChart")}</h1>
         </div>
       </div>
 
@@ -184,7 +186,7 @@ function Analyze() {
               <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Upload className="size-8 text-primary" />
               </div>
-              <div className="font-bold text-lg mb-1">Tap to Upload Chart</div>
+              <div className="font-bold text-lg mb-1">{t("analyze.tapToUpload")}</div>
               <div className="text-xs text-muted-foreground">PNG, JPG, WebP (Max 8MB)</div>
             </div>
             <input type="file" ref={fileRef} className="hidden" accept="image/png, image/jpeg, image/webp" onChange={e => pickFile(e.target.files?.[0] || null)} />
@@ -193,11 +195,11 @@ function Analyze() {
           <div className="grid grid-cols-2 gap-3">
             <button onClick={() => fileRef.current?.click()} className="h-14 rounded-xl bg-card border border-border flex flex-col items-center justify-center gap-1 hover:bg-card-hover transition-colors">
               <ImageIcon className="size-5 text-muted-foreground" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Gallery</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">{t("analyze.gallery")}</span>
             </button>
             <button onClick={handlePaste} className="h-14 rounded-xl bg-card border border-border flex flex-col items-center justify-center gap-1 hover:bg-card-hover transition-colors">
               <Clipboard className="size-5 text-muted-foreground" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Paste</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">{t("analyze.paste")}</span>
             </button>
           </div>
         </>
@@ -226,7 +228,7 @@ function Analyze() {
             </div>
 
             <button onClick={startAnalysis} disabled={!isPremium && points < 10} className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-bold text-lg flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50">
-              <Sparkles className="size-5" /> Start Analysis
+              <Sparkles className="size-5" /> {t("analyze.startAnalysis")}
               {!isPremium && <span className="ml-2 text-xs bg-black/20 px-2 py-0.5 rounded-full">-10 pts</span>}
             </button>
           </div>
@@ -242,11 +244,11 @@ function Analyze() {
             </div>
           </div>
           
-          <h2 className="text-xl font-bold tracking-tight mb-2">Analyzing Chart...</h2>
-          <div className="text-sm font-mono text-primary font-bold">{STEPS[progress]}</div>
+          <h2 className="text-xl font-bold tracking-tight mb-2">{t("analyzing.analyzingChart")}</h2>
+          <div className="text-sm font-mono text-primary font-bold">{t(STEPS_KEYS[progress])}</div>
           
           <div className="w-48 h-1.5 bg-muted rounded-full mt-6 overflow-hidden">
-            <div className="h-full gradient-primary transition-all duration-500 ease-out" style={{ width: `${((progress + 1) / STEPS.length) * 100}%` }} />
+            <div className="h-full gradient-primary transition-all duration-500 ease-out" style={{ width: `${((progress + 1) / STEPS_KEYS.length) * 100}%` }} />
           </div>
         </div>
       )}

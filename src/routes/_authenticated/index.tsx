@@ -25,6 +25,7 @@ import { useMemo } from "react";
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 import { useRenderGuard } from "@/hooks/use-render-guard";
 import { RecBadge } from "@/components/vixor/atoms";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Command Center — Vixor" }] }),
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/")({
 function CommandCenter() {
   useRenderGuard("CommandCenter");
   const navigate = useNavigate();
+  const { t } = useI18n();
   // Use stable server function references to prevent infinite re-render loop (React error #310)
   const fetchMe = useStableServerFn(getMe);
   const fetchRecent = useStableServerFn(listAnalyses);
@@ -67,7 +69,7 @@ function CommandCenter() {
     refetchInterval: 120_000,
   }), [fetchNews]));
 
-  const name = me.data?.profile?.display_name?.split(" ")[0] || "Trader";
+  const name = me.data?.profile?.display_name?.split(" ")[0] || t("dashboard.trader");
   const xp = (me.data?.profile as any)?.xp ?? 1250;
   const isPremium = !!me.data?.isPremium;
 
@@ -85,7 +87,7 @@ function CommandCenter() {
       <div className="flex items-start justify-between">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            {new Date().getHours() < 12 ? "Good Morning" : new Date().getHours() < 17 ? "Good Afternoon" : "Good Evening"}, Trader
+            {new Date().getHours() < 12 ? t("dashboard.greeting.morning") : new Date().getHours() < 17 ? t("dashboard.greeting.afternoon") : t("dashboard.greeting.evening")}, {t("dashboard.trader")}
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             {name} <span className="animate-wave origin-bottom-right inline-block">👋</span>
@@ -114,9 +116,9 @@ function CommandCenter() {
         <div className="relative flex items-center justify-between">
           <div>
             <Sparkles className="size-5 text-emerald-200 mb-3" />
-            <h2 className="text-xl font-bold text-white mb-1">Analyze Your Chart</h2>
+            <h2 className="text-xl font-bold text-white mb-1">{t("dashboard.analyzeChart")}</h2>
             <p className="text-xs text-emerald-100 font-medium opacity-90">
-              SMC and ICT-powered signal in seconds
+              {t("dashboard.smcIct")}
             </p>
           </div>
           <div className="size-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
@@ -131,13 +133,13 @@ function CommandCenter() {
           <div className="flex items-center gap-2">
             <Activity className="size-4 text-muted-foreground" />
             <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              Market Pulse
+              {t("dashboard.marketPulse")}
             </h3>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="size-1.5 rounded-full bg-primary animate-pulse" />
             <span className="text-[9px] font-bold text-primary uppercase tracking-widest">
-              Live
+              {t("dashboard.live")}
             </span>
           </div>
         </div>
@@ -203,14 +205,14 @@ function CommandCenter() {
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 text-primary" />
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                Today's Signals
+                {t("dashboard.todaysSignals")}
               </h3>
             </div>
             <a
               href="/signals"
               className="text-[10px] font-bold text-primary flex items-center hover:underline"
             >
-              View All <ChevronRight className="size-3" />
+              {t("dashboard.viewAll")} <ChevronRight className="size-3" />
             </a>
           </div>
           <div className="space-y-2">
@@ -239,7 +241,7 @@ function CommandCenter() {
                       <RecBadge rec={signal.recommendation} />
                     </div>
                     <div className="text-xs text-muted-foreground font-mono">
-                      Entry:{" "}
+                      {t("signals.entry")}:{" "}
                       {signal.entry
                         ? Number(signal.entry).toLocaleString(undefined, {
                             maximumFractionDigits: 2,
@@ -271,7 +273,7 @@ function CommandCenter() {
         <div className="flex items-center gap-2 mb-2 relative">
           <Zap className="size-4 text-primary" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
-            AI Daily Focus
+            {t("dashboard.aiDailyFocus")}
           </span>
         </div>
         <p className="text-sm font-medium text-foreground leading-relaxed relative">
@@ -287,7 +289,7 @@ function CommandCenter() {
           <div className="flex items-center gap-2">
             <AlertTriangle className="size-4 text-bearish" />
             <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              High Impact Events
+              {t("dashboard.highImpactEvents")}
             </h3>
           </div>
         </div>
@@ -296,7 +298,7 @@ function CommandCenter() {
             <AlertTriangle className="size-5 text-muted-foreground/30" />
           </div>
           <p className="text-sm text-muted-foreground font-medium">
-            No high-impact events scheduled today. Check back later for updates.
+            {t("dashboard.noHighImpactEvents")}
           </p>
         </div>
       </div>
@@ -307,23 +309,23 @@ function CommandCenter() {
           <div className="flex items-center gap-2">
             <Bell className="size-4 text-muted-foreground" />
             <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              Active Alerts
+              {t("dashboard.activeAlerts")}
             </h3>
           </div>
           <a
             href="/charts"
             className="text-[10px] font-bold text-primary flex items-center hover:underline"
           >
-            View All <ChevronRight className="size-3" />
+            {t("dashboard.viewAll")} <ChevronRight className="size-3" />
           </a>
         </div>
 
         {activeAlerts.length === 0 ? (
           <div className="vixor-card p-4 text-center">
             <Bell className="size-6 text-muted-foreground/30 mx-auto mb-2" />
-            <div className="text-xs text-muted-foreground">No active alerts</div>
+            <div className="text-xs text-muted-foreground">{t("dashboard.noActiveAlerts")}</div>
             <a href="/charts" className="text-xs text-primary font-bold mt-1 inline-block">
-              Set one from Charts →
+              {t("dashboard.setOneFromCharts")} →
             </a>
           </div>
         ) : (
@@ -348,12 +350,12 @@ function CommandCenter() {
                     <div className="font-bold text-sm font-mono">{alert.pair}</div>
                     <div className="text-xs text-muted-foreground font-mono">
                       {alert.condition === "above"
-                        ? "Above"
+                        ? t("common.above")
                         : alert.condition === "below"
-                          ? "Below"
+                          ? t("common.below")
                           : alert.condition === "crosses_up"
-                            ? "Crosses up"
-                            : "Crosses down"}{" "}
+                            ? t("common.crossesUp")
+                            : t("common.crossesDown")}{" "}
                       $
                       {Number(alert.target_price).toLocaleString(undefined, {
                         maximumFractionDigits: 2,
@@ -361,7 +363,7 @@ function CommandCenter() {
                     </div>
                   </div>
                   <div className="px-2 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary uppercase">
-                    Active
+                    {t("dashboard.active")}
                   </div>
                 </div>
               </div>
@@ -376,7 +378,7 @@ function CommandCenter() {
           <div className="flex items-center gap-2">
             <Newspaper className="size-4 text-muted-foreground" />
             <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              Market News
+              {t("dashboard.marketNews")}
             </h3>
           </div>
         </div>
@@ -399,7 +401,7 @@ function CommandCenter() {
         ) : !news.data || news.data.length === 0 ? (
           <div className="vixor-card p-6 text-center">
             <Newspaper className="size-6 text-muted-foreground/30 mx-auto mb-2" />
-            <div className="text-xs text-muted-foreground">No market news available right now</div>
+            <div className="text-xs text-muted-foreground">{t("dashboard.noMarketNews")}</div>
           </div>
         ) : (
           <div className="space-y-2">
@@ -417,7 +419,7 @@ function CommandCenter() {
                       {item.source}
                     </span>
                     <span className="text-[10px] font-bold text-muted-foreground">
-                      {formatTimeAgo(item.time)}
+                      {formatTimeAgo(item.time, t)}
                     </span>
                   </div>
                   <h4 className="text-sm font-bold leading-snug line-clamp-2">{item.title}</h4>
@@ -447,13 +449,13 @@ function CommandCenter() {
 
 // Subcomponents
 
-function formatTimeAgo(timestamp: number) {
+function formatTimeAgo(timestamp: number, t?: (key: string, params?: Record<string, string | number>) => string) {
   const diff = Date.now() - timestamp;
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t ? t("common.justNow") : "Just now";
+  if (mins < 60) return t ? t("common.mAgo", { mins }) : `${mins}m ago`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t ? t("common.hAgo", { hours }) : `${hours}h ago`;
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return t ? t("common.dAgo", { days }) : `${days}d ago`;
 }

@@ -12,6 +12,7 @@ import { useEffect, useRef, useState, useCallback, type ReactNode, Component, ty
 import appCss from "../styles.css?url";
 import { AppShell } from "@/components/vixor/AppShell";
 import { wasRenderLoopDetected, getRenderLoopComponent, clearRenderLoopFlag } from "@/hooks/use-render-guard";
+import { I18nProvider } from "@/lib/i18n";
 
 function NotFoundComponent() {
   return (
@@ -212,11 +213,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <GlobalErrorBoundary onReset={handleErrorReset}>
-        <AppShell>
-          <Outlet />
-        </AppShell>
-      </GlobalErrorBoundary>
+      <I18nProvider>
+        <GlobalErrorBoundary onReset={handleErrorReset}>
+          <AppShell>
+            <Outlet />
+          </AppShell>
+        </GlobalErrorBoundary>
+      </I18nProvider>
     </QueryClientProvider>
   );
 }

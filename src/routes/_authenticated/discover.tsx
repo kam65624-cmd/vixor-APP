@@ -6,28 +6,17 @@ import { getMarketNews, getMarketPrices, getDailySignals } from "@/lib/vixor.fun
 import { useStableServerFn } from "@/hooks/use-stable-server-fn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecBadge } from "@/components/vixor/atoms";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/discover")({
   head: () => ({ meta: [{ title: "Discover — Vixor" }] }),
   component: Discover,
 });
 
-const TABS = ["Watchlist", "Scanner", "News", "Heatmap"] as const;
-
-
-
-function formatTimeAgo(timestamp: number) {
-  const diff = Date.now() - timestamp;
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
+const TABS = ["discover.watchlist", "discover.scanner", "discover.news", "discover.heatmap"] as const;
 
 function DiscoverNews() {
+  const { t } = useI18n();
   const fetchMarketNews = useStableServerFn(getMarketNews);
 
   const [category, setCategory] = useState<"forex" | "general" | "crypto" | "merger">("forex");
@@ -53,7 +42,7 @@ function DiscoverNews() {
                 : "bg-card border-border text-muted-foreground hover:text-foreground"
             }`}
           >
-            {cat === "merger" ? "M&A" : cat}
+            {cat === "merger" ? t("discover.merger") : cat === "forex" ? t("discover.forex") : cat === "crypto" ? t("discover.crypto") : t("discover.general")}
           </button>
         ))}
       </div>
@@ -76,11 +65,11 @@ function DiscoverNews() {
         </div>
       ) : error ? (
         <div className="vixor-card p-6 text-center text-muted-foreground text-sm">
-          Failed to load news. Please try again.
+          {t("discover.failedToLoadNews")}
         </div>
       ) : news.length === 0 ? (
         <div className="vixor-card p-6 text-center text-muted-foreground text-sm">
-          No news articles found for this category.
+          {t("discover.noNewsArticles")}
         </div>
       ) : (
         <div className="space-y-3">
@@ -109,7 +98,7 @@ function DiscoverNews() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1 text-[10px] font-bold text-primary mt-2">
-                  Read full article <ExternalLink className="size-3" />
+                  {t("discover.readFullArticle")} <ExternalLink className="size-3" />
                 </div>
               </div>
               {item.image && (
@@ -133,6 +122,7 @@ function DiscoverNews() {
 }
 
 function DiscoverWatchlist() {
+  const { t } = useI18n();
   const fetchPrices = useStableServerFn(getMarketPrices);
   const { data: prices = [], isLoading } = useQuery(useMemo(() => ({
     queryKey: ["market-prices"] as const,
@@ -158,7 +148,7 @@ function DiscoverWatchlist() {
       ) : prices.length === 0 ? (
         <div className="vixor-card p-6 text-center">
           <Search className="size-6 text-muted-foreground/30 mx-auto mb-2" />
-          <div className="text-xs text-muted-foreground">No market data available</div>
+          <div className="text-xs text-muted-foreground">{t("discover.noMarketData")}</div>
         </div>
       ) : (
         prices.map((p: any) => (
@@ -191,13 +181,14 @@ function DiscoverWatchlist() {
       )}
 
       <button className="w-full h-12 rounded-xl border border-dashed border-border text-muted-foreground font-bold text-sm hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
-        <Search className="size-4" /> Add to Watchlist
+        <Search className="size-4" /> {t("discover.addToWatchlist")}
       </button>
     </div>
   );
 }
 
 function DiscoverScanner() {
+  const { t } = useI18n();
   const fetchSignals = useStableServerFn(getDailySignals);
   const { data: signals = [], isLoading } = useQuery(useMemo(() => ({
     queryKey: ["daily-signals"] as const,
@@ -210,8 +201,8 @@ function DiscoverScanner() {
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="grid grid-cols-2 gap-3 mb-2">
-        <button className="h-10 rounded-lg bg-primary/10 text-primary font-bold text-xs flex items-center justify-center gap-1.5 border border-primary/20"><Flame className="size-4"/> Hot Breakouts</button>
-        <button className="h-10 rounded-lg bg-card text-muted-foreground font-bold text-xs flex items-center justify-center gap-1.5 border border-border"><Layers className="size-4"/> Volume Spikes</button>
+        <button className="h-10 rounded-lg bg-primary/10 text-primary font-bold text-xs flex items-center justify-center gap-1.5 border border-primary/20"><Flame className="size-4"/> {t("discover.hotBreakouts")}</button>
+        <button className="h-10 rounded-lg bg-card text-muted-foreground font-bold text-xs flex items-center justify-center gap-1.5 border border-border"><Layers className="size-4"/> {t("discover.volumeSpikes")}</button>
       </div>
 
       {isLoading ? (
@@ -232,8 +223,8 @@ function DiscoverScanner() {
       ) : activeSignals.length === 0 ? (
         <div className="vixor-card p-6 text-center">
           <Flame className="size-6 text-muted-foreground/30 mx-auto mb-2" />
-          <div className="text-xs text-muted-foreground">No active signals right now</div>
-          <div className="text-[10px] text-muted-foreground mt-1">Signals are generated daily — check back later</div>
+          <div className="text-xs text-muted-foreground">{t("discover.noActiveSignals")}</div>
+          <div className="text-[10px] text-muted-foreground mt-1">{t("discover.signalsDaily")}</div>
         </div>
       ) : (
         activeSignals.map((s: any) => {
@@ -246,8 +237,8 @@ function DiscoverScanner() {
               </div>
               <div className="flex items-center gap-2 text-sm font-bold">
                 <RecBadge rec={s.recommendation} />
-                <span className="text-muted-foreground font-medium">{s.confidence}% confidence</span>
-                <a href={`/charts?symbol=BINANCE:${s.pair.replace("/", "")}`} className="ml-auto text-xs font-bold text-primary hover:underline">Analyze</a>
+                <span className="text-muted-foreground font-medium">{s.confidence}% {t("signals.confidence").toLowerCase()}</span>
+                <a href={`/charts?symbol=BINANCE:${s.pair.replace("/", "")}`} className="ml-auto text-xs font-bold text-primary hover:underline">{t("discover.analyze")}</a>
               </div>
             </div>
           );
@@ -258,6 +249,7 @@ function DiscoverScanner() {
 }
 
 function DiscoverHeatmap() {
+  const { t } = useI18n();
   const fetchPrices = useStableServerFn(getMarketPrices);
   const { data: prices = [], isLoading } = useQuery(useMemo(() => ({
     queryKey: ["market-prices"] as const,
@@ -270,12 +262,12 @@ function DiscoverHeatmap() {
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-bold text-sm">Market Heatmap</h3>
-          <p className="text-[10px] text-muted-foreground">24h change across popular pairs</p>
+          <h3 className="font-bold text-sm">{t("discover.marketHeatmap")}</h3>
+          <p className="text-[10px] text-muted-foreground">{t("discover.24hChange")}</p>
         </div>
         <div className="flex items-center gap-2 text-[9px] font-bold text-muted-foreground">
-          <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-bullish" /> Gain</span>
-          <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-bearish" /> Loss</span>
+          <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-bullish" /> {t("discover.gain")}</span>
+          <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-bearish" /> {t("discover.loss")}</span>
         </div>
       </div>
 
@@ -288,14 +280,14 @@ function DiscoverHeatmap() {
       ) : prices.length === 0 ? (
         <div className="vixor-card p-6 text-center">
           <BarChart2 className="size-6 text-muted-foreground/30 mx-auto mb-2" />
-          <div className="text-xs text-muted-foreground">No heatmap data available</div>
+          <div className="text-xs text-muted-foreground">{t("discover.noHeatmapData")}</div>
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-2">
           {prices.map((p: any) => {
             const change = p.change24h ?? 0;
             const isPositive = change >= 0;
-            const intensity = Math.min(Math.abs(change) / 3, 1); // normalize: 3% = max intensity
+            const intensity = Math.min(Math.abs(change) / 3, 1);
             return (
               <div
                 key={p.pair}
@@ -328,7 +320,7 @@ function DiscoverHeatmap() {
 
       <div className="vixor-card p-4 flex flex-col items-center justify-center text-center border-dashed">
         <BarChart2 className="size-6 text-muted-foreground/30 mb-2" />
-        <div className="text-xs text-muted-foreground font-medium">Interactive heatmap coming soon</div>
+        <div className="text-xs text-muted-foreground font-medium">{t("discover.interactiveHeatmapSoon")}</div>
         <div className="text-[10px] text-muted-foreground">With sector analysis & historical comparison</div>
       </div>
     </div>
@@ -336,15 +328,16 @@ function DiscoverHeatmap() {
 }
 
 function Discover() {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("Watchlist");
+  const { t } = useI18n();
+  const [tab, setTab] = useState<(typeof TABS)[number]>("discover.watchlist");
 
   return (
     <div className="space-y-6 pb-6">
       <div className="pt-2">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Compass className="size-6 text-primary" /> Market Explorer
+          <Compass className="size-6 text-primary" /> {t("discover.marketExplorer")}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">What's moving right now?</p>
+        <p className="text-sm text-muted-foreground mt-1">{t("discover.whatsMoving")}</p>
       </div>
 
       {/* Global Search */}
@@ -354,33 +347,36 @@ function Discover() {
         </div>
         <input 
           type="text" 
-          placeholder="Search pairs, stocks, crypto..." 
+          placeholder={t("discover.searchPlaceholder")} 
           className="w-full h-12 pl-10 pr-4 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary transition-colors"
         />
       </div>
 
       {/* Navigation Tabs */}
       <div className="flex gap-1 p-1 bg-card border border-border rounded-xl">
-        {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all ${tab === t ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-            {t}
+        {TABS.map(tabKey => (
+          <button key={tabKey} onClick={() => setTab(tabKey)}
+            className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all ${tab === tabKey ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+            {t(tabKey)}
           </button>
         ))}
       </div>
 
-      {/* Watchlist Tab */}
-      {tab === "Watchlist" && <DiscoverWatchlist />}
-
-      {/* Scanner Tab */}
-      {tab === "Scanner" && <DiscoverScanner />}
-
-      {/* News Tab */}
-      {tab === "News" && <DiscoverNews />}
-
-      {/* Heatmap Tab */}
-      {tab === "Heatmap" && <DiscoverHeatmap />}
-
+      {tab === "discover.watchlist" && <DiscoverWatchlist />}
+      {tab === "discover.scanner" && <DiscoverScanner />}
+      {tab === "discover.news" && <DiscoverNews />}
+      {tab === "discover.heatmap" && <DiscoverHeatmap />}
     </div>
   );
+}
+
+function formatTimeAgo(timestamp: number) {
+  const diff = Date.now() - timestamp;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
