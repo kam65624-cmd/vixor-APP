@@ -53,7 +53,7 @@ function renderErrorPage() {
 let serverEntryPromise;
 async function getServerEntry() {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("./server-C4f_wE9B.mjs").then((n) => n.s).then(
+    serverEntryPromise = import("./server-ywbAJf4M.mjs").then((n) => n.s).then(
       (m) => m.default ?? m
     );
   }
@@ -64,14 +64,61 @@ async function normalizeCatastrophicSsrResponse(response) {
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) return response;
   const body = await response.clone().text();
-  if (!body.includes('"unhandled":true') || !body.includes('"message":"HTTPError"')) {
-    return response;
+  console.error(`[Vixor] 500 JSON response body: ${body.substring(0, 2e3)}`);
+  const captured = consumeLastCapturedError();
+  if (captured) {
+    console.error("[Vixor] Captured SSR error:", captured);
   }
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
+  try {
+    const parsed = JSON.parse(body);
+    const errorMsg = parsed.message || parsed.error || body;
+    const html = renderDebugErrorPage(errorMsg, captured?.stack);
+    return new Response(html, {
+      status: 500,
+      headers: { "content-type": "text/html; charset=utf-8" }
+    });
+  } catch {
+  }
+  if (captured) {
+    const html = renderDebugErrorPage(captured.message || String(captured), captured.stack);
+    return new Response(html, {
+      status: 500,
+      headers: { "content-type": "text/html; charset=utf-8" }
+    });
+  }
   return new Response(renderErrorPage(), {
     status: 500,
     headers: { "content-type": "text/html; charset=utf-8" }
   });
+}
+function renderDebugErrorPage(message, stack) {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Vixor — Server Error</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font: 13px/1.6 'SF Mono', 'Fira Code', monospace; background: #0a0a0f; color: #e0e0e0; padding: 2rem; max-width: 900px; margin: 0 auto; }
+      h1 { color: #ff6b6b; font-size: 1.1rem; margin-bottom: 0.5rem; }
+      .msg { background: #1a1a2e; padding: 1rem; border-radius: 8px; border-left: 3px solid #ff6b6b; margin-bottom: 1rem; }
+      .stack { white-space: pre-wrap; background: #16213e; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 11px; color: #a8d8ea; max-height: 400px; overflow-y: auto; }
+      .env-info { background: #16213e; padding: 0.75rem; border-radius: 8px; font-size: 11px; color: #888; margin-top: 1rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Vixor Server Error</h1>
+    <div class="msg">${message}</div>
+    ${stack ? `<details><summary>Stack Trace</summary><div class="stack">${stack}</div></details>` : ""}
+    <div class="env-info">
+      Node: ${typeof process !== "undefined" ? process.version : "N/A"} |
+      SUPABASE_URL: ${process.env.SUPABASE_URL ? "✅ set" : "❌ missing"} |
+      SUPABASE_ANON_KEY: ${process.env.SUPABASE_ANON_KEY ? "✅ set" : "❌ missing"} |
+      TWELVEDATA_API_KEY: ${process.env.TWELVEDATA_API_KEY ? "✅ set" : "❌ missing"} |
+      FINNHUB_API_KEY: ${process.env.FINNHUB_API_KEY ? "✅ set" : "❌ missing"}
+    </div>
+  </body>
+</html>`;
 }
 const server = {
   async fetch(request, env, ctx) {
@@ -83,14 +130,8 @@ const server = {
       console.error("[Vixor Server Error]", error);
       const errorMsg = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : "";
-      if (process.env.VIXOR_DEBUG) {
-        const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Server Error</title><style>body{font:14px/1.5 monospace;background:#1a1a2e;color:#e0e0e0;padding:2rem;max-width:900px;margin:0 auto}h1{color:#ff6b6b;font-size:1.2rem}.stack{white-space:pre-wrap;background:#16213e;padding:1rem;border-radius:8px;overflow-x:auto;font-size:12px;color:#a8d8ea}</style></head><body><h1>Server Error (Debug)</h1><p>${errorMsg}</p><div class="stack">${errorStack || "No stack trace"}</div></body></html>`;
-        return new Response(html, {
-          status: 500,
-          headers: { "content-type": "text/html; charset=utf-8" }
-        });
-      }
-      return new Response(renderErrorPage(), {
+      const html = renderDebugErrorPage(errorMsg, errorStack);
+      return new Response(html, {
         status: 500,
         headers: { "content-type": "text/html; charset=utf-8" }
       });
@@ -98,6 +139,5 @@ const server = {
   }
 };
 export {
-  server as default,
-  renderErrorPage as r
+  server as default
 };
