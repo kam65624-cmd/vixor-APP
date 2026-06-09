@@ -25,6 +25,7 @@ import {
   Target,
   MessageSquare,
   ChevronRight,
+  Flame,
 } from "lucide-react";
 import { useMemo } from "react";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
@@ -841,6 +842,30 @@ function MissionControl() {
           </div>
         </div>
       </div>
+
+      {/* ═══════════════════════════════════════════
+          DAILY LOOP CTA
+          ═══════════════════════════════════════════ */}
+      <a
+        href="/daily-loop"
+        className="relative overflow-hidden rounded-2xl p-5 cursor-pointer group active:scale-[0.98] transition-all block"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FF9800]/90 to-[#E65100]/90" />
+        <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+
+        <div className="relative flex items-center justify-between">
+          <div>
+            <Flame className="size-5 text-amber-200 mb-3" />
+            <h2 className="text-xl font-bold text-white mb-1">Daily Loop</h2>
+            <p className="text-xs text-amber-100 font-medium opacity-90">
+              Build consistency with your daily trading routine
+            </p>
+          </div>
+          <div className="size-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <Target className="size-5 text-white" />
+          </div>
+        </div>
+      </a>
     </div>
   );
 }

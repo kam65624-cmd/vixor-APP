@@ -33,7 +33,8 @@ const tabs = [
       p.startsWith("/journal") ||
       p.startsWith("/trade-desk") ||
       p.startsWith("/charts") ||
-      p.startsWith("/signals"),
+      p.startsWith("/signals") ||
+      p.startsWith("/daily-loop"),
   },
 ] as const;
 

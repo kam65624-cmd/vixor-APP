@@ -24,6 +24,10 @@ export interface MigrationStatus {
   user_strategies: boolean;
   trading_notes: boolean;
   trades: boolean;
+  copilot_conversations: boolean;
+  copilot_messages: boolean;
+  daily_loops: boolean;
+  user_streaks: boolean;
   allComplete: boolean;
   sql: string;
 }
@@ -187,6 +191,138 @@ DROP TRIGGER IF EXISTS trades_updated_at ON trades;
 CREATE TRIGGER trades_updated_at
   BEFORE UPDATE ON trades
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- 6. Copilot Conversations Table
+CREATE TABLE IF NOT EXISTS copilot_conversations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT 'New Chat',
+  agent_id TEXT DEFAULT 'auto',
+  is_consensus BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 7. Copilot Messages Table
+CREATE TABLE IF NOT EXISTS copilot_messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  conversation_id UUID NOT NULL REFERENCES copilot_conversations(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+  content TEXT NOT NULL,
+  agent_id TEXT,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE copilot_conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE copilot_messages ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can view own conversations" ON copilot_conversations FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Users can insert own conversations" ON copilot_conversations FOR INSERT WITH CHECK (auth.uid() = user_id);
+  CREATE POLICY "Users can update own conversations" ON copilot_conversations FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "Users can delete own conversations" ON copilot_conversations FOR DELETE USING (auth.uid() = user_id);
+  CREATE POLICY "Users can view own messages" ON copilot_messages FOR SELECT USING (
+    conversation_id IN (SELECT id FROM copilot_conversations WHERE user_id = auth.uid())
+  );
+  CREATE POLICY "Users can insert own messages" ON copilot_messages FOR INSERT WITH CHECK (
+    conversation_id IN (SELECT id FROM copilot_conversations WHERE user_id = auth.uid())
+  );
+  CREATE POLICY "Users can delete own messages" ON copilot_messages FOR DELETE USING (
+    conversation_id IN (SELECT id FROM copilot_conversations WHERE user_id = auth.uid())
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_copilot_conversations_user ON copilot_conversations(user_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_copilot_messages_conversation ON copilot_messages(conversation_id, created_at ASC);
+
+DROP TRIGGER IF EXISTS copilot_conversations_updated_at ON copilot_conversations;
+CREATE TRIGGER copilot_conversations_updated_at
+  BEFORE UPDATE ON copilot_conversations
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE OR REPLACE FUNCTION auto_title_conversation()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.role = 'user' AND OLD IS NULL THEN
+    UPDATE copilot_conversations 
+    SET title = LEFT(NEW.content, 50), updated_at = now()
+    WHERE id = NEW.conversation_id AND title = 'New Chat';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS copilot_messages_auto_title ON copilot_messages;
+CREATE TRIGGER copilot_messages_auto_title
+  AFTER INSERT ON copilot_messages
+  FOR EACH ROW EXECUTE FUNCTION auto_title_conversation();
+
+-- 8. Daily Loops Table
+CREATE TABLE IF NOT EXISTS daily_loops (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  morning_prep_completed BOOLEAN DEFAULT false,
+  morning_prep_at TIMESTAMPTZ,
+  market_bias TEXT,
+  key_levels TEXT,
+  watchlist_reviewed BOOLEAN DEFAULT false,
+  london_session_traded BOOLEAN DEFAULT false,
+  london_session_notes TEXT,
+  ny_session_traded BOOLEAN DEFAULT false,
+  ny_session_notes TEXT,
+  asian_session_traded BOOLEAN DEFAULT false,
+  asian_session_notes TEXT,
+  eod_review_completed BOOLEAN DEFAULT false,
+  eod_review_at TIMESTAMPTZ,
+  daily_pnl NUMERIC,
+  trades_taken INTEGER DEFAULT 0,
+  rules_followed INTEGER DEFAULT 0,
+  rules_broken INTEGER DEFAULT 0,
+  emotional_state TEXT CHECK (emotional_state IN ('disciplined', 'anxious', 'fomo', 'revenge', 'calm', 'tired')) DEFAULT 'calm',
+  lessons_learned TEXT,
+  tomorrow_plan TEXT,
+  completion_percentage NUMERIC DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, date)
+);
+
+CREATE INDEX IF NOT EXISTS idx_daily_loops_user_date ON daily_loops(user_id, date DESC);
+
+ALTER TABLE daily_loops ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can view own daily loops" ON daily_loops FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Users can insert own daily loops" ON daily_loops FOR INSERT WITH CHECK (auth.uid() = user_id);
+  CREATE POLICY "Users can update own daily loops" ON daily_loops FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "Users can delete own daily loops" ON daily_loops FOR DELETE USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DROP TRIGGER IF EXISTS daily_loops_updated_at ON daily_loops;
+CREATE TRIGGER daily_loops_updated_at
+  BEFORE UPDATE ON daily_loops
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- 9. User Streaks Table
+CREATE TABLE IF NOT EXISTS user_streaks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE UNIQUE,
+  current_streak INTEGER DEFAULT 0,
+  longest_streak INTEGER DEFAULT 0,
+  last_completed_date DATE,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE user_streaks ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can view own streaks" ON user_streaks FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Users can update own streaks" ON user_streaks FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "Users can insert own streaks" ON user_streaks FOR INSERT WITH CHECK (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 `;
 }
 
@@ -194,12 +330,16 @@ export async function checkMigrations(): Promise<MigrationStatus> {
   const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
   // Check each table by attempting a select
-  const [alertsRes, signalsRes, strategiesRes, notesRes, tradesRes] = await Promise.all([
+  const [alertsRes, signalsRes, strategiesRes, notesRes, tradesRes, copilotConvRes, copilotMsgRes, loopsRes, streaksRes] = await Promise.all([
     supabaseAdmin.from("price_alerts").select("id").limit(1),
     supabaseAdmin.from("daily_signals").select("id").limit(1),
     supabaseAdmin.from("user_strategies").select("id").limit(1),
     supabaseAdmin.from("trading_notes").select("id").limit(1),
     supabaseAdmin.from("trades").select("id").limit(1),
+    supabaseAdmin.from("copilot_conversations").select("id").limit(1),
+    supabaseAdmin.from("copilot_messages").select("id").limit(1),
+    supabaseAdmin.from("daily_loops").select("id").limit(1),
+    supabaseAdmin.from("user_streaks").select("id").limit(1),
   ]);
 
   const priceAlerts = !alertsRes.error || alertsRes.error.code !== "42P01";
@@ -207,8 +347,12 @@ export async function checkMigrations(): Promise<MigrationStatus> {
   const userStrategies = !strategiesRes.error || strategiesRes.error.code !== "42P01";
   const tradingNotes = !notesRes.error || notesRes.error.code !== "42P01";
   const tradesTable = !tradesRes.error || tradesRes.error.code !== "42P01";
+  const copilotConversations = !copilotConvRes.error || copilotConvRes.error.code !== "42P01";
+  const copilotMessages = !copilotMsgRes.error || copilotMsgRes.error.code !== "42P01";
+  const dailyLoops = !loopsRes.error || loopsRes.error.code !== "42P01";
+  const userStreaks = !streaksRes.error || streaksRes.error.code !== "42P01";
 
-  const allComplete = priceAlerts && dailySignals && userStrategies && tradingNotes && tradesTable;
+  const allComplete = priceAlerts && dailySignals && userStrategies && tradingNotes && tradesTable && copilotConversations && copilotMessages && dailyLoops && userStreaks;
 
   return {
     price_alerts: priceAlerts,
@@ -216,6 +360,10 @@ export async function checkMigrations(): Promise<MigrationStatus> {
     user_strategies: userStrategies,
     trading_notes: tradingNotes,
     trades: tradesTable,
+    copilot_conversations: copilotConversations,
+    copilot_messages: copilotMessages,
+    daily_loops: dailyLoops,
+    user_streaks: userStreaks,
     allComplete,
     sql: allComplete ? "" : getMigrationSQL(),
   };

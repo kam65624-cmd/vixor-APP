@@ -22,6 +22,7 @@ import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authentica
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
 import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
+import { Route as AuthenticatedDailyLoopRouteImport } from './routes/_authenticated/daily-loop'
 import { Route as AuthenticatedCopilotRouteImport } from './routes/_authenticated/copilot'
 import { Route as AuthenticatedChartsRouteImport } from './routes/_authenticated/charts'
 import { Route as AuthenticatedAnalyzeRouteImport } from './routes/_authenticated/analyze'
@@ -92,6 +93,11 @@ const AuthenticatedDiscoverRoute = AuthenticatedDiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDailyLoopRoute = AuthenticatedDailyLoopRouteImport.update({
+  id: '/daily-loop',
+  path: '/daily-loop',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCopilotRoute = AuthenticatedCopilotRouteImport.update({
   id: '/copilot',
   path: '/copilot',
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/analyze': typeof AuthenticatedAnalyzeRoute
   '/charts': typeof AuthenticatedChartsRoute
   '/copilot': typeof AuthenticatedCopilotRoute
+  '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/analyze': typeof AuthenticatedAnalyzeRoute
   '/charts': typeof AuthenticatedChartsRoute
   '/copilot': typeof AuthenticatedCopilotRoute
+  '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/_authenticated/analyze': typeof AuthenticatedAnalyzeRoute
   '/_authenticated/charts': typeof AuthenticatedChartsRoute
   '/_authenticated/copilot': typeof AuthenticatedCopilotRoute
+  '/_authenticated/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/_authenticated/discover': typeof AuthenticatedDiscoverRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/analyze'
     | '/charts'
     | '/copilot'
+    | '/daily-loop'
     | '/discover'
     | '/journal'
     | '/notifications'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/analyze'
     | '/charts'
     | '/copilot'
+    | '/daily-loop'
     | '/discover'
     | '/journal'
     | '/notifications'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/_authenticated/analyze'
     | '/_authenticated/charts'
     | '/_authenticated/copilot'
+    | '/_authenticated/daily-loop'
     | '/_authenticated/discover'
     | '/_authenticated/journal'
     | '/_authenticated/notifications'
@@ -325,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDiscoverRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/daily-loop': {
+      id: '/_authenticated/daily-loop'
+      path: '/daily-loop'
+      fullPath: '/daily-loop'
+      preLoaderRoute: typeof AuthenticatedDailyLoopRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/copilot': {
       id: '/_authenticated/copilot'
       path: '/copilot'
@@ -360,6 +379,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyzeRoute: typeof AuthenticatedAnalyzeRoute
   AuthenticatedChartsRoute: typeof AuthenticatedChartsRoute
   AuthenticatedCopilotRoute: typeof AuthenticatedCopilotRoute
+  AuthenticatedDailyLoopRoute: typeof AuthenticatedDailyLoopRoute
   AuthenticatedDiscoverRoute: typeof AuthenticatedDiscoverRoute
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -378,6 +398,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyzeRoute: AuthenticatedAnalyzeRoute,
   AuthenticatedChartsRoute: AuthenticatedChartsRoute,
   AuthenticatedCopilotRoute: AuthenticatedCopilotRoute,
+  AuthenticatedDailyLoopRoute: AuthenticatedDailyLoopRoute,
   AuthenticatedDiscoverRoute: AuthenticatedDiscoverRoute,
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,

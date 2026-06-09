@@ -54,6 +54,15 @@ export {
   getConsensus,
 } from "@/domains/copilot/functions";
 
+export {
+  createConversation,
+  listConversations,
+  getConversation,
+  saveMessage,
+  deleteConversation,
+  updateConversationTitle,
+} from "@/domains/copilot/conversations";
+
 // ── Watchlist Domain ──
 export {
   getWatchlists,
@@ -101,3 +110,13 @@ export {
   linkTelegramAccount,
   createStarsInvoice,
 } from "@/domains/user/functions";
+
+// ── Daily Loop Domain ──
+export {
+  getTodayLoop,
+  updateMorningPrep,
+  updateSessionTracking,
+  updateEodReview,
+  getLoopHistory,
+  getStreak,
+} from "@/domains/daily-loop/functions";

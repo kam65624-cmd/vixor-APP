@@ -513,6 +513,82 @@ export type Database = {
           },
         ];
       };
+      copilot_conversations: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          agent_id: string | null;
+          is_consensus: boolean | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title?: string;
+          agent_id?: string | null;
+          is_consensus?: boolean | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          agent_id?: string | null;
+          is_consensus?: boolean | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "copilot_conversations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      copilot_messages: {
+        Row: {
+          id: string;
+          conversation_id: string;
+          role: string;
+          content: string;
+          agent_id: string | null;
+          metadata: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          conversation_id: string;
+          role: string;
+          content: string;
+          agent_id?: string | null;
+          metadata?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          conversation_id?: string;
+          role?: string;
+          content?: string;
+          agent_id?: string | null;
+          metadata?: Json | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "copilot_messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "copilot_conversations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -706,6 +782,136 @@ export type Database = {
             columns: ["analysis_id"];
             isOneToOne: false;
             referencedRelation: "analyses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      daily_loops: {
+        Row: {
+          id: string;
+          user_id: string;
+          date: string;
+          morning_prep_completed: boolean;
+          morning_prep_at: string | null;
+          market_bias: string | null;
+          key_levels: string | null;
+          watchlist_reviewed: boolean;
+          london_session_traded: boolean;
+          london_session_notes: string | null;
+          ny_session_traded: boolean;
+          ny_session_notes: string | null;
+          asian_session_traded: boolean;
+          asian_session_notes: string | null;
+          eod_review_completed: boolean;
+          eod_review_at: string | null;
+          daily_pnl: number | null;
+          trades_taken: number;
+          rules_followed: number;
+          rules_broken: number;
+          emotional_state: "disciplined" | "anxious" | "fomo" | "revenge" | "calm" | "tired";
+          lessons_learned: string | null;
+          tomorrow_plan: string | null;
+          completion_percentage: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          date?: string;
+          morning_prep_completed?: boolean;
+          morning_prep_at?: string | null;
+          market_bias?: string | null;
+          key_levels?: string | null;
+          watchlist_reviewed?: boolean;
+          london_session_traded?: boolean;
+          london_session_notes?: string | null;
+          ny_session_traded?: boolean;
+          ny_session_notes?: string | null;
+          asian_session_traded?: boolean;
+          asian_session_notes?: string | null;
+          eod_review_completed?: boolean;
+          eod_review_at?: string | null;
+          daily_pnl?: number | null;
+          trades_taken?: number;
+          rules_followed?: number;
+          rules_broken?: number;
+          emotional_state?: "disciplined" | "anxious" | "fomo" | "revenge" | "calm" | "tired";
+          lessons_learned?: string | null;
+          tomorrow_plan?: string | null;
+          completion_percentage?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          date?: string;
+          morning_prep_completed?: boolean;
+          morning_prep_at?: string | null;
+          market_bias?: string | null;
+          key_levels?: string | null;
+          watchlist_reviewed?: boolean;
+          london_session_traded?: boolean;
+          london_session_notes?: string | null;
+          ny_session_traded?: boolean;
+          ny_session_notes?: string | null;
+          asian_session_traded?: boolean;
+          asian_session_notes?: string | null;
+          eod_review_completed?: boolean;
+          eod_review_at?: string | null;
+          daily_pnl?: number | null;
+          trades_taken?: number;
+          rules_followed?: number;
+          rules_broken?: number;
+          emotional_state?: "disciplined" | "anxious" | "fomo" | "revenge" | "calm" | "tired";
+          lessons_learned?: string | null;
+          tomorrow_plan?: string | null;
+          completion_percentage?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "daily_loops_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_streaks: {
+        Row: {
+          id: string;
+          user_id: string;
+          current_streak: number;
+          longest_streak: number;
+          last_completed_date: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          current_streak?: number;
+          longest_streak?: number;
+          last_completed_date?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          current_streak?: number;
+          longest_streak?: number;
+          last_completed_date?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_streaks_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
