@@ -1,31 +1,26 @@
-import { defineEventHandler } from "vinxi/http";
+import { defineEventHandler, getMethod, createError } from "h3";
 import { checkMigrations, getMigrationSQL } from "@/shared/migrate.server";
 
 export default defineEventHandler(async (event) => {
-  const method = event.method;
+  const method = getMethod(event);
 
-  // GET: Check migration status
   if (method === "GET") {
     try {
       const status = await checkMigrations();
-      return new Response(JSON.stringify(status, null, 2), {
-        headers: { "Content-Type": "application/json" },
-      });
+      return status;
     } catch (error) {
-      return new Response(
-        JSON.stringify({ error: "Failed to check migrations", detail: String(error) }),
-        { status: 500, headers: { "Content-Type": "application/json" } },
-      );
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to check migrations",
+        data: String(error),
+      });
     }
   }
 
-  // POST: Return the SQL that needs to be executed
   if (method === "POST") {
     const sql = getMigrationSQL();
-    return new Response(sql, {
-      headers: { "Content-Type": "text/plain" },
-    });
+    return sql;
   }
 
-  return new Response("Method not allowed", { status: 405 });
+  throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
 });
