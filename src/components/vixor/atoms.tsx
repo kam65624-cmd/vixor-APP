@@ -4,6 +4,12 @@ import { TrendingUp, TrendingDown, Minus, Shield, ShieldAlert, ShieldQuestion, C
 import { useState } from "react";
 
 // ═══════════════════════════════════════════════
+// RECOMMENDATION TYPE
+// ═══════════════════════════════════════════════
+
+export type Recommendation = "BUY" | "SELL" | "WAIT";
+
+// ═══════════════════════════════════════════════
 // SECTION TITLE
 // ═══════════════════════════════════════════════
 
@@ -16,6 +22,30 @@ export function SectionTitle({ title, action, subtitle }: { title: string; actio
       </div>
       {action}
     </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// RECOMMENDATION BADGE
+// ═══════════════════════════════════════════════
+
+export function RecBadge({ rec, size = "sm" }: { rec: Recommendation; size?: "sm" | "lg" }) {
+  const map = {
+    BUY: { bg: "bg-bullish/15", border: "border-bullish/40", text: "text-bullish", Icon: TrendingUp },
+    SELL: { bg: "bg-bearish/15", border: "border-bearish/40", text: "text-bearish", Icon: TrendingDown },
+    WAIT: { bg: "bg-neutral-wait/15", border: "border-neutral-wait/40", text: "text-neutral-wait", Icon: Minus },
+  } as const;
+  const s = map[rec];
+  const Icon = s.Icon;
+  return (
+    <span className={cn(
+      "inline-flex items-center gap-1 font-semibold rounded-lg border",
+      s.bg, s.border, s.text,
+      size === "lg" ? "px-3 py-1.5 text-sm" : "px-2 py-0.5 text-[11px]"
+    )}>
+      <Icon className={size === "lg" ? "size-4" : "size-3"} strokeWidth={2.5} />
+      {rec}
+    </span>
   );
 }
 
