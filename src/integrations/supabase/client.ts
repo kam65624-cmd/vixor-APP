@@ -14,8 +14,11 @@ function createSupabaseClient() {
       ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
     ];
     const message = `Missing Supabase environment variable(s): ${missing.join(', ')}.`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
+    console.warn(`[Supabase] ${message} — client will be non-functional until env vars are set.`);
+    // Return a dummy client that won't crash SSR, but won't work either
+    // The user will be redirected to /auth and then see the login page
+    // Once the client-side JS hydrates with proper env vars, it will work
+    return null as unknown as ReturnType<typeof createClient<Database>>;
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
@@ -28,13 +31,24 @@ function createSupabaseClient() {
 }
 
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
+let _initAttempted = false;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
   get(_, prop, receiver) {
-    if (!_supabase) _supabase = createSupabaseClient();
-    return Reflect.get(_supabase, prop, receiver);
+    if (!_supabase && !_initAttempted) {
+      _initAttempted = true;
+      try {
+        _supabase = createSupabaseClient();
+      } catch (e) {
+        console.error('[Supabase] Failed to create client:', e);
+      }
+    }
+    if (_supabase) {
+      return Reflect.get(_supabase, prop, receiver);
+    }
+    // Return a no-op function for any method calls when client is not available
+    return () => Promise.resolve({ data: null, error: new Error('Supabase not configured') });
   },
 });
-
