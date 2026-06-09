@@ -157,11 +157,18 @@ function addApiRouteInterception() {
   // Find the vercel_web.fetch function and add API interception before nitroApp.fetch
   const apiHandlerCode = `
 // ── Vixor: API Route Interception ──
-// Simple, self-contained API handlers with ZERO dynamic imports.
-// Returns JSON directly. No dependency on SSR chunks.
+// Self-contained API handlers. Uses req.url with fallback for path extraction.
 function __vixor_api__(req) {
-  const url = new URL(req.url);
-  if (!url.pathname.startsWith("/api/")) return null;
+  // Extract pathname from request - handle both full URL and path-only formats
+  let pathname = "";
+  try {
+    pathname = new URL(req.url).pathname;
+  } catch(e) {
+    // req.url might be just a path like "/api/migrate"
+    pathname = req.url?.split("?")[0] || "";
+  }
+
+  if (!pathname.startsWith("/api/")) return null;
 
   const headers = new Headers({
     "Content-Type": "application/json",
@@ -170,30 +177,25 @@ function __vixor_api__(req) {
 
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
 
-  const path = url.pathname;
-  console.log("[Vixor API]", req.method, path);
+  console.log("[Vixor API]", req.method, pathname);
 
-  if (path === "/api/migrate" && req.method === "GET") {
+  if (pathname === "/api/migrate" && req.method === "GET") {
     return new Response(JSON.stringify({ status: "ok", note: "Use POST to get migration SQL" }), { headers });
   }
 
-  if (path === "/api/migrate" && req.method === "POST") {
+  if (pathname === "/api/migrate" && req.method === "POST") {
     return new Response(JSON.stringify({ status: "ok", sql: "See supabase/migrations/ for SQL files" }), { headers });
   }
 
-  if (path === "/api/check-alerts") {
+  if (pathname === "/api/check-alerts") {
     return new Response(JSON.stringify({ status: "ok", message: "Alert check endpoint active" }), { headers });
   }
 
-  if (path === "/api/generate-signals") {
-    return new Response(JSON.stringify({ status: "ok", message: "Signal generation endpoint active" }), { headers });
+  if (pathname === "/api/generate-signals" || pathname === "/api/telegram-webhook") {
+    return new Response(JSON.stringify({ status: "ok" }), { headers });
   }
 
-  if (path === "/api/telegram-webhook") {
-    return new Response(JSON.stringify({ status: "ok", message: "Telegram webhook endpoint active" }), { headers });
-  }
-
-  return null; // Not an API route, fall through to SSR
+  return null; // Not a known API route, fall through to SSR
 }
 `;
 
