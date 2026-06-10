@@ -1,8 +1,19 @@
-import { defineEventHandler, getMethod, createError } from "h3";
-import { checkMigrations, getMigrationSQL, getPendingMigrationsSQL } from "@/shared/migrate.server";
+import { defineEventHandler, getMethod, getHeader, createError } from "h3";
+import { checkMigrations, getPendingMigrationsSQL } from "@/shared/migrate.server";
 
 export default defineEventHandler(async (event) => {
   const method = getMethod(event);
+
+  // Security: Protect migration endpoint with CRON_SECRET
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const authHeader = getHeader(event, "authorization");
+    if (authHeader !== `Bearer ${cronSecret}`) {
+      throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+    }
+  } else if (process.env.NODE_ENV === "production") {
+    throw createError({ statusCode: 500, statusMessage: "Migration endpoint not configured" });
+  }
 
   if (method === "GET") {
     try {

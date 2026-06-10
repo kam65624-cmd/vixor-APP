@@ -1,4 +1,4 @@
-import { defineEventHandler, getMethod, readBody, createError } from "h3";
+import { defineEventHandler, getMethod, readBody, getHeader, createError } from "h3";
 import { supabaseAdmin } from "@/shared/supabase/client.server";
 
 export default defineEventHandler(async (event) => {
@@ -6,6 +6,24 @@ export default defineEventHandler(async (event) => {
 
   if (method !== "POST") {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
+  }
+
+  // SECURITY: Verify Telegram webhook secret token
+  // This prevents anyone from sending forged webhook events
+  const telegramSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (telegramSecret) {
+    const receivedSecret = getHeader(event, "x-telegram-bot-api-secret-token");
+    if (receivedSecret !== telegramSecret) {
+      console.warn("[Telegram Webhook] Rejected: invalid secret token");
+      throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+    }
+  } else {
+    // In production, the secret MUST be set
+    if (process.env.NODE_ENV === "production") {
+      console.error("[Telegram Webhook] CRITICAL: TELEGRAM_WEBHOOK_SECRET not set in production!");
+      throw createError({ statusCode: 500, statusMessage: "Webhook not configured" });
+    }
+    console.warn("[Telegram Webhook] WARNING: No TELEGRAM_WEBHOOK_SECRET set (development only)");
   }
 
   try {
