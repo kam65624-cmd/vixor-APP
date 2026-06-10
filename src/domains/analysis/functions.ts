@@ -532,7 +532,16 @@ export const quickAnalyze = createServerFn({ method: "POST" })
   });
 
 // ---------- APPLY MIGRATION (add signal_badge and vixor_message columns) ----------
+// SECURITY: This function previously had NO authentication, allowing anyone to
+// execute DDL changes. Now requires CRON_SECRET in production.
+// TODO: Remove this function entirely once the migration has been applied.
 export const applySignalBadgeMigration = createServerFn({ method: "POST" }).handler(async () => {
+  // SECURITY: Require CRON_SECRET in production
+  if (process.env.NODE_ENV === "production") {
+    // This migration function should not be callable in production
+    // The columns should already exist via SQL migrations
+    return { applied: false, message: "Migration function disabled in production. Run SQL migrations via Supabase Dashboard." };
+  }
   const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
   try {

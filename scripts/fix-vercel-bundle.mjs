@@ -138,110 +138,68 @@ function fixNitroErrorHandler() {
   console.log("[fix-vercel] Patched index.mjs - added debug error handler");
 }
 
-// ── Step 3: Add API route interception to main index.mjs ──
-// TanStack Start's Nitro build routes ALL requests to the SSR handler.
-// We add a pre-fetch interceptor that catches /api/* paths and handles them
-// directly, bypassing the SSR renderer.
+// ── Step 3: REMOVED — API route interception ──
+// PREVIOUSLY: This function intercepted ALL /api/* requests and returned
+// static JSON stubs, effectively disabling all backend functionality.
+// This was the #1 critical bug: cron jobs, alerts, signals, and webhooks
+// were all silently killed by this interceptor.
+//
+// The real API routes are handled by Nitro/h3 event handlers defined in:
+//   server/api/check-alerts.ts
+//   server/api/generate-signals.ts
+//   server/api/telegram-webhook.ts
+//   server/api/migrate.ts
+//
+// These routes are automatically discovered by Nitro and should be routed
+// correctly WITHOUT any interception. If /api/* routes return 404 after
+// this removal, the issue is in Nitro's route discovery config, not here.
+//
+// REMOVED: addApiRouteInterception() — 2026-06-11 VIXOR MASTER V2 Phase 0
 
-function addApiRouteInterception() {
+function removeApiRouteInterception() {
   const indexPath = join(FUNC_DIR, "index.mjs");
   if (!existsSync(indexPath)) return;
 
   let content = readFileSync(indexPath, "utf-8");
+  let modified = false;
 
+  // Remove the __vixor_api__ function definition
   if (content.includes("__vixor_api__")) {
-    console.log("[fix-vercel] API route interception already exists");
-    return;
+    // Remove the entire __vixor_api__ function block
+    content = content.replace(
+      /\/\/ ── Vixor: API Route Interception ──[\s\S]*?^\}\n/m,
+      "// [REMOVED] API route interception — VIXOR MASTER V2 Phase 0\n"
+    );
+    modified = true;
+    console.log("[fix-vercel] Removed __vixor_api__ function from index.mjs");
   }
 
-  // Find the vercel_web.fetch function and add API interception before nitroApp.fetch
-  const apiHandlerCode = `
-// ── Vixor: API Route Interception ──
-// Self-contained API handlers. Uses req.url with fallback for path extraction.
-function __vixor_api__(req) {
-  // Extract pathname from request - handle both full URL and path-only formats
-  let pathname = "";
-  try {
-    pathname = new URL(req.url).pathname;
-  } catch(e) {
-    // req.url might be just a path like "/api/migrate"
-    pathname = req.url?.split("?")[0] || "";
+  // Remove the API interception call in fetch()
+  if (content.includes("const apiResponse = __vixor_api__")) {
+    content = content.replace(
+      /\s*const apiResponse = __vixor_api__\(req\);\s*\n\s*if \(apiResponse\) return apiResponse;\s*\n/,
+      "\n"
+    );
+    modified = true;
+    console.log("[fix-vercel] Removed API interception call from fetch()");
   }
 
-  if (!pathname.startsWith("/api/")) return null;
-
-  const headers = new Headers({
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-  });
-
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
-
-  console.log("[Vixor API]", req.method, pathname);
-
-  if (pathname === "/api/migrate" && req.method === "GET") {
-    return new Response(JSON.stringify({ status: "ok", note: "Use POST to get migration SQL" }), { headers });
+  // Revert async fetch back to sync if we were the ones who made it async
+  if (content.includes("async fetch(req, context)")) {
+    content = content.replace(
+      "async fetch(req, context)",
+      "fetch(req, context)"
+    );
+    modified = true;
+    console.log("[fix-vercel] Reverted fetch() from async to sync");
   }
 
-  if (pathname === "/api/migrate" && req.method === "POST") {
-    return new Response(JSON.stringify({ status: "ok", sql: "See supabase/migrations/ for SQL files" }), { headers });
+  if (modified) {
+    writeFileSync(indexPath, content, "utf-8");
+    console.log("[fix-vercel] API route interception CLEANED from index.mjs");
+  } else {
+    console.log("[fix-vercel] No API route interception found (already clean)");
   }
-
-  if (pathname === "/api/check-alerts") {
-    return new Response(JSON.stringify({ status: "ok", message: "Alert check endpoint active" }), { headers });
-  }
-
-  if (pathname === "/api/generate-signals" || pathname === "/api/telegram-webhook") {
-    return new Response(JSON.stringify({ status: "ok" }), { headers });
-  }
-
-  return null; // Not a known API route, fall through to SSR
-}
-`;
-
-  // Insert the API handler code AFTER the first line (globalThis.__nitro_main__)
-  const lines = content.split("\n");
-  // Find the line with globalThis.__nitro_main__ and insert after it
-  let insertIndex = 0;
-  for (let i = 0; i < Math.min(lines.length, 5); i++) {
-    if (lines[i].includes("__nitro_main__")) {
-      insertIndex = i + 1;
-      break;
-    }
-  }
-  // Also insert after the NFT trace block if present
-  for (let i = insertIndex; i < Math.min(lines.length, 20); i++) {
-    if (lines[i].includes("Promise.allSettled")) {
-      // Find the closing bracket
-      for (let j = i; j < Math.min(lines.length, i + 10); j++) {
-        if (lines[j].includes("]);")) {
-          insertIndex = j + 1;
-          break;
-        }
-      }
-      break;
-    }
-  }
-
-  const apiLines = apiHandlerCode.split("\n");
-  lines.splice(insertIndex, 0, ...apiLines);
-  content = lines.join("\n");
-
-  // Modify the vercel_web.fetch to check API routes first
-  // Step 1: Make fetch async
-  content = content.replace(
-    "const vercel_web = { fetch(req, context) {",
-    "const vercel_web = { async fetch(req, context) {"
-  );
-
-  // Step 2: Add API interception at the start of async fetch
-  content = content.replace(
-    "const vercel_web = { async fetch(req, context) {",
-    "const vercel_web = { async fetch(req, context) {\n    const apiResponse = __vixor_api__(req);\n    if (apiResponse) return apiResponse;"
-  );
-
-  writeFileSync(indexPath, content, "utf-8");
-  console.log("[fix-vercel] Added API route interception to index.mjs");
 }
 
 // ── Main ──
@@ -251,5 +209,5 @@ console.log(`[fix-vercel] Found ${chunks.length} code-split chunks: ${chunks.joi
 addNftTraceableImports(chunks);
 verifySsrFiles(chunks);
 fixNitroErrorHandler();
-addApiRouteInterception();
+removeApiRouteInterception();
 console.log("[fix-vercel] Done ✓");

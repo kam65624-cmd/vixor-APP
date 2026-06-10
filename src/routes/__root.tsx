@@ -211,7 +211,7 @@ function RootComponent() {
     let lastAuthEvent = "";
     let lastAuthTime = 0;
 
-    import("@/integrations/supabase/client").then(({ supabase }) => {
+    import("@/shared/supabase/client").then(({ supabase }) => {
       if (!mounted) return;
       const { data: sub } = supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;

@@ -3,6 +3,22 @@ import { supabaseAdmin } from "@/shared/supabase/client.server";
 
 export const APIRoute = createAPIFileRoute("/api/telegram-webhook")({
   POST: async ({ request }) => {
+    // SECURITY: Verify Telegram webhook secret token
+    const telegramSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (telegramSecret) {
+      const receivedSecret = request.headers.get("x-telegram-bot-api-secret-token");
+      if (receivedSecret !== telegramSecret) {
+        console.warn("[Telegram Webhook] Rejected: invalid secret token");
+        return new Response("Unauthorized", { status: 401 });
+      }
+    } else {
+      if (process.env.NODE_ENV === "production") {
+        console.error("[Telegram Webhook] CRITICAL: TELEGRAM_WEBHOOK_SECRET not set in production!");
+        return new Response("Webhook not configured", { status: 500 });
+      }
+      console.warn("[Telegram Webhook] WARNING: No TELEGRAM_WEBHOOK_SECRET set (development only)");
+    }
+
     try {
       const body = await request.json();
 

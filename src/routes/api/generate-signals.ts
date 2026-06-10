@@ -11,13 +11,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
 
-  // Validate CRON_SECRET when set
+  // Validate CRON_SECRET — mandatory in production
   const cronSecret = process.env.CRON_SECRET;
   if (cronSecret) {
     const authHeader = getHeader(event, "authorization");
     if (authHeader !== `Bearer ${cronSecret}`) {
       throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
+  } else if (process.env.NODE_ENV === "production") {
+    console.error("[CRON SECURITY] CRON_SECRET not set in production! Refusing to execute.");
+    throw createError({ statusCode: 500, statusMessage: "Cron not configured" });
   }
 
   try {

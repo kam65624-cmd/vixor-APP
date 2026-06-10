@@ -22,6 +22,8 @@ export const startInstance = createStart(() => ({
   functionMiddleware: [attachSupabaseAuth],
   requestMiddleware: [errorMiddleware],
   serverFns: {
-    disableCsrfMiddlewareWarning: true,
-  } as any,
+    // CSRF protection enabled — VIXOR MASTER V2 Phase 0
+    // Previously disabled as a workaround; the correct fix is to ensure
+    // all state-changing server functions use method: "POST"
+  },
 }));

@@ -7,11 +7,10 @@ import type { Database } from "./types";
 
 function createSupabaseAdminClient() {
   const SUPABASE_URL = process.env.SUPABASE_URL;
-  // Support both naming conventions: SUPABASE_ANON_KEY (common) and SUPABASE_PUBLISHABLE_KEY (TanStack Start default)
-  const SUPABASE_SERVICE_ROLE_KEY =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_PUBLISHABLE_KEY ||
-    process.env.SUPABASE_ANON_KEY;
+  // SECURITY: Only use the service role key — NEVER fall back to anon key.
+  // The admin client bypasses RLS and must only use the service role key.
+  // If SUPABASE_SERVICE_ROLE_KEY is not set, the app will throw an error.
+  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     const missing = [
