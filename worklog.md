@@ -21,3 +21,33 @@ Stage Summary:
 - Document includes 20+ detailed tables with exact file paths, SQL statements, API changes, and effort estimates
 - 20-week execution roadmap with P0-P5 priorities
 - Document saved to: /home/z/my-project/download/VIXOR_MASTER_V2_Architecture_Transformation.docx
+
+---
+Task ID: P0
+Agent: Main Agent (Super Z)
+Task: VIXOR MASTER V2 — Phase 0: System Re-Activation
+
+Work Log:
+- REMOVED API route interception from scripts/fix-vercel-bundle.mjs (addApiRouteInterception replaced with removeApiRouteInterception)
+- ADDED Telegram webhook secret verification in both h3 and TanStack Start versions (TELEGRAM_WEBHOOK_SECRET)
+- CREATED RLS migration for daily_signals table (20260611000000_enable_rls_daily_signals.sql)
+- DELETED leaked .env.production containing live OIDC JWT token
+- FIXED admin client: removed anon key fallback from client.server.ts (service role only)
+- MADE CRON_SECRET mandatory in production for /api/check-alerts, /api/generate-signals, /api/migrate
+- DISABLED applySignalBadgeMigration in production
+- ENABLED CSRF protection by removing disableCsrfMiddlewareWarning from start.ts
+- ADDED auth to /api/migrate endpoint
+- DELETED 549 MB of dead code: vixor-APP/, src/integrations/, src/lib/analysis/ (8,081 lines), src/lib/i18n/, src/lib/vixor-mock.ts, 88+ root-level duplicate files
+- FIXED __root.tsx import from @/integrations/supabase/client to @/shared/supabase/client
+- VERIFIED build succeeds (vite build + fix-vercel-bundle.mjs)
+- VERIFIED no __vixor_api__ or apiResponse in built output
+- COMMITTED and PUSHED to GitHub for Vercel auto-deploy
+
+Stage Summary:
+- 125 files changed, 161 insertions, 19,083 deletions
+- Build output size reduced significantly
+- All 9 P0 launch blockers addressed
+- System should now have working API routes when Vercel deployment completes
+- IMPORTANT: The RLS migration (20260611000000) needs to be run manually in Supabase Dashboard
+- IMPORTANT: TELEGRAM_WEBHOOK_SECRET env var needs to be set in Vercel
+- IMPORTANT: CRON_SECRET env var needs to be set in Vercel
