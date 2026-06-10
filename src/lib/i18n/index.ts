@@ -1,5 +1,3 @@
-"use client";
-
 import {
   createContext,
   useContext,
@@ -8,59 +6,86 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import {
-  type Language,
-  translate,
-  getLanguageConfig,
-  LANGUAGES,
-} from "./translations";
+import { translations } from "./translations";
 
 // ═══════════════════════════════════════════════
-// CONTEXT TYPE
+// TYPES
 // ═══════════════════════════════════════════════
+
+export type Language = "en" | "ar";
 
 interface I18nContextType {
-  /** Current language code */
   lang: Language;
-  /** Set language and persist to localStorage */
   setLang: (lang: Language) => void;
-  /** Translate a key with optional params: t("dashboard.greeting.morning") */
   t: (key: string, params?: Record<string, string | number>) => string;
-  /** Text direction: "ltr" or "rtl" */
   dir: "ltr" | "rtl";
-  /** Whether the current language is RTL */
   isRTL: boolean;
-  /** Available languages list */
-  languages: typeof LANGUAGES;
 }
+
+// ═══════════════════════════════════════════════
+// CONTEXT
+// ═══════════════════════════════════════════════
 
 const I18nContext = createContext<I18nContextType | null>(null);
 
 // ═══════════════════════════════════════════════
-// PERSISTENCE
+// STORAGE KEY
 // ═══════════════════════════════════════════════
 
 const STORAGE_KEY = "vixor-lang";
 
-function getSavedLang(): Language {
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+
+function getInitialLang(): Language {
   if (typeof window === "undefined") return "en";
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "ar" || saved === "en") return saved;
-  } catch {}
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "ar" || stored === "en") return stored;
+  } catch {
+    // localStorage not available
+  }
   return "en";
 }
 
 function applyDirection(lang: Language) {
   if (typeof document === "undefined") return;
-  const config = getLanguageConfig(lang);
-  document.documentElement.dir = config.dir;
+  const isRTL = lang === "ar";
+  document.documentElement.dir = isRTL ? "rtl" : "ltr";
   document.documentElement.lang = lang;
-  if (config.dir === "rtl") {
+  if (isRTL) {
     document.documentElement.classList.add("rtl");
   } else {
     document.documentElement.classList.remove("rtl");
   }
+}
+
+/**
+ * Resolve a dot-separated key against a flat translations object.
+ * Supports both flat keys ("dashboard.greeting.morning") and
+ * also direct lookups.
+ */
+function resolve(
+  dict: Record<string, string>,
+  key: string,
+  params?: Record<string, string | number>
+): string {
+  let value = dict[key];
+
+  // If not found, try replacing dots with nested lookups
+  if (value === undefined) {
+    value = key;
+  }
+
+  // Interpolate parameters: {name} → value
+  if (params && value) {
+    for (const [k, v] of Object.entries(params)) {
+      value = value.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+    }
+  }
+
+  return value;
 }
 
 // ═══════════════════════════════════════════════
@@ -68,40 +93,36 @@ function applyDirection(lang: Language) {
 // ═══════════════════════════════════════════════
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Language>(getSavedLang);
+  const [lang, setLangState] = useState<Language>(getInitialLang);
 
-  // Apply direction on mount and when language changes
+  // Apply direction on mount and on lang change
   useEffect(() => {
     applyDirection(lang);
   }, [lang]);
 
   const setLang = useCallback((newLang: Language) => {
-    setLangState(newLang);
     try {
       localStorage.setItem(STORAGE_KEY, newLang);
-    } catch {}
+    } catch {
+      // ignore
+    }
     applyDirection(newLang);
+    setLangState(newLang);
   }, []);
 
-  const config = getLanguageConfig(lang);
+  const isRTL = lang === "ar";
+  const dir = isRTL ? "rtl" : "ltr";
 
   const t = useCallback(
-    (key: string, params?: Record<string, string | number>) =>
-      translate(lang, key, params),
-    [lang],
+    (key: string, params?: Record<string, string | number>): string => {
+      const dict = translations[lang] ?? translations.en;
+      return resolve(dict, key, params);
+    },
+    [lang]
   );
 
   return (
-    <I18nContext.Provider
-      value={{
-        lang,
-        setLang,
-        t,
-        dir: config.dir,
-        isRTL: config.dir === "rtl",
-        languages: LANGUAGES,
-      }}
-    >
+    <I18nContext.Provider value={{ lang, setLang, t, dir, isRTL }}>
       {children}
     </I18nContext.Provider>
   );
@@ -118,7 +139,3 @@ export function useI18n(): I18nContextType {
   }
   return ctx;
 }
-
-// Re-export types and utilities for convenience
-export type { Language } from "./translations";
-export { LANGUAGES, getLanguageConfig } from "./translations";

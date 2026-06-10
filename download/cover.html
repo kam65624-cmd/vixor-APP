@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=794, height=1123">
+<title>VIXOR Full System Audit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  @page { size: 794px 1123px; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 794px; height: 1123px; margin: 0; padding: 0; overflow: hidden; background: #fafaf8; }
+  
+  .page { position: relative; width: 794px; height: 1123px; background: #fafaf8; }
+  
+  /* Layer 1: Background - grid pattern */
+  .bg-layer { position: absolute; inset: 0; overflow: hidden; z-index: 1; }
+  .grid-line { position: absolute; background: rgba(33, 116, 144, 0.03); }
+  .grid-h { width: 794px; height: 0.5pt; }
+  .grid-v { height: 1123px; width: 0.5pt; }
+  
+  /* Layer 2: Structure */
+  .structure-layer { position: absolute; inset: 0; z-index: 2; }
+  .anchor-line { position: absolute; left: 95px; width: 6px; background: #217490; }
+  .meta-separator { position: absolute; height: 1px; background: rgba(33, 116, 144, 0.3); }
+  
+  /* Layer 3: Content */
+  .content-layer { position: absolute; inset: 0; z-index: 3; }
+  .content-left { position: absolute; left: 130px; }
+  
+  .kicker {
+    position: absolute; top: 170px; left: 130px;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400;
+    letter-spacing: 4px; color: rgba(27, 26, 24, 0.6);
+    text-transform: uppercase;
+  }
+  
+  .hero-title {
+    position: absolute; top: 330px; left: 130px;
+    font-family: 'Inter', sans-serif; font-size: 52px; font-weight: 900;
+    color: #1b1a18; line-height: 1.15; max-width: 520px;
+  }
+  
+  .summary {
+    position: absolute; top: 550px; left: 130px;
+    font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 400;
+    color: rgba(27, 26, 24, 0.85); line-height: 1.6; max-width: 440px;
+  }
+  
+  .meta {
+    position: absolute; top: 790px; left: 130px;
+    font-family: 'Inter', sans-serif; font-size: 17px; font-weight: 400;
+    color: rgba(27, 26, 24, 0.75); line-height: 2.0;
+  }
+  
+  .footer {
+    position: absolute; bottom: 60px; right: 80px;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400;
+    letter-spacing: 2px; color: rgba(27, 26, 24, 0.4);
+    text-transform: uppercase;
+  }
+  
+  .audit-badge {
+    position: absolute; top: 170px; right: 80px;
+    font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600;
+    letter-spacing: 2px; color: #217490; text-transform: uppercase;
+    border: 1.5px solid #217490; padding: 6px 14px; border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- Layer 1: Background grid -->
+  <div class="bg-layer">
+    <div class="grid-line grid-h" style="top: 112px;"></div>
+    <div class="grid-line grid-h" style="top: 224px;"></div>
+    <div class="grid-line grid-h" style="top: 336px;"></div>
+    <div class="grid-line grid-h" style="top: 448px;"></div>
+    <div class="grid-line grid-h" style="top: 560px;"></div>
+    <div class="grid-line grid-h" style="top: 672px;"></div>
+    <div class="grid-line grid-h" style="top: 784px;"></div>
+    <div class="grid-line grid-h" style="top: 896px;"></div>
+    <div class="grid-line grid-v" style="left: 95px;"></div>
+    <div class="grid-line grid-v" style="left: 260px;"></div>
+    <div class="grid-line grid-v" style="left: 425px;"></div>
+    <div class="grid-line grid-v" style="left: 590px;"></div>
+  </div>
+  
+  <!-- Layer 2: Structure -->
+  <div class="structure-layer">
+    <div class="anchor-line" style="top: 100px; height: 900px;"></div>
+    <div class="meta-separator" style="top: 775px; left: 130px; width: 280px;"></div>
+  </div>
+  
+  <!-- Layer 3: Content -->
+  <div class="content-layer">
+    <div class="kicker">FORENSIC ENGINEERING AUDIT</div>
+    <div class="audit-badge">CLASSIFIED</div>
+    <div class="hero-title">VIXOR<br>Full System<br>Audit Report</div>
+    <div class="summary">
+      Complete reverse-engineering and forensic audit of the Vixor trading platform. 
+      Covering architecture, security, database, API integrations, AI systems, 
+      data flows, and rebuild recommendations. Detailed enough for a new 
+      engineering team to rebuild the entire platform.
+    </div>
+    <div class="meta">
+      Z.ai Engineering Audit<br>
+      Version 1.0 &middot; June 2026<br>
+      20 Sections &middot; 24 Pages
+    </div>
+    <div class="footer">CONFIDENTIAL &middot; INTERNAL USE ONLY</div>
+  </div>
+</div>
+</body>
+</html>
