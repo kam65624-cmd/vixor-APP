@@ -9,7 +9,6 @@ export default defineEventHandler(async (event) => {
   }
 
   // SECURITY: Verify Telegram webhook secret token
-  // This prevents anyone from sending forged webhook events
   const telegramSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
   if (telegramSecret) {
     const receivedSecret = getHeader(event, "x-telegram-bot-api-secret-token");
@@ -18,7 +17,6 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
   } else {
-    // In production, the secret MUST be set
     if (process.env.NODE_ENV === "production") {
       console.error("[Telegram Webhook] CRITICAL: TELEGRAM_WEBHOOK_SECRET not set in production!");
       throw createError({ statusCode: 500, statusMessage: "Webhook not configured" });
@@ -29,7 +27,7 @@ export default defineEventHandler(async (event) => {
   try {
     const body = (await readBody(event)) as Record<string, any>;
 
-    // 1. Handle pre_checkout_query (Telegram asks if we are ready to proceed with payment)
+    // 1. Handle pre_checkout_query
     if (body.pre_checkout_query) {
       const queryId = body.pre_checkout_query.id as string;
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -54,7 +52,6 @@ export default defineEventHandler(async (event) => {
       if (payload) {
         const [userId, packId] = payload.split("_");
 
-        // Fetch the pack to know how many points to credit
         const { data: pack } = await supabaseAdmin
           .from("point_packs")
           .select("*")
@@ -64,7 +61,6 @@ export default defineEventHandler(async (event) => {
         if (pack) {
           const totalPoints = pack.points + (pack.bonus_points || 0);
 
-          // Credit points via RPC
           await supabaseAdmin.rpc("credit_points", {
             _user: userId,
             _amount: totalPoints,

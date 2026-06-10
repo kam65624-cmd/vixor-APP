@@ -4,7 +4,6 @@ import { checkAllAlerts } from "@/domains/trading/server/alert-checker";
 export default defineEventHandler(async (event) => {
   const method = getMethod(event);
 
-  // Both GET and POST are supported so Vercel Cron and manual triggers work
   if (method !== "GET" && method !== "POST") {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
@@ -19,13 +18,11 @@ export default defineEventHandler(async (event) => {
   if (isVercelCron) {
     // Vercel Cron requests are automatically authenticated by Vercel's infrastructure
   } else if (cronSecret) {
-    // Manual trigger — must provide the CRON_SECRET
     const authHeader = getHeader(event, "authorization");
     if (authHeader !== `Bearer ${cronSecret}`) {
       throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
   } else if (process.env.NODE_ENV === "production") {
-    // No Vercel Cron header AND no CRON_SECRET set in production = BLOCK
     console.error("[CRON SECURITY] Request is not from Vercel Cron and CRON_SECRET is not set. Refusing.");
     throw createError({ statusCode: 500, statusMessage: "Cron not configured" });
   }

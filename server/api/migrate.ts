@@ -4,7 +4,7 @@ import { checkMigrations, getPendingMigrationsSQL } from "@/shared/migrate.serve
 export default defineEventHandler(async (event) => {
   const method = getMethod(event);
 
-  // Security: Protect migration endpoint with CRON_SECRET
+  // SECURITY: Require CRON_SECRET or admin access for migration endpoints
   const cronSecret = process.env.CRON_SECRET;
   if (cronSecret) {
     const authHeader = getHeader(event, "authorization");
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
   } else if (process.env.NODE_ENV === "production") {
-    throw createError({ statusCode: 500, statusMessage: "Migration endpoint not configured" });
+    throw createError({ statusCode: 403, statusMessage: "Migrations not accessible in production without CRON_SECRET" });
   }
 
   if (method === "GET") {
@@ -29,7 +29,6 @@ export default defineEventHandler(async (event) => {
   }
 
   if (method === "POST") {
-    // Return only the SQL for tables that are missing
     const pendingSQL = await getPendingMigrationsSQL();
     return { sql: pendingSQL, instructions: "Run this SQL in the Supabase Dashboard SQL Editor" };
   }

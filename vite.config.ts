@@ -26,9 +26,14 @@ export default defineConfig({
       // @vercel/nft doesn't trace imports within dynamically-loaded modules,
       // so code-split chunks in _ssr/ get excluded from the deployment.
       includeFiles: ["_ssr/**"],
-      // API routes are defined in server/api/ directory.
-      // Nitro auto-discovers handlers from server/api/*.ts files.
-      // Each file exports a defineEventHandler from h3.
+      // API handlers: server/api/*.ts exports defineEventHandler from h3.
+      // These are registered as Nitro route handlers alongside the SSR renderer.
+      handlers: [
+        { route: "/api/check-alerts", handler: "./server/api/check-alerts.ts" },
+        { route: "/api/generate-signals", handler: "./server/api/generate-signals.ts" },
+        { route: "/api/telegram-webhook", handler: "./server/api/telegram-webhook.ts" },
+        { route: "/api/migrate", handler: "./server/api/migrate.ts" },
+      ],
     }),
     viteReact(),
   ],
