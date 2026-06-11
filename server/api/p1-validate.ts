@@ -22,6 +22,20 @@ configureEventPersistence();
 export default defineEventHandler(async (event) => {
   const query = getQuery(event) as Record<string, string>;
 
+  // ═══ P1 BOOTSTRAP: Must run before any ToolRegistry operations ═══
+  // In Vercel serverless, each API handler runs in its own context.
+  // Static imports at the top may be tree-shaken. This dynamic import
+  // ensures tools are registered and events are configured.
+  let bootstrapResult = "not attempted";
+  try {
+    await import("../../src/shared/tool-registry/bootstrap");
+    const { configureEventPersistence } = await import("../../src/shared/events/persist");
+    configureEventPersistence();
+    bootstrapResult = "success";
+  } catch (err) {
+    bootstrapResult = `failed: ${err instanceof Error ? err.message : String(err)}`;
+  }
+
   // Auth: Same pattern as check-alerts.ts
   // Accept: Vercel Cron header OR Bearer token with CRON_SECRET
   const isVercelCron = getHeader(event, "x-vercel-cron") === "1";
@@ -258,7 +272,8 @@ export default defineEventHandler(async (event) => {
 
   return {
     timestamp: new Date().toISOString(),
-    version: "P1-activation-v1",
+    version: "P1-activation-v2",
+    bootstrap: bootstrapResult,
     summary: {
       activeComponents: `${activeCount}/${totalComponents}`,
       errors: errors.length,
