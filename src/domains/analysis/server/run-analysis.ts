@@ -247,6 +247,28 @@ export async function runChartAnalysis(
   }
 
   // ═══════════════════════════════════════════════════════════════════════
+  // STEP 2.5: TRUTH VALIDATION — Verify vision data against real market
+  //
+  // Compares the vision-extracted price against real market data.
+  // NEVER blocks analysis — only warns. The local engine uses real OHLCV
+  // data anyway, so even if vision is wrong, the analysis is still valid.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  if (chartContext && hasVisionKey) {
+    try {
+      const { validateChartTruth } = await import("@/domains/chart-truth");
+      const truthResult = await validateChartTruth(chartContext);
+      console.log("[Vixor] Truth Score:", truthResult.truthScore, truthResult.status);
+      if (truthResult.warnings.length > 0) {
+        console.warn("[Vixor] Truth warnings:", truthResult.warnings);
+      }
+      // Do NOT throw on low truth score — just warn. Real data will be used anyway.
+    } catch (truthErr) {
+      console.warn("[Vixor] Truth validation failed silently:", truthErr instanceof Error ? truthErr.message : String(truthErr));
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
   // STEP 3: DETERMINE PAIR — Prefer vision-extracted symbol over user selection
   // ═══════════════════════════════════════════════════════════════════════
 
@@ -279,18 +301,17 @@ export async function runChartAnalysis(
 
   // If local engine produced a reasonable result (confidence >= 50), use it
   // The local engine is deterministic and based on REAL OHLCV data
+  // Determine the result: local engine or Gemini fallback
+  let result: AnalysisResult;
+
   if (localResult.confidence >= 50 || !hasVisionKey) {
     console.log(
       `[Vixor] Local analysis complete: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
     );
-
-    const result = buildAnalysisResult(localResult, chartContext);
-    return result;
-  }
-
-  // ── GEMINI VISION FALLBACK — Full analysis with vision model ──
-  // Only used when local engine has very low confidence AND we have an API key
-  if (hasVisionKey) {
+    result = buildAnalysisResult(localResult, chartContext);
+  } else if (hasVisionKey) {
+    // ── GEMINI VISION FALLBACK — Full analysis with vision model ──
+    // Only used when local engine has very low confidence AND we have an API key
     try {
       console.log("[Vixor] Step 3: Local confidence low, attempting Gemini Vision analysis...");
       const geminiResult = await runGeminiAnalysis(
@@ -302,20 +323,39 @@ export async function runChartAnalysis(
         chartContext,
       );
       console.log("[Vixor] Gemini Vision analysis completed successfully.");
-      return geminiResult;
+      result = geminiResult;
     } catch (geminiError) {
       console.warn(
         "[Vixor] Gemini Vision analysis failed, using local engine result:",
         geminiError instanceof Error ? geminiError.message : String(geminiError),
       );
+      result = buildAnalysisResult(localResult, chartContext);
+    }
+  } else {
+    // Use local result even with lower confidence
+    console.log(
+      `[Vixor] Using local analysis result: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
+    );
+    result = buildAnalysisResult(localResult, chartContext);
+  }
+
+  // ── OPTIONAL: Debate Engine validation ──
+  // Gated by environment variable — only runs when explicitly enabled.
+  // Attaches results to result._debate for downstream consumption (non-breaking).
+  if (process.env.ENABLE_DEBATE_ENGINE === "true") {
+    try {
+      const { DebateEngine } = await import("@/domains/debate");
+      const debate = new DebateEngine();
+      const debateResult = await debate.run(result);
+      console.log("[Vixor] Debate result:", debateResult.summary);
+      // Attach to result for downstream use (non-breaking, invisible to frontend)
+      (result as any)._debate = debateResult;
+    } catch (e) {
+      console.warn("[Vixor] Debate engine failed silently:", e instanceof Error ? e.message : String(e));
     }
   }
 
-  // Use local result even with lower confidence
-  console.log(
-    `[Vixor] Using local analysis result: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
-  );
-  return buildAnalysisResult(localResult, chartContext);
+  return result;
 }
 
 // ---------------------------------------------------------------------------
