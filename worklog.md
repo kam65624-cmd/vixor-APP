@@ -24,3 +24,28 @@ Stage Summary:
 - Chart Vision Pipeline code is correct but REQUIRES either GEMINI_API_KEY or LOVABLE_AI_GATEWAY_API_KEY in Vercel env vars
 - Database migrations NOT yet applied (domain_events, user_memories, etc.) — need Supabase Dashboard access
 - Key remaining items: (1) Add AI API key to Vercel, (2) Run DB migrations, (3) Fix sensitive env vars in Vercel
+---
+Task ID: 1
+Agent: Main Agent
+Task: Build P1.6 Truth Layer, Debate Engine, Risk Governor, and Paper Trading modules
+
+Work Log:
+- Explored full codebase: chart-intelligence, run-analysis.ts, price-fetcher.ts, chart-context.ts, chart-validation.ts, AnalysisResult type, trades/types.ts
+- Created src/domains/chart-truth/ with 5 files: types.ts, price-reconciler.ts, truth-score.engine.ts, market-truth.service.ts, index.ts
+- Created src/domains/debate/ with 7 files: types.ts, 4 agents, debate.engine.ts, index.ts
+- Created src/domains/risk-governor/ with 4 files: types.ts, risk-rules.ts, governor.engine.ts, index.ts
+- Created src/domains/paper-trading/ with 4 files: types.ts, paper.engine.ts, trade-ledger.ts, index.ts
+- Modified run-analysis.ts: Added Step 2.5 (Truth Validation) + Debate Engine hook
+- Verified TypeScript compilation: 0 errors in new code
+- Git committed: 21 files changed, 1708 insertions(+), 14 deletions(-)
+- Pushed to GitHub: main -> main
+- Deployed to Vercel production successfully
+
+Stage Summary:
+- P1.6 Truth Layer: Vision-extracted prices reconciled against real market data (NEVER blocks, only warns)
+- Debate Engine: 4 agents (Analyst 1.0, Strategist 1.2, RiskGuard 1.5, Contrarian 0.8) with weighted voting
+- Risk Governor: Composite risk scoring → PROCEED/REDUCE_SIZE/WAIT/BLOCK decisions
+- Paper Trading: Virtual trade sandbox with openTrade() + settleTrades() + TradeLedger
+- All modules: pure TypeScript, zero new dependencies, never throw, fail-safe defaults
+- Environment gates: ENABLE_DEBATE_ENGINE, ENABLE_PAPER_TRADING
+- Paper trades table migration SQL included in types.ts comments
