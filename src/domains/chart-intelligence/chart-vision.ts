@@ -2,18 +2,16 @@
 // Vixor Chart Intelligence — Vision Pipeline
 // ============================================================================
 //
-// Uses Gemini Vision (or z-ai-web-dev-sdk VLM) to extract ChartContext
-// from a screenshot image BEFORE any analysis runs.
+// Uses z-ai-web-dev-sdk VLM to extract ChartContext from a screenshot image
+// BEFORE any analysis runs. No external API keys required.
 //
 // This is the CORE of the Chart Intelligence Layer.
 // Without this, the system is "blind" and hallucinates.
 //
 // Flow:
-//   Image bytes → Vision Model → ChartExtractionResult → Validate → Analyze
+//   Image bytes → z-ai VLM → ChartExtractionResult → Validate → Analyze
 // ============================================================================
 
-import { generateObject } from "ai";
-import { z } from "zod";
 import {
   type ChartContext,
   type ChartExtractionResult,
@@ -23,151 +21,126 @@ import {
   failedExtraction,
 } from "./chart-context";
 
-// ── Schema for vision model output ──
-const ChartExtractionSchema = z.object({
-  /** Is this image a trading chart? */
-  isChart: z.boolean().describe("Whether this image contains a trading/chart view"),
-
-  /** What platform generated this chart? */
-  platform: z.enum(["tradingview", "mt5", "mt4", "binance", "exness", "bybit", "unknown"])
-    .describe("The trading platform that generated this chart, based on visual cues"),
-
-  /** Trading symbol/pair detected on the chart */
-  symbol: z.string().nullable()
-    .describe("The trading pair/symbol visible on the chart (e.g., 'XAUUSD', 'BTCUSDT', 'EURUSD'). NULL if not clearly visible."),
-
-  /** Confidence in symbol detection (0.0-1.0) */
-  symbolConfidence: z.number().min(0).max(1)
-    .describe("How confident you are about the detected symbol. 0.0 = pure guess, 1.0 = clearly readable text"),
-
-  /** Chart timeframe */
-  timeframe: z.string().nullable()
-    .describe("The chart timeframe visible on the chart (e.g., '1m', '5m', '15m', '1H', '4H', '1D'). NULL if not clearly visible."),
-
-  /** Confidence in timeframe detection (0.0-1.0) */
-  timeframeConfidence: z.number().min(0).max(1)
-    .describe("How confident you are about the detected timeframe"),
-
-  /** Current price visible on the chart */
-  currentPrice: z.number().nullable()
-    .describe("The current/latest price level visible on the chart. NULL if not clearly readable."),
-
-  /** Confidence in price reading (0.0-1.0) */
-  priceConfidence: z.number().min(0).max(1)
-    .describe("How confident you are about the detected price"),
-
-  /** Trend direction visible on the chart */
-  visualTrend: z.enum(["bullish", "bearish", "sideways", "unknown"])
-    .describe("The overall visual trend direction based on candle patterns"),
-
-  /** Indicators visible on the chart */
-  indicators: z.array(z.string())
-    .describe("List of technical indicators visible on the chart (e.g., 'EMA', 'RSI', 'MACD', 'Bollinger')"),
-
-  /** Any notable visual features */
-  notes: z.array(z.string())
-    .describe("Any notable features observed: candlestick patterns, support/resistance lines drawn, trendlines, etc."),
-});
-
-type VisionExtraction = z.infer<typeof ChartExtractionSchema>;
-
-// ── Extract ChartContext from an image using Gemini Vision ──
+// ── Extract ChartContext from an image using z-ai-web-dev-sdk VLM ──
 export async function extractChartContext(
   imageBytes: Uint8Array,
   mimeType: string,
   source: ChartSource = "external_screenshot",
 ): Promise<ChartExtractionResult> {
-  // Support both GEMINI_API_KEY and LOVABLE_AI_GATEWAY_API_KEY
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const lovableKey = process.env.LOVABLE_AI_GATEWAY_API_KEY;
-
-  if (!geminiKey && !lovableKey) {
-    console.warn("[ChartVision] No GEMINI_API_KEY or LOVABLE_AI_GATEWAY_API_KEY — cannot extract chart context from image");
-    return failedExtraction(
-      "Vision model not available (no API key). Cannot analyze chart image. Please set GEMINI_API_KEY or LOVABLE_AI_GATEWAY_API_KEY in your environment.",
-      { source },
-    );
-  }
-
   try {
-    console.log("[ChartVision] Starting vision extraction...");
+    console.log("[ChartVision] Starting vision extraction using z-ai VLM...");
 
-    // Prefer direct Gemini API key; fall back to Lovable AI Gateway
-    let model: any;
-    if (geminiKey) {
-      const { google } = await import("@ai-sdk/google");
-      model = google("gemini-2.5-pro");
-    } else {
-      const { createOpenAICompatible } = await import("@ai-sdk/openai-compatible");
-      const provider = createOpenAICompatible({
-        name: "lovable",
-        baseURL: "https://ai.gateway.lovable.dev/v1",
-        headers: {
-          "Lovable-API-Key": lovableKey!,
-          "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-        },
-      });
-      model = provider("google/gemini-2.5-pro");
-    }
+    const ZAI = await import("z-ai-web-dev-sdk");
+    const zai = await ZAI.default.create();
 
-    const { object } = await generateObject({
-      model,
-      schema: ChartExtractionSchema,
+    // Convert image bytes to base64 for z-ai VLM
+    const base64Image = Buffer.from(imageBytes).toString("base64");
+    const dataUrl = `data:${mimeType};base64,${base64Image}`;
+
+    const prompt = `You are a specialized chart analysis vision system for the Vixor trading platform. Your ONLY job is to extract factual, observable data from trading chart screenshots.
+
+CRITICAL RULES:
+1. NEVER guess or fabricate data. If you cannot clearly see something, return null.
+2. NEVER use your general knowledge about current market prices. Only report what's VISIBLE in the image.
+3. Symbol detection: Look for text labels like "XAUUSD", "BTCUSDT", "EURUSD" typically in the top-left corner of the chart.
+4. Timeframe detection: Look for text like "1m", "5m", "15m", "1H", "4H", "1D" usually near the symbol.
+5. Price detection: Look at the price axis (usually right side) for the current price level.
+6. Platform detection: TradingView has a distinctive dark theme. MT5 has its own layout. Binance has its web interface.
+7. If the image is NOT a trading chart, say so explicitly.
+
+Extract the following from the chart image and respond in this EXACT JSON format (no other text):
+{
+  "isChart": true/false,
+  "platform": "tradingview" | "mt5" | "mt4" | "binance" | "exness" | "bybit" | "unknown",
+  "symbol": "the trading pair or null if not visible",
+  "symbolConfidence": 0.0-1.0,
+  "timeframe": "the timeframe or null if not visible",
+  "timeframeConfidence": 0.0-1.0,
+  "currentPrice": the price number or null,
+  "priceConfidence": 0.0-1.0,
+  "visualTrend": "bullish" | "bearish" | "sideways" | "unknown",
+  "indicators": ["list of visible indicators"],
+  "notes": ["any notable observations"]
+}
+
+Confidence scoring:
+- 0.9-1.0: Text is clearly readable and unambiguous
+- 0.7-0.9: Text is readable but could have slight ambiguity
+- 0.5-0.7: Text is partially visible or blurry
+- 0.0-0.5: Cannot clearly read, mostly guessing
+
+Be especially careful with price values — a wrong price is worse than no price.`;
+
+    const response = await zai.chat.completions.createVision({
+      model: "glm-4.6v",
       messages: [
-        {
-          role: "system",
-          content: VISION_SYSTEM_PROMPT,
-        },
         {
           role: "user",
           content: [
-            {
-              type: "text",
-              text: "Extract the trading context from this chart image. Be precise — only report what you can actually SEE in the image. If something is not clearly visible, return null for that field and set confidence accordingly. NEVER guess or fabricate data.",
-            },
-            { type: "image", image: imageBytes },
+            { type: "text" as const, text: prompt },
+            { type: "image_url" as const, image_url: { url: dataUrl } },
           ],
         },
       ],
+      thinking: { type: "disabled" },
     });
 
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      return failedExtraction("Vision model returned no content.", { source });
+    }
+
+    // Parse the JSON response from the vision model
+    let parsed: any;
+    try {
+      // Try to extract JSON from the response (may be wrapped in markdown code block)
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return failedExtraction("Vision model did not return valid JSON.", { source });
+      }
+      parsed = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
+      console.warn("[ChartVision] Failed to parse vision response:", content.slice(0, 200));
+      return failedExtraction("Failed to parse vision model output.", { source });
+    }
+
     console.log("[ChartVision] Vision extraction complete:", {
-      isChart: object.isChart,
-      symbol: object.symbol,
-      timeframe: object.timeframe,
-      price: object.currentPrice,
-      symbolConf: object.symbolConfidence,
-      timeframeConf: object.timeframeConfidence,
-      priceConf: object.priceConfidence,
+      isChart: parsed.isChart,
+      symbol: parsed.symbol,
+      timeframe: parsed.timeframe,
+      price: parsed.currentPrice,
+      symbolConf: parsed.symbolConfidence,
+      timeframeConf: parsed.timeframeConfidence,
+      priceConf: parsed.priceConfidence,
     });
 
     // Validate: Is this even a chart?
-    if (!object.isChart) {
+    if (!parsed.isChart) {
       return failedExtraction(
         "The uploaded image does not appear to be a trading chart. Please upload a screenshot of a chart from TradingView, MT5, Binance, or similar platforms.",
-        { source, platform: object.platform as ChartPlatform ?? null },
+        { source, platform: parsed.platform as ChartPlatform ?? null },
       );
     }
 
     // Normalize the symbol (e.g., "XAUUSD" → "XAU/USD", "BTCUSDT" → "BTC/USDT")
-    const normalizedSymbol = normalizeSymbol(object.symbol);
+    const normalizedSymbol = normalizeSymbol(parsed.symbol);
 
     // Calculate overall confidence
-    const overallConfidence = calculateOverallConfidence(object);
+    const overallConfidence = calculateOverallConfidence(parsed);
 
     // Build ChartContext
     const context: ChartContext = {
       symbol: normalizedSymbol,
-      timeframe: object.timeframe ? normalizeTimeframe(object.timeframe) : null,
-      currentPrice: object.currentPrice,
+      timeframe: parsed.timeframe ? normalizeTimeframe(parsed.timeframe) : null,
+      currentPrice: parsed.currentPrice ?? null,
       source,
       confidence: overallConfidence,
-      platform: (object.platform as ChartPlatform) ?? null,
-      visibleIndicators: object.indicators ?? [],
-      extractionNotes: object.notes ?? [],
+      platform: (parsed.platform as ChartPlatform) ?? null,
+      visibleIndicators: parsed.indicators ?? [],
+      extractionNotes: parsed.notes ?? [],
     };
 
-    return successfulExtraction(context, JSON.stringify(object));
+    return successfulExtraction(context, content);
   } catch (err) {
     console.error("[ChartVision] Vision extraction failed:", err instanceof Error ? err.message : String(err));
     return failedExtraction(
@@ -265,7 +238,7 @@ function normalizeTimeframe(tf: string | null): string | null {
 }
 
 // ── Calculate overall confidence from individual confidences ──
-function calculateOverallConfidence(extraction: VisionExtraction): number {
+function calculateOverallConfidence(extraction: any): number {
   // Weight: symbol is most important (50%), timeframe (25%), price (25%)
   const symbolWeight = 0.5;
   const timeframeWeight = 0.25;
@@ -273,41 +246,22 @@ function calculateOverallConfidence(extraction: VisionExtraction): number {
 
   // If symbol is missing, confidence is very low regardless
   if (!extraction.symbol) {
-    return extraction.symbolConfidence * 0.3; // Max 0.3 if no symbol
+    return (extraction.symbolConfidence ?? 0) * 0.3; // Max 0.3 if no symbol
   }
 
-  let confidence = extraction.symbolConfidence * symbolWeight;
+  let confidence = (extraction.symbolConfidence ?? 0.5) * symbolWeight;
 
   if (extraction.timeframe) {
-    confidence += extraction.timeframeConfidence * timeframeWeight;
+    confidence += (extraction.timeframeConfidence ?? 0.5) * timeframeWeight;
   } else {
     confidence += 0.1 * timeframeWeight; // Small credit for seeing a chart
   }
 
   if (extraction.currentPrice) {
-    confidence += extraction.priceConfidence * priceWeight;
+    confidence += (extraction.priceConfidence ?? 0.5) * priceWeight;
   } else {
     confidence += 0.1 * priceWeight; // Small credit
   }
 
   return Math.min(confidence, 1.0);
 }
-
-// ── Vision System Prompt ──
-const VISION_SYSTEM_PROMPT = `You are a specialized chart analysis vision system for the Vixor trading platform. Your ONLY job is to extract factual, observable data from trading chart screenshots.
-
-CRITICAL RULES:
-1. NEVER guess or fabricate data. If you cannot clearly see something, return null.
-2. NEVER use your general knowledge about current market prices. Only report what's VISIBLE in the image.
-3. Symbol detection: Look for text labels like "XAUUSD", "BTCUSDT", "EURUSD" typically in the top-left corner of the chart.
-4. Timeframe detection: Look for text like "1m", "5m", "15m", "1H", "4H", "1D" usually near the symbol.
-5. Price detection: Look at the price axis (usually right side) for the current price level.
-6. Platform detection: TradingView has a distinctive dark theme with specific toolbar icons. MT5 has its own layout. Binance has its web interface style.
-7. Indicator detection: Look for indicator names in the chart (RSI, MACD, EMA, etc.) or visual overlays.
-8. Confidence scoring:
-   - 0.9-1.0: Text is clearly readable and unambiguous
-   - 0.7-0.9: Text is readable but could have slight ambiguity
-   - 0.5-0.7: Text is partially visible or blurry
-   - 0.0-0.5: Cannot clearly read the text, mostly guessing
-9. If the image is NOT a trading chart (e.g., a photo, meme, document), set isChart=false.
-10. Be especially careful with price values — a wrong price is worse than no price.`;

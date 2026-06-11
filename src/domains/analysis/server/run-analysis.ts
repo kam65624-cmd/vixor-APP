@@ -2,26 +2,27 @@
 // Vixor Analysis Runner — Chart Intelligence Pipeline
 // ============================================================================
 //
-// REVISED ARCHITECTURE (Chart Intelligence Layer):
+// ARCHITECTURE (100% Local — Zero External AI APIs):
 //
 //   When an IMAGE is uploaded:
-//     1. CHART VISION — Extract ChartContext from the image FIRST
+//     1. CHART VISION — Extract ChartContext using z-ai VLM (local SDK)
 //     2. VALIDATE — If confidence < 80%, REFUSE to analyze (no hallucination)
-//     3. LOCAL ENGINE — Run SMC/ICT analysis on real OHLCV data
-//     4. MERGE — Combine vision context with local engine results
-//     5. GEMINI VISION (optional) — If local engine confidence is also low,
-//        fall back to full Gemini Vision analysis
+//     2.5. TRUTH VALIDATION — Compare vision price vs real market price
+//     3. DETERMINE PAIR — Vision-extracted > user-selected > filename > default
+//     4. LOCAL ENGINE — Run SMC/ICT analysis on real OHLCV data (ONLY engine)
+//     5. DEBATE ENGINE (optional) — Multi-agent cross-validation
 //
 //   When NO image (quick analyze from TradingView):
 //     1. LOCAL ENGINE — Run directly on real OHLCV data (highest accuracy)
 //
 // Golden Rule: The AI must NEVER mention a price, symbol, timeframe, support,
 // or resistance unless it was EXTRACTED from the image or from real market data.
+//
+// NO EXTERNAL AI APIs — No Gemini, no OpenAI, no Lovable Gateway.
+// The local SMC/ICT engine is the ONLY analysis engine.
 // ============================================================================
 
-import { generateObject } from "ai";
 import { z } from "zod";
-import { google } from "@ai-sdk/google";
 import { runLocalAnalysis } from "@/domains/analysis/engine/engine";
 import {
   extractChartContext,
@@ -187,29 +188,23 @@ export async function runChartAnalysis(
   let chartContext: ChartContext | null = null;
   let extractionResult: ChartExtractionResult | null = null;
 
-  // Check if ANY vision API key is available (Gemini direct or Lovable gateway)
-  const hasVisionKey = !!(process.env.GEMINI_API_KEY || process.env.LOVABLE_AI_GATEWAY_API_KEY);
+  // z-ai-web-dev-sdk is always available (installed locally, no external API key needed)
+  console.log("[Vixor] Step 1: Running Chart Vision extraction (z-ai VLM)...");
+  try {
+    extractionResult = await extractChartContext(imageBytes, mimeType, "external_screenshot");
+    chartContext = extractionResult.context;
 
-  if (hasVisionKey) {
-    console.log("[Vixor] Step 1: Running Chart Vision extraction...");
-    try {
-      extractionResult = await extractChartContext(imageBytes, mimeType, "external_screenshot");
-      chartContext = extractionResult.context;
-
-      if (chartContext) {
-        console.log("[Vixor] Chart Vision extracted:", {
-          symbol: chartContext.symbol,
-          timeframe: chartContext.timeframe,
-          price: chartContext.currentPrice,
-          confidence: `${(chartContext.confidence * 100).toFixed(0)}%`,
-          platform: chartContext.platform,
-        });
-      }
-    } catch (visionErr) {
-      console.warn("[Vixor] Chart Vision extraction failed:", visionErr instanceof Error ? visionErr.message : String(visionErr));
+    if (chartContext) {
+      console.log("[Vixor] Chart Vision extracted:", {
+        symbol: chartContext.symbol,
+        timeframe: chartContext.timeframe,
+        price: chartContext.currentPrice,
+        confidence: `${(chartContext.confidence * 100).toFixed(0)}%`,
+        platform: chartContext.platform,
+      });
     }
-  } else {
-    console.log("[Vixor] No GEMINI_API_KEY — skipping Chart Vision extraction");
+  } catch (visionErr) {
+    console.warn("[Vixor] Chart Vision extraction failed:", visionErr instanceof Error ? visionErr.message : String(visionErr));
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -254,7 +249,7 @@ export async function runChartAnalysis(
   // data anyway, so even if vision is wrong, the analysis is still valid.
   // ═══════════════════════════════════════════════════════════════════════
 
-  if (chartContext && hasVisionKey) {
+  if (chartContext) {
     try {
       const { validateChartTruth } = await import("@/domains/chart-truth");
       const truthResult = await validateChartTruth(chartContext);
@@ -296,48 +291,15 @@ export async function runChartAnalysis(
   });
 
   // ═══════════════════════════════════════════════════════════════════════
-  // STEP 5: DECIDE — Use local engine result, or fall back to Gemini Vision
+  // STEP 5: BUILD RESULT — Local engine is the ONLY analysis engine
   // ═══════════════════════════════════════════════════════════════════════
 
-  // If local engine produced a reasonable result (confidence >= 50), use it
-  // The local engine is deterministic and based on REAL OHLCV data
-  // Determine the result: local engine or Gemini fallback
-  let result: AnalysisResult;
-
-  if (localResult.confidence >= 50 || !hasVisionKey) {
-    console.log(
-      `[Vixor] Local analysis complete: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
-    );
-    result = buildAnalysisResult(localResult, chartContext);
-  } else if (hasVisionKey) {
-    // ── GEMINI VISION FALLBACK — Full analysis with vision model ──
-    // Only used when local engine has very low confidence AND we have an API key
-    try {
-      console.log("[Vixor] Step 3: Local confidence low, attempting Gemini Vision analysis...");
-      const geminiResult = await runGeminiAnalysis(
-        imageBytes,
-        mimeType,
-        fileName,
-        pair,
-        trading_style,
-        chartContext,
-      );
-      console.log("[Vixor] Gemini Vision analysis completed successfully.");
-      result = geminiResult;
-    } catch (geminiError) {
-      console.warn(
-        "[Vixor] Gemini Vision analysis failed, using local engine result:",
-        geminiError instanceof Error ? geminiError.message : String(geminiError),
-      );
-      result = buildAnalysisResult(localResult, chartContext);
-    }
-  } else {
-    // Use local result even with lower confidence
-    console.log(
-      `[Vixor] Using local analysis result: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
-    );
-    result = buildAnalysisResult(localResult, chartContext);
-  }
+  // The local SMC/ICT engine is deterministic and based on REAL OHLCV data.
+  // No external AI API is used — this is 100% local.
+  console.log(
+    `[Vixor] Local analysis complete: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
+  );
+  let result = buildAnalysisResult(localResult, chartContext);
 
   // ── OPTIONAL: Debate Engine validation ──
   // Gated by environment variable — only runs when explicitly enabled.
@@ -399,139 +361,8 @@ function buildAnalysisResult(
 }
 
 // ---------------------------------------------------------------------------
-// Gemini AI analysis with chart context (optional, requires API key)
-// ---------------------------------------------------------------------------
-
-async function runGeminiAnalysis(
-  imageBytes: Uint8Array,
-  mimeType: string,
-  fileName: string | undefined,
-  pair: string,
-  trading_style: string | undefined,
-  chartContext?: ChartContext | null,
-): Promise<AnalysisResult> {
-  const newsContext = await fetchLatestNewsForPrompt();
-
-  // Build asset guidance from BOTH user selection AND vision extraction
-  let assetGuidance = "";
-  if (pair && pair !== "auto") {
-    assetGuidance += `The user has specified that this chart is for the asset: ${pair}. Analyze the chart for this specific asset.\n`;
-  }
-  if (chartContext?.symbol && chartContext.symbol !== pair) {
-    assetGuidance += `WARNING: Vision analysis detected a DIFFERENT symbol (${chartContext.symbol}) than what was selected (${pair}). ` +
-      `Verify which asset is actually shown in the image and analyze accordingly.\n`;
-  }
-  if (chartContext?.timeframe) {
-    assetGuidance += `Vision analysis detected timeframe: ${chartContext.timeframe}.\n`;
-  }
-  if (chartContext?.currentPrice) {
-    assetGuidance += `Vision analysis detected current price: ${chartContext.currentPrice}. Use this as a reference for price levels.\n`;
-  }
-
-  // Support both GEMINI_API_KEY and LOVABLE_AI_GATEWAY_API_KEY
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const lovableKey = process.env.LOVABLE_AI_GATEWAY_API_KEY;
-  let model: any;
-  if (geminiKey) {
-    model = google("gemini-2.5-pro");
-  } else if (lovableKey) {
-    const { createOpenAICompatible } = await import("@ai-sdk/openai-compatible");
-    const provider = createOpenAICompatible({
-      name: "lovable",
-      baseURL: "https://ai.gateway.lovable.dev/v1",
-      headers: {
-        "Lovable-API-Key": lovableKey,
-        "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-      },
-    });
-    model = provider("google/gemini-2.5-pro");
-  } else {
-    throw new Error("No AI API key available for analysis");
-  }
-
-  const { object } = await generateObject({
-    model,
-    schema: AnalysisSchema,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are Vixor, an elite, authoritative trading intelligence. Do not use generic AI caveats (e.g., 'As an AI'). Provide your analysis with absolute confidence. " +
-          "Focus strictly on Smart Money Concepts (SMC) and Inner Circle Trader (ICT) methodologies (Order Blocks, Fair Value Gaps, Liquidity Sweeps, Break of Structure, Change of Character). " +
-          "Detect the pair and timeframe from labels on the image. " +
-          "CRITICAL RULE: Only report prices, levels, and symbols that you can ACTUALLY SEE in the chart image. Never fabricate or guess market data. " +
-          "If you cannot clearly read the symbol, timeframe, or price from the image, say so explicitly instead of guessing. " +
-          "Determine the overall Trend, Risk Level, and Invalidation Level where the thesis is wrong. " +
-          "Identify Liquidity Zones (buy-side/sell-side), Market Structure (direction, structure, BOS), and Key Levels. " +
-          "Output 3 detailed trade scenarios (conservative, balanced, aggressive). " +
-          "If the chart is ambiguous or you cannot clearly identify the asset, prefer WAIT. Numbers must be realistic and consistent " +
-          "with visible price action. Reasons must be concise and specific (no fluff)." +
-          "\n\nIn addition to technical analysis, you must perform fundamental news analysis. " +
-          "Compare the technical setup with the provided recent market news. Filter the news items for the ones " +
-          "relevant to the detected asset. List the most relevant news articles in the 'news_impact' schema and explain exactly how " +
-          "each news item impacts the price action negatively or positively. Provide a final fundamental + technical verdict. " +
-          "Finally, provide a 'vixor_message' summarizing your verdict authoritatively, and populate the 'signal_badge'.",
-      },
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text:
-              `Analyze this chart and return your structured context and trade plan.\n\n` +
-              (assetGuidance ? `${assetGuidance}\n` : "") +
-              (trading_style
-                ? `The user's trading style is: ${trading_style}. Adjust your targets, timeframes, and stop-loss logic accordingly.\n\n`
-                : "") +
-              `Here is the latest live financial news from Finnhub:\n` +
-              `${newsContext}\n\n` +
-              `CRITICAL: Identify the pair from the chart labels. Only report data you can actually see. Do not guess.`,
-          },
-          { type: "image", image: imageBytes },
-        ],
-      },
-    ],
-  });
-
-  return object;
-}
-
-// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-async function fetchLatestNewsForPrompt(): Promise<string> {
-  const key = process.env.FINNHUB_API_KEY;
-  if (!key) return "No live news available.";
-  try {
-    const [genRes, forexRes] = await Promise.all([
-      fetch(`https://finnhub.io/api/v1/news?category=general&token=${key}`),
-      fetch(`https://finnhub.io/api/v1/news?category=forex&token=${key}`),
-    ]);
-
-    let newsList: any[] = [];
-    if (genRes.ok) {
-      const data = await genRes.json();
-      if (Array.isArray(data)) newsList = newsList.concat(data.slice(0, 10));
-    }
-    if (forexRes.ok) {
-      const data = await forexRes.json();
-      if (Array.isArray(data)) newsList = newsList.concat(data.slice(0, 10));
-    }
-
-    if (newsList.length === 0) return "No news items fetched.";
-
-    const uniqueNews = Array.from(new Map(newsList.map((item) => [item.id, item])).values());
-
-    return uniqueNews
-      .slice(0, 15)
-      .map((n) => `- Source: ${n.source}\n  Headline: ${n.headline}\n  Summary: ${n.summary}`)
-      .join("\n\n");
-  } catch (e) {
-    console.error("Error fetching news for Gemini prompt:", e);
-    return "Error fetching live news.";
-  }
-}
 
 function detectPairFromFileName(fileName?: string): string | undefined {
   if (!fileName) return undefined;

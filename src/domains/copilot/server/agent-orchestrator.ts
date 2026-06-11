@@ -1,6 +1,10 @@
 // ═══════════════════════════════════════════════════════════
 // Vixor Multi-Agent Orchestrator
 // ═══════════════════════════════════════════════════════════
+//
+// Uses z-ai-web-dev-sdk for all AI operations.
+// NO external API keys required — the SDK is installed locally.
+// ═══════════════════════════════════════════════════════════
 
 import {
   type AgentId,
@@ -25,7 +29,17 @@ export interface ConsensusResponse {
   synthesis: string;
 }
 
-// ─── Call the AI model ───
+// ─── z-ai singleton (lazy init) ───
+let zaiInstance: any = null;
+async function getZAI() {
+  if (!zaiInstance) {
+    const ZAI = await import("z-ai-web-dev-sdk");
+    zaiInstance = await ZAI.default.create();
+  }
+  return zaiInstance;
+}
+
+// ─── Call the AI model using z-ai-web-dev-sdk ───
 async function callAI(params: {
   systemPrompt: string;
   messages: ChatMessage[];
@@ -33,63 +47,26 @@ async function callAI(params: {
   maxOutputTokens?: number;
   temperature?: number;
 }): Promise<string> {
-  const { systemPrompt, messages, userMessage, maxOutputTokens = 2048, temperature = 0.7 } = params;
+  const { systemPrompt, messages, userMessage, temperature = 0.7 } = params;
 
-  const apiKey = process.env.LOVABLE_AI_GATEWAY_API_KEY;
+  const zai = await getZAI();
 
-  if (!apiKey) {
-    // Fallback: try Gemini API key directly
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (!geminiKey) {
-      throw new Error("AI service is not configured. Please try again later.");
-    }
-
-    const { generateText } = await import("ai");
-    const { google } = await import("@ai-sdk/google");
-
-    const chatHistory = messages.map((m) => ({
+  // Build messages array for z-ai SDK
+  const chatMessages: any[] = [
+    { role: "system", content: systemPrompt },
+    ...messages.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
-    }));
+    })),
+    { role: "user" as const, content: userMessage },
+  ];
 
-    const { text } = await generateText({
-      model: google("gemini-2.5-flash"),
-      system: systemPrompt,
-      messages: [...chatHistory, { role: "user" as const, content: userMessage }],
-      maxOutputTokens,
-      temperature,
-    });
-
-    return text;
-  }
-
-  // Use Lovable AI Gateway with @ai-sdk/openai-compatible
-  const { generateText } = await import("ai");
-  const { createOpenAICompatible } = await import("@ai-sdk/openai-compatible");
-
-  const provider = createOpenAICompatible({
-    name: "lovable",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    headers: {
-      "Lovable-API-Key": apiKey,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-    },
-  });
-
-  const chatHistory = messages.map((m) => ({
-    role: m.role as "user" | "assistant",
-    content: m.content,
-  }));
-
-  const { text } = await generateText({
-    model: provider("google/gemini-2.5-flash"),
-    system: systemPrompt,
-    messages: [...chatHistory, { role: "user" as const, content: userMessage }],
-    maxOutputTokens,
+  const response = await zai.chat.completions.create({
+    messages: chatMessages,
     temperature,
   });
 
-  return text;
+  return response.choices[0]?.message?.content ?? "No response generated.";
 }
 
 // ─── Run a single agent ───
@@ -137,7 +114,6 @@ export async function runConsensus(params: {
       systemPrompt,
       messages: [], // Fresh context for each agent in consensus mode
       userMessage: message,
-      maxOutputTokens: 1024, // Shorter responses for consensus
       temperature: 0.5, // More focused/consistent
     });
     return {
@@ -181,19 +157,19 @@ ${agentResponses}
 ## YOUR TASK
 Synthesize the above perspectives into a unified, actionable summary. Follow this format:
 
-## 🎯 Key Consensus Points
+## Key Consensus Points
 - List the points where ALL agents agree (these are highest confidence)
 
-## 📊 Primary Action
+## Primary Action
 The single most important action the trader should take right now
 
-## ⚠️ Key Warnings
+## Key Warnings
 - List critical risk factors or cautions flagged by any agent
 
-## 🔄 Divergent Views
+## Divergent Views
 - Note where agents disagree and explain both sides briefly
 
-## ✅ Action Plan
+## Action Plan
 Numbered list of immediate next steps (1-3 items max)
 
 IMPORTANT RULES:
@@ -208,7 +184,6 @@ IMPORTANT RULES:
     systemPrompt: synthesisPrompt,
     messages: [],
     userMessage: "Synthesize the agent perspectives above.",
-    maxOutputTokens: 1024,
     temperature: 0.4,
   });
 
