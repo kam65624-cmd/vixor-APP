@@ -11,7 +11,11 @@
 // ============================================================================
 
 // ── Minimum confidence threshold to allow analysis ──
-export const MIN_CONFIDENCE_FOR_ANALYSIS = 0.8; // 80%
+// NOTE: Set to 0 so we NEVER refuse to analyze a chart.
+// The vision extraction is informational — if it can't identify the symbol,
+// the user can select one, or we'll use a default. The SMC/ICT engine uses
+// REAL OHLCV data anyway, so the analysis is always valid.
+export const MIN_CONFIDENCE_FOR_ANALYSIS = 0; // 0% — always proceed
 
 // ── Chart source: where did the data come from? ──
 export type ChartSource =

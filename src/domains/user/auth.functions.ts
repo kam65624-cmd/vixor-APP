@@ -60,50 +60,41 @@ export const telegramSignIn = createServerFn({ method: "POST" })
     const password = createHmac("sha256", botToken).update(`vixor:${tgUser.id}`).digest("hex");
 
     // ── Find or create the user ──
-    // First try to find by email in the user list
-    let userId: string | null = null;
+    // Strategy: Try to create first. If user already exists, that's fine —
+    // we just need the email/password to sign in on the client side.
+    // This avoids the expensive and unreliable listUsers() pagination.
 
-    // Try listing users with email filter (Supabase admin API)
-    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1 });
-    for (const u of list?.users ?? []) {
-      if (u.email === email) {
-        userId = u.id;
-        break;
+    const displayName =
+      [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") || tgUser.username || "Trader";
+
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        telegram_id: tgUser.id,
+        display_name: displayName,
+        username: tgUser.username,
+        avatar_url: tgUser.photo_url,
+      },
+    });
+
+    if (createErr) {
+      // If user already exists, that's OK — they can still sign in
+      if (
+        createErr.message.includes("already registered") ||
+        createErr.message.includes("already been registered") ||
+        createErr.message.includes("User already registered") ||
+        createErr.status === 422 ||
+        createErr.status === 409
+      ) {
+        console.log("[Auth] Telegram user already exists, proceeding with sign-in:", email);
+      } else {
+        // Some other error — this is fatal
+        throw new Error(`Failed to create user: ${createErr.message}`);
       }
-    }
-
-    // If not found on first page, search through all users
-    if (!userId) {
-      const { data: bySearch } = await supabaseAdmin.auth.admin.listUsers({
-        page: 1,
-        perPage: 200,
-      });
-      for (const u of bySearch?.users ?? []) {
-        if (u.email === email) {
-          userId = u.id;
-          break;
-        }
-      }
-    }
-
-    // If still not found, create the user
-    if (!userId) {
-      const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          telegram_id: tgUser.id,
-          display_name:
-            [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") || tgUser.username,
-          username: tgUser.username,
-          avatar_url: tgUser.photo_url,
-        },
-      });
-      if (error || !created.user) throw new Error(error?.message ?? "Failed to create user");
-      userId = created.user.id;
-
-      // Also update the profile with telegram info
+    } else if (created.user) {
+      // New user — update their profile with telegram info
       try {
         await supabaseAdmin
           .from("profiles")
@@ -111,10 +102,23 @@ export const telegramSignIn = createServerFn({ method: "POST" })
             telegram_id: String(tgUser.id),
             telegram_username: tgUser.username,
             telegram_photo_url: tgUser.photo_url,
+            display_name: displayName,
           })
-          .eq("id", userId);
+          .eq("id", created.user.id);
       } catch {
-        // Non-critical — profile may not exist yet
+        // Non-critical — profile row may not exist yet (trigger creates it)
+      }
+
+      // Credit signup bonus points (non-blocking)
+      try {
+        await supabaseAdmin.rpc("credit_points", {
+          _user: created.user.id,
+          _amount: 200,
+          _reason: "signup_bonus",
+          _meta: { source: "telegram_signup" },
+        });
+      } catch {
+        // Non-critical — points system may not be set up yet
       }
     }
 

@@ -31,10 +31,10 @@ const TRADING_STYLES = [
 ];
 
 const STEPS_KEYS = [
-  "analyzing.connectingToEngine",
-  "analyzing.extractingPriceAction",
-  "analyzing.computingMarketStructure",
-  "analyzing.generatingSignal",
+  "analyze.steps.connecting",
+  "analyze.steps.extracting",
+  "analyze.steps.computing",
+  "analyze.steps.generating",
 ];
 
 function Analyze() {
@@ -209,10 +209,10 @@ function Analyze() {
         </button>
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
-            {t("analyze.vixorEngine")}
+            {t("analyze.subtitle")}
           </div>
           <h1 className="text-xl font-bold tracking-tight leading-none">
-            {t("analyze.analyzeChart")}
+            {t("analyze.title")}
           </h1>
         </div>
       </div>
@@ -323,7 +323,7 @@ function Analyze() {
             </div>
           </div>
 
-          <h2 className="text-xl font-bold tracking-tight mb-2">{t("analyzing.analyzingChart")}</h2>
+          <h2 className="text-xl font-bold tracking-tight mb-2">{t("analyze.analyzing")}</h2>
           <div className="text-sm font-mono text-primary font-bold">{t(STEPS_KEYS[progress])}</div>
 
           <div className="w-48 h-1.5 bg-muted rounded-full mt-6 overflow-hidden">

@@ -61,7 +61,7 @@ function SettingsPage() {
         >
           <ArrowLeft className="size-4" />
         </Link>
-        <h1 className="font-bold text-lg tracking-tight">{t("settings.settings")}</h1>
+        <h1 className="font-bold text-lg tracking-tight">{t("settings.title")}</h1>
         <div className="size-10" />
       </div>
 

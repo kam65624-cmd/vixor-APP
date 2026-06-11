@@ -275,18 +275,6 @@ export const createAnalysis = createServerFn({ method: "POST" })
         });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-
-      // Check if this is a ChartExtractionRefused error — provide user-friendly message
-      const { ChartExtractionRefusedError } = await import("@/domains/analysis/server/run-analysis");
-      if (e instanceof ChartExtractionRefusedError) {
-        const userMsg = e.validation.userMessage ?? msg;
-        void supabaseAdmin
-          .from("analyses")
-          .update({ status: "failed", error_message: userMsg })
-          .eq("id", row.id);
-        throw new Error(userMsg);
-      }
-
       void supabaseAdmin
         .from("analyses")
         .update({ status: "failed", error_message: msg })

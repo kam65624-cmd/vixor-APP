@@ -37,7 +37,7 @@ function NotificationsPage() {
         >
           <ArrowLeft className="size-4" />
         </Link>
-        <h1 className="font-semibold">{t("notifications.notifications")}</h1>
+        <h1 className="font-semibold">{t("notifications.title")}</h1>
         <button
           onClick={() => m.mutate()}
           className="text-xs text-primary font-semibold flex items-center gap-1"

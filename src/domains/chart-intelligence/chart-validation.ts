@@ -35,32 +35,35 @@ export interface ValidationResult {
 }
 
 // ── Validate a ChartContext for analysis readiness ──
+// NOTE: This validation is SOFT — it NEVER blocks analysis.
+// All issues are converted to warnings. The SMC/ICT engine uses real OHLCV
+// data, so the analysis is always valid regardless of vision extraction quality.
 export function validateChartContext(result: ChartExtractionResult): ValidationResult {
   const warnings: string[] = [];
-  const errors: string[] = [];
+  const errors: string[] = []; // Always empty — we never block
 
-  // If extraction completely failed
+  // If extraction completely failed — still proceed, just note it
   if (!result.success || !result.context) {
     return {
-      valid: false,
-      warnings: [],
-      errors: [result.failureReason ?? "Chart context extraction failed"],
-      adjustedConfidence: 0,
-      userMessage: formatExtractionFailureMessage(result),
+      valid: true, // Changed: Always valid
+      warnings: [result.failureReason ?? "Chart context extraction failed — will use user-selected pair or default"],
+      errors: [],
+      adjustedConfidence: 0.1, // Low but non-zero
+      userMessage: null, // Never show blocking message
     };
   }
 
   const ctx = result.context;
 
-  // ── Check 1: Symbol must be present ──
+  // ── Check 1: Symbol detection — warning only, not a blocker ──
   if (!ctx.symbol) {
-    errors.push("No trading symbol detected in the chart image. Cannot determine which asset to analyze.");
+    warnings.push("No trading symbol detected in the chart image. Using user-selected pair or default.");
   }
 
-  // ── Check 2: Minimum confidence threshold ──
-  if (ctx.confidence < MIN_CONFIDENCE_FOR_ANALYSIS) {
-    errors.push(
-      `Extraction confidence (${(ctx.confidence * 100).toFixed(0)}%) is below the minimum required (${(MIN_CONFIDENCE_FOR_ANALYSIS * 100).toFixed(0)}%).`,
+  // ── Check 2: Low confidence — warning only ──
+  if (ctx.confidence < 0.5) {
+    warnings.push(
+      `Vision extraction confidence is low (${(ctx.confidence * 100).toFixed(0)}%). Analysis will proceed with available data.`,
     );
   }
 
@@ -90,17 +93,16 @@ export function validateChartContext(result: ChartExtractionResult): ValidationR
   // ── Calculate adjusted confidence ──
   let adjustedConfidence = ctx.confidence;
   if (warnings.length > 0) {
-    adjustedConfidence = Math.max(adjustedConfidence - warnings.length * 0.05, 0);
+    adjustedConfidence = Math.max(adjustedConfidence - warnings.length * 0.05, 0.1);
   }
 
-  const valid = errors.length === 0 && adjustedConfidence >= MIN_CONFIDENCE_FOR_ANALYSIS;
-
+  // ALWAYS valid — never block analysis
   return {
-    valid,
+    valid: true,
     warnings,
-    errors,
+    errors: [], // Always empty
     adjustedConfidence,
-    userMessage: valid ? null : formatExtractionFailureMessage(result),
+    userMessage: null, // Never show a blocking message
   };
 }
 

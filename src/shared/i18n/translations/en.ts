@@ -39,6 +39,8 @@ const en = {
     below: "Below",
     crossesUp: "Crosses Up",
     crossesDown: "Crosses Down",
+    create: "Create",
+    loading: "Loading...",
   },
 
   // ═══ NAVIGATION ═══
@@ -140,6 +142,8 @@ const en = {
   signals: {
     title: "Daily Signals",
     subtitle: "Vixor Intelligence",
+    vixorIntelligence: "Vixor Intelligence",
+    dailySignals: "Daily Signals",
     yourStrategy: "Your Strategy",
     style: "Style",
     risk: "Risk",
@@ -151,6 +155,8 @@ const en = {
     noSignals: "No signals for today yet",
     generateSignals: "Generate Signals",
     generating: "Generating...",
+    loadingSignals: "Loading signals...",
+    noSignalsToday: "No signals for today yet",
     strategySetup: "Strategy Setup",
     tradingStyle: "Trading Style",
     riskTolerance: "Risk Tolerance",
@@ -176,6 +182,7 @@ const en = {
   discover: {
     title: "Market Explorer",
     subtitle: "What's moving right now?",
+    whatsMoving: "What's moving right now?",
     searchPlaceholder: "Search pairs, stocks, crypto...",
     watchlist: "Watchlist",
     scanner: "Scanner",
@@ -229,6 +236,18 @@ const en = {
     noEvents: "No economic events found",
     impactLevel: "Impact",
     currency: "Currency",
+    default: "Default",
+    newWatchlist: "New Watchlist",
+    renameWatchlist: "Rename",
+    deleteWatchlist: "Delete Watchlist",
+    watchlistNamePlaceholder: "Watchlist name",
+    createWatchlist: "Create Watchlist",
+    deleteWatchlistTitle: "Delete Watchlist?",
+    deleteWatchlistDescription: "This action cannot be undone. All pairs in this watchlist will be removed.",
+    noHeatmapData: "No heatmap data available",
+    interactiveHeatmapSoon: "Interactive heatmap coming soon",
+    signalsDaily: "Daily signals powered by Vixor AI",
+    noActiveSignals: "No active signals right now",
   },
 
   // ═══ CHARTS ═══
@@ -241,6 +260,7 @@ const en = {
     watchlist: "Watchlist",
     myAlerts: "My Alerts",
     allAlerts: "All Alerts",
+    askCopilot: "Ask AI",
   },
 
   // ═══ ANALYZE ═══
@@ -445,6 +465,11 @@ const en = {
     earned: "Earned",
     analyses: "Analyses",
     referrals: "Referrals",
+    referralsLink: "Referrals",
+    premiumActive: "Premium Active",
+    premiumUnlock: "Unlock Premium",
+    notificationsDesc: "View your notifications",
+    settingsDesc: "App settings & preferences",
     badges: "Badges",
     firstAnalysis: "First Analysis",
     firstAnalysisDesc: "Completed your first chart read",
@@ -466,6 +491,7 @@ const en = {
     friendsInvited: "{count} friend{s} invited",
     active: "Active",
     unlockUnlimited: "Unlock unlimited",
+    unlimitedSmarter: "Unlimited analyses. Smarter setups.",
   },
 
   // ═══ SETTINGS ═══
@@ -525,6 +551,7 @@ const en = {
     markAll: "Mark all",
     noNotifications: "No notifications",
     allCaughtUp: "You're all caught up",
+    loading: "Loading notifications...",
   },
 
   // ═══ REFERRAL ═══
@@ -533,6 +560,7 @@ const en = {
     inviteFriends: "Invite friends, earn points",
     earnPoints: "+25 pts for you · +15 pts for them",
     yourCode: "Your referral code",
+    yourReferralCode: "Your referral code",
     copied: "Copied!",
     shareViaTelegram: "Share via Telegram",
     haveCode: "Have a referral code?",

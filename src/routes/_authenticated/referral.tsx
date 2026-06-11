@@ -61,7 +61,7 @@ function Referral() {
         >
           <ArrowLeft className="size-4" />
         </Link>
-        <h1 className="font-semibold">{t("referral.referrals")}</h1>
+        <h1 className="font-semibold">{t("referral.title")}</h1>
         <div className="size-9" />
       </div>
 

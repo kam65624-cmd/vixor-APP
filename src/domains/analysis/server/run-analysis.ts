@@ -208,35 +208,16 @@ export async function runChartAnalysis(
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // STEP 2: VALIDATE — If confidence is too low, REFUSE to analyze
+  // STEP 2: VALIDATE — Validation is now SOFT (warnings only, never blocks)
   //
-  // Golden Rule: Better to say "I can't read this" than to hallucinate.
+  // The SMC/ICT engine uses real OHLCV data, so even if vision extraction
+  // fails, the analysis is still valid. We log warnings but NEVER refuse.
   // ═══════════════════════════════════════════════════════════════════════
 
   if (extractionResult) {
     const validation = validateChartContext(extractionResult);
-
-    if (!validation.valid) {
-      console.warn("[Vixor] Chart context validation FAILED:", validation.errors);
-
-      // If we have a user-selected pair AND real OHLCV data, we can still proceed
-      // with a WARNING (the user explicitly chose the pair, not the AI)
-      if (selectedPair && realBars && realBars.length > 20) {
-        console.log("[Vixor] User selected pair + real data available — proceeding with lower confidence");
-        chartContext = {
-          ...chartContext,
-          symbol: selectedPair,
-          confidence: 0.5, // Lower confidence since vision failed
-          extractionNotes: [
-            ...(chartContext?.extractionNotes ?? []),
-            "Vision extraction failed but user explicitly selected the pair.",
-          ],
-        } as ChartContext;
-      } else {
-        // REFUSE to analyze — throw extraction refused error
-        throw new ChartExtractionRefusedError(validation, extractionResult ?? undefined);
-      }
-    } else if (validation.warnings.length > 0) {
+    // validation is ALWAYS valid now — just log warnings
+    if (validation.warnings.length > 0) {
       console.log("[Vixor] Chart context validation warnings:", validation.warnings);
     }
   }

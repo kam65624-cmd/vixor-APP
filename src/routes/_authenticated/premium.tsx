@@ -89,7 +89,7 @@ function Premium() {
         >
           <ArrowLeft className="size-4" />
         </Link>
-        <h1 className="font-semibold">{t("premium.premium")}</h1>
+        <h1 className="font-semibold">{t("premium.title")}</h1>
         <div className="size-9" />
       </div>
 
