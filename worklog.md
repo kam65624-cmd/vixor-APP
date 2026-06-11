@@ -80,3 +80,26 @@ Stage Summary:
 - All env vars configured on Vercel
 - Gemini API completely removed from codebase (was already not used, only referenced in comments)
 - Deep Proxy fix ensures no "is not a function" errors even if env vars are missing
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix 3 screenshot errors — market data fetch, Telegram WebApp, bot config
+
+Work Log:
+- Analyzed 3 screenshots: (1) "Unable to fetch real market data for EUR/USD", (2-3) App not opening in Telegram — showing config error messages
+- Root cause of market data error: Only 2 data sources tried (Binance for crypto, TwelveData for forex) with no fallback. If either fails, analysis is blocked entirely
+- Improved market data fetch with 4-source fallback chain: Binance → TwelveData → Binance fallback → TwelveData daily
+- Each source has its own try/catch, no single failure blocks the entire pipeline
+- Lowered minimum bar threshold for daily fallback (10 bars vs 20)
+- Set Telegram Bot menu button via API: type=web_app, text="Open Vixor", url=https://vixor-app.vercel.app/
+- Set Telegram Bot commands: /start, /analyze, /signals, /help
+- Set Bot short description and description
+- Fixed bot username in auth.tsx: "VixorAIBot" → "VIXOR_v1_bot" (matches actual bot @VIXOR_v1_bot)
+- Deployed to Vercel successfully
+
+Stage Summary:
+- App URL: https://vixor-app.vercel.app
+- Telegram Bot: @VIXOR_v1_bot with WebApp menu button configured
+- Market data: 4-source fallback chain significantly reduces failure rate
+- Bot menu button opens the Vixor WebApp directly inside Telegram
