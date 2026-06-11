@@ -2,6 +2,7 @@ import { defineEventHandler, getMethod, getHeader, createError } from "h3";
 import { supabaseAdmin } from "@/shared/supabase/client.server";
 import { fetchBinanceKlines, fetchTwelveDataKlines } from "@/domains/market/server/price-fetcher";
 import { runLocalAnalysis } from "@/domains/analysis/engine/engine";
+import { AssetRegistry } from "@/shared/asset-registry";
 
 export default defineEventHandler(async (event) => {
   const method = getMethod(event);
@@ -27,7 +28,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const pairs = ["BTC/USDT", "ETH/USDT", "XAU/USD", "EUR/USD", "GBP/JPY", "SOL/USDT"];
+    const pairs = AssetRegistry.signalPairs();
     const timeframes = ["1H", "4H"];
     const today = new Date().toISOString().split("T")[0];
 
@@ -37,7 +38,7 @@ export default defineEventHandler(async (event) => {
       for (const tf of timeframes) {
         try {
           let bars;
-          if (pair.includes("USDT")) {
+          if (AssetRegistry.isCrypto(pair)) {
             bars = await fetchBinanceKlines(pair, tf, 200);
           }
           if (!bars || bars.length <= 20) {

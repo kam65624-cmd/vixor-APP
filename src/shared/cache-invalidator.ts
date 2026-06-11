@@ -12,6 +12,7 @@
 // ============================================================================
 
 import { cache, CACHE_KEYS } from "@/shared/cache";
+import { ALL_KNOWN_PAIRS } from "@/shared/asset-registry";
 
 /**
  * Invalidate the cached price data for a specific pair.
@@ -27,28 +28,7 @@ export async function invalidatePriceCache(pair: string): Promise<void> {
  * Use this when market conditions change dramatically (e.g., flash crash).
  */
 export async function invalidateAllPriceCache(): Promise<void> {
-  const knownPairs = [
-    "BTC/USDT",
-    "ETH/USDT",
-    "SOL/USDT",
-    "BNB/USDT",
-    "XRP/USDT",
-    "ADA/USDT",
-    "DOGE/USDT",
-    "AVAX/USDT",
-    "DOT/USDT",
-    "XAU/USD",
-    "EUR/USD",
-    "GBP/USD",
-    "USD/JPY",
-    "GBP/JPY",
-    "AUD/USD",
-    "NZD/USD",
-    "USD/CAD",
-    "USD/CHF",
-    "EUR/GBP",
-    "EUR/JPY",
-  ];
+  const knownPairs = ALL_KNOWN_PAIRS;
 
   await Promise.allSettled(knownPairs.map((pair) => cache.delete(CACHE_KEYS.price(pair))));
 
@@ -90,29 +70,7 @@ export async function invalidateMarketPricesCache(): Promise<void> {
  * Use this sparingly, only when a full refresh is absolutely necessary.
  */
 export async function invalidateAllCache(): Promise<void> {
-  // Invalidate all known individual caches
-  const knownPairs = [
-    "BTC/USDT",
-    "ETH/USDT",
-    "SOL/USDT",
-    "BNB/USDT",
-    "XRP/USDT",
-    "ADA/USDT",
-    "DOGE/USDT",
-    "AVAX/USDT",
-    "DOT/USDT",
-    "XAU/USD",
-    "EUR/USD",
-    "GBP/USD",
-    "USD/JPY",
-    "GBP/JPY",
-    "AUD/USD",
-    "NZD/USD",
-    "USD/CAD",
-    "USD/CHF",
-    "EUR/GBP",
-    "EUR/JPY",
-  ];
+  const knownPairs = ALL_KNOWN_PAIRS;
 
   const knownIntervals = ["1M", "5M", "15M", "30M", "1H", "4H", "1D", "1W"];
   const newsCategories = ["general", "forex", "crypto"];

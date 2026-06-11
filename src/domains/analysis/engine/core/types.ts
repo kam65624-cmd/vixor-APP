@@ -191,78 +191,12 @@ export interface PairConfig {
   typicalRange: number; // typical daily ATR as % of price
 }
 
-export const PAIR_CONFIGS: Record<string, PairConfig> = {
-  "XAU/USD": {
-    basePrice: 3300,
-    volatility: 0.012,
-    pipSize: 0.01,
-    decimals: 2,
-    typicalRange: 0.015,
-  },
-  "EUR/USD": {
-    basePrice: 1.13,
-    volatility: 0.005,
-    pipSize: 0.0001,
-    decimals: 4,
-    typicalRange: 0.008,
-  },
-  "GBP/USD": {
-    basePrice: 1.34,
-    volatility: 0.006,
-    pipSize: 0.0001,
-    decimals: 4,
-    typicalRange: 0.009,
-  },
-  "USD/JPY": {
-    basePrice: 145,
-    volatility: 0.007,
-    pipSize: 0.01,
-    decimals: 2,
-    typicalRange: 0.01,
-  },
-  "GBP/JPY": {
-    basePrice: 195,
-    volatility: 0.008,
-    pipSize: 0.01,
-    decimals: 2,
-    typicalRange: 0.012,
-  },
-  "BTC/USD": {
-    basePrice: 105000,
-    volatility: 0.03,
-    pipSize: 0.01,
-    decimals: 2,
-    typicalRange: 0.04,
-  },
-  "ETH/USDT": {
-    basePrice: 2600,
-    volatility: 0.028,
-    pipSize: 0.01,
-    decimals: 2,
-    typicalRange: 0.035,
-  },
-  "SOL/USDT": {
-    basePrice: 170,
-    volatility: 0.04,
-    pipSize: 0.01,
-    decimals: 2,
-    typicalRange: 0.05,
-  },
-  AAPL: {
-    basePrice: 195,
-    volatility: 0.015,
-    pipSize: 0.01,
-    decimals: 2,
-    typicalRange: 0.02,
-  },
-  NASDAQ: {
-    basePrice: 18500,
-    volatility: 0.012,
-    pipSize: 0.01,
-    decimals: 2,
-    typicalRange: 0.018,
-  },
-};
+/**
+ * Pair configs — now sourced from the Asset Registry (single source of truth).
+ * Re-exported here for backward compatibility with the analysis engine.
+ * To add a new asset, update src/shared/asset-registry/types.ts instead.
+ */
+export { PAIR_CONFIGS } from "@/shared/asset-registry";
 
 // Market structure analysis result
 export interface MarketStructureResult {

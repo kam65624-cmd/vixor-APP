@@ -14,6 +14,7 @@
 // ============================================================================
 
 import { cache, CACHE_KEYS, CACHE_TTL, getKlinesTtl } from "@/shared/cache";
+import { AssetRegistry, POPULAR_PAIRS, TIMEFRAMES } from "@/shared/asset-registry";
 
 export interface PriceResult {
   symbol: string;
@@ -34,35 +35,8 @@ export interface KlineBar {
   volume: number;
 }
 
-// Map user-friendly pair names to Binance symbols
-const BINANCE_SYMBOLS: Record<string, string> = {
-  "BTC/USDT": "BTCUSDT",
-  "ETH/USDT": "ETHUSDT",
-  "SOL/USDT": "SOLUSDT",
-  "BTC/USD": "BTCUSDT",
-  "ETH/USD": "ETHUSDT",
-  "SOL/USD": "SOLUSDT",
-  "BNB/USDT": "BNBUSDT",
-  "XRP/USDT": "XRPUSDT",
-  "ADA/USDT": "ADAUSDT",
-  "DOGE/USDT": "DOGEUSDT",
-  "AVAX/USDT": "AVAXUSDT",
-  "DOT/USDT": "DOTUSDT",
-};
-
-// Forex pair to Finnhub symbol mapping
-const FOREX_SYMBOLS: Record<string, string> = {
-  "EUR/USD": "EURUSD",
-  "GBP/USD": "GBPUSD",
-  "USD/JPY": "USDJPY",
-  "GBP/JPY": "GBPJPY",
-  "AUD/USD": "AUDUSD",
-  "NZD/USD": "NZDUSD",
-  "USD/CAD": "USDCAD",
-  "USD/CHF": "USDCHF",
-  "EUR/GBP": "EURGBP",
-  "EUR/JPY": "EURJPY",
-};
+// Symbol mappings are now centralized in the Asset Registry.
+// Use AssetRegistry.binanceSymbol(pair) and AssetRegistry.isCrypto(pair) etc.
 
 // REMOVED: FALLBACK_PRICES — we never fabricate prices. If no real data, return null.
 
@@ -73,18 +47,16 @@ const FOREX_SYMBOLS: Record<string, string> = {
 /**
  * Determine if a pair is crypto (Binance) or forex/commodity
  */
+/**
+ * Determine if a pair is crypto (Binance) or forex/commodity
+ * Delegates to Asset Registry for single source of truth.
+ */
 function isCryptoPair(pair: string): boolean {
-  return (
-    pair in BINANCE_SYMBOLS ||
-    pair.includes("USDT") ||
-    pair.includes("BTC") ||
-    pair.includes("ETH") ||
-    pair.includes("SOL")
-  );
+  return AssetRegistry.isCrypto(pair);
 }
 
 function isForexPair(pair: string): boolean {
-  return pair in FOREX_SYMBOLS;
+  return AssetRegistry.isForex(pair);
 }
 
 /**
@@ -92,7 +64,7 @@ function isForexPair(pair: string): boolean {
  * With retry logic for better reliability on serverless environments
  */
 async function fetchBinancePrice(pair: string): Promise<PriceResult | null> {
-  const binanceSymbol = BINANCE_SYMBOLS[pair];
+  const binanceSymbol = AssetRegistry.binanceSymbol(pair);
   if (!binanceSymbol) return null;
 
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -146,8 +118,9 @@ async function fetchBinancePrice(pair: string): Promise<PriceResult | null> {
  * Falls back to exchangerate-api.com if TwelveData fails
  */
 async function fetchForexPrice(pair: string): Promise<PriceResult | null> {
-  const forexSymbol = FOREX_SYMBOLS[pair];
-  if (!forexSymbol) return null;
+  const asset = AssetRegistry.find(pair);
+  if (!asset) return null;
+  const forexSymbol = asset.symbols.finnhub || pair.replace("/", "");
 
   // ── Primary: TwelveData Exchange Rate API (1 credit, most accurate) ──
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -159,9 +132,10 @@ async function fetchForexPrice(pair: string): Promise<PriceResult | null> {
         let change24h: number | undefined;
         try {
           const apiKey = process.env.TWELVEDATA_API_KEY;
+          const tdSymbol = AssetRegistry.twelveDataSymbol(pair) || pair;
           if (apiKey) {
             const tsRes = await fetch(
-              `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(pair)}&interval=1day&outputsize=2&apikey=${apiKey}`,
+              `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(tdSymbol)}&interval=1day&outputsize=2&apikey=${apiKey}`,
               { signal: AbortSignal.timeout(10000) },
             );
             if (tsRes.ok) {
@@ -195,8 +169,8 @@ async function fetchForexPrice(pair: string): Promise<PriceResult | null> {
 
   // ── Fallback: ExchangeRate API ──
   try {
-    const base = forexSymbol.slice(0, 3);
-    const quote = forexSymbol.slice(3);
+    const base = asset.base;
+    const quote = asset.quote;
     const res = await fetch(`https://api.exchangerate-api.com/v4/latest/${base}`, {
       signal: AbortSignal.timeout(10000),
     });
@@ -491,21 +465,12 @@ export async function fetchBinanceKlines(
 ): Promise<
   Array<{ time: number; open: number; high: number; low: number; close: number; volume: number }>
 > {
-  const binanceSymbol = BINANCE_SYMBOLS[pair];
+  const binanceSymbol = AssetRegistry.binanceSymbol(pair);
   if (!binanceSymbol) return [];
 
-  // Map timeframe strings to Binance interval format
-  const intervalMap: Record<string, string> = {
-    "1M": "1m",
-    "5M": "5m",
-    "15M": "15m",
-    "30M": "30m",
-    "1H": "1h",
-    "4H": "4h",
-    "1D": "1d",
-    "1W": "1w",
-  };
-  const binanceInterval = intervalMap[interval] || "1h";
+  // Map timeframe strings to Binance interval format using the registry
+  const tf = TIMEFRAMES.find((t) => t.key === interval);
+  const binanceInterval = tf?.binanceInterval || "1h";
 
   // ── Check cache first ──
   const ttlMs = getKlinesTtl(interval);
@@ -560,16 +525,10 @@ export async function fetchBinanceKlines(
 }
 
 /**
- * Popular pairs for quick access
+ * Popular pairs for quick access — re-exported from Asset Registry
+ * (Kept as export for backward compatibility)
  */
-export const POPULAR_PAIRS = [
-  { pair: "BTC/USDT", icon: "₿" },
-  { pair: "ETH/USDT", icon: "Ξ" },
-  { pair: "XAU/USD", icon: "Au" },
-  { pair: "EUR/USD", icon: "€" },
-  { pair: "GBP/JPY", icon: "£" },
-  { pair: "SOL/USDT", icon: "◎" },
-];
+export { POPULAR_PAIRS } from "@/shared/asset-registry";
 
 /**
  * Fetch OHLCV candle data from TwelveData API for forex/commodity pairs.
@@ -586,36 +545,13 @@ export async function fetchTwelveDataKlines(
   const apiKey = process.env.TWELVEDATA_API_KEY;
   if (!apiKey) return [];
 
-  // Map pair to TwelveData symbol format
-  const symbolMap: Record<string, string> = {
-    "XAU/USD": "XAU/USD",
-    "EUR/USD": "EUR/USD",
-    "GBP/USD": "GBP/USD",
-    "USD/JPY": "USD/JPY",
-    "GBP/JPY": "GBP/JPY",
-    "AUD/USD": "AUD/USD",
-    "NZD/USD": "NZD/USD",
-    "USD/CAD": "USD/CAD",
-    "USD/CHF": "USD/CHF",
-    "EUR/GBP": "EUR/GBP",
-    "EUR/JPY": "EUR/JPY",
-  };
-
-  const symbol = symbolMap[pair];
+  // Symbol mapping now handled by Asset Registry
+  const symbol = AssetRegistry.twelveDataSymbol(pair);
   if (!symbol) return [];
 
-  // Map timeframe to TwelveData interval
-  const intervalMap: Record<string, string> = {
-    "1M": "1min",
-    "5M": "5min",
-    "15M": "15min",
-    "30M": "30min",
-    "1H": "1h",
-    "4H": "4h",
-    "1D": "1day",
-    "1W": "1week",
-  };
-  const tdInterval = intervalMap[interval] || "1h";
+  // Map timeframe to TwelveData interval using the registry
+  const tf = TIMEFRAMES.find((t) => t.key === interval);
+  const tdInterval = tf?.twelveDataInterval || "1h";
 
   // ── Check cache first ──
   const ttlMs = getKlinesTtl(interval);
