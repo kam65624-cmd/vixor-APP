@@ -87,10 +87,16 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
       {/* Responsive: mobile = max-w-md, desktop = max-w-4xl with side padding */}
-      <main className="flex-1 mx-auto w-full max-w-md lg:max-w-4xl px-4 pb-28 pt-3">
+      <main
+        className="flex-1 mx-auto w-full max-w-md lg:max-w-4xl px-4 pt-3 pb-24"
+        style={{ paddingBottom: "max(6rem, calc(6rem + env(safe-area-inset-bottom, 0px)))" }}
+      >
         {children}
       </main>
-      <nav className="fixed bottom-0 inset-x-0 z-40 pb-safe pointer-events-none">
+      <nav
+        className="fixed bottom-0 inset-x-0 z-40 pointer-events-none"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
         <div className="mx-auto max-w-md lg:max-w-4xl px-4 pb-3 pointer-events-auto">
           <div className="glass-card rounded-2xl flex items-center justify-around h-16 px-2 shadow-[var(--shadow-elevated)] relative overflow-hidden">
             {tabs.map((t) => {

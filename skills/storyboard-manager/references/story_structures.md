@@ -5,20 +5,17 @@ This reference provides common story structures and frameworks for planning narr
 ## Three-Act Structure
 
 ### Act One: Setup (25% of story)
-
 - **Hook**: Opening scene that grabs attention
 - **Inciting Incident**: Event that disrupts the protagonist's normal world
 - **First Plot Point**: Decision/event that propels protagonist into Act Two (typically at 25% mark)
 
 ### Act Two: Confrontation (50% of story)
-
 - **Rising Action**: Series of obstacles and complications
 - **Midpoint**: Major revelation or reversal (at 50% mark)
 - **Pinch Points**: Moments that increase pressure on protagonist
 - **Second Plot Point**: Lowest point/crisis that leads into Act Three (at 75% mark)
 
 ### Act Three: Resolution (25% of story)
-
 - **Climax**: Final confrontation or decision
 - **Falling Action**: Immediate consequences of climax
 - **Resolution**: New normal/equilibrium established
@@ -59,7 +56,6 @@ This reference provides common story structures and frameworks for planning narr
 ## Character Arc Templates
 
 ### Positive Change Arc
-
 - **Lie Believed**: Character starts believing something false about themselves/world
 - **Want vs. Need**: What they think they want vs. what they actually need
 - **Ghost/Wound**: Past trauma influencing present behavior
@@ -67,7 +63,6 @@ This reference provides common story structures and frameworks for planning narr
 - **Resolution**: Embraces truth and grows
 
 ### Flat Arc
-
 - **Truth Known**: Character already knows the truth
 - **World's Lie**: The world around them believes a lie
 - **Testing**: Character's truth is challenged repeatedly
@@ -75,7 +70,6 @@ This reference provides common story structures and frameworks for planning narr
 - **Affirmation**: Character's truth proven correct
 
 ### Negative Arc
-
 - **Initial Weakness**: Character has a flaw or belief
 - **Escalation**: Flaw grows worse through choices
 - **Point of No Return**: Character chooses darkness
@@ -85,13 +79,11 @@ This reference provides common story structures and frameworks for planning narr
 ## Scene Structure
 
 ### Scene Components
-
 1. **Goal**: What the POV character wants in this scene
 2. **Conflict**: Opposition to achieving the goal
 3. **Disaster**: Outcome (usually negative) that propels to next scene
 
 ### Sequel Components (reaction to scene)
-
 1. **Reaction**: Emotional response to disaster
 2. **Dilemma**: Working through options
 3. **Decision**: Choice that leads to next goal/scene
@@ -99,7 +91,6 @@ This reference provides common story structures and frameworks for planning narr
 ## Pacing Guidelines
 
 ### Chapter Length by Genre
-
 - **Thriller/Mystery**: 2,000-3,000 words (faster pace)
 - **Fantasy/Sci-Fi**: 3,000-5,000 words (world-building needs)
 - **Romance**: 2,500-4,000 words (emotional beats)
@@ -107,7 +98,6 @@ This reference provides common story structures and frameworks for planning narr
 - **YA**: 2,000-3,500 words (shorter attention span)
 
 ### Tension Management
-
 - **High-tension scenes**: Action, conflict, revelations (shorter, punchier)
 - **Low-tension scenes**: Character development, world-building (can be longer)
 - **Rhythm**: Alternate between high and low tension
@@ -116,7 +106,6 @@ This reference provides common story structures and frameworks for planning narr
 ## Plot Development
 
 ### Conflict Types
-
 1. **Character vs. Character**: Antagonist opposition
 2. **Character vs. Self**: Internal struggle
 3. **Character vs. Society**: Against norms/systems
@@ -125,7 +114,6 @@ This reference provides common story structures and frameworks for planning narr
 6. **Character vs. Fate**: Against destiny/prophecy
 
 ### Subplot Integration
-
 - **Mirror subplots**: Reflect main theme differently
 - **Contrast subplots**: Show opposite approach to theme
 - **Complication subplots**: Add obstacles to main plot
@@ -134,7 +122,6 @@ This reference provides common story structures and frameworks for planning narr
 ## Genre-Specific Structures
 
 ### Mystery/Thriller
-
 - Introduction of crime/mystery
 - Investigation and clue discovery
 - Red herrings and misdirection
@@ -143,7 +130,6 @@ This reference provides common story structures and frameworks for planning narr
 - Resolution and explanation
 
 ### Romance
-
 - Meet-cute or introduction
 - Attraction develops
 - Barrier/conflict introduced
@@ -153,7 +139,6 @@ This reference provides common story structures and frameworks for planning narr
 - Happy ending or HEA (Happily Ever After)
 
 ### Fantasy/Sci-Fi
-
 - Ordinary world establishment
 - Introduction to magical/sci-fi elements
 - Quest or mission defined

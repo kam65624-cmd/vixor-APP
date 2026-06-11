@@ -128,6 +128,7 @@ function MissionControl() {
   const name = me.data?.profile?.display_name?.split(" ")[0] || t("dashboard.trader");
   const xp = (me.data?.profile as any)?.total_xp ?? (me.data?.profile as any)?.xp ?? 0;
   const isPremium = !!me.data?.isPremium;
+  const isLoadingMe = me.isLoading;
 
   // Active alerts
   const activeAlerts = (alerts.data ?? []).filter((a: any) => a.status === "active");
@@ -168,23 +169,38 @@ function MissionControl() {
                 : t("dashboard.greeting.evening")}
             , {t("dashboard.trader")}
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            {name} <span className="animate-wave origin-bottom-right inline-block">👋</span>
-          </h1>
-          <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed max-w-xs">
-            {aiSuggestion}
-          </p>
+          {isLoadingMe ? (
+            <div className="space-y-2">
+              <div className="h-8 w-32 rounded-lg bg-muted shimmer" />
+              <div className="h-3 w-48 rounded bg-muted shimmer" />
+            </div>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                {name} <span className="animate-wave origin-bottom-right inline-block">👋</span>
+              </h1>
+              <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed max-w-xs">
+                {aiSuggestion}
+              </p>
+            </>
+          )}
         </div>
         <div className="flex flex-col items-end gap-2">
-          {isPremium && (
-            <div className="px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-primary text-[10px] font-extrabold uppercase tracking-widest glow-primary">
-              PRO
-            </div>
-          )}
-          {xp > 0 && (
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-card border border-border text-[10px] font-bold text-foreground">
-              <Zap className="size-3 text-info" /> {xp} pts
-            </div>
+          {isLoadingMe ? (
+            <div className="h-5 w-10 rounded bg-muted shimmer" />
+          ) : (
+            <>
+              {isPremium && (
+                <div className="px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-primary text-[10px] font-extrabold uppercase tracking-widest glow-primary">
+                  PRO
+                </div>
+              )}
+              {xp > 0 && (
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-card border border-border text-[10px] font-bold text-foreground">
+                  <Zap className="size-3 text-info" /> {xp} pts
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -204,7 +220,23 @@ function MissionControl() {
         metricLabel={topSignal ? t("signals.confidence") : undefined}
         defaultExpanded={false}
       >
-        {topSignal ? (
+        {signals.isLoading ? (
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="space-y-1.5">
+                  <div className="h-2.5 w-12 rounded bg-muted shimmer" />
+                  <div className="h-4 w-16 rounded bg-muted shimmer" />
+                </div>
+              ))}
+            </div>
+            <div className="h-3 w-full rounded bg-muted shimmer" />
+            <div className="flex gap-2">
+              <div className="h-7 w-20 rounded-md bg-muted shimmer" />
+              <div className="h-7 w-20 rounded-md bg-muted shimmer" />
+            </div>
+          </div>
+        ) : topSignal ? (
           <div className="space-y-4">
             {/* Signal details */}
             <div className="grid grid-cols-3 gap-3">
@@ -310,6 +342,12 @@ function MissionControl() {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="p-3 rounded-xl bg-card border border-border shimmer h-20" />
             ))}
+          </div>
+        ) : !(prices.data ?? []).length ? (
+          <div className="py-6 text-center">
+            <Activity className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+            <p className="text-xs text-muted-foreground">{t("dashboard.noMarketData") || "Market data temporarily unavailable"}</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-1">Prices will appear when the feed reconnects</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -820,7 +858,7 @@ function MissionControl() {
       </ExpandableWidget>
 
       {/* ═══════════════════════════════════════════
-          QUICK ANALYZE CTA (bottom)
+          QUICK ANALYZE CTA (bottom) — always visible
           ═══════════════════════════════════════════ */}
       <div
         onClick={() => navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })}
@@ -837,8 +875,8 @@ function MissionControl() {
               {t("dashboard.smcIct")}
             </p>
           </div>
-          <div className="size-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-            <Camera className="size-5 text-white" />
+          <div className="size-14 rounded-full bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-black/10">
+            <Camera className="size-6 text-white" />
           </div>
         </div>
       </div>

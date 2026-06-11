@@ -1,4 +1,4 @@
-import { createHmac } from "crypto";
+import { createHmac, createHash } from "crypto";
 
 export interface TelegramUser {
   id: number;
@@ -65,7 +65,9 @@ export function verifyTelegramWidgetAuth(
     .map(([k, v]) => `${k}=${v}`)
     .join("\n");
 
-  const secretKey = createHmac("sha256", "").update(botToken).digest();
+  // Telegram Login Widget spec: secret_key = SHA256(bot_token)
+  // See: https://core.telegram.org/widgets/login#checking-authorization
+  const secretKey = createHash("sha256").update(botToken).digest();
   const computed = createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
 
   if (computed !== hash) return null;

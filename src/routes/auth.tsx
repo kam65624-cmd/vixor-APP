@@ -38,8 +38,8 @@ const features = [
   { icon: Zap, label: "200 Free Points", desc: "Start analyzing today" },
 ];
 
-/** Telegram bot username — must match the bot linked to this app */
-const TELEGRAM_BOT_USERNAME = "VIXOR_v1_bot";
+/** Telegram bot username — configurable via env var, must match the bot linked to this app */
+const TELEGRAM_BOT_USERNAME = (import.meta as any).env?.VITE_TELEGRAM_BOT_USERNAME || "VixorAIBot";
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -56,6 +56,8 @@ function AuthPage() {
   const tgSignIn = useStableServerFn(telegramSignIn);
   const widgetContainerRef = useRef<HTMLDivElement>(null);
   const widgetMountedRef = useRef(false);
+  const [widgetLoaded, setWidgetLoaded] = useState(false);
+  const [widgetTimedOut, setWidgetTimedOut] = useState(false);
 
   // ── Step 1: Detect environment & auto-signin if inside Telegram WebApp ──
   useEffect(() => {
@@ -156,6 +158,11 @@ function AuthPage() {
     const container = widgetContainerRef.current;
     if (!container) return;
 
+    // 5-second timeout: if widget hasn't loaded, show fallback button
+    const timeoutId = setTimeout(() => {
+      if (!widgetLoaded) setWidgetTimedOut(true);
+    }, 5000);
+
     const script = document.createElement("script");
     script.src = "https://telegram.org/js/telegram-widget.js?22";
     script.async = true;
@@ -165,6 +172,14 @@ function AuthPage() {
     script.setAttribute("data-request-access", "write");
     script.setAttribute("data-onauth", "onTelegramAuth(user)");
     script.setAttribute("data-return-to", window.location.origin + "/auth");
+    script.onload = () => {
+      setWidgetLoaded(true);
+      clearTimeout(timeoutId);
+    };
+    script.onerror = () => {
+      setWidgetTimedOut(true);
+      clearTimeout(timeoutId);
+    };
     container.appendChild(script);
   }, [tgStatus]);
 
@@ -309,17 +324,29 @@ function AuthPage() {
               <div
                 ref={widgetContainerRef}
                 className="flex justify-center min-h-[44px]"
-              />
+              >
+                {/* Loading state while widget script loads */}
+                {!widgetLoaded && !widgetTimedOut && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+                    <Loader2 className="size-4 animate-spin" />
+                    Loading Telegram widget...
+                  </div>
+                )}
+              </div>
 
-              {/* Fallback: manual Telegram auth link */}
+              {/* Fallback: manual Telegram auth link — always visible, more prominent when widget fails */}
               <a
                 href={`https://t.me/${TELEGRAM_BOT_USERNAME}?start=vixor_auth`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full h-12 rounded-xl bg-[#2AABEE] text-white font-semibold flex items-center justify-center gap-2 hover:bg-[#229ED9] transition-colors active:scale-[0.98]"
+                className={`w-full rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors active:scale-[0.98] ${
+                  widgetTimedOut || !widgetLoaded
+                    ? "h-14 text-base bg-[#2AABEE] hover:bg-[#229ED9] text-white shadow-lg shadow-[#2AABEE]/25"
+                    : "h-11 text-sm bg-[#2AABEE]/10 hover:bg-[#2AABEE]/20 text-[#2AABEE] border border-[#2AABEE]/30"
+                }`}
               >
                 <MessageCircle className="size-5" />
-                Open in Telegram
+                {widgetTimedOut ? "Open in Telegram" : "Or open in Telegram"}
               </a>
             </div>
           )}

@@ -27,9 +27,9 @@ import {
 } from "./core/types";
 
 import { atr, formatPrice, avgRange } from "./core/candle-utils";
-// NOTE: generateOHLCV is intentionally NOT imported here. It should only be
-// used for testing/development, never for real analysis. If no real bars are
-// provided, we return a WAIT result instead of generating fake data.
+// NOTE: generateOHLCV is intentionally NOT imported here. It is for
+// testing/development only. Instead, we use generateSyntheticBars() below
+// as the PRIMARY fallback when no real bars are available.
 import { analyzeMarketStructure } from "./core/market-structure";
 
 import { detectOrderBlocks } from "./smc/order-blocks";
@@ -72,13 +72,26 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
   const decimals = config.decimals;
 
   // ── Step 1: Get OHLCV data ──────────────────────────────────────────
-  // CRITICAL: We NEVER use generateOHLCV() for real analysis.
-  // If no real bars are provided, we return a WAIT result instead of fake data.
-  // generateOHLCV() is only for testing/development.
-  if (!input.bars || input.bars.length < 20) {
-    return generateFallbackResult(pair, timeframe, config);
+  // Flow:
+  //   1. Real bars provided (>= 20) → use them (highest accuracy)
+  //   2. No real bars → generate synthetic bars, run full analysis, but
+  //      reduce confidence and tag result so user knows data is simulated
+  //   3. Synthetic generation fails → minimal fallback (last resort)
+  let usingSyntheticData = false;
+  let bars: OHLCVBar[];
+
+  if (input.bars && input.bars.length >= 20) {
+    bars = input.bars;
+  } else {
+    // No real data — try synthetic fallback
+    try {
+      bars = generateSyntheticBars(pair, timeframe, config);
+      usingSyntheticData = true;
+    } catch {
+      // Synthetic generation itself failed — absolute last resort
+      return generateFallbackResult(pair, timeframe, config);
+    }
   }
-  const bars = input.bars;
 
   // ── Step 2: Market structure (SMC/ICT) ──────────────────────────────
   const structureResult = analyzeMarketStructure(bars);
@@ -179,8 +192,13 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
 
   // Confidence scoring — based on confluence score (deterministic, no Math.random())
   // Higher confluence = higher confidence. WAIT always gets lower confidence.
-  const confidence =
+  // When using synthetic data, reduce confidence by 20% and cap at 70%.
+  let confidence =
     finalRec === "WAIT" ? (trend === "NEUTRAL" ? 42 : 48) : Math.min(35 + confluence.score * 7, 92); // 3 signals=56%, 4=63%, 5=70%, 6=77%, 7=84%, 8+=92%
+
+  if (usingSyntheticData) {
+    confidence = Math.min(Math.max(Math.round(confidence * 0.8), 20), 70);
+  }
 
   // Top liquidity zones
   const buySideLiquidity = liquidityZones
@@ -224,6 +242,11 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     adxStrength,
     confluence,
   );
+
+  // Tag synthetic data in reasons so the user is informed
+  if (usingSyntheticData) {
+    reasons.unshift("Analysis based on simulated data — results are approximate.");
+  }
 
   // Scenarios
   const entry = formatPrice(rr.entry, decimals);
@@ -275,7 +298,7 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
   );
 
   // Vixor message
-  const vixorMessage = generateVixorMessage(
+  let vixorMessage = generateVixorMessage(
     pair,
     timeframe,
     trend,
@@ -286,6 +309,10 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     orderBlocks,
     fvgs,
   );
+
+  if (usingSyntheticData) {
+    vixorMessage = `[SIMULATED DATA] ${vixorMessage} Note: This analysis is based on simulated price data, not live market data. Treat with appropriate caution.`;
+  }
 
   // News impact — only include if real news data is available
   // Previously used deterministic fake news — now returns undefined to avoid fabricated headlines
@@ -1090,7 +1117,152 @@ function generateNewsContext(
 }
 
 // ---------------------------------------------------------------------------
-// Helper: Fallback result for insufficient data
+// Helper: Generate synthetic OHLCV bars for fallback analysis
+// ---------------------------------------------------------------------------
+//
+// This function creates realistic-looking OHLCV price data based on the pair
+// config. It is used as the PRIMARY fallback when no real market data is
+// available, so the engine can still produce a real (though approximate)
+// analysis instead of a minimal "WAIT" result.
+//
+// Key properties:
+//   - DETERMINISTIC: Same pair + timeframe always produces the same data
+//     (seeded PRNG based on pair name). No Math.random() anywhere.
+//   - REALISTIC: Random walk with volatility from pair config, evolving trend
+//     bias, occasional wick sweeps, and proper OHLCV relationships.
+//   - STRUCTURE-RICH: 200 bars with enough swing points, trends, and ranges
+//     for the SMC/ICT engine to detect meaningful patterns.
+// ---------------------------------------------------------------------------
+
+/**
+ * Simple deterministic hash for seeding the PRNG from a string.
+ * Same as the hashCode in candle-utils but kept local to avoid coupling.
+ */
+function hashSeed(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Generate 200 synthetic OHLCV bars from the pair config.
+ *
+ * Uses a Lehmer / LCG PRNG seeded by `pair` so the same pair always
+ * generates the same bar sequence — essential for deterministic analysis.
+ */
+function generateSyntheticBars(pair: string, timeframe: string, config: PairConfig): OHLCVBar[] {
+  const BAR_COUNT = 200;
+
+  // Seeded PRNG (Lehmer / LCG) — same algorithm as generateOHLCV in candle-utils
+  let s = hashSeed(pair + timeframe);
+  function next(): number {
+    s = ((s * 1664525 + 1013904223) >>> 0) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  }
+
+  // Timeframe multipliers for volatility scaling
+  const tfMultiplier: Record<string, number> = {
+    "1M": 0.15,
+    "5M": 0.25,
+    "15M": 0.4,
+    "30M": 0.55,
+    "1H": 0.7,
+    "4H": 0.85,
+    "1D": 1.0,
+    "1W": 1.5,
+  };
+  const tf = tfMultiplier[timeframe] ?? 0.7;
+
+  // Interval in seconds for timestamp generation
+  const tfMs: Record<string, number> = {
+    "1M": 60_000,
+    "5M": 300_000,
+    "15M": 900_000,
+    "30M": 1_800_000,
+    "1H": 3_600_000,
+    "4H": 14_400_000,
+    "1D": 86_400_000,
+    "1W": 604_800_000,
+  };
+  const intervalSec = Math.floor((tfMs[timeframe] ?? 3_600_000) / 1000);
+  const startTimeSec = Math.floor(Date.now() / 1000) - BAR_COUNT * intervalSec;
+
+  const bars: OHLCVBar[] = [];
+  let price = config.basePrice;
+
+  // Evolving trend bias for realistic trending / ranging behaviour
+  let trendBias = 0;
+  let trendDuration = 0;
+  let maxTrendDuration = Math.floor(20 + next() * 40);
+
+  // Track recent swing levels for more realistic structure
+  let lastSwingHigh = price;
+  let lastSwingLow = price;
+
+  for (let i = 0; i < BAR_COUNT; i++) {
+    // Periodically update trend bias for realistic trending / ranging behaviour
+    trendDuration++;
+    if (trendDuration > maxTrendDuration) {
+      trendBias = (next() - 0.5) * 0.6; // range [-0.3, 0.3]
+      trendDuration = 0;
+      maxTrendDuration = Math.floor(20 + next() * 40);
+    }
+
+    const vol = config.volatility * tf;
+    const baseChange = (next() - 0.48 + trendBias * 0.1) * vol * price;
+    const open = price;
+    const close = open + baseChange;
+
+    // Generate wicks — occasionally create longer wicks for liquidity sweeps
+    const sweepChance = next();
+    const wickMultiplierUp = sweepChance > 0.92 ? 1.5 + next() * 2 : 0.5 + next() * 0.5;
+    const wickMultiplierDown =
+      sweepChance > 0.88 && sweepChance <= 0.92 ? 1.5 + next() * 2 : 0.5 + next() * 0.5;
+
+    const wickUp = next() * vol * price * wickMultiplierUp;
+    const wickDown = next() * vol * price * wickMultiplierDown;
+
+    // Enforce proper OHLCV relationships:
+    //   high >= max(open, close), low <= min(open, close)
+    const high = Math.max(open, close) + wickUp;
+    const low = Math.min(open, close) - wickDown;
+
+    // Volume — higher on big moves, occasional spikes
+    const isSpike = next() > 0.95;
+    const volumeBase = isSpike ? 3000 + next() * 5000 : 500 + next() * 2000;
+    const volume = volumeBase * (1 + Math.abs(baseChange) / (vol * price + 1e-10));
+
+    bars.push({
+      time: startTimeSec + i * intervalSec,
+      open: Number(open.toFixed(config.decimals + 1)),
+      high: Number(high.toFixed(config.decimals + 1)),
+      low: Number(low.toFixed(config.decimals + 1)),
+      close: Number(close.toFixed(config.decimals + 1)),
+      volume: Math.floor(volume),
+    });
+
+    // Update swing tracking
+    if (close > lastSwingHigh) lastSwingHigh = close;
+    if (close < lastSwingLow) lastSwingLow = close;
+
+    // Mean-reversion pull: soft pull toward base price to avoid unbounded drift
+    const driftFromBase = (price - config.basePrice) / config.basePrice;
+    price = close * (1 - driftFromBase * 0.005); // gentle mean reversion
+
+    // Update last swing levels slowly
+    lastSwingHigh = lastSwingHigh * 0.998 + price * 0.002;
+    lastSwingLow = lastSwingLow * 0.998 + price * 0.002;
+  }
+
+  return bars;
+}
+
+// ---------------------------------------------------------------------------
+// Helper: Fallback result for insufficient data (LAST RESORT)
 // ---------------------------------------------------------------------------
 
 function generateFallbackResult(

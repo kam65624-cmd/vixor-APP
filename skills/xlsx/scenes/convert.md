@@ -1,19 +1,18 @@
 # Scene: Format Conversion
 
 ## When This Applies
-
 User wants to convert between tabular file formats: CSV↔XLSX, JSON→XLSX, TSV→XLSX, PDF table→XLSX, or XLSX→CSV/JSON.
 
 ## Conversion Matrix
 
-| From               | To                                           | Method                    |
-| ------------------ | -------------------------------------------- | ------------------------- |
-| CSV/TSV → XLSX     | pandas read → openpyxl write with formatting | Most common               |
-| JSON → XLSX        | pandas json_normalize → openpyxl             | Flatten nested structures |
-| XLSX → CSV         | pandas read_excel → to_csv                   | Simple export             |
-| XLSX → JSON        | pandas read_excel → to_json                  | With orient parameter     |
-| PDF table → XLSX   | pdfplumber/tabula extract → openpyxl         | Needs table detection     |
-| Image table → XLSX | OCR → pandas → openpyxl                      | Last resort, error-prone  |
+| From | To | Method |
+|------|-----|--------|
+| CSV/TSV → XLSX | pandas read → openpyxl write with formatting | Most common |
+| JSON → XLSX | pandas json_normalize → openpyxl | Flatten nested structures |
+| XLSX → CSV | pandas read_excel → to_csv | Simple export |
+| XLSX → JSON | pandas read_excel → to_json | With orient parameter |
+| PDF table → XLSX | pdfplumber/tabula extract → openpyxl | Needs table detection |
+| Image table → XLSX | OCR → pandas → openpyxl | Last resort, error-prone |
 
 ## CSV/TSV → XLSX
 
@@ -23,7 +22,7 @@ from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 
 # Read with encoding detection
-df = pd.read_csv('input.csv', encoding='utf-8')
+df = pd.read_csv('input.csv', encoding='utf-8')  
 # Common encodings: utf-8, gbk, gb2312, latin-1, shift_jis
 
 # Handle messy CSVs
@@ -116,13 +115,13 @@ df = pd.DataFrame(tables[1:], columns=tables[0])
 
 ## Encoding Gotchas
 
-| Scenario                  | Encoding               | Tip                               |
-| ------------------------- | ---------------------- | --------------------------------- |
-| Chinese data from Windows | `gbk` or `gb2312`      | Try gbk first                     |
-| Japanese data             | `shift_jis` or `cp932` |                                   |
-| European data             | `latin-1` or `cp1252`  |                                   |
-| Excel-generated CSV       | `utf-8-sig` (has BOM)  | pandas handles automatically      |
-| Output CSV for Excel      | Write with `utf-8-sig` | Prevents garbled Chinese in Excel |
+| Scenario | Encoding | Tip |
+|----------|----------|-----|
+| Chinese data from Windows | `gbk` or `gb2312` | Try gbk first |
+| Japanese data | `shift_jis` or `cp932` | |
+| European data | `latin-1` or `cp1252` | |
+| Excel-generated CSV | `utf-8-sig` (has BOM) | pandas handles automatically |
+| Output CSV for Excel | Write with `utf-8-sig` | Prevents garbled Chinese in Excel |
 
 ## Quality Checks After Conversion
 

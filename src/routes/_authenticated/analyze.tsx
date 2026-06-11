@@ -8,12 +8,21 @@ import {
   ArrowLeft,
   Image as ImageIcon,
   Clipboard,
+  Crosshair,
+  Info,
 } from "lucide-react";
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { createAnalysis, getMe } from "@/lib/vixor.functions";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/analyze")({
   head: () => ({ meta: [{ title: "Analyze — Vixor" }] }),
@@ -28,6 +37,18 @@ const TRADING_STYLES = [
   { id: "Scalping", icon: "⚡", label: "Scalping" },
   { id: "Day Trading", icon: "☀️", label: "Day Trading" },
   { id: "Swing Trading", icon: "🌊", label: "Swing Trading" },
+];
+
+const POPULAR_PAIRS = [
+  { value: "auto", label: "Auto-detect", icon: "🔍" },
+  { value: "XAU/USD", label: "XAU/USD", icon: "🥇" },
+  { value: "EUR/USD", label: "EUR/USD", icon: "🇪🇺" },
+  { value: "GBP/USD", label: "GBP/USD", icon: "🇬🇧" },
+  { value: "BTC/USDT", label: "BTC/USDT", icon: "₿" },
+  { value: "ETH/USDT", label: "ETH/USDT", icon: "Ξ" },
+  { value: "USD/JPY", label: "USD/JPY", icon: "🇯🇵" },
+  { value: "GBP/JPY", label: "GBP/JPY", icon: "🇬🇧🇯🇵" },
+  { value: "SOL/USDT", label: "SOL/USDT", icon: "◎" },
 ];
 
 const STEPS_KEYS = [
@@ -242,6 +263,37 @@ function Analyze() {
             />
           </label>
 
+          {/* Pair Selection Dropdown */}
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide flex items-center gap-1.5">
+              <Crosshair className="size-3" /> Pair / Instrument
+            </label>
+            <Select value={selectedPair} onValueChange={setSelectedPair}>
+              <SelectTrigger className="h-11 rounded-xl bg-card border border-border text-sm font-mono">
+                <SelectValue placeholder="Select pair" />
+              </SelectTrigger>
+              <SelectContent>
+                {POPULAR_PAIRS.map((p) => (
+                  <SelectItem key={p.value} value={p.value}>
+                    <span className="flex items-center gap-2 font-mono">
+                      <span className="text-base">{p.icon}</span>
+                      <span className="font-bold">{p.label}</span>
+                      {p.value === "auto" && (
+                        <span className="text-[10px] text-muted-foreground ml-1">(VLM detect)</span>
+                      )}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedPair !== "auto" && (
+              <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
+                <Crosshair className="size-3.5 text-primary" />
+                <span className="text-xs font-bold text-primary">Analyzing: {selectedPair}</span>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => fileRef.current?.click()}
@@ -282,6 +334,37 @@ function Analyze() {
           </div>
 
           <div className="vixor-card p-4 space-y-4">
+            {/* Pair Selection (in preview too) */}
+            <div>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block flex items-center gap-1.5">
+                <Crosshair className="size-3" /> Pair / Instrument
+              </label>
+              <Select value={selectedPair} onValueChange={setSelectedPair}>
+                <SelectTrigger className="h-11 rounded-xl bg-card border border-border text-sm font-mono">
+                  <SelectValue placeholder="Select pair" />
+                </SelectTrigger>
+                <SelectContent>
+                  {POPULAR_PAIRS.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>
+                      <span className="flex items-center gap-2 font-mono">
+                        <span className="text-base">{p.icon}</span>
+                        <span className="font-bold">{p.label}</span>
+                        {p.value === "auto" && (
+                          <span className="text-[10px] text-muted-foreground ml-1">(VLM detect)</span>
+                        )}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedPair !== "auto" && (
+                <div className="mt-2 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
+                  <Crosshair className="size-3.5 text-primary" />
+                  <span className="text-xs font-bold text-primary">Analyzing: {selectedPair}</span>
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
                 Trading Style
@@ -300,12 +383,20 @@ function Analyze() {
               </div>
             </div>
 
+            {/* SMC/ICT Engine Note */}
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-info/5 border border-info/20">
+              <Info className="size-4 text-info shrink-0 mt-0.5" />
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Analysis powered by the <span className="font-bold text-foreground">local SMC/ICT engine</span> — Smart Money Concepts &amp; Inner Circle Trader methodology for order blocks, FVGs, liquidity zones, and more.
+              </p>
+            </div>
+
             <button
               onClick={startAnalysis}
               disabled={!isPremium && points < 10}
-              className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-bold text-lg flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50"
+              className="w-full h-16 rounded-2xl gradient-primary text-primary-foreground font-bold text-lg flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50 shadow-lg shadow-primary/25"
             >
-              <Sparkles className="size-5" /> {t("analyze.startAnalysis")}
+              <Sparkles className="size-6" /> {t("analyze.startAnalysis")}
               {!isPremium && (
                 <span className="ml-2 text-xs bg-black/20 px-2 py-0.5 rounded-full">-10 pts</span>
               )}

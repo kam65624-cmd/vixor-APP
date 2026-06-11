@@ -1,3 +1,4 @@
+
 ---
 
 ## CJK Typography Supplement
@@ -12,9 +13,7 @@ body {
   overflow-wrap: break-word;
 }
 
-p,
-td,
-li {
+p, td, li {
   line-break: strict;
   text-align: justify;
 }

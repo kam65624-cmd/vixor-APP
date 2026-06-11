@@ -11,7 +11,6 @@ description: |
 从网页提取 WebGL/Canvas/Shader 特效，反混淆并移植为独立项目。
 
 核心原则：
-
 - **先 1:1 复刻，确认正确后再考虑简化框架**
 - **全程自主执行，不中断用户** — 提取是只读操作，安全性无风险。除 Phase 6 简化提议外，所有步骤自动完成，不询问用户确认。遇到问题自行判断最佳方案继续推进，只在需要用户做产品决策时才询问。
 
@@ -43,7 +42,6 @@ fi
 ```
 
 如果安装过程中遇到权限或网络问题，尝试以下备选方案：
-
 - npm 权限问题 → 使用 `--prefix` 安装到用户目录
 - 网络问题（Chromium 下载慢）→ 设置 `PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright` 使用国内镜像
 - 实在无法安装 Playwright → 降级为纯 curl 模式（跳过 DOM 渲染，仅分析静态 HTML + JS bundle），在 Phase 2 中标注可能缺失 canvas-info
@@ -116,26 +114,17 @@ URL 或 HTML 特征匹配已知平台 → 直接跳转专用工作流（跳过�
 提取完成后，**询问用户**是否生成 `EXTRACTION-REPORT.md`（会消耗额外 token 回顾对话历史）。
 
 报告内容结构：
-
 ```markdown
 # 提取报告：{项目名}
-
 **来源/作者/平台/时间**
 
 ## 目标效果（一句话描述）
-
 ## 提取思路与时间线（每个迭代的问题→修复）
-
 ## 场景结构（组件树/图层结构）
-
 ## 最终渲染管线（pass 列表）
-
 ## 关键资源文件
-
 ## 发现的关键经验（表格：经验/影响/沉淀位置）
-
 ## 剩余已知差异
-
 ## 技术栈（原始 vs 移植）
 ```
 
@@ -143,14 +132,14 @@ URL 或 HTML 特征匹配已知平台 → 直接跳转专用工作流（跳过�
 
 ## Reference 索引
 
-| 需要时                                                   | 读取                                |
-| -------------------------------------------------------- | ----------------------------------- |
-| 识别框架（Three.js/WebGL/PixiJS 特征）                   | `references/tech-signatures.md`     |
-| Agent 提取 prompt + 反混淆规则                           | `references/extraction-workflow.md` |
-| 获取配置参数（API/payload/内嵌）                         | `references/config-extraction.md`   |
-| Three.js TSL 节点 shader 重建                            | `references/tsl-extraction.md`      |
-| 编码/加密配置解码                                        | `references/encoded-definitions.md` |
-| onBeforeCompile GLSL 注入陷阱                            | `references/shader-injection.md`    |
-| 移植框架选择 + 项目结构                                  | `references/porting-strategy.md`    |
-| **Unicorn Studio** 专用流程（curtains.js + Firestore）   | `references/unicorn-studio.md`      |
-| **shaders.com** 专用流程（TSL + XOR 编码 + Y-flip 陷阱） | `references/shaders-com.md`         |
+| 需要时 | 读取 |
+|--------|------|
+| 识别框架（Three.js/WebGL/PixiJS 特征） | `references/tech-signatures.md` |
+| Agent 提取 prompt + 反混淆规则 | `references/extraction-workflow.md` |
+| 获取配置参数（API/payload/内嵌） | `references/config-extraction.md` |
+| Three.js TSL 节点 shader 重建 | `references/tsl-extraction.md` |
+| 编码/加密配置解码 | `references/encoded-definitions.md` |
+| onBeforeCompile GLSL 注入陷阱 | `references/shader-injection.md` |
+| 移植框架选择 + 项目结构 | `references/porting-strategy.md` |
+| **Unicorn Studio** 专用流程（curtains.js + Firestore） | `references/unicorn-studio.md` |
+| **shaders.com** 专用流程（TSL + XOR 编码 + Y-flip 陷阱） | `references/shaders-com.md` |

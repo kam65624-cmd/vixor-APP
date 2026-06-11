@@ -185,11 +185,11 @@ export const createAnalysis = createServerFn({ method: "POST" })
         );
       }
 
-      // HARD CHECK: If we couldn't fetch real OHLCV data from any source, throw an error.
+      // SOFT CHECK: If real OHLCV data is unavailable, the engine will use its
+      // built-in synthetic data generator as fallback. This ensures the app always
+      // produces analysis results, even when market data APIs are down.
       if (!realBars) {
-        const errMsg = `Unable to fetch real market data for ${data.selectedPair || "EUR/USD"}. The market data API may be temporarily unavailable. Please try again in a moment.`;
-        console.error(`[Vixor] ${errMsg}`);
-        throw new Error(errMsg);
+        console.warn(`[Vixor] No real OHLCV data available for ${data.selectedPair || "EUR/USD"}. Engine will use synthetic data fallback.`);
       }
 
       const result = await runChartAnalysis(
@@ -198,7 +198,7 @@ export const createAnalysis = createServerFn({ method: "POST" })
         data.fileName,
         data.selectedPair,
         data.tradingStyle,
-        realBars,
+        realBars || undefined,
       );
 
       const updateData = {
@@ -509,18 +509,17 @@ export const quickAnalyze = createServerFn({ method: "POST" })
         }
       }
 
-      // HARD CHECK
+      // SOFT CHECK: If real OHLCV data is unavailable, the engine will use its
+      // built-in synthetic data generator as fallback.
       if (!realBars) {
-        const errMsg = `Unable to fetch real market data for ${pair}. The market data API may be temporarily unavailable. Please try again in a moment.`;
-        console.error(`[Vixor] QuickAnalyze: ${errMsg}`);
-        throw new Error(errMsg);
+        console.warn(`[Vixor] QuickAnalyze: No real OHLCV data for ${pair}. Engine will use synthetic data fallback.`);
       }
 
       const result = runLocalAnalysis({
         pair,
         timeframe,
         tradingStyle,
-        bars: realBars,
+        bars: realBars || undefined,
       });
 
       const updateData = {

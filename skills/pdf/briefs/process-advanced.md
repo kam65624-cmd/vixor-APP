@@ -25,7 +25,6 @@ For basic operations (extract, merge, split, fill forms, convert), go back to `p
 A Python binding for PDFium (Chromium's PDF library). Excellent for fast rendering and text extraction — serves as a PyMuPDF replacement.
 
 #### Render PDF to Images
-
 ```python
 import pypdfium2 as pdfium
 
@@ -45,7 +44,6 @@ for i, page in enumerate(pdf):
 ```
 
 #### Extract Text with pypdfium2
-
 ```python
 import pypdfium2 as pdfium
 
@@ -58,7 +56,6 @@ for i, page in enumerate(pdf):
 ## §pdfplumber Advanced Features
 
 #### Extract Text with Precise Coordinates
-
 ```python
 import pdfplumber
 
@@ -74,7 +71,6 @@ with pdfplumber.open("document.pdf") as pdf:
 ```
 
 #### Advanced Table Extraction with Custom Settings
-
 ```python
 import pdfplumber
 
@@ -99,13 +95,11 @@ with pdfplumber.open("complex_table.pdf") as pdf:
 ## §poppler-utils Advanced Features
 
 ### Extract Text with Bounding Box Coordinates
-
 ```bash
 pdftotext -bbox-layout document.pdf output.xml
 ```
 
 ### Advanced Image Conversion
-
 ```bash
 # High-resolution PNG
 pdftoppm -png -r 300 document.pdf output_prefix
@@ -118,7 +112,6 @@ pdftoppm -jpeg -jpegopt quality=85 -r 200 document.pdf jpeg_output
 ```
 
 ### Extract Embedded Images
-
 ```bash
 pdfimages -all document.pdf images/img
 pdfimages -list document.pdf
@@ -129,7 +122,6 @@ pdfimages -list document.pdf
 ## §qpdf Advanced Features
 
 ### Complex Page Manipulation
-
 ```bash
 # Split into groups of N pages
 qpdf --split-pages=3 input.pdf output_group_%02d.pdf
@@ -142,7 +134,6 @@ qpdf --empty --pages doc1.pdf 1-3 doc2.pdf 5-7 doc3.pdf 2,4 -- combined.pdf
 ```
 
 ### PDF Optimization and Repair
-
 ```bash
 qpdf --linearize input.pdf optimized.pdf
 qpdf --optimize-level=all input.pdf compressed.pdf
@@ -151,7 +142,6 @@ qpdf --fix-qdf damaged.pdf repaired.pdf
 ```
 
 ### Encryption and Decryption
-
 ```bash
 qpdf --encrypt user_pass owner_pass 256 --print=none --modify=none -- input.pdf encrypted.pdf
 qpdf --show-encryption encrypted.pdf
@@ -174,7 +164,6 @@ except Exception as e:
 ```
 
 Or via qpdf:
-
 ```bash
 qpdf --password=secret123 --decrypt encrypted.pdf decrypted.pdf
 ```
@@ -255,18 +244,15 @@ def batch_process_pdfs(input_dir, operation='merge'):
 ## §Performance Optimization
 
 ### Text Extraction
-
 - `pdftotext -bbox-layout` is fastest for plain text
 - Use pdfplumber for structured data and tables
 - Avoid `pypdf.extract_text()` for very large documents
 
 ### Image Extraction
-
 - `pdfimages` is much faster than rendering entire pages
 - Use low resolution for previews, high resolution for final output
 
 ### Memory Management for Large PDFs
-
 ```python
 def process_large_pdf(pdf_path, chunk_size=10):
     reader = PdfReader(pdf_path)
@@ -285,14 +271,14 @@ def process_large_pdf(pdf_path, chunk_size=10):
 
 ## Extended Tooling Inventory
 
-| Library / Tool | Role                                                  | Licence    |
-| -------------- | ----------------------------------------------------- | ---------- |
-| pikepdf        | Low-level PDF manipulation (forms, pages, metadata)   | MPL-2.0    |
-| pdfplumber     | Content extraction (text, tables)                     | MIT        |
-| pypdfium2      | Fast rendering, text extraction (PyMuPDF alternative) | Apache/BSD |
-| pypdf          | Merge, split, crop, metadata, encryption              | BSD        |
-| poppler-utils  | CLI text/image extraction, rendering                  | GPL-2      |
-| qpdf           | Page manipulation, optimization, encryption, repair   | Apache     |
-| pytesseract    | OCR for scanned PDFs                                  | Apache     |
-| pdf2image      | PDF-to-image conversion via poppler                   | MIT        |
-| LibreOffice    | Office format conversion engine                       | MPL-2.0    |
+| Library / Tool | Role | Licence |
+|----------------|------|---------|
+| pikepdf | Low-level PDF manipulation (forms, pages, metadata) | MPL-2.0 |
+| pdfplumber | Content extraction (text, tables) | MIT |
+| pypdfium2 | Fast rendering, text extraction (PyMuPDF alternative) | Apache/BSD |
+| pypdf | Merge, split, crop, metadata, encryption | BSD |
+| poppler-utils | CLI text/image extraction, rendering | GPL-2 |
+| qpdf | Page manipulation, optimization, encryption, repair | Apache |
+| pytesseract | OCR for scanned PDFs | Apache |
+| pdf2image | PDF-to-image conversion via poppler | MIT |
+| LibreOffice | Office format conversion engine | MPL-2.0 |
