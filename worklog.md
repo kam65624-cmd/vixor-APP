@@ -27,3 +27,26 @@ Stage Summary:
 - Copilot Agent: processWithAgent() wired into askCopilot flow
 - Database: ALL 11 tables exist
 - Key architecture: User Message → Copilot Agent (intent detection) → Tool Router → Tool → DB → Event → Memory → Response → (fallback to AI if no tool intent)
+---
+Task ID: P1.5-Chart-Intelligence
+Agent: Main Agent
+Task: Build Chart Intelligence Layer — Fix blind AI analysis that hallucinates instead of reading chart images
+
+Work Log:
+- Audited entire chart analysis pipeline: found detectPairFromImage() is a STUB, image bytes are NEVER consumed, Gemini Vision only fires as fallback (confidence < 60)
+- Created src/domains/chart-intelligence/ with 5 files: chart-context.ts, chart-vision.ts, chart-validation.ts, chart-session.ts, index.ts
+- Rewrote run-analysis.ts: Image is now analyzed FIRST via Chart Vision, validated, then local engine runs with extracted context
+- Added ChartExtractionRefusedError: System REFUSES to analyze if confidence < 80%, returns clear user message
+- Added chart session context to copilot: charts page passes current pair/timeframe/price to copilot via search params
+- Added "Ask AI" button on charts page (4-col grid: Alert | Analyze | Ask AI | Watchlist)
+- Updated copilot.tsx to accept chartSession parameter and inject chart context into AI prompt
+- Updated copilot functions.ts to accept chartSession and build chart session prompt
+- Pushed to GitHub and deployed to Vercel
+
+Stage Summary:
+- Chart Intelligence Layer is now LIVE
+- Golden Rule enforced: Never hallucinate price/symbol/timeframe — only report what's extracted from image or real data
+- Two analysis paths: Session mode (TradingView widget, 100% accuracy) and Vision mode (screenshot analysis with confidence threshold)
+- If vision extraction fails AND user hasn't selected a pair, analysis is REFUSED with clear message
+- Copilot now knows the chart the user is viewing (context-aware)
+- Deployment ID: dpl_BTcgCXuu6Qj8vWDURXMULAyRuaLP
