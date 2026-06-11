@@ -177,8 +177,6 @@ export async function runChartAnalysis(
   trading_style?: string,
   realBars?: import("@/domains/analysis/engine/core/types").OHLCVBar[],
 ): Promise<AnalysisResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 1: CHART VISION — Extract context from the image FIRST
   //
@@ -189,7 +187,10 @@ export async function runChartAnalysis(
   let chartContext: ChartContext | null = null;
   let extractionResult: ChartExtractionResult | null = null;
 
-  if (apiKey) {
+  // Check if ANY vision API key is available (Gemini direct or Lovable gateway)
+  const hasVisionKey = !!(process.env.GEMINI_API_KEY || process.env.LOVABLE_AI_GATEWAY_API_KEY);
+
+  if (hasVisionKey) {
     console.log("[Vixor] Step 1: Running Chart Vision extraction...");
     try {
       extractionResult = await extractChartContext(imageBytes, mimeType, "external_screenshot");
@@ -278,7 +279,7 @@ export async function runChartAnalysis(
 
   // If local engine produced a reasonable result (confidence >= 50), use it
   // The local engine is deterministic and based on REAL OHLCV data
-  if (localResult.confidence >= 50 || !apiKey) {
+  if (localResult.confidence >= 50 || !hasVisionKey) {
     console.log(
       `[Vixor] Local analysis complete: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
     );
@@ -289,7 +290,7 @@ export async function runChartAnalysis(
 
   // ── GEMINI VISION FALLBACK — Full analysis with vision model ──
   // Only used when local engine has very low confidence AND we have an API key
-  if (apiKey) {
+  if (hasVisionKey) {
     try {
       console.log("[Vixor] Step 3: Local confidence low, attempting Gemini Vision analysis...");
       const geminiResult = await runGeminiAnalysis(
@@ -387,8 +388,29 @@ async function runGeminiAnalysis(
     assetGuidance += `Vision analysis detected current price: ${chartContext.currentPrice}. Use this as a reference for price levels.\n`;
   }
 
+  // Support both GEMINI_API_KEY and LOVABLE_AI_GATEWAY_API_KEY
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const lovableKey = process.env.LOVABLE_AI_GATEWAY_API_KEY;
+  let model: any;
+  if (geminiKey) {
+    model = google("gemini-2.5-pro");
+  } else if (lovableKey) {
+    const { createOpenAICompatible } = await import("@ai-sdk/openai-compatible");
+    const provider = createOpenAICompatible({
+      name: "lovable",
+      baseURL: "https://ai.gateway.lovable.dev/v1",
+      headers: {
+        "Lovable-API-Key": lovableKey,
+        "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+      },
+    });
+    model = provider("google/gemini-2.5-pro");
+  } else {
+    throw new Error("No AI API key available for analysis");
+  }
+
   const { object } = await generateObject({
-    model: google("gemini-2.5-pro"),
+    model,
     schema: AnalysisSchema,
     messages: [
       {

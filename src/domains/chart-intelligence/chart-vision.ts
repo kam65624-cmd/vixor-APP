@@ -77,12 +77,14 @@ export async function extractChartContext(
   mimeType: string,
   source: ChartSource = "external_screenshot",
 ): Promise<ChartExtractionResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Support both GEMINI_API_KEY and LOVABLE_AI_GATEWAY_API_KEY
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const lovableKey = process.env.LOVABLE_AI_GATEWAY_API_KEY;
 
-  if (!apiKey) {
-    console.warn("[ChartVision] No GEMINI_API_KEY — cannot extract chart context from image");
+  if (!geminiKey && !lovableKey) {
+    console.warn("[ChartVision] No GEMINI_API_KEY or LOVABLE_AI_GATEWAY_API_KEY — cannot extract chart context from image");
     return failedExtraction(
-      "Vision model not available (no API key). Cannot analyze chart image.",
+      "Vision model not available (no API key). Cannot analyze chart image. Please set GEMINI_API_KEY or LOVABLE_AI_GATEWAY_API_KEY in your environment.",
       { source },
     );
   }
@@ -90,10 +92,26 @@ export async function extractChartContext(
   try {
     console.log("[ChartVision] Starting vision extraction...");
 
-    const { google } = await import("@ai-sdk/google");
+    // Prefer direct Gemini API key; fall back to Lovable AI Gateway
+    let model: any;
+    if (geminiKey) {
+      const { google } = await import("@ai-sdk/google");
+      model = google("gemini-2.5-pro");
+    } else {
+      const { createOpenAICompatible } = await import("@ai-sdk/openai-compatible");
+      const provider = createOpenAICompatible({
+        name: "lovable",
+        baseURL: "https://ai.gateway.lovable.dev/v1",
+        headers: {
+          "Lovable-API-Key": lovableKey!,
+          "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+        },
+      });
+      model = provider("google/gemini-2.5-pro");
+    }
 
     const { object } = await generateObject({
-      model: google("gemini-2.5-pro"),
+      model,
       schema: ChartExtractionSchema,
       messages: [
         {
