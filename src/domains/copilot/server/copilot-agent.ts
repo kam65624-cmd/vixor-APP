@@ -18,7 +18,8 @@
 //   User message → AI fallback (existing system) → Response
 // ============================================================================
 
-import { ToolRouter, type ToolContext } from "@/shared/tool-router";
+import { ToolRouter } from "@/shared/tool-router";
+import { type ToolContext, ToolRegistry } from "@/shared/tool-registry";
 import { MemoryStore } from "@/shared/memory";
 import { VixorEvents } from "@/shared/events";
 
@@ -341,6 +342,3 @@ function formatToolResponse(toolName: string, data: unknown): string {
       return `Tool "${toolName}" executed successfully.`;
   }
 }
-
-// Need this import for the tool definition lookup
-import { ToolRegistry } from "@/shared/tool-registry";

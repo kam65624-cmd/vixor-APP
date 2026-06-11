@@ -268,7 +268,7 @@ function MissionControl() {
                 <Camera className="size-3" /> {t("dashboard.analyzeNow")}
               </button>
               <button
-                onClick={() => navigate({ to: "/copilot" })}
+                onClick={() => navigate({ to: "/copilot", search: { chartPair: undefined, chartTimeframe: undefined, chartPrice: undefined, chartSymbol: undefined } })}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-card border border-border hover:bg-card-hover transition-colors"
               >
                 <MessageSquare className="size-3" /> {t("dashboard.askCopilot")}
@@ -640,7 +640,7 @@ function MissionControl() {
                 : t("dashboard.noSignalsYet")}
             </p>
             <button
-              onClick={() => navigate({ to: "/copilot" })}
+              onClick={() => navigate({ to: "/copilot", search: { chartPair: undefined, chartTimeframe: undefined, chartPrice: undefined, chartSymbol: undefined } })}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-colors"
             >
               <MessageSquare className="size-3" /> {t("dashboard.askCopilot")}

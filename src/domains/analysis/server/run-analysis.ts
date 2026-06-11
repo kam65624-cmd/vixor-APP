@@ -322,7 +322,7 @@ export async function runChartAnalysis(
 // ---------------------------------------------------------------------------
 
 function buildAnalysisResult(
-  localResult: import("@/domains/analysis/engine/engine").LocalAnalysisResult,
+  localResult: import("@/domains/analysis/engine/core/types").LocalAnalysisResult,
   chartContext: ChartContext | null,
 ): AnalysisResult {
   const result: AnalysisResult = {
