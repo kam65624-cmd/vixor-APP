@@ -1,20 +1,48 @@
 // ============================================================================
-// Vixor Analysis Runner — Local Engine (primary) + Gemini (optional fallback)
+// Vixor Analysis Runner — Chart Intelligence Pipeline
 // ============================================================================
 //
-// Priority order:
-//   1. LOCAL ENGINE — Always runs first. Deterministic, zero API keys needed.
-//   2. GEMINI AI    — Used as fallback if GEMINI_API_KEY is set AND the user
-//                     explicitly uploads a chart image for visual analysis.
+// REVISED ARCHITECTURE (Chart Intelligence Layer):
 //
-// The local engine uses SMC/ICT analysis on OHLCV data and is fully independent
-// of any external APIs. It produces the same `AnalysisResult` shape.
+//   When an IMAGE is uploaded:
+//     1. CHART VISION — Extract ChartContext from the image FIRST
+//     2. VALIDATE — If confidence < 80%, REFUSE to analyze (no hallucination)
+//     3. LOCAL ENGINE — Run SMC/ICT analysis on real OHLCV data
+//     4. MERGE — Combine vision context with local engine results
+//     5. GEMINI VISION (optional) — If local engine confidence is also low,
+//        fall back to full Gemini Vision analysis
+//
+//   When NO image (quick analyze from TradingView):
+//     1. LOCAL ENGINE — Run directly on real OHLCV data (highest accuracy)
+//
+// Golden Rule: The AI must NEVER mention a price, symbol, timeframe, support,
+// or resistance unless it was EXTRACTED from the image or from real market data.
 // ============================================================================
 
 import { generateObject } from "ai";
 import { z } from "zod";
 import { google } from "@ai-sdk/google";
 import { runLocalAnalysis } from "@/domains/analysis/engine/engine";
+import {
+  extractChartContext,
+  validateChartContext,
+  type ChartContext,
+  type ChartExtractionResult,
+  type ValidationResult,
+} from "@/domains/chart-intelligence";
+
+// ── Error class for analysis refusal (extraction failed) ──
+export class ChartExtractionRefusedError extends Error {
+  public readonly chartContext: ChartContext | null;
+  public readonly validation: ValidationResult;
+
+  constructor(validation: ValidationResult, extraction?: ChartExtractionResult) {
+    super(validation.userMessage ?? "Chart context extraction failed. Cannot analyze this image.");
+    this.name = "ChartExtractionRefusedError";
+    this.chartContext = extraction?.context ?? null;
+    this.validation = validation;
+  }
+}
 
 // Re-export the schema for other files that import it
 export const AnalysisSchema = z.object({
@@ -138,7 +166,7 @@ export const AnalysisSchema = z.object({
 export type AnalysisResult = z.infer<typeof AnalysisSchema>;
 
 // ---------------------------------------------------------------------------
-// Main entry point
+// Main entry point — IMAGE-BASED analysis
 // ---------------------------------------------------------------------------
 
 export async function runChartAnalysis(
@@ -149,64 +177,134 @@ export async function runChartAnalysis(
   trading_style?: string,
   realBars?: import("@/domains/analysis/engine/core/types").OHLCVBar[],
 ): Promise<AnalysisResult> {
-  const pair = selectedPair || detectPairFromFileName(fileName) || "EUR/USD";
-
-  // ── Strategy: LOCAL ENGINE first (always available, zero API keys), Gemini as optional fallback ──
   const apiKey = process.env.GEMINI_API_KEY;
 
-  // ── LOCAL ENGINE — Always runs first. Deterministic, zero API keys needed. ──
-  console.log("[Vixor] Running local SMC/ICT analysis engine...");
+  // ═══════════════════════════════════════════════════════════════════════
+  // STEP 1: CHART VISION — Extract context from the image FIRST
+  //
+  // This is the CORE fix. Previously, the image was IGNORED and the system
+  // just used OHLCV data from APIs. Now we actually READ the image.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  let chartContext: ChartContext | null = null;
+  let extractionResult: ChartExtractionResult | null = null;
+
+  if (apiKey) {
+    console.log("[Vixor] Step 1: Running Chart Vision extraction...");
+    try {
+      extractionResult = await extractChartContext(imageBytes, mimeType, "external_screenshot");
+      chartContext = extractionResult.context;
+
+      if (chartContext) {
+        console.log("[Vixor] Chart Vision extracted:", {
+          symbol: chartContext.symbol,
+          timeframe: chartContext.timeframe,
+          price: chartContext.currentPrice,
+          confidence: `${(chartContext.confidence * 100).toFixed(0)}%`,
+          platform: chartContext.platform,
+        });
+      }
+    } catch (visionErr) {
+      console.warn("[Vixor] Chart Vision extraction failed:", visionErr instanceof Error ? visionErr.message : String(visionErr));
+    }
+  } else {
+    console.log("[Vixor] No GEMINI_API_KEY — skipping Chart Vision extraction");
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // STEP 2: VALIDATE — If confidence is too low, REFUSE to analyze
+  //
+  // Golden Rule: Better to say "I can't read this" than to hallucinate.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  if (extractionResult) {
+    const validation = validateChartContext(extractionResult);
+
+    if (!validation.valid) {
+      console.warn("[Vixor] Chart context validation FAILED:", validation.errors);
+
+      // If we have a user-selected pair AND real OHLCV data, we can still proceed
+      // with a WARNING (the user explicitly chose the pair, not the AI)
+      if (selectedPair && realBars && realBars.length > 20) {
+        console.log("[Vixor] User selected pair + real data available — proceeding with lower confidence");
+        chartContext = {
+          ...chartContext,
+          symbol: selectedPair,
+          confidence: 0.5, // Lower confidence since vision failed
+          extractionNotes: [
+            ...(chartContext?.extractionNotes ?? []),
+            "Vision extraction failed but user explicitly selected the pair.",
+          ],
+        } as ChartContext;
+      } else {
+        // REFUSE to analyze — throw extraction refused error
+        throw new ChartExtractionRefusedError(validation, extractionResult ?? undefined);
+      }
+    } else if (validation.warnings.length > 0) {
+      console.log("[Vixor] Chart context validation warnings:", validation.warnings);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // STEP 3: DETERMINE PAIR — Prefer vision-extracted symbol over user selection
+  // ═══════════════════════════════════════════════════════════════════════
+
+  const pair =
+    chartContext?.symbol ??
+    selectedPair ??
+    detectPairFromFileName(fileName) ??
+    "EUR/USD";
+
+  const timeframe =
+    chartContext?.timeframe ??
+    inferTimeframeFromTradingStyle(trading_style);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // STEP 4: LOCAL ENGINE — Run SMC/ICT analysis on real OHLCV data
+  // ═══════════════════════════════════════════════════════════════════════
+
+  console.log(`[Vixor] Step 2: Running local SMC/ICT analysis for ${pair} ${timeframe}...`);
   const localResult = runLocalAnalysis({
     pair,
-    timeframe: inferTimeframeFromTradingStyle(trading_style),
+    timeframe,
     tradingStyle: trading_style,
     imageBytes,
-    bars: realBars, // Pass real Binance OHLCV data if available
+    bars: realBars,
   });
 
-  // If local engine produced a high-confidence result, use it directly
-  if (localResult.confidence >= 60 || !apiKey) {
+  // ═══════════════════════════════════════════════════════════════════════
+  // STEP 5: DECIDE — Use local engine result, or fall back to Gemini Vision
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // If local engine produced a reasonable result (confidence >= 50), use it
+  // The local engine is deterministic and based on REAL OHLCV data
+  if (localResult.confidence >= 50 || !apiKey) {
     console.log(
       `[Vixor] Local analysis complete: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
     );
-    const result: AnalysisResult = {
-      ...localResult,
-      market_structure: {
-        ...localResult.market_structure,
-        direction:
-          localResult.market_structure.direction === "NEUTRAL"
-            ? "SIDEWAYS"
-            : localResult.market_structure.direction,
-      },
-      news_impact: localResult.news_impact
-        ? {
-            ...localResult.news_impact,
-            overall_sentiment:
-              localResult.news_impact.overall_sentiment === "NEUTRAL"
-                ? "NEUTRAL"
-                : localResult.news_impact.overall_sentiment,
-          }
-        : undefined,
-    };
+
+    const result = buildAnalysisResult(localResult, chartContext);
     return result;
   }
 
-  // ── GEMINI AI — Optional fallback for low-confidence local results when image analysis is needed ──
+  // ── GEMINI VISION FALLBACK — Full analysis with vision model ──
+  // Only used when local engine has very low confidence AND we have an API key
   if (apiKey) {
     try {
-      console.log("[Vixor] Local confidence low, attempting Gemini AI vision analysis...");
+      console.log("[Vixor] Step 3: Local confidence low, attempting Gemini Vision analysis...");
       const geminiResult = await runGeminiAnalysis(
         imageBytes,
         mimeType,
         fileName,
         pair,
         trading_style,
+        chartContext,
       );
-      console.log("[Vixor] Gemini analysis completed successfully.");
+      console.log("[Vixor] Gemini Vision analysis completed successfully.");
       return geminiResult;
     } catch (geminiError) {
       console.warn(
-        "[Vixor] Gemini analysis failed, using local engine result:",
+        "[Vixor] Gemini Vision analysis failed, using local engine result:",
         geminiError instanceof Error ? geminiError.message : String(geminiError),
       );
     }
@@ -216,7 +314,18 @@ export async function runChartAnalysis(
   console.log(
     `[Vixor] Using local analysis result: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
   );
-  const fallbackResult: AnalysisResult = {
+  return buildAnalysisResult(localResult, chartContext);
+}
+
+// ---------------------------------------------------------------------------
+// Build final AnalysisResult with chart context enrichment
+// ---------------------------------------------------------------------------
+
+function buildAnalysisResult(
+  localResult: import("@/domains/analysis/engine/engine").LocalAnalysisResult,
+  chartContext: ChartContext | null,
+): AnalysisResult {
+  const result: AnalysisResult = {
     ...localResult,
     market_structure: {
       ...localResult.market_structure,
@@ -235,11 +344,21 @@ export async function runChartAnalysis(
         }
       : undefined,
   };
-  return fallbackResult;
+
+  // If vision extracted a DIFFERENT symbol than what the local engine used,
+  // log a warning but keep the local engine's result (it used real OHLCV data)
+  if (chartContext?.symbol && chartContext.symbol !== localResult.pair) {
+    console.warn(
+      `[Vixor] VISION vs DATA mismatch: Vision detected "${chartContext.symbol}" but local engine analyzed "${localResult.pair}" using real OHLCV data. ` +
+      `The data-based analysis is more reliable. If this is wrong, the user may have selected the wrong pair.`
+    );
+  }
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------
-// Gemini AI analysis (optional, requires API key)
+// Gemini AI analysis with chart context (optional, requires API key)
 // ---------------------------------------------------------------------------
 
 async function runGeminiAnalysis(
@@ -248,13 +367,25 @@ async function runGeminiAnalysis(
   fileName: string | undefined,
   pair: string,
   trading_style: string | undefined,
+  chartContext?: ChartContext | null,
 ): Promise<AnalysisResult> {
   const newsContext = await fetchLatestNewsForPrompt();
 
-  const assetGuidance =
-    pair && pair !== "auto"
-      ? `The user has specified that this chart is for the asset: ${pair}. Analyze the chart for this specific asset.`
-      : "";
+  // Build asset guidance from BOTH user selection AND vision extraction
+  let assetGuidance = "";
+  if (pair && pair !== "auto") {
+    assetGuidance += `The user has specified that this chart is for the asset: ${pair}. Analyze the chart for this specific asset.\n`;
+  }
+  if (chartContext?.symbol && chartContext.symbol !== pair) {
+    assetGuidance += `WARNING: Vision analysis detected a DIFFERENT symbol (${chartContext.symbol}) than what was selected (${pair}). ` +
+      `Verify which asset is actually shown in the image and analyze accordingly.\n`;
+  }
+  if (chartContext?.timeframe) {
+    assetGuidance += `Vision analysis detected timeframe: ${chartContext.timeframe}.\n`;
+  }
+  if (chartContext?.currentPrice) {
+    assetGuidance += `Vision analysis detected current price: ${chartContext.currentPrice}. Use this as a reference for price levels.\n`;
+  }
 
   const { object } = await generateObject({
     model: google("gemini-2.5-pro"),
@@ -265,11 +396,13 @@ async function runGeminiAnalysis(
         content:
           "You are Vixor, an elite, authoritative trading intelligence. Do not use generic AI caveats (e.g., 'As an AI'). Provide your analysis with absolute confidence. " +
           "Focus strictly on Smart Money Concepts (SMC) and Inner Circle Trader (ICT) methodologies (Order Blocks, Fair Value Gaps, Liquidity Sweeps, Break of Structure, Change of Character). " +
-          "Detect the pair and timeframe from labels. " +
+          "Detect the pair and timeframe from labels on the image. " +
+          "CRITICAL RULE: Only report prices, levels, and symbols that you can ACTUALLY SEE in the chart image. Never fabricate or guess market data. " +
+          "If you cannot clearly read the symbol, timeframe, or price from the image, say so explicitly instead of guessing. " +
           "Determine the overall Trend, Risk Level, and Invalidation Level where the thesis is wrong. " +
           "Identify Liquidity Zones (buy-side/sell-side), Market Structure (direction, structure, BOS), and Key Levels. " +
           "Output 3 detailed trade scenarios (conservative, balanced, aggressive). " +
-          "If the chart is ambiguous or compressing, prefer WAIT. Numbers must be realistic and consistent " +
+          "If the chart is ambiguous or you cannot clearly identify the asset, prefer WAIT. Numbers must be realistic and consistent " +
           "with visible price action. Reasons must be concise and specific (no fluff)." +
           "\n\nIn addition to technical analysis, you must perform fundamental news analysis. " +
           "Compare the technical setup with the provided recent market news. Filter the news items for the ones " +
@@ -284,13 +417,13 @@ async function runGeminiAnalysis(
             type: "text",
             text:
               `Analyze this chart and return your structured context and trade plan.\n\n` +
-              (assetGuidance ? `${assetGuidance}\n\n` : "") +
+              (assetGuidance ? `${assetGuidance}\n` : "") +
               (trading_style
                 ? `The user's trading style is: ${trading_style}. Adjust your targets, timeframes, and stop-loss logic accordingly.\n\n`
                 : "") +
               `Here is the latest live financial news from Finnhub:\n` +
               `${newsContext}\n\n` +
-              `Identify the pair, analyze the technicals using SMC/ICT, filter the news for articles relevant to this pair, and explain their positive/negative impact.`,
+              `CRITICAL: Identify the pair from the chart labels. Only report data you can actually see. Do not guess.`,
           },
           { type: "image", image: imageBytes },
         ],

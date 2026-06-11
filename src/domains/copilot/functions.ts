@@ -30,12 +30,18 @@ export const askCopilot = createServerFn({ method: "POST" })
         agent: z
           .enum(["market_analyst", "risk_manager", "news_analyst", "strategy_builder", "auto"])
           .default("auto"),
+        chartSession: z.object({
+          pair: z.string(),
+          timeframe: z.string(),
+          currentPrice: z.number(),
+          tradingViewSymbol: z.string(),
+        }).optional(),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
-    const { message, history = [], agent } = data;
+    const { message, history = [], agent, chartSession } = data;
 
     const [
       { data: profile },
@@ -181,9 +187,22 @@ export const askCopilot = createServerFn({ method: "POST" })
     }
 
     const { runAgent } = await import("@/domains/copilot/server/agent-orchestrator");
+
+    // Build chart session context string for the AI prompt
+    let chartSessionPrompt: string | undefined;
+    if (chartSession) {
+      const { buildChartSessionPrompt, createSessionContext } = await import("@/domains/chart-intelligence");
+      const chartCtx = createSessionContext({
+        symbol: chartSession.pair,
+        timeframe: chartSession.timeframe,
+        currentPrice: chartSession.currentPrice,
+      });
+      chartSessionPrompt = buildChartSessionPrompt(chartCtx);
+    }
+
     const result = await runAgent({
       agent: agent as any,
-      message,
+      message: chartSessionPrompt ? `${chartSessionPrompt}\n\n${message}` : message,
       history,
       context: {
         ...userContext,

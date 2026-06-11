@@ -31,6 +31,18 @@ export interface ChatMessage {
   content: string;
 }
 
+// ── Chart Session Context (from TradingView widget) ──
+export interface ChartSessionContext {
+  /** Trading pair the user is currently viewing */
+  pair: string;
+  /** Timeframe on the chart */
+  timeframe: string;
+  /** Current price from live data */
+  currentPrice: number;
+  /** TradingView symbol format */
+  tradingViewSymbol: string;
+}
+
 export interface AgentResponse {
   response: string;
   agent: AgentId;

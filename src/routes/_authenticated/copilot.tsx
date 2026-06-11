@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { askCopilot, getConsensus, createConversation, listConversations, getConversation, saveMessage, deleteConversation, updateConversationTitle } from "@/lib/vixor.functions";
@@ -31,6 +31,12 @@ import {
 export const Route = createFileRoute("/_authenticated/copilot")({
   head: () => ({ meta: [{ title: "AI Copilot — Vixor" }] }),
   component: CopilotPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    chartPair: (search.chartPair as string) || undefined,
+    chartTimeframe: (search.chartTimeframe as string) || undefined,
+    chartPrice: (search.chartPrice as number) || undefined,
+    chartSymbol: (search.chartSymbol as string) || undefined,
+  }),
 });
 
 // ─── Types ───
@@ -161,6 +167,25 @@ const QUICK_ACTIONS: { label: string; prompt: string; agent: AgentId }[] = [
 function CopilotPage() {
   const { t } = useI18n();
   const queryClient = useQueryClient();
+  const search = useSearch({ strict: false }) as {
+    chartPair?: string;
+    chartTimeframe?: string;
+    chartPrice?: number;
+    chartSymbol?: string;
+  };
+
+  // Build chart session context if available (from charts page navigation)
+  const chartSession = useMemo(() => {
+    if (search.chartPair && search.chartTimeframe && search.chartPrice) {
+      return {
+        pair: search.chartPair,
+        timeframe: search.chartTimeframe,
+        currentPrice: search.chartPrice,
+        tradingViewSymbol: search.chartSymbol || search.chartPair,
+      };
+    }
+    return undefined;
+  }, [search.chartPair, search.chartTimeframe, search.chartPrice, search.chartSymbol]);
 
   // ─── Chat State ───
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -201,6 +226,7 @@ function CopilotPage() {
       message: string;
       history: { role: "user" | "assistant"; content: string }[];
       agent: AgentId;
+      chartSession?: { pair: string; timeframe: string; currentPrice: number; tradingViewSymbol: string };
     }) => askCopilotFn({ data }),
     onSuccess: async (result) => {
       const assistantMsg: ChatMessage = {
@@ -353,10 +379,10 @@ function CopilotPage() {
       if (consensusMode) {
         consensusMutation.mutate({ message: trimmed });
       } else {
-        copilotMutation.mutate({ message: trimmed, history, agent });
+        copilotMutation.mutate({ message: trimmed, history, agent, chartSession });
       }
     },
-    [activeAgent, copilotMutation, consensusMutation, messages, consensusMode, activeConversationId, createConversationFn, saveMessageFn, queryClient],
+    [activeAgent, copilotMutation, consensusMutation, messages, consensusMode, activeConversationId, createConversationFn, saveMessageFn, queryClient, chartSession],
   );
 
   const handleSubmit = useCallback(

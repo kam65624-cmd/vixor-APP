@@ -10,6 +10,7 @@ import {
   BarChart3,
   Star,
   Loader2,
+  MessageSquare,
 } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -393,7 +394,7 @@ function Charts() {
       )}
 
       {/* ── Action buttons ── */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         <button
           onClick={() => setShowAlertDialog(true)}
           className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover"
@@ -428,6 +429,29 @@ function Charts() {
               : cooldownSeconds > 0
                 ? t("charts.wait", { seconds: cooldownSeconds })
                 : t("charts.analyze")}
+          </span>
+        </button>
+
+        <button
+          onClick={() => {
+            const tf = Object.entries(INTERVAL_MAP).find(([, tv]) => tv === currentInterval)?.[0] || "1H";
+            navigate({
+              to: "/copilot",
+              search: {
+                chartPair: currentPair,
+                chartTimeframe: tf,
+                chartPrice: currentPrice || 0,
+                chartSymbol: currentSymbol,
+              },
+            } as any);
+          }}
+          className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover"
+        >
+          <div className="size-9 rounded-xl bg-violet-500/10 flex items-center justify-center">
+            <MessageSquare className="size-4 text-violet-400" />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            {t("charts.askCopilot") || "Ask AI"}
           </span>
         </button>
 
