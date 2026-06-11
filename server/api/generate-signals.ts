@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/shared/supabase/client.server";
 import { fetchBinanceKlines, fetchTwelveDataKlines } from "@/domains/market/server/price-fetcher";
 import { runLocalAnalysis } from "@/domains/analysis/engine/engine";
 import { AssetRegistry } from "@/shared/asset-registry";
+import { VixorEvents } from "@/shared/events";
 
 export default defineEventHandler(async (event) => {
   const method = getMethod(event);
@@ -68,7 +69,17 @@ export default defineEventHandler(async (event) => {
             signal_date: today,
           });
 
-          if (!error) generated++;
+          if (!error) {
+            generated++;
+            // Emit signal.generated event (non-blocking)
+            void VixorEvents.emit("signal.generated", {
+              pair,
+              timeframe: tf,
+              recommendation: result.recommendation,
+              confidence: result.confidence,
+              signalDate: today,
+            });
+          }
         } catch (err) {
           console.warn(
             `[Signals API] Failed for ${pair}/${tf}:`,

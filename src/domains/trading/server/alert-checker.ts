@@ -9,6 +9,7 @@
 // ============================================================================
 
 import { fetchPrice } from "@/domains/market/server/price-fetcher";
+import { VixorEvents } from "@/shared/events";
 
 interface AlertRow {
   id: string;
@@ -228,6 +229,16 @@ export async function checkAllAlerts(): Promise<{
           errors++;
           continue;
         }
+
+        // Emit alert.triggered event (non-blocking, for event-driven consumers)
+        void VixorEvents.emit("alert.triggered", {
+          alertId: alert.id,
+          userId: alert.user_id,
+          pair: alert.pair,
+          condition: alert.condition,
+          targetPrice: Number(alert.target_price),
+          currentPrice,
+        });
 
         // Create notification
         const conditionText = formatCondition(alert.condition);
