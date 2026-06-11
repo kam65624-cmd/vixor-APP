@@ -11,6 +11,14 @@
 
 import { defineEventHandler, getQuery, getHeader, createError } from "h3";
 
+// Ensure P1 Intelligence Layer is active in this API handler context.
+// In Vercel serverless, API handlers run in separate contexts from SSR.
+import "../../src/shared/tool-registry/bootstrap";
+import { configureEventPersistence } from "../../src/shared/events/persist";
+
+// Configure event persistence for this handler context
+configureEventPersistence();
+
 export default defineEventHandler(async (event) => {
   const query = getQuery(event) as Record<string, string>;
 

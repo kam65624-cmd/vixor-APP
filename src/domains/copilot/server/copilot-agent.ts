@@ -22,6 +22,11 @@ import { ToolRouter, type ToolContext } from "@/shared/tool-router";
 import { MemoryStore } from "@/shared/memory";
 import { VixorEvents } from "@/shared/events";
 
+// Ensure tools are registered when copilot-agent is used.
+// This is critical for Vercel serverless where API handlers
+// run in separate contexts from the SSR handler.
+import "@/shared/tool-registry/bootstrap";
+
 // ── Intent Detection ─────────────────────────────────────────────────────────
 
 interface IntentMatch {
