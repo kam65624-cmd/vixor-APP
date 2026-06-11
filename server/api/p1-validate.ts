@@ -9,13 +9,13 @@
 // Protected by CRON_SECRET — only accessible by admin/cron requests.
 // ============================================================================
 
-import { defineEventHandler, getQuery, createError } from "h3";
+import { defineEventHandler, getQuery, getHeader, createError } from "h3";
 
 export default defineEventHandler(async (event) => {
   // Auth check
   const query = getQuery(event) as Record<string, string>;
   const cronSecret = process.env.CRON_SECRET;
-  const headerSecret = event.node.req.headers["x-vercel-cron"] || event.node.req.headers["authorization"];
+  const headerSecret = getHeader(event, "x-vercel-cron") || getHeader(event, "authorization");
   const querySecret = query.secret;
 
   if (cronSecret && querySecret !== cronSecret && headerSecret !== cronSecret && headerSecret !== `Bearer ${cronSecret}`) {
@@ -45,7 +45,6 @@ export default defineEventHandler(async (event) => {
       totalAssets: allAssets.length,
       popularAssets: popularAssets.length,
       categories: byCategory,
-      pairs: allAssets.map((a) => a.pair),
       sampleLookup: AssetRegistry.find("BTC/USDT") ? "BTC/USDT found" : "BTC/USDT NOT FOUND",
     };
   } catch (err) {
@@ -116,7 +115,6 @@ export default defineEventHandler(async (event) => {
   // ═══════════════════════════════════════════════════════════════════════
   try {
     const { ToolRouter } = await import("../../src/shared/tool-router");
-    const { ToolRegistry } = await import("../../src/shared/tool-registry");
 
     const testContext = {
       userId: "validation-test",
@@ -194,14 +192,9 @@ export default defineEventHandler(async (event) => {
   // 6. Copilot Agent Validation (Intent Detection)
   // ═══════════════════════════════════════════════════════════════════════
   try {
-    // Test intent detection by importing and checking the module
     const copilotModule = await import("../../src/domains/copilot/server/copilot-agent");
-
-    // Check that processWithAgent is exported
     const hasProcessWithAgent = typeof copilotModule.processWithAgent === "function";
 
-    // We can't actually call processWithAgent without a real user context,
-    // but we can verify the function exists and the module is loadable
     results.copilotAgent = {
       status: hasProcessWithAgent ? "ACTIVE" : "MISSING",
       processWithAgent: hasProcessWithAgent ? "EXPORTED" : "NOT FOUND",
