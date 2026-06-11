@@ -39,7 +39,7 @@ const features = [
 ];
 
 /** Telegram bot username — must match the bot linked to this app */
-const TELEGRAM_BOT_USERNAME = "VixorAIBot";
+const TELEGRAM_BOT_USERNAME = "VIXOR_v1_bot";
 
 function AuthPage() {
   const navigate = useNavigate();
