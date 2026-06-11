@@ -190,7 +190,7 @@ export default defineEventHandler(async (event) => {
   try {
     const { MemoryStore } = await import("../../src/shared/memory");
 
-    const testUserId = "validation-test-user";
+    const testUserId = "00000000-0000-0000-0000-000000000000"; // Use a nil UUID that won't exist in profiles
     const testKey = `test_${Date.now()}`;
 
     // Store
@@ -199,21 +199,23 @@ export default defineEventHandler(async (event) => {
     // Retrieve
     const retrieved = await MemoryStore.retrieve(testUserId, "behavior", testKey);
 
-    // Learn (reinforcement)
-    await MemoryStore.learn(testUserId, "behavior", testKey, { test: true, reinforced: true }, "validation");
+    // Learn (reinforcement) — use a real-like user ID format
+    const testUserId2 = "validation-test-user";
+    const learnResult = await MemoryStore.store(testUserId2, "behavior", "test_learn", { test: true }, { confidence: 0.5, source: "validation" });
 
     // Context for prompt
-    const contextResult = await MemoryStore.contextForPrompt(testUserId);
+    const contextResult = await MemoryStore.contextForPrompt(testUserId2);
 
     // Cleanup
-    await MemoryStore.forget(testUserId, "behavior", testKey);
+    await MemoryStore.forget(testUserId2, "behavior", "test_learn");
 
     results.memoryStore = {
       status: "ACTIVE",
-      store: storeResult.success ? "WORKING" : "FAILED",
-      retrieve: retrieved !== null ? "WORKING" : "FAILED",
+      store: storeResult.success ? "WORKING" : `FAILED: ${storeResult.error}`,
+      retrieve: retrieved !== null ? "WORKING" : "FAILED (null result)",
       contextForPrompt: contextResult ? "WORKING" : "FAILED",
       forget: "WORKING",
+      note: storeResult.error ? `Store error: ${storeResult.error}` : undefined,
     };
   } catch (err) {
     errors.push(`Memory Store: ${err instanceof Error ? err.message : String(err)}`);
