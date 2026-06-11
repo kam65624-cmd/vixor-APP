@@ -89,51 +89,93 @@ export const createAnalysis = createServerFn({ method: "POST" })
               ? "4H"
               : "1H";
 
-        // Try Binance for crypto pairs
+        // ── Try multiple data sources with fallback ──
+        const { fetchBinanceKlines, fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
+
+        // Source 1: Binance for crypto pairs
         if (
           pair.includes("USDT") ||
           pair.includes("BTC") ||
           pair.includes("ETH") ||
           pair.includes("SOL")
         ) {
-          const { fetchBinanceKlines } = await import("@/domains/market/server/price-fetcher");
-          const klines = await fetchBinanceKlines(pair, tf, 200);
-          if (klines.length > 20) {
-            realBars = klines.map((k) => ({
-              time: k.time,
-              open: k.open,
-              high: k.high,
-              low: k.low,
-              close: k.close,
-              volume: k.volume,
-            }));
-            console.log(`[Vixor] Using ${realBars.length} real Binance candles for ${pair}/${tf}`);
+          try {
+            const klines = await fetchBinanceKlines(pair, tf, 200);
+            if (klines.length > 20) {
+              realBars = klines.map((k) => ({
+                time: k.time,
+                open: k.open,
+                high: k.high,
+                low: k.low,
+                close: k.close,
+                volume: k.volume,
+              }));
+              console.log(`[Vixor] Using ${realBars.length} real Binance candles for ${pair}/${tf}`);
+            }
+          } catch (err) {
+            console.warn(`[Vixor] Binance fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
           }
         }
 
-        // Try TwelveData for forex/commodity pairs
-        if (
-          !realBars &&
-          (pair.includes("USD") ||
-            pair.includes("JPY") ||
-            pair.includes("GBP") ||
-            pair.includes("EUR") ||
-            pair.includes("AUD"))
-        ) {
-          const { fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
-          const klines = await fetchTwelveDataKlines(pair, tf, 200);
-          if (klines.length > 20) {
-            realBars = klines.map((k) => ({
-              time: k.time,
-              open: k.open,
-              high: k.high,
-              low: k.low,
-              close: k.close,
-              volume: k.volume,
-            }));
-            console.log(
-              `[Vixor] Using ${realBars.length} real TwelveData candles for ${pair}/${tf}`,
-            );
+        // Source 2: TwelveData for forex/commodity pairs
+        if (!realBars) {
+          try {
+            const klines = await fetchTwelveDataKlines(pair, tf, 200);
+            if (klines.length > 20) {
+              realBars = klines.map((k) => ({
+                time: k.time,
+                open: k.open,
+                high: k.high,
+                low: k.low,
+                close: k.close,
+                volume: k.volume,
+              }));
+              console.log(
+                `[Vixor] Using ${realBars.length} real TwelveData candles for ${pair}/${tf}`,
+              );
+            }
+          } catch (err) {
+            console.warn(`[Vixor] TwelveData fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
+          }
+        }
+
+        // Source 3: Try Binance as fallback even for non-crypto (some forex pairs exist)
+        if (!realBars && !pair.includes("USDT")) {
+          try {
+            const klines = await fetchBinanceKlines(pair, tf, 200);
+            if (klines.length > 20) {
+              realBars = klines.map((k) => ({
+                time: k.time,
+                open: k.open,
+                high: k.high,
+                low: k.low,
+                close: k.close,
+                volume: k.volume,
+              }));
+              console.log(`[Vixor] Using ${realBars.length} Binance fallback candles for ${pair}/${tf}`);
+            }
+          } catch {
+            // Non-fatal
+          }
+        }
+
+        // Source 4: Try TwelveData with 1D interval as last resort
+        if (!realBars) {
+          try {
+            const klines = await fetchTwelveDataKlines(pair, "1D", 100);
+            if (klines.length > 10) {
+              realBars = klines.map((k) => ({
+                time: k.time,
+                open: k.open,
+                high: k.high,
+                low: k.low,
+                close: k.close,
+                volume: k.volume,
+              }));
+              console.log(`[Vixor] Using ${realBars.length} TwelveData daily candles as fallback for ${pair}`);
+            }
+          } catch {
+            // Non-fatal
           }
         }
       } catch (fetchErr) {
@@ -145,7 +187,7 @@ export const createAnalysis = createServerFn({ method: "POST" })
 
       // HARD CHECK: If we couldn't fetch real OHLCV data from any source, throw an error.
       if (!realBars) {
-        const errMsg = `Unable to fetch real market data for ${data.selectedPair || "EUR/USD"}. Please try again in a moment.`;
+        const errMsg = `Unable to fetch real market data for ${data.selectedPair || "EUR/USD"}. The market data API may be temporarily unavailable. Please try again in a moment.`;
         console.error(`[Vixor] ${errMsg}`);
         throw new Error(errMsg);
       }
@@ -381,7 +423,10 @@ export const quickAnalyze = createServerFn({ method: "POST" })
     try {
       let realBars: import("@/domains/analysis/engine/core/types").OHLCVBar[] | undefined;
 
-      // Try Binance for crypto pairs
+      // ── Try multiple data sources with fallback ──
+      const { fetchBinanceKlines, fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
+
+      // Source 1: Binance for crypto pairs
       if (
         pair.includes("USDT") ||
         pair.includes("BTC") ||
@@ -389,7 +434,6 @@ export const quickAnalyze = createServerFn({ method: "POST" })
         pair.includes("SOL")
       ) {
         try {
-          const { fetchBinanceKlines } = await import("@/domains/market/server/price-fetcher");
           const klines = await fetchBinanceKlines(pair, timeframe, 200);
           if (klines.length > 20) {
             realBars = klines.map((k) => ({
@@ -412,17 +456,9 @@ export const quickAnalyze = createServerFn({ method: "POST" })
         }
       }
 
-      // Try TwelveData for forex/commodity pairs
-      if (
-        !realBars &&
-        (pair.includes("USD") ||
-          pair.includes("JPY") ||
-          pair.includes("GBP") ||
-          pair.includes("EUR") ||
-          pair.includes("AUD"))
-      ) {
+      // Source 2: TwelveData for forex/commodity pairs
+      if (!realBars) {
         try {
-          const { fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
           const klines = await fetchTwelveDataKlines(pair, timeframe, 200);
           if (klines.length > 20) {
             realBars = klines.map((k) => ({
@@ -445,9 +481,49 @@ export const quickAnalyze = createServerFn({ method: "POST" })
         }
       }
 
+      // Source 3: Try Binance as fallback even for non-crypto
+      if (!realBars && !pair.includes("USDT")) {
+        try {
+          const klines = await fetchBinanceKlines(pair, timeframe, 200);
+          if (klines.length > 20) {
+            realBars = klines.map((k) => ({
+              time: k.time,
+              open: k.open,
+              high: k.high,
+              low: k.low,
+              close: k.close,
+              volume: k.volume,
+            }));
+            console.log(`[Vixor] QuickAnalyze: Using ${realBars.length} Binance fallback candles for ${pair}/${timeframe}`);
+          }
+        } catch {
+          // Non-fatal
+        }
+      }
+
+      // Source 4: Try TwelveData with 1D interval as last resort
+      if (!realBars) {
+        try {
+          const klines = await fetchTwelveDataKlines(pair, "1D", 100);
+          if (klines.length > 10) {
+            realBars = klines.map((k) => ({
+              time: k.time,
+              open: k.open,
+              high: k.high,
+              low: k.low,
+              close: k.close,
+              volume: k.volume,
+            }));
+            console.log(`[Vixor] QuickAnalyze: Using ${realBars.length} TwelveData daily candles as fallback for ${pair}`);
+          }
+        } catch {
+          // Non-fatal
+        }
+      }
+
       // HARD CHECK
       if (!realBars) {
-        const errMsg = `Unable to fetch real market data for ${pair}. Please try again in a moment.`;
+        const errMsg = `Unable to fetch real market data for ${pair}. The market data API may be temporarily unavailable. Please try again in a moment.`;
         console.error(`[Vixor] QuickAnalyze: ${errMsg}`);
         throw new Error(errMsg);
       }
