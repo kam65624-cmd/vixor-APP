@@ -29,6 +29,8 @@ export interface MigrationStatus {
   copilot_messages: boolean;
   daily_loops: boolean;
   user_streaks: boolean;
+  domain_events: boolean;
+  user_memories: boolean;
   allComplete: boolean;
   sql: string;
 }
@@ -324,6 +326,50 @@ DO $$ BEGIN
   CREATE POLICY "Users can insert own streaks" ON user_streaks FOR INSERT WITH CHECK (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
+-- 10. Domain Events Table
+CREATE TABLE IF NOT EXISTS domain_events (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  event_type TEXT NOT NULL,
+  payload JSONB NOT NULL DEFAULT '{}',
+  source TEXT,
+  trace_id TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_domain_events_event_type ON domain_events (event_type);
+CREATE INDEX IF NOT EXISTS idx_domain_events_created_at ON domain_events (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_domain_events_trace_id ON domain_events (trace_id) WHERE trace_id IS NOT NULL;
+
+ALTER TABLE domain_events ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Service role can manage domain_events" ON domain_events FOR ALL TO service_role USING (true) WITH CHECK (true);
+  CREATE POLICY "Users can read domain_events" ON domain_events FOR SELECT TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- 11. User Memories Table
+CREATE TABLE IF NOT EXISTS user_memories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  category TEXT NOT NULL CHECK (category IN ('preference', 'behavior', 'mistake', 'insight', 'strategy')),
+  key TEXT NOT NULL,
+  value JSONB NOT NULL DEFAULT '{}',
+  confidence REAL NOT NULL DEFAULT 0.5 CHECK (confidence >= 0 AND confidence <= 1),
+  source TEXT NOT NULL DEFAULT 'system',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(user_id, category, key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_memories_user_category ON user_memories (user_id, category);
+
+ALTER TABLE user_memories ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Service role can manage user_memories" ON user_memories FOR ALL TO service_role USING (true) WITH CHECK (true);
+  CREATE POLICY "Users can read own memories" ON user_memories FOR SELECT TO authenticated USING (user_id::text = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 `;
 }
 
@@ -331,7 +377,7 @@ export async function checkMigrations(): Promise<MigrationStatus> {
   const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
   // Check each table by attempting a select
-  const [alertsRes, signalsRes, strategiesRes, notesRes, tradesRes, copilotConvRes, copilotMsgRes, loopsRes, streaksRes] = await Promise.all([
+  const [alertsRes, signalsRes, strategiesRes, notesRes, tradesRes, copilotConvRes, copilotMsgRes, loopsRes, streaksRes, domainEventsRes, userMemoriesRes] = await Promise.all([
     supabaseAdmin.from("price_alerts").select("id").limit(1),
     supabaseAdmin.from("daily_signals").select("id").limit(1),
     supabaseAdmin.from("user_strategies").select("id").limit(1),
@@ -341,6 +387,8 @@ export async function checkMigrations(): Promise<MigrationStatus> {
     supabaseAdmin.from("copilot_messages").select("id").limit(1),
     supabaseAdmin.from("daily_loops").select("id").limit(1),
     supabaseAdmin.from("user_streaks").select("id").limit(1),
+    supabaseAdmin.from("domain_events").select("id").limit(1),
+    supabaseAdmin.from("user_memories").select("id").limit(1),
   ]);
 
   const priceAlerts = !alertsRes.error || alertsRes.error.code !== "42P01";
@@ -352,8 +400,10 @@ export async function checkMigrations(): Promise<MigrationStatus> {
   const copilotMessages = !copilotMsgRes.error || copilotMsgRes.error.code !== "42P01";
   const dailyLoops = !loopsRes.error || loopsRes.error.code !== "42P01";
   const userStreaks = !streaksRes.error || streaksRes.error.code !== "42P01";
+  const domainEvents = !domainEventsRes.error || domainEventsRes.error.code !== "42P01";
+  const userMemories = !userMemoriesRes.error || userMemoriesRes.error.code !== "42P01";
 
-  const allComplete = priceAlerts && dailySignals && userStrategies && tradingNotes && tradesTable && copilotConversations && copilotMessages && dailyLoops && userStreaks;
+  const allComplete = priceAlerts && dailySignals && userStrategies && tradingNotes && tradesTable && copilotConversations && copilotMessages && dailyLoops && userStreaks && domainEvents && userMemories;
 
   return {
     price_alerts: priceAlerts,
@@ -365,6 +415,8 @@ export async function checkMigrations(): Promise<MigrationStatus> {
     copilot_messages: copilotMessages,
     daily_loops: dailyLoops,
     user_streaks: userStreaks,
+    domain_events: domainEvents,
+    user_memories: userMemories,
     allComplete,
     sql: allComplete ? "" : getMigrationSQL(),
   };
@@ -394,6 +446,8 @@ export async function getPendingMigrationsSQL(): Promise<string> {
     { table: "copilot_messages", label: "-- 7. Copilot Messages Table" },
     { table: "daily_loops", label: "-- 8. Daily Loops Table" },
     { table: "user_streaks", label: "-- 9. User Streaks Table" },
+    { table: "domain_events", label: "-- 10. Domain Events Table" },
+    { table: "user_memories", label: "-- 11. User Memories Table" },
   ];
 
   // For simplicity, if any table is missing, return the full SQL with a header

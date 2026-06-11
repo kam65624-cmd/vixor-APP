@@ -3,6 +3,11 @@
 // ============================================================================
 //
 // AI copilot with multi-agent system.
+//
+// P1 Intelligence Layer Integration:
+//   User message → processWithAgent() first (tool execution)
+//   If no tool intent → fall back to AI (runAgent)
+//   This ensures the Copilot Agent is ALWAYS in the path.
 // ============================================================================
 
 import { createServerFn } from "@tanstack/react-start";
@@ -14,7 +19,7 @@ const ChatMessageSchema = z.object({
   content: z.string(),
 });
 
-// ---------- ASK COPILOT (Multi-Agent) ----------
+// ---------- ASK COPILOT (P1 Intelligence Layer + Multi-Agent) ----------
 export const askCopilot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
@@ -106,12 +111,77 @@ export const askCopilot = createServerFn({ method: "POST" })
       economicEvents: Array.isArray(economicEvents) ? economicEvents : [],
     };
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // P1 INTELLIGENCE LAYER: Try tool execution FIRST, then fall back to AI
+    // ═══════════════════════════════════════════════════════════════════════
+    try {
+      const { processWithAgent } = await import("./server/copilot-agent");
+      const { ToolRegistry } = await import("@/shared/tool-registry");
+
+      // Build ToolContext from auth context
+      const toolContext: import("@/shared/tool-registry").ToolContext = {
+        userId,
+        isPremium: (profile as any)?.is_premium ?? false,
+        isAdmin: false,
+        traceId: `copilot-${Date.now()}`,
+      };
+
+      // Try P1 Agent first — detect intent and execute tool if matched
+      const agentResult = await processWithAgent(message, toolContext);
+
+      if (agentResult.toolExecuted && !agentResult.shouldFallbackToAI) {
+        // Tool was executed successfully — return the tool response directly
+        console.log(`[Copilot] P1 Tool executed: ${agentResult.toolName}`);
+
+        // Persist the message to conversation (same as AI flow)
+        return {
+          response: agentResult.response,
+          agent: "auto" as const,
+          toolExecuted: true,
+          toolName: agentResult.toolName,
+        };
+      }
+
+      if (!agentResult.shouldFallbackToAI && agentResult.response) {
+        // Intent detected but missing params — return the clarification
+        console.log(`[Copilot] P1 Intent detected, needs clarification`);
+        return {
+          response: agentResult.response,
+          agent: "auto" as const,
+          toolExecuted: false,
+        };
+      }
+
+      // No tool intent — log and fall through to AI
+      console.log(`[Copilot] No tool intent, falling back to AI`);
+    } catch (err) {
+      // P1 layer error — don't break the copilot, fall back to AI
+      console.warn("[Copilot] P1 Agent error, falling back to AI:", err instanceof Error ? err.message : String(err));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // AI FALLBACK: Use existing multi-agent system
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Inject user memories into the context for AI agents
+    let memoryContext: string | undefined;
+    try {
+      const { MemoryStore } = await import("@/shared/memory");
+      memoryContext = await MemoryStore.contextForPrompt(userId);
+      console.log(`[Copilot] Memory context loaded for AI prompt`);
+    } catch {
+      // Non-critical — AI works fine without memory
+    }
+
     const { runAgent } = await import("@/domains/copilot/server/agent-orchestrator");
     const result = await runAgent({
       agent: agent as any,
       message,
       history,
-      context: userContext,
+      context: {
+        ...userContext,
+        memoryContext, // Injected memory for AI prompt
+      },
     });
 
     return { response: result.response, agent: result.agent };
@@ -205,11 +275,23 @@ export const getConsensus = createServerFn({ method: "POST" })
       economicEvents: Array.isArray(economicEvents) ? economicEvents : [],
     };
 
+    // Inject user memories for consensus agents too
+    let memoryContext: string | undefined;
+    try {
+      const { MemoryStore } = await import("@/shared/memory");
+      memoryContext = await MemoryStore.contextForPrompt(userId);
+    } catch {
+      // Non-critical
+    }
+
     const { runConsensus } = await import("@/domains/copilot/server/agent-orchestrator");
     const result = await runConsensus({
       message,
       history: [],
-      context: userContext,
+      context: {
+        ...userContext,
+        memoryContext,
+      },
     });
 
     return result;

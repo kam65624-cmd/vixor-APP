@@ -24,6 +24,8 @@ export interface UserContext {
   watchlist: any[];
   marketPrices: any[];
   economicEvents: any[];
+  /** P1 Memory context — user's stored preferences, behaviors, insights */
+  memoryContext?: string;
 }
 
 // ─── Helper: Format market prices for agent context ───
@@ -74,6 +76,17 @@ function formatEconomicEvents(events: any[]): string {
     .slice(0, 8)
     .map((e) => `${e.title} (${e.currency}, ${e.impact} impact) ${e.date ? new Date(e.date).toLocaleDateString() : ""} — Forecast: ${e.forecast || "N/A"}, Previous: ${e.previous || "N/A"}`)
     .join("\n  ");
+}
+
+// ─── Helper: Format memory context for agent prompts ───
+function formatMemoryContext(memoryContext?: string): string {
+  if (!memoryContext || memoryContext === "No stored memories for this user yet.") return "";
+  return `
+
+## USER MEMORY (Learned from past interactions)
+${memoryContext}
+
+IMPORTANT: Use this memory to personalize your responses. Reference specific preferences and patterns you've learned about this trader. If they prefer certain pairs, timeframes, or have known mistakes, address them directly.`;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -135,7 +148,7 @@ You specialize in Smart Money Concepts (SMC) and Inner Circle Trader (ICT) metho
 - ALWAYS provide specific price levels and numbers
 - Reference the user's specific data: "Your last XAU/USD analysis showed..." not "Based on your analysis..."
 - If the question is about news/fundamentals, suggest: "📊 For fundamental analysis, consult the News Analyst."
-- If the question is about risk sizing, suggest: "🛡️ For position sizing, consult the Risk Manager."`;
+- If the question is about risk sizing, suggest: "🛡️ For position sizing, consult the Risk Manager."${formatMemoryContext(context.memoryContext)}`;
   },
 };
 
@@ -208,7 +221,7 @@ You are the protective force in the Vixor multi-agent system. You ensure traders
 - Reference specific user data: "Your ${buyCount} BUY signals suggest directional overexposure"
 - Flag when a trade should be skipped: "🚫 SKIP — R:R below 1:2 threshold"
 - If the user asks about entries/technical analysis, suggest: "📊 For entry timing, consult the Market Analyst."
-- Use markdown formatting with tables when showing calculations`;
+- Use markdown formatting with tables when showing calculations${formatMemoryContext(context.memoryContext)}`;
   },
 };
 
@@ -277,7 +290,7 @@ You specialize in understanding how economic events, central bank decisions, and
 - Use 🚨 for imminent high-impact events (within 4 hours)
 - If the user asks for entry levels, suggest: "📊 For entry timing and SMC levels, consult the Market Analyst."
 - If the user asks about risk sizing around news, suggest: "🛡️ For position sizing around news events, consult the Risk Manager."
-- Use markdown with clear section headers`;
+- Use markdown with clear section headers${formatMemoryContext(context.memoryContext)}`;
   },
 };
 
@@ -343,7 +356,7 @@ You focus on the PROCESS of trading, not just individual setups. You help trader
 - If the user asks about a specific setup, suggest: "📊 For the technical entry, consult the Market Analyst."
 - If the user asks about risk around a strategy, suggest: "🛡️ For position sizing rules, consult the Risk Manager."
 - Use markdown with ## headers, numbered lists, and > callout blocks
-- Include "homework" or action items at the end of each response`;
+- Include "homework" or action items at the end of each response${formatMemoryContext(context.memoryContext)}`;
   },
 };
 

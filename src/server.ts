@@ -1,4 +1,5 @@
 import "./shared/error-capture";
+import "./shared/p1-bootstrap";
 
 import { consumeLastCapturedError } from "./shared/error-capture";
 import { renderErrorPage } from "./shared/error-page";

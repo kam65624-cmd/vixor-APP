@@ -33,6 +33,7 @@ export default defineConfig({
         { route: "/api/generate-signals", handler: "./server/api/generate-signals.ts" },
         { route: "/api/telegram-webhook", handler: "./server/api/telegram-webhook.ts" },
         { route: "/api/migrate", handler: "./server/api/migrate.ts" },
+        { route: "/api/p1-validate", handler: "./server/api/p1-validate.ts" },
       ],
     }),
     viteReact(),
