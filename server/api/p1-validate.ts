@@ -24,11 +24,14 @@ export default defineEventHandler(async (event) => {
 
   // ═══ P1 BOOTSTRAP: Must run before any ToolRegistry operations ═══
   // In Vercel serverless, each API handler runs in its own context.
-  // Static imports at the top may be tree-shaken. This dynamic import
-  // ensures tools are registered and events are configured.
+  // We must dynamically import the tool registration files directly
+  // because side-effect imports from bootstrap.ts may be tree-shaken.
   let bootstrapResult = "not attempted";
   try {
-    await import("../../src/shared/tool-registry/bootstrap");
+    // Import tool registration files directly (these call ToolRegistry.register as side effects)
+    await import("../../src/shared/tool-registry/tools/trading");
+    await import("../../src/shared/tool-registry/tools/journal-analysis");
+    // Configure event persistence
     const { configureEventPersistence } = await import("../../src/shared/events/persist");
     configureEventPersistence();
     bootstrapResult = "success";
