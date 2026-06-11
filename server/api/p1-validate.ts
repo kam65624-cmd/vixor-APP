@@ -12,17 +12,24 @@
 import { defineEventHandler, getQuery, getHeader, createError } from "h3";
 
 export default defineEventHandler(async (event) => {
-  // Auth check
   const query = getQuery(event) as Record<string, string>;
-  const cronSecret = process.env.CRON_SECRET;
-  const headerSecret = getHeader(event, "x-vercel-cron") || getHeader(event, "authorization");
-  const querySecret = query.secret;
 
-  if (cronSecret && querySecret !== cronSecret && headerSecret !== cronSecret && headerSecret !== `Bearer ${cronSecret}`) {
-    // Allow without secret in development
-    if (process.env.NODE_ENV === "production") {
+  // Auth: Same pattern as check-alerts.ts
+  // Accept: Vercel Cron header OR Bearer token with CRON_SECRET
+  const isVercelCron = getHeader(event, "x-vercel-cron") === "1";
+  const cronSecret = process.env.CRON_SECRET;
+
+  if (isVercelCron) {
+    // Vercel Cron requests are automatically authenticated
+  } else if (cronSecret) {
+    const authHeader = getHeader(event, "authorization");
+    const querySecret = query.secret;
+    if (authHeader !== `Bearer ${cronSecret}` && querySecret !== cronSecret) {
       throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
+  } else if (process.env.NODE_ENV === "production") {
+    // No CRON_SECRET set and not from Vercel Cron — allow with warning
+    console.warn("[P1 Validate] No CRON_SECRET set, allowing unauthenticated access");
   }
 
   const results: Record<string, any> = {};
