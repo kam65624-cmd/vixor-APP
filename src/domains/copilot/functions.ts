@@ -115,6 +115,13 @@ export const askCopilot = createServerFn({ method: "POST" })
     // P1 INTELLIGENCE LAYER: Try tool execution FIRST, then fall back to AI
     // ═══════════════════════════════════════════════════════════════════════
     try {
+      // Ensure tools are registered (side-effect import for Vercel serverless)
+      await import("@/shared/tool-registry/tools/trading");
+      await import("@/shared/tool-registry/tools/journal-analysis");
+      // Ensure event persistence is configured
+      const { configureEventPersistence } = await import("@/shared/events/persist");
+      configureEventPersistence();
+
       const { processWithAgent } = await import("./server/copilot-agent");
       const { ToolRegistry } = await import("@/shared/tool-registry");
 
