@@ -40,7 +40,6 @@ const en = {
     crossesUp: "Crosses Up",
     crossesDown: "Crosses Down",
     create: "Create",
-    loading: "Loading...",
   },
 
   // ═══ NAVIGATION ═══
@@ -247,7 +246,6 @@ const en = {
     noHeatmapData: "No heatmap data available",
     interactiveHeatmapSoon: "Interactive heatmap coming soon",
     signalsDaily: "Daily signals powered by Vixor AI",
-    noActiveSignals: "No active signals right now",
   },
 
   // ═══ CHARTS ═══

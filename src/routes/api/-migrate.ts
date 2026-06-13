@@ -1,31 +1,38 @@
-import { defineEventHandler } from "vinxi/http";
-import { checkMigrations, getMigrationSQL } from "@/shared/migrate.server";
+import { defineEventHandler, getMethod, getHeader, createError } from "h3";
+import { checkMigrations, getMigrationSQL, getPendingMigrationsSQL } from "@/shared/migrate.server";
 
 export default defineEventHandler(async (event) => {
-  const method = event.method;
+  const method = getMethod(event);
 
-  // GET: Check migration status
+  // SECURITY: Require CRON_SECRET or admin access for migration endpoints
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const authHeader = getHeader(event, "authorization");
+    if (authHeader !== `Bearer ${cronSecret}`) {
+      throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+    }
+  } else if (process.env.NODE_ENV === "production") {
+    throw createError({ statusCode: 403, statusMessage: "Migrations not accessible in production without CRON_SECRET" });
+  }
+
   if (method === "GET") {
     try {
       const status = await checkMigrations();
-      return new Response(JSON.stringify(status, null, 2), {
-        headers: { "Content-Type": "application/json" },
-      });
+      return status;
     } catch (error) {
-      return new Response(
-        JSON.stringify({ error: "Failed to check migrations", detail: String(error) }),
-        { status: 500, headers: { "Content-Type": "application/json" } },
-      );
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to check migrations",
+        data: String(error),
+      });
     }
   }
 
-  // POST: Return the SQL that needs to be executed
   if (method === "POST") {
-    const sql = getMigrationSQL();
-    return new Response(sql, {
-      headers: { "Content-Type": "text/plain" },
-    });
+    // Return only the SQL for tables that are missing
+    const pendingSQL = await getPendingMigrationsSQL();
+    return { sql: pendingSQL, instructions: "Run this SQL in the Supabase Dashboard SQL Editor" };
   }
 
-  return new Response("Method not allowed", { status: 405 });
+  throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
 });

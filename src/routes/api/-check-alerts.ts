@@ -1,43 +1,40 @@
-import { createAPIFileRoute } from "@tanstack/react-start/api";
+import { defineEventHandler, getMethod, getHeader, createError } from "h3";
 import { checkAllAlerts } from "@/domains/trading/server/alert-checker";
 
-export const APIRoute = createAPIFileRoute("/api/check-alerts")({
-  POST: async ({ request }) => {
-    try {
-      // Simple auth: check for a cron secret or just allow it
-      const cronSecret = process.env.CRON_SECRET;
-      if (cronSecret) {
-        const authHeader = request.headers.get("authorization");
-        if (authHeader !== `Bearer ${cronSecret}`) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-      }
+export default defineEventHandler(async (event) => {
+  const method = getMethod(event);
 
-      const result = await checkAllAlerts();
-      return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch (error) {
-      console.error("Alert check error:", error);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
+  // Both GET and POST are supported so Vercel Cron and manual triggers work
+  if (method !== "GET" && method !== "POST") {
+    throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
+  }
+
+  // Security: Verify this is a legitimate cron request
+  // Accept 2 sources:
+  //   1. Vercel Cron (sends x-vercel-cron: 1 header automatically)
+  //   2. Manual trigger with CRON_SECRET via Authorization: Bearer <secret>
+  const isVercelCron = getHeader(event, "x-vercel-cron") === "1";
+  const cronSecret = process.env.CRON_SECRET;
+
+  if (isVercelCron) {
+    // Vercel Cron requests are automatically authenticated by Vercel's infrastructure
+  } else if (cronSecret) {
+    // Manual trigger — must provide the CRON_SECRET
+    const authHeader = getHeader(event, "authorization");
+    if (authHeader !== `Bearer ${cronSecret}`) {
+      throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
-  },
-  GET: async () => {
-    // Allow GET for easy cron service invocation (e.g., UptimeRobot)
-    try {
-      const result = await checkAllAlerts();
-      return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch (error) {
-      console.error("Alert check error:", error);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-  },
+  } else if (process.env.NODE_ENV === "production") {
+    // No Vercel Cron header AND no CRON_SECRET set in production = BLOCK
+    console.error("[CRON SECURITY] Request is not from Vercel Cron and CRON_SECRET is not set. Refusing.");
+    throw createError({ statusCode: 500, statusMessage: "Cron not configured" });
+  }
+
+  try {
+    const result = await checkAllAlerts();
+    return result;
+  } catch (error) {
+    console.error("Alert check error:", error);
+    throw createError({ statusCode: 500, statusMessage: "Internal server error" });
+  }
 });
