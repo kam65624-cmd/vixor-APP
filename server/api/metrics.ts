@@ -1,77 +1,12 @@
 import { defineEventHandler, getHeader, createError } from "h3";
+import { getMetricsStore } from "../_metrics-store";
 
 /**
  * GET /api/metrics
- * Returns Prometheus-style text metrics + a JSON summary for dashboards.
+ * Returns Prometheus exposition format + JSON summary.
  *
- * Auth: same gate as /api/health.
- *
- * Metrics collected (in-memory counters/histograms since process start):
- *  - vixor_http_requests_total{method,route,status}
- *  - vixor_http_request_duration_seconds_bucket{le}
- *  - vixor_errors_total{kind}
- *  - vixor_uptime_seconds
- *  - vixor_cache_hits_total / vixor_cache_misses_total
- *
- * Note: in serverless (Vercel) each invocation starts fresh, so these metrics
- * are best-effort per-instance snapshots. For production-grade metrics, ship
- * to Datadog/Grafana Cloud via OpenTelemetry. This endpoint is the fallback
- * when no such integration exists.
+ * Auth: CRON_SECRET or HEALTH_TOKEN (Bearer).
  */
-
-// In-memory metric store (process-scoped)
-interface MetricStore {
-  httpRequests: Map<string, number>; // key: METHOD|ROUTE|STATUS
-  httpDurationsMs: number[]; // last 1000 samples
-  errorsByKind: Map<string, number>;
-  cacheHits: number;
-  cacheMisses: number;
-  startedAt: number;
-}
-
-declare global {
-  // eslint-disable-next-line no-var
-  var __VIXOR_METRICS__: MetricStore | undefined;
-}
-
-function getStore(): MetricStore {
-  if (!globalThis.__VIXOR_METRICS__) {
-    globalThis.__VIXOR_METRICS__ = {
-      httpRequests: new Map(),
-      httpDurationsMs: [],
-      errorsByKind: new Map(),
-      cacheHits: 0,
-      cacheMisses: 0,
-      startedAt: Date.now(),
-    };
-  }
-  return globalThis.__VIXOR_METRICS__!;
-}
-
-/** Public API for other modules to record metrics */
-export const metrics = {
-  recordHttpRequest(method: string, route: string, status: number) {
-    const s = getStore();
-    const key = `${method}|${route}|${status}`;
-    s.httpRequests.set(key, (s.httpRequests.get(key) ?? 0) + 1);
-  },
-  recordDurationMs(ms: number) {
-    const s = getStore();
-    s.httpDurationsMs.push(ms);
-    if (s.httpDurationsMs.length > 1000) s.httpDurationsMs.shift();
-  },
-  recordError(kind: string) {
-    const s = getStore();
-    s.errorsByKind.set(kind, (s.errorsByKind.get(kind) ?? 0) + 1);
-  },
-  recordCacheHit() {
-    getStore().cacheHits += 1;
-  },
-  recordCacheMiss() {
-    getStore().cacheMisses += 1;
-  },
-};
-
 export default defineEventHandler((event) => {
   const method = (event.node.req.method || "GET").toUpperCase();
   if (method !== "GET") {
@@ -89,7 +24,7 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
   }
 
-  const s = getStore();
+  const s = getMetricsStore();
   const uptimeS = (Date.now() - s.startedAt) / 1000;
   const samples = s.httpDurationsMs;
   const count = samples.length;

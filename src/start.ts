@@ -3,7 +3,7 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/shared/supabase/auth-attacher";
 import { structuredLogger } from "@/shared/structured-logger";
-import { metrics } from "@/routes/api/metrics";
+import { metrics } from "@/shared/metrics-store";
 
 // Structured request logging + metrics recording.
 // Logs every request as a single JSON line for downstream ingestion (Loki/ELK/Datadog).

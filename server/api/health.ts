@@ -8,7 +8,7 @@ import { defineEventHandler, getHeader, createError } from "h3";
  *  - redis: ping Upstash via REST (if configured)
  *  - env: which critical env vars are present
  *
- * Auth: same gate as other /api routes — Vercel Cron header OR CRON_SECRET.
+ * Auth: same gate as other /api routes — Vercel Cron header OR CRON_SECRET OR HEALTH_TOKEN.
  */
 export default defineEventHandler(async (event) => {
   const method = (event.node.req.method || "GET").toUpperCase();
