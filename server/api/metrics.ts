@@ -1,4 +1,4 @@
-import { defineEventHandler, getHeader, createError } from "h3";
+import { defineEventHandler, getMethod, getHeader, setHeader, createError } from "h3";
 import { getMetricsStore } from "../_metrics-store";
 
 /**
@@ -8,7 +8,7 @@ import { getMetricsStore } from "../_metrics-store";
  * Auth: CRON_SECRET or HEALTH_TOKEN (Bearer).
  */
 export default defineEventHandler((event) => {
-  const method = (event.node.req.method || "GET").toUpperCase();
+  const method = getMethod(event).toUpperCase();
   if (method !== "GET") {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
@@ -69,6 +69,6 @@ export default defineEventHandler((event) => {
   lines.push(`vixor_cache_total{result="hit"} ${s.cacheHits}`);
   lines.push(`vixor_cache_total{result="miss"} ${s.cacheMisses}`);
 
-  event.node.res.setHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
+  setHeader(event, "Content-Type", "text/plain; version=0.0.4; charset=utf-8");
   return lines.join("\n");
 });
