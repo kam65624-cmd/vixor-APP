@@ -1,0 +1,935 @@
+     1→import { createFileRoute, useNavigate } from "@tanstack/react-router";
+     2→import {
+     3→  getMe,
+     4→  getMarketPrices,
+     5→  getDailySignals,
+     6→  listAlerts,
+     7→  getMarketNews,
+     8→  getDefaultWatchlist,
+     9→  getEconomicCalendar,
+    10→} from "@/lib/vixor.functions";
+    11→import { useQuery } from "@tanstack/react-query";
+    12→import {
+    13→  Sparkles,
+    14→  Camera,
+    15→  Activity,
+    16→  Zap,
+    17→  ArrowUpRight,
+    18→  ArrowDownRight,
+    19→  Newspaper,
+    20→  TrendingUp,
+    21→  Bell,
+    22→  Crosshair,
+    23→  CalendarClock,
+    24→  Eye,
+    25→  Target,
+    26→  MessageSquare,
+    27→  ChevronRight,
+    28→  Flame,
+    29→} from "lucide-react";
+    30→import { useMemo } from "react";
+    31→import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+    32→import { useRenderGuard } from "@/shared/hooks/use-render-guard";
+    33→import { RecBadge } from "@/components/vixor/atoms";
+    34→import {
+    35→  ExpandableWidget,
+    36→  MiniWidget,
+    37→  WidgetGroup,
+    38→  type WidgetVariant,
+    39→} from "@/components/vixor/ExpandableWidget";
+    40→import { useI18n } from "@/shared/i18n";
+    41→
+    42→export const Route = createFileRoute("/_authenticated/")({
+    43→  head: () => ({ meta: [{ title: "Mission Control — Vixor" }] }),
+    44→  component: MissionControl,
+    45→});
+    46→
+    47→function MissionControl() {
+    48→  useRenderGuard("MissionControl");
+    49→  const navigate = useNavigate();
+    50→  const { t } = useI18n();
+    51→
+    52→  // Use stable server function references to prevent infinite re-render loop (React error #310)
+    53→  const fetchMe = useStableServerFn(getMe);
+    54→  const fetchPrices = useStableServerFn(getMarketPrices);
+    55→  const fetchSignals = useStableServerFn(getDailySignals);
+    56→  const fetchAlerts = useStableServerFn(listAlerts);
+    57→  const fetchNews = useStableServerFn(getMarketNews);
+    58→  const fetchWatchlist = useStableServerFn(getDefaultWatchlist);
+    59→  const fetchCalendar = useStableServerFn(getEconomicCalendar);
+    60→
+    61→  const me = useQuery(
+    62→    useMemo(() => ({ queryKey: ["me"] as const, queryFn: () => fetchMe({}) }), [fetchMe]),
+    63→  );
+    64→  const prices = useQuery(
+    65→    useMemo(
+    66→      () => ({
+    67→        queryKey: ["market-prices"] as const,
+    68→        queryFn: () => fetchPrices({}),
+    69→        staleTime: 30_000,
+    70→        refetchInterval: 60_000,
+    71→      }),
+    72→      [fetchPrices],
+    73→    ),
+    74→  );
+    75→  const signals = useQuery(
+    76→    useMemo(
+    77→      () => ({
+    78→        queryKey: ["daily-signals", "home"] as const,
+    79→        queryFn: async () => {
+    80→          const r = await fetchSignals({ data: { limit: 5, offset: 0 } });
+    81→          // Server returns { items, total, hasMore } — extract items for backward compat
+    82→          return (r as any)?.items ?? (Array.isArray(r) ? r : []);
+    83→        },
+    84→        staleTime: 120_000,
+    85→      }),
+    86→      [fetchSignals],
+    87→    ),
+    88→  );
+    89→  const alerts = useQuery(
+    90→    useMemo(
+    91→      () => ({
+    92→        queryKey: ["alerts-dashboard", "home"] as const,
+    93→        queryFn: async () => {
+    94→          const r = await fetchAlerts({ data: { limit: 10, offset: 0 } });
+    95→          return (r as any)?.items ?? (Array.isArray(r) ? r : []);
+    96→        },
+    97→        staleTime: 30_000,
+    98→      }),
+    99→      [fetchAlerts],
+   100→    ),
+   101→  );
+   102→  const news = useQuery(
+   103→    useMemo(
+   104→      () => ({
+   105→        queryKey: ["market-news-forex"] as const,
+   106→        queryFn: () => fetchNews({ data: { category: "forex" } }),
+   107→        staleTime: 60_000,
+   108→        refetchInterval: 120_000,
+   109→      }),
+   110→      [fetchNews],
+   111→    ),
+   112→  );
+   113→  const watchlist = useQuery(
+   114→    useMemo(
+   115→      () => ({
+   116→        queryKey: ["default-watchlist"] as const,
+   117→        queryFn: () => fetchWatchlist({}),
+   118→        staleTime: 30_000,
+   119→      }),
+   120→      [fetchWatchlist],
+   121→    ),
+   122→  );
+   123→  const calendar = useQuery(
+   124→    useMemo(
+   125→      () => ({
+   126→        queryKey: ["economic-calendar"] as const,
+   127→        queryFn: () => fetchCalendar({ data: { days: 7 } }),
+   128→        staleTime: 300_000,
+   129→        refetchInterval: 600_000,
+   130→      }),
+   131→      [fetchCalendar],
+   132→    ),
+   133→  );
+   134→
+   135→  const name = me.data?.profile?.display_name?.split(" ")[0] || t("dashboard.trader");
+   136→  const xp = (me.data?.profile as any)?.total_xp ?? (me.data?.profile as any)?.xp ?? 0;
+   137→  const isPremium = !!me.data?.isPremium;
+   138→  const isLoadingMe = me.isLoading;
+   139→
+   140→  // Active alerts
+   141→  const activeAlerts = (alerts.data ?? []).filter((a: any) => a.status === "active");
+   142→
+   143→  // All non-WAIT signals sorted by confidence
+   144→  const allSignals = (signals.data ?? [])
+   145→    .filter((s: any) => s.recommendation !== "WAIT")
+   146→    .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
+   147→  const topSignals = allSignals.slice(0, 3);
+   148→
+   149→  // Determine top signal variant for hero widget
+   150→  const topSignal: any = allSignals[0] ?? null;
+   151→  const heroVariant: WidgetVariant = topSignal
+   152→    ? topSignal.recommendation === "BUY"
+   153→      ? "bullish"
+   154→      : "bearish"
+   155→    : "neutral";
+   156→
+   157→  // AI suggestion text based on signals/alerts state
+   158→  const aiSuggestion = topSignal
+   159→    ? `${topSignal.pair} ${topSignal.recommendation} @ ${topSignal.confidence}% — ${t("dashboard.suggestedAction")}`
+   160→    : activeAlerts.length > 0
+   161→      ? t("dashboard.todayPlan")
+   162→      : t("dashboard.whatShouldIDo");
+   163→
+   164→  return (
+   165→    <div className="space-y-5 pb-6 animate-in fade-in duration-500">
+   166→      {/* ═══════════════════════════════════════════
+   167→          1. GREETING HEADER
+   168→          ═══════════════════════════════════════════ */}
+   169→      <div className="flex items-start justify-between">
+   170→        <div>
+   171→          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+   172→            {new Date().getHours() < 12
+   173→              ? t("dashboard.greeting.morning")
+   174→              : new Date().getHours() < 17
+   175→                ? t("dashboard.greeting.afternoon")
+   176→                : t("dashboard.greeting.evening")}
+   177→            , {t("dashboard.trader")}
+   178→          </div>
+   179→          {isLoadingMe ? (
+   180→            <div className="space-y-2">
+   181→              <div className="h-8 w-32 rounded-lg bg-muted shimmer" />
+   182→              <div className="h-3 w-48 rounded bg-muted shimmer" />
+   183→            </div>
+   184→          ) : (
+   185→            <>
+   186→              <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+   187→                {name} <span className="animate-wave origin-bottom-right inline-block">👋</span>
+   188→              </h1>
+   189→              <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed max-w-xs">
+   190→                {aiSuggestion}
+   191→              </p>
+   192→            </>
+   193→          )}
+   194→        </div>
+   195→        <div className="flex flex-col items-end gap-2">
+   196→          {isLoadingMe ? (
+   197→            <div className="h-5 w-10 rounded bg-muted shimmer" />
+   198→          ) : (
+   199→            <>
+   200→              {isPremium && (
+   201→                <div className="px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-primary text-[10px] font-extrabold uppercase tracking-widest glow-primary">
+   202→                  PRO
+   203→                </div>
+   204→              )}
+   205→              {xp > 0 && (
+   206→                <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-card border border-border text-[10px] font-bold text-foreground">
+   207→                  <Zap className="size-3 text-info" /> {xp} pts
+   208→                </div>
+   209→              )}
+   210→            </>
+   211→          )}
+   212→        </div>
+   213→      </div>
+   214→
+   215→      {/* ═══════════════════════════════════════════
+   216→          2. DAILY ACTION CENTER (Hero Widget)
+   217→          ═══════════════════════════════════════════ */}
+   218→      <ExpandableWidget
+   219→        title={t("dashboard.dailyAction")}
+   220→        subtitle={
+   221→          topSignal ? `${topSignal.pair} · ${topSignal.timeframe}` : t("dashboard.noSignalsTitle")
+   222→        }
+   223→        icon={Target}
+   224→        variant={heroVariant}
+   225→        badge={topSignal ? topSignal.recommendation : undefined}
+   226→        metric={topSignal ? `${topSignal.confidence}%` : undefined}
+   227→        metricLabel={topSignal ? t("signals.confidence") : undefined}
+   228→        defaultExpanded={false}
+   229→      >
+   230→        {signals.isLoading ? (
+   231→          <div className="space-y-3">
+   232→            <div className="grid grid-cols-3 gap-3">
+   233→              {[1, 2, 3].map((i) => (
+   234→                <div key={i} className="space-y-1.5">
+   235→                  <div className="h-2.5 w-12 rounded bg-muted shimmer" />
+   236→                  <div className="h-4 w-16 rounded bg-muted shimmer" />
+   237→                </div>
+   238→              ))}
+   239→            </div>
+   240→            <div className="h-3 w-full rounded bg-muted shimmer" />
+   241→            <div className="flex gap-2">
+   242→              <div className="h-7 w-20 rounded-md bg-muted shimmer" />
+   243→              <div className="h-7 w-20 rounded-md bg-muted shimmer" />
+   244→            </div>
+   245→          </div>
+   246→        ) : topSignal ? (
+   247→          <div className="space-y-4">
+   248→            {/* Signal details */}
+   249→            <div className="grid grid-cols-3 gap-3">
+   250→              <div className="flex flex-col gap-0.5">
+   251→                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+   252→                  {t("signals.entry")}
+   253→                </span>
+   254→                <span className="text-sm font-mono font-bold text-foreground">
+   255→                  {topSignal.entry
+   256→                    ? Number(topSignal.entry).toLocaleString(undefined, {
+   257→                        maximumFractionDigits: 2,
+   258→                      })
+   259→                    : "—"}
+   260→                </span>
+   261→              </div>
+   262→              <div className="flex flex-col gap-0.5">
+   263→                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+   264→                  {t("signals.stopLoss")}
+   265→                </span>
+   266→                <span className="text-sm font-mono font-bold text-bearish">
+   267→                  {topSignal.stop_loss
+   268→                    ? Number(topSignal.stop_loss).toLocaleString(undefined, {
+   269→                        maximumFractionDigits: 2,
+   270→                      })
+   271→                    : "—"}
+   272→                </span>
+   273→              </div>
+   274→              <div className="flex flex-col gap-0.5">
+   275→                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+   276→                  {t("signals.takeProfit")}
+   277→                </span>
+   278→                <span className="text-sm font-mono font-bold text-bullish">
+   279→                  {topSignal.take_profit
+   280→                    ? Number(topSignal.take_profit).toLocaleString(undefined, {
+   281→                        maximumFractionDigits: 2,
+   282→                      })
+   283→                    : "—"}
+   284→                </span>
+   285→              </div>
+   286→            </div>
+   287→
+   288→            {/* Pattern / Reason */}
+   289→            {topSignal.pattern && (
+   290→              <div className="text-xs text-muted-foreground leading-relaxed">
+   291→                {topSignal.pattern}
+   292→              </div>
+   293→            )}
+   294→
+   295→            {/* Action buttons */}
+   296→            <div className="flex flex-wrap gap-2">
+   297→              <a
+   298→                href={`/charts?symbol=BINANCE:${topSignal.pair.replace("/", "")}`}
+   299→                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+   300→              >
+   301→                <Eye className="size-3" /> {t("dashboard.viewCharts")}
+   302→              </a>
+   303→              <button
+   304→                onClick={() => navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })}
+   305→                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-card border border-border hover:bg-card-hover transition-colors"
+   306→              >
+   307→                <Camera className="size-3" /> {t("dashboard.analyzeNow")}
+   308→              </button>
+   309→              <button
+   310→                onClick={() => navigate({ to: "/copilot", search: { chartPair: undefined, chartTimeframe: undefined, chartPrice: undefined, chartSymbol: undefined } })}
+   311→                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-card border border-border hover:bg-card-hover transition-colors"
+   312→              >
+   313→                <MessageSquare className="size-3" /> {t("dashboard.askCopilot")}
+   314→              </button>
+   315→            </div>
+   316→          </div>
+   317→        ) : (
+   318→          <div className="space-y-4">
+   319→            <p className="text-xs text-muted-foreground leading-relaxed">
+   320→              {t("dashboard.noSignalsDesc")}
+   321→            </p>
+   322→            <button
+   323→              onClick={() => navigate({ to: "/signals" })}
+   324→              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+   325→            >
+   326→              <Sparkles className="size-3.5" /> {t("dashboard.generateSignals")}
+   327→            </button>
+   328→          </div>
+   329→        )}
+   330→      </ExpandableWidget>
+   331→
+   332→      {/* ═══════════════════════════════════════════
+   333→          3. MARKET PULSE GRID
+   334→          ═══════════════════════════════════════════ */}
+   335→      <WidgetGroup
+   336→        title={t("dashboard.marketPulse")}
+   337→        icon={Activity}
+   338→        action={
+   339→          <div className="flex items-center gap-1.5">
+   340→            <div className="size-1.5 rounded-full bg-primary animate-pulse" />
+   341→            <span className="text-[9px] font-bold text-primary uppercase tracking-widest">
+   342→              {t("dashboard.live")}
+   343→            </span>
+   344→          </div>
+   345→        }
+   346→      >
+   347→        {prices.isLoading ? (
+   348→          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+   349→            {[1, 2, 3, 4, 5, 6].map((i) => (
+   350→              <div key={i} className="p-3 rounded-xl bg-card border border-border shimmer h-20" />
+   351→            ))}
+   352→          </div>
+   353→        ) : !(prices.data ?? []).length ? (
+   354→          <div className="py-6 text-center">
+   355→            <Activity className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   356→            <p className="text-xs text-muted-foreground">{t("dashboard.noMarketData") || "Market data temporarily unavailable"}</p>
+   357→            <p className="text-[10px] text-muted-foreground/60 mt-1">Prices will appear when the feed reconnects</p>
+   358→          </div>
+   359→        ) : (
+   360→          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+   361→            {(prices.data ?? []).map((p: any) => {
+   362→              const change = p.change24h ?? 0;
+   363→              const variant: WidgetVariant = change >= 0 ? "bullish" : "bearish";
+   364→              return (
+   365→                <a key={p.pair} href={`/charts?symbol=${p.symbol || p.pair}`} className="block">
+   366→                  <MiniWidget
+   367→                    title={p.pair}
+   368→                    value={`$${Number(p.price).toLocaleString(undefined, {
+   369→                      minimumFractionDigits: 2,
+   370→                      maximumFractionDigits: p.pair?.includes("JPY") ? 2 : 4,
+   371→                    })}`}
+   372→                    variant={variant}
+   373→                    icon={change >= 0 ? TrendingUp : ArrowDownRight}
+   374→                    className="hover:bg-card-hover transition-colors"
+   375→                  />
+   376→                </a>
+   377→              );
+   378→            })}
+   379→          </div>
+   380→        )}
+   381→      </WidgetGroup>
+   382→
+   383→      {/* ═══════════════════════════════════════════
+   384→          4. WATCHLIST QUICK VIEW
+   385→          ═══════════════════════════════════════════ */}
+   386→      <ExpandableWidget
+   387→        title={t("dashboard.watchlistQuick")}
+   388→        subtitle={
+   389→          (watchlist.data as any)?.items?.length > 0
+   390→            ? t("dashboard.watchlistItems", { count: (watchlist.data as any).items.length })
+   391→            : t("dashboard.addPairs")
+   392→        }
+   393→        icon={Eye}
+   394→        variant="info"
+   395→        defaultExpanded={false}
+   396→      >
+   397→        {watchlist.isLoading ? (
+   398→          <div className="space-y-2">
+   399→            {[1, 2, 3].map((i) => (
+   400→              <div key={i} className="h-10 rounded-lg bg-muted shimmer" />
+   401→            ))}
+   402→          </div>
+   403→        ) : !(watchlist.data as any)?.items || (watchlist.data as any).items.length === 0 ? (
+   404→          <div className="space-y-3">
+   405→            {/* Show popular pairs as suggestions */}
+   406→            <div className="grid grid-cols-2 gap-2">
+   407→              {["EUR/USD", "GBP/USD", "XAU/USD", "BTC/USDT"].map((pair) => (
+   408→                <div
+   409→                  key={pair}
+   410→                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border"
+   411→                >
+   412→                  <Crosshair className="size-3 text-muted-foreground" />
+   413→                  <span className="text-xs font-mono font-bold text-foreground">{pair}</span>
+   414→                </div>
+   415→              ))}
+   416→            </div>
+   417→            <button
+   418→              onClick={() => navigate({ to: "/discover" })}
+   419→              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-colors"
+   420→            >
+   421→              <Eye className="size-3.5" /> {t("dashboard.buildWatchlist")}
+   422→            </button>
+   423→          </div>
+   424→        ) : (
+   425→          <div className="space-y-2">
+   426→            {(watchlist.data as any).items.slice(0, 6).map((item: any) => {
+   427→              const priceData = (prices.data ?? []).find((p: any) => p.pair === item.pair);
+   428→              const change = priceData?.change24h ?? 0;
+   429→              const isPositive = change >= 0;
+   430→              return (
+   431→                <a
+   432→                  key={item.id}
+   433→                  href={`/charts?symbol=BINANCE:${item.pair.replace("/", "")}`}
+   434→                  className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors"
+   435→                >
+   436→                  <div className="flex-1 min-w-0">
+   437→                    <div className="flex items-center gap-2">
+   438→                      <span className="font-bold font-mono text-xs">{item.pair}</span>
+   439→                      <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary capitalize">
+   440→                        {item.category}
+   441→                      </span>
+   442→                    </div>
+   443→                    {priceData && (
+   444→                      <div className="text-[10px] text-muted-foreground font-mono mt-0.5">
+   445→                        ${Number(priceData.price).toLocaleString(undefined, {
+   446→                          minimumFractionDigits: 2,
+   447→                          maximumFractionDigits: item.pair?.includes("JPY") ? 2 : 4,
+   448→                        })}
+   449→                      </div>
+   450→                    )}
+   451→                  </div>
+   452→                  {priceData && (
+   453→                    <div className="text-right shrink-0">
+   454→                      <div
+   455→                        className={`text-xs font-bold font-mono ${isPositive ? "text-bullish" : "text-bearish"}`}
+   456→                      >
+   457→                        {isPositive ? "+" : ""}{change.toFixed(2)}%
+   458→                      </div>
+   459→                    </div>
+   460→                  )}
+   461→                </a>
+   462→              );
+   463→            })}
+   464→            <button
+   465→              onClick={() => navigate({ to: "/discover" })}
+   466→              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold text-primary hover:underline"
+   467→            >
+   468→              {t("dashboard.viewAll")} <ChevronRight className="size-3" />
+   469→            </button>
+   470→          </div>
+   471→        )}
+   472→      </ExpandableWidget>
+   473→
+   474→      {/* ═══════════════════════════════════════════
+   475→          DESKTOP TWO-COLUMN LAYOUT
+   476→          Signals + Alerts side by side on lg
+   477→          ═══════════════════════════════════════════ */}
+   478→      <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-5 lg:space-y-0">
+   479→        {/* ═══════════════════════════════════════════
+   480→            5. TODAY'S SIGNALS
+   481→            ═══════════════════════════════════════════ */}
+   482→        <ExpandableWidget
+   483→          title={t("dashboard.todaysSignals")}
+   484→          subtitle={
+   485→            allSignals.length > 0
+   486→              ? t("dashboard.signalCount", { count: allSignals.length })
+   487→              : undefined
+   488→          }
+   489→          icon={Sparkles}
+   490→          variant={
+   491→            topSignal ? (topSignal.recommendation === "BUY" ? "bullish" : "bearish") : "neutral"
+   492→          }
+   493→          badge={allSignals.length > 0 ? `${allSignals.length}` : undefined}
+   494→          defaultExpanded={false}
+   495→        >
+   496→          {signals.isLoading ? (
+   497→            <div className="space-y-2">
+   498→              {[1, 2, 3].map((i) => (
+   499→                <div key={i} className="h-14 rounded-lg bg-muted shimmer" />
+   500→              ))}
+   501→            </div>
+   502→          ) : allSignals.length === 0 ? (
+   503→            <div className="py-4 text-center">
+   504→              <Sparkles className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   505→              <p className="text-xs text-muted-foreground">{t("dashboard.noSignalsTitle")}</p>
+   506→              <button
+   507→                onClick={() => navigate({ to: "/signals" })}
+   508→                className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+   509→              >
+   510→                {t("dashboard.generateSignals")} <ChevronRight className="size-3" />
+   511→              </button>
+   512→            </div>
+   513→          ) : (
+   514→            <div className="space-y-2">
+   515→              {allSignals.map((signal: any) => {
+   516→                const isBuy = signal.recommendation === "BUY";
+   517→                return (
+   518→                  <a
+   519→                    key={signal.id}
+   520→                    href={`/charts?symbol=BINANCE:${signal.pair.replace("/", "")}`}
+   521→                    className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors"
+   522→                  >
+   523→                    <div
+   524→                      className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
+   525→                        isBuy ? "bg-bullish/10" : "bg-bearish/10"
+   526→                      }`}
+   527→                    >
+   528→                      {isBuy ? (
+   529→                        <TrendingUp className="size-4 text-bullish" />
+   530→                      ) : (
+   531→                        <ArrowDownRight className="size-4 text-bearish" />
+   532→                      )}
+   533→                    </div>
+   534→                    <div className="flex-1 min-w-0">
+   535→                      <div className="flex items-center gap-2">
+   536→                        <span className="font-bold font-mono text-xs">{signal.pair}</span>
+   537→                        <RecBadge rec={signal.recommendation} />
+   538→                      </div>
+   539→                      <div className="text-[10px] text-muted-foreground font-mono">
+   540→                        {t("signals.entry")}:{" "}
+   541→                        {signal.entry
+   542→                          ? Number(signal.entry).toLocaleString(undefined, {
+   543→                              maximumFractionDigits: 2,
+   544→                            })
+   545→                          : "—"}
+   546→                        {" · "}
+   547→                        {signal.timeframe}
+   548→                      </div>
+   549→                    </div>
+   550→                    <div className="text-right shrink-0">
+   551→                      <div className="text-xs font-bold font-mono">{signal.confidence}%</div>
+   552→                      <div className="w-10 h-1 bg-muted rounded-full overflow-hidden mt-1">
+   553→                        <div
+   554→                          className={`h-full rounded-full ${isBuy ? "bg-bullish" : "bg-bearish"}`}
+   555→                          style={{ width: `${signal.confidence}%` }}
+   556→                        />
+   557→                      </div>
+   558→                    </div>
+   559→                  </a>
+   560→                );
+   561→              })}
+   562→              {/* Action buttons */}
+   563→              <div className="flex flex-wrap gap-2 pt-2">
+   564→                <button
+   565→                  onClick={() => navigate({ to: "/signals" })}
+   566→                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+   567→                >
+   568→                  <Sparkles className="size-3" /> {t("dashboard.viewAll")}
+   569→                </button>
+   570→                <button
+   571→                  onClick={() => navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })}
+   572→                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold bg-card border border-border hover:bg-card-hover transition-colors"
+   573→                >
+   574→                  <Camera className="size-3" /> {t("dashboard.analyzeNow")}
+   575→                </button>
+   576→              </div>
+   577→            </div>
+   578→          )}
+   579→        </ExpandableWidget>
+   580→
+   581→        {/* ═══════════════════════════════════════════
+   582→            8. ACTIVE ALERTS
+   583→            ═══════════════════════════════════════════ */}
+   584→        <ExpandableWidget
+   585→          title={t("dashboard.activeAlerts")}
+   586→          subtitle={
+   587→            activeAlerts.length > 0
+   588→              ? t("dashboard.alertCount", { count: activeAlerts.length })
+   589→              : undefined
+   590→          }
+   591→          icon={Bell}
+   592→          variant={activeAlerts.length > 0 ? "warning" : "neutral"}
+   593→          badge={activeAlerts.length > 0 ? `${activeAlerts.length}` : undefined}
+   594→          defaultExpanded={false}
+   595→        >
+   596→          {alerts.isLoading ? (
+   597→            <div className="space-y-2">
+   598→              {[1, 2].map((i) => (
+   599→                <div key={i} className="h-12 rounded-lg bg-muted shimmer" />
+   600→              ))}
+   601→            </div>
+   602→          ) : activeAlerts.length === 0 ? (
+   603→            <div className="py-4 text-center">
+   604→              <Bell className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   605→              <p className="text-xs text-muted-foreground">{t("dashboard.noActiveAlerts")}</p>
+   606→              <button
+   607→                onClick={() => navigate({ to: "/charts", search: { symbol: "BINANCE:BTCUSDT" } })}
+   608→                className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+   609→              >
+   610→                {t("dashboard.setAlert")} <ChevronRight className="size-3" />
+   611→              </button>
+   612→            </div>
+   613→          ) : (
+   614→            <div className="space-y-2">
+   615→              {activeAlerts.slice(0, 5).map((alert: any) => {
+   616→                const isUp = alert.condition === "above" || alert.condition === "crosses_up";
+   617→                return (
+   618→                  <div
+   619→                    key={alert.id}
+   620→                    className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
+   621→                  >
+   622→                    <div
+   623→                      className={`size-7 rounded-lg flex items-center justify-center shrink-0 ${
+   624→                        isUp ? "bg-bullish/10" : "bg-bearish/10"
+   625→                      }`}
+   626→                    >
+   627→                      {isUp ? (
+   628→                        <ArrowUpRight className="size-3.5 text-bullish" />
+   629→                      ) : (
+   630→                        <ArrowDownRight className="size-3.5 text-bearish" />
+   631→                      )}
+   632→                    </div>
+   633→                    <div className="flex-1 min-w-0">
+   634→                      <div className="font-bold text-xs font-mono">{alert.pair}</div>
+   635→                      <div className="text-[10px] text-muted-foreground font-mono">
+   636→                        {alert.condition === "above"
+   637→                          ? t("common.above")
+   638→                          : alert.condition === "below"
+   639→                            ? t("common.below")
+   640→                            : alert.condition === "crosses_up"
+   641→                              ? t("common.crossesUp")
+   642→                              : t("common.crossesDown")}{" "}
+   643→                        $
+   644→                        {Number(alert.target_price).toLocaleString(undefined, {
+   645→                          maximumFractionDigits: 2,
+   646→                        })}
+   647→                      </div>
+   648→                    </div>
+   649→                    <div className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-primary/10 text-primary uppercase">
+   650→                      {t("dashboard.active")}
+   651→                    </div>
+   652→                  </div>
+   653→                );
+   654→              })}
+   655→              <button
+   656→                onClick={() => navigate({ to: "/charts", search: { symbol: "BINANCE:BTCUSDT" } })}
+   657→                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+   658→              >
+   659→                <Bell className="size-3" /> {t("dashboard.setAlert")}
+   660→              </button>
+   661→            </div>
+   662→          )}
+   663→        </ExpandableWidget>
+   664→      </div>
+   665→
+   666→      {/* ═══════════════════════════════════════════
+   667→          DESKTOP TWO-COLUMN LAYOUT
+   668→          AI Focus + Calendar side by side on lg
+   669→          ═══════════════════════════════════════════ */}
+   670→      <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-5 lg:space-y-0">
+   671→        {/* ═══════════════════════════════════════════
+   672→            6. AI DAILY FOCUS
+   673→            ═══════════════════════════════════════════ */}
+   674→        <ExpandableWidget
+   675→          title={t("dashboard.aiDailyFocus")}
+   676→          subtitle={t("dashboard.todayPlan")}
+   677→          icon={Zap}
+   678→          variant="info"
+   679→          defaultExpanded={false}
+   680→        >
+   681→          <div className="space-y-3">
+   682→            <p className="text-xs text-foreground/90 leading-relaxed">
+   683→              {topSignals.length > 0
+   684→                ? `${t("dashboard.topSignal")}: ${topSignals[0].pair} ${topSignals[0].recommendation} @ ${topSignals[0].confidence}% ${t("signals.confidence").toLowerCase()}. ${topSignals[0].pattern || "Multiple confluences detected."} ${activeAlerts.length > 0 ? `${activeAlerts.length} ${t("dashboard.activeAlerts").toLowerCase()} ${t("dashboard.active").toLowerCase()}.` : ""}`
+   685→                : t("dashboard.noSignalsYet")}
+   686→            </p>
+   687→            <button
+   688→              onClick={() => navigate({ to: "/copilot", search: { chartPair: undefined, chartTimeframe: undefined, chartPrice: undefined, chartSymbol: undefined } })}
+   689→              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-colors"
+   690→            >
+   691→              <MessageSquare className="size-3" /> {t("dashboard.askCopilot")}
+   692→            </button>
+   693→          </div>
+   694→        </ExpandableWidget>
+   695→
+   696→        {/* ═══════════════════════════════════════════
+   697→            7. ECONOMIC CALENDAR PREVIEW (Real Data)
+   698→            ═══════════════════════════════════════════ */}
+   699→        <ExpandableWidget
+   700→          title={t("dashboard.calendarTitle")}
+   701→          subtitle={t("dashboard.calendarSubtitle")}
+   702→          icon={CalendarClock}
+   703→          variant="warning"
+   704→          badge={(() => {
+   705→            const todayEvents = (calendar.data ?? []).filter((e: any) => {
+   706→              const d = new Date(e.date);
+   707→              const now = new Date();
+   708→              return d.getDate() === now.getDate() && d.getMonth() === now.getMonth();
+   709→            });
+   710→            const highCount = todayEvents.filter((e: any) => e.impact === "high").length;
+   711→            return highCount > 0 ? `${highCount} 🔴` : undefined;
+   712→          })()}
+   713→          defaultExpanded={false}
+   714→        >
+   715→          {calendar.isLoading ? (
+   716→            <div className="space-y-2">
+   717→              {[1, 2, 3].map((i) => (
+   718→                <div key={i} className="h-12 rounded-lg bg-muted shimmer" />
+   719→              ))}
+   720→            </div>
+   721→          ) : !(calendar.data ?? []).length ? (
+   722→            <div className="py-4 text-center">
+   723→              <CalendarClock className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   724→              <p className="text-xs text-muted-foreground">{t("dashboard.noEventsToday")}</p>
+   725→            </div>
+   726→          ) : (
+   727→            <div className="space-y-2">
+   728→              {(calendar.data ?? [])
+   729→                .filter((e: any) => {
+   730→                  const d = new Date(e.date);
+   731→                  const now = new Date();
+   732→                  return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate());
+   733→                })
+   734→                .slice(0, 5)
+   735→                .map((evt: any) => {
+   736→                  const eventDate = new Date(evt.date);
+   737→                  const isToday = (() => {
+   738→                    const now = new Date();
+   739→                    return eventDate.getDate() === now.getDate() && eventDate.getMonth() === now.getMonth();
+   740→                  })();
+   741→                  const timeStr = eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+   742→                  const flagMap: Record<string, string> = { US: "🇺🇸", EU: "🇪🇺", UK: "🇬🇧", JP: "🇯🇵", AU: "🇦🇺", CA: "🇨🇦", CH: "🇨🇭", NZ: "🇳🇿" };
+   743→                  const impactColor = evt.impact === "high" ? "bg-bearish/15 text-bearish border-bearish/40" : evt.impact === "medium" ? "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40" : "bg-muted text-muted-foreground border-border";
+   744→                  return (
+   745→                    <div
+   746→                      key={evt.id}
+   747→                      className="flex items-center gap-2.5 p-2.5 rounded-lg bg-card border border-border"
+   748→                      style={evt.impact === "high" ? { borderInlineStartColor: "var(--color-bearish)", borderInlineStartWidth: "3px" } : undefined}
+   749→                    >
+   750→                      <span className="text-base shrink-0">{flagMap[evt.country] || "🌍"}</span>
+   751→                      <div className="flex-1 min-w-0">
+   752→                        <div className="flex items-center gap-1.5">
+   753→                          <span className="text-xs font-bold truncate">{evt.title}</span>
+   754→                        </div>
+   755→                        <div className="flex items-center gap-1.5 mt-0.5">
+   756→                          <span className="text-[10px] text-muted-foreground font-mono">{evt.currency}</span>
+   757→                          <span className="text-[10px] text-muted-foreground">·</span>
+   758→                          <span className="text-[10px] text-muted-foreground font-mono">{timeStr}</span>
+   759→                          {!isToday && (
+   760→                            <>
+   761→                              <span className="text-[10px] text-muted-foreground">·</span>
+   762→                              <span className="text-[10px] text-muted-foreground">{eventDate.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}</span>
+   763→                            </>
+   764→                          )}
+   765→                        </div>
+   766→                      </div>
+   767→                      <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase shrink-0 ${impactColor}`}>
+   768→                        {evt.impact === "high" ? t("discover.high") : evt.impact === "medium" ? t("discover.medium") : t("discover.low")}
+   769→                      </span>
+   770→                      <div className="flex flex-col items-end shrink-0 text-[9px] font-mono">
+   771→                        {evt.actual && <span className="text-foreground">{evt.actual}</span>}
+   772→                        {evt.forecast && <span className="text-muted-foreground">F: {evt.forecast}</span>}
+   773→                      </div>
+   774→                    </div>
+   775→                  );
+   776→                })}
+   777→              <a
+   778→                href="/discover"
+   779→                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold text-primary hover:underline"
+   780→              >
+   781→                {t("dashboard.viewCalendar")} <ChevronRight className="size-3" />
+   782→              </a>
+   783→            </div>
+   784→          )}
+   785→        </ExpandableWidget>
+   786→      </div>
+   787→
+   788→      {/* ═══════════════════════════════════════════
+   789→          9. MARKET NEWS
+   790→          ═══════════════════════════════════════════ */}
+   791→      <ExpandableWidget
+   792→        title={t("dashboard.marketNews")}
+   793→        subtitle={
+   794→          news.data && news.data.length > 0
+   795→            ? t("dashboard.newsCount", { count: news.data.length })
+   796→            : undefined
+   797→        }
+   798→        icon={Newspaper}
+   799→        variant="neutral"
+   800→        defaultExpanded={false}
+   801→      >
+   802→        {news.isLoading ? (
+   803→          <div className="space-y-2">
+   804→            {[1, 2, 3].map((i) => (
+   805→              <div key={i} className="flex items-start gap-3 p-2">
+   806→                <div className="flex-1 min-w-0 space-y-2">
+   807→                  <div className="h-3 w-20 rounded bg-muted shimmer" />
+   808→                  <div className="h-4 w-full rounded bg-muted shimmer" />
+   809→                  <div className="h-4 w-3/4 rounded bg-muted shimmer" />
+   810→                </div>
+   811→                <div className="size-12 rounded-lg bg-muted shimmer shrink-0" />
+   812→              </div>
+   813→            ))}
+   814→          </div>
+   815→        ) : !news.data || news.data.length === 0 ? (
+   816→          <div className="py-4 text-center">
+   817→            <Newspaper className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   818→            <p className="text-xs text-muted-foreground">{t("dashboard.noMarketNews")}</p>
+   819→          </div>
+   820→        ) : (
+   821→          <div className="space-y-2">
+   822→            {news.data.slice(0, 5).map((item: any) => (
+   823→              <a
+   824→                key={item.id}
+   825→                href={item.url}
+   826→                target="_blank"
+   827→                rel="noopener noreferrer"
+   828→                className="flex items-start gap-3 p-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors cursor-pointer"
+   829→              >
+   830→                <div className="flex-1 min-w-0">
+   831→                  <div className="flex items-center justify-between mb-1">
+   832→                    <span className="text-[8px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+   833→                      {item.source}
+   834→                    </span>
+   835→                    <span className="text-[9px] font-bold text-muted-foreground">
+   836→                      {formatTimeAgo(item.time, t)}
+   837→                    </span>
+   838→                  </div>
+   839→                  <h4 className="text-xs font-bold leading-snug line-clamp-2">{item.title}</h4>
+   840→                </div>
+   841→                <div className="size-11 rounded-lg bg-card-hover border border-border shrink-0 flex items-center justify-center overflow-hidden">
+   842→                  {item.image ? (
+   843→                    <img
+   844→                      src={item.image}
+   845→                      alt=""
+   846→                      className="size-full object-cover"
+   847→                      onError={(e) => {
+   848→                        (e.target as HTMLElement).style.display = "none";
+   849→                      }}
+   850→                    />
+   851→                  ) : (
+   852→                    <Newspaper className="size-4 text-muted-foreground/30" />
+   853→                  )}
+   854→                </div>
+   855→              </a>
+   856→            ))}
+   857→            <a
+   858→              href="/discover"
+   859→              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold text-primary hover:underline"
+   860→            >
+   861→              {t("dashboard.viewAll")} <ChevronRight className="size-3" />
+   862→            </a>
+   863→          </div>
+   864→        )}
+   865→      </ExpandableWidget>
+   866→
+   867→      {/* ═══════════════════════════════════════════
+   868→          QUICK ANALYZE CTA (bottom) — always visible
+   869→          ═══════════════════════════════════════════ */}
+   870→      <div
+   871→        onClick={() => navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })}
+   872→        className="relative overflow-hidden rounded-2xl p-5 cursor-pointer group active:scale-[0.98] transition-all"
+   873→      >
+   874→        <div className="absolute inset-0 bg-gradient-to-br from-[#059669]/90 to-[#064e3b]/90" />
+   875→        <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+   876→
+   877→        <div className="relative flex items-center justify-between">
+   878→          <div>
+   879→            <Sparkles className="size-5 text-emerald-200 mb-3" />
+   880→            <h2 className="text-xl font-bold text-white mb-1">{t("dashboard.analyzeChart")}</h2>
+   881→            <p className="text-xs text-emerald-100 font-medium opacity-90">
+   882→              {t("dashboard.smcIct")}
+   883→            </p>
+   884→          </div>
+   885→          <div className="size-14 rounded-full bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-black/10">
+   886→            <Camera className="size-6 text-white" />
+   887→          </div>
+   888→        </div>
+   889→      </div>
+   890→
+   891→      {/* ═══════════════════════════════════════════
+   892→          DAILY LOOP CTA
+   893→          ═══════════════════════════════════════════ */}
+   894→      <a
+   895→        href="/daily-loop"
+   896→        className="relative overflow-hidden rounded-2xl p-5 cursor-pointer group active:scale-[0.98] transition-all block"
+   897→      >
+   898→        <div className="absolute inset-0 bg-gradient-to-br from-[#FF9800]/90 to-[#E65100]/90" />
+   899→        <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+   900→
+   901→        <div className="relative flex items-center justify-between">
+   902→          <div>
+   903→            <Flame className="size-5 text-amber-200 mb-3" />
+   904→            <h2 className="text-xl font-bold text-white mb-1">Daily Loop</h2>
+   905→            <p className="text-xs text-amber-100 font-medium opacity-90">
+   906→              Build consistency with your daily trading routine
+   907→            </p>
+   908→          </div>
+   909→          <div className="size-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+   910→            <Target className="size-5 text-white" />
+   911→          </div>
+   912→        </div>
+   913→      </a>
+   914→    </div>
+   915→  );
+   916→}
+   917→
+   918→// ═══════════════════════════════════════════════
+   919→// HELPERS
+   920→// ═══════════════════════════════════════════════
+   921→
+   922→function formatTimeAgo(
+   923→  timestamp: number,
+   924→  t?: (key: string, params?: Record<string, string | number>) => string,
+   925→) {
+   926→  const diff = Date.now() - timestamp;
+   927→  const mins = Math.floor(diff / 60000);
+   928→  if (mins < 1) return t ? t("common.justNow") : "Just now";
+   929→  if (mins < 60) return t ? t("common.mAgo", { mins }) : `${mins}m ago`;
+   930→  const hours = Math.floor(mins / 60);
+   931→  if (hours < 24) return t ? t("common.hAgo", { hours }) : `${hours}h ago`;
+   932→  const days = Math.floor(hours / 24);
+   933→  return t ? t("common.dAgo", { days }) : `${days}d ago`;
+   934→}
+   935→
