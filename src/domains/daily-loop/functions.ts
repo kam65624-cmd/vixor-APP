@@ -309,29 +309,41 @@ export const updateEodReview = createServerFn({ method: "POST" })
   });
 
 // ═══════════════════════════════════════════════════════════════════════
-// GET LOOP HISTORY (last 30 days)
+// GET LOOP HISTORY (last N days, paginated)
 // ═══════════════════════════════════════════════════════════════════════
 export const getLoopHistory = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
     z
       .object({
-        limit: z.number().min(1).max(90).default(30),
+        limit: z.number().min(1).max(90).default(10),
+        offset: z.number().min(0).default(0),
       })
       .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
+    const { count, error: countErr } = await supabase
+      .from("daily_loops")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+    if (countErr) throw new Error(countErr.message);
+    const total = count ?? 0;
+
     const { data: loops, error } = await supabase
       .from("daily_loops")
       .select("*")
       .eq("user_id", userId)
       .order("date", { ascending: false })
-      .limit(data.limit);
+      .range(data.offset, data.offset + data.limit - 1);
 
     if (error) throw new Error(error.message);
-    return (loops ?? []) as DailyLoop[];
+    return {
+      items: (loops ?? []) as DailyLoop[],
+      total,
+      hasMore: data.offset + data.limit < total,
+    };
   });
 
 // ═══════════════════════════════════════════════════════════════════════

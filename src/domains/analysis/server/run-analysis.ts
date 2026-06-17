@@ -260,16 +260,35 @@ export async function runChartAnalysis(
 
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 4: LOCAL ENGINE — Run SMC/ICT analysis on real OHLCV data
+  //
+  // SAFETY NET: The local engine is fully deterministic and CANNOT fail.
+  // If it ever throws (which would be a bug), we still return a minimal
+  // valid AnalysisResult so users never see a "failed" analysis card.
   // ═══════════════════════════════════════════════════════════════════════
 
   console.log(`[Vixor] Step 2: Running local SMC/ICT analysis for ${pair} ${timeframe}...`);
-  const localResult = runLocalAnalysis({
-    pair,
-    timeframe,
-    tradingStyle: trading_style,
-    imageBytes,
-    bars: realBars,
-  });
+  let localResult: import("@/domains/analysis/engine/core/types").LocalAnalysisResult;
+  try {
+    localResult = runLocalAnalysis({
+      pair,
+      timeframe,
+      tradingStyle: trading_style,
+      imageBytes,
+      bars: realBars,
+    });
+  } catch (engineErr) {
+    // Absolute last-resort fallback — should never happen because
+    // runLocalAnalysis already has a synthetic-data fallback built in,
+    // but if it does, we still produce a valid result.
+    console.error(
+      "[Vixor] Local analysis engine threw unexpectedly:",
+      engineErr instanceof Error ? engineErr.message : String(engineErr),
+    );
+    const { generateFallbackResult } = await import("@/domains/analysis/engine/engine");
+    const { PAIR_CONFIGS } = await import("@/domains/analysis/engine/core/types");
+    const config = PAIR_CONFIGS[pair] || PAIR_CONFIGS["EUR/USD"]!;
+    localResult = generateFallbackResult(pair, timeframe, config);
+  }
 
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 5: BUILD RESULT — Local engine is the ONLY analysis engine

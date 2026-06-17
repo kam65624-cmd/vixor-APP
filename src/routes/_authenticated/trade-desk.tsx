@@ -20,6 +20,7 @@ import { createTrade, listTrades } from "@/domains/trades/functions";
 import type { Trade, TradeDirection } from "@/domains/trades/types";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { cn } from "@/shared/utils";
+import { PaginationBar } from "@/components/vixor/PaginationBar";
 
 export const Route = createFileRoute("/_authenticated/trade-desk")({
   head: () => ({ meta: [{ title: "Trade Desk — Vixor" }] }),
@@ -56,13 +57,28 @@ function TradeDesk() {
   const createTradeFn = useStableServerFn(createTrade);
   const fetchOpenTrades = useStableServerFn(listTrades);
 
+  // Pagination state for open positions
+  const [tradesPage, setTradesPage] = useState(1);
+  const TRADES_PAGE_SIZE = 10;
+
   const openTradesQuery = useQuery({
-    queryKey: ["open-trades-desk"],
-    queryFn: () => fetchOpenTrades({ data: { status: "open", limit: 50 } }),
+    queryKey: ["open-trades-desk", tradesPage],
+    queryFn: () =>
+      fetchOpenTrades({
+        data: {
+          status: "open",
+          limit: TRADES_PAGE_SIZE,
+          offset: (tradesPage - 1) * TRADES_PAGE_SIZE,
+        },
+      }),
     staleTime: 15_000,
   });
 
-  const openTrades = (openTradesQuery.data ?? []) as Trade[];
+  const openTradesRaw = openTradesQuery.data as
+    | { items: Trade[]; total: number; hasMore: boolean }
+    | undefined;
+  const openTrades = openTradesRaw?.items ?? [];
+  const openTradesTotal = openTradesRaw?.total ?? 0;
 
   const saveMutation = useMutation({
     mutationFn: (data: { pair: string; direction: TradeDirection; entry_price: number; quantity?: number | null; stop_loss?: number | null; notes?: string | null; strategy?: string | null }) => createTradeFn({ data }),
@@ -373,6 +389,15 @@ function TradeDesk() {
               </div>
             ))}
           </div>
+        )}
+
+        {openTradesTotal > TRADES_PAGE_SIZE && (
+          <PaginationBar
+            page={tradesPage}
+            pageSize={TRADES_PAGE_SIZE}
+            total={openTradesTotal}
+            onPageChange={setTradesPage}
+          />
         )}
       </div>
     </div>

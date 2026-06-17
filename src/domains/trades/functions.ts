@@ -53,7 +53,7 @@ export const createTrade = createServerFn({ method: "POST" })
     return trade;
   });
 
-// ---------- LIST TRADES ----------
+// ---------- LIST TRADES (with pagination) ----------
 export const listTrades = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
@@ -63,17 +63,34 @@ export const listTrades = createServerFn({ method: "GET" })
         pair: z.string().optional(),
         dateFrom: z.string().optional(),
         dateTo: z.string().optional(),
-        limit: z.number().min(1).max(200).default(100),
+        limit: z.number().min(1).max(200).default(50),
+        offset: z.number().min(0).default(0),
       })
       .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
+    // Count query (no rows, just total) — uses head:true for speed
+    let countQuery = context.supabase
+      .from("trades")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", context.userId);
+
+    if (data.status) countQuery = countQuery.eq("status", data.status);
+    if (data.pair) countQuery = countQuery.eq("pair", data.pair);
+    if (data.dateFrom) countQuery = countQuery.gte("entry_date", data.dateFrom);
+    if (data.dateTo) countQuery = countQuery.lte("entry_date", data.dateTo);
+
+    const { count, error: countErr } = await countQuery;
+    if (countErr) throw new Error(countErr.message);
+    const total = count ?? 0;
+
+    // Data query
     let query = context.supabase
       .from("trades")
       .select("*")
       .eq("user_id", context.userId)
       .order("entry_date", { ascending: false })
-      .limit(data.limit);
+      .range(data.offset, data.offset + data.limit - 1);
 
     if (data.status) query = query.eq("status", data.status);
     if (data.pair) query = query.eq("pair", data.pair);
@@ -82,7 +99,11 @@ export const listTrades = createServerFn({ method: "GET" })
 
     const { data: trades, error } = await query;
     if (error) throw new Error(error.message);
-    return trades ?? [];
+    return {
+      items: trades ?? [],
+      total,
+      hasMore: data.offset + data.limit < total,
+    };
   });
 
 // ---------- UPDATE TRADE ----------

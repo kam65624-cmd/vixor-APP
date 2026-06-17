@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { askCopilot, getConsensus, createConversation, listConversations, getConversation, saveMessage, deleteConversation, updateConversationTitle } from "@/lib/vixor.functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
+import { PaginationBar } from "@/components/vixor/PaginationBar";
 import {
   Bot,
   Send,
@@ -214,10 +215,15 @@ function CopilotPage() {
   const deleteConversationFn = useStableServerFn(deleteConversation);
   const updateConversationTitleFn = useStableServerFn(updateConversationTitle);
 
-  // ─── Fetch Conversation List ───
+  // ─── Fetch Conversation List (paginated) ───
+  const [convPage, setConvPage] = useState(1);
+  const CONV_PAGE_SIZE = 15;
   const conversationsQuery = useQuery({
-    queryKey: ["copilot-conversations"],
-    queryFn: () => listConversationsFn({ data: { limit: 50 } }),
+    queryKey: ["copilot-conversations", convPage],
+    queryFn: () =>
+      listConversationsFn({
+        data: { limit: CONV_PAGE_SIZE, offset: (convPage - 1) * CONV_PAGE_SIZE },
+      }),
   });
 
   // ─── Copilot Mutation ───
@@ -496,7 +502,11 @@ function CopilotPage() {
 
   const currentAgentConfig = AGENTS.find((a) => a.id === activeAgent)!;
   const isPending = copilotMutation.isPending || consensusMutation.isPending;
-  const conversations = conversationsQuery.data ?? [];
+  const conversationsRaw = conversationsQuery.data as
+    | { items: ConversationSummary[]; total: number; hasMore: boolean }
+    | undefined;
+  const conversations = conversationsRaw?.items ?? [];
+  const conversationsTotal = conversationsRaw?.total ?? 0;
 
   // ─── Get agent icon for sidebar ───
   const getAgentIcon = (agentId: string | null) => {
@@ -535,6 +545,10 @@ function CopilotPage() {
           setEditingTitleValue={setEditingTitleValue}
           getAgentIcon={getAgentIcon}
           getAgentColor={getAgentColor}
+          page={convPage}
+          pageSize={CONV_PAGE_SIZE}
+          total={conversationsTotal}
+          onPageChange={setConvPage}
         />
       </div>
 
@@ -559,6 +573,10 @@ function CopilotPage() {
               setEditingTitleValue={setEditingTitleValue}
               getAgentIcon={getAgentIcon}
               getAgentColor={getAgentColor}
+              page={convPage}
+              pageSize={CONV_PAGE_SIZE}
+              total={conversationsTotal}
+              onPageChange={setConvPage}
             />
           </div>
         </div>
@@ -833,6 +851,10 @@ function ConversationSidebar({
   setEditingTitleValue,
   getAgentIcon,
   getAgentColor,
+  page,
+  pageSize,
+  total,
+  onPageChange,
 }: {
   conversations: ConversationSummary[];
   activeConversationId: string | null;
@@ -849,6 +871,10 @@ function ConversationSidebar({
   setEditingTitleValue: (v: string) => void;
   getAgentIcon: (id: string | null) => typeof BarChart3;
   getAgentColor: (id: string | null) => string;
+  page: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (p: number) => void;
 }) {
   const renameInputRef = useRef<HTMLInputElement>(null);
 
@@ -1002,6 +1028,18 @@ function ConversationSidebar({
           })
         )}
       </div>
+
+      {/* Pagination */}
+      {total > pageSize && (
+        <div className="border-t border-border p-2">
+          <PaginationBar
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={onPageChange}
+          />
+        </div>
+      )}
     </div>
   );
 }

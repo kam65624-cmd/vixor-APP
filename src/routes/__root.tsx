@@ -148,7 +148,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
-    scripts: [{ src: "https://telegram.org/js/telegram-web-app.js" }],
+    scripts: [
+      // Telegram WebApp SDK
+      { src: "https://telegram.org/js/telegram-web-app.js" },
+      // ── Theme bootstrap (runs before paint to prevent FOUC) ──
+      // Reads the user's saved theme from localStorage and applies the
+      // .dark / .light class to <html> BEFORE the first paint. Defaults
+      // to dark if no preference is stored.
+      {
+        innerHTML: `(function(){try{var t=localStorage.getItem('vixor-theme')||'dark';var d=t==='dark';document.documentElement.classList.toggle('dark',d);document.documentElement.classList.toggle('light',!d);}catch(e){document.documentElement.classList.add('dark');}})();`,
+        type: "text/javascript",
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

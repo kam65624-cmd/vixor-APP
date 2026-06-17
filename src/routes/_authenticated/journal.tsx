@@ -20,6 +20,7 @@ import type { TradingNote, Mood } from "@/domains/notes/types";
 import { NoteEditorDialog } from "@/components/vixor/NoteEditorDialog";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
+import { PaginationBar } from "@/components/vixor/PaginationBar";
 import {
   Dialog,
   DialogContent,
@@ -62,13 +63,27 @@ function Journal() {
   const { t } = useI18n();
   const [tab, setTab] = useState<(typeof TABS)[number]>("journal.overview");
 
+  // Pagination state for history tab
+  const [historyPage, setHistoryPage] = useState(1);
+  const HISTORY_PAGE_SIZE = 10;
+
   const fetchAnalyses = useStableServerFn(listAnalyses);
   const analysesQuery = useQuery({
-    queryKey: ["analyses-journal"],
-    queryFn: () => fetchAnalyses({ data: { limit: 50 } }),
+    queryKey: ["analyses-journal", historyPage],
+    queryFn: () =>
+      fetchAnalyses({
+        data: {
+          limit: HISTORY_PAGE_SIZE,
+          offset: (historyPage - 1) * HISTORY_PAGE_SIZE,
+        },
+      }),
   });
 
-  const analyses = analysesQuery.data ?? [];
+  const analysesRaw = analysesQuery.data as
+    | { items: any[]; total: number; hasMore: boolean }
+    | undefined;
+  const analyses = analysesRaw?.items ?? [];
+  const analysesTotal = analysesRaw?.total ?? 0;
   const activeSignals = analyses.filter(
     (a: any) => a.recommendation === "BUY" || a.recommendation === "SELL",
   );
@@ -266,6 +281,16 @@ function Journal() {
               <BookOpen className="size-6 text-muted-foreground/30 mx-auto mb-2" />
               <div className="text-xs text-muted-foreground">No trade history yet</div>
             </div>
+          )}
+
+          {/* Pagination */}
+          {analysesTotal > HISTORY_PAGE_SIZE && (
+            <PaginationBar
+              page={historyPage}
+              pageSize={HISTORY_PAGE_SIZE}
+              total={analysesTotal}
+              onPageChange={setHistoryPage}
+            />
           )}
         </div>
       )}

@@ -1,0 +1,1188 @@
+     1→"use client";
+     2→
+     3→import { createFileRoute } from "@tanstack/react-router";
+     4→import { useMemo, useState, useCallback } from "react";
+     5→import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+     6→import {
+     7→  TrendingUp,
+     8→  TrendingDown,
+     9→  BarChart3,
+    10→  Clock,
+    11→  CalendarDays,
+    12→  ShieldAlert,
+    13→  ShieldCheck,
+    14→  Shield,
+    15→  Target,
+    16→  Layers,
+    17→  ArrowRight,
+    18→  LineChart,
+    19→  Plus,
+    20→  ArrowUpRight,
+    21→  ArrowDownRight,
+    22→  X,
+    23→  DollarSign,
+    24→  Activity,
+    25→  Loader2,
+    26→  Camera,
+    27→  Save,
+    28→} from "lucide-react";
+    29→import {
+    30→  AreaChart,
+    31→  Area,
+    32→  XAxis,
+    33→  YAxis,
+    34→  CartesianGrid,
+    35→  Tooltip,
+    36→  ResponsiveContainer,
+    37→  ReferenceLine,
+    38→} from "recharts";
+    39→import {
+    40→  Dialog,
+    41→  DialogContent,
+    42→  DialogHeader,
+    43→  DialogTitle,
+    44→  DialogDescription,
+    45→  DialogFooter,
+    46→} from "@/components/ui/dialog";
+    47→import { listTrades, createTrade, updateTrade, getTradeStats, getEquityCurve } from "@/domains/trades/functions";
+    48→import type { Trade, TradeStats, TradeDirection, EquityCurvePoint } from "@/domains/trades/types";
+    49→import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+    50→import { useI18n } from "@/shared/i18n";
+    51→import { ExpandableWidget, WidgetGroup, MiniWidget } from "@/components/vixor/ExpandableWidget";
+    52→import { cn } from "@/shared/utils";
+    53→
+    54→export const Route = createFileRoute("/_authenticated/portfolio")({
+    55→  head: () => ({ meta: [{ title: "Portfolio Intelligence — Vixor" }] }),
+    56→  component: Portfolio,
+    57→});
+    58→
+    59→// ═══════════════════════════════════════════════
+    60→// PAIRS (for the trade form)
+    61→// ═══════════════════════════════════════════════
+    62→const PAIRS = [
+    63→  "XAUUSD", "EURUSD", "GBPUSD", "USDJPY", "GBPJPY",
+    64→  "BTCUSD", "ETHUSD", "SOLUSD", "AUDUSD", "NZDUSD",
+    65→  "USDCAD", "USDCHF", "EURGBP", "EURJPY",
+    66→];
+    67→
+    68→// ═══════════════════════════════════════════════
+    69→// MAIN COMPONENT
+    70→// ═══════════════════════════════════════════════
+    71→
+    72→function Portfolio() {
+    73→  const { t } = useI18n();
+    74→  const queryClient = useQueryClient();
+    75→  const [showNewTradeDialog, setShowNewTradeDialog] = useState(false);
+    76→  const [closeTradeDialog, setCloseTradeDialog] = useState<Trade | null>(null);
+    77→
+    78→  // Stable server fn refs
+    79→  const fetchStats = useStableServerFn(getTradeStats);
+    80→  const fetchCurve = useStableServerFn(getEquityCurve);
+    81→  const fetchOpenTrades = useStableServerFn(listTrades);
+    82→  const fetchRecentTrades = useStableServerFn(listTrades);
+    83→  const createTradeFn = useStableServerFn(createTrade);
+    84→  const updateTradeFn = useStableServerFn(updateTrade);
+    85→
+    86→  // Queries
+    87→  const statsQuery = useQuery({
+    88→    queryKey: ["trade-stats"],
+    89→    queryFn: () => fetchStats({}),
+    90→    staleTime: 30_000,
+    91→  });
+    92→
+    93→  const curveQuery = useQuery({
+    94→    queryKey: ["equity-curve"],
+    95→    queryFn: () => fetchCurve({}),
+    96→    staleTime: 30_000,
+    97→  });
+    98→
+    99→  const openTradesQuery = useQuery({
+   100→    queryKey: ["open-trades"],
+   101→    queryFn: () => fetchOpenTrades({ data: { status: "open", limit: 50 } }),
+   102→    staleTime: 15_000,
+   103→  });
+   104→
+   105→  const recentTradesQuery = useQuery({
+   106→    queryKey: ["recent-closed-trades"],
+   107→    queryFn: () => fetchRecentTrades({ data: { status: "closed", limit: 20 } }),
+   108→    staleTime: 30_000,
+   109→  });
+   110→
+   111→  const stats = statsQuery.data as TradeStats | undefined;
+   112→  const curve = (curveQuery.data ?? []) as EquityCurvePoint[];
+   113→  const openTrades = (openTradesQuery.data ?? []) as Trade[];
+   114→  const recentTrades = (recentTradesQuery.data ?? []) as Trade[];
+   115→
+   116→  const isLoading = statsQuery.isLoading;
+   117→  const hasData = (stats?.closedTrades ?? 0) > 0 || (stats?.totalTrades ?? 0) > 0;
+   118→
+   119→  // Mutations
+   120→  const createMutation = useMutation({
+   121→    mutationFn: (data: { pair: string; direction: TradeDirection; entry_price: number; quantity?: number | null; stop_loss?: number | null; take_profit?: number | null; notes?: string | null; tags?: string[]; strategy?: string | null; analysis_id?: string | null }) => createTradeFn({ data }),
+   122→    onSuccess: () => {
+   123→      setShowNewTradeDialog(false);
+   124→      queryClient.invalidateQueries({ queryKey: ["trade-stats"] });
+   125→      queryClient.invalidateQueries({ queryKey: ["equity-curve"] });
+   126→      queryClient.invalidateQueries({ queryKey: ["open-trades"] });
+   127→      queryClient.invalidateQueries({ queryKey: ["recent-closed-trades"] });
+   128→    },
+   129→  });
+   130→
+   131→  const closeMutation = useMutation({
+   132→    mutationFn: (data: { tradeId: string; exit_price: number; status: "closed"; exit_date: string }) => updateTradeFn({ data }),
+   133→    onSuccess: () => {
+   134→      setCloseTradeDialog(null);
+   135→      queryClient.invalidateQueries({ queryKey: ["trade-stats"] });
+   136→      queryClient.invalidateQueries({ queryKey: ["equity-curve"] });
+   137→      queryClient.invalidateQueries({ queryKey: ["open-trades"] });
+   138→      queryClient.invalidateQueries({ queryKey: ["recent-closed-trades"] });
+   139→    },
+   140→  });
+   141→
+   142→  const invalidateAll = useCallback(() => {
+   143→    queryClient.invalidateQueries({ queryKey: ["trade-stats"] });
+   144→    queryClient.invalidateQueries({ queryKey: ["equity-curve"] });
+   145→    queryClient.invalidateQueries({ queryKey: ["open-trades"] });
+   146→    queryClient.invalidateQueries({ queryKey: ["recent-closed-trades"] });
+   147→  }, [queryClient]);
+   148→
+   149→  return (
+   150→    <div className="space-y-6 pb-6 animate-in fade-in duration-500">
+   151→      {/* ── HEADER ── */}
+   152→      <div className="flex items-center justify-between">
+   153→        <div className="flex items-center gap-3">
+   154→          <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center">
+   155→            <BarChart3 className="size-5 text-primary" />
+   156→          </div>
+   157→          <div>
+   158→            <h1 className="text-xl font-bold tracking-tight leading-none">{t("portfolio.title")}</h1>
+   159→            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
+   160→              {t("portfolio.subtitle")}
+   161→            </div>
+   162→          </div>
+   163→        </div>
+   164→
+   165→        {/* New Trade Button */}
+   166→        <button
+   167→          onClick={() => setShowNewTradeDialog(true)}
+   168→          className="flex items-center gap-1.5 px-3 py-2 rounded-lg gradient-primary text-primary-foreground text-xs font-bold glow-primary transition-transform active:scale-95"
+   169→        >
+   170→          <Plus className="size-3.5" />
+   171→          <span className="hidden sm:inline">New Trade</span>
+   172→        </button>
+   173→      </div>
+   174→
+   175→      {/* ── LOADING STATE ── */}
+   176→      {isLoading && (
+   177→        <div className="space-y-4">
+   178→          <div className="grid grid-cols-2 gap-3">
+   179→            {[1, 2, 3, 4].map((i) => (
+   180→              <div key={i} className="vixor-card p-4 h-24 shimmer" />
+   181→            ))}
+   182→          </div>
+   183→          {[1, 2, 3].map((i) => (
+   184→            <div key={i} className="vixor-card h-40 shimmer" />
+   185→          ))}
+   186→        </div>
+   187→      )}
+   188→
+   189→      {/* ── EMPTY / ONBOARDING STATE ── */}
+   190→      {!isLoading && !hasData && (
+   191→        <div className="space-y-5">
+   192→          <div className="vixor-card p-8 text-center border-dashed border-2">
+   193→            <div className="size-16 rounded-2xl bg-primary/5 border border-primary/15 flex items-center justify-center mx-auto mb-5">
+   194→              <LineChart className="size-7 text-primary/60" />
+   195→            </div>
+   196→            <h2 className="text-lg font-bold mb-2">{t("portfolio.noData")}</h2>
+   197→            <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed mb-6">
+   198→              Start logging your trades to see real performance metrics, equity curves, and trade breakdowns here.
+   199→            </p>
+   200→
+   201→            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-sm mx-auto text-left">
+   202→              <button
+   203→                onClick={() => setShowNewTradeDialog(true)}
+   204→                className="vixor-card p-4 flex items-start gap-3 vixor-card-hover group"
+   205→              >
+   206→                <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+   207→                  <Plus className="size-4 text-primary" />
+   208→                </div>
+   209→                <div>
+   210→                  <div className="text-xs font-bold mb-0.5 group-hover:text-primary transition-colors">
+   211→                    Log a Trade
+   212→                  </div>
+   213→                  <div className="text-[10px] text-muted-foreground leading-relaxed">
+   214→                    Record your first trade to start tracking performance
+   215→                  </div>
+   216→                </div>
+   217→                <ArrowRight className="size-3.5 text-muted-foreground shrink-0 mt-1 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+   218→              </button>
+   219→
+   220→              <a
+   221→                href="/analyze"
+   222→                className="vixor-card p-4 flex items-start gap-3 vixor-card-hover group"
+   223→              >
+   224→                <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+   225→                  <Camera className="size-4 text-primary" />
+   226→                </div>
+   227→                <div>
+   228→                  <div className="text-xs font-bold mb-0.5 group-hover:text-primary transition-colors">
+   229→                    Analyze Charts
+   230→                  </div>
+   231→                  <div className="text-[10px] text-muted-foreground leading-relaxed">
+   232→                    Get AI signals then save them as trades
+   233→                  </div>
+   234→                </div>
+   235→                <ArrowRight className="size-3.5 text-muted-foreground shrink-0 mt-1 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+   236→              </a>
+   237→            </div>
+   238→          </div>
+   239→
+   240→          <WidgetGroup title="Coming Soon">
+   241→            <ExpandableWidget
+   242→              title="Performance Overview"
+   243→              icon={Target}
+   244→              variant="bullish"
+   245→              defaultExpanded={false}
+   246→              metric="—"
+   247→              metricLabel={t("portfolio.winRate")}
+   248→            >
+   249→              <div className="text-xs text-muted-foreground text-center py-4">
+   250→                Log your first trade to see real performance metrics.
+   251→              </div>
+   252→            </ExpandableWidget>
+   253→          </WidgetGroup>
+   254→        </div>
+   255→      )}
+   256→
+   257→      {/* ── MAIN CONTENT (has data) ── */}
+   258→      {!isLoading && hasData && stats && (
+   259→        <div className="space-y-4">
+   260→          {/* ═══ TOP METRICS GRID ═══ */}
+   261→          <div className="grid grid-cols-2 gap-3">
+   262→            <MiniWidget
+   263→              title={t("portfolio.winRate")}
+   264→              value={`${stats.winRate}%`}
+   265→              variant={stats.winRate >= 50 ? "bullish" : "bearish"}
+   266→              icon={TrendingUp}
+   267→            />
+   268→            <MiniWidget
+   269→              title="Total P&L"
+   270→              value={formatPnl(stats.totalPnl)}
+   271→              variant={stats.totalPnl >= 0 ? "bullish" : "bearish"}
+   272→              icon={DollarSign}
+   273→            />
+   274→            <MiniWidget
+   275→              title={t("portfolio.profitFactor")}
+   276→              value={stats.profitFactor !== null ? stats.profitFactor.toFixed(2) : "—"}
+   277→              variant={(stats.profitFactor ?? 0) >= 1.5 ? "bullish" : (stats.profitFactor ?? 0) >= 1 ? "neutral" : "bearish"}
+   278→              icon={BarChart3}
+   279→            />
+   280→            <MiniWidget
+   281→              title="Avg R"
+   282→              value={stats.avgRMultiple !== null ? `${stats.avgRMultiple}R` : "—"}
+   283→              variant={(stats.avgRMultiple ?? 0) >= 1 ? "bullish" : (stats.avgRMultiple ?? 0) >= 0 ? "neutral" : "bearish"}
+   284→              icon={Target}
+   285→            />
+   286→          </div>
+   287→
+   288→          {/* ═══ SECONDARY STATS ROW ═══ */}
+   289→          <div className="grid grid-cols-3 gap-2">
+   290→            <div className="vixor-card p-3 text-center">
+   291→              <div className="text-[9px] font-bold uppercase tracking-widest text-bullish mb-1">
+   292→                WINS
+   293→              </div>
+   294→              <div className="text-lg font-bold font-mono text-bullish">{stats.winCount}</div>
+   295→            </div>
+   296→            <div className="vixor-card p-3 text-center">
+   297→              <div className="text-[9px] font-bold uppercase tracking-widest text-bearish mb-1">
+   298→                LOSSES
+   299→              </div>
+   300→              <div className="text-lg font-bold font-mono text-bearish">{stats.lossCount}</div>
+   301→            </div>
+   302→            <div className="vixor-card p-3 text-center">
+   303→              <div className="text-[9px] font-bold uppercase tracking-widest text-neutral-wait mb-1">
+   304→                MAX DD
+   305→              </div>
+   306→              <div className="text-lg font-bold font-mono text-neutral-wait">
+   307→                {stats.maxDrawdown > 0 ? formatPnl(-stats.maxDrawdown) : "$0"}
+   308→              </div>
+   309→            </div>
+   310→          </div>
+   311→
+   312→          {/* ═══ PERFORMANCE OVERVIEW ═══ */}
+   313→          <ExpandableWidget
+   314→            title="Performance Overview"
+   315→            subtitle={`${stats.closedTrades} closed trades · ${stats.totalTrades} total`}
+   316→            icon={Target}
+   317→            variant="bullish"
+   318→            defaultExpanded={true}
+   319→            metric={`${stats.winRate}%`}
+   320→            metricLabel={t("portfolio.winRate")}
+   321→            badge="REAL"
+   322→          >
+   323→            <div className="space-y-4">
+   324→              {/* Equity Curve */}
+   325→              {curve.length >= 2 ? (
+   326→                <div className="rounded-lg border border-border bg-card-hover p-3">
+   327→                  <div className="flex items-center justify-between mb-2">
+   328→                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+   329→                      {t("portfolio.equityCurve")}
+   330→                    </span>
+   331→                    <span className={cn(
+   332→                      "text-xs font-mono font-bold",
+   333→                      curve[curve.length - 1]?.cumulative_pnl >= 0 ? "text-bullish" : "text-bearish"
+   334→                    )}>
+   335→                      {formatPnl(curve[curve.length - 1]?.cumulative_pnl ?? 0)}
+   336→                    </span>
+   337→                  </div>
+   338→                  <div className="h-48">
+   339→                    <ResponsiveContainer width="100%" height="100%">
+   340→                      <AreaChart data={curve} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+   341→                        <defs>
+   342→                          <linearGradient id="pnlGradientPos" x1="0" y1="0" x2="0" y2="1">
+   343→                            <stop offset="5%" stopColor="var(--color-bullish)" stopOpacity={0.3} />
+   344→                            <stop offset="95%" stopColor="var(--color-bullish)" stopOpacity={0} />
+   345→                          </linearGradient>
+   346→                          <linearGradient id="pnlGradientNeg" x1="0" y1="0" x2="0" y2="1">
+   347→                            <stop offset="5%" stopColor="var(--color-bearish)" stopOpacity={0.3} />
+   348→                            <stop offset="95%" stopColor="var(--color-bearish)" stopOpacity={0} />
+   349→                          </linearGradient>
+   350→                        </defs>
+   351→                        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
+   352→                        <XAxis
+   353→                          dataKey="date"
+   354→                          tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+   355→                          tickFormatter={(v: string) => v.slice(5)}
+   356→                        />
+   357→                        <YAxis
+   358→                          tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+   359→                          tickFormatter={(v: number) => `$${v.toFixed(0)}`}
+   360→                        />
+   361→                        <Tooltip
+   362→                          contentStyle={{
+   363→                            backgroundColor: "var(--color-card)",
+   364→                            border: "1px solid var(--color-border)",
+   365→                            borderRadius: "8px",
+   366→                            fontSize: "11px",
+   367→                          }}
+   368→                          formatter={(value: number) => [formatPnl(value), "Cumulative P&L"]}
+   369→                        />
+   370→                        <ReferenceLine y={0} stroke="var(--color-muted-foreground)" strokeDasharray="3 3" />
+   371→                        <Area
+   372→                          type="monotone"
+   373→                          dataKey="cumulative_pnl"
+   374→                          stroke={curve[curve.length - 1]?.cumulative_pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"}
+   375→                          fill={curve[curve.length - 1]?.cumulative_pnl >= 0 ? "url(#pnlGradientPos)" : "url(#pnlGradientNeg)"}
+   376→                          strokeWidth={2}
+   377→                          dot={false}
+   378→                          activeDot={{ r: 4, strokeWidth: 0 }}
+   379→                        />
+   380→                      </AreaChart>
+   381→                    </ResponsiveContainer>
+   382→                  </div>
+   383→                </div>
+   384→              ) : (
+   385→                <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
+   386→                  <LineChart className="size-8 text-muted-foreground/40 mx-auto mb-3" />
+   387→                  <div className="text-xs font-bold text-muted-foreground mb-1">
+   388→                    {t("portfolio.equityCurve")}
+   389→                  </div>
+   390→                  <div className="text-[10px] text-muted-foreground/70">
+   391→                    Close at least 2 trades to see your equity curve.
+   392→                  </div>
+   393→                </div>
+   394→              )}
+   395→
+   396→              {/* Detailed Metrics */}
+   397→              <div className="data-grid grid-cols-2">
+   398→                <div className="flex flex-col gap-0.5 p-3">
+   399→                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+   400→                    {t("portfolio.winRate")}
+   401→                  </span>
+   402→                  <span className="text-mono text-sm font-bold text-bullish">
+   403→                    {stats.winRate}%
+   404→                  </span>
+   405→                  <span className="text-[9px] text-muted-foreground">{stats.winCount}W / {stats.lossCount}L</span>
+   406→                </div>
+   407→                <div className="flex flex-col gap-0.5 p-3">
+   408→                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+   409→                    {t("portfolio.profitFactor")}
+   410→                  </span>
+   411→                  <span
+   412→                    className={cn(
+   413→                      "text-mono text-sm font-bold",
+   414→                      (stats.profitFactor ?? 0) >= 1.5
+   415→                        ? "text-bullish"
+   416→                        : (stats.profitFactor ?? 0) >= 1.0
+   417→                          ? "text-neutral-wait"
+   418→                          : "text-bearish",
+   419→                    )}
+   420→                  >
+   421→                    {stats.profitFactor !== null ? stats.profitFactor.toFixed(2) : "—"}
+   422→                  </span>
+   423→                  <span className="text-[9px] text-muted-foreground">Gross profit / |Gross loss|</span>
+   424→                </div>
+   425→                <div className="flex flex-col gap-0.5 p-3">
+   426→                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+   427→                    Avg R-Multiple
+   428→                  </span>
+   429→                  <span className="text-mono text-sm font-bold text-info">
+   430→                    {stats.avgRMultiple !== null ? `${stats.avgRMultiple}R` : "—"}
+   431→                  </span>
+   432→                  <span className="text-[9px] text-muted-foreground">Risk-adjusted returns</span>
+   433→                </div>
+   434→                <div className="flex flex-col gap-0.5 p-3">
+   435→                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+   436→                    {t("portfolio.drawdown")}
+   437→                  </span>
+   438→                  <span className="text-mono text-sm font-bold text-bearish">
+   439→                    {stats.maxDrawdown > 0 ? formatPnl(-stats.maxDrawdown) : "$0"}
+   440→                  </span>
+   441→                  <span className="text-[9px] text-muted-foreground">Peak-to-trough decline</span>
+   442→                </div>
+   443→                <div className="flex flex-col gap-0.5 p-3">
+   444→                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+   445→                    Avg P&L / Trade
+   446→                  </span>
+   447→                  <span className={cn(
+   448→                    "text-mono text-sm font-bold",
+   449→                    stats.avgPnl >= 0 ? "text-bullish" : "text-bearish",
+   450→                  )}>
+   451→                    {formatPnl(stats.avgPnl)}
+   452→                  </span>
+   453→                  <span className="text-[9px] text-muted-foreground">Per closed trade</span>
+   454→                </div>
+   455→                <div className="flex flex-col gap-0.5 p-3">
+   456→                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+   457→                    Avg Hold Time
+   458→                  </span>
+   459→                  <span className="text-mono text-sm font-bold text-foreground">
+   460→                    {stats.avgHoldingTimeHours !== null ? formatDuration(stats.avgHoldingTimeHours) : "—"}
+   461→                  </span>
+   462→                  <span className="text-[9px] text-muted-foreground">From entry to exit</span>
+   463→                </div>
+   464→              </div>
+   465→
+   466→              {/* Best / Worst */}
+   467→              {(stats.bestTrade || stats.worstTrade) && (
+   468→                <div className="grid grid-cols-2 gap-2">
+   469→                  {stats.bestTrade && (
+   470→                    <div className="flex items-center gap-2 p-2.5 rounded-lg bg-bullish/5 border border-bullish/20">
+   471→                      <ArrowUpRight className="size-3.5 text-bullish shrink-0" />
+   472→                      <div className="min-w-0">
+   473→                        <div className="text-[9px] font-bold uppercase tracking-widest text-bullish">Best Trade</div>
+   474→                        <div className="text-xs font-bold font-mono text-bullish truncate">
+   475→                          {formatPnl(stats.bestTrade.pnl)} · {stats.bestTrade.pair}
+   476→                        </div>
+   477→                      </div>
+   478→                    </div>
+   479→                  )}
+   480→                  {stats.worstTrade && (
+   481→                    <div className="flex items-center gap-2 p-2.5 rounded-lg bg-bearish/5 border border-bearish/20">
+   482→                      <ArrowDownRight className="size-3.5 text-bearish shrink-0" />
+   483→                      <div className="min-w-0">
+   484→                        <div className="text-[9px] font-bold uppercase tracking-widest text-bearish">Worst Trade</div>
+   485→                        <div className="text-xs font-bold font-mono text-bearish truncate">
+   486→                          {formatPnl(stats.worstTrade.pnl)} · {stats.worstTrade.pair}
+   487→                        </div>
+   488→                      </div>
+   489→                    </div>
+   490→                  )}
+   491→                </div>
+   492→              )}
+   493→            </div>
+   494→          </ExpandableWidget>
+   495→
+   496→          {/* ═══ OPEN POSITIONS ═══ */}
+   497→          <ExpandableWidget
+   498→            title="Open Positions"
+   499→            subtitle={`${openTrades.length} active`}
+   500→            icon={Activity}
+   501→            variant="info"
+   502→            defaultExpanded={openTrades.length > 0}
+   503→            metric={`${openTrades.length}`}
+   504→            metricLabel="OPEN"
+   505→            badge={openTrades.length > 0 ? "ACTIVE" : undefined}
+   506→          >
+   507→            {openTrades.length === 0 ? (
+   508→              <div className="text-xs text-muted-foreground text-center py-4">
+   509→                No open positions. Click "New Trade" to log one.
+   510→              </div>
+   511→            ) : (
+   512→              <div className="space-y-2 max-h-80 overflow-y-auto scrollbar-thin">
+   513→                {openTrades.map((trade) => (
+   514→                  <div
+   515→                    key={trade.id}
+   516→                    className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border"
+   517→                  >
+   518→                    <div className={cn(
+   519→                      "size-8 rounded-lg flex items-center justify-center shrink-0",
+   520→                      trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+   521→                    )}>
+   522→                      {trade.direction === "long" ? (
+   523→                        <ArrowUpRight className="size-4 text-bullish" />
+   524→                      ) : (
+   525→                        <ArrowDownRight className="size-4 text-bearish" />
+   526→                      )}
+   527→                    </div>
+   528→                    <div className="flex-1 min-w-0">
+   529→                      <div className="flex items-center gap-2">
+   530→                        <span className="text-xs font-bold font-mono">{trade.pair}</span>
+   531→                        <span className={cn(
+   532→                          "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded",
+   533→                          trade.direction === "long"
+   534→                            ? "bg-bullish/15 text-bullish"
+   535→                            : "bg-bearish/15 text-bearish",
+   536→                        )}>
+   537→                          {trade.direction.toUpperCase()}
+   538→                        </span>
+   539→                      </div>
+   540→                      <div className="text-[10px] text-muted-foreground font-mono mt-0.5">
+   541→                        Entry: {trade.entry_price}
+   542→                        {trade.stop_loss && ` · SL: ${trade.stop_loss}`}
+   543→                        {trade.take_profit && ` · TP: ${trade.take_profit}`}
+   544→                      </div>
+   545→                    </div>
+   546→                    <button
+   547→                      onClick={() => setCloseTradeDialog(trade)}
+   548→                      className="text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors shrink-0"
+   549→                    >
+   550→                      Close
+   551→                    </button>
+   552→                  </div>
+   553→                ))}
+   554→              </div>
+   555→            )}
+   556→          </ExpandableWidget>
+   557→
+   558→          {/* ═══ BY PAIR ═══ */}
+   559→          {stats.winRateByPair.length > 0 && (
+   560→            <ExpandableWidget
+   561→              title={t("portfolio.byAsset")}
+   562→              subtitle={`${stats.winRateByPair.length} instruments tracked`}
+   563→              icon={BarChart3}
+   564→              variant="info"
+   565→              defaultExpanded={true}
+   566→              metric={`${stats.winRateByPair.length}`}
+   567→              metricLabel="PAIRS"
+   568→            >
+   569→              <div className="space-y-2">
+   570→                {stats.winRateByPair.map((item) => {
+   571→                  const maxCount = stats.winRateByPair[0]?.count ?? 1;
+   572→                  const barWidth = Math.round((item.count / maxCount) * 100);
+   573→                  const confColor =
+   574→                    item.winRate >= 55
+   575→                      ? "bg-bullish"
+   576→                      : item.winRate >= 40
+   577→                        ? "bg-neutral-wait"
+   578→                        : "bg-bearish";
+   579→
+   580→                  return (
+   581→                    <div
+   582→                      key={item.pair}
+   583→                      className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
+   584→                    >
+   585→                      <div className="w-20 shrink-0">
+   586→                        <div className="text-xs font-bold font-mono truncate">{item.pair}</div>
+   587→                      </div>
+   588→                      <div className="flex-1 min-w-0">
+   589→                        <div className="h-2 rounded-full bg-muted overflow-hidden">
+   590→                          <div
+   591→                            className={cn("h-full rounded-full transition-all duration-700", confColor)}
+   592→                            style={{ width: `${barWidth}%` }}
+   593→                          />
+   594→                        </div>
+   595→                      </div>
+   596→                      <div className="shrink-0 text-right">
+   597→                        <div className="text-[11px] font-bold font-mono">{item.count}</div>
+   598→                        <div className={cn(
+   599→                          "text-[9px] font-mono",
+   600→                          item.winRate >= 55
+   601→                            ? "text-bullish"
+   602→                            : item.winRate >= 40
+   603→                              ? "text-neutral-wait"
+   604→                              : "text-bearish",
+   605→                        )}>
+   606→                          {item.winRate}% WR
+   607→                        </div>
+   608→                        <div className={cn(
+   609→                          "text-[9px] font-mono",
+   610→                          item.totalPnl >= 0 ? "text-bullish" : "text-bearish",
+   611→                        )}>
+   612→                          {formatPnl(item.totalPnl)}
+   613→                        </div>
+   614→                      </div>
+   615→                    </div>
+   616→                  );
+   617→                })}
+   618→              </div>
+   619→            </ExpandableWidget>
+   620→          )}
+   621→
+   622→          {/* ═══ BY DIRECTION ═══ */}
+   623→          {stats.winRateByDirection.length > 0 && (
+   624→            <ExpandableWidget
+   625→              title="By Direction"
+   626→              subtitle="Long vs Short breakdown"
+   627→              icon={Layers}
+   628→              variant="neutral"
+   629→              defaultExpanded={false}
+   630→            >
+   631→              <div className="space-y-2">
+   632→                {stats.winRateByDirection.map((item) => (
+   633→                  <div
+   634→                    key={item.direction}
+   635→                    className="flex items-center gap-3 p-3 rounded-lg border bg-card border-border"
+   636→                  >
+   637→                    <div className={cn(
+   638→                      "size-8 rounded-lg flex items-center justify-center shrink-0",
+   639→                      item.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+   640→                    )}>
+   641→                      {item.direction === "long" ? (
+   642→                        <ArrowUpRight className="size-4 text-bullish" />
+   643→                      ) : (
+   644→                        <ArrowDownRight className="size-4 text-bearish" />
+   645→                      )}
+   646→                    </div>
+   647→                    <div className="flex-1 min-w-0">
+   648→                      <div className="text-xs font-bold">{item.direction.toUpperCase()}</div>
+   649→                      <div className="text-[10px] text-muted-foreground">{item.count} trades</div>
+   650→                    </div>
+   651→                    <div className="text-right shrink-0">
+   652→                      <div className={cn(
+   653→                        "text-sm font-bold font-mono",
+   654→                        item.winRate >= 55 ? "text-bullish" : item.winRate >= 40 ? "text-neutral-wait" : "text-bearish",
+   655→                      )}>
+   656→                        {item.winRate}%
+   657→                      </div>
+   658→                      <div className={cn(
+   659→                        "text-[10px] font-mono",
+   660→                        item.totalPnl >= 0 ? "text-bullish" : "text-bearish",
+   661→                      )}>
+   662→                        {formatPnl(item.totalPnl)}
+   663→                      </div>
+   664→                    </div>
+   665→                  </div>
+   666→                ))}
+   667→              </div>
+   668→            </ExpandableWidget>
+   669→          )}
+   670→
+   671→          {/* ═══ BY DAY OF WEEK ═══ */}
+   672→          {stats.winRateByDay.length > 0 && (
+   673→            <ExpandableWidget
+   674→              title={t("portfolio.byDay")}
+   675→              subtitle="Weekly performance pattern"
+   676→              icon={CalendarDays}
+   677→              variant="neutral"
+   678→              defaultExpanded={false}
+   679→              metric={getBestDay(stats.winRateByDay)}
+   680→              metricLabel="BEST DAY"
+   681→            >
+   682→              <div className="space-y-1.5">
+   683→                {stats.winRateByDay.map((item) => {
+   684→                  const maxCount = Math.max(...stats.winRateByDay.map((d) => d.count));
+   685→                  const barWidth = Math.round((item.count / (maxCount || 1)) * 100);
+   686→                  const isBest =
+   687→                    item.winRate === Math.max(...stats.winRateByDay.map((d) => d.winRate));
+   688→
+   689→                  return (
+   690→                    <div
+   691→                      key={item.day}
+   692→                      className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
+   693→                    >
+   694→                      <div className="w-10 shrink-0">
+   695→                        <span className={cn("text-xs font-bold", isBest ? "text-primary" : "text-foreground")}>
+   696→                          {item.day}
+   697→                        </span>
+   698→                      </div>
+   699→                      <div className="flex-1 min-w-0">
+   700→                        <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+   701→                          <div
+   702→                            className={cn(
+   703→                              "h-full rounded-full transition-all duration-700",
+   704→                              isBest ? "bg-primary" : "bg-muted-foreground/40",
+   705→                            )}
+   706→                            style={{ width: `${barWidth}%` }}
+   707→                          />
+   708→                        </div>
+   709→                      </div>
+   710→                      <div className="shrink-0 text-right flex items-center gap-2">
+   711→                        <span className="text-[10px] text-muted-foreground font-mono">{item.count}</span>
+   712→                        <span className={cn(
+   713→                          "text-[11px] font-bold font-mono min-w-[36px]",
+   714→                          item.winRate >= 55 ? "text-bullish" : item.winRate >= 40 ? "text-neutral-wait" : "text-bearish",
+   715→                        )}>
+   716→                          {item.winRate}%
+   717→                        </span>
+   718→                      </div>
+   719→                    </div>
+   720→                  );
+   721→                })}
+   722→              </div>
+   723→            </ExpandableWidget>
+   724→          )}
+   725→
+   726→          {/* ═══ RECENT TRADES ═══ */}
+   727→          {recentTrades.length > 0 && (
+   728→            <ExpandableWidget
+   729→              title="Recent Trades"
+   730→              subtitle={`Last ${Math.min(recentTrades.length, 20)} closed trades`}
+   731→              icon={Clock}
+   732→              variant="neutral"
+   733→              defaultExpanded={true}
+   734→            >
+   735→              <div className="space-y-1.5 max-h-96 overflow-y-auto scrollbar-thin">
+   736→                {recentTrades.map((trade) => (
+   737→                  <div
+   738→                    key={trade.id}
+   739→                    className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
+   740→                  >
+   741→                    <div className={cn(
+   742→                      "size-7 rounded-lg flex items-center justify-center shrink-0",
+   743→                      trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+   744→                    )}>
+   745→                      {trade.direction === "long" ? (
+   746→                        <ArrowUpRight className="size-3.5 text-bullish" />
+   747→                      ) : (
+   748→                        <ArrowDownRight className="size-3.5 text-bearish" />
+   749→                      )}
+   750→                    </div>
+   751→                    <div className="flex-1 min-w-0">
+   752→                      <div className="flex items-center gap-2">
+   753→                        <span className="text-xs font-bold font-mono">{trade.pair}</span>
+   754→                        <span className={cn(
+   755→                          "text-[8px] font-bold uppercase px-1 py-0.5 rounded",
+   756→                          trade.direction === "long"
+   757→                            ? "bg-bullish/15 text-bullish"
+   758→                            : "bg-bearish/15 text-bearish",
+   759→                        )}>
+   760→                          {trade.direction.toUpperCase()}
+   761→                        </span>
+   762→                      </div>
+   763→                      <div className="text-[10px] text-muted-foreground font-mono">
+   764→                        {trade.entry_price} → {trade.exit_price ?? "—"}
+   765→                      </div>
+   766→                    </div>
+   767→                    <div className="shrink-0 text-right">
+   768→                      <div className={cn(
+   769→                        "text-xs font-bold font-mono",
+   770→                        (trade.pnl ?? 0) >= 0 ? "text-bullish" : "text-bearish",
+   771→                      )}>
+   772→                        {formatPnl(trade.pnl ?? 0)}
+   773→                      </div>
+   774→                      {trade.r_multiple !== null && (
+   775→                        <div className={cn(
+   776→                          "text-[9px] font-mono",
+   777→                          trade.r_multiple >= 1 ? "text-bullish" : trade.r_multiple >= 0 ? "text-neutral-wait" : "text-bearish",
+   778→                        )}>
+   779→                          {trade.r_multiple >= 0 ? "+" : ""}{trade.r_multiple.toFixed(2)}R
+   780→                        </div>
+   781→                      )}
+   782→                      <div className="text-[9px] text-muted-foreground font-mono">
+   783→                        {trade.exit_date ? new Date(trade.exit_date).toLocaleDateString() : "—"}
+   784→                      </div>
+   785→                    </div>
+   786→                  </div>
+   787→                ))}
+   788→              </div>
+   789→            </ExpandableWidget>
+   790→          )}
+   791→
+   792→          {/* ═══ DATA SUMMARY ═══ */}
+   793→          <div className="vixor-card p-4">
+   794→            <div className="flex items-center gap-2 mb-3">
+   795→              <Activity className="size-3.5 text-muted-foreground" />
+   796→              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+   797→                Data Summary
+   798→              </span>
+   799→            </div>
+   800→            <div className="grid grid-cols-3 gap-3">
+   801→              <div className="text-center">
+   802→                <div className="text-lg font-bold font-mono text-foreground">{stats.totalTrades}</div>
+   803→                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Total</div>
+   804→              </div>
+   805→              <div className="text-center">
+   806→                <div className="text-lg font-bold font-mono text-bullish">{stats.closedTrades}</div>
+   807→                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Closed</div>
+   808→              </div>
+   809→              <div className="text-center">
+   810→                <div className="text-lg font-bold font-mono text-info">{openTrades.length}</div>
+   811→                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Open</div>
+   812→              </div>
+   813→            </div>
+   814→          </div>
+   815→        </div>
+   816→      )}
+   817→
+   818→      {/* ── NEW TRADE DIALOG ── */}
+   819→      <NewTradeDialog
+   820→        open={showNewTradeDialog}
+   821→        onOpenChange={setShowNewTradeDialog}
+   822→        onSubmit={(data) => createMutation.mutate(data)}
+   823→        isLoading={createMutation.isPending}
+   824→      />
+   825→
+   826→      {/* ── CLOSE TRADE DIALOG ── */}
+   827→      {closeTradeDialog && (
+   828→        <CloseTradeDialog
+   829→          trade={closeTradeDialog}
+   830→          open={!!closeTradeDialog}
+   831→          onOpenChange={(open) => { if (!open) setCloseTradeDialog(null); }}
+   832→          onSubmit={(exitPrice) => closeMutation.mutate({
+   833→            tradeId: closeTradeDialog.id,
+   834→            exit_price: exitPrice,
+   835→            status: "closed",
+   836→            exit_date: new Date().toISOString(),
+   837→          })}
+   838→          isLoading={closeMutation.isPending}
+   839→        />
+   840→      )}
+   841→    </div>
+   842→  );
+   843→}
+   844→
+   845→// ═══════════════════════════════════════════════
+   846→// NEW TRADE DIALOG
+   847→// ═══════════════════════════════════════════════
+   848→
+   849→function NewTradeDialog({
+   850→  open,
+   851→  onOpenChange,
+   852→  onSubmit,
+   853→  isLoading,
+   854→}: {
+   855→  open: boolean;
+   856→  onOpenChange: (open: boolean) => void;
+   857→  onSubmit: (data: {
+   858→    pair: string;
+   859→    direction: TradeDirection;
+   860→    entry_price: number;
+   861→    quantity?: number | null;
+   862→    stop_loss?: number | null;
+   863→    take_profit?: number | null;
+   864→    notes?: string | null;
+   865→    strategy?: string | null;
+   866→  }) => void;
+   867→  isLoading: boolean;
+   868→}) {
+   869→  const [pair, setPair] = useState("XAUUSD");
+   870→  const [direction, setDirection] = useState<TradeDirection>("long");
+   871→  const [entryPrice, setEntryPrice] = useState("");
+   872→  const [quantity, setQuantity] = useState("");
+   873→  const [stopLoss, setStopLoss] = useState("");
+   874→  const [takeProfit, setTakeProfit] = useState("");
+   875→  const [notes, setNotes] = useState("");
+   876→  const [strategy, setStrategy] = useState("");
+   877→
+   878→  const handleSubmit = useCallback(() => {
+   879→    if (!entryPrice || !pair) return;
+   880→    onSubmit({
+   881→      pair,
+   882→      direction,
+   883→      entry_price: parseFloat(entryPrice),
+   884→      quantity: quantity ? parseFloat(quantity) : null,
+   885→      stop_loss: stopLoss ? parseFloat(stopLoss) : null,
+   886→      take_profit: takeProfit ? parseFloat(takeProfit) : null,
+   887→      notes: notes || null,
+   888→      strategy: strategy || null,
+   889→    });
+   890→  }, [pair, direction, entryPrice, quantity, stopLoss, takeProfit, notes, strategy, onSubmit]);
+   891→
+   892→  // Reset form when dialog opens
+   893→  const handleOpenChange = useCallback((nextOpen: boolean) => {
+   894→    if (nextOpen) {
+   895→      setPair("XAUUSD");
+   896→      setDirection("long");
+   897→      setEntryPrice("");
+   898→      setQuantity("");
+   899→      setStopLoss("");
+   900→      setTakeProfit("");
+   901→      setNotes("");
+   902→      setStrategy("");
+   903→    }
+   904→    onOpenChange(nextOpen);
+   905→  }, [onOpenChange]);
+   906→
+   907→  return (
+   908→    <Dialog open={open} onOpenChange={handleOpenChange}>
+   909→      <DialogContent className="sm:max-w-md">
+   910→        <DialogHeader>
+   911→          <DialogTitle className="flex items-center gap-2">
+   912→            <Plus className="size-4 text-primary" />
+   913→            New Trade
+   914→          </DialogTitle>
+   915→          <DialogDescription>
+   916→            Log a new trade entry. You can close it later from the open positions list.
+   917→          </DialogDescription>
+   918→        </DialogHeader>
+   919→
+   920→        <div className="space-y-3">
+   921→          {/* Pair */}
+   922→          <div className="space-y-1.5">
+   923→            <label className="text-[10px] uppercase font-bold text-muted-foreground">Pair</label>
+   924→            <select
+   925→              value={pair}
+   926→              onChange={(e) => setPair(e.target.value)}
+   927→              className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors cursor-pointer"
+   928→            >
+   929→              {PAIRS.map((p) => (
+   930→                <option key={p} value={p}>{p}</option>
+   931→              ))}
+   932→            </select>
+   933→          </div>
+   934→
+   935→          {/* Direction */}
+   936→          <div className="space-y-1.5">
+   937→            <label className="text-[10px] uppercase font-bold text-muted-foreground">Direction</label>
+   938→            <div className="grid grid-cols-2 gap-2">
+   939→              <button
+   940→                onClick={() => setDirection("long")}
+   941→                className={cn(
+   942→                  "h-10 rounded-lg border text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-colors",
+   943→                  direction === "long"
+   944→                    ? "bg-bullish/15 border-bullish/40 text-bullish"
+   945→                    : "bg-card-hover border-border text-muted-foreground hover:border-bullish/30",
+   946→                )}
+   947→              >
+   948→                <ArrowUpRight className="size-3.5" />
+   949→                Long
+   950→              </button>
+   951→              <button
+   952→                onClick={() => setDirection("short")}
+   953→                className={cn(
+   954→                  "h-10 rounded-lg border text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-colors",
+   955→                  direction === "short"
+   956→                    ? "bg-bearish/15 border-bearish/40 text-bearish"
+   957→                    : "bg-card-hover border-border text-muted-foreground hover:border-bearish/30",
+   958→                )}
+   959→              >
+   960→                <ArrowDownRight className="size-3.5" />
+   961→                Short
+   962→              </button>
+   963→            </div>
+   964→          </div>
+   965→
+   966→          {/* Entry Price & Quantity */}
+   967→          <div className="grid grid-cols-2 gap-2">
+   968→            <div className="space-y-1.5">
+   969→              <label className="text-[10px] uppercase font-bold text-muted-foreground">Entry Price *</label>
+   970→              <input
+   971→                type="number"
+   972→                step="any"
+   973→                value={entryPrice}
+   974→                onChange={(e) => setEntryPrice(e.target.value)}
+   975→                placeholder="0.00"
+   976→                className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors"
+   977→              />
+   978→            </div>
+   979→            <div className="space-y-1.5">
+   980→              <label className="text-[10px] uppercase font-bold text-muted-foreground">Quantity</label>
+   981→              <input
+   982→                type="number"
+   983→                step="any"
+   984→                value={quantity}
+   985→                onChange={(e) => setQuantity(e.target.value)}
+   986→                placeholder="1"
+   987→                className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors"
+   988→              />
+   989→            </div>
+   990→          </div>
+   991→
+   992→          {/* SL & TP */}
+   993→          <div className="grid grid-cols-2 gap-2">
+   994→            <div className="space-y-1.5">
+   995→              <label className="text-[10px] uppercase font-bold text-muted-foreground">Stop Loss</label>
+   996→              <input
+   997→                type="number"
+   998→                step="any"
+   999→                value={stopLoss}
+  1000→                onChange={(e) => setStopLoss(e.target.value)}
+  1001→                placeholder="—"
+  1002→                className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors"
+  1003→              />
+  1004→            </div>
+  1005→            <div className="space-y-1.5">
+  1006→              <label className="text-[10px] uppercase font-bold text-muted-foreground">Take Profit</label>
+  1007→              <input
+  1008→                type="number"
+  1009→                step="any"
+  1010→                value={takeProfit}
+  1011→                onChange={(e) => setTakeProfit(e.target.value)}
+  1012→                placeholder="—"
+  1013→                className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors"
+  1014→              />
+  1015→            </div>
+  1016→          </div>
+  1017→
+  1018→          {/* Strategy */}
+  1019→          <div className="space-y-1.5">
+  1020→            <label className="text-[10px] uppercase font-bold text-muted-foreground">Strategy</label>
+  1021→            <input
+  1022→              type="text"
+  1023→              value={strategy}
+  1024→              onChange={(e) => setStrategy(e.target.value)}
+  1025→              placeholder="e.g., Breakout, Mean Reversion"
+  1026→              maxLength={100}
+  1027→              className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm outline-none focus:border-primary transition-colors"
+  1028→            />
+  1029→          </div>
+  1030→
+  1031→          {/* Notes */}
+  1032→          <div className="space-y-1.5">
+  1033→            <label className="text-[10px] uppercase font-bold text-muted-foreground">Notes</label>
+  1034→            <textarea
+  1035→              value={notes}
+  1036→              onChange={(e) => setNotes(e.target.value)}
+  1037→              placeholder="Trade rationale, observations..."
+  1038→              rows={2}
+  1039→              maxLength={5000}
+  1040→              className="w-full px-3 py-2 bg-card-hover border border-border rounded-lg text-sm outline-none focus:border-primary transition-colors resize-none"
+  1041→            />
+  1042→          </div>
+  1043→        </div>
+  1044→
+  1045→        <DialogFooter>
+  1046→          <button
+  1047→            onClick={handleSubmit}
+  1048→            disabled={!entryPrice || isLoading}
+  1049→            className={cn(
+  1050→              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+  1051→              entryPrice && !isLoading
+  1052→                ? "gradient-primary text-primary-foreground glow-primary active:scale-95"
+  1053→                : "bg-muted text-muted-foreground cursor-not-allowed",
+  1054→            )}
+  1055→          >
+  1056→            {isLoading ? (
+  1057→              <Loader2 className="size-3.5 animate-spin" />
+  1058→            ) : (
+  1059→              <Save className="size-3.5" />
+  1060→            )}
+  1061→            Open Trade
+  1062→          </button>
+  1063→        </DialogFooter>
+  1064→      </DialogContent>
+  1065→    </Dialog>
+  1066→  );
+  1067→}
+  1068→
+  1069→// ═══════════════════════════════════════════════
+  1070→// CLOSE TRADE DIALOG
+  1071→// ═══════════════════════════════════════════════
+  1072→
+  1073→function CloseTradeDialog({
+  1074→  trade,
+  1075→  open,
+  1076→  onOpenChange,
+  1077→  onSubmit,
+  1078→  isLoading,
+  1079→}: {
+  1080→  trade: Trade;
+  1081→  open: boolean;
+  1082→  onOpenChange: (open: boolean) => void;
+  1083→  onSubmit: (exitPrice: number) => void;
+  1084→  isLoading: boolean;
+  1085→}) {
+  1086→  const [exitPrice, setExitPrice] = useState(trade.exit_price?.toString() ?? "");
+  1087→
+  1088→  const handleSubmit = useCallback(() => {
+  1089→    if (!exitPrice) return;
+  1090→    onSubmit(parseFloat(exitPrice));
+  1091→  }, [exitPrice, onSubmit]);
+  1092→
+  1093→  return (
+  1094→    <Dialog open={open} onOpenChange={onOpenChange}>
+  1095→      <DialogContent className="sm:max-w-sm">
+  1096→        <DialogHeader>
+  1097→          <DialogTitle className="flex items-center gap-2">
+  1098→            <X className="size-4 text-bearish" />
+  1099→            Close Trade
+  1100→          </DialogTitle>
+  1101→          <DialogDescription>
+  1102→            Close {trade.pair} {trade.direction} position entered at {trade.entry_price}
+  1103→          </DialogDescription>
+  1104→        </DialogHeader>
+  1105→
+  1106→        <div className="space-y-3">
+  1107→          {/* Trade summary */}
+  1108→          <div className="vixor-card p-3 flex items-center gap-3">
+  1109→            <div className={cn(
+  1110→              "size-8 rounded-lg flex items-center justify-center shrink-0",
+  1111→              trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+  1112→            )}>
+  1113→              {trade.direction === "long" ? (
+  1114→                <ArrowUpRight className="size-4 text-bullish" />
+  1115→              ) : (
+  1116→                <ArrowDownRight className="size-4 text-bearish" />
+  1117→              )}
+  1118→            </div>
+  1119→            <div>
+  1120→              <div className="text-xs font-bold font-mono">{trade.pair} · {trade.direction.toUpperCase()}</div>
+  1121→              <div className="text-[10px] text-muted-foreground font-mono">
+  1122→                Entry: {trade.entry_price}
+  1123→                {trade.stop_loss && ` · SL: ${trade.stop_loss}`}
+  1124→                {trade.take_profit && ` · TP: ${trade.take_profit}`}
+  1125→              </div>
+  1126→            </div>
+  1127→          </div>
+  1128→
+  1129→          {/* Exit price */}
+  1130→          <div className="space-y-1.5">
+  1131→            <label className="text-[10px] uppercase font-bold text-muted-foreground">Exit Price *</label>
+  1132→            <input
+  1133→              type="number"
+  1134→              step="any"
+  1135→              value={exitPrice}
+  1136→              onChange={(e) => setExitPrice(e.target.value)}
+  1137→              placeholder="0.00"
+  1138→              className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors"
+  1139→            />
+  1140→          </div>
+  1141→        </div>
+  1142→
+  1143→        <DialogFooter>
+  1144→          <button
+  1145→            onClick={handleSubmit}
+  1146→            disabled={!exitPrice || isLoading}
+  1147→            className={cn(
+  1148→              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+  1149→              exitPrice && !isLoading
+  1150→                ? "bg-bearish/20 text-bearish border border-bearish/40 hover:bg-bearish/30 active:scale-95"
+  1151→                : "bg-muted text-muted-foreground cursor-not-allowed",
+  1152→            )}
+  1153→          >
+  1154→            {isLoading ? (
+  1155→              <Loader2 className="size-3.5 animate-spin" />
+  1156→            ) : (
+  1157→              <X className="size-3.5" />
+  1158→            )}
+  1159→            Close Trade
+  1160→          </button>
+  1161→        </DialogFooter>
+  1162→      </DialogContent>
+  1163→    </Dialog>
+  1164→  );
+  1165→}
+  1166→
+  1167→// ═══════════════════════════════════════════════
+  1168→// HELPERS
+  1169→// ═══════════════════════════════════════════════
+  1170→
+  1171→function formatPnl(value: number): string {
+  1172→  const prefix = value >= 0 ? "+" : "";
+  1173→  return `${prefix}$${Math.abs(value).toFixed(2)}`;
+  1174→}
+  1175→
+  1176→function formatDuration(hours: number): string {
+  1177→  if (hours < 1) return `${Math.round(hours * 60)}m`;
+  1178→  if (hours < 24) return `${Math.round(hours * 10) / 10}h`;
+  1179→  const days = Math.round((hours / 24) * 10) / 10;
+  1180→  return `${days}d`;
+  1181→}
+  1182→
+  1183→function getBestDay(days: { day: string; winRate: number }[]): string {
+  1184→  if (days.length === 0) return "—";
+  1185→  const best = days.reduce((a, b) => (a.winRate > b.winRate ? a : b));
+  1186→  return best.day;
+  1187→}
+  1188→

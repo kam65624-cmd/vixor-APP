@@ -38,6 +38,7 @@ import type {
 } from "@/domains/daily-loop/types";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { ExpandableWidget, MiniWidget, WidgetGroup } from "@/components/vixor/ExpandableWidget";
+import { PaginationBar } from "@/components/vixor/PaginationBar";
 import { cn } from "@/shared/utils";
 
 export const Route = createFileRoute("/_authenticated/daily-loop")({
@@ -81,6 +82,8 @@ function getActiveSession(): TradingSession | null {
 function DailyLoopPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"today" | "history">("today");
+  const [historyPage, setHistoryPage] = useState(1);
+  const HISTORY_PAGE_SIZE = 10;
 
   // Stable server fn refs
   const fetchTodayLoop = useStableServerFn(getTodayLoop);
@@ -98,8 +101,14 @@ function DailyLoopPage() {
   });
 
   const historyQuery = useQuery({
-    queryKey: ["daily-loop-history"],
-    queryFn: () => fetchHistory({ data: { limit: 30 } }),
+    queryKey: ["daily-loop-history", historyPage],
+    queryFn: () =>
+      fetchHistory({
+        data: {
+          limit: HISTORY_PAGE_SIZE,
+          offset: (historyPage - 1) * HISTORY_PAGE_SIZE,
+        },
+      }),
     staleTime: 60_000,
     enabled: activeTab === "history",
   });
@@ -112,7 +121,11 @@ function DailyLoopPage() {
 
   const loop = loopQuery.data as DailyLoop | undefined;
   const streak = streakQuery.data;
-  const history = (historyQuery.data ?? []) as DailyLoop[];
+  const historyRaw = historyQuery.data as
+    | { items: DailyLoop[]; total: number; hasMore: boolean }
+    | undefined;
+  const history = historyRaw?.items ?? [];
+  const historyTotal = historyRaw?.total ?? 0;
   const isLoading = loopQuery.isLoading;
 
   // Invalidate all daily-loop queries
@@ -197,7 +210,15 @@ function DailyLoopPage() {
           eodMutation={eodMutation}
         />
       ) : (
-        <HistoryTab history={history} isLoading={historyQuery.isLoading} streak={streak} />
+        <HistoryTab
+          history={history}
+          isLoading={historyQuery.isLoading}
+          streak={streak}
+          page={historyPage}
+          pageSize={HISTORY_PAGE_SIZE}
+          total={historyTotal}
+          onPageChange={setHistoryPage}
+        />
       )}
     </div>
   );
@@ -955,10 +976,18 @@ function HistoryTab({
   history,
   isLoading,
   streak,
+  page,
+  pageSize,
+  total,
+  onPageChange,
 }: {
   history: DailyLoop[];
   isLoading: boolean;
   streak: { current_streak: number; longest_streak: number; last_completed_date: string | null } | null | undefined;
+  page: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (p: number) => void;
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -1106,6 +1135,16 @@ function HistoryTab({
           );
         })}
       </div>
+
+      {/* Pagination */}
+      {total > pageSize && (
+        <PaginationBar
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={onPageChange}
+        />
+      )}
     </div>
   );
 }

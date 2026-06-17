@@ -53,15 +53,32 @@ export const listAlerts = createServerFn({ method: "GET" })
       .object({
         pair: z.string().optional(),
         status: z.enum(["active", "triggered", "cancelled"]).optional(),
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
       })
       .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
+    // Count query
+    let countQuery = context.supabase
+      .from("price_alerts")
+      .select("*", { count: "exact", head: true })
+      .order("created_at", { ascending: false });
+
+    if (data.pair) countQuery = countQuery.eq("pair", data.pair);
+    if (data.status) countQuery = countQuery.eq("status", data.status);
+    else countQuery = countQuery.in("status", ["active", "triggered"]);
+
+    const { count, error: countErr } = await countQuery;
+    if (countErr) throw new Error(countErr.message);
+    const total = count ?? 0;
+
+    // Data query
     let query = context.supabase
       .from("price_alerts")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(50);
+      .range(data.offset, data.offset + data.limit - 1);
 
     if (data.pair) query = query.eq("pair", data.pair);
     if (data.status) query = query.eq("status", data.status);
@@ -69,7 +86,11 @@ export const listAlerts = createServerFn({ method: "GET" })
 
     const { data: alerts, error } = await query;
     if (error) throw new Error(error.message);
-    return alerts ?? [];
+    return {
+      items: alerts ?? [],
+      total,
+      hasMore: data.offset + data.limit < total,
+    };
   });
 
 export const deleteAlert = createServerFn({ method: "POST" })
@@ -210,6 +231,8 @@ export const getDailySignals = createServerFn({ method: "GET" })
         pair: z.string().optional(),
         timeframe: z.string().optional(),
         recommendation: z.enum(["BUY", "SELL", "WAIT"]).optional(),
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
       })
       .parse(d ?? {}),
   )
@@ -224,12 +247,37 @@ export const getDailySignals = createServerFn({ method: "GET" })
       .maybeSingle();
 
     const today = new Date().toISOString().split("T")[0];
+
+    // Count query
+    let countQuery = supabase
+      .from("daily_signals")
+      .select("*", { count: "exact", head: true })
+      .eq("signal_date", today);
+
+    if (data.pair) {
+      countQuery = countQuery.eq("pair", data.pair);
+    } else if (strategy?.pairs && strategy.pairs.length > 0) {
+      countQuery = countQuery.in("pair", strategy.pairs);
+    }
+
+    if (data.timeframe) countQuery = countQuery.eq("timeframe", data.timeframe);
+    else if (strategy?.preferred_timeframes && strategy.preferred_timeframes.length > 0) {
+      countQuery = countQuery.in("timeframe", strategy.preferred_timeframes);
+    }
+
+    if (data.recommendation) countQuery = countQuery.eq("recommendation", data.recommendation);
+
+    const { count, error: countErr } = await countQuery;
+    if (countErr) throw new Error(countErr.message);
+    const total = count ?? 0;
+
+    // Data query
     let query = supabase
       .from("daily_signals")
       .select("*")
       .eq("signal_date", today)
       .order("confidence", { ascending: false })
-      .limit(20);
+      .range(data.offset, data.offset + data.limit - 1);
 
     if (data.pair) {
       query = query.eq("pair", data.pair);
@@ -246,7 +294,11 @@ export const getDailySignals = createServerFn({ method: "GET" })
 
     const { data: signals, error } = await query;
     if (error) throw new Error(error.message);
-    return signals ?? [];
+    return {
+      items: signals ?? [],
+      total,
+      hasMore: data.offset + data.limit < total,
+    };
   });
 
 // ---------- USER STRATEGIES ----------

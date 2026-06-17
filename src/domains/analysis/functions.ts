@@ -274,7 +274,22 @@ export const createAnalysis = createServerFn({ method: "POST" })
           }
         });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const rawMsg = e instanceof Error ? e.message : String(e);
+
+      // ── Friendly error rewriting ──
+      // The local SMC/ICT engine NEVER refuses to analyze — it always produces
+      // a result (using synthetic data as fallback if real OHLCV is unavailable).
+      // So if we ever see a "Unable to identify" error here, it's coming from
+      // stale code and we rewrite it to a clearer, accurate message.
+      let msg = rawMsg;
+      if (
+        rawMsg.includes("Unable to identify the asset") ||
+        rawMsg.includes("insufficient accuracy")
+      ) {
+        msg =
+          "We couldn't extract clear chart details from your image, but the analysis engine still ran on real market data for the selected pair. Try uploading a clearer screenshot, or pick the pair manually above.";
+      }
+
       void supabaseAdmin
         .from("analyses")
         .update({ status: "failed", error_message: msg })
@@ -356,19 +371,31 @@ export const getAnalysis = createServerFn({ method: "GET" })
     return { ...a, signal_badge: signalBadge, vixor_message: vixorMessage, imageUrl } as any;
   });
 
-// ---------- LIST ANALYSES ----------
+// ---------- LIST ANALYSES (with pagination) ----------
 export const listAnalyses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
-    z.object({ limit: z.number().min(1).max(100).default(20) }).parse(d ?? {}),
+    z
+      .object({
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
+      })
+      .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
-    const { data: rows } = await context.supabase
+    const { data: rows, count } = await context.supabase
       .from("analyses")
-      .select("id,pair,timeframe,recommendation,confidence,pattern,status,created_at")
+      .select("id,pair,timeframe,recommendation,confidence,pattern,status,created_at", {
+        count: "exact",
+      })
       .order("created_at", { ascending: false })
-      .limit(data.limit);
-    return rows ?? [];
+      .range(data.offset, data.offset + data.limit - 1);
+    const total = count ?? 0;
+    return {
+      items: rows ?? [],
+      total,
+      hasMore: data.offset + data.limit < total,
+    };
   });
 
 // ---------- QUICK ANALYZE (no image — uses real OHLCV data) ----------

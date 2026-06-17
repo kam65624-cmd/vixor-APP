@@ -158,10 +158,11 @@ function AuthPage() {
     const container = widgetContainerRef.current;
     if (!container) return;
 
-    // 5-second timeout: if widget hasn't loaded, show fallback button
+    // 3-second timeout: if widget hasn't loaded, show fallback button.
+    // Reduced from 5s — better UX to show the fallback sooner.
     const timeoutId = setTimeout(() => {
       if (!widgetLoaded) setWidgetTimedOut(true);
-    }, 5000);
+    }, 3000);
 
     const script = document.createElement("script");
     script.src = "https://telegram.org/js/telegram-widget.js?22";
@@ -181,6 +182,16 @@ function AuthPage() {
       clearTimeout(timeoutId);
     };
     container.appendChild(script);
+
+    // Also detect if the widget actually rendered (Telegram returns an iframe
+    // when the bot domain is configured; if not, it shows nothing). After 5s,
+    // if no iframe appears in the container, show the fallback.
+    setTimeout(() => {
+      const iframe = container.querySelector("iframe");
+      if (!iframe && !widgetLoaded) {
+        setWidgetTimedOut(true);
+      }
+    }, 5000);
   }, [tgStatus]);
 
   // ── Email/password submit handler ──
@@ -348,6 +359,16 @@ function AuthPage() {
                 <MessageCircle className="size-5" />
                 {widgetTimedOut ? "Open in Telegram" : "Or open in Telegram"}
               </a>
+
+              {/* Helpful hint when widget fails to load (usually because BotFather domain isn't set) */}
+              {widgetTimedOut && (
+                <p className="text-[10px] text-muted-foreground text-center leading-relaxed px-2">
+                  If the Telegram button above doesn't appear, open Vixor directly
+                  inside the Telegram app — tap the link above, then tap{" "}
+                  <strong className="text-foreground">START</strong> to launch Vixor
+                  and sign in instantly.
+                </p>
+              )}
             </div>
           )}
 

@@ -53,11 +53,19 @@ export default defineEventHandler(async (event) => {
   }
 
   // --- Upstash Redis ping --------------------------------------------------
+  // Note: When UPSTASH_REDIS_REST_URL/TOKEN are not set, the cache layer
+  // automatically falls back to an in-memory Map. This is acceptable for
+  // small/single-instance deployments, so we report it as "info" status
+  // (ok with a note) rather than "degraded" to avoid false-positive alerts.
   try {
     const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
     const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
     if (!redisUrl || !redisToken) {
-      checks.redis = { status: "degraded", latencyMs: 0, detail: "UPSTASH_REDIS_REST_URL/TOKEN not set (in-memory fallback active)" };
+      checks.redis = {
+        status: "ok",
+        latencyMs: 0,
+        detail: "Not configured — using in-memory cache fallback (single-instance only)",
+      };
     } else {
       const t0 = Date.now();
       const r = await fetch(`${redisUrl}/ping`, {

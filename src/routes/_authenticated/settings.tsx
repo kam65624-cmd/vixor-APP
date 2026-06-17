@@ -20,7 +20,7 @@ import {
   Star,
   Check,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/shared/supabase/client";
 import { useI18n } from "@/shared/i18n";
 
@@ -29,9 +29,25 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
 });
 
+/** Theme is persisted to localStorage so it survives reloads */
+const THEME_KEY = "vixor-theme";
+
+function getStoredTheme(): "dark" | "light" {
+  if (typeof window === "undefined") return "dark";
+  const stored = localStorage.getItem(THEME_KEY);
+  return stored === "light" ? "light" : "dark";
+}
+
+function applyTheme(theme: "dark" | "light") {
+  const isDark = theme === "dark";
+  document.documentElement.classList.toggle("light", !isDark);
+  document.documentElement.classList.toggle("dark", isDark);
+}
+
 function SettingsPage() {
   const navigate = useNavigate();
   const { t, lang, setLang, isRTL } = useI18n();
+  // Initialize from localStorage so the toggle reflects the user's saved choice
   const [dark, setDark] = useState(true);
   const [haptics, setHaptics] = useState(true);
   const [sound, setSound] = useState(true);
@@ -39,6 +55,13 @@ function SettingsPage() {
   const [newsAlerts, setNewsAlerts] = useState(false);
   const [signing, setSigning] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
+
+  // On mount, load saved theme from localStorage
+  useEffect(() => {
+    const stored = getStoredTheme();
+    setDark(stored === "dark");
+    applyTheme(stored);
+  }, []);
 
   const handleSignOut = async () => {
     setSigning(true);
@@ -137,7 +160,9 @@ function SettingsPage() {
             on={dark}
             onChange={(v) => {
               setDark(v);
-              document.documentElement.classList.toggle("light", !v);
+              const theme = v ? "dark" : "light";
+              applyTheme(theme);
+              localStorage.setItem(THEME_KEY, theme);
             }}
           />
         </Row>

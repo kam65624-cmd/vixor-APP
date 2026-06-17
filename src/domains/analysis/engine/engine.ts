@@ -1265,7 +1265,7 @@ function generateSyntheticBars(pair: string, timeframe: string, config: PairConf
 // Helper: Fallback result for insufficient data (LAST RESORT)
 // ---------------------------------------------------------------------------
 
-function generateFallbackResult(
+export function generateFallbackResult(
   pair: string,
   timeframe: string,
   config: PairConfig,

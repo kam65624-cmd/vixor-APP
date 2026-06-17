@@ -49,6 +49,7 @@ import type { Trade, TradeStats, TradeDirection, EquityCurvePoint } from "@/doma
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
 import { ExpandableWidget, WidgetGroup, MiniWidget } from "@/components/vixor/ExpandableWidget";
+import { PaginationBar } from "@/components/vixor/PaginationBar";
 import { cn } from "@/shared/utils";
 
 export const Route = createFileRoute("/_authenticated/portfolio")({
@@ -83,6 +84,10 @@ function Portfolio() {
   const createTradeFn = useStableServerFn(createTrade);
   const updateTradeFn = useStableServerFn(updateTrade);
 
+  // Pagination state for recent closed trades
+  const [recentPage, setRecentPage] = useState(1);
+  const RECENT_PAGE_SIZE = 10;
+
   // Queries
   const statsQuery = useQuery({
     queryKey: ["trade-stats"],
@@ -98,20 +103,35 @@ function Portfolio() {
 
   const openTradesQuery = useQuery({
     queryKey: ["open-trades"],
-    queryFn: () => fetchOpenTrades({ data: { status: "open", limit: 50 } }),
+    queryFn: () =>
+      fetchOpenTrades({ data: { status: "open", limit: 50, offset: 0 } }),
     staleTime: 15_000,
   });
 
   const recentTradesQuery = useQuery({
-    queryKey: ["recent-closed-trades"],
-    queryFn: () => fetchRecentTrades({ data: { status: "closed", limit: 20 } }),
+    queryKey: ["recent-closed-trades", recentPage],
+    queryFn: () =>
+      fetchRecentTrades({
+        data: {
+          status: "closed",
+          limit: RECENT_PAGE_SIZE,
+          offset: (recentPage - 1) * RECENT_PAGE_SIZE,
+        },
+      }),
     staleTime: 30_000,
   });
 
   const stats = statsQuery.data as TradeStats | undefined;
   const curve = (curveQuery.data ?? []) as EquityCurvePoint[];
-  const openTrades = (openTradesQuery.data ?? []) as Trade[];
-  const recentTrades = (recentTradesQuery.data ?? []) as Trade[];
+  const openTradesRaw = openTradesQuery.data as
+    | { items: Trade[]; total: number; hasMore: boolean }
+    | undefined;
+  const openTrades = openTradesRaw?.items ?? [];
+  const recentTradesRaw = recentTradesQuery.data as
+    | { items: Trade[]; total: number; hasMore: boolean }
+    | undefined;
+  const recentTrades = recentTradesRaw?.items ?? [];
+  const recentTradesTotal = recentTradesRaw?.total ?? 0;
 
   const isLoading = statsQuery.isLoading;
   const hasData = (stats?.closedTrades ?? 0) > 0 || (stats?.totalTrades ?? 0) > 0;
@@ -727,7 +747,7 @@ function Portfolio() {
           {recentTrades.length > 0 && (
             <ExpandableWidget
               title="Recent Trades"
-              subtitle={`Last ${Math.min(recentTrades.length, 20)} closed trades`}
+              subtitle={`${recentTradesTotal} total closed trades`}
               icon={Clock}
               variant="neutral"
               defaultExpanded={true}
@@ -786,6 +806,16 @@ function Portfolio() {
                   </div>
                 ))}
               </div>
+              {recentTradesTotal > RECENT_PAGE_SIZE && (
+                <div className="mt-3 pt-3 border-t border-border">
+                  <PaginationBar
+                    page={recentPage}
+                    pageSize={RECENT_PAGE_SIZE}
+                    total={recentTradesTotal}
+                    onPageChange={setRecentPage}
+                  />
+                </div>
+              )}
             </ExpandableWidget>
           )}
 

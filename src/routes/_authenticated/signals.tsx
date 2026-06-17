@@ -26,6 +26,7 @@ import { RecBadge, ConfidenceBar } from "@/components/vixor/atoms";
 import { toTradingViewSymbol } from "@/components/vixor/TradingViewChart";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
+import { PaginationBar } from "@/components/vixor/PaginationBar";
 
 export const Route = createFileRoute("/_authenticated/signals")({
   head: () => ({ meta: [{ title: "Daily Signals — Vixor" }] }),
@@ -62,17 +63,26 @@ function DailySignals() {
   const { t } = useI18n();
   const [showStrategy, setShowStrategy] = useState(false);
   const [filterRec, setFilterRec] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
-  // Fetch signals
+  // Fetch signals (paginated)
   const signalsFn = useStableServerFn(getDailySignals);
   const signalsQuery = useQuery(
     useMemo(
       () => ({
-        queryKey: ["daily-signals"] as const,
-        queryFn: () => signalsFn({ data: {} }),
+        queryKey: ["daily-signals", page, filterRec] as const,
+        queryFn: () =>
+          signalsFn({
+            data: {
+              limit: PAGE_SIZE,
+              offset: (page - 1) * PAGE_SIZE,
+              recommendation: filterRec ?? undefined,
+            },
+          }),
         staleTime: 120_000,
       }),
-      [signalsFn],
+      [signalsFn, page, filterRec],
     ),
   );
 
@@ -114,13 +124,13 @@ function DailySignals() {
   });
 
   const strategy = strategyQuery.data;
-  const signals = signalsQuery.data;
+  const signalsRaw = signalsQuery.data as
+    | { items: any[]; total: number; hasMore: boolean }
+    | undefined;
+  const signalsTotal = signalsRaw?.total ?? 0;
 
-  // Filter signals
-  const filteredSignals = (signals ?? []).filter((s: any) => {
-    if (filterRec && s.recommendation !== filterRec) return false;
-    return true;
-  });
+  // Filter signals (client-side filter on the current page is now done server-side via recommendation param)
+  const filteredSignals = signalsRaw?.items ?? [];
 
   return (
     <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -213,7 +223,10 @@ function DailySignals() {
         ].map((f) => (
           <button
             key={f.label}
-            onClick={() => setFilterRec(f.value)}
+            onClick={() => {
+              setFilterRec(f.value);
+              setPage(1); // Reset to first page on filter change
+            }}
             className={`px-3 h-8 rounded-lg text-xs font-bold transition-all ${
               filterRec === f.value
                 ? "bg-primary text-primary-foreground"
@@ -264,6 +277,16 @@ function DailySignals() {
             signals for {generateMutation.data.date}
           </div>
         </div>
+      )}
+
+      {/* Pagination */}
+      {signalsTotal > PAGE_SIZE && (
+        <PaginationBar
+          page={page}
+          pageSize={PAGE_SIZE}
+          total={signalsTotal}
+          onPageChange={(p) => setPage(p)}
+        />
       )}
     </div>
   );

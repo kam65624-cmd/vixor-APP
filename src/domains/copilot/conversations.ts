@@ -38,26 +38,39 @@ export const createConversation = createServerFn({ method: "POST" })
     return conversation;
   });
 
-// ---------- LIST CONVERSATIONS ----------
+// ---------- LIST CONVERSATIONS (with pagination) ----------
 export const listConversations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
     z
       .object({
-        limit: z.number().min(1).max(100).default(50),
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
       })
       .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
+    const { count, error: countErr } = await supabase
+      .from("copilot_conversations")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+    if (countErr) throw new Error(countErr.message);
+    const total = count ?? 0;
+
     const { data: conversations, error } = await supabase
       .from("copilot_conversations")
       .select("id, title, agent_id, is_consensus, created_at, updated_at")
       .eq("user_id", userId)
       .order("updated_at", { ascending: false })
-      .limit(data.limit);
+      .range(data.offset, data.offset + data.limit - 1);
     if (error) throw new Error(error.message);
-    return conversations ?? [];
+    return {
+      items: conversations ?? [],
+      total,
+      hasMore: data.offset + data.limit < total,
+    };
   });
 
 // ---------- GET CONVERSATION (with messages) ----------
