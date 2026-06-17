@@ -216,7 +216,17 @@ function RootComponent() {
     const tg = (
       window as unknown as {
         Telegram?: {
-          WebApp?: { ready: () => void; expand: () => void; setHeaderColor?: (c: string) => void };
+          WebApp?: {
+            ready: () => void;
+            expand: () => void;
+            setHeaderColor?: (c: string) => void;
+            setBackgroundColor?: (c: string) => void;
+            disableVerticalSwipes?: () => void;
+            enableClosingConfirmation?: () => void;
+            BackButton?: { hide: () => void };
+            SettingsButton?: { hide: () => void };
+            MainButton?: { hide: () => void };
+          };
         };
       }
     ).Telegram?.WebApp;
@@ -225,6 +235,15 @@ function RootComponent() {
         tg.ready();
         tg.expand();
         tg.setHeaderColor?.("#08090C");
+        tg.setBackgroundColor?.("#08090C");
+        tg.disableVerticalSwipes?.();
+        // Hide all Telegram chrome that competes with our own header / nav.
+        // The screenshot showed a "Close" button and a menu icon — these are
+        // Telegram's BackButton and SettingsButton. Hiding them gives us a
+        // clean full-screen app surface.
+        tg.BackButton?.hide?.();
+        tg.SettingsButton?.hide?.();
+        tg.MainButton?.hide?.();
       } catch {
         /* noop */
       }

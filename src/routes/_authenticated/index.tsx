@@ -162,49 +162,45 @@ function MissionControl() {
       : t("dashboard.whatShouldIDo");
 
   return (
-    <div className="space-y-5 pb-6 animate-in fade-in duration-500">
+    <div className="space-y-4 pb-6 animate-in fade-in duration-500">
       {/* ═══════════════════════════════════════════
-          1. GREETING HEADER
+          1. GREETING HEADER — compact, single row, no emoji
           ═══════════════════════════════════════════ */}
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
             {new Date().getHours() < 12
               ? t("dashboard.greeting.morning")
               : new Date().getHours() < 17
                 ? t("dashboard.greeting.afternoon")
                 : t("dashboard.greeting.evening")}
-            , {t("dashboard.trader")}
           </div>
           {isLoadingMe ? (
-            <div className="space-y-2">
-              <div className="h-8 w-32 rounded-lg bg-muted shimmer" />
-              <div className="h-3 w-48 rounded bg-muted shimmer" />
-            </div>
+            <div className="h-7 w-28 rounded-lg bg-muted shimmer" />
           ) : (
-            <>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                {name} <span className="animate-wave origin-bottom-right inline-block">👋</span>
-              </h1>
-              <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed max-w-xs">
-                {aiSuggestion}
-              </p>
-            </>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground truncate">
+              {name}
+            </h1>
+          )}
+          {!isLoadingMe && aiSuggestion && (
+            <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">
+              {aiSuggestion}
+            </p>
           )}
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
           {isLoadingMe ? (
             <div className="h-5 w-10 rounded bg-muted shimmer" />
           ) : (
             <>
               {isPremium && (
-                <div className="px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-primary text-[10px] font-extrabold uppercase tracking-widest glow-primary">
+                <div className="px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary text-[9px] font-extrabold uppercase tracking-widest">
                   PRO
                 </div>
               )}
               {xp > 0 && (
-                <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-card border border-border text-[10px] font-bold text-foreground">
-                  <Zap className="size-3 text-info" /> {xp} pts
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-card border border-border text-[10px] font-bold text-foreground">
+                  <Zap className="size-3 text-info" /> {xp}
                 </div>
               )}
             </>
@@ -330,7 +326,7 @@ function MissionControl() {
       </ExpandableWidget>
 
       {/* ═══════════════════════════════════════════
-          3. MARKET PULSE GRID
+          3. MARKET PULSE GRID — consistent 2-col grid on mobile, 4-col on desktop
           ═══════════════════════════════════════════ */}
       <WidgetGroup
         title={t("dashboard.marketPulse")}
@@ -345,7 +341,7 @@ function MissionControl() {
         }
       >
         {prices.isLoading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="p-3 rounded-xl bg-card border border-border shimmer h-20" />
             ))}
@@ -357,22 +353,42 @@ function MissionControl() {
             <p className="text-[10px] text-muted-foreground/60 mt-1">Prices will appear when the feed reconnects</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-            {(prices.data ?? []).map((p: any) => {
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+            {(prices.data ?? []).slice(0, 8).map((p: any) => {
               const change = p.change24h ?? 0;
-              const variant: WidgetVariant = change >= 0 ? "bullish" : "bearish";
+              const isPositive = change >= 0;
+              const variant: WidgetVariant = isPositive ? "bullish" : "bearish";
               return (
-                <a key={p.pair} href={`/charts?symbol=${p.symbol || p.pair}`} className="block">
-                  <MiniWidget
-                    title={p.pair}
-                    value={`$${Number(p.price).toLocaleString(undefined, {
+                <a
+                  key={p.pair}
+                  href={`/charts?symbol=${p.symbol || p.pair}`}
+                  className="block p-3 rounded-xl bg-card border border-border hover:border-primary/30 hover:bg-card-hover transition-all duration-200"
+                  style={{
+                    borderInlineStartColor: isPositive ? "var(--color-bullish)" : "var(--color-bearish)",
+                    borderInlineStartWidth: "2px",
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] font-bold font-mono text-foreground truncate">{p.pair}</span>
+                    {isPositive ? (
+                      <TrendingUp className="size-3 text-bullish shrink-0" />
+                    ) : (
+                      <ArrowDownRight className="size-3 text-bearish shrink-0" />
+                    )}
+                  </div>
+                  <div className="text-sm font-mono font-bold text-foreground tabular-nums truncate">
+                    ${Number(p.price).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: p.pair?.includes("JPY") ? 2 : 4,
-                    })}`}
-                    variant={variant}
-                    icon={change >= 0 ? TrendingUp : ArrowDownRight}
-                    className="hover:bg-card-hover transition-colors"
-                  />
+                    })}
+                  </div>
+                  <div
+                    className={`text-[10px] font-mono font-bold mt-0.5 ${
+                      isPositive ? "text-bullish" : "text-bearish"
+                    }`}
+                  >
+                    {isPositive ? "+" : ""}{change.toFixed(2)}%
+                  </div>
                 </a>
               );
             })}
