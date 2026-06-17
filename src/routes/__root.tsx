@@ -172,6 +172,18 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en" className="dark">
       <head>
         <HeadContent />
+        {/* ── Theme bootstrap (runs before paint to prevent FOUC) ──
+            Reads the user's saved theme from localStorage and applies the
+            .dark / .light class to <html> BEFORE the first paint. Defaults
+            to dark if no preference is stored. Must be inline in JSX so
+            TanStack Start renders it as a real <script> tag in the SSR
+            output (scripts[] in document() head config does not always
+            emit innerHTML entries). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('vixor-theme')||'dark';var d=t==='dark';document.documentElement.classList.toggle('dark',d);document.documentElement.classList.toggle('light',!d);}catch(e){document.documentElement.classList.add('dark');}})();`,
+          }}
+        />
       </head>
       <body>
         {children}
