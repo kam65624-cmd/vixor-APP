@@ -47,7 +47,11 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
     useMemo(
       () => ({
         queryKey: ["alerts", pair] as const,
-        queryFn: () => listAlertsFn({ data: { pair, status: undefined } }),
+        queryFn: async () => {
+          const r = await listAlertsFn({ data: { pair, status: undefined, limit: 50, offset: 0 } });
+          // Server now returns { items, total, hasMore }
+          return (r as any)?.items ?? (Array.isArray(r) ? r : []);
+        },
         staleTime: 15_000,
       }),
       [listAlertsFn, pair],

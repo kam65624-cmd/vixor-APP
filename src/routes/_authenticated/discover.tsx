@@ -881,8 +881,11 @@ function DiscoverScanner() {
   const { data: signals = [], isLoading } = useQuery(
     useMemo(
       () => ({
-        queryKey: ["daily-signals"] as const,
-        queryFn: () => fetchSignals({ data: {} }),
+        queryKey: ["daily-signals", "discover"] as const,
+        queryFn: async () => {
+          const r = await fetchSignals({ data: { limit: 20, offset: 0 } });
+          return (r as any)?.items ?? (Array.isArray(r) ? r : []);
+        },
         staleTime: 120_000,
       }),
       [fetchSignals],

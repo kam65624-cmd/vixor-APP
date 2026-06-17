@@ -75,8 +75,12 @@ function MissionControl() {
   const signals = useQuery(
     useMemo(
       () => ({
-        queryKey: ["daily-signals"] as const,
-        queryFn: () => fetchSignals({ data: {} }),
+        queryKey: ["daily-signals", "home"] as const,
+        queryFn: async () => {
+          const r = await fetchSignals({ data: { limit: 5, offset: 0 } });
+          // Server returns { items, total, hasMore } — extract items for backward compat
+          return (r as any)?.items ?? (Array.isArray(r) ? r : []);
+        },
         staleTime: 120_000,
       }),
       [fetchSignals],
@@ -85,8 +89,11 @@ function MissionControl() {
   const alerts = useQuery(
     useMemo(
       () => ({
-        queryKey: ["alerts-dashboard"] as const,
-        queryFn: () => fetchAlerts({ data: {} }),
+        queryKey: ["alerts-dashboard", "home"] as const,
+        queryFn: async () => {
+          const r = await fetchAlerts({ data: { limit: 10, offset: 0 } });
+          return (r as any)?.items ?? (Array.isArray(r) ? r : []);
+        },
         staleTime: 30_000,
       }),
       [fetchAlerts],

@@ -75,7 +75,11 @@ function Profile() {
   const refs = useQuery({ queryKey: ["refs"], queryFn: () => fetchRef({}) });
   const analyses = useQuery({
     queryKey: ["analyses-profile"],
-    queryFn: () => fetchAnalyses({ data: { limit: 50 } }),
+    queryFn: async () => {
+      const r = await fetchAnalyses({ data: { limit: 50, offset: 0 } });
+      // Server now returns { items, total, hasMore }
+      return (r as any)?.items ?? (Array.isArray(r) ? r : []);
+    },
   });
 
   const display = me.data?.profile?.display_name ?? "Trader";
