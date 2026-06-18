@@ -153,3 +153,86 @@ Stage Summary:
 - More professional appearance (no childish emoji, consistent badge styling)
 - Better thumb-tap targets (22px icons, rounded-xl tabs)
 - Active state propagates correctly across all 16 routes (Home/Discover/Analyze/Copilot/Portfolio now correctly highlight based on current path)
+
+---
+Task ID: P0-FIXER
+Agent: Main Agent (Phase 0 Fixer — VIXOR audit §15)
+Task: تنفيذ كل إصلاحات المرحلة 0 (9 fixes) قبل أي نقل من QuantDinger
+
+Work Log:
+- قرأ الـ 3 ملفات المرجعية قبل أي تنفيذ:
+  • /home/z/my-project/audit/vixor_current_state.md (718 سطر) — Top 10 critical issues
+  • /home/z/my-project/audit/quantdinger_inventory.md (1695 سطر) — what to reuse
+  • /home/z/my-project/download/VIXOR_QuantDinger_Integration_Strategy.md (949 سطر) — Phase 0 plan
+- P0.1 Environment variables:
+  • أنشأ .env.example يوثق كل الـ 13 متغير مطلوب (Supabase × 5، Telegram × 3، Market data × 2، App secrets × 2، Feature flags × 2)
+  • حدّث .env بالبنية الصحيحة (مع placeholders للـ secrets)
+  • عدّل .gitignore للسماح بتتبع .env.example
+- P0.2 Supabase deep-no-op Proxy → fail-fast (src/shared/supabase/client.ts):
+  • حذف دالة deepNoOp() التي كانت تبتلع كل استدعاءات Supabase كـ { data: null, error: "..." }
+  • أضاف getSupabaseOrNull() لمسارات graceful degradation
+  • أضاف getSupabaseOrThrow() لمسارات حيث missing Supabase = bug
+  • الـ singleton `supabase` Proxy الآن يرمي خطأ واضح عند أول استدعاء بدلاً من silent no-op
+- P0.3 حذف newsMap الوهمية (src/domains/analysis/engine/engine.ts):
+  • حذف دالة generateNewsContext() بالكامل (170 سطر من الأخبار الوهمية لـ 5 أزواج)
+  • الأخبار كانت تُعرض للمستخدم كتحليل حقيقي ("Fed Signals Hawkish Pause" إلخ)
+  • news_impact الآن undefined عندما لا تتوفر أخبار حقيقية — UI يخفي القسم
+  • الأخبار الحقيقية ستُربط في Phase 1.6 (Finnhub integration)
+- P0.4 توسيع Layout لـ max-w-7xl + desktop sidebar rail (src/components/vixor/AppShell.tsx + src/styles.css):
+  • الـ main container توسع من max-w-md lg:max-w-4xl (896px) إلى max-w-md sm:max-w-2xl lg:max-w-7xl (1280px) — 43% عرض أكبر على desktop
+  • أضاف DesktopSidebar component (lg+ only): شريط جانبي 64px على اليسار بـ icons، مثل Bloomberg Terminal / TradingView
+  • BottomNav أصبح lg:hidden (mobile-only) — كان floating بشكل غريب على desktop
+  • أضاف tablet breakpoint (768-1023px) مع md-grid-2/3/4 utilities
+  • أضاف lg-grid-4 و lg-grid-6 utilities
+  • أضاف @media (prefers-reduced-motion: reduce) لدعم إعدادات إمكانية الوصول
+  • أضاف @media print styles لطباعة التحليلات
+- P0.5 إضافة cron للـ alerts (vercel.json):
+  • أضاف { path: "/api/check-alerts", schedule: "*/5 * * * *" } كل 5 دقائق
+  • الـ price alerts الآن تطلق تلقائياً (كانت لا تطلق أبداً بدون هذا الـ cron)
+- P0.6 حذف dead code في chart-intelligence:
+  • حذف formatExtractionFailureMessage() من chart-context.ts (dead code — لم تُستدعى أبداً)
+  • حذف ChartExtractionRefusedError class من run-analysis.ts (dead code — لم يُرمَ أبداً)
+  • نظّف barrel exports في chart-intelligence/index.ts
+  • نظّف unused imports في chart-validation.ts
+- P0.7 حذف ملفات ` (1)` المكررة:
+  • حذف 84 ملف مكرر من project root (remnants من generate-vixor-v2.cjs)
+  • لم تكن مستوردة من أي ملف لكنها تربك IDE file search
+- P0.8 إصلاح _authenticated/route.tsx error swallowing:
+  • الـ auth guard الآن يميز بين أخطاء auth وأخطاء server
+  • يُعيد redirect لـ /auth فقط عند: missing Supabase config، auth/session errors (Invalid token, JWT, refresh_token, etc.)، أو 401 فعلي
+  • باقي الأخطاء (network, server, etc.) تنتقل لـ error boundary ليرى المستخدم ما الخطأ بدلاً من تسجيل خروج مفاجئ
+- P0.9 ربط settings toggles بـ localStorage فعلياً:
+  • صفحة settings الآن تحفظ {haptics, sound, priceAlerts, newsAlerts} في localStorage تحت مفتاح "vixor-prefs"
+  • تُطلق CustomEvent باسم "vixor-prefs-changed" عند كل تغيير
+  • أنشأ src/shared/prefs.ts مع getUserPrefs()، subscribeToPrefs()، isHapticsEnabled()، isPriceAlertsEnabled()، isNewsAlertsEnabled()
+  • الـ alert checker + news fetcher + haptics util الآن يمكنها قراءة prefs الحقيقية بدلاً من تجاهل الـ toggles
+- QA runner enhancements (scripts/qa-test-runner.cjs):
+  • أضاف Suite 12: "Phase 0 Fixes (VIXOR audit §15)" مع 8 اختبارات جديدة:
+    1. P0.4 Layout: max-w-7xl container deployed
+    2. P0.4 Desktop sidebar rail component deployed
+    3. P0.4 BottomNav hidden on desktop (lg:hidden)
+    4. P0.4 prefers-reduced-motion CSS support
+    5. P0.5 /api/check-alerts endpoint exists (cron target)
+    6. P0.3 Fake newsMap removed from analysis engine
+    7. P0.2 Supabase fail-fast guard (replaces deep-no-op Proxy)
+    8. P0.9 Settings toggles persist to localStorage (vixor-prefs)
+  • أضاف helper functions findJsAsset() و findCssAsset() لاستخراج bundle paths من HTML
+- Verification:
+  • Build ينجح محلياً (vite build → 10.89s → .vercel/output جاهز)
+  • ESLint: 0 أخطاء على كل الملفات المعدلة (بعد eslint --fix)
+  • Commit 65d87dd تم عمل push بنجاح إلى origin/main
+- QA test runner results ضد production (https://vixor-app.vercel.app):
+  • Pre-deploy (immediately after push): 54 pass / 0 fail / 12 warn
+    - 2 PASS في Suite 12 (P0.5 endpoint + P0.3 newsMap — يعملان قبل deploy)
+    - 6 WARN في Suite 12 (deploy pending — ستتحول لـ PASS بعد deploy)
+  • Target post-deploy: 60 pass / 0 fail / 6 warn (المستخدم طلب 52 → 60)
+  • ملاحظة: Vercel deploy لم يكتمل بعد بعد ~6 دقائق من push — قد يحتاج إعادة trigger أو webhook GitHub معلق
+
+Stage Summary:
+- كل الـ 9 إصلاحات في الكود تم تنفيذها بنجاح
+- 8 اختبارات جديدة تمت إضافتها للـ QA runner لتغطية الـ fixes
+- Build محلي ينجح في 10.89 ثانية، ESLint نظيف
+- Commit 65d87dd على origin/main جاهز للـ deploy
+- المرحلة 0 جاهزة للانتقال للمرحلة 1 (Parallel Agents 2 + 3) بمجرد اكتمال Vercel deploy
+- بعد اكتمال deploy: QA runner سينتقل من 52 → 60 pass (+8 new tests in Suite 12)
+- يمكن إطلاق Agent 2 (Infrastructure Porter) + Agent 3 (Engine Porter) بالتوازي فوراً
