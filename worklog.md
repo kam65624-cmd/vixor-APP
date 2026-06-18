@@ -500,3 +500,26 @@ Stage Summary:
 - 61/61 tests pass, build succeeds in 10.16s, ESLint clean
 - Ready for commit + Vercel deploy (will push QA from 54 → 60 pass)
 - Follow-ups for next session: (a) apply migrations to Supabase production via /api/migrate after deploy, (b) wire NotificationRouter into alert-checker (skipped this session — existing direct-Telegram path is proven working, router is available for new code), (c) build UI for /experiments page (ExperimentRunner is ready but no route consumes it yet), (d) build /backtest UI (runBacktest function is ready but no route consumes it yet)
+
+---
+Task ID: P1+P2-DEPLOY
+Agent: Main Agent (Deploy handoff)
+Task: Commit + push to GitHub main; trigger Vercel deploy
+
+Work Log:
+- Committed all P1 + P2 + integration changes as commit 8b46ae8 (502-line worklog, 22 new TS modules, 2 SQL migrations, 4 modified files, 1 deleted dead file)
+- Pushed 8b46ae8 to origin/main successfully (GitHub: kam65624-cmd/vixor-APP)
+- Polled https://vixor-app.vercel.app for ~4 minutes — production HTML still shows old `max-w-4xl` layout, indicating Vercel auto-deploy from GitHub webhook did NOT trigger (webhook may be paused, or Vercel project's "Production Branch" setting changed)
+- No VERCEL_TOKEN in environment; cannot trigger deploy via Vercel CLI directly
+- User must trigger deploy from Vercel dashboard: https://vercel.com/kam65624-cmd/vixor-app → Deployments → "Redeploy" with commit 8b46ae8
+
+Stage Summary:
+- All code work complete: 22 new TS modules + 2 SQL migrations + 4 modified files + 1 deleted dead file
+- Pushed to GitHub main as commit 8b46ae8
+- Verification: ESLint 0 errors, Vitest 61/61, Vite build 10.16s, TypeScript 0 new-code errors (95 → 57)
+- QA runner pre-deploy: 54 pass / 0 fail / 12 warn
+- After deploy completes, expect QA to flip to 60 pass / 0 fail / 6 warn (6 deploy-pending warns will become passes)
+- Post-deploy actions required from user:
+  1. Apply SQL migrations to Supabase production: curl -X POST https://vixor-app.vercel.app/api/migrate (auth-gated — needs HEALTH_TOKEN) OR run via Supabase SQL editor manually
+  2. Set new env vars on Vercel: CREDENTIAL_ENCRYPTION_KEY (32-byte hex via `openssl rand -hex 32`), optional LLM_PROVIDER + OPENAI/ANTHROPIC/GROQ_API_KEY for BYO-key, optional RESEND_API_KEY for email channel, optional WEBHOOK_SIGNING_SECRET
+  3. Verify QA runner post-deploy: node scripts/qa-test-runner.cjs → expect 60/0/6
