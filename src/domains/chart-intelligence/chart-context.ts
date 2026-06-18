@@ -19,10 +19,10 @@ export const MIN_CONFIDENCE_FOR_ANALYSIS = 0; // 0% — always proceed
 
 // ── Chart source: where did the data come from? ──
 export type ChartSource =
-  | "tradingview_session"  // Data from TradingView widget inside Vixor (highest accuracy)
-  | "internal_screenshot"  // Screenshot captured from inside Vixor
-  | "external_screenshot"  // Screenshot uploaded from external source (MT5, TradingView web, etc.)
-  | "market_data_only";    // No image — pure OHLCV data analysis
+  | "tradingview_session" // Data from TradingView widget inside Vixor (highest accuracy)
+  | "internal_screenshot" // Screenshot captured from inside Vixor
+  | "external_screenshot" // Screenshot uploaded from external source (MT5, TradingView web, etc.)
+  | "market_data_only"; // No image — pure OHLCV data analysis
 
 // ── The core Chart Context — produced BEFORE any analysis ──
 export interface ChartContext {
@@ -77,7 +77,10 @@ export interface ChartExtractionResult {
 }
 
 // ── Helper: Create a successful extraction result ──
-export function successfulExtraction(context: ChartContext, rawExtraction?: string): ChartExtractionResult {
+export function successfulExtraction(
+  context: ChartContext,
+  rawExtraction?: string,
+): ChartExtractionResult {
   return {
     success: context.confidence >= MIN_CONFIDENCE_FOR_ANALYSIS,
     context,
@@ -90,7 +93,10 @@ export function successfulExtraction(context: ChartContext, rawExtraction?: stri
 }
 
 // ── Helper: Create a failed extraction result ──
-export function failedExtraction(reason: string, partial?: Partial<ChartContext>): ChartExtractionResult {
+export function failedExtraction(
+  reason: string,
+  partial?: Partial<ChartContext>,
+): ChartExtractionResult {
   return {
     success: false,
     context: partial
@@ -130,22 +136,15 @@ export function createSessionContext(params: {
 }
 
 // ── Helper: Format a user-friendly message when extraction fails ──
-export function formatExtractionFailureMessage(result: ChartExtractionResult, lang: "en" | "ar" = "en"): string {
-  if (lang === "ar") {
-    if (!result.context?.symbol) {
-      return "لم أتمكن من تحديد الأصل الموجود في الصورة بدقة كافية. الرجاء رفع لقطة أوضح تظهر رمز الأصل (مثل XAUUSD أو BTCUSDT) بوضوح.";
-    }
-    if (!result.context?.timeframe) {
-      return `تم التعرف على ${result.context.symbol} لكن لم أتمكن من تحديد الفريم الزمني. الرجاء رفع لقطة يظهر فيها الفريم (مثل H1 أو 15M).`;
-    }
-    return `لم أتمكن من استخراج بيانات كافية من الصورة (الثقة: ${(result.context?.confidence ?? 0) * 100}%). الرجاء رفع لقطة أوضح.`;
-  }
-
-  if (!result.context?.symbol) {
-    return "Unable to identify the asset in the image with sufficient accuracy. Please upload a clearer screenshot that shows the symbol (e.g., XAUUSD or BTCUSDT) clearly.";
-  }
-  if (!result.context?.timeframe) {
-    return `Detected ${result.context.symbol} but could not determine the timeframe. Please upload a screenshot where the timeframe (e.g., H1, 15M) is visible.`;
-  }
-  return `Unable to extract sufficient data from the image (confidence: ${(result.context?.confidence ?? 0) * 100}%). Please upload a clearer screenshot.`;
-}
+//
+// REMOVED (audit §15 issue #9): This function was dead code — never called.
+// The validation layer is SOFT (never blocks analysis), so there's no failure
+// message to format. The "Unable to identify the asset in the image" string
+// it produced was previously surfaced to users from stale DB rows and confused
+// them. The current analysis pipeline never refuses on low confidence — it
+// proceeds with whatever data is available and tags the result with caveats
+// in `extractionNotes` instead.
+//
+// If a future iteration re-introduces hard refusal for very low confidence
+// (e.g. < 20%), this helper can be revived — but it must NOT use the legacy
+// "Unable to identify" wording, which is now considered misleading.

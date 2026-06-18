@@ -613,6 +613,186 @@ async function testPerformance() {
   recordSuite("11. Performance (response time)", tests);
 }
 
+// ─── Suite 12: Phase 0 fixes (VIXOR audit §15) ─────────────────────────────
+// 8 new tests covering the Phase 0 fixes from the VIXOR × QuantDinger
+// integration strategy. Each test verifies a specific fix is deployed.
+async function testPhase0Fixes() {
+  const tests = [];
+
+  // 12.1 — Layout expanded to max-w-7xl (was max-w-4xl)
+  // Probe the homepage HTML for the new container class.
+  const homeR = await probe(BASE + "/");
+  const has7xl = homeR.body.includes("max-w-7xl") || homeR.body.includes("lg:max-w-7xl");
+  const has4xlOnly = !has7xl && homeR.body.includes("max-w-4xl");
+  tests.push({
+    name: "P0.4 Layout: max-w-7xl container deployed (replaces max-w-4xl)",
+    status: has7xl ? "pass" : has4xlOnly ? "warn" : "warn",
+    detail: has7xl
+      ? "max-w-7xl found in HTML (Phase 0.4 deployed)"
+      : has4xlOnly
+        ? "max-w-4xl still present (deploy pending) — was the old layout"
+        : "no max-w class detected in SSR HTML (may render client-side)",
+    durationMs: homeR.durationMs,
+  });
+
+  // 12.2 — Desktop sidebar rail exists (new in Phase 0.4)
+  // Probe built JS bundle for DesktopSidebar component
+  const homeBundleR = await probe(BASE + "/assets/" + findJsAsset(homeR.body, "index"));
+  const hasDesktopSidebar =
+    homeBundleR.body.includes("DesktopSidebar") ||
+    homeBundleR.body.includes("hidden lg:flex flex-col fixed left-0");
+  tests.push({
+    name: "P0.4 Desktop sidebar rail component deployed",
+    status: hasDesktopSidebar ? "pass" : "warn",
+    detail: hasDesktopSidebar
+      ? "DesktopSidebar component detected in JS bundle"
+      : "DesktopSidebar not detected (deploy pending or different bundle)",
+    durationMs: homeBundleR.durationMs,
+  });
+
+  // 12.3 — BottomNav is mobile-only (lg:hidden) on desktop
+  const hasLgHiddenNav = homeBundleR.body.includes("lg:hidden");
+  tests.push({
+    name: "P0.4 BottomNav hidden on desktop (lg:hidden)",
+    status: hasLgHiddenNav ? "pass" : "warn",
+    detail: hasLgHiddenNav
+      ? "lg:hidden detected — bottom nav is mobile-only as designed"
+      : "lg:hidden not found — bottom nav may still show on desktop",
+    durationMs: homeBundleR.durationMs,
+  });
+
+  // 12.4 — Reduced motion support in CSS
+  const cssR = await probe(BASE + "/assets/" + findCssAsset(homeR.body));
+  const hasReducedMotion = cssR.body.includes("prefers-reduced-motion");
+  tests.push({
+    name: "P0.4 prefers-reduced-motion CSS support",
+    status: hasReducedMotion ? "pass" : "warn",
+    detail: hasReducedMotion
+      ? "@media (prefers-reduced-motion: reduce) rules present in CSS"
+      : "no reduced-motion rules found in CSS (deploy pending)",
+    durationMs: cssR.durationMs,
+  });
+
+  // 12.5 — vercel.json has /api/check-alerts cron
+  // We can't read vercel.json directly from production, but we CAN probe
+  // whether the /api/check-alerts endpoint exists and accepts requests.
+  const alertsR = await probe(BASE + "/api/check-alerts", { method: "GET" });
+  // 401 means the endpoint exists and is auth-gated. 404 means it's missing.
+  // 405 means it exists but doesn't accept GET (also fine — cron uses POST).
+  const alertsEndpointExists =
+    alertsR.status === 401 || alertsR.status === 403 || alertsR.status === 405;
+  tests.push({
+    name: "P0.5 /api/check-alerts endpoint exists (cron target)",
+    status: alertsEndpointExists ? "pass" : alertsR.status === 404 ? "warn" : "fail",
+    detail: `HTTP ${alertsR.status} ${
+      alertsEndpointExists
+        ? "(endpoint exists — cron can target it)"
+        : alertsR.status === 404
+          ? "(NEW — needs deploy)"
+          : "(unexpected status)"
+    }`,
+    durationMs: alertsR.durationMs,
+  });
+
+  // 12.6 — News fabrication removed (engine.ts no longer returns fake news)
+  // Probe analyze page bundle for absence of "newsMap" + absence of "Fed Signals Hawkish Pause"
+  const analyzeR = await probe(BASE + "/analyze");
+  const analyzeBundleR = await probe(BASE + "/assets/" + findJsAsset(analyzeR.body, "analyze"));
+  const hasFakeNews = analyzeBundleR.body.includes("Fed Signals Hawkish Pause") ||
+    analyzeBundleR.body.includes("ECB Maintains Restrictive Stance");
+  const hasNewsMap = analyzeBundleR.body.includes("newsMap");
+  tests.push({
+    name: "P0.3 Fake newsMap removed from analysis engine",
+    status: !hasFakeNews && !hasNewsMap ? "pass" : hasFakeNews ? "fail" : "warn",
+    detail: !hasFakeNews && !hasNewsMap
+      ? "No fabricated news headlines or newsMap found in analyze bundle"
+      : hasFakeNews
+        ? "FAKE NEWS still present in bundle (deploy pending or rollback needed)"
+        : "newsMap reference still present (may be a comment, not a runtime value)",
+    durationMs: analyzeBundleR.durationMs,
+  });
+
+  // 12.7 — Supabase fail-fast (no deep-no-op Proxy swallowing errors)
+  // Probe any bundle for absence of "deepNoOp" + presence of "getSupabaseOrNull"
+  const bundles = [homeBundleR, analyzeBundleR];
+  let foundDeepNoOp = false;
+  let foundFailFast = false;
+  for (const b of bundles) {
+    if (b.body.includes("deepNoOp")) foundDeepNoOp = true;
+    if (b.body.includes("getSupabaseOrNull") || b.body.includes("Supabase browser client is not configured"))
+      foundFailFast = true;
+  }
+  tests.push({
+    name: "P0.2 Supabase fail-fast guard (replaces deep-no-op Proxy)",
+    status: !foundDeepNoOp && foundFailFast ? "pass" : foundDeepNoOp ? "fail" : "warn",
+    detail: !foundDeepNoOp && foundFailFast
+      ? "deepNoOp removed; getSupabaseOrNull / configuration error present"
+      : foundDeepNoOp
+        ? "deepNoOp still in bundle (deploy pending)"
+        : "neither pattern found in probed bundles (try different bundle)",
+    durationMs: homeBundleR.durationMs,
+  });
+
+  // 12.8 — Settings toggles persist to localStorage (vixor-prefs key)
+  // Probe settings bundle for "vixor-prefs" + "vixor-prefs-changed"
+  const settingsR = await probe(BASE + "/settings");
+  // Settings page is /settings — but might be embedded in dashboard bundle.
+  // Probe both home and analyze bundles + the settings-specific bundle.
+  let allBundles = [homeBundleR, analyzeBundleR];
+  // Try to find a settings-specific bundle
+  const settingsAsset = findJsAsset(settingsR.body, "settings");
+  if (settingsAsset) {
+    const settingsBundleR = await probe(BASE + "/assets/" + settingsAsset);
+    allBundles.push(settingsBundleR);
+  }
+  let foundPrefsKey = false;
+  let foundPrefsEvent = false;
+  for (const b of allBundles) {
+    if (b.body.includes("vixor-prefs")) foundPrefsKey = true;
+    if (b.body.includes("vixor-prefs-changed")) foundPrefsEvent = true;
+  }
+  tests.push({
+    name: "P0.9 Settings toggles persist to localStorage (vixor-prefs)",
+    status: foundPrefsKey && foundPrefsEvent ? "pass" : foundPrefsKey ? "warn" : "warn",
+    detail: foundPrefsKey && foundPrefsEvent
+      ? "vixor-prefs key + change event both found"
+      : foundPrefsKey
+        ? "vixor-prefs key found but change event missing (partial deploy?)"
+        : "vixor-prefs not yet deployed (deploy pending)",
+    durationMs: settingsR.durationMs,
+  });
+
+  recordSuite("12. Phase 0 Fixes (VIXOR audit §15)", tests);
+}
+
+/**
+ * Helper: extract the first JS asset path from an HTML body, optionally
+ * filtered by a name fragment (e.g. "index", "analyze", "settings").
+ * Returns empty string if no match.
+ */
+function findJsAsset(htmlBody, nameFrag) {
+  // Match patterns like: src="/assets/index-AbCdEf.js" or href="/assets/analyze-Xyz.js"
+  const re = /(?:src|href)="(\/assets\/[^"]+\.js)"/g;
+  let m;
+  const all = [];
+  while ((m = re.exec(htmlBody)) !== null) {
+    all.push(m[1]);
+  }
+  if (all.length === 0) return "";
+  // Prefer ones containing the name fragment
+  const preferred = all.find((a) => a.includes(nameFrag));
+  return preferred || all[0];
+}
+
+/**
+ * Helper: extract the first CSS asset path from an HTML body.
+ */
+function findCssAsset(htmlBody) {
+  const re = /(?:href)="(\/assets\/[^"]+\.css)"/g;
+  const m = re.exec(htmlBody);
+  return m ? m[1] : "";
+}
+
 // ───────────────────────────────────────────────────────────────────────────
 // Run all suites sequentially
 // ───────────────────────────────────────────────────────────────────────────
@@ -632,6 +812,7 @@ async function testPerformance() {
   await testSearchFilter();
   await testHealthMetrics();
   await testPerformance();
+  await testPhase0Fixes();
 
   results.endedAt = new Date().toISOString();
   results.totalPass = results.suites.reduce((a, s) => a + s.pass, 0);

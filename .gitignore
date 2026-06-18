@@ -33,4 +33,5 @@ dist-ssr
 .vercel/
 .vercel
 .env*
+!.env.example
 .vercel/

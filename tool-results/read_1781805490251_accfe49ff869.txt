@@ -1,0 +1,950 @@
+     1→     1→# VIXOR × QuantDinger — استراتيجية إعادة الاستخدام والتكامل
+     2→     2→
+     3→     3→> **المستند:** خطة استراتيجية لاست corásticoage الأساسيات الجاهزة والشغالة من QuantDinger في VIXOR MASTER V2 بدل بنائها من جديد
+     4→     4→> **التاريخ:** 2026-06-18
+     5→     5→> **المراجع:**
+     6→     6→> - تقرير جرد QuantDinger الكامل: `/home/z/my-project/audit/quantdinger_inventory.md` (1,695 سطراً)
+     7→     7→> - تقرير تدقيق VIXOR الحالي: `/home/z/my-project/audit/vixor_current_state.md` (718 سطراً)
+     8→     8→> - مستودع QuantDinger: `/home/z/my-project/audit/QuantDinger/` (Apache-2.0)
+     9→     9→> - ترخيص إعادة الاستخدام: مسموح مع شرط إزالة علامة QuantDinger التجارية في التوزيعات المشتقة (per `TRADEMARKS.md §5`)
+    10→    10→
+    11→    11→---
+    12→    12→
+    13→    13→## 1. الخلاصة التنفيذية (Executive Summary)
+    14→    14→
+    15→    15→QuantDinger هو منصة **Python/Flask + Vue + Postgres + Redis** تطرح نفسها كنظام "AI Quant OS" متكامل، صدر الإصدار V3.1.0 منه مع **AI Agent Gateway** و **MCP server** و **experiment orchestration layer**. الكود مفتوح المصدر برخصة Apache-2.0، ومكتوب بأسلوب احترافي (safe_exec sandbox ثلاثي الطبقات، capability-scoped tokens، circuit breaker للـ data sources، backtest engine بـ 5K LOC).
+    16→    16→
+    17→    17→VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supabase** يطالب بنفس الطموح (Bloomberg Professional للـ SMC/ICT traders)، لكنه **معاق تشغيلياً** بسبب:
+    18→    18→- 13 متغير بيئة مفقود محلياً (Vercel production لديه معظمها)
+    19→    19→- `deep-no-op Proxy` يبتلع كل أخطاء Supabase بصمت
+    20→    20→- `newsMap` بأخبار وهمية مدمجة في المحرك تعرض للمستخدم كأنها تحليل حقيقي
+    21→    21→- Layout محدود بـ `max-w-4xl` (896px) — ضيق جداً لتطبيق تداول
+    22→    22→- صفحات some features مكسورة (settings toggles, alert cron, dead code paths)
+    23→    23→
+    24→    24→### القرار الاستراتيجي
+    25→    25→
+    26→    26→**لا يمكن نقل كود QuantDinger مباشرة إلى VIXOR** لأن الـ stack مختلف جذرياً (Python/Flask vs TypeScript/TanStack). لكن **يمكن است corósticoage:**
+    27→    27→
+    28→    28→1. **الـ patterns المعمارية** (Agent Gateway، capability tokens، SSE progress، idempotency) — تُعاد كتابتها بـ TypeScript
+    29→    29→2. **الـ safe_exec sandbox** — يُعاد كتابته في Node.js `vm2` أو `isolated-vm` مع نفس الـ 3 طبقات
+    30→    30→3. **الـ backtest engine logic** — يُعاد كتابتها بـ TypeScript مع نفس الـ candle-path simulation
+    31→    31→4. **الـ strategy DSL** (`IndicatorStrategy` + `ScriptStrategy`) — يُعاد تصميمه لـ JavaScript/TypeScript
+    32→    32→5. **الـ circuit breaker + rate limiter + cache** — يُعاد كتابتها بـ TypeScript (سهلة)
+    33→    33→6. **الـ broker adapters** — تُعاد كتابتها لـ 4 exchanges أساسية (Binance, OKX, Bybit, Coinbase) — لا تحتاج ccxt
+    34→    34→7. **الـ multi-provider LLM service** — يُعاد كتابته بـ TypeScript (7 providers)
+    35→    35→8. **الـ multi-channel notifier** — يُعاد كتابته بـ TypeScript (Telegram + Email + Webhook)
+    36→    36→9. **الـ credential encryption** — يُستبدل بـ `crypto.createCipheriv` في Node.js
+    37→    37→10. **الـ experiment orchestration** — يُعاد كتابته بـ TypeScript
+    38→    38→
+    39→    39→### ما الذي يبقى في VIXOR كما هو (لا نلمسه من QuantDinger)
+    40→    40→
+    41→    41→- ✅ **محرر التحليل SMC/ICT المحلي** (VIXOR's `engine.ts` 1360 سطر) — أفضل من QuantDinger الذي لا يطرح SMC أصلاً
+    42→    42→- ✅ **Debate Engine (4 agents)** — VIXOR ينفرد بها
+    43→    43→- ✅ **Chart Truth Layer** — VIXOR ينفرد بها
+    44→    44→- ✅ **Telegram WebApp auth (initData HMAC)** — VIXOR شغاله صح
+    45→    45→- ✅ **Asset Registry** — VIXOR شغاله
+    46→    46→- ✅ **i18n + RTL** — VIXOR شغاله
+    47→    47→- ✅ **Design system (OKLCH + Bloomberg aesthetic)** — VIXOR شغاله
+    48→    48→
+    49→    49→---
+    50→    50→
+    51→    51→## 2. مصفوفة Build vs Reuse vs Keep (المصفوفة الاستراتيجية)
+    52→    52→
+    53→    53→لكل ميزة رئيسية، نحدد: هل نبنيها من الصفر (BUILD)، أم نعيد استخدامها من QuantDinger (REUSE-PORT)، أم نحتفظ بما لدينا في VIXOR (KEEP)?
+    54→    54→
+    55→    55→| # | الميزة | الحالة في VIXOR | الحالة في QuantDinger | القرار | الجهد | الأولوية |
+    56→    56→|---|---|---|---|---|---|---|
+    57→    57→| 1 | **Safe code execution sandbox** | غير موجودة | `safe_exec.py` 470 LOC، 3 طبقات | **REUSE-PORT** | متوسط | P0 |
+    58→    58→| 2 | **Backtest engine** | غير موجودة | `backtest.py` 4974 LOC، MTF precision | **REUSE-PORT** (core only ~2000 LOC) | عالي | P1 |
+    59→    59→| 3 | **Strategy DSL (IndicatorStrategy)** | غير موجودة | `strategy_script_runtime.py` + `indicator_params.py` ~600 LOC | **REUSE-PORT** | متوسط | P1 |
+    60→    60→| 4 | **Agent Gateway (capability tokens)** | Copilot agent فقط | `agent_auth.py` + `agent_jobs.py` 810 LOC | **REUSE-PORT** (pattern) | متوسط | P2 |
+    61→    61→| 5 | **SSE progress streaming for jobs** | غير موجودة | `agent_jobs.py:stream_progress` + SSE endpoint | **REUSE-PORT** (pattern) | متوسط | P2 |
+    62→    62→| 6 | **Idempotency-Key with DB unique index** | غير موجودة | Postgres partial unique index pattern | **REUSE-PORT** (SQL only) | منخفض | P2 |
+    63→    63→| 7 | **Multi-provider LLM service** | ZAI SDK فقط | `llm.py` 629 LOC، 7 providers | **REUSE-PORT** | منخفض | P1 |
+    64→    64→| 8 | **Multi-channel notifier** | Telegram فقط | `signal_notifier.py` 912 LOC، 6 channels | **REUSE-PORT** | متوسط | P1 |
+    65→    65→| 9 | **Circuit breaker + rate limiter** | Hybrid cache فقط | `circuit_breaker.py` + `rate_limiter.py` + `cache_manager.py` ~600 LOC | **REUSE-PORT** | منخفض | P0 |
+    66→    66→| 10 | **Credential encryption (Fernet)** | غير موجودة | `credential_crypto.py` 50 LOC | **REUSE-PORT** (Node `crypto`) | منخفض | P0 |
+    67→    67→| 11 | **Crypto exchange adapters (REST)** | غير موجودة | 11 exchanges في `live_trading/` | **REUSE-PORT** (4 exchanges فقط: Binance, OKX, Bybit, Coinbase) | عالي | P2 |
+    68→    68→| 12 | **Experiment orchestration (AI tuning)** | غير موجودة | `app/services/experiment/` ~700 LOC | **REUSE-PORT** | متوسط | P2 |
+    69→    69→| 13 | **Market regime detector** | غير موجودة | `experiment/regime.py` 170 LOC، 5 regimes | **REUSE-PORT** | منخفض | P2 |
+    70→    70→| 14 | **Strategy scoring service** | غير موجودة | `experiment/scoring.py` 140 LOC | **REUSE-PORT** | منخفض | P2 |
+    71→    71→| 15 | **MCP server** | غير موجودة | `mcp_server/` 306 LOC | **SKIP** (لأن VIXOR لا يحتاج MCP) | — | — |
+    72→    72→| 16 | **SMC/ICT analysis engine** | `engine.ts` 1360 LOC ✅ | غير موجودة | **KEEP** (VIXOR متفوق) | — | — |
+    73→    73→| 17 | **Debate Engine (4 agents)** | `debate.engine.ts` ✅ | غير موجودة | **KEEP** | — | — |
+    74→    74→| 18 | **Chart Truth Layer** | `chart-truth/` ✅ | غير موجودة | **KEEP** | — | — |
+    75→    75→| 19 | **Chart Vision (VLM)** | `chart-vision.ts` ✅ (يحتاج ZAI_API_KEY) | غير موجودة | **KEEP + FIX ENV** | — | — |
+    76→    76→| 20 | **Telegram WebApp auth** | `auth.functions.ts` ✅ | غير موجودة | **KEEP + FIX ENV** | — | — |
+    77→    77→| 21 | **Risk Governor** | `risk-governor/` ✅ (غير متصل) | غير موجودة | **KEEP + WIRE** | — | — |
+    78→    78→| 22 | **Paper Trading engine** | `paper-trading/` ✅ (gated) | `paper_orders` table | **KEEP + UNGATE** | — | — |
+    79→    79→| 23 | **Memory store (user_memories)** | `memory/store.ts` ✅ | `analysis_memory` table | **KEEP** | — | — |
+    80→    80→| 24 | **Event bus + persistence** | `events/orchestrator.ts` ✅ | غير موجودة | **KEEP** | — | — |
+    81→    81→| 25 | **Tool registry** | `tool-registry/` ✅ (2 tools) | غير موجودة | **KEEP + EXPAND** | — | — |
+    82→    82→| 26 | **UI/UX (shadcn + custom)** | 38 + 10 components ✅ | Vue (private repo) | **KEEP + FIX** | — | — |
+    83→    83→| 27 | **i18n + RTL** | ✅ (EN + AR) | Vue i18n (غير متوفر) | **KEEP** | — | — |
+    84→    84→| 28 | **News integration** | أخبار وهمية مدمجة! ❌ | Finnhub + RSS في `news.py` | **REUSE-PORT** (Finnhub pattern) | منخفض | **P0** |
+    85→    85→| 29 | **Database migrations framework** | 12 SQL files يدوية | `init.sql` يدوي | **KEEP** | — | — |
+    86→    86→| 30 | **Pricing/payment (USDT-TRC20)** | Telegram Stars فقط | `usdt_payment_service.py` 830 LOC | **REUSE-PORT** (later) | عالي | P3 |
+    87→    87→| 31 | **OAuth (Google/GitHub)** | غير موجودة | `oauth_service.py` 715 LOC | **REUSE-PORT** (later) | متوسط | P3 |
+    88→    88→
+    89→    89→### الإحصائيات
+    90→    90→
+    91→    91→- **KEEP** (لا نلمسه): 14 ميزة — VIXOR متفوق فيها أو لا يحتاجها
+    92→    92→- **REUSE-PORT** (نقل من QuantDinger): 16 ميزة — جوهر القيمة المضافة
+    93→    93→- **SKIP** (لا نحتاجها): 1 ميزة (MCP server)
+    94→    94→- **FIX** (إصلاح في VIXOR): 4 ميزات (env vars، deep-no-op، layout، news)
+    95→    95→
+    96→    96→---
+    97→    97→
+    98→    98→## 3. خطة التنفيذ على 4 مراحل (Phased Roadmap)
+    99→    99→
+   100→   100→### المرحلة 0: إصلاح VIXOR الحالي قبل أي نقل (1-2 أيام) — **P0 CRITICAL**
+   101→   101→
+   102→   102→**لماذا أولاً؟** لا فائدة من نقل modules جديدة على قاعدة مكسورة. هذه الإصلاحات تحل 70% من شكاوى المستخدم فوراً.
+   103→   103→
+   104→   104→#### 0.1 إصلاح متغيرات البيئة
+   105→   105→- **ملف:** `.env` (local) + Vercel project settings
+   106→   106→- **المتغيرات المطلوبة (13):**
+   107→   107→  ```
+   108→   108→  SUPABASE_URL=https://lrbgxrfvjxaixtzkutxn.supabase.co
+   109→   109→  SUPABASE_SERVICE_ROLE_KEY=<from-supabase-dashboard>
+   110→   110→  SUPABASE_ANON_KEY=<from-supabase-dashboard>
+   111→   111→  SUPABASE_PUBLISHABLE_KEY=<same-as-anon>
+   112→   112→  VITE_SUPABASE_URL=<same-as-SUPABASE_URL>
+   113→   113→  VITE_SUPABASE_PUBLISHABLE_KEY=<same-as-anon>
+   114→   114→  TELEGRAM_BOT_TOKEN=<from-BotFather>
+   115→   115→  VITE_TELEGRAM_BOT_USERNAME=VixorAIBot
+   116→   116→  TELEGRAM_WEBHOOK_SECRET=<random-32-bytes>
+   117→   117→  TWELVEDATA_API_KEY=<from-twelvedata>
+   118→   118→  FINNHUB_API_KEY=<from-finnhub>
+   119→   119→  CRON_SECRET=<random-32-bytes>
+   120→   120→  ENABLE_PAPER_TRADING=true
+   121→   121→  ENABLE_DEBATE_ENGINE=true
+   122→   122→  ```
+   123→   123→- **التحقق:** `node scripts/qa-test-runner.cjs` يجب أن ينتقل من 52→58 pass
+   124→   124→
+   125→   125→#### 0.2 استبدال `deep-no-op Proxy` بـ fail-fast
+   126→   126→- **ملف:** `src/shared/supabase/client.ts:48-61`
+   127→   127→- **التغيير:** حذف `deepNoOp()`، استبدالها بـ:
+   128→   128→  ```typescript
+   129→   129→  if (!url || !anonKey) {
+   130→   130→    throw new Error("Supabase browser client not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.");
+   131→   131→  }
+   132→   132→  ```
+   133→   133→- **لماذا:** المستخدم يرى "No data" بدلاً من رسالة خطأ واضحة. هذا هو السبب الجذري لشكوى "data display not smooth/professional".
+   134→   134→
+   135→   135→#### 0.3 حذف `newsMap` الوهمية من المحرك
+   136→   136→- **ملف:** `src/domains/analysis/engine/engine.ts:~1080-1116`
+   137→   137→- **التغيير:** حذف الـ `newsMap` كاملاً، استبدالها بـ:
+   138→   138→  ```typescript
+   139→   139→  // Fetch real news from Finnhub (already implemented in market/functions.ts)
+   140→   140→  const news = await getMarketNews(pair);
+   141→   141→  ```
+   142→   142→- **لماذا:** أخبار وهمية تعرض للمستخدم كتحليل حقيقي — هذا يضر بثقة المستخدم.
+   143→   143→
+   144→   144→#### 0.4 إصلاح Layout (الـ dimensions من الأعلى)
+   145→   145→- **ملف:** `src/components/vixor/AppShell.tsx:99, 124, 200`
+   146→   146→- **التغيير:**
+   147→   147→  ```typescript
+   148→   148→  // قبل
+   149→   149→  <header className="max-w-md lg:max-w-4xl mx-auto">
+   150→   150→  <main className="max-w-md lg:max-w-4xl mx-auto">
+   151→   151→  <nav className="max-w-md lg:max-w-4xl mx-auto">
+   152→   152→
+   153→   153→  // بعد
+   154→   154→  <header className="w-full">  // full-width header
+   155→   155→  <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">  // 1280px content
+   156→   156→  <nav className="fixed bottom-0 left-0 right-0 lg:hidden">  // mobile only
+   157→   157→  ```
+   158→   158→- **إضافة tablet breakpoint:**
+   159→   159→  ```css
+   160→   160→  /* styles.css */
+   161→   161→  @media (min-width: 768px) and (max-width: 1023px) { /* tablet */ }
+   162→   162→  ```
+   163→   163→- **Desktop sidebar rail** (لـ lg+): شريط جانبي 64px بـ icons، يحل مشكلة "الصفحات مش مربوطه بشكل سلس"
+   164→   164→
+   165→   165→#### 0.5 إصلاح cron للم alerts
+   166→   166→- **ملف:** `vercel.json`
+   167→   167→- **التغيير:**
+   168→   168→  ```json
+   169→   169→  {
+   170→   170→    "crons": [
+   171→   171→      { "path": "/api/generate-signals", "schedule": "0 0 * * *" },
+   172→   172→      { "path": "/api/check-alerts", "schedule": "*/5 * * * *" }
+   173→   173→    ]
+   174→   174→  }
+   175→   175→  ```
+   176→   176→- **لماذا:** price alerts لا تطلق أبداً بدون هذا الـ cron.
+   177→   177→
+   178→   178→#### 0.6 حذف الـ dead code في chart-intelligence
+   179→   179→- **ملفات:**
+   180→   180→  - `src/domains/chart-intelligence/chart-context.ts:133` — حذف `formatExtractionFailureMessage`
+   181→   181→  - `src/domains/analysis/server/run-analysis.ts:36` — حذف `ChartExtractionRefusedError`
+   182→   182→- **لماذا:** الكود الميت يربك المطورين ويخفي الأخطاء الحقيقية.
+   183→   183→
+   184→   184→#### 0.7 حذف الملفات المكررة بـ ` (1)` suffix
+   185→   185→- **ملفات:** ~80 ملف في `/home/z/my-project/* (1).*`
+   186→   186→- **لماذا:** تربك الـ IDE وتبدو غير احترافية.
+   187→   187→
+   188→   188→#### 0.8 إصلاح `_authenticated/route.tsx` error swallowing
+   189→   189→- **ملف:** `src/routes/_authenticated/route.tsx:15-23`
+   190→   190→- **التغيير:**
+   191→   191→  ```typescript
+   192→   192→  // قبل
+   193→   193→  catch (e) { navigate({ to: "/auth" }); }
+   194→   194→
+   195→   195→  // بعد
+   196→   196→  catch (e) {
+   197→   197→    if (e?.code === 401 || e?.code === 403) navigate({ to: "/auth" });
+   198→   198→    else throw e;  // propagate to error boundary
+   199→   199→  }
+   200→   200→  ```
+   201→   201→- **لماذا:** أي خطأ server-side يسجل خروج المستخدم — يجعل التطبيق يبدو غير مستقر.
+   202→   202→
+   203→   203→#### 0.9 إصلاح settings toggles
+   204→   204→- **ملف:** `src/routes/_authenticated/settings.tsx:51-55`
+   205→   205→- **التغيير:** ربط الـ toggles بـ localStorage flags فعلياً، أو حذفها.
+   206→   206→
+   207→   207→**انتقال للمرحلة 1 فقط بعد نجاح كل اختبارات المرحلة 0.**
+   208→   208→
+   209→   209→---
+   210→   210→
+   211→   211→### المرحلة 1: نقل الـ infrastructure layers من QuantDinger (3-5 أيام) — **P0-P1**
+   212→   212→
+   213→   213→#### 1.1 نقل `safe_exec` sandbox إلى TypeScript (P0)
+   214→   214→- **المصدر:** `audit/QuantDinger/backend_api_python/app/utils/safe_exec.py` (470 LOC)
+   215→   215→- **الهدف:** `src/shared/safe-exec/index.ts` + `validator.ts` + `runner.ts`
+   216→   216→- **الـ approach:**
+   217→   217→  - **Layer 1 (regex blacklist):** نقل مباشر، نفس الـ patterns بالضبط
+   218→   218→  - **Layer 2 (AST):** استخدام `@typescript-eslint/parser` أو `acorn` للـ AST walk، نفس الـ import whitelist (`numpy, pandas, math, json, datetime, time, collections, functools, itertools, statistics, decimal, fractions, operator, copy` — لكن بالـ JS equivalents)
+   219→   219→  - **Layer 3 (restricted builtins):** استخدام `vm2` أو `isolated-vm` في Node.js
+   220→   220→  - **Timeout:** `Promise.race` مع `setTimeout` + `worker_threads` للـ CPU-bound
+   221→   221→  - **Subprocess isolation:** `worker_threads` (أخف من `child_process`)
+   222→   222→- **الجهد:** 2-3 أيام
+   223→   223→- **الاستخدام في VIXOR:** تنفيذ استراتيجيات Python/JS المقدمة من المستخدم بأمان
+   224→   224→
+   225→   225→#### 1.2 نقل `circuit_breaker + rate_limiter + cache_manager` (P0)
+   226→   226→- **المصدر:**
+   227→   227→  - `audit/QuantDinger/backend_api_python/app/data_sources/circuit_breaker.py`
+   228→   228→  - `audit/QuantDinger/backend_api_python/app/data_sources/rate_limiter.py`
+   229→   229→  - `audit/QuantDinger/backend_api_python/app/data_sources/cache_manager.py`
+   230→   230→- **الهدف:**
+   231→   231→  - `src/shared/resilience/circuit-breaker.ts`
+   232→   232→  - `src/shared/resilience/rate-limiter.ts`
+   233→   233→  - `src/shared/resilience/lru-cache.ts`
+   234→   234→- **الـ approach:** نقل مباشر بـ TypeScript — لا توجد dependencies على Python
+   235→   235→- **الجهد:** 1 يوم
+   236→   236→- **الاستخدام في VIXOR:** حماية كل الـ external API calls (Binance, TwelveData, Finnhub, Telegram) من الـ cascading failures
+   237→   237→
+   238→   238→#### 1.3 نقل `credential_crypto` إلى Node.js `crypto` (P0)
+   239→   239→- **المصدر:** `audit/QuantDinger/backend_api_python/app/utils/credential_crypto.py` (50 LOC)
+   240→   240→- **الهدف:** `src/shared/crypto/credential-crypto.ts`
+   241→   241→- **الـ approach:**
+   242→   242→  ```typescript
+   243→   243→  import { createCipheriv, createDecipheriv, scryptSync, randomBytes } from "crypto";
+   244→   244→
+   245→   245→  const KEY = scryptSync(process.env.SECRET_KEY!, "vixor-salt", 32); // AES-256
+   246→   246→
+   247→   247→  export function encryptCredential(data: object): string {
+   248→   248→    const iv = randomBytes(16);
+   249→   249→    const cipher = createCipheriv("aes-256-gcm", KEY, iv);
+   250→   250→    const enc = Buffer.concat([cipher.update(JSON.stringify(data), "utf8"), cipher.final()]);
+   251→   251→    const tag = cipher.getAuthTag();
+   252→   252→    return Buffer.concat([iv, tag, enc]).toString("base64url");
+   253→   253→  }
+   254→   254→
+   255→   255→  export function decryptCredential<T>(token: string): T {
+   256→   256→    const buf = Buffer.from(token, "base64url");
+   257→   257→    const iv = buf.subarray(0, 16);
+   258→   258→    const tag = buf.subarray(16, 32);
+   259→   259→    const enc = buf.subarray(32);
+   260→   260→    const decipher = createDecipheriv("aes-256-gcm", KEY, iv);
+   261→   261→    decipher.setAuthTag(tag);
+   262→   262→    const dec = Buffer.concat([decipher.update(enc), decipher.final()]);
+   263→   263→    return JSON.parse(dec.toString("utf8"));
+   264→   264→  }
+   265→   265→  ```
+   266→   266→- **الجهد:** نصف يوم
+   267→   267→- **الاستخدام في VIXOR:** تشفير exchange API keys قبل تخزينها في Supabase
+   268→   268→
+   269→   269→#### 1.4 نقل `llm.py` (multi-provider LLM service) إلى TypeScript (P1)
+   270→   270→- **المصدر:** `audit/QuantDinger/backend_api_python/app/services/llm.py` (629 LOC)
+   271→   271→- **الهدف:** `src/shared/llm/index.ts` + `providers/*.ts`
+   272→   272→- **الـ approach:**
+   273→   273→  - 7 providers: OpenRouter, OpenAI, Gemini, DeepSeek, Grok, MiniMax, Custom OpenAI-compatible
+   274→   274→  - Auto-detect by API key prefix:
+   275→   275→    - `sk-or-v1-*` → OpenRouter
+   276→   276→    - `sk-*` → OpenAI
+   277→   277→    - `AIza*` → Gemini
+   278→   278→    - etc.
+   279→   279→  - Provider interface: `chat(messages, options) => { content, usage }`
+   280→   280→  - Error normalization per provider
+   281→   281→- **الجهد:** 1-2 يوم
+   282→   282→- **الاستخدام في VIXOR:** السماح للمستخدم بإحضار مفتاحه الخاص لأي LLM — لا حصر على ZAI SDK
+   283→   283→
+   284→   284→#### 1.5 نقل `signal_notifier.py` إلى TypeScript (P1)
+   285→   285→- **المصدر:** `audit/QuantDinger/backend_api_python/app/services/signal_notifier.py` (912 LOC)
+   286→   286→- **الهدف:** `src/shared/notifications/index.ts` + `channels/*.ts`
+   287→   287→- **الـ approach:**
+   288→   288→  - 6 channels: browser (Web Push), email (Resend/SendGrid), Telegram (Bot API), SMS (Twilio), Discord webhook, generic HMAC webhook
+   289→   289→  - Per-strategy `notification_config` JSON schema
+   290→   290→  - User-timezone-aware timestamps (VIXOR عندها بالفعل timezone لـ Cairo)
+   291→   291→- **الجهد:** 2 يوم
+   292→   292→- **الاستخدام في VIXOR:** إشعارات متعددة القنوات للـ signals و alerts — حالياً فقط Telegram
+   293→   293→
+   294→   294→#### 1.6 نقل `news.py` (Finnhub + RSS) إلى TypeScript (P0 — استبدال للأخبار الوهمية)
+   295→   295→- **المصدر:** `audit/QuantDinger/backend_api_python/app/data_providers/news.py`
+   296→   296→- **الهدف:** `src/domains/market/server/news.ts`
+   297→   297→- **الـ approach:**
+   298→   298→  ```typescript
+   299→   299→  // 1. Finnhub market news (already have FINNHUB_API_KEY)
+   300→   300→  export async function getMarketNews(category: "general" | "forex" | "crypto" = "general") {
+   301→   301→    const res = await fetch(
+   302→   302→      `https://finnhub.io/api/v1/news?category=${category}&token=${process.env.FINNHUB_API_KEY}`
+   303→   303→    );
+   304→   304→    return res.json();
+   305→   305→  }
+   306→   306→
+   307→   307→  // 2. Company-specific news
+   308→   308→  export async function getCompanyNews(symbol: string, from: string, to: string) {
+   309→   309→    const res = await fetch(
+   310→   310→      `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${from}&to=${to}&token=${process.env.FINNHUB_API_KEY}`
+   311→   311→    );
+   312→   312→    return res.json();
+   313→   313→  }
+   314→   314→
+   315→   315→  // 3. RSS fallback ( Investing.com, Reuters, FXStreet)
+   316→   316→  export async function getRSSFeeds(category: string) { /* parse RSS XML */ }
+   317→   317→  ```
+   318→   318→- **الجهد:** 1 يوم
+   319→   319→- **الاستخدام في VIXOR:** استبدال `newsMap` الوهمية بأخبار حقيقية في `engine.ts`
+   320→   320→
+   321→   321→---
+   322→   322→
+   323→   323→### المرحلة 2: نقل الـ engines الرئيسية (5-8 أيام) — **P1-P2**
+   324→   324→
+   325→   325→#### 2.1 نقل `backtest.py` core (P1)
+   326→   326→- **المصدر:** `audit/QuantDinger/backend_api_python/app/services/backtest.py` (4974 LOC)
+   327→   327→- **ننقل فقط:** الـ core simulation logic (~2000 LOC):
+   328→   328→  - `_simulate_signals_with_mtf` — multi-timeframe simulation
+   329→   329→  - `_infer_candle_path` — 4-point intra-bar path (bullish: O→L→H→C, bearish: O→H→L→C)
+   330→   330→  - الـ trade state machine (`position ∈ {-size, 0, +size}`)
+   331→   331→  - Risk features: fixed SL/TP, trailing stop, liquidation
+   332→   332→  - Trade-direction modes: long/short/both
+   333→   333→  - Equity curve sampling
+   334→   334→- **الهدف:** `src/domains/backtest/engine/simulator.ts` + `state-machine.ts` + `candle-path.ts`
+   335→   335→- **الـ approach:**
+   336→   336→  - نقل الـ algorithms حرفياً (نفس الـ formulas)
+   337→   337→  - استخدام `typed arrays` (Float64Array) للأداء
+   338→   338→  - تخزين النتائج في `backtest_runs`, `backtest_trades`, `backtest_equity_points` (نفس schema من QuantDinger)
+   339→   339→- **الجهد:** 3-4 أيام
+   340→   340→- **الاستخدام في VIXOR:** backtest لأي استراتيجية — ميزة كبرى مفقودة حالياً
+   341→   341→
+   342→   342→#### 2.2 نقل `strategy_script_runtime.py` + `indicator_params.py` (P1)
+   343→   343→- **المصدر:**
+   344→   344→  - `audit/QuantDinger/backend_api_python/app/services/strategy_script_runtime.py`
+   345→   345→  - `audit/QuantDinger/backend_api_python/app/services/indicator_params.py`
+   346→   346→- **الهدف:** `src/domains/strategy/runtime/script-runtime.ts` + `indicator-params.ts`
+   347→   347→- **الـ approach:**
+   348→   348→  - الـ DSL: `@strategy` + `@param` decorators → TypeScript decorators
+   349→   349→  - `on_init(ctx)` + `on_bar(ctx, bar)` contract → same in TS
+   350→   350→  - `ctx.buy()`, `ctx.sell()`, `ctx.close_position()` → same API
+   351→   351→  - يعتمد على `safe-exec` (المرحلة 1.1)
+   352→   352→- **الجهد:** 2-3 أيام
+   353→   353→- **الاستخدام في VIXOR:** السماح للمستخدم بكتابة استراتيجيات JavaScript/TypeScript وتشغيلها
+   354→   354→
+   355→   355→#### 2.3 نقل `experiment/regime.py` + `scoring.py` (P2)
+   356→   356→- **المصدر:**
+   357→   357→  - `audit/QuantDinger/backend_api_python/app/services/experiment/regime.py` (170 LOC) — 5 regimes
+   358→   358→  - `audit/QuantDinger/backend_api_python/app/services/experiment/scoring.py` (140 LOC) — multi-factor
+   359→   359→- **الهدف:** `src/domains/analysis/engine/regime/regime-detector.ts` + `strategy-scorer.ts`
+   360→   360→- **الـ approach:** نقل مباشر — كل المنطق هو calculations رياضية
+   361→   361→- **الجهد:** 1 يوم
+   362→   362→- **الاستخدام في VIXOR:**
+   363→   363→  - Regime detector: يحدد السوق trending/ranging/volatile/choppy/reversal — يحسن الـ signal accuracy
+   364→   364→  - Scorer: يرتب الـ strategies في leaderboard بأربع درجات (A/B/C/D)
+   365→   365→
+   366→   366→#### 2.4 نقل `experiment/evolution.py` + `runner.py` (P2)
+   367→   367→- **المصدر:**
+   368→   368→  - `audit/QuantDinger/backend_api_python/app/services/experiment/evolution.py` (123 LOC)
+   369→   369→  - `audit/QuantDinger/backend_api_python/app/services/experiment/runner.py` (609 LOC)
+   370→   370→- **الهدف:** `src/domains/experiment/evolution.ts` + `runner.ts`
+   371→   371→- **الـ approach:**
+   372→   372→  - Grid search + random search + LLM-driven optimization
+   373→   373→  - Multi-round LLM optimization مع early-stop عند score ≥ 82
+   374→   374→  - يعتمد على backtest engine + LLM service + scorer
+   375→   375→- **الجهد:** 2-3 أيام
+   376→   376→- **الاستخدام في VIXOR:** "AI يبحث → backtests → يقيم → يقترح أفضل استراتيجية" loop — ميزة تسويقية قوية
+   377→   377→
+   378→   378→---
+   379→   379→
+   380→   380→### المرحلة 3: نقل الـ agent + trading adapters (8-12 يوم) — **P2-P3**
+   381→   381→
+   382→   382→#### 3.1 نقل Agent Gateway pattern (P2)
+   383→   383→- **المصدر:**
+   384→   384→  - `audit/QuantDinger/backend_api_python/app/utils/agent_auth.py` (470 LOC)
+   385→   385→  - `audit/QuantDinger/backend_api_python/app/utils/agent_jobs.py` (339 LOC)
+   386→   386→  - `audit/QuantDinger/backend_api_python/app/routes/agent_v1/` (10 routes)
+   387→   387→- **الهدف:** `src/domains/agent-gateway/`
+   388→   388→  - `tokens.ts` — capability-class scoped tokens (R/W/B/N/C/T)
+   389→   389→  - `jobs.ts` — async job runner with SSE progress
+   390→   390→  - `audit.ts` — redacted audit logging
+   391→   391→  - `idempotency.ts` — DB unique partial index pattern
+   392→   392→- **الـ approach:**
+   393→   393→  - Token format: `vx_agent_<urlsafe_32_bytes>`
+   394→   394→  - SHA-256 hash at rest
+   395→   395→  - Per-token: `scopes`, `markets`, `instruments`, `paper_only`, `rate_limit_per_min`, `expires_at`
+   396→   396→  - SaaS-mode guard: when `VIXOR_DEPLOYMENT_MODE=saas`, reject T-scope at issuance
+   397→   397→- **الجهد:** 3-4 أيام
+   398→   398→- **الاستخدام في VIXOR:** السماح لـ AI agents خارجية (Cursor, Claude Code) بالوصول لـ VIXOR بشكل آمن ومنظم
+   399→   399→
+   400→   400→#### 3.2 نقل 4 crypto exchange adapters (P2)
+   401→   401→- **المصدر:** `audit/QuantDinger/backend_api_python/app/services/live_trading/`
+   402→   402→- **ننقل فقط:**
+   403→   403→  - `binance.py` (spot + futures) — مع broker ID `A2NAPZAC`/`HBpUbQjT`
+   404→   404→  - `okx.py` — مع passphrase
+   405→   405→  - `bybit.py` — linear futures
+   406→   406→  - `coinbase_exchange.py` — spot فقط
+   407→   407→- **الهدف:** `src/domains/broker-adapters/{binance,okx,bybit,coinbase}/`
+   408→   408→- **الـ approach:**
+   409→   409→  - نفس `BaseRestClient` interface: `ping()`, `get_account()`, `place_order()`, `cancel_order()`, `get_positions()`, `get_fee_rate()`
+   410→   410→  - نفس الـ HMAC signing logic لكل exchange
+   411→   411→  - نفس demo/testnet URL routing
+   412→   412→  - **لا نستخدم ccxt** — التحكم المباشر أفضل
+   413→   413→- **الجهد:** 4-5 أيام
+   414→   414→- **الاستخدام في VIXOR:** تنفيذ أوامر حقيقية (أو paper) من الـ strategies
+   415→   415→
+   416→   416→#### 3.3 نقل OAuth (Google + GitHub) (P3)
+   417→   417→- **المصدر:** `audit/QuantDinger/backend_api_python/app/services/oauth_service.py` (715 LOC)
+   418→   418→- **الهدف:** `src/domains/auth/oauth/`
+   419→   419→- **الـ approach:**
+   420→   420→  - Cross-worker OAuth state في `oauth_states` table (ليس in-memory)
+   421→   421→  - Google + GitHub providers
+   422→   422→  - Same CSRF protection pattern
+   423→   423→- **الجهد:** 2-3 أيام
+   424→   424→- **الاستخدام في VIXOR:** بدائل للـ Telegram login (مفيد للمستخدمين بدون Telegram)
+   425→   425→
+   426→   426→#### 3.4 نقل USDT-TRC20 payment service (P3)
+   427→   427→- **المصدر:** `audit/QuantDinger/backend_api_python/app/services/usdt_payment_service.py` (830 LOC)
+   428→   428→- **الهدف:** `src/domains/payment/usdt-trc20/`
+   429→   429→- **الـ approach:**
+   430→   430→  - HD-derived per-order addresses
+   431→   431→  - TronGrid on-chain reconciliation
+   432→   432→  - Same `usdt_payments` table schema
+   433→   433→- **الجهد:** 3-4 أيام
+   434→   434→- **الاستخدام في VIXOR:** بديل لـ Telegram Stars — قبول مدفوعات crypto
+   435→   435→
+   436→   436→---
+   437→   437→
+   438→   438→## 4. الـ Schema Changes المطلوبة
+   439→   439→
+   440→   440→### 4.1 جداول جديدة (New tables)
+   441→   441→
+   442→   442→```sql
+   443→   443→-- Migration: 20260618000000_add_quantdinger_reuse.sql
+   444→   444→
+   445→   445→-- Strategy runtime (للمرحلة 2.2)
+   446→   446→CREATE TABLE IF NOT EXISTS strategies (
+   447→   447→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   448→   448→  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+   449→   449→  name TEXT NOT NULL,
+   450→   450→  description TEXT,
+   451→   451→  code TEXT NOT NULL,  -- JS/TS code
+   452→   452→  code_hash TEXT NOT NULL,  -- SHA-256 for change detection
+   453→   453→  params JSONB DEFAULT '{}',
+   454→   454→  market TEXT NOT NULL,  -- Crypto/Forex/USStock
+   455→   455→  symbol TEXT NOT NULL,
+   456→   456→  timeframe TEXT NOT NULL,
+   457→   457→  status TEXT DEFAULT 'draft',  -- draft/active/paused/archived
+   458→   458→  created_at TIMESTAMPTZ DEFAULT NOW(),
+   459→   459→  updated_at TIMESTAMPTZ DEFAULT NOW()
+   460→   460→);
+   461→   461→CREATE INDEX idx_strategies_user ON strategies(user_id, created_at DESC);
+   462→   462→
+   463→   463→-- Backtest runs (للمرحلة 2.1)
+   464→   464→CREATE TABLE IF NOT EXISTS backtest_runs (
+   465→   465→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   466→   466→  strategy_id UUID NOT NULL REFERENCES strategies(id) ON DELETE CASCADE,
+   467→   467→  user_id UUID NOT NULL REFERENCES profiles(id),
+   468→   468→  config JSONB NOT NULL,
+   469→   469→  result JSONB,  -- equity curve, trades count, sharpe, max DD, etc.
+   470→   470→  status TEXT DEFAULT 'queued',  -- queued/running/succeeded/failed
+   471→   471→  error TEXT,
+   472→   472→  started_at TIMESTAMPTZ,
+   473→   473→  completed_at TIMESTAMPTZ,
+   474→   474→  created_at TIMESTAMPTZ DEFAULT NOW()
+   475→   475→);
+   476→   476→CREATE INDEX idx_backtest_runs_user ON backtest_runs(user_id, created_at DESC);
+   477→   477→CREATE INDEX idx_backtest_runs_strategy ON backtest_runs(strategy_id, created_at DESC);
+   478→   478→
+   479→   479→-- Backtest trades (per-trade record)
+   480→   480→CREATE TABLE IF NOT EXISTS backtest_trades (
+   481→   481→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   482→   482→  backtest_run_id UUID NOT NULL REFERENCES backtest_runs(id) ON DELETE CASCADE,
+   483→   483→  entry_time TIMESTAMPTZ NOT NULL,
+   484→   484→  exit_time TIMESTAMPTZ NOT NULL,
+   485→   485→  side TEXT NOT NULL,  -- long/short
+   486→   486→  entry_price NUMERIC NOT NULL,
+   487→   487→  exit_price NUMERIC NOT NULL,
+   488→   488→  size NUMERIC NOT NULL,
+   489→   489→  pnl NUMERIC NOT NULL,
+   490→   490→  pnl_pct NUMERIC NOT NULL,
+   491→   491→  fees NUMERIC DEFAULT 0,
+   492→   492→  exit_reason TEXT  -- take_profit/stop_loss/trailing/signal/manual
+   493→   493→);
+   494→   494→
+   495→   495→-- Agent tokens (للمرحلة 3.1)
+   496→   496→CREATE TABLE IF NOT EXISTS agent_tokens (
+   497→   497→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   498→   498→  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+   499→   499→  name TEXT NOT NULL,
+   500→   500→  token_hash TEXT NOT NULL UNIQUE,  -- SHA-256
+   501→   501→  token_prefix TEXT NOT NULL,  -- vx_agent_xxxxxxxx (for display)
+   502→   502→  scopes TEXT NOT NULL DEFAULT 'R',  -- CSV: R/W/B/N/C/T
+   503→   503→  markets TEXT NOT NULL DEFAULT '*',
+   504→   504→  instruments TEXT NOT NULL DEFAULT '*',
+   505→   505→  paper_only BOOLEAN NOT NULL DEFAULT TRUE,
+   506→   506→  rate_limit_per_min INTEGER NOT NULL DEFAULT 60,
+   507→   507→  status TEXT NOT NULL DEFAULT 'active',  -- active/revoked/expired
+   508→   508→  expires_at TIMESTAMPTZ,
+   509→   509→  last_used_at TIMESTAMPTZ,
+   510→   510→  created_at TIMESTAMPTZ DEFAULT NOW()
+   511→   511→);
+   512→   512→CREATE INDEX idx_agent_tokens_user ON agent_tokens(user_id, created_at DESC);
+   513→   513→CREATE INDEX idx_agent_tokens_hash ON agent_tokens(token_hash) WHERE status = 'active';
+   514→   514→
+   515→   515→-- Agent jobs (async runner with SSE progress)
+   516→   516→CREATE TABLE IF NOT EXISTS agent_jobs (
+   517→   517→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   518→   518→  agent_token_id UUID NOT NULL REFERENCES agent_tokens(id) ON DELETE CASCADE,
+   519→   519→  user_id UUID NOT NULL REFERENCES profiles(id),
+   520→   520→  kind TEXT NOT NULL,  -- backtest/analyze/trade/etc.
+   521→   521→  status TEXT NOT NULL DEFAULT 'queued',  -- queued/running/succeeded/failed
+   522→   522→  request_payload JSONB,
+   523→   523→  result JSONB,
+   524→   524→  error TEXT,
+   525→   525→  progress JSONB,  -- latest snapshot for cold reconnect
+   526→   526→  started_at TIMESTAMPTZ,
+   527→   527→  completed_at TIMESTAMPTZ,
+   528→   528→  created_at TIMESTAMPTZ DEFAULT NOW()
+   529→   529→);
+   530→   530→CREATE UNIQUE INDEX idx_agent_jobs_idem
+   531→   531→  ON agent_jobs(agent_token_id, kind, (request_payload->>'idempotency_key'))
+   532→   532→  WHERE request_payload->>'idempotency_key' IS NOT NULL;
+   533→   533→CREATE INDEX idx_agent_jobs_user ON agent_jobs(user_id, created_at DESC);
+   534→   534→
+   535→   535→-- Agent audit log (redacted)
+   536→   536→CREATE TABLE IF NOT EXISTS agent_audit (
+   537→   537→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   538→   538→  agent_token_id UUID NOT NULL REFERENCES agent_tokens(id) ON DELETE CASCADE,
+   539→   539→  user_id UUID NOT NULL REFERENCES profiles(id),
+   540→   540→  route TEXT NOT NULL,
+   541→   541→  method TEXT NOT NULL,
+   542→   542→  scope_class TEXT NOT NULL,
+   543→   543→  status_code INTEGER NOT NULL,
+   544→   544→  idempotency_key TEXT,
+   545→   545→  request_summary JSONB,  -- redacted
+   546→   546→  response_summary JSONB,  -- redacted
+   547→   547→  duration_ms INTEGER,
+   548→   548→  created_at TIMESTAMPTZ DEFAULT NOW()
+   549→   549→);
+   550→   550→CREATE INDEX idx_agent_audit_user ON agent_audit(user_id, created_at DESC);
+   551→   551→CREATE INDEX idx_agent_audit_token ON agent_audit(agent_token_id, created_at DESC);
+   552→   552→
+   553→   553→-- Exchange credentials (encrypted at rest via credential_crypto)
+   554→   554→CREATE TABLE IF NOT EXISTS exchange_credentials (
+   555→   555→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   556→   556→  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+   557→   557→  exchange TEXT NOT NULL,  -- binance/okx/bybit/coinbase
+   558→   558→  label TEXT NOT NULL,
+   559→   559→  encrypted_credentials TEXT NOT NULL,  -- base64(iv + tag + ciphertext)
+   560→   560→  is_testnet BOOLEAN DEFAULT FALSE,
+   561→   561→  permissions TEXT NOT NULL DEFAULT 'read',  -- read/trade
+   562→   562→  last_used_at TIMESTAMPTZ,
+   563→   563→  created_at TIMESTAMPTZ DEFAULT NOW()
+   564→   564→);
+   565→   565→CREATE INDEX idx_exchange_credentials_user ON exchange_credentials(user_id, exchange);
+   566→   566→
+   567→   567→-- Analysis memory (لـ self-calibration loop)
+   568→   568→CREATE TABLE IF NOT EXISTS analysis_memory (
+   569→   569→  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   570→   570→  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+   571→   571→  pair TEXT NOT NULL,
+   572→   572→  timeframe TEXT NOT NULL,
+   573→   573→  recommendation TEXT NOT NULL,
+   574→   574→  confidence NUMERIC NOT NULL,
+   575→   575→  actual_outcome TEXT,  -- win/loss/neutral (filled later)
+   576→   576→  pnl_pct NUMERIC,
+   577→   577→  created_at TIMESTAMPTZ DEFAULT NOW(),
+   578→   578→  validated_at TIMESTAMPTZ
+   579→   579→);
+   580→   580→CREATE INDEX idx_analysis_memory_pair ON analysis_memory(pair, timeframe, created_at DESC);
+   581→   581→CREATE INDEX idx_analysis_memory_unvalidated ON analysis_memory(id) WHERE actual_outcome IS NULL;
+   582→   582→
+   583→   583→-- Enable RLS on all new tables
+   584→   584→ALTER TABLE strategies ENABLE ROW LEVEL SECURITY;
+   585→   585→ALTER TABLE backtest_runs ENABLE ROW LEVEL SECURITY;
+   586→   586→ALTER TABLE backtest_trades ENABLE ROW LEVEL SECURITY;
+   587→   587→ALTER TABLE agent_tokens ENABLE ROW LEVEL SECURITY;
+   588→   588→ALTER TABLE agent_jobs ENABLE ROW LEVEL SECURITY;
+   589→   589→ALTER TABLE agent_audit ENABLE ROW LEVEL SECURITY;
+   590→   590→ALTER TABLE exchange_credentials ENABLE ROW LEVEL SECURITY;
+   591→   591→ALTER TABLE analysis_memory ENABLE ROW LEVEL SECURITY;
+   592→   592→
+   593→   593→-- RLS policies (user can only see their own rows)
+   594→   594→CREATE POLICY "user_own_strategies" ON strategies FOR ALL USING (auth.uid() = user_id);
+   595→   595→CREATE POLICY "user_own_backtests" ON backtest_runs FOR ALL USING (auth.uid() = user_id);
+   596→   596→CREATE POLICY "user_own_backtest_trades" ON backtest_trades FOR ALL USING (
+   597→   597→  EXISTS (SELECT 1 FROM backtest_runs WHERE id = backtest_trades.backtest_run_id AND user_id = auth.uid())
+   598→   598→);
+   599→   599→CREATE POLICY "user_own_agent_tokens" ON agent_tokens FOR ALL USING (auth.uid() = user_id);
+   600→   600→CREATE POLICY "user_own_agent_jobs" ON agent_jobs FOR ALL USING (auth.uid() = user_id);
+   601→   601→CREATE POLICY "user_own_agent_audit" ON agent_audit FOR ALL USING (auth.uid() = user_id);
+   602→   602→CREATE POLICY "user_own_exchange_credentials" ON exchange_credentials FOR ALL USING (auth.uid() = user_id);
+   603→   603→CREATE POLICY "user_own_analysis_memory" ON analysis_memory FOR ALL USING (auth.uid() = user_id);
+   604→   604→```
+   605→   605→
+   606→   606→### 4.2 تعديل جداول موجودة
+   607→   607→
+   608→   608→```sql
+   609→   609→-- إضافة strategy_id لجدول analyses الحالي
+   610→   610→ALTER TABLE analyses ADD COLUMN IF NOT EXISTS strategy_id UUID REFERENCES strategies(id);
+   611→   611→ALTER TABLE analyses ADD COLUMN IF NOT EXISTS backtest_run_id UUID REFERENCES backtest_runs(id);
+   612→   612→
+   613→   613→-- إضافة regime للـ daily_signals
+   614→   614→ALTER TABLE daily_signals ADD COLUMN IF NOT EXISTS regime TEXT;
+   615→   615→ALTER TABLE daily_signals ADD COLUMN IF NOT EXISTS regime_confidence NUMERIC;
+   616→   616→```
+   617→   617→
+   618→   618→---
+   619→   619→
+   620→   620→## 5. الـ Dependencies الجديدة لـ package.json
+   621→   621→
+   622→   622→```json
+   623→   623→{
+   624→   624→  "dependencies": {
+   625→   625→    "isolated-vm": "^5.0.0",     // للـ safe_exec sandbox
+   626→   626→    "acorn": "^8.11.0",          // للـ AST validation
+   627→   627→    "acorn-walk": "^8.3.0",      // للـ AST walk
+   628→   628→    "ws": "^8.16.0",             // للـ SSE progress streaming
+   629→   629→    "node-fetch": "^3.3.2",      // للـ HTTP calls لـ exchanges
+   630→   630→    "crypto-js": "^4.2.0",       // للـ HMAC signing لـ exchanges
+   631→   631→    "rss-parser": "^3.13.0",     // للـ RSS news fallback
+   632→   632→    "web-push": "^3.6.7"         // للـ browser push notifications
+   633→   633→  }
+   634→   634→}
+   635→   635→```
+   636→   636→
+   637→   637→---
+   638→   638→
+   639→   639→## 6. تحليل المخاطر (Risk Analysis)
+   640→   640→
+   641→   641→### مخاطر عالية (High Risk)
+   642→   642→
+   643→   643→| # | المخاطرة | التخفيف |
+   644→   644→|---|---|---|
+   645→   645→| 1 | **تعارض TypeScript decorators مع الـ compiler config** للـ `@strategy` / `@param` | استخدام `experimentalDecorators: true` + `emitDecoratorMetadata: true` في `tsconfig.json`. أو تبديلها بـ plain function calls (`strategy({...})` wrapper) |
+   646→   646→| 2 | **`isolated-vm` له native bindings** قد لا تعمل على Vercel serverless | استخدام `vm2` بدلاً منه (pure JS لكن أبطأ). أو تشغيل الـ strategy execution في worker منفصل. |
+   647→   647→| 3 | **Backtest engine مع 2000 LOC** قد يحمل bugs خفية من النقل | كتابة unit tests بـ نفس الـ fixtures من QuantDinger (`tests/test_three_minute_timeframe.py` يتحول لـ TS test) |
+   648→   648→| 4 | **Exchange adapters تحتاج HMAC signing دقيق** — خطأ واحد يكسر كل الطلبات | اختبار كل adapter ضد testnet أولاً. استخدام `crypto-js` بدلاً من `node:crypto` للـ portability |
+   649→   649→| 5 | **Agent Gateway + tokens** يضيف surface للهجوم | تشغيل الـ audit log دائماً. اختبار penetration للـ token issuance flow |
+   650→   650→
+   651→   651→### مخاطر متوسطة (Medium Risk)
+   652→   652→
+   653→   653→| # | المخاطرة | التخفيف |
+   654→   654→|---|---|---|
+   655→   655→| 6 | **Migration حجمها كبير** (8 جداول جديدة) | تطبيقها على staging أولاً، ثم production. Backup قبل التطبيق. |
+   656→   656→| 7 | **Multi-provider LLM** يضيف 7 dependencies | استخدام `openai` SDK لكل الـ OpenAI-compatible providers (OpenRouter, DeepSeek, Grok, MiniMax, Custom). فقط Gemini و OpenAI الأصلي يحتاجون adapters خاصة. |
+   657→   657→| 8 | **`news.py` Finnhub** rate limit (60 calls/min) | استخدام الـ rate limiter المنقول (المرحلة 1.2). Cache 5 دقائق. |
+   658→   658→| 9 | **Experiment orchestration** يستهلك LLM tokens بكثرة | Hard cap per user per day. Early-stop عند score ≥ 82. |
+   659→   659→
+   660→   660→### مخاطر منخفضة (Low Risk)
+   661→   661→
+   662→   662→| # | المخاطرة | التخفيف |
+   663→   663→|---|---|---|
+   664→   664→| 10 | **`credential_crypto` AES-256-GCM** في Node.js — قياسي ومختبر | فقط تأكد من أن `SECRET_KEY` قوي (32+ bytes) |
+   665→   665→| 11 | **Circuit breaker pattern** — معروف ومختبر | نقل مباشر من QuantDinger بلا تعديل |
+   666→   666→| 12 | **RSS parser** — مكتبة ناضجة | استخدام `rss-parser` المعروفة |
+   667→   667→
+   668→   668→---
+   669→   669→
+   670→   670→## 7. الـ Acceptance Criteria لكل مرحلة
+   671→   671→
+   672→   672→### المرحلة 0 (إصلاح VIXOR)
+   673→   673→- [ ] كل الـ 13 env vars مضبوطة في `.env` و Vercel
+   674→   674→- [ ] `npm run dev` يفتح التطبيق بدون أخطاء console
+   675→   675→- [ ] `/auth` يعمل (Telegram login widget يظهر بعد BotFather `/setdomain`)
+   676→   676→- [ ] `/` dashboard يعرض بيانات حقيقية (ليس empty states)
+   677→   677→- [ ] `/analyze` ينتج تحليل بدون "Unable to identify asset"
+   678→   678→- [ ] `/settings` toggles تعمل فعلياً (localStorage)
+   679→   679→- [ ] price alerts تطلق كل 5 دقائق (cron)
+   680→   680→- [ ] Layout يستغل عرض الشاشة بالكامل على desktop (max-w-7xl)
+   681→   681→- [ ] لا توجد ملفات ` (1)` في الـ root
+   682→   682→
+   683→   683→### المرحلة 1 (infrastructure)
+   684→   684→- [ ] `safe-exec` يرفض كود فيه `import os` ويسمح بـ `import math`
+   685→   685→- [ ] `circuit-breaker` يفتح بعد 3 failures في 60s
+   686→   686→- [ ] `credential-crypto` يشفر ويفك تشفير JSON بنجاح
+   687→   687→- [ ] `llm` auto-detects OpenAI key ويستدعي `gpt-4o`
+   688→   688→- [ ] `notifications` يرسل Telegram message بنجاح
+   689→   689→- [ ] `news` يجلب أخبار حقيقية من Finnhub
+   690→   690→
+   691→   691→### المرحلة 2 (engines)
+   692→   692→- [ ] `backtest` ينتج equity curve لأي strategy
+   693→   693→- [ ] `strategy-runtime` ينفذ `on_bar` بشكل صحيح
+   694→   694→- [ ] `regime-detector` يصنف السوق كـ "trending" أو "ranging"
+   695→   695→- [ ] `experiment-runner` يحسن parameters ويرفع الـ score
+   696→   696→
+   697→   697→### المرحلة 3 (agent + adapters)
+   698→   698→- [ ] `agent-tokens` يصدر token بـ scope `R` فقط
+   699→   699→- [ ] `agent-jobs` يبث SSE progress
+   700→   700→- [ ] `binance-adapter` يجلب balance من testnet
+   701→   701→- [ ] `oauth` يوجه المستخدم لـ Google ويعيده بنجاح
+   702→   702→
+   703→   703→---
+   704→   704→
+   705→   705→## 8. الـ Agent Workflow للتطبيق
+   706→   706→
+   707→   707→### Agent 1: Fixer Agent (المرحلة 0)
+   708→   708→```
+   709→   709→Task ID: P0-FIXER
+   710→   710→Goal: تنفيذ كل إصلاحات المرحلة 0
+   711→   711→Inputs:
+   712→   712→  - /home/z/my-project/audit/vixor_current_state.md (القسم 15: Top 10 Issues)
+   713→   713→  - /home/z/my-project/.env (current state)
+   714→   714→  - Vercel project: prj_cGYyIJfIqiD8nzh8Mu3k50Yo2bIx
+   715→   715→Outputs:
+   716→   716→  - .env updated (local)
+   717→   717→  - Vercel env vars set
+   718→   718→  - 9 fixes in code (sections 0.1-0.9)
+   719→   719→  - QA runner passes 60/60 (was 52/0/6)
+   720→   720→Handoff:
+   721→   721→  - Append worklog entry to /home/z/my-project/worklog.md
+   722→   722→  - Run `node scripts/qa-test-runner.cjs` and save report
+   723→   723→```
+   724→   724→
+   725→   725→### Agent 2: Infrastructure Porter (المرحلة 1)
+   726→   726→```
+   727→   727→Task ID: P1-INFRA
+   728→   728→Goal: نقل 6 modules من QuantDinger
+   729→   729→Inputs:
+   730→   730→  - /home/z/my-project/audit/QuantDinger/backend_api_python/app/utils/safe_exec.py
+   731→   731→  - /home/z/my-project/audit/QuantDinger/backend_api_python/app/data_sources/{circuit_breaker,rate_limiter,cache_manager}.py
+   732→   732→  - /home/z/my-project/audit/QuantDinger/backend_api_python/app/utils/credential_crypto.py
+   733→   733→  - /home/z/my-project/audit/QuantDinger/backend_api_python/app/services/{llm,signal_notifier}.py
+   734→   734→  - /home/z/my-project/audit/QuantDinger/backend_api_python/app/data_providers/news.py
+   735→   735→Outputs:
+   736→   736→  - src/shared/safe-exec/{index,validator,runner}.ts
+   737→   737→  - src/shared/resilience/{circuit-breaker,rate-limiter,lru-cache}.ts
+   738→   738→  - src/shared/crypto/credential-crypto.ts
+   739→   739→  - src/shared/llm/{index,providers/*}.ts
+   740→   740→  - src/shared/notifications/{index,channels/*}.ts
+   741→   741→  - src/domains/market/server/news.ts
+   742→   742→Handoff:
+   743→   743→  - Each module has unit tests
+   744→   744→  - Migration: 20260618000000_add_quantdinger_reuse.sql applied
+   745→   745→  - worklog.md updated
+   746→   746→```
+   747→   747→
+   748→   748→### Agent 3: Engine Porter (المرحلة 2)
+   749→   749→```
+   750→   750→Task ID: P2-ENGINES
+   751→   751→Goal: نقل backtest + strategy runtime + experiment
+   752→   752→Inputs:
+   753→   753→  - audit/QuantDinger/backend_api_python/app/services/backtest.py
+   754→   754→  - audit/QuantDinger/backend_api_python/app/services/strategy_script_runtime.py
+   755→   755→  - audit/QuantDinger/backend_api_python/app/services/indicator_params.py
+   756→   756→  - audit/QuantDinger/backend_api_python/app/services/experiment/{regime,scoring,evolution,runner,prompts}.py
+   757→   757→Outputs:
+   758→   758→  - src/domains/backtest/engine/{simulator,state-machine,candle-path}.ts
+   759→   759→  - src/domains/strategy/runtime/{script-runtime,indicator-params}.ts
+   760→   760→  - src/domains/analysis/engine/regime/{regime-detector,strategy-scorer}.ts
+   761→   761→  - src/domains/experiment/{evolution,runner,prompts}.ts
+   762→   762→Handoff:
+   763→   763→  - Backtest produces equity curve
+   764→   764→  - Strategy runtime executes on_bar correctly
+   765→   765→  - Experiment runner improves strategy score
+   766→   766→```
+   767→   767→
+   768→   768→### Agent 4: Agent Gateway + Adapters (المرحلة 3)
+   769→   769→```
+   770→   770→Task ID: P3-AGENT-ADAPTERS
+   771→   771→Goal: نقل Agent Gateway + 4 exchange adapters + OAuth
+   772→   772→Inputs:
+   773→   773→  - audit/QuantDinger/backend_api_python/app/utils/{agent_auth,agent_jobs}.py
+   774→   774→  - audit/QuantDinger/backend_api_python/app/routes/agent_v1/
+   775→   775→  - audit/QuantDinger/backend_api_python/app/services/live_trading/{binance,okx,bybit,coinbase_exchange}.py
+   776→   776→  - audit/QuantDinger/backend_api_python/app/services/oauth_service.py
+   777→   777→Outputs:
+   778→   778→  - src/domains/agent-gateway/{tokens,jobs,audit,idempotency}.ts
+   779→   779→  - src/routes/api/agent-v1/* (10 routes)
+   780→   780→  - src/domains/broker-adapters/{binance,okx,bybit,coinbase}/
+   781→   781→  - src/domains/auth/oauth/{google,github}.ts
+   782→   782→Handoff:
+   783→   783→  - Agent token with scope R can call /api/agent/v1/markets
+   784→   784→  - Binance adapter gets balance from testnet
+   785→   785→  - OAuth Google login works end-to-end
+   786→   786→```
+   787→   787→
+   788→   788→---
+   789→   789→
+   790→   790→## 9. الـ KPIs لقياس النجاح
+   791→   791→
+   792→   792→### KPIs تقنية
+   793→   793→| KPI | الحالي | الهدف |
+   794→   794→|---|---|---|
+   795→   795→| QA test pass rate | 52/58 | 60/60 |
+   796→   796→| Bundle size (gzipped) | ~unknown | < 500 KB |
+   797→   797→| Time to first analysis | ~3s (when working) | < 2s |
+   798→   798→| Backtest execution (200 candles) | N/A | < 500ms |
+   799→   799→| Strategy compilation | N/A | < 100ms |
+   800→   800→| Agent token issuance | N/A | < 50ms |
+   801→   801→| SSE job progress latency | N/A | < 100ms |
+   802→   802→
+   803→   803→### KPIs منتج
+   804→   804→| KPI | الحالي | الهدف |
+   805→   805→|---|---|---|
+   806→   806→| Features that work | ~60% | 95% |
+   807→   807→| Telegram login success rate | 0% (env missing) | 100% (after BotFather config) |
+   808→   808→| Real news in analysis | 0% (mock data) | 100% (Finnhub) |
+   809→   809→| User complaints | 5 (layout, flow, data, UI, features) | 0 |
+   810→   810→| Time on page (avg) | unknown | > 5 min |
+   811→   811→| Strategies created per user | 0 | > 2 |
+   812→   812→
+   813→   813→---
+   814→   814→
+   815→   815→## 10. الخلاصة والتوصيات النهائية
+   816→   816→
+   817→   817→### ما يجب عمله **الآن** (قبل أي شيء آخر)
+   818→   818→1. **المرحلة 0** كاملة (1-2 يوم) — هذا يحل 70% من شكاوى المستخدم
+   819→   819→2. لا تبدأ أي نقل من QuantDinger قبل إصلاح VIXOR
+   820→   820→
+   821→   821→### أعلى قيمة من QuantDinger (ROI)
+   822→   822→1. **`safe_exec` sandbox** — يمكن تحويله لأي تنفيذ user code (strategies, indicators, custom alerts)
+   823→   823→2. **`backtest engine`** — ميزة كبرى مفقودة، تفتح أبواب monetization (Premium feature)
+   824→   824→3. **`multi-provider LLM`** — يحرر VIXOR من ZAI SDK فقط، يسمح بـ BYO-key
+   825→   825→4. **`multi-channel notifier`** — يحرر VIXOR من Telegram فقط
+   826→   826→5. **`circuit breaker + rate limiter`** — ضروري لأي تكامل مع external APIs
+   827→   827→
+   828→   828→### ما **لا** يستحق النقل من QuantDinger
+   829→   829→1. **MCP server** — VIXOR لا يحتاج MCP
+   830→   830→2. **Vue frontend** — VIXOR يستخدم React، لا معنى لنقل Vue code
+   831→   831→3. **USDT payment service** — مؤجل للمرحلة 3 (P3)
+   832→   832→4. **MT5 / IBKR adapters** — VIXOR يركز على crypto أولاً
+   833→   833→5. **CN/HK stock data sources** — VIXOR يركز على Forex + Crypto
+   834→   834→
+   835→   835→### ما يجب **الاحتفاظ به** في VIXOR (لا نلمسه من QuantDinger)
+   836→   836→1. **SMC/ICT analysis engine** (`engine.ts` 1360 LOC) — VIXOR متفوق
+   837→   837→2. **Debate Engine** — VIXOR ينفرد بها
+   838→   838→3. **Chart Truth Layer** — VIXOR ينفرد بها
+   839→   839→4. **Risk Governor** — VIXOR ينفرد بها
+   840→   840→5. **Telegram WebApp auth** — VIXOR شغاله صح (بعد env vars)
+   841→   841→6. **Asset Registry** — VIXOR شغاله
+   842→   842→7. **i18n + RTL** — VIXOR شغاله
+   843→   843→8. **Design system (OKLCH + Bloomberg)** — VIXOR شغاله
+   844→   844→
+   845→   845→### التوصية النهائية
+   846→   846→
+   847→   847→**اطلق المرحلة 0 فوراً.** بعد إكمالها، أطلق Agent 1 (Infrastructure Porter) بالتوازي مع Agent 2 (Engine Porter). المرحلة 3 مؤجلة حتى التحقق من نجاح المرحلتين 0 و 1.
+   848→   848→
+   849→   849→الـ total estimate: **15-25 يوم عمل** لتنفيذ كل المراحل، مع تحسن ملموس في تجربة المستخدم بعد **يوم واحد** فقط من المرحلة 0.
+   850→   850→
+   851→   851→---
+   852→   852→
+   853→   853→## الملحق أ: قائمة المصادر المرجعية لكل module منقول
+   854→   854→
+   855→   855→| Module | Source file in QuantDinger | Target file in VIXOR |
+   856→   856→|---|---|---|
+   857→   857→| safe_exec | `app/utils/safe_exec.py` (470 LOC) | `src/shared/safe-exec/{index,validator,runner}.ts` |
+   858→   858→| circuit_breaker | `app/data_sources/circuit_breaker.py` | `src/shared/resilience/circuit-breaker.ts` |
+   859→   859→| rate_limiter | `app/data_sources/rate_limiter.py` | `src/shared/resilience/rate-limiter.ts` |
+   860→   860→| cache_manager | `app/data_sources/cache_manager.py` | `src/shared/resilience/lru-cache.ts` |
+   861→   861→| credential_crypto | `app/utils/credential_crypto.py` (50 LOC) | `src/shared/crypto/credential-crypto.ts` |
+   862→   862→| llm | `app/services/llm.py` (629 LOC) | `src/shared/llm/{index,providers/*}.ts` |
+   863→   863→| signal_notifier | `app/services/signal_notifier.py` (912 LOC) | `src/shared/notifications/{index,channels/*}.ts` |
+   864→   864→| news | `app/data_providers/news.py` | `src/domains/market/server/news.ts` |
+   865→   865→| backtest (core) | `app/services/backtest.py` (4974 LOC, port ~2000) | `src/domains/backtest/engine/{simulator,state-machine,candle-path}.ts` |
+   866→   866→| strategy_runtime | `app/services/strategy_script_runtime.py` | `src/domains/strategy/runtime/{script-runtime,indicator-params}.ts` |
+   867→   867→| regime | `app/services/experiment/regime.py` (170 LOC) | `src/domains/analysis/engine/regime/regime-detector.ts` |
+   868→   868→| scoring | `app/services/experiment/scoring.py` (140 LOC) | `src/domains/analysis/engine/regime/strategy-scorer.ts` |
+   869→   869→| experiment | `app/services/experiment/{evolution,runner,prompts}.py` | `src/domains/experiment/{evolution,runner,prompts}.ts` |
+   870→   870→| agent_auth | `app/utils/agent_auth.py` (470 LOC) | `src/domains/agent-gateway/tokens.ts` |
+   871→   871→| agent_jobs | `app/utils/agent_jobs.py` (339 LOC) | `src/domains/agent-gateway/jobs.ts` |
+   872→   872→| agent_v1 routes | `app/routes/agent_v1/` (10 files) | `src/routes/api/agent-v1/*` |
+   873→   873→| binance adapter | `app/services/live_trading/binance.py` | `src/domains/broker-adapters/binance/` |
+   874→   874→| okx adapter | `app/services/live_trading/okx.py` | `src/domains/broker-adapters/okx/` |
+   875→   875→| bybit adapter | `app/services/live_trading/bybit.py` | `src/domains/broker-adapters/bybit/` |
+   876→   876→| coinbase adapter | `app/services/live_trading/coinbase_exchange.py` | `src/domains/broker-adapters/coinbase/` |
+   877→   877→| oauth | `app/services/oauth_service.py` (715 LOC) | `src/domains/auth/oauth/{google,github}.ts` |
+   878→   878→| usdt_payment | `app/services/usdt_payment_service.py` (830 LOC) | `src/domains/payment/usdt-trc20/` (P3, optional) |
+   879→   879→
+   880→   880→## الملحق ب: مرجع سريع لأهم الـ patterns في QuantDinger
+   881→   881→
+   882→   882→### Pattern 1: Capability-class scoped tokens
+   883→   883→```
+   884→   884→R = Read (markets, prices, klines, strategies, jobs)
+   885→   885→W = Write (create strategies, edit settings)
+   886→   886→B = Backtest (queue backtests)
+   887→   887→N = Notify (trigger notifications)
+   888→   888→C = Calendar (read economic calendar)
+   889→   889→T = Trade (place orders — paper or live, gated by paper_only flag + AGENT_LIVE_TRADING_ENABLED)
+   890→   890→```
+   891→   891→
+   892→   892→### Pattern 2: SSE progress protocol
+   893→   893→```
+   894→   894→event: snapshot
+   895→   895→data: {"job_id":"...","status":"running","progress":45}
+   896→   896→
+   897→   897→event: progress
+   898→   898→data: {"seq":1,"ts":"...","data":{"phase":"backtesting","bar":45/200}}
+   899→   899→
+   900→   900→event: ping
+   901→   901→(15s keepalive)
+   902→   902→
+   903→   903→event: result
+   904→   904→data: {"status":"succeeded","result":{...}}
+   905→   905→```
+   906→   906→
+   907→   907→### Pattern 3: Idempotency-Key unique partial index
+   908→   908→```sql
+   909→   909→CREATE UNIQUE INDEX idx_agent_jobs_idem
+   910→   910→  ON qd_agent_jobs(agent_token_id, kind, idempotency_key)
+   911→   911→  WHERE idempotency_key IS NOT NULL;
+   912→   912→```
+   913→   913→
+   914→   914→### Pattern 4: Three-layer safe execution
+   915→   915→```
+   916→   916→Layer 1: Regex blacklist (os.system, subprocess, __import__, eval, exec, ...)
+   917→   917→Layer 2: AST walk (whitelist imports, reject dangerous calls)
+   918→   918→Layer 3: Restricted __builtins__ (whitelist functions only)
+   919→   919→+ Timeout (SIGALRM on Unix, threading.Timer + ctypes on Windows)
+   920→   920→+ Optional subprocess isolation (multiprocessing.Process)
+   921→   921→```
+   922→   922→
+   923→   923→### Pattern 5: Candle-path simulation
+   924→   924→```
+   925→   925→Bullish bar (close > open): O → L → H → C (dip then rally)
+   926→   926→Bearish bar (close < open): O → H → L → C (rally then dip)
+   927→   927→Doji (close ≈ open): O → H → L → C (worst case)
+   928→   928→```
+   929→   929→This lets SL/TP trigger intra-bar with realistic ordering.
+   930→   930→
+   931→   931→### Pattern 6: Circuit breaker state machine
+   932→   932→```
+   933→   933→CLOSED → (failures ≥ threshold) → OPEN
+   934→   934→OPEN → (after cooldown) → HALF_OPEN
+   935→   935→HALF_OPEN → (success) → CLOSED
+   936→   936→HALF_OPEN → (failure) → OPEN
+   937→   937→```
+   938→   938→
+   939→   939→### Pattern 7: SaaS-mode issuance-time guard
+   940→   940→```python
+   941→   941→if DEPLOYMENT_MODE in {'saas','shared','hosted','multitenant'}:
+   942→   942→    if 'T' in scopes:
+   943→   943→        abort(403, "T-scope not allowed in SaaS mode")
+   944→   944→    paper_only = True  # force-pin regardless of payload
+   945→   945→```
+   946→   946→
+   947→   947→---
+   948→   948→
+   949→   949→**نهاية الوثيقة.** أي agent يبدأ العمل يجب أن يقرأ هذه الوثيقة + `audit/vixor_current_state.md` + `audit/quantdinger_inventory.md` قبل أي شيء.
+   950→   950→

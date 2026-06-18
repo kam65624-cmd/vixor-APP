@@ -32,18 +32,13 @@ import {
   type ValidationResult,
 } from "@/domains/chart-intelligence";
 
-// ── Error class for analysis refusal (extraction failed) ──
-export class ChartExtractionRefusedError extends Error {
-  public readonly chartContext: ChartContext | null;
-  public readonly validation: ValidationResult;
-
-  constructor(validation: ValidationResult, extraction?: ChartExtractionResult) {
-    super(validation.userMessage ?? "Chart context extraction failed. Cannot analyze this image.");
-    this.name = "ChartExtractionRefusedError";
-    this.chartContext = extraction?.context ?? null;
-    this.validation = validation;
-  }
-}
+// ── Error class for analysis refusal ──
+//
+// REMOVED (audit §15 issue #9): `ChartExtractionRefusedError` was dead code —
+// defined but never thrown anywhere in the codebase. The validation layer is
+// SOFT (see chart-validation.ts) and never refuses to analyze — it always
+// proceeds with whatever data is available. If a future iteration re-introduces
+// hard refusal for very low confidence, this error class can be revived.
 
 // Re-export the schema for other files that import it
 export const AnalysisSchema = z.object({
@@ -204,7 +199,10 @@ export async function runChartAnalysis(
       });
     }
   } catch (visionErr) {
-    console.warn("[Vixor] Chart Vision extraction failed:", visionErr instanceof Error ? visionErr.message : String(visionErr));
+    console.warn(
+      "[Vixor] Chart Vision extraction failed:",
+      visionErr instanceof Error ? visionErr.message : String(visionErr),
+    );
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -240,7 +238,10 @@ export async function runChartAnalysis(
       }
       // Do NOT throw on low truth score — just warn. Real data will be used anyway.
     } catch (truthErr) {
-      console.warn("[Vixor] Truth validation failed silently:", truthErr instanceof Error ? truthErr.message : String(truthErr));
+      console.warn(
+        "[Vixor] Truth validation failed silently:",
+        truthErr instanceof Error ? truthErr.message : String(truthErr),
+      );
     }
   }
 
@@ -249,14 +250,9 @@ export async function runChartAnalysis(
   // ═══════════════════════════════════════════════════════════════════════
 
   const pair =
-    chartContext?.symbol ??
-    selectedPair ??
-    detectPairFromFileName(fileName) ??
-    "EUR/USD";
+    chartContext?.symbol ?? selectedPair ?? detectPairFromFileName(fileName) ?? "EUR/USD";
 
-  const timeframe =
-    chartContext?.timeframe ??
-    inferTimeframeFromTradingStyle(trading_style);
+  const timeframe = chartContext?.timeframe ?? inferTimeframeFromTradingStyle(trading_style);
 
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 4: LOCAL ENGINE — Run SMC/ICT analysis on real OHLCV data
@@ -299,7 +295,7 @@ export async function runChartAnalysis(
   console.log(
     `[Vixor] Local analysis complete: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
   );
-  let result = buildAnalysisResult(localResult, chartContext);
+  const result = buildAnalysisResult(localResult, chartContext);
 
   // ── OPTIONAL: Debate Engine validation ──
   // Gated by environment variable — only runs when explicitly enabled.
@@ -313,7 +309,10 @@ export async function runChartAnalysis(
       // Attach to result for downstream use (non-breaking, invisible to frontend)
       (result as any)._debate = debateResult;
     } catch (e) {
-      console.warn("[Vixor] Debate engine failed silently:", e instanceof Error ? e.message : String(e));
+      console.warn(
+        "[Vixor] Debate engine failed silently:",
+        e instanceof Error ? e.message : String(e),
+      );
     }
   }
 
@@ -353,7 +352,7 @@ function buildAnalysisResult(
   if (chartContext?.symbol && chartContext.symbol !== localResult.pair) {
     console.warn(
       `[Vixor] VISION vs DATA mismatch: Vision detected "${chartContext.symbol}" but local engine analyzed "${localResult.pair}" using real OHLCV data. ` +
-      `The data-based analysis is more reliable. If this is wrong, the user may have selected the wrong pair.`
+        `The data-based analysis is more reliable. If this is wrong, the user may have selected the wrong pair.`,
     );
   }
 

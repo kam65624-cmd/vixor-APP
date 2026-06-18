@@ -943,178 +943,28 @@ function generateVixorMessage(
 }
 
 // ---------------------------------------------------------------------------
-// Helper: Generate deterministic news context (no API needed)
+// News context helper — REMOVED (audit §15 issue #2)
 // ---------------------------------------------------------------------------
-
-function generateNewsContext(
-  pair: string,
-  trend: TrendDirection,
-): LocalAnalysisResult["news_impact"] {
-  // Deterministic news based on pair and trend - replaces Finnhub dependency
-  const newsMap: Record<
-    string,
-    Array<{
-      headline: string;
-      source: string;
-      impact: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
-      explanation: string;
-    }>
-  > = {
-    "XAU/USD": [
-      {
-        headline: "US Treasury Yields Slide on Lower Inflation Expectations",
-        source: "Bloomberg",
-        impact: "POSITIVE",
-        explanation:
-          "Lower yields reduce the opportunity cost of holding non-yielding Gold, reinforcing the technical support at current levels.",
-      },
-      {
-        headline: "Dollar Index Strengthens After Robust Services PMI",
-        source: "Reuters",
-        impact: "NEGATIVE",
-        explanation:
-          "A stronger Dollar pressures Gold prices, potentially delaying a breakout above key resistance.",
-      },
-      {
-        headline: "Central Banks Continue Gold Accumulation Trend",
-        source: "Financial Times",
-        impact: "POSITIVE",
-        explanation:
-          "Sustained central bank buying provides a structural demand floor for Gold prices.",
-      },
-    ],
-    "EUR/USD": [
-      {
-        headline: "ECB Signals Potential Rate Cut in Upcoming Meeting",
-        source: "Reuters",
-        impact: "NEGATIVE",
-        explanation:
-          "Divergence between ECB's dovish tone and Fed's hawkish stance puts downward pressure on the Euro.",
-      },
-      {
-        headline: "US Jobless Claims Rise More Than Expected",
-        source: "MarketWatch",
-        impact: "POSITIVE",
-        explanation:
-          "Weak labor data weakens the Dollar, supporting a potential technical bounce from support.",
-      },
-      {
-        headline: "Eurozone Manufacturing PMI Shows Unexpected Improvement",
-        source: "Bloomberg",
-        impact: "POSITIVE",
-        explanation:
-          "Better-than-expected manufacturing data supports the Euro's fundamental outlook.",
-      },
-    ],
-    "BTC/USD": [
-      {
-        headline: "Institutional Inflows to Spot Bitcoin ETFs Accelerate",
-        source: "CoinDesk",
-        impact: "POSITIVE",
-        explanation:
-          "Consistent spot buying pressure from ETFs aligns with the bullish technical structure.",
-      },
-      {
-        headline: "Regulatory Framework Advances in Major Markets",
-        source: "Bloomberg",
-        impact: "POSITIVE",
-        explanation:
-          "Clearer regulation reduces uncertainty and attracts institutional capital to the space.",
-      },
-      {
-        headline: "Mining Difficulty Reaches All-Time High",
-        source: "Glassnode",
-        impact: "NEUTRAL",
-        explanation:
-          "Increasing mining difficulty reflects network security strength but doesn't directly impact short-term price direction.",
-      },
-    ],
-    "ETH/USDT": [
-      {
-        headline: "Ethereum Network Upgrade Boosts Transaction Throughput",
-        source: "CoinDesk",
-        impact: "POSITIVE",
-        explanation: "Improved network fundamentals support the bullish case for ETH.",
-      },
-      {
-        headline: "DeFi TVL Reaches New Yearly High",
-        source: "DeFi Llama",
-        impact: "POSITIVE",
-        explanation:
-          "Growing total value locked indicates increasing utility and demand for the Ethereum ecosystem.",
-      },
-      {
-        headline: "SEC Delays Decision on Ethereum ETF Application",
-        source: "Reuters",
-        impact: "NEGATIVE",
-        explanation: "Regulatory uncertainty creates short-term selling pressure on ETH.",
-      },
-    ],
-    "GBP/JPY": [
-      {
-        headline: "Bank of England Maintains Hawkish Stance on Rates",
-        source: "Financial Times",
-        impact: "POSITIVE",
-        explanation:
-          "Higher UK rates support the Pound against the Yen, reinforcing the bullish technical structure.",
-      },
-      {
-        headline: "Japan Core CPI Falls Below BOJ Target",
-        source: "NHK",
-        impact: "POSITIVE",
-        explanation:
-          "Subdued inflation in Japan keeps BOJ policy accommodative, weakening the Yen.",
-      },
-      {
-        headline: "UK GDP Growth Slows More Than Expected",
-        source: "Bloomberg",
-        impact: "NEGATIVE",
-        explanation: "Economic slowdown could force the BOE to pivot dovish, pressuring GBP.",
-      },
-    ],
-  };
-
-  const defaultNews = [
-    {
-      headline: "Federal Reserve Maintains Data-Dependent Stance on Rates",
-      source: "Bloomberg",
-      impact: "NEUTRAL" as const,
-      explanation:
-        "The Fed's wait-and-see approach creates a range-bound environment for the Dollar.",
-    },
-    {
-      headline: "Global Risk Sentiment Improves on Trade Optimism",
-      source: "Reuters",
-      impact: "POSITIVE" as const,
-      explanation: "Improved risk appetite supports higher-yielding assets and risk-on currencies.",
-    },
-    {
-      headline: "Geopolitical Tensions Keep Safe-Haven Demand Elevated",
-      source: "Financial Times",
-      impact: "NEGATIVE" as const,
-      explanation:
-        "Persistent geopolitical risk supports safe-haven flows, creating headwinds for risk assets.",
-    },
-  ];
-
-  const pairNews = newsMap[pair] || defaultNews;
-
-  // Filter news by trend alignment
-  const overallSentiment: TrendDirection =
-    trend === "BULLISH" ? "BULLISH" : trend === "BEARISH" ? "BEARISH" : "NEUTRAL";
-  const verdict =
-    trend === "NEUTRAL"
-      ? "Mixed fundamental signals align with the consolidating technical structure. Wait for a clear fundamental catalyst."
-      : trend === "BULLISH"
-        ? "Fundamental news broadly supports the bullish technical setup, increasing the probability of target completion."
-        : "Fundamental headwinds align with the bearish technical structure, supporting the short thesis.";
-
-  return {
-    relevant_news: pairNews.slice(0, 3),
-    overall_sentiment: overallSentiment,
-    verdict,
-  };
-}
+//
+// Previously this function returned fabricated "deterministic" news headlines
+// for 5 hardcoded pairs + a default fallback. Users were shown fake news
+// (e.g. "Fed Signals Hawkish Pause") presented as real fundamental analysis.
+// This was misleading and broke user trust.
+//
+// Real news is fetched from Finnhub via `getMarketNews` server function (see
+// `src/domains/market/functions.ts`). The analysis engine no longer
+// fabricates news — `news_impact` is `undefined` when no real news is fetched,
+// and the UI gracefully hides the news section.
+//
+// To re-enable real news in the analysis pipeline:
+//   1. Call `getMarketNews({ category: "general" })` from `run-analysis.ts`
+//   2. Filter results by the analyzed pair (e.g. BTCUSD → crypto news)
+//   3. Build a `news_impact` object from the top 3 real headlines
+//   4. Attach to the analysis result before persisting to Supabase
+//
+// See: /home/z/my-project/download/VIXOR_QuantDinger_Integration_Strategy.md
+//      Phase 1.6 — "نقل news.py (Finnhub + RSS) إلى TypeScript" for the plan.
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Helper: Generate synthetic OHLCV bars for fallback analysis
@@ -1341,11 +1191,9 @@ export function generateFallbackResult(
       "Do not enter any position without real market data.",
       "Wait for the data source to become available and try again.",
     ],
-    news_impact: {
-      relevant_news: [],
-      overall_sentiment: "NEUTRAL",
-      verdict: "Insufficient data for fundamental analysis.",
-    },
+    // No fabricated news — see comment block above where `generateNewsContext`
+    // was removed. Real news is fetched via `getMarketNews` (Finnhub) elsewhere.
+    news_impact: undefined,
     signal_badge: {
       direction: "WAIT",
       entry: String(formatPrice(price, d)),

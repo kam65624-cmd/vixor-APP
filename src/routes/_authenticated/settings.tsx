@@ -20,8 +20,8 @@ import {
   Star,
   Check,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { supabase } from "@/shared/supabase/client";
+import { useState, useEffect, useCallback } from "react";
+import { getSupabaseOrNull } from "@/shared/supabase/client";
 import { useI18n } from "@/shared/i18n";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -29,8 +29,34 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
 });
 
+// ───────────────────────────────────────────────────────────────────────────
+// Phase 0 fix (audit §15 issue #7): settings toggles are now persisted to
+// localStorage and READ by the relevant components at runtime. Previously
+// they were local-only React state — flipping "Price alerts" off had no effect.
+// ───────────────────────────────────────────────────────────────────────────
+
 /** Theme is persisted to localStorage so it survives reloads */
 const THEME_KEY = "vixor-theme";
+/** Settings toggles — read by alert checker, news fetcher, haptics util, etc. */
+const PREFS_KEY = "vixor-prefs";
+
+interface VixorPrefs {
+  /** Whether haptic feedback is enabled (mobile only) */
+  haptics: boolean;
+  /** Whether UI sound effects are enabled */
+  sound: boolean;
+  /** Whether price alert notifications should fire (read by /api/check-alerts) */
+  priceAlerts: boolean;
+  /** Whether market news notifications should fire (read by /api/generate-signals) */
+  newsAlerts: boolean;
+}
+
+const DEFAULT_PREFS: VixorPrefs = {
+  haptics: true,
+  sound: true,
+  priceAlerts: true,
+  newsAlerts: false,
+};
 
 function getStoredTheme(): "dark" | "light" {
   if (typeof window === "undefined") return "dark";
@@ -44,28 +70,65 @@ function applyTheme(theme: "dark" | "light") {
   document.documentElement.classList.toggle("dark", isDark);
 }
 
+function getStoredPrefs(): VixorPrefs {
+  if (typeof window === "undefined") return DEFAULT_PREFS;
+  try {
+    const raw = localStorage.getItem(PREFS_KEY);
+    if (!raw) return DEFAULT_PREFS;
+    const parsed = JSON.parse(raw) as Partial<VixorPrefs>;
+    return { ...DEFAULT_PREFS, ...parsed };
+  } catch {
+    return DEFAULT_PREFS;
+  }
+}
+
+function persistPrefs(prefs: VixorPrefs) {
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    // Dispatch a custom event so other components (alert checker, news
+    // fetcher) can react to preference changes without a page reload.
+    window.dispatchEvent(new CustomEvent("vixor-prefs-changed", { detail: prefs }));
+  } catch (e) {
+    console.warn("[Settings] Failed to persist prefs:", e);
+  }
+}
+
 function SettingsPage() {
   const navigate = useNavigate();
   const { t, lang, setLang, isRTL } = useI18n();
   // Initialize from localStorage so the toggle reflects the user's saved choice
   const [dark, setDark] = useState(true);
-  const [haptics, setHaptics] = useState(true);
-  const [sound, setSound] = useState(true);
-  const [priceAlerts, setPriceAlerts] = useState(true);
-  const [newsAlerts, setNewsAlerts] = useState(false);
+  const [prefs, setPrefs] = useState<VixorPrefs>(DEFAULT_PREFS);
   const [signing, setSigning] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
 
-  // On mount, load saved theme from localStorage
+  // On mount, load saved theme + prefs from localStorage
   useEffect(() => {
     const stored = getStoredTheme();
     setDark(stored === "dark");
     applyTheme(stored);
+    setPrefs(getStoredPrefs());
+  }, []);
+
+  // Helper: update a single pref and persist
+  const updatePref = useCallback((key: keyof VixorPrefs, value: boolean) => {
+    setPrefs((prev) => {
+      const next = { ...prev, [key]: value };
+      persistPrefs(next);
+      return next;
+    });
   }, []);
 
   const handleSignOut = async () => {
     setSigning(true);
-    await supabase.auth.signOut();
+    const client = getSupabaseOrNull();
+    if (client) {
+      try {
+        await client.auth.signOut();
+      } catch (e) {
+        console.warn("[Settings] signOut failed:", e);
+      }
+    }
     navigate({ to: "/auth" });
   };
 
@@ -200,16 +263,16 @@ function SettingsPage() {
       {/* Notifications */}
       <Section title={t("settings.notifications")} icon={Bell}>
         <Row icon={Volume2} label={t("settings.soundEffects")} iconColor="text-primary">
-          <Toggle on={sound} onChange={setSound} />
+          <Toggle on={prefs.sound} onChange={(v) => updatePref("sound", v)} />
         </Row>
         <Row icon={Smartphone} label={t("settings.hapticFeedback")} iconColor="text-info">
-          <Toggle on={haptics} onChange={setHaptics} />
+          <Toggle on={prefs.haptics} onChange={(v) => updatePref("haptics", v)} />
         </Row>
         <Row icon={Bell} label={t("settings.priceAlerts")} iconColor="text-neutral-wait">
-          <Toggle on={priceAlerts} onChange={setPriceAlerts} />
+          <Toggle on={prefs.priceAlerts} onChange={(v) => updatePref("priceAlerts", v)} />
         </Row>
         <Row icon={Globe} label={t("settings.newsAlerts")} iconColor="text-bullish">
-          <Toggle on={newsAlerts} onChange={setNewsAlerts} />
+          <Toggle on={prefs.newsAlerts} onChange={(v) => updatePref("newsAlerts", v)} />
         </Row>
       </Section>
 

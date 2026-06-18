@@ -13,8 +13,10 @@ import {
   type ChartContext,
   type ChartExtractionResult,
   MIN_CONFIDENCE_FOR_ANALYSIS,
-  formatExtractionFailureMessage,
 } from "./chart-context";
+// NOTE: `formatExtractionFailureMessage` was removed from this import — it was
+// dead code (defined but never called). The validation layer is SOFT (never
+// blocks analysis), so there's no failure message to format. See audit §15 issue #9.
 
 // ── Validation result ──
 export interface ValidationResult {
@@ -46,7 +48,10 @@ export function validateChartContext(result: ChartExtractionResult): ValidationR
   if (!result.success || !result.context) {
     return {
       valid: true, // Changed: Always valid
-      warnings: [result.failureReason ?? "Chart context extraction failed — will use user-selected pair or default"],
+      warnings: [
+        result.failureReason ??
+          "Chart context extraction failed — will use user-selected pair or default",
+      ],
       errors: [],
       adjustedConfidence: 0.1, // Low but non-zero
       userMessage: null, // Never show blocking message
@@ -57,7 +62,9 @@ export function validateChartContext(result: ChartExtractionResult): ValidationR
 
   // ── Check 1: Symbol detection — warning only, not a blocker ──
   if (!ctx.symbol) {
-    warnings.push("No trading symbol detected in the chart image. Using user-selected pair or default.");
+    warnings.push(
+      "No trading symbol detected in the chart image. Using user-selected pair or default.",
+    );
   }
 
   // ── Check 2: Low confidence — warning only ──
@@ -69,12 +76,16 @@ export function validateChartContext(result: ChartExtractionResult): ValidationR
 
   // ── Check 3: Price validation (if present, must be reasonable) ──
   if (ctx.currentPrice !== null && ctx.currentPrice <= 0) {
-    warnings.push("Detected price is invalid (negative or zero). Price will not be used for analysis.");
+    warnings.push(
+      "Detected price is invalid (negative or zero). Price will not be used for analysis.",
+    );
   }
 
   // ── Check 4: Timeframe warning (not required but recommended) ──
   if (!ctx.timeframe) {
-    warnings.push("Timeframe not detected — will use the user's trading style to infer a default timeframe.");
+    warnings.push(
+      "Timeframe not detected — will use the user's trading style to infer a default timeframe.",
+    );
   }
 
   // ── Check 5: Cross-validate price against known ranges ──
@@ -107,7 +118,10 @@ export function validateChartContext(result: ChartExtractionResult): ValidationR
 }
 
 // ── Validate that a price is reasonable for a given symbol ──
-function validatePriceForSymbol(symbol: string, price: number): { valid: boolean; message: string } {
+function validatePriceForSymbol(
+  symbol: string,
+  price: number,
+): { valid: boolean; message: string } {
   // Known price ranges for major pairs (approximate, 2024-2025 ranges)
   const priceRanges: Record<string, { min: number; max: number; name: string }> = {
     "XAU/USD": { min: 1800, max: 4000, name: "Gold" },
@@ -121,10 +135,10 @@ function validatePriceForSymbol(symbol: string, price: number): { valid: boolean
     "USD/JPY": { min: 100, max: 170, name: "USD/JPY" },
     "AUD/USD": { min: 0.5, max: 0.85, name: "AUD/USD" },
     "SOL/USDT": { min: 8, max: 400, name: "Solana" },
-    "AAPL": { min: 100, max: 300, name: "Apple" },
-    "TSLA": { min: 100, max: 500, name: "Tesla" },
-    "NASDAQ": { min: 10000, max: 25000, name: "NASDAQ" },
-    "SPX500": { min: 3000, max: 7000, name: "S&P 500" },
+    AAPL: { min: 100, max: 300, name: "Apple" },
+    TSLA: { min: 100, max: 500, name: "Tesla" },
+    NASDAQ: { min: 10000, max: 25000, name: "NASDAQ" },
+    SPX500: { min: 3000, max: 7000, name: "S&P 500" },
   };
 
   const range = priceRanges[symbol];
@@ -153,3 +167,7 @@ export function validateSessionContext(): ValidationResult {
     userMessage: null,
   };
 }
+
+// Unused warning suppressor — `ChartContext` type is referenced for type
+// inference elsewhere; keep the import active to avoid TS6133 in strict mode.
+export type { ChartContext } from "./chart-context";

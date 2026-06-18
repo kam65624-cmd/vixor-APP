@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Compass, Plus, Brain, Briefcase } from "lucide-react";
+import { Home, Compass, Plus, Brain, Briefcase, Bell, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { OnboardingModal } from "./OnboardingModal";
@@ -92,21 +92,114 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
-      {/* Responsive: mobile = max-w-md, desktop = max-w-4xl with side padding.
-          pt-20 = 14 (header h-14 = 3.5rem) + 1.5rem breathing room so content
-          never hides behind the fixed header. */}
-      <main
-        className="flex-1 mx-auto w-full max-w-md lg:max-w-4xl px-4 pt-20 pb-28"
-        style={{ paddingBottom: "max(7rem, calc(7rem + env(safe-area-inset-bottom, 0px)))" }}
-      >
-        {children}
-      </main>
+      {/* Layout: full-width header, content max-w-7xl (1280px) centered.
+          Mobile: bottom nav, no sidebar. Desktop (lg+): left sidebar rail
+          + content + bottom nav hidden. Tablet uses content max-w-5xl. */}
+      <div className="flex-1 flex w-full pt-14">
+        <DesktopSidebar path={path} tabs={tabs} />
+        <main
+          className="flex-1 mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-28 lg:pb-12"
+          style={{ paddingBottom: "max(7rem, calc(7rem + env(safe-area-inset-bottom, 0px)))" }}
+        >
+          {children}
+        </main>
+      </div>
       <BottomNav path={path} tabs={tabs} />
 
       {showOnboarding && <OnboardingModal onClose={closeOnboarding} />}
     </div>
   );
 }
+
+// ───────────────────────────────────────────────────────────────────────────
+// DESKTOP SIDEBAR RAIL — fixed left rail with icons (lg+ only)
+// ───────────────────────────────────────────────────────────────────────────
+// Solves the "pages not smoothly connected" complaint on desktop — replaces
+// the floating bottom nav (which was awkward on desktop) with a proper
+// desktop sidebar like Bloomberg Terminal / TradingView.
+interface SidebarProps {
+  path: string;
+  tabs: readonly {
+    to: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+    match: (p: string) => boolean;
+  }[];
+}
+
+const DesktopSidebar = memo(function DesktopSidebar({ path, tabs }: SidebarProps) {
+  return (
+    <aside className="hidden lg:flex flex-col fixed left-0 top-14 bottom-0 w-16 border-r border-border bg-card/50 backdrop-blur-sm z-30">
+      <nav className="flex-1 flex flex-col items-center gap-2 py-6">
+        {tabs.map((t) => {
+          const active = t.match(path);
+          const Icon = t.icon;
+          const isAnalyze = t.label === "Analyze";
+          return (
+            <Link
+              key={t.to}
+              to={t.to}
+              className={`group relative flex flex-col items-center justify-center size-12 rounded-2xl transition-all duration-200 ${
+                active
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-card-hover hover:text-foreground"
+              }`}
+              aria-label={t.label}
+              aria-current={active ? "page" : undefined}
+              title={t.label}
+            >
+              {isAnalyze ? (
+                <div
+                  className={`size-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                    active
+                      ? "gradient-primary glow-primary scale-105"
+                      : "bg-card-hover border border-border group-hover:scale-105"
+                  }`}
+                >
+                  <Icon
+                    className={`size-5 ${active ? "text-primary-foreground" : "text-foreground"}`}
+                    strokeWidth={2.5}
+                  />
+                </div>
+              ) : (
+                <Icon className="size-5" strokeWidth={active ? 2.5 : 2} />
+              )}
+              <span
+                className={`text-[9px] font-bold uppercase tracking-wider mt-1 ${
+                  active ? "text-primary" : ""
+                }`}
+              >
+                {t.label}
+              </span>
+              {active && !isAnalyze && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-primary" />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="flex flex-col items-center gap-2 py-4 border-t border-border">
+        <Link
+          to="/notifications"
+          aria-label="Notifications"
+          className="size-10 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-card-hover hover:text-foreground transition-colors relative"
+          title="Notifications"
+        >
+          <Bell className="size-5" />
+          <span className="absolute top-1 right-1 size-2 rounded-full bg-primary border border-card" />
+        </Link>
+        <Link
+          to="/profile"
+          aria-label="Profile"
+          className="size-10 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-card-hover hover:text-foreground transition-colors"
+          title="Profile"
+        >
+          <User className="size-5" />
+        </Link>
+      </div>
+    </aside>
+  );
+});
 
 // ───────────────────────────────────────────────────────────────────────────
 // HEADER — fixed to top, compact, professional
@@ -121,7 +214,8 @@ const Header = memo(function Header() {
         // always sits at the visible top of the viewport.
       }}
     >
-      <div className="mx-auto max-w-md lg:max-w-4xl px-4">
+      {/* Full-width header — content max-w-7xl + sidebar offset on desktop */}
+      <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-7xl px-4 sm:px-6 lg:px-8 lg:pl-24">
         <div className="h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="size-8 rounded-xl gradient-primary flex items-center justify-center glow-primary group-hover:scale-105 transition-transform">
@@ -194,10 +288,10 @@ interface BottomNavProps {
 const BottomNav = memo(function BottomNav({ path, tabs }: BottomNavProps) {
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 pointer-events-none"
+      className="fixed bottom-0 inset-x-0 z-40 pointer-events-none lg:hidden"
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0px)" }}
     >
-      <div className="mx-auto max-w-md lg:max-w-4xl px-3 pb-3 pointer-events-auto">
+      <div className="mx-auto w-full max-w-md sm:max-w-2xl px-3 pb-3 pointer-events-auto">
         <div className="glass-card rounded-2xl flex items-stretch justify-around h-16 px-1.5 shadow-[var(--shadow-elevated)] relative overflow-hidden">
           {tabs.map((t) => {
             const active = t.match(path);

@@ -25,13 +25,9 @@ export {
   successfulExtraction,
   failedExtraction,
   createSessionContext,
-  formatExtractionFailureMessage,
 } from "./chart-context";
 
-export {
-  extractChartContext,
-  extractChartContextFromBase64,
-} from "./chart-vision";
+export { extractChartContext, extractChartContextFromBase64 } from "./chart-vision";
 
 export {
   type ValidationResult,
@@ -39,8 +35,4 @@ export {
   validateSessionContext,
 } from "./chart-validation";
 
-export {
-  type ChartSession,
-  sessionToContext,
-  buildChartSessionPrompt,
-} from "./chart-session";
+export { type ChartSession, sessionToContext, buildChartSessionPrompt } from "./chart-session";

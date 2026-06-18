@@ -444,3 +444,72 @@
     }
   }
 }
+
+  /* ====== Phase 0 fixes (audit §15 issue #5) ====== */
+
+  /* Tablet breakpoint — between mobile (640px) and desktop (1024px).
+     Previously: 640-1023px rendered as mobile, wasting space. */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .md-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+    .md-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .md-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+  }
+
+  /* Desktop grid (matches the new lg:max-w-7xl container). */
+  @media (min-width: 1024px) {
+    .lg-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+    .lg-grid-6 {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  /* Reduced motion — respect user's accessibility preferences. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    .shimmer {
+      animation: none !important;
+    }
+    .pulse-dot {
+      animation: none !important;
+      opacity: 0.85;
+    }
+  }
+
+  /* Print styles — users can print analyses. */
+  @media print {
+    .glass-header,
+    .glass-card,
+    nav,
+    aside {
+      display: none !important;
+    }
+    body {
+      background: white !important;
+      color: black !important;
+    }
+  }
