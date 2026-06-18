@@ -35,3 +35,8 @@ dist-ssr
 .env*
 !.env.example
 .vercel/
+
+# Phantom submodule — QuantDinger reference repo (62MB, kept locally for audit only)
+# Was committed as gitlink (mode 160000) by mistake; breaks Vercel/GitHub Actions
+# checkout because no .gitmodules entry exists. Files stay on disk locally.
+audit/QuantDinger/
