@@ -2,8 +2,12 @@
 // Vixor Multi-Agent Orchestrator
 // ═══════════════════════════════════════════════════════════
 //
-// Uses z-ai-web-dev-sdk for all AI operations.
-// NO external API keys required — the SDK is installed locally.
+// Uses LLMRouter (src/shared/llm) for all AI operations.
+//   - Auto-selects ZAI by default (bundled, no key required).
+//   - Falls back to OpenAI / Anthropic / Groq if user has set BYO keys
+//     via user_settings.llm_api_keys.
+//   - Direct z-ai-web-dev-sdk path remains as a last-resort fallback
+//     in case the router has a runtime issue.
 // ═══════════════════════════════════════════════════════════
 
 import {
@@ -13,6 +17,8 @@ import {
   getAgentById,
   autoSelectAgent,
 } from "./agents";
+import { LLMRouter } from "@/shared/llm";
+import type { ChatMessage as RouterChatMessage } from "@/shared/llm/types";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -29,17 +35,39 @@ export interface ConsensusResponse {
   synthesis: string;
 }
 
-// ─── z-ai singleton (lazy init) ───
-let zaiInstance: any = null;
-async function getZAI() {
-  if (!zaiInstance) {
-    const ZAI = await import("z-ai-web-dev-sdk");
-    zaiInstance = await ZAI.default.create();
+// ─── LLM Router singleton (lazy init) ───
+let routerInstance: LLMRouter | null = null;
+function getRouter(): LLMRouter {
+  if (!routerInstance) {
+    routerInstance = new LLMRouter();
   }
-  return zaiInstance;
+  return routerInstance;
 }
 
-// ─── Call the AI model using z-ai-web-dev-sdk ───
+// ─── Direct z-ai fallback singleton (lazy init) ───
+// Used ONLY if the LLMRouter throws — keeps the orchestrator resilient.
+type ZaiSdkInstance = {
+  chat: {
+    completions: {
+      create: (opts: {
+        messages: Array<{ role: string; content: string }>;
+        temperature?: number;
+      }) => Promise<{
+        choices?: Array<{ message?: { content?: string } }>;
+      }>;
+    };
+  };
+};
+let zaiFallback: ZaiSdkInstance | null = null;
+async function getZAIFallback(): Promise<ZaiSdkInstance> {
+  if (!zaiFallback) {
+    const ZAI = await import("z-ai-web-dev-sdk");
+    zaiFallback = (await ZAI.default.create()) as ZaiSdkInstance;
+  }
+  return zaiFallback;
+}
+
+// ─── Call the AI model via LLMRouter, with direct-ZAI fallback ───
 async function callAI(params: {
   systemPrompt: string;
   messages: ChatMessage[];
@@ -49,10 +77,8 @@ async function callAI(params: {
 }): Promise<string> {
   const { systemPrompt, messages, userMessage, temperature = 0.7 } = params;
 
-  const zai = await getZAI();
-
-  // Build messages array for z-ai SDK
-  const chatMessages: any[] = [
+  // Build the router messages array (system + history + current user msg).
+  const routerMessages: RouterChatMessage[] = [
     { role: "system", content: systemPrompt },
     ...messages.map((m) => ({
       role: m.role as "user" | "assistant",
@@ -61,12 +87,42 @@ async function callAI(params: {
     { role: "user" as const, content: userMessage },
   ];
 
-  const response = await zai.chat.completions.create({
-    messages: chatMessages,
-    temperature,
-  });
+  try {
+    const router = getRouter();
+    const response = await router.chat({
+      messages: routerMessages,
+      temperature,
+      maxTokens: params.maxOutputTokens,
+    });
+    return response.content || "No response generated.";
+  } catch (routerErr) {
+    // Defensive: if the new LLMRouter has any runtime issue, fall back to
+    // the direct ZAI SDK path that was used before this change. This
+    // guarantees the copilot keeps working even if the router is buggy.
+    console.warn(
+      "[Copilot] LLMRouter failed, falling back to direct ZAI SDK:",
+      routerErr instanceof Error ? routerErr.message : String(routerErr),
+    );
 
-  return response.choices[0]?.message?.content ?? "No response generated.";
+    try {
+      const zai = await getZAIFallback();
+      const response = await zai.chat.completions.create({
+        messages: routerMessages,
+        temperature,
+      });
+      return response.choices?.[0]?.message?.content ?? "No response generated.";
+    } catch (zaiErr) {
+      console.error(
+        "[Copilot] Direct ZAI fallback ALSO failed:",
+        zaiErr instanceof Error ? zaiErr.message : String(zaiErr),
+      );
+      throw new Error(
+        `Copilot AI call failed (router + ZAI fallback). Router: ${
+          routerErr instanceof Error ? routerErr.message : String(routerErr)
+        }. ZAI: ${zaiErr instanceof Error ? zaiErr.message : String(zaiErr)}`,
+      );
+    }
+  }
 }
 
 // ─── Run a single agent ───
@@ -80,7 +136,8 @@ export async function runAgent(params: {
 
   // If "auto" mode, select the best agent
   let selectedAgentId: AgentId = agentId;
-  if (agentId === "auto" as any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (agentId === ("auto" as any)) {
     selectedAgentId = autoSelectAgent(message);
   }
 

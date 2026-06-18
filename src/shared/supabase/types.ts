@@ -112,6 +112,7 @@ export type Database = {
       };
       notifications: {
         Row: {
+          // Original columns (from 20260607170345_*.sql)
           body: string | null;
           created_at: string;
           id: string;
@@ -119,15 +120,26 @@ export type Database = {
           title: string;
           type: string;
           user_id: string;
+          // Extended columns (from 20260618000000_add_quantdinger_reuse.sql)
+          channel: string;
+          payload: Json;
+          status: string;
+          sent_at: string | null;
+          error: string | null;
         };
         Insert: {
           body?: string | null;
           created_at?: string;
           id?: string;
           read_at?: string | null;
-          title: string;
+          title?: string;
           type?: string;
           user_id: string;
+          channel?: string;
+          payload?: Json;
+          status?: string;
+          sent_at?: string | null;
+          error?: string | null;
         };
         Update: {
           body?: string | null;
@@ -137,6 +149,11 @@ export type Database = {
           title?: string;
           type?: string;
           user_id?: string;
+          channel?: string;
+          payload?: Json;
+          status?: string;
+          sent_at?: string | null;
+          error?: string | null;
         };
         Relationships: [];
       };
@@ -912,6 +929,253 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      // ── P1-INFRA: QuantDinger reuse tables (20260618000000) ──
+      user_settings: {
+        Row: {
+          user_id: string;
+          notification_channels: Json;
+          preferred_llm_provider: string;
+          llm_api_keys: Json;
+          telegram_chat_id: string | null;
+          webhook_url: string | null;
+          webhook_secret: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          notification_channels?: Json;
+          preferred_llm_provider?: string;
+          llm_api_keys?: Json;
+          telegram_chat_id?: string | null;
+          webhook_url?: string | null;
+          webhook_secret?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          notification_channels?: Json;
+          preferred_llm_provider?: string;
+          llm_api_keys?: Json;
+          telegram_chat_id?: string | null;
+          webhook_url?: string | null;
+          webhook_secret?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      agent_tokens: {
+        Row: {
+          id: string;
+          user_id: string;
+          token_hash: string;
+          scopes: string[];
+          name: string | null;
+          last_used_at: string | null;
+          expires_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          token_hash: string;
+          scopes?: string[];
+          name?: string | null;
+          last_used_at?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          token_hash?: string;
+          scopes?: string[];
+          name?: string | null;
+          last_used_at?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "agent_tokens_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      agent_jobs: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          token_id: string | null;
+          status: string;
+          progress: number;
+          result: Json | null;
+          error: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          token_id?: string | null;
+          status?: string;
+          progress?: number;
+          result?: Json | null;
+          error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          token_id?: string | null;
+          status?: string;
+          progress?: number;
+          result?: Json | null;
+          error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "agent_jobs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "agent_jobs_token_id_fkey";
+            columns: ["token_id"];
+            isOneToOne: false;
+            referencedRelation: "agent_tokens";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      agent_audit_log: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          token_id: string | null;
+          route: string;
+          method: string;
+          status: number | null;
+          duration_ms: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          token_id?: string | null;
+          route: string;
+          method: string;
+          status?: number | null;
+          duration_ms?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          token_id?: string | null;
+          route?: string;
+          method?: string;
+          status?: number | null;
+          duration_ms?: number | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      // ── P2-ENGINES: Experiment tables (20260618000001) ──
+      experiments: {
+        Row: {
+          id: string;
+          user_id: string;
+          config: Json;
+          result: Json | null;
+          status: string;
+          created_at: string;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          config: Json;
+          result?: Json | null;
+          status?: string;
+          created_at?: string;
+          completed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          config?: Json;
+          result?: Json | null;
+          status?: string;
+          created_at?: string;
+          completed_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "experiments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      experiment_generations: {
+        Row: {
+          id: string;
+          experiment_id: string;
+          generation: number;
+          best_score: Json | null;
+          avg_score: Json | null;
+          population: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          experiment_id: string;
+          generation: number;
+          best_score?: Json | null;
+          avg_score?: Json | null;
+          population?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          experiment_id?: string;
+          generation?: number;
+          best_score?: Json | null;
+          avg_score?: Json | null;
+          population?: Json | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "experiment_generations_experiment_id_fkey";
+            columns: ["experiment_id"];
+            isOneToOne: false;
+            referencedRelation: "experiments";
             referencedColumns: ["id"];
           },
         ];

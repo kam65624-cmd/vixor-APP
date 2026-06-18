@@ -31,6 +31,7 @@ import {
   type ChartExtractionResult,
   type ValidationResult,
 } from "@/domains/chart-intelligence";
+import { getNewsForSymbol, type NewsItem } from "@/domains/market/server/news";
 
 // ── Error class for analysis refusal ──
 //
@@ -295,6 +296,81 @@ export async function runChartAnalysis(
   console.log(
     `[Vixor] Local analysis complete: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
   );
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // STEP 4.5: REAL NEWS ENRICHMENT (Finnhub)
+  // ═══════════════════════════════════════════════════════════════════════
+  //
+  // The local engine returns `news_impact: undefined` (P0.3 fix — fake newsMap
+  // was deleted). We now fetch REAL news from Finnhub and attach a real
+  // `news_impact` object so users see actual market-moving headlines attached
+  // to their analysis.
+  //
+  // Failures are non-fatal: if Finnhub is unreachable, no API key configured,
+  // or the circuit breaker is open, `newsImpact` stays `undefined` and the
+  // analysis pipeline continues normally. The UI hides the news section when
+  // `news_impact` is undefined.
+  try {
+    const newsItems: NewsItem[] = await getNewsForSymbol(localResult.pair, {
+      limit: 5,
+    });
+
+    if (newsItems.length > 0) {
+      const sentimentCounts = newsItems.reduce(
+        (acc, n) => {
+          if (n.sentiment === "positive") acc.positive++;
+          else if (n.sentiment === "negative") acc.negative++;
+          else acc.neutral++;
+          return acc;
+        },
+        { positive: 0, negative: 0, neutral: 0 },
+      );
+
+      const overallSentiment =
+        sentimentCounts.positive > sentimentCounts.negative
+          ? "BULLISH"
+          : sentimentCounts.negative > sentimentCounts.positive
+            ? "BEARISH"
+            : "NEUTRAL";
+
+      const verdict =
+        overallSentiment === "BULLISH"
+          ? `Recent news sentiment leans positive (${sentimentCounts.positive} bullish vs ${sentimentCounts.negative} bearish headlines in the past 7 days). Aligns with the technical bias if direction matches.`
+          : overallSentiment === "BEARISH"
+            ? `Recent news sentiment leans negative (${sentimentCounts.negative} bearish vs ${sentimentCounts.positive} bullish headlines in the past 7 days). Consider this when sizing positions.`
+            : `News sentiment is mixed or neutral (${sentimentCounts.neutral} neutral headlines). No strong directional catalyst from news flow.`;
+
+      localResult.news_impact = {
+        relevant_news: newsItems.map((n) => ({
+          headline: n.title,
+          source: n.source,
+          impact:
+            n.sentiment === "positive"
+              ? ("POSITIVE" as const)
+              : n.sentiment === "negative"
+                ? ("NEGATIVE" as const)
+                : ("NEUTRAL" as const),
+          explanation: n.summary || `Published ${n.publishedAt}`,
+        })),
+        overall_sentiment: overallSentiment as "BULLISH" | "BEARISH" | "NEUTRAL",
+        verdict,
+      };
+
+      console.log(
+        `[Vixor] News enrichment: +${newsItems.length} real headlines from Finnhub (${overallSentiment})`,
+      );
+    } else {
+      console.log("[Vixor] News enrichment: no recent Finnhub news for this symbol");
+    }
+  } catch (newsErr) {
+    // Defensive: getNewsForSymbol already returns [] on failure, but if
+    // something unexpected happens here, we must NOT break the analysis.
+    console.warn(
+      "[Vixor] News enrichment failed (non-fatal):",
+      newsErr instanceof Error ? newsErr.message : String(newsErr),
+    );
+  }
+
   const result = buildAnalysisResult(localResult, chartContext);
 
   // ── OPTIONAL: Debate Engine validation ──
@@ -307,6 +383,7 @@ export async function runChartAnalysis(
       const debateResult = await debate.run(result);
       console.log("[Vixor] Debate result:", debateResult.summary);
       // Attach to result for downstream use (non-breaking, invisible to frontend)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (result as any)._debate = debateResult;
     } catch (e) {
       console.warn(
