@@ -1,0 +1,502 @@
+   750→| `news.py` | 180s | Finnhub + RSS |
+   751→| `heatmap.py` | 120s | aggregator |
+   752→| `sentiment.py` | 21600s (6h) | alternative.me Fear & Greed |
+   753→| `adanos_sentiment.py` | — | Adanos API (optional key) |
+   754→| `opportunities.py` | 3600s | computed from price scans |
+   755→
+   756→---
+   757→
+   758→## 8. Broker Integrations Map
+   759→
+   760→### 8.1 Crypto (direct REST, no ccxt for orders)
+   761→
+   762→| Exchange | Class | Spot | Swap | Demo/Testnet | Notes |
+   763→|----------|-------|------|------|--------------|-------|
+   764→| Binance | `BinanceFuturesClient` / `BinanceSpotClient` | ✓ | ✓ (USDT-M) | `demo-fapi.binance.com` / `demo-api.binance.com` | Broker IDs `A2NAPZAC` (spot) / `HBpUbQjT` (futures) |
+   765→| OKX | `OkxClient` | ✓ | ✓ | simulated trading flag | Broker code `56fa80b0ce8cBCDE`, passphrase required |
+   766→| Bitget | `BitgetMixClient` / `BitgetSpotClient` | ✓ | ✓ | simulated trading flag | Channel API code `qvz9x`, passphrase required |
+   767→| Bybit | `BybitClient` | ✓ | ✓ (linear) | `api-testnet.bybit.com` | Broker referer `Ri001020`, hedge-mode toggle |
+   768→| Coinbase Exchange | `CoinbaseExchangeClient` | ✓ | — | `api-public.sandbox.exchange.coinbase.com` | Passphrase required |
+   769→| Kraken | `KrakenClient` / `KrakenFuturesClient` | ✓ | ✓ | `demo-futures.kraken.com` | — |
+   770→| KuCoin | `KucoinSpotClient` / `KucoinFuturesClient` | ✓ | ✓ | `openapi-sandbox.kucoin.com` / `api-sandbox-futures.kucoin.com` | Passphrase required |
+   771→| Gate | `GateSpotClient` / `GateUsdtFuturesClient` | ✓ | ✓ | `api-testnet.gateio.ws` / `fx-api-testnet.gateio.ws` | Channel ID `dinger` |
+   772→| Deepcoin | `DeepcoinClient` | — | ✓ | not configured | Passphrase required |
+   773→| HTX | `HtxClient` | ✓ | ✓ | not configured | Broker ID `AA7b890547`, separate spot/futures base URLs |
+   774→
+   775→Each client implements: `ping()`, `get_account()`/`get_balance()`,
+   776→`get_positions()`, `place_order(...)`, `cancel_order(...)`,
+   777→`get_fee_rate(symbol, market_type)`.
+   778→
+   779→### 8.2 Traditional brokers
+   780→
+   781→| Broker | Class | Market | Required env |
+   782→|--------|-------|--------|--------------|
+   783→| Interactive Brokers | `IBKRClient` (ib_insync) | US stocks | TWS or IB Gateway running on host (`ibkr_host`, `ibkr_port`, `ibkr_client_id`, `ibkr_account`) |
+   784→| MetaTrader 5 | `MT5Client` (MetaTrader5 lib) | Forex | Windows + MT5 terminal running (`mt5_login`, `mt5_password`, `mt5_server`, `mt5_terminal_path`) |
+   785→
+   786→Both are **gated** by `local_desktop_brokers_allowed()` — set
+   787→`ALLOW_LOCAL_DESKTOP_BROKERS=false` to disable on SaaS cloud.
+   788→
+   789→### 8.3 Credential storage
+   790→
+   791→* All exchange credentials stored in `qd_exchange_credentials.encrypted_config`
+   792→  (TEXT) — Fernet-encrypted with key derived from
+   793→  `urlsafe_b64encode(sha256(SECRET_KEY))`.
+   794→* Plaintext never persisted; only `api_key_hint` (first 4 + last 4 chars)
+   795→  stored for UI display.
+   796→* `decrypt_credential_blob(stored)` is the single decryption path — raises
+   797→  `ValueError` on wrong key, so rotating `SECRET_KEY` invalidates all
+   798→  stored credentials (intentional).
+   799→
+   800→---
+   801→
+   802→## 9. Database Schema
+   803→
+   804→PostgreSQL 16, schema applied via `migrations/init.sql` on first container
+   805→boot. 30+ tables, all prefixed `qd_` (except `pending_orders`).
+   806→
+   807→### 9.1 Users & Auth (Section 1)
+   808→
+   809→| Table | Purpose | Key columns | Indexes |
+   810→|-------|---------|-------------|---------|
+   811→| `qd_users` | User accounts | `id`, `username` (unique), `password_hash`, `email` (unique), `role` (admin/manager/user/viewer), `credits`, `vip_expires_at`, `vip_plan`, `vip_is_lifetime`, `email_verified`, `referred_by`, `notification_settings` (JSON), `chart_templates` (JSON), `timezone`, `token_version` (single-client enforcement), `last_login_at` | `idx_users_referred_by` |
+   812→| `qd_credits_log` | Credits ledger | `user_id`, `action` (recharge/consume/refund/admin_adjust/vip_grant), `amount`, `balance_after`, `feature` (ai_analysis/strategy_run/backtest), `reference_id`, `operator_id` | user_id, action, created_at |
+   813→| `qd_membership_orders` | Mock-paid membership orders | `user_id`, `plan` (monthly/yearly/lifetime), `price_usd`, `status` (paid/pending/failed/refunded), `paid_at` | user_id |
+   814→| `qd_usdt_orders` | USDT-TRC20 payment orders | `user_id`, `plan`, `chain` (TRC20), `amount_usdt`, `address_index` (HD), `address` (unique per chain), `status` (pending/paid/confirmed/expired/cancelled/failed), `tx_hash`, `paid_at`, `confirmed_at`, `expires_at` | unique(chain, address), user_id, status |
+   815→| `qd_oauth_states` | Cross-worker OAuth CSRF state | `state` (PK), `provider`, `redirect`, `expires_at` | expires_at |
+   816→| `qd_verification_codes` | Email verification codes | `email`, `code`, `type` (register/login/reset_password/change_email/change_password), `expires_at`, `used_at`, `attempts`, `last_attempt_at` | email, type, expires_at |
+   817→| `qd_login_attempts` | Brute-force tracking | `identifier`, `identifier_type` (ip/account), `attempt_time`, `success`, `ip_address`, `user_agent` | (identifier, identifier_type), attempt_time |
+   818→| `qd_oauth_links` | Google/GitHub account links | `user_id`, `provider`, `provider_user_id` (unique per provider), `provider_email`, `access_token`, `refresh_token` | user_id, provider |
+   819→| `qd_security_logs` | Security audit | `user_id`, `action` (login/logout/register/reset_password/oauth_login), `ip_address`, `user_agent`, `details` (JSON) | user_id, action, created_at |
+   820→
+   821→### 9.2 Trading (Sections 2–6)
+   822→
+   823→| Table | Purpose | Key columns | Indexes |
+   824→|-------|---------|-------------|---------|
+   825→| `qd_strategies_trading` | Strategy records | `user_id`, `strategy_name`, `strategy_type` (IndicatorStrategy/ScriptStrategy), `market_category`, `execution_mode` (signal), `status` (running/stopped), `symbol`, `timeframe`, `initial_capital`, `leverage`, `market_type` (swap/spot), `exchange_config` (JSON), `indicator_config` (JSON), `trading_config` (JSON), `ai_model_config` (JSON), `decide_interval`, `strategy_group_id`, `strategy_mode`, `strategy_code` (for ScriptStrategy), `last_rebalance_at` (for cross-sectional) | user_id, status, group_id |
+   826→| `qd_strategy_positions` | Live positions | `strategy_id`, `symbol`, `side` (long/short), `size`, `entry_price`, `current_price`, `highest_price`, `lowest_price`, `unrealized_pnl`, `pnl_percent`, `equity`, UNIQUE(`strategy_id`, `symbol`, `side`) | user_id, strategy_id |
+   827→| `qd_strategy_trades` | Trade ledger | `strategy_id`, `symbol`, `type` (open_long/close_short/etc.), `price`, `amount`, `value`, `commission`, `commission_ccy`, `profit` | user_id, strategy_id, created_at |
+   828→| `pending_orders` | Order queue (consumed by `PendingOrderWorker`) | `strategy_id`, `symbol`, `signal_type`, `signal_ts`, `market_type`, `order_type`, `amount`, `price`, `execution_mode`, `status` (pending/processing/executed/failed/cancelled), `priority`, `attempts`, `max_attempts`, `last_error`, `payload_json`, `exchange_id`, `exchange_order_id`, `exchange_response_json`, `filled`, `avg_price`, `executed_at`, `sent_at`, `processed_at` | user_id, status, strategy_id |
+   829→| `qd_strategy_notifications` | In-app signal notifications | `strategy_id`, `symbol`, `signal_type`, `channels`, `title`, `message`, `payload_json`, `is_read` | user_id, strategy_id, is_read |
+   830→| `qd_strategy_logs` | Runtime logs (for dashboard) | `strategy_id`, `level`, `message`, `timestamp` | strategy_id, timestamp |
+   831→| `qd_indicator_codes` | User-saved indicator code | `user_id`, `name`, `code`, `description`, `is_buy`, `end_time`, `publish_to_community`, `pricing_type` (free/paid), `price`, `is_encrypted`, `vip_free`, `purchase_count`, `avg_rating`, `rating_count`, `view_count`, `review_status` (approved/pending/rejected), `review_note`, `reviewed_at`, `reviewed_by`, `source_indicator_id` (for sync from upstream publisher) | user_id, review_status, source_indicator_id |
+   832→
+   833→### 9.3 Market data (Sections 7, 10, 11, 14, 15, 16)
+   834→
+   835→| Table | Purpose |
+   836→|-------|---------|
+   837→| `qd_market_symbols` | Seed catalog of hot symbols per market (USStock, Crypto, Forex, Futures, CNStock, HKStock) with display name, exchange, currency, is_hot, sort_order. UNIQUE(market, symbol). Pre-seeded with ~80 hot symbols. |
+   838→| `qd_watchlist` | Per-user watchlist. UNIQUE(user_id, market, symbol). |
+   839→| `qd_analysis_tasks` | AI analysis task tracking |
+   840→| `qd_backtest_runs` | Backtest run records (user_id, indicator_id, strategy_id, run_type, market, symbol, timeframe, start_date, end_date, initial_capital, commission, slippage, leverage, trade_direction, strategy_config, config_snapshot, engine_version, code_hash, status, result_json) |
+   841→| `qd_backtest_trades` | Per-trade records (run_id, trade_index, trade_time, trade_type, side, price, amount, profit, balance, reason, payload_json) |
+   842→| `qd_backtest_equity_points` | Equity curve points (run_id, point_index, point_time, point_value) |
+   843→| `qd_exchange_credentials` | Fernet-encrypted exchange credentials (user_id, exchange_id, api_key_hint, encrypted_config) |
+   844→| `qd_manual_positions` | Manual portfolio positions (user_id, market, symbol, side, quantity, entry_price, entry_time, notes, tags, group_name) |
+   845→| `qd_position_alerts` | Price/PnL alerts (user_id, position_id, alert_type, threshold, notification_config, is_active, is_triggered, last_triggered_at, trigger_count, repeat_interval) |
+   846→| `qd_position_monitors` | Scheduled AI monitors (user_id, name, position_ids, monitor_type, config, notification_config, last_run_at, next_run_at) |
+   847→
+   848→### 9.4 AI / Reflection (Section 19.5)
+   849→
+   850→| Table | Purpose |
+   851→|-------|---------|
+   852→| `qd_analysis_memory` | Stores every AI analysis (user_id, market, symbol, decision, confidence, price_at_analysis, summary, reasons JSONB, scores JSONB, indicators_snapshot JSONB, raw_result JSONB, consensus_score, consensus_abs, agreement_ratio, quality_multiplier, validated_at, actual_outcome, actual_return_pct, was_correct, user_feedback, feedback_at). Powers the self-calibration loop. |
+   853→
+   854→### 9.5 Community marketplace (Section 21)
+   855→
+   856→| Table | Purpose |
+   857→|-------|---------|
+   858→| `qd_indicator_purchases` | Indicator purchase records (indicator_id, buyer_id, seller_id, price). UNIQUE(indicator_id, buyer_id). |
+   859→| `qd_indicator_comments` | Comments/ratings (indicator_id, user_id, rating 1-5, content, parent_id for threaded replies, is_deleted) |
+   860→
+   861→### 9.6 Quick trades & Polymarket (Sections 22–23)
+   862→
+   863→| Table | Purpose |
+   864→|-------|---------|
+   865→| `qd_quick_trades` | Manual/discretionary trades from Quick Trade Panel (user_id, exchange_id, symbol, side, order_type, amount, price, leverage, market_type, tp_price, sl_price, status, exchange_order_id, filled_amount, avg_fill_price, source — ai_radar/ai_analysis/indicator/manual, raw_result JSONB) |
+   866→| `qd_polymarket_markets` | Cached prediction markets (market_id unique, question, category, current_probability, volume_24h, liquidity, end_date_iso, status, outcome_tokens JSONB, slug) |
+   867→| `qd_polymarket_ai_analysis` | AI analysis records (market_id, ai_predicted_probability, market_probability, divergence, recommendation YES/NO/HOLD, confidence_score, opportunity_score, reasoning, key_factors JSONB, related_assets TEXT[]) |
+   868→| `qd_polymarket_asset_opportunities` | Derived asset-level signals (market_id, asset_symbol, asset_market, signal BUY/SELL/HOLD, confidence, entry_suggestion JSONB) |
+   869→
+   870→### 9.7 Agent Gateway (Section 30)
+   871→
+   872→| Table | Purpose |
+   873→|-------|---------|
+   874→| `qd_agent_tokens` | Token registry (user_id FK, name, token_prefix, token_hash UNIQUE, scopes CSV, markets CSV, instruments CSV, paper_only, rate_limit_per_min, status, expires_at, last_used_at). Indexes: token_hash unique, user_id, status. |
+   875→| `qd_agent_jobs` | Async job records (BIGSERIAL, job_id uuid hex UNIQUE, user_id FK, agent_token_id FK, kind — backtest/experiment_pipeline/structured_tune/ai_optimize, status — queued/running/succeeded/failed/cancelled, request JSONB, result JSONB, error TEXT, progress JSONB, idempotency_key, started_at, finished_at). Indexes: user_id, status, kind, unique(agent_token_id, kind, idempotency_key) WHERE idempotency_key IS NOT NULL. |
+   876→| `qd_agent_audit` | Audit log (user_id, agent_token_id, agent_name, route, method, scope_class R/W/B/N/C/T, status_code, idempotency_key, request_summary JSONB redacted, response_summary JSONB redacted, duration_ms). Indexes: (user_id, created_at DESC), (agent_token_id, created_at DESC), scope_class. |
+   877→| `qd_agent_paper_orders` | Paper-trading ledger for T-scope tokens (order_uid UNIQUE, user_id FK, agent_token_id FK, market, symbol, side, order_type, qty, limit_price, fill_price, fill_value, status — filled/cancelled/rejected, note). Indexes: (user_id, created_at DESC), agent_token_id. |
+   878→
+   879→### 9.8 Notable schema patterns
+   880→
+   881→* **All tables use `SERIAL` or `BIGSERIAL` PRIMARY KEY** (no UUIDs in DB).
+   882→* **Foreign keys** use `ON DELETE CASCADE` for ownership chains (user →
+   883→  strategies → positions/trades).
+   884→* **Soft migrations via `DO $$ ... END $$` blocks** that check
+   885→  `information_schema.columns` before `ALTER TABLE ADD COLUMN` — so the same
+   886→  `init.sql` is idempotent across upgrades.
+   887→* **No row-level security (RLS)** — tenant isolation enforced at the
+   888→  application layer via `user_id` filters in every query.
+   889→* **No stored procedures, triggers, or views** — all logic in Python.
+   890→* **JSONB** used liberally for flexible payloads
+   891→  (`exchange_config`, `trading_config`, `indicator_config`,
+   892→  `notification_config`, `request`, `result`, `progress`,
+   893→  `request_summary`, `response_summary`, `reasons`, `scores`,
+   894→  `indicators_snapshot`, `raw_result`, `outcome_tokens`, `key_factors`,
+   895→  `entry_suggestion`, `chart_templates`, `notification_settings`).
+   896→
+   897→---
+   898→
+   899→## 10. AI / LLM Integration
+   900→
+   901→### 10.1 Provider matrix
+   902→
+   903→| Provider | Base URL | Default model | Fallback model | Auth |
+   904→|----------|----------|---------------|----------------|------|
+   905→| OpenRouter | `https://openrouter.ai/api/v1` | `openai/gpt-4o` | `openai/gpt-4o-mini` | Bearer + `HTTP-Referer` + `X-Title` headers |
+   906→| OpenAI | `https://api.openai.com/v1` | `gpt-4o` | `gpt-4o-mini` | Bearer |
+   907→| Google Gemini | `https://generativelanguage.googleapis.com/v1beta` | `gemini-1.5-flash` | `gemini-1.5-flash` | API key in query string |
+   908→| DeepSeek | `https://api.deepseek.com/v1` | `deepseek-chat` | `deepseek-chat` | Bearer |
+   909→| Grok (xAI) | `https://api.x.ai/v1` | `grok-beta` | `grok-beta` | Bearer |
+   910→| MiniMax | `https://api.minimax.io/v1` | `MiniMax-M2.7` | `MiniMax-M2.7-highspeed` | Bearer |
+   911→| Custom | (user-configured) | (user-configured) | — | Bearer, OpenAI-compatible |
+   912→
+   913→### 10.2 Provider selection
+   914→
+   915→1. If `LLM_PROVIDER` env (or `llm.provider` config) set → use that
+   916→   explicitly.
+   917→2. Otherwise auto-detect by API key presence, priority order:
+   918→   `DeepSeek > Grok > MiniMax > OpenAI > Google > OpenRouter`.
+   919→3. If none configured → default to OpenRouter (will fail on first call with
+   920→   a clear error message).
+   921→
+   922→### 10.3 Call paths
+   923→
+   924→* **OpenAI-compatible** (OpenAI, DeepSeek, Grok, OpenRouter, MiniMax, Custom):
+   925→  standard `/chat/completions` POST with optional
+   926→  `response_format={"type": "json_object"}` for JSON mode.
+   927→* **Google Gemini**: bespoke `_call_google_gemini()` that converts OpenAI
+   928→  message format to Gemini `contents`/`parts` format, with
+   929→  `systemInstruction` for system messages and `responseMimeType:
+   930→  "application/json"` for JSON mode.
+   931→
+   932→### 10.4 Error handling
+   933→
+   934→* Non-2xx responses produce detailed error messages with provider-specific
+   935→  hints (e.g. OpenRouter 403 → "可能原因：API 密钥无效/过期、余额不足、或无
+   936→  模型权限"; 404 → "可能原因：模型不可用或账户隐私/数据策略限制").
+   937→* Empty content → `ValueError("Model X returned empty content")`.
+   938→* Missing `choices` → `ValueError("API response is missing 'choices'")`.
+   939→
+   940→### 10.5 Model normalization
+   941→
+   942→`_normalize_model_for_provider(model, provider)`:
+   943→
+   944→* If provider is OpenRouter → keep `vendor/model` format.
+   945→* Otherwise → strip prefix (`openai/gpt-4o` → `gpt-4o`).
+   946→* If prefix doesn't match the active provider → fall back to provider's
+   947→  default model (prevents sending `gpt-4o` to DeepSeek).
+   948→
+   949→### 10.6 AI surfaces
+   950→
+   951→| Feature | Endpoint | Service | LLM usage |
+   952→|---------|----------|---------|-----------|
+   953→| Fast Analysis (instant) | `POST /api/fast-analysis/analyze` | `FastAnalysisService` | Single call, structured JSON output (decision, scores, trend outlook, trading plan) |
+   954→| Fast Analysis (legacy) | `POST /api/fast-analysis/analyze-legacy` | Same | Same + `fast_analysis` envelope |
+   955→| AI Chat | `POST /api/ai/chat/message` | `LLMService` direct | Conversational |
+   956→| Indicator code generation | `POST /api/indicator/aiGenerate` | `LLMService` | Produces IndicatorStrategy Python code |
+   957→| Strategy code generation | `POST /api/strategies/ai-generate` | `LLMService` | Same |
+   958→| Backtest AI analysis | `POST /api/indicator/backtest/aiAnalyze` | `LLMService` | Summarizes backtest results |
+   959→| Experiment — AI optimize | `POST /api/experiment/ai-optimize` (SSE) | `ExperimentRunnerService.run_ai_pipeline` | Multi-round optimization (3 rounds × 5 candidates default) |
+   960→| Agent — AI optimize | `POST /api/agent/v1/experiments/ai-optimize` (async job) | Same | Same, with SSE progress streaming |
+   961→| Portfolio monitor | Background worker | `PortfolioMonitorService` | Periodic analysis on manual positions |
+   962→| Polymarket deep analysis | `POST /api/polymarket/analyze` | `PolymarketAnalyzer` | YES/NO divergence, opportunity score |
+   963→
+   964→### 10.7 Self-calibration loop
+   965→
+   966→```
+   967→qd_analysis_memory (validated rows)
+   968→        │
+   969→        ▼
+   970→ReflectionService.run_verification_cycle()  (daily, background thread)
+   971→        │ 1. Validate unvalidated rows older than 7 days
+   972→        │    - Fetch current price for (market, symbol)
+   973→        │    - Compute actual_return_pct = (current - price_at_analysis) / price_at_analysis × 100
+   974→        │    - Set was_correct based on decision:
+   975→        │       BUY correct if return > +2%
+   976→        │       SELL correct if return < -2%
+   977→        │       HOLD correct if |return| <= 5%
+   978→        │    - Set validated_at = NOW()
+   979→        ▼
+   980→AICalibrationService.calibrate_market(market)
+   981→        │ 2. For each candidate abs_threshold in [10,12,14,16,18,20,22,25,30]:
+   982→        │    - For each validated row, predict decision from consensus_score:
+   983→        │        score >= +thr → BUY
+   984→        │        score <= -thr → SELL
+   985→        │        else → HOLD
+   986→        │    - Compute accuracy = correct_predictions / total_predictions
+   987→        │ 3. Pick threshold with best accuracy (min 80 samples)
+   988→        │ 4. INSERT into qd_ai_calibration (market, buy_threshold, sell_threshold, ...)
+   989→        ▼
+   990→FastAnalysisService reads qd_ai_calibration on next call
+   991→        → uses tuned thresholds for BUY/SELL/HOLD decisions
+   992→```
+   993→
+   994→---
+   995→
+   996→## 11. Notifications (Telegram/Email/SMS)
+   997→
+   998→### 11.1 Channels (per-strategy `notification_config` JSON)
+   999→
+  1000→```json
+  1001→{
+  1002→  "channels": ["browser", "email", "phone", "telegram", "discord", "webhook"],
+  1003→  "targets": {
+  1004→    "email": "foo@example.com",
+  1005→    "phone": "+15551234567",
+  1006→    "telegram": "12345678 or @username",
+  1007→    "discord": "https://discord.com/api/webhooks/...",
+  1008→    "webhook": "https://example.com/webhook"
+  1009→  }
+  1010→}
+  1011→```
+  1012→
+  1013→### 11.2 Telegram
+  1014→
+  1015→* Bot Token via `TELEGRAM_BOT_TOKEN` env (admin-set, system-wide).
+  1016→* Per-user Telegram Chat ID stored in user `notification_settings` JSON or
+  1017→  per-strategy `targets.telegram`.
+  1018→* Supports multiple recipients (comma-separated) and group/channel IDs
+  1019→  (negative numbers).
+  1020→* HTTP API: `https://api.telegram.org/bot<token>/sendMessage`.
+  1021→* HTML-formatted messages with strategy name, symbol, signal type, price,
+  1022→  direction, timestamp (in user's timezone).
+  1023→
+  1024→### 11.3 Email
+  1025→
+  1026→* SMTP via `SMTP_HOST`, `SMTP_PORT` (default 587), `SMTP_USER`,
+  1027→  `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_USE_TLS` (default true),
+  1028→  `SMTP_USE_SSL` (for port 465).
+  1029→* Two services:
+  1030→  * `EmailService` — verification codes (6-digit, 10-min expiry, max-5
+  1031→    attempts / 30-min lockout) and password reset flows.
+  1032→  * `SignalNotifier` — strategy signal notifications (HTML-formatted).
+  1033→* All emails are admin-configured (system-wide SMTP); users can't change
+  1034→  SMTP settings, only their target address.
+  1035→
+  1036→### 11.4 SMS (Twilio)
+  1037→
+  1038→* `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` env vars.
+  1039→* Per-user phone number in `targets.phone`.
+  1040→* Used for critical signal alerts (configurable per strategy).
+  1041→
+  1042→### 11.5 Discord & generic webhook
+  1043→
+  1044→* Discord: posts to a Discord channel webhook URL.
+  1045→* Generic webhook: HMAC-SHA256 signed POST to any URL.
+  1046→* Both configurable per-strategy in `targets.discord` / `targets.webhook`.
+  1047→
+  1048→### 11.6 Browser (in-app)
+  1049→
+  1050→* Always available as a fallback channel.
+  1051→* Persists notifications into `qd_strategy_notifications` table for the
+  1052→  notification bell icon in the SPA.
+  1053→* `GET /api/strategies/notifications` (paginated list),
+  1054→  `GET /api/strategies/notifications/unread-count`,
+  1055→  `POST /api/strategies/notifications/read` (mark one read),
+  1056→  `POST /api/strategies/notifications/read-all`,
+  1057→  `DELETE /api/strategies/notifications/clear`.
+  1058→
+  1059→---
+  1060→
+  1061→## 12. Auth & Security
+  1062→
+  1063→### 12.1 Auth pipelines (two parallel, never crossable)
+  1064→
+  1065→| Pipeline | Used by | Token format | Storage | Decorator |
+  1066→|----------|---------|--------------|---------|-----------|
+  1067→| Human JWT | Browser SPA, OAuth callbacks | `jwt.encode(payload, SECRET_KEY, HS256)`, 7-day expiry | Not stored server-side; `token_version` in DB enforces single-client | `@login_required`, `@admin_required` |
+  1068→| Agent token | External AI agents, MCP server | `qd_agent_<urlsafe_32_bytes>` | SHA-256 hash in `qd_agent_tokens.token_hash` | `@agent_required(scope)` |
+  1069→
+  1070→A JWT is **never** accepted on `/api/agent/v1/*` and an agent token is
+  1071→**never** accepted on `/api/*`. No accidental cross-use.
+  1072→
+  1073→### 12.2 JWT specifics
+  1074→
+  1075→* Algorithm: HS256.
+  1076→* Payload: `exp` (7 days), `iat`, `sub` (username), `user_id`, `role`,
+  1077→  `token_version`.
+  1078→* **Single-client enforcement**: every login increments `qd_users.token_version`;
+  1079→  JWT verification checks DB `token_version` matches the one in the token —
+  1080→  mismatch → reject (kicks older sessions).
+  1081→* Auto-regenerated `SECRET_KEY` if running in production with the default
+  1082→  example value (defensive; `run.py` main()).
+  1083→
+  1084→### 12.3 OAuth2
+  1085→
+  1086→* Providers: Google, GitHub.
+  1087→* CSRF state stored in `qd_oauth_states` (cross-worker safe — not in-memory).
+  1088→* State TTL: 20 min (env: `OAUTH_STATE_TTL_MINUTES`).
+  1089→* Auto-creates user on first OAuth login; links to existing user if email
+  1090→  matches.
+  1091→* Frontend redirect: PC hash mode (`/#/user/login`) or mobile history mode
+  1092→  (preserves full path) — auto-detected by URL shape.
+  1093→
+  1094→### 12.4 Email verification & brute-force protection
+  1095→
+  1096→* 6-digit numeric code, 10-min expiry, max-5 attempts / 30-min lockout per
+  1097→  email.
+  1098→* `qd_login_attempts` tracks per-IP and per-account attempts.
+  1099→* `qd_verification_codes.attempts` and `last_attempt_at` enforce code
+  1100→  attempt limits.
+  1101→
+  1102→### 12.5 Credential encryption
+  1103→
+  1104→* `cryptography.fernet.Fernet` with key =
+  1105→  `urlsafe_b64encode(hashlib.sha256(SECRET_KEY.encode()).digest())`.
+  1106→* `encrypt_credential_blob(plaintext_json)` → Fernet-encrypted string for
+  1107→  DB storage in `qd_exchange_credentials.encrypted_config`.
+  1108→* `decrypt_credential_blob(stored)` → plaintext JSON; raises `ValueError`
+  1109→  on wrong key (so rotating `SECRET_KEY` invalidates all stored credentials
+  1110→  — must re-enter exchange API keys).
+  1111→* API key hint (`api_key_hint` column) stores first 4 + last 4 chars for
+  1112→  UI display.
+  1113→* Secrets are masked in logs via `mask_secret()` (e.g.
+  1114→  `ABCD...wxyz`).
+  1115→
+  1116→### 12.6 Rate limiting
+  1117→
+  1118→* **Per-token agent rate limit**: in-process sliding window,
+  1119→  `rate_limit_per_min` per token (default 60). Returns HTTP 429 with
+  1120→  `retriable: true` when exceeded.
+  1121→* **Per-IP / per-account login throttling**: `qd_login_attempts` table.
+  1122→* **Per-data-source rate limiters**: `RateLimiter` instances for
+  1123→  eastmoney/tencent/akshare (min-interval + jitter).
+  1124→* **Circuit breaker**: per-source failure tracking with cooldown (3min
+  1125→  realtime, 5min akshare).
+  1126→* **External API rate limits**: Finnhub (60/min), CCXT (built-in
+  1127→  `enableRateLimit: true`).
+  1128→
+  1129→### 12.7 Code execution sandbox
+  1130→
+  1131→See §4.3 for the full safe_exec analysis. Key points:
+  1132→
+  1133→* Three-layer defense: regex blacklist → AST walk → restricted `__builtins__`.
+  1134→* Whitelisted imports only: `numpy`, `pandas`, `math`, `json`, `datetime`,
+  1135→  `time`, `collections`, `functools`, `itertools`, `statistics`, `decimal`,
+  1136→  `fractions`, `operator`, `copy`.
+  1137→* Cross-platform timeout (SIGALRM on Unix main thread, ctypes
+  1138→  `PyThreadState_SetAsyncExc` elsewhere).
+  1139→* Optional subprocess isolation via `multiprocessing.Process` with
+  1140→  `RLIMIT_AS`.
+  1141→* Fail-closed: AST parse failure → reject.
+  1142→
+  1143→### 12.8 Other security features
+  1144→
+  1145→* **SafeJSONProvider** in `app/__init__.py`: sanitizes NaN/Infinity to
+  1146→  `null` in all JSON responses (RFC 8259 compliance).
+  1147→* **CORS**: enabled globally via flask-cors (consider tightening for
+  1148→  production).
+  1149→* **Security headers**: `X-Frame-Options: SAMEORIGIN`,
+  1150→  `X-Content-Type-Options: nosniff`, `X-XSS-Protection: 1; mode=block` in
+  1151→  nginx.
+  1152→* **Audit logs**: `qd_security_logs` (human auth events) +
+  1153→  `qd_agent_audit` (every agent call).
+  1154→* **Egress IP detection** for Binance IP whitelist debugging
+  1155→  (`https://ifconfig.me/ip`).
+  1156→
+  1157→---
+  1158→
+  1159→## 13. Frontend
+  1160→
+  1161→### 13.1 What's in this repo
+  1162→
+  1163→Only the **pre-built SPA** under `frontend/dist/`. The Vue source lives in a
+  1164→private repository (`QuantDinger-Vue-src`); the open-source workflow is:
+  1165→
+  1166→```
+  1167→private Vue repo  ──npm run build──>  dist/  ──rsync──>  frontend/dist/  ──Docker build──>  nginx:1.25-alpine
+  1168→```
+  1169→
+  1170→### 13.2 Stack identification
+  1171→
+  1172→From `frontend/dist/index.html`:
+  1173→
+  1174→* `<noscript>We're sorry but **vue-antd-pro** doesn't work properly without JavaScript enabled.</noscript>` — confirms Vue + Ant Design Pro.
+  1175→* `chunk-vendors.429ef519.js` (modern) + `chunk-vendors-legacy.d5daba6c.js` (IE/legacy) — Vue CLI build with `@vue/cli-service` legacy build mode.
+  1176→* `app.01d755db.js` (modern) + `app-legacy.5ad1f339.js` (legacy).
+  1177→* Module/nomodule split for modern vs legacy browsers.
+  1178→* 9 locale chunks: `lang-zh-CN`, `lang-zh-TW`, `lang-ko-KR`, `lang-ja-JP`,
+  1179→  `lang-fr-FR`, `lang-de-DE`, `lang-vi-VN`, `lang-th-TH`, `lang-ar-SA`.
+  1180→
+  1181→### 13.3 Page structure (inferred from CSS chunk names)
+  1182→
+  1183→CSS chunks suggest these view modules:
+  1184→
+  1185→* `app.css`, `chunk-vendors.css` — base
+  1186→* `user.css` — user/auth pages
+  1187→* `theme-colors.css` — theme tokens
+  1188→* Numeric chunks (668, 374, 482, 456, 298, 228, 593, 737, 676, 727, 412,
+  1189→  334, 18, 196, 506, 509, 89, 254, 130, 159, 912, 529, 362, 45) — Vue
+  1190→  lazy-loaded route chunks. Roughly 25-30 distinct route views.
+  1191→
+  1192→### 13.4 Deployment
+  1193→
+  1194→* `frontend/Dockerfile`: `nginx:1.25-alpine` base, copies `dist/` to
+  1195→  `/usr/share/nginx/html/`, copies `nginx.conf.template` to `/templates/`,
+  1196→  copies `entrypoint.sh`.
+  1197→* `frontend/entrypoint.sh`:
+  1198→  * Strips whitespace and angle brackets from `BACKEND_URL`.
+  1199→  * Defaults bare hosts to `https://` (Railway public domains are HTTPS).
+  1200→  * Defaults: `BACKEND_URL=http://backend:5000`, `PORT=80`.
+  1201→  * Explicit `envsubst '${BACKEND_URL} ${PORT}'` (so nginx's `$host`,
+  1202→    `$remote_addr` etc. stay literal).
+  1203→  * Hands off to the official nginx image's entrypoint chain.
+  1204→* `frontend/nginx.conf.template`:
+  1205→  * Gzip on, immutable caching for hashed static assets (1y).
+  1206→  * `location /api/` → `proxy_pass ${BACKEND_URL}/api/` with 10-min
+  1207→    read/send timeout for long-running backtests, 10MB body limit.
+  1208→  * `location /` → SPA fallback (`try_files $uri $uri/ /index.html`).
+  1209→  * `location /health` → 200 OK (container healthcheck).
+  1210→* `frontend/railway.json`: Railway deployment config.
+  1211→
+  1212→### 13.5 Maps & assets
+  1213→
+  1214→* `frontend/dist/maps/world-atlas.json` + `world.json` — for global market
+  1215→  heatmap visualizations (likely using ECharts or D3 geo projections).
+  1216→* Logo, slogo (small), avatar2 (default user avatar), background SVG.
+  1217→
+  1218→---
+  1219→
+  1220→## 14. Tests
+  1221→
+  1222→Location: `backend_api_python/tests/` (11 test files)
+  1223→
+  1224→| File | Scope | Coverage |
+  1225→|------|-------|----------|
+  1226→| `conftest.py` | Shared pytest fixtures — sets `SECRET_KEY`, `ADMIN_USER`, `ADMIN_PASSWORD`, `CACHE_ENABLED=false`; creates app via `create_app("testing")` + test client | All tests |
+  1227→| `test_health.py` | `GET /api/health` returns 200 | Health endpoint |
+  1228→| `test_json_encoder.py` | NaN/Inf → null in JSON responses (RFC 8259 compliance) | `SafeJSONProvider` |
+  1229→| `test_indicator_code_quality.py` | Heuristics for indicator code quality (empty code, missing output, missing SL/TP, unknown @strategy keys) | `indicator_code_quality.analyze_indicator_code_quality` + `StrategyConfigParser` |
+  1230→| `test_data_providers.py` | Cache layer helpers (`safe_float`, `get_cached`, `set_cached`, `clear_cache`) | `app.data_providers` cache |
+  1231→| `test_three_minute_timeframe.py` | CCXTConfig timeframe mapping includes 3m | Data source config |
+  1232→| `test_global_market_adanos.py` | Optional Adanos global-market endpoint (skipped if no API key) | `global_market` route |
+  1233→| `test_moex_data_source.py` | MOEX data source — mocks HTTP layer, doesn't hit real ISS API | `MOEXDataSource` |
+  1234→| `test_agent_v1.py` | Agent Gateway smoke tests: `/health` public, `/whoami` requires token, unknown/inactive/expired tokens rejected, scope enforcement returns 403 not 401 | `agent_required` decorator + agent_v1 routes |
+  1235→| `test_agent_v1_saas_guard.py` | SaaS deployment guard: `QUANTDINGER_DEPLOYMENT_MODE=saas` rejects T-scope at issuance with 403, force-pins `paper_only=True`; 13 cases covering env-var spellings + self-hosted regression | `agent_v1/admin.py._is_saas_mode()` |
+  1236→| `test_agent_jobs_progress.py` | Async job runner — runner-signature detection (single-arg vs `on_progress`), progress events accumulate monotonically, terminal events stop stream + clean up state, idle timeout returns control without hanging | `agent_jobs` progress / streaming machinery |
+  1237→| `test_experiment_services.py` | Experiment orchestration — regime detection, evolution variants, scoring | `experiment.regime` / `evolution` / `scoring` |
+  1238→
+  1239→**MCP server tests** (`mcp_server/tests/test_transport_resolution.py`, 5 tests):
+  1240→transport resolution (stdio default, alias mapping, unknown exits), HTTP
+  1241→settings shim tolerates FastMCP version drift.
+  1242→
+  1243→### Test observations
+  1244→
+  1245→* **No end-to-end / integration tests** that exercise the full strategy →
+  1246→  backtest → live-trade flow.
+  1247→* **No load / performance tests**.
+  1248→* **No tests for the strategy runtime itself** (`trading_executor.py`,
+  1249→  `backtest.py`) — these are the most complex modules.
+
+[showing lines 750-1249 of 1696; use offset=1250 with limit to continue reading]

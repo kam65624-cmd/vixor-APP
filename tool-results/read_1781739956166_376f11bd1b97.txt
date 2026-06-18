@@ -1,0 +1,951 @@
+     1→import { createFileRoute, useNavigate } from "@tanstack/react-router";
+     2→import {
+     3→  getMe,
+     4→  getMarketPrices,
+     5→  getDailySignals,
+     6→  listAlerts,
+     7→  getMarketNews,
+     8→  getDefaultWatchlist,
+     9→  getEconomicCalendar,
+    10→} from "@/lib/vixor.functions";
+    11→import { useQuery } from "@tanstack/react-query";
+    12→import {
+    13→  Sparkles,
+    14→  Camera,
+    15→  Activity,
+    16→  Zap,
+    17→  ArrowUpRight,
+    18→  ArrowDownRight,
+    19→  Newspaper,
+    20→  TrendingUp,
+    21→  Bell,
+    22→  Crosshair,
+    23→  CalendarClock,
+    24→  Eye,
+    25→  Target,
+    26→  MessageSquare,
+    27→  ChevronRight,
+    28→  Flame,
+    29→} from "lucide-react";
+    30→import { useMemo } from "react";
+    31→import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+    32→import { useRenderGuard } from "@/shared/hooks/use-render-guard";
+    33→import { RecBadge } from "@/components/vixor/atoms";
+    34→import {
+    35→  ExpandableWidget,
+    36→  MiniWidget,
+    37→  WidgetGroup,
+    38→  type WidgetVariant,
+    39→} from "@/components/vixor/ExpandableWidget";
+    40→import { useI18n } from "@/shared/i18n";
+    41→
+    42→export const Route = createFileRoute("/_authenticated/")({
+    43→  head: () => ({ meta: [{ title: "Mission Control — Vixor" }] }),
+    44→  component: MissionControl,
+    45→});
+    46→
+    47→function MissionControl() {
+    48→  useRenderGuard("MissionControl");
+    49→  const navigate = useNavigate();
+    50→  const { t } = useI18n();
+    51→
+    52→  // Use stable server function references to prevent infinite re-render loop (React error #310)
+    53→  const fetchMe = useStableServerFn(getMe);
+    54→  const fetchPrices = useStableServerFn(getMarketPrices);
+    55→  const fetchSignals = useStableServerFn(getDailySignals);
+    56→  const fetchAlerts = useStableServerFn(listAlerts);
+    57→  const fetchNews = useStableServerFn(getMarketNews);
+    58→  const fetchWatchlist = useStableServerFn(getDefaultWatchlist);
+    59→  const fetchCalendar = useStableServerFn(getEconomicCalendar);
+    60→
+    61→  const me = useQuery(
+    62→    useMemo(() => ({ queryKey: ["me"] as const, queryFn: () => fetchMe({}) }), [fetchMe]),
+    63→  );
+    64→  const prices = useQuery(
+    65→    useMemo(
+    66→      () => ({
+    67→        queryKey: ["market-prices"] as const,
+    68→        queryFn: () => fetchPrices({}),
+    69→        staleTime: 30_000,
+    70→        refetchInterval: 60_000,
+    71→      }),
+    72→      [fetchPrices],
+    73→    ),
+    74→  );
+    75→  const signals = useQuery(
+    76→    useMemo(
+    77→      () => ({
+    78→        queryKey: ["daily-signals", "home"] as const,
+    79→        queryFn: async () => {
+    80→          const r = await fetchSignals({ data: { limit: 5, offset: 0 } });
+    81→          // Server returns { items, total, hasMore } — extract items for backward compat
+    82→          return (r as any)?.items ?? (Array.isArray(r) ? r : []);
+    83→        },
+    84→        staleTime: 120_000,
+    85→      }),
+    86→      [fetchSignals],
+    87→    ),
+    88→  );
+    89→  const alerts = useQuery(
+    90→    useMemo(
+    91→      () => ({
+    92→        queryKey: ["alerts-dashboard", "home"] as const,
+    93→        queryFn: async () => {
+    94→          const r = await fetchAlerts({ data: { limit: 10, offset: 0 } });
+    95→          return (r as any)?.items ?? (Array.isArray(r) ? r : []);
+    96→        },
+    97→        staleTime: 30_000,
+    98→      }),
+    99→      [fetchAlerts],
+   100→    ),
+   101→  );
+   102→  const news = useQuery(
+   103→    useMemo(
+   104→      () => ({
+   105→        queryKey: ["market-news-forex"] as const,
+   106→        queryFn: () => fetchNews({ data: { category: "forex" } }),
+   107→        staleTime: 60_000,
+   108→        refetchInterval: 120_000,
+   109→      }),
+   110→      [fetchNews],
+   111→    ),
+   112→  );
+   113→  const watchlist = useQuery(
+   114→    useMemo(
+   115→      () => ({
+   116→        queryKey: ["default-watchlist"] as const,
+   117→        queryFn: () => fetchWatchlist({}),
+   118→        staleTime: 30_000,
+   119→      }),
+   120→      [fetchWatchlist],
+   121→    ),
+   122→  );
+   123→  const calendar = useQuery(
+   124→    useMemo(
+   125→      () => ({
+   126→        queryKey: ["economic-calendar"] as const,
+   127→        queryFn: () => fetchCalendar({ data: { days: 7 } }),
+   128→        staleTime: 300_000,
+   129→        refetchInterval: 600_000,
+   130→      }),
+   131→      [fetchCalendar],
+   132→    ),
+   133→  );
+   134→
+   135→  const name = me.data?.profile?.display_name?.split(" ")[0] || t("dashboard.trader");
+   136→  const xp = (me.data?.profile as any)?.total_xp ?? (me.data?.profile as any)?.xp ?? 0;
+   137→  const isPremium = !!me.data?.isPremium;
+   138→  const isLoadingMe = me.isLoading;
+   139→
+   140→  // Active alerts
+   141→  const activeAlerts = (alerts.data ?? []).filter((a: any) => a.status === "active");
+   142→
+   143→  // All non-WAIT signals sorted by confidence
+   144→  const allSignals = (signals.data ?? [])
+   145→    .filter((s: any) => s.recommendation !== "WAIT")
+   146→    .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
+   147→  const topSignals = allSignals.slice(0, 3);
+   148→
+   149→  // Determine top signal variant for hero widget
+   150→  const topSignal: any = allSignals[0] ?? null;
+   151→  const heroVariant: WidgetVariant = topSignal
+   152→    ? topSignal.recommendation === "BUY"
+   153→      ? "bullish"
+   154→      : "bearish"
+   155→    : "neutral";
+   156→
+   157→  // AI suggestion text based on signals/alerts state
+   158→  const aiSuggestion = topSignal
+   159→    ? `${topSignal.pair} ${topSignal.recommendation} @ ${topSignal.confidence}% — ${t("dashboard.suggestedAction")}`
+   160→    : activeAlerts.length > 0
+   161→      ? t("dashboard.todayPlan")
+   162→      : t("dashboard.whatShouldIDo");
+   163→
+   164→  return (
+   165→    <div className="space-y-4 pb-6 animate-in fade-in duration-500">
+   166→      {/* ═══════════════════════════════════════════
+   167→          1. GREETING HEADER — compact, single row, no emoji
+   168→          ═══════════════════════════════════════════ */}
+   169→      <div className="flex items-center justify-between gap-3">
+   170→        <div className="min-w-0 flex-1">
+   171→          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
+   172→            {new Date().getHours() < 12
+   173→              ? t("dashboard.greeting.morning")
+   174→              : new Date().getHours() < 17
+   175→                ? t("dashboard.greeting.afternoon")
+   176→                : t("dashboard.greeting.evening")}
+   177→          </div>
+   178→          {isLoadingMe ? (
+   179→            <div className="h-7 w-28 rounded-lg bg-muted shimmer" />
+   180→          ) : (
+   181→            <h1 className="text-2xl font-bold tracking-tight text-foreground truncate">
+   182→              {name}
+   183→            </h1>
+   184→          )}
+   185→          {!isLoadingMe && aiSuggestion && (
+   186→            <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">
+   187→              {aiSuggestion}
+   188→            </p>
+   189→          )}
+   190→        </div>
+   191→        <div className="flex flex-col items-end gap-1.5 shrink-0">
+   192→          {isLoadingMe ? (
+   193→            <div className="h-5 w-10 rounded bg-muted shimmer" />
+   194→          ) : (
+   195→            <>
+   196→              {isPremium && (
+   197→                <div className="px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary text-[9px] font-extrabold uppercase tracking-widest">
+   198→                  PRO
+   199→                </div>
+   200→              )}
+   201→              {xp > 0 && (
+   202→                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-card border border-border text-[10px] font-bold text-foreground">
+   203→                  <Zap className="size-3 text-info" /> {xp}
+   204→                </div>
+   205→              )}
+   206→            </>
+   207→          )}
+   208→        </div>
+   209→      </div>
+   210→
+   211→      {/* ═══════════════════════════════════════════
+   212→          2. DAILY ACTION CENTER (Hero Widget)
+   213→          ═══════════════════════════════════════════ */}
+   214→      <ExpandableWidget
+   215→        title={t("dashboard.dailyAction")}
+   216→        subtitle={
+   217→          topSignal ? `${topSignal.pair} · ${topSignal.timeframe}` : t("dashboard.noSignalsTitle")
+   218→        }
+   219→        icon={Target}
+   220→        variant={heroVariant}
+   221→        badge={topSignal ? topSignal.recommendation : undefined}
+   222→        metric={topSignal ? `${topSignal.confidence}%` : undefined}
+   223→        metricLabel={topSignal ? t("signals.confidence") : undefined}
+   224→        defaultExpanded={false}
+   225→      >
+   226→        {signals.isLoading ? (
+   227→          <div className="space-y-3">
+   228→            <div className="grid grid-cols-3 gap-3">
+   229→              {[1, 2, 3].map((i) => (
+   230→                <div key={i} className="space-y-1.5">
+   231→                  <div className="h-2.5 w-12 rounded bg-muted shimmer" />
+   232→                  <div className="h-4 w-16 rounded bg-muted shimmer" />
+   233→                </div>
+   234→              ))}
+   235→            </div>
+   236→            <div className="h-3 w-full rounded bg-muted shimmer" />
+   237→            <div className="flex gap-2">
+   238→              <div className="h-7 w-20 rounded-md bg-muted shimmer" />
+   239→              <div className="h-7 w-20 rounded-md bg-muted shimmer" />
+   240→            </div>
+   241→          </div>
+   242→        ) : topSignal ? (
+   243→          <div className="space-y-4">
+   244→            {/* Signal details */}
+   245→            <div className="grid grid-cols-3 gap-3">
+   246→              <div className="flex flex-col gap-0.5">
+   247→                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+   248→                  {t("signals.entry")}
+   249→                </span>
+   250→                <span className="text-sm font-mono font-bold text-foreground">
+   251→                  {topSignal.entry
+   252→                    ? Number(topSignal.entry).toLocaleString(undefined, {
+   253→                        maximumFractionDigits: 2,
+   254→                      })
+   255→                    : "—"}
+   256→                </span>
+   257→              </div>
+   258→              <div className="flex flex-col gap-0.5">
+   259→                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+   260→                  {t("signals.stopLoss")}
+   261→                </span>
+   262→                <span className="text-sm font-mono font-bold text-bearish">
+   263→                  {topSignal.stop_loss
+   264→                    ? Number(topSignal.stop_loss).toLocaleString(undefined, {
+   265→                        maximumFractionDigits: 2,
+   266→                      })
+   267→                    : "—"}
+   268→                </span>
+   269→              </div>
+   270→              <div className="flex flex-col gap-0.5">
+   271→                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+   272→                  {t("signals.takeProfit")}
+   273→                </span>
+   274→                <span className="text-sm font-mono font-bold text-bullish">
+   275→                  {topSignal.take_profit
+   276→                    ? Number(topSignal.take_profit).toLocaleString(undefined, {
+   277→                        maximumFractionDigits: 2,
+   278→                      })
+   279→                    : "—"}
+   280→                </span>
+   281→              </div>
+   282→            </div>
+   283→
+   284→            {/* Pattern / Reason */}
+   285→            {topSignal.pattern && (
+   286→              <div className="text-xs text-muted-foreground leading-relaxed">
+   287→                {topSignal.pattern}
+   288→              </div>
+   289→            )}
+   290→
+   291→            {/* Action buttons */}
+   292→            <div className="flex flex-wrap gap-2">
+   293→              <a
+   294→                href={`/charts?symbol=BINANCE:${topSignal.pair.replace("/", "")}`}
+   295→                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+   296→              >
+   297→                <Eye className="size-3" /> {t("dashboard.viewCharts")}
+   298→              </a>
+   299→              <button
+   300→                onClick={() => navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })}
+   301→                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-card border border-border hover:bg-card-hover transition-colors"
+   302→              >
+   303→                <Camera className="size-3" /> {t("dashboard.analyzeNow")}
+   304→              </button>
+   305→              <button
+   306→                onClick={() => navigate({ to: "/copilot", search: { chartPair: undefined, chartTimeframe: undefined, chartPrice: undefined, chartSymbol: undefined } })}
+   307→                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-card border border-border hover:bg-card-hover transition-colors"
+   308→              >
+   309→                <MessageSquare className="size-3" /> {t("dashboard.askCopilot")}
+   310→              </button>
+   311→            </div>
+   312→          </div>
+   313→        ) : (
+   314→          <div className="space-y-4">
+   315→            <p className="text-xs text-muted-foreground leading-relaxed">
+   316→              {t("dashboard.noSignalsDesc")}
+   317→            </p>
+   318→            <button
+   319→              onClick={() => navigate({ to: "/signals" })}
+   320→              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+   321→            >
+   322→              <Sparkles className="size-3.5" /> {t("dashboard.generateSignals")}
+   323→            </button>
+   324→          </div>
+   325→        )}
+   326→      </ExpandableWidget>
+   327→
+   328→      {/* ═══════════════════════════════════════════
+   329→          3. MARKET PULSE GRID — consistent 2-col grid on mobile, 4-col on desktop
+   330→          ═══════════════════════════════════════════ */}
+   331→      <WidgetGroup
+   332→        title={t("dashboard.marketPulse")}
+   333→        icon={Activity}
+   334→        action={
+   335→          <div className="flex items-center gap-1.5">
+   336→            <div className="size-1.5 rounded-full bg-primary animate-pulse" />
+   337→            <span className="text-[9px] font-bold text-primary uppercase tracking-widest">
+   338→              {t("dashboard.live")}
+   339→            </span>
+   340→          </div>
+   341→        }
+   342→      >
+   343→        {prices.isLoading ? (
+   344→          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+   345→            {[1, 2, 3, 4, 5, 6].map((i) => (
+   346→              <div key={i} className="p-3 rounded-xl bg-card border border-border shimmer h-20" />
+   347→            ))}
+   348→          </div>
+   349→        ) : !(prices.data ?? []).length ? (
+   350→          <div className="py-6 text-center">
+   351→            <Activity className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   352→            <p className="text-xs text-muted-foreground">{t("dashboard.noMarketData") || "Market data temporarily unavailable"}</p>
+   353→            <p className="text-[10px] text-muted-foreground/60 mt-1">Prices will appear when the feed reconnects</p>
+   354→          </div>
+   355→        ) : (
+   356→          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+   357→            {(prices.data ?? []).slice(0, 8).map((p: any) => {
+   358→              const change = p.change24h ?? 0;
+   359→              const isPositive = change >= 0;
+   360→              const variant: WidgetVariant = isPositive ? "bullish" : "bearish";
+   361→              return (
+   362→                <a
+   363→                  key={p.pair}
+   364→                  href={`/charts?symbol=${p.symbol || p.pair}`}
+   365→                  className="block p-3 rounded-xl bg-card border border-border hover:border-primary/30 hover:bg-card-hover transition-all duration-200"
+   366→                  style={{
+   367→                    borderInlineStartColor: isPositive ? "var(--color-bullish)" : "var(--color-bearish)",
+   368→                    borderInlineStartWidth: "2px",
+   369→                  }}
+   370→                >
+   371→                  <div className="flex items-center justify-between mb-1.5">
+   372→                    <span className="text-[11px] font-bold font-mono text-foreground truncate">{p.pair}</span>
+   373→                    {isPositive ? (
+   374→                      <TrendingUp className="size-3 text-bullish shrink-0" />
+   375→                    ) : (
+   376→                      <ArrowDownRight className="size-3 text-bearish shrink-0" />
+   377→                    )}
+   378→                  </div>
+   379→                  <div className="text-sm font-mono font-bold text-foreground tabular-nums truncate">
+   380→                    ${Number(p.price).toLocaleString(undefined, {
+   381→                      minimumFractionDigits: 2,
+   382→                      maximumFractionDigits: p.pair?.includes("JPY") ? 2 : 4,
+   383→                    })}
+   384→                  </div>
+   385→                  <div
+   386→                    className={`text-[10px] font-mono font-bold mt-0.5 ${
+   387→                      isPositive ? "text-bullish" : "text-bearish"
+   388→                    }`}
+   389→                  >
+   390→                    {isPositive ? "+" : ""}{change.toFixed(2)}%
+   391→                  </div>
+   392→                </a>
+   393→              );
+   394→            })}
+   395→          </div>
+   396→        )}
+   397→      </WidgetGroup>
+   398→
+   399→      {/* ═══════════════════════════════════════════
+   400→          4. WATCHLIST QUICK VIEW
+   401→          ═══════════════════════════════════════════ */}
+   402→      <ExpandableWidget
+   403→        title={t("dashboard.watchlistQuick")}
+   404→        subtitle={
+   405→          (watchlist.data as any)?.items?.length > 0
+   406→            ? t("dashboard.watchlistItems", { count: (watchlist.data as any).items.length })
+   407→            : t("dashboard.addPairs")
+   408→        }
+   409→        icon={Eye}
+   410→        variant="info"
+   411→        defaultExpanded={false}
+   412→      >
+   413→        {watchlist.isLoading ? (
+   414→          <div className="space-y-2">
+   415→            {[1, 2, 3].map((i) => (
+   416→              <div key={i} className="h-10 rounded-lg bg-muted shimmer" />
+   417→            ))}
+   418→          </div>
+   419→        ) : !(watchlist.data as any)?.items || (watchlist.data as any).items.length === 0 ? (
+   420→          <div className="space-y-3">
+   421→            {/* Show popular pairs as suggestions */}
+   422→            <div className="grid grid-cols-2 gap-2">
+   423→              {["EUR/USD", "GBP/USD", "XAU/USD", "BTC/USDT"].map((pair) => (
+   424→                <div
+   425→                  key={pair}
+   426→                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border"
+   427→                >
+   428→                  <Crosshair className="size-3 text-muted-foreground" />
+   429→                  <span className="text-xs font-mono font-bold text-foreground">{pair}</span>
+   430→                </div>
+   431→              ))}
+   432→            </div>
+   433→            <button
+   434→              onClick={() => navigate({ to: "/discover" })}
+   435→              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-colors"
+   436→            >
+   437→              <Eye className="size-3.5" /> {t("dashboard.buildWatchlist")}
+   438→            </button>
+   439→          </div>
+   440→        ) : (
+   441→          <div className="space-y-2">
+   442→            {(watchlist.data as any).items.slice(0, 6).map((item: any) => {
+   443→              const priceData = (prices.data ?? []).find((p: any) => p.pair === item.pair);
+   444→              const change = priceData?.change24h ?? 0;
+   445→              const isPositive = change >= 0;
+   446→              return (
+   447→                <a
+   448→                  key={item.id}
+   449→                  href={`/charts?symbol=BINANCE:${item.pair.replace("/", "")}`}
+   450→                  className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors"
+   451→                >
+   452→                  <div className="flex-1 min-w-0">
+   453→                    <div className="flex items-center gap-2">
+   454→                      <span className="font-bold font-mono text-xs">{item.pair}</span>
+   455→                      <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary capitalize">
+   456→                        {item.category}
+   457→                      </span>
+   458→                    </div>
+   459→                    {priceData && (
+   460→                      <div className="text-[10px] text-muted-foreground font-mono mt-0.5">
+   461→                        ${Number(priceData.price).toLocaleString(undefined, {
+   462→                          minimumFractionDigits: 2,
+   463→                          maximumFractionDigits: item.pair?.includes("JPY") ? 2 : 4,
+   464→                        })}
+   465→                      </div>
+   466→                    )}
+   467→                  </div>
+   468→                  {priceData && (
+   469→                    <div className="text-right shrink-0">
+   470→                      <div
+   471→                        className={`text-xs font-bold font-mono ${isPositive ? "text-bullish" : "text-bearish"}`}
+   472→                      >
+   473→                        {isPositive ? "+" : ""}{change.toFixed(2)}%
+   474→                      </div>
+   475→                    </div>
+   476→                  )}
+   477→                </a>
+   478→              );
+   479→            })}
+   480→            <button
+   481→              onClick={() => navigate({ to: "/discover" })}
+   482→              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold text-primary hover:underline"
+   483→            >
+   484→              {t("dashboard.viewAll")} <ChevronRight className="size-3" />
+   485→            </button>
+   486→          </div>
+   487→        )}
+   488→      </ExpandableWidget>
+   489→
+   490→      {/* ═══════════════════════════════════════════
+   491→          DESKTOP TWO-COLUMN LAYOUT
+   492→          Signals + Alerts side by side on lg
+   493→          ═══════════════════════════════════════════ */}
+   494→      <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-5 lg:space-y-0">
+   495→        {/* ═══════════════════════════════════════════
+   496→            5. TODAY'S SIGNALS
+   497→            ═══════════════════════════════════════════ */}
+   498→        <ExpandableWidget
+   499→          title={t("dashboard.todaysSignals")}
+   500→          subtitle={
+   501→            allSignals.length > 0
+   502→              ? t("dashboard.signalCount", { count: allSignals.length })
+   503→              : undefined
+   504→          }
+   505→          icon={Sparkles}
+   506→          variant={
+   507→            topSignal ? (topSignal.recommendation === "BUY" ? "bullish" : "bearish") : "neutral"
+   508→          }
+   509→          badge={allSignals.length > 0 ? `${allSignals.length}` : undefined}
+   510→          defaultExpanded={false}
+   511→        >
+   512→          {signals.isLoading ? (
+   513→            <div className="space-y-2">
+   514→              {[1, 2, 3].map((i) => (
+   515→                <div key={i} className="h-14 rounded-lg bg-muted shimmer" />
+   516→              ))}
+   517→            </div>
+   518→          ) : allSignals.length === 0 ? (
+   519→            <div className="py-4 text-center">
+   520→              <Sparkles className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   521→              <p className="text-xs text-muted-foreground">{t("dashboard.noSignalsTitle")}</p>
+   522→              <button
+   523→                onClick={() => navigate({ to: "/signals" })}
+   524→                className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+   525→              >
+   526→                {t("dashboard.generateSignals")} <ChevronRight className="size-3" />
+   527→              </button>
+   528→            </div>
+   529→          ) : (
+   530→            <div className="space-y-2">
+   531→              {allSignals.map((signal: any) => {
+   532→                const isBuy = signal.recommendation === "BUY";
+   533→                return (
+   534→                  <a
+   535→                    key={signal.id}
+   536→                    href={`/charts?symbol=BINANCE:${signal.pair.replace("/", "")}`}
+   537→                    className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors"
+   538→                  >
+   539→                    <div
+   540→                      className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
+   541→                        isBuy ? "bg-bullish/10" : "bg-bearish/10"
+   542→                      }`}
+   543→                    >
+   544→                      {isBuy ? (
+   545→                        <TrendingUp className="size-4 text-bullish" />
+   546→                      ) : (
+   547→                        <ArrowDownRight className="size-4 text-bearish" />
+   548→                      )}
+   549→                    </div>
+   550→                    <div className="flex-1 min-w-0">
+   551→                      <div className="flex items-center gap-2">
+   552→                        <span className="font-bold font-mono text-xs">{signal.pair}</span>
+   553→                        <RecBadge rec={signal.recommendation} />
+   554→                      </div>
+   555→                      <div className="text-[10px] text-muted-foreground font-mono">
+   556→                        {t("signals.entry")}:{" "}
+   557→                        {signal.entry
+   558→                          ? Number(signal.entry).toLocaleString(undefined, {
+   559→                              maximumFractionDigits: 2,
+   560→                            })
+   561→                          : "—"}
+   562→                        {" · "}
+   563→                        {signal.timeframe}
+   564→                      </div>
+   565→                    </div>
+   566→                    <div className="text-right shrink-0">
+   567→                      <div className="text-xs font-bold font-mono">{signal.confidence}%</div>
+   568→                      <div className="w-10 h-1 bg-muted rounded-full overflow-hidden mt-1">
+   569→                        <div
+   570→                          className={`h-full rounded-full ${isBuy ? "bg-bullish" : "bg-bearish"}`}
+   571→                          style={{ width: `${signal.confidence}%` }}
+   572→                        />
+   573→                      </div>
+   574→                    </div>
+   575→                  </a>
+   576→                );
+   577→              })}
+   578→              {/* Action buttons */}
+   579→              <div className="flex flex-wrap gap-2 pt-2">
+   580→                <button
+   581→                  onClick={() => navigate({ to: "/signals" })}
+   582→                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+   583→                >
+   584→                  <Sparkles className="size-3" /> {t("dashboard.viewAll")}
+   585→                </button>
+   586→                <button
+   587→                  onClick={() => navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })}
+   588→                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold bg-card border border-border hover:bg-card-hover transition-colors"
+   589→                >
+   590→                  <Camera className="size-3" /> {t("dashboard.analyzeNow")}
+   591→                </button>
+   592→              </div>
+   593→            </div>
+   594→          )}
+   595→        </ExpandableWidget>
+   596→
+   597→        {/* ═══════════════════════════════════════════
+   598→            8. ACTIVE ALERTS
+   599→            ═══════════════════════════════════════════ */}
+   600→        <ExpandableWidget
+   601→          title={t("dashboard.activeAlerts")}
+   602→          subtitle={
+   603→            activeAlerts.length > 0
+   604→              ? t("dashboard.alertCount", { count: activeAlerts.length })
+   605→              : undefined
+   606→          }
+   607→          icon={Bell}
+   608→          variant={activeAlerts.length > 0 ? "warning" : "neutral"}
+   609→          badge={activeAlerts.length > 0 ? `${activeAlerts.length}` : undefined}
+   610→          defaultExpanded={false}
+   611→        >
+   612→          {alerts.isLoading ? (
+   613→            <div className="space-y-2">
+   614→              {[1, 2].map((i) => (
+   615→                <div key={i} className="h-12 rounded-lg bg-muted shimmer" />
+   616→              ))}
+   617→            </div>
+   618→          ) : activeAlerts.length === 0 ? (
+   619→            <div className="py-4 text-center">
+   620→              <Bell className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   621→              <p className="text-xs text-muted-foreground">{t("dashboard.noActiveAlerts")}</p>
+   622→              <button
+   623→                onClick={() => navigate({ to: "/charts", search: { symbol: "BINANCE:BTCUSDT" } })}
+   624→                className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+   625→              >
+   626→                {t("dashboard.setAlert")} <ChevronRight className="size-3" />
+   627→              </button>
+   628→            </div>
+   629→          ) : (
+   630→            <div className="space-y-2">
+   631→              {activeAlerts.slice(0, 5).map((alert: any) => {
+   632→                const isUp = alert.condition === "above" || alert.condition === "crosses_up";
+   633→                return (
+   634→                  <div
+   635→                    key={alert.id}
+   636→                    className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
+   637→                  >
+   638→                    <div
+   639→                      className={`size-7 rounded-lg flex items-center justify-center shrink-0 ${
+   640→                        isUp ? "bg-bullish/10" : "bg-bearish/10"
+   641→                      }`}
+   642→                    >
+   643→                      {isUp ? (
+   644→                        <ArrowUpRight className="size-3.5 text-bullish" />
+   645→                      ) : (
+   646→                        <ArrowDownRight className="size-3.5 text-bearish" />
+   647→                      )}
+   648→                    </div>
+   649→                    <div className="flex-1 min-w-0">
+   650→                      <div className="font-bold text-xs font-mono">{alert.pair}</div>
+   651→                      <div className="text-[10px] text-muted-foreground font-mono">
+   652→                        {alert.condition === "above"
+   653→                          ? t("common.above")
+   654→                          : alert.condition === "below"
+   655→                            ? t("common.below")
+   656→                            : alert.condition === "crosses_up"
+   657→                              ? t("common.crossesUp")
+   658→                              : t("common.crossesDown")}{" "}
+   659→                        $
+   660→                        {Number(alert.target_price).toLocaleString(undefined, {
+   661→                          maximumFractionDigits: 2,
+   662→                        })}
+   663→                      </div>
+   664→                    </div>
+   665→                    <div className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-primary/10 text-primary uppercase">
+   666→                      {t("dashboard.active")}
+   667→                    </div>
+   668→                  </div>
+   669→                );
+   670→              })}
+   671→              <button
+   672→                onClick={() => navigate({ to: "/charts", search: { symbol: "BINANCE:BTCUSDT" } })}
+   673→                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+   674→              >
+   675→                <Bell className="size-3" /> {t("dashboard.setAlert")}
+   676→              </button>
+   677→            </div>
+   678→          )}
+   679→        </ExpandableWidget>
+   680→      </div>
+   681→
+   682→      {/* ═══════════════════════════════════════════
+   683→          DESKTOP TWO-COLUMN LAYOUT
+   684→          AI Focus + Calendar side by side on lg
+   685→          ═══════════════════════════════════════════ */}
+   686→      <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-5 lg:space-y-0">
+   687→        {/* ═══════════════════════════════════════════
+   688→            6. AI DAILY FOCUS
+   689→            ═══════════════════════════════════════════ */}
+   690→        <ExpandableWidget
+   691→          title={t("dashboard.aiDailyFocus")}
+   692→          subtitle={t("dashboard.todayPlan")}
+   693→          icon={Zap}
+   694→          variant="info"
+   695→          defaultExpanded={false}
+   696→        >
+   697→          <div className="space-y-3">
+   698→            <p className="text-xs text-foreground/90 leading-relaxed">
+   699→              {topSignals.length > 0
+   700→                ? `${t("dashboard.topSignal")}: ${topSignals[0].pair} ${topSignals[0].recommendation} @ ${topSignals[0].confidence}% ${t("signals.confidence").toLowerCase()}. ${topSignals[0].pattern || "Multiple confluences detected."} ${activeAlerts.length > 0 ? `${activeAlerts.length} ${t("dashboard.activeAlerts").toLowerCase()} ${t("dashboard.active").toLowerCase()}.` : ""}`
+   701→                : t("dashboard.noSignalsYet")}
+   702→            </p>
+   703→            <button
+   704→              onClick={() => navigate({ to: "/copilot", search: { chartPair: undefined, chartTimeframe: undefined, chartPrice: undefined, chartSymbol: undefined } })}
+   705→              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-colors"
+   706→            >
+   707→              <MessageSquare className="size-3" /> {t("dashboard.askCopilot")}
+   708→            </button>
+   709→          </div>
+   710→        </ExpandableWidget>
+   711→
+   712→        {/* ═══════════════════════════════════════════
+   713→            7. ECONOMIC CALENDAR PREVIEW (Real Data)
+   714→            ═══════════════════════════════════════════ */}
+   715→        <ExpandableWidget
+   716→          title={t("dashboard.calendarTitle")}
+   717→          subtitle={t("dashboard.calendarSubtitle")}
+   718→          icon={CalendarClock}
+   719→          variant="warning"
+   720→          badge={(() => {
+   721→            const todayEvents = (calendar.data ?? []).filter((e: any) => {
+   722→              const d = new Date(e.date);
+   723→              const now = new Date();
+   724→              return d.getDate() === now.getDate() && d.getMonth() === now.getMonth();
+   725→            });
+   726→            const highCount = todayEvents.filter((e: any) => e.impact === "high").length;
+   727→            return highCount > 0 ? `${highCount} 🔴` : undefined;
+   728→          })()}
+   729→          defaultExpanded={false}
+   730→        >
+   731→          {calendar.isLoading ? (
+   732→            <div className="space-y-2">
+   733→              {[1, 2, 3].map((i) => (
+   734→                <div key={i} className="h-12 rounded-lg bg-muted shimmer" />
+   735→              ))}
+   736→            </div>
+   737→          ) : !(calendar.data ?? []).length ? (
+   738→            <div className="py-4 text-center">
+   739→              <CalendarClock className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   740→              <p className="text-xs text-muted-foreground">{t("dashboard.noEventsToday")}</p>
+   741→            </div>
+   742→          ) : (
+   743→            <div className="space-y-2">
+   744→              {(calendar.data ?? [])
+   745→                .filter((e: any) => {
+   746→                  const d = new Date(e.date);
+   747→                  const now = new Date();
+   748→                  return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate());
+   749→                })
+   750→                .slice(0, 5)
+   751→                .map((evt: any) => {
+   752→                  const eventDate = new Date(evt.date);
+   753→                  const isToday = (() => {
+   754→                    const now = new Date();
+   755→                    return eventDate.getDate() === now.getDate() && eventDate.getMonth() === now.getMonth();
+   756→                  })();
+   757→                  const timeStr = eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+   758→                  const flagMap: Record<string, string> = { US: "🇺🇸", EU: "🇪🇺", UK: "🇬🇧", JP: "🇯🇵", AU: "🇦🇺", CA: "🇨🇦", CH: "🇨🇭", NZ: "🇳🇿" };
+   759→                  const impactColor = evt.impact === "high" ? "bg-bearish/15 text-bearish border-bearish/40" : evt.impact === "medium" ? "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40" : "bg-muted text-muted-foreground border-border";
+   760→                  return (
+   761→                    <div
+   762→                      key={evt.id}
+   763→                      className="flex items-center gap-2.5 p-2.5 rounded-lg bg-card border border-border"
+   764→                      style={evt.impact === "high" ? { borderInlineStartColor: "var(--color-bearish)", borderInlineStartWidth: "3px" } : undefined}
+   765→                    >
+   766→                      <span className="text-base shrink-0">{flagMap[evt.country] || "🌍"}</span>
+   767→                      <div className="flex-1 min-w-0">
+   768→                        <div className="flex items-center gap-1.5">
+   769→                          <span className="text-xs font-bold truncate">{evt.title}</span>
+   770→                        </div>
+   771→                        <div className="flex items-center gap-1.5 mt-0.5">
+   772→                          <span className="text-[10px] text-muted-foreground font-mono">{evt.currency}</span>
+   773→                          <span className="text-[10px] text-muted-foreground">·</span>
+   774→                          <span className="text-[10px] text-muted-foreground font-mono">{timeStr}</span>
+   775→                          {!isToday && (
+   776→                            <>
+   777→                              <span className="text-[10px] text-muted-foreground">·</span>
+   778→                              <span className="text-[10px] text-muted-foreground">{eventDate.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}</span>
+   779→                            </>
+   780→                          )}
+   781→                        </div>
+   782→                      </div>
+   783→                      <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase shrink-0 ${impactColor}`}>
+   784→                        {evt.impact === "high" ? t("discover.high") : evt.impact === "medium" ? t("discover.medium") : t("discover.low")}
+   785→                      </span>
+   786→                      <div className="flex flex-col items-end shrink-0 text-[9px] font-mono">
+   787→                        {evt.actual && <span className="text-foreground">{evt.actual}</span>}
+   788→                        {evt.forecast && <span className="text-muted-foreground">F: {evt.forecast}</span>}
+   789→                      </div>
+   790→                    </div>
+   791→                  );
+   792→                })}
+   793→              <a
+   794→                href="/discover"
+   795→                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold text-primary hover:underline"
+   796→              >
+   797→                {t("dashboard.viewCalendar")} <ChevronRight className="size-3" />
+   798→              </a>
+   799→            </div>
+   800→          )}
+   801→        </ExpandableWidget>
+   802→      </div>
+   803→
+   804→      {/* ═══════════════════════════════════════════
+   805→          9. MARKET NEWS
+   806→          ═══════════════════════════════════════════ */}
+   807→      <ExpandableWidget
+   808→        title={t("dashboard.marketNews")}
+   809→        subtitle={
+   810→          news.data && news.data.length > 0
+   811→            ? t("dashboard.newsCount", { count: news.data.length })
+   812→            : undefined
+   813→        }
+   814→        icon={Newspaper}
+   815→        variant="neutral"
+   816→        defaultExpanded={false}
+   817→      >
+   818→        {news.isLoading ? (
+   819→          <div className="space-y-2">
+   820→            {[1, 2, 3].map((i) => (
+   821→              <div key={i} className="flex items-start gap-3 p-2">
+   822→                <div className="flex-1 min-w-0 space-y-2">
+   823→                  <div className="h-3 w-20 rounded bg-muted shimmer" />
+   824→                  <div className="h-4 w-full rounded bg-muted shimmer" />
+   825→                  <div className="h-4 w-3/4 rounded bg-muted shimmer" />
+   826→                </div>
+   827→                <div className="size-12 rounded-lg bg-muted shimmer shrink-0" />
+   828→              </div>
+   829→            ))}
+   830→          </div>
+   831→        ) : !news.data || news.data.length === 0 ? (
+   832→          <div className="py-4 text-center">
+   833→            <Newspaper className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   834→            <p className="text-xs text-muted-foreground">{t("dashboard.noMarketNews")}</p>
+   835→          </div>
+   836→        ) : (
+   837→          <div className="space-y-2">
+   838→            {news.data.slice(0, 5).map((item: any) => (
+   839→              <a
+   840→                key={item.id}
+   841→                href={item.url}
+   842→                target="_blank"
+   843→                rel="noopener noreferrer"
+   844→                className="flex items-start gap-3 p-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors cursor-pointer"
+   845→              >
+   846→                <div className="flex-1 min-w-0">
+   847→                  <div className="flex items-center justify-between mb-1">
+   848→                    <span className="text-[8px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+   849→                      {item.source}
+   850→                    </span>
+   851→                    <span className="text-[9px] font-bold text-muted-foreground">
+   852→                      {formatTimeAgo(item.time, t)}
+   853→                    </span>
+   854→                  </div>
+   855→                  <h4 className="text-xs font-bold leading-snug line-clamp-2">{item.title}</h4>
+   856→                </div>
+   857→                <div className="size-11 rounded-lg bg-card-hover border border-border shrink-0 flex items-center justify-center overflow-hidden">
+   858→                  {item.image ? (
+   859→                    <img
+   860→                      src={item.image}
+   861→                      alt=""
+   862→                      className="size-full object-cover"
+   863→                      onError={(e) => {
+   864→                        (e.target as HTMLElement).style.display = "none";
+   865→                      }}
+   866→                    />
+   867→                  ) : (
+   868→                    <Newspaper className="size-4 text-muted-foreground/30" />
+   869→                  )}
+   870→                </div>
+   871→              </a>
+   872→            ))}
+   873→            <a
+   874→              href="/discover"
+   875→              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold text-primary hover:underline"
+   876→            >
+   877→              {t("dashboard.viewAll")} <ChevronRight className="size-3" />
+   878→            </a>
+   879→          </div>
+   880→        )}
+   881→      </ExpandableWidget>
+   882→
+   883→      {/* ═══════════════════════════════════════════
+   884→          QUICK ANALYZE CTA (bottom) — always visible
+   885→          ═══════════════════════════════════════════ */}
+   886→      <div
+   887→        onClick={() => navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })}
+   888→        className="relative overflow-hidden rounded-2xl p-5 cursor-pointer group active:scale-[0.98] transition-all"
+   889→      >
+   890→        <div className="absolute inset-0 bg-gradient-to-br from-[#059669]/90 to-[#064e3b]/90" />
+   891→        <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+   892→
+   893→        <div className="relative flex items-center justify-between">
+   894→          <div>
+   895→            <Sparkles className="size-5 text-emerald-200 mb-3" />
+   896→            <h2 className="text-xl font-bold text-white mb-1">{t("dashboard.analyzeChart")}</h2>
+   897→            <p className="text-xs text-emerald-100 font-medium opacity-90">
+   898→              {t("dashboard.smcIct")}
+   899→            </p>
+   900→          </div>
+   901→          <div className="size-14 rounded-full bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-black/10">
+   902→            <Camera className="size-6 text-white" />
+   903→          </div>
+   904→        </div>
+   905→      </div>
+   906→
+   907→      {/* ═══════════════════════════════════════════
+   908→          DAILY LOOP CTA
+   909→          ═══════════════════════════════════════════ */}
+   910→      <a
+   911→        href="/daily-loop"
+   912→        className="relative overflow-hidden rounded-2xl p-5 cursor-pointer group active:scale-[0.98] transition-all block"
+   913→      >
+   914→        <div className="absolute inset-0 bg-gradient-to-br from-[#FF9800]/90 to-[#E65100]/90" />
+   915→        <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+   916→
+   917→        <div className="relative flex items-center justify-between">
+   918→          <div>
+   919→            <Flame className="size-5 text-amber-200 mb-3" />
+   920→            <h2 className="text-xl font-bold text-white mb-1">Daily Loop</h2>
+   921→            <p className="text-xs text-amber-100 font-medium opacity-90">
+   922→              Build consistency with your daily trading routine
+   923→            </p>
+   924→          </div>
+   925→          <div className="size-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+   926→            <Target className="size-5 text-white" />
+   927→          </div>
+   928→        </div>
+   929→      </a>
+   930→    </div>
+   931→  );
+   932→}
+   933→
+   934→// ═══════════════════════════════════════════════
+   935→// HELPERS
+   936→// ═══════════════════════════════════════════════
+   937→
+   938→function formatTimeAgo(
+   939→  timestamp: number,
+   940→  t?: (key: string, params?: Record<string, string | number>) => string,
+   941→) {
+   942→  const diff = Date.now() - timestamp;
+   943→  const mins = Math.floor(diff / 60000);
+   944→  if (mins < 1) return t ? t("common.justNow") : "Just now";
+   945→  if (mins < 60) return t ? t("common.mAgo", { mins }) : `${mins}m ago`;
+   946→  const hours = Math.floor(mins / 60);
+   947→  if (hours < 24) return t ? t("common.hAgo", { hours }) : `${hours}h ago`;
+   948→  const days = Math.floor(hours / 24);
+   949→  return t ? t("common.dAgo", { days }) : `${days}d ago`;
+   950→}
+   951→

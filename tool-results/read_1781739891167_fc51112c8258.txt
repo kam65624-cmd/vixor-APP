@@ -1,0 +1,1161 @@
+     1→"""
+     2→Authentication API Routes
+     3→
+     4→Handles login, logout, registration, password reset, and OAuth authentication.
+     5→Supports both multi-user (database) and single-user (legacy) modes.
+     6→"""
+     7→import os
+     8→from flask import Blueprint, request, jsonify, g, redirect
+     9→from urllib.parse import urlencode, urlparse, urlunparse, parse_qsl
+    10→from app.config.settings import Config
+    11→from app.utils.auth import generate_token, login_required, authenticate_legacy
+    12→from app.utils.logger import get_logger
+    13→
+    14→logger = get_logger(__name__)
+    15→
+    16→auth_bp = Blueprint('auth', __name__)
+    17→
+    18→def _build_frontend_login_redirect(frontend_url: str, **params) -> str:
+    19→    """
+    20→    Build a redirect URL to the frontend login page for OAuth flows.
+    21→
+    22→    Supports both:
+    23→    - PC (hash mode, path `/#/user/login`) — default behavior when only an origin
+    24→      is supplied via FRONTEND_URL.
+    25→    - Mobile / SPA history mode (e.g. `https://m.example.com/login`) — when the
+    26→      caller provides a full URL with a real path (and optional query/hash), we
+    27→      preserve that path instead of overwriting it with `/#/user/login`.
+    28→
+    29→    The decision rule:
+    30→    1. If `frontend_url` contains a hash fragment (starts with `#/`), treat it as
+    31→       a PC hash-mode URL and normalize to `{origin}/#/user/login`.
+    32→    2. If `frontend_url` has a path other than `/` or empty, preserve the full
+    33→       URL (origin + path) and just append the OAuth params as query string.
+    34→    3. Otherwise (origin only), fall back to PC `/#/user/login`.
+    35→    """
+    36→    base = (frontend_url or '').strip().rstrip('/')
+    37→    if not base:
+    38→        base = 'http://localhost:8080'
+    39→
+    40→    # Ensure we can parse the URL
+    41→    candidate = base if '://' in base else f'https://{base}'
+    42→    try:
+    43→        parsed = urlparse(candidate)
+    44→    except Exception:
+    45→        parsed = None
+    46→
+    47→    origin = ''
+    48→    has_real_path = False
+    49→    has_hash_route = False
+    50→
+    51→    if parsed and parsed.scheme and parsed.netloc:
+    52→        origin = f"{parsed.scheme}://{parsed.netloc}".rstrip('/')
+    53→        # Hash-mode PC login URL, e.g. https://pc.example.com/#/user/login
+    54→        if parsed.fragment:
+    55→            has_hash_route = True
+    56→        path_part = (parsed.path or '').rstrip('/')
+    57→        if path_part and path_part != '':
+    58→            has_real_path = True
+    59→    else:
+    60→        origin = base
+    61→
+    62→    clean_params = {k: v for k, v in params.items() if v is not None and v != ''}
+    63→    qs = urlencode(clean_params)
+    64→
+    65→    if has_hash_route:
+    66→        # PC / hash-mode: always normalize to /#/user/login
+    67→        login_url = f"{origin}/#/user/login"
+    68→        return f"{login_url}?{qs}" if qs else login_url
+    69→
+    70→    if has_real_path:
+    71→        # SPA history-mode (mobile etc.) — keep the caller-provided path and
+    72→        # merge OAuth params into existing query string.
+    73→        existing_qs = dict(parse_qsl(parsed.query or '', keep_blank_values=True))
+    74→        existing_qs.update(clean_params)
+    75→        merged_qs = urlencode(existing_qs)
+    76→        rebuilt = urlunparse((
+    77→            parsed.scheme,
+    78→            parsed.netloc,
+    79→            parsed.path,
+    80→            parsed.params,
+    81→            merged_qs,
+    82→            ''  # drop the fragment deliberately for history-mode SPAs
+    83→        ))
+    84→        return rebuilt
+    85→
+    86→    # Origin only — fall back to PC hash route for backward compatibility
+    87→    login_url = f"{origin}/#/user/login"
+    88→    return f"{login_url}?{qs}" if qs else login_url
+    89→
+    90→
+    91→def _is_single_user_mode() -> bool:
+    92→    """Check if system is in single-user (legacy) mode"""
+    93→    return os.getenv('SINGLE_USER_MODE', 'false').lower() == 'true'
+    94→
+    95→
+    96→def _get_client_ip() -> str:
+    97→    """Get client IP address from request"""
+    98→    # Check for proxy headers
+    99→    if request.headers.get('X-Forwarded-For'):
+   100→        return request.headers.get('X-Forwarded-For').split(',')[0].strip()
+   101→    if request.headers.get('X-Real-IP'):
+   102→        return request.headers.get('X-Real-IP')
+   103→    return request.remote_addr or '0.0.0.0'
+   104→
+   105→
+   106→def _get_user_agent() -> str:
+   107→    """Get user agent from request"""
+   108→    return request.headers.get('User-Agent', '')[:500]
+   109→
+   110→
+   111→# =============================================================================
+   112→# Security Config Endpoint
+   113→# =============================================================================
+   114→
+   115→@auth_bp.route('/security-config', methods=['GET'])
+   116→def get_security_config():
+   117→    """
+   118→    Get public security configuration for frontend.
+   119→    
+   120→    Returns:
+   121→        turnstile_enabled: bool
+   122→        turnstile_site_key: str
+   123→        registration_enabled: bool
+   124→        oauth_google_enabled: bool
+   125→        oauth_github_enabled: bool
+   126→    """
+   127→    try:
+   128→        from app.services.security_service import get_security_service
+   129→        config = get_security_service().get_security_config()
+   130→        return jsonify({'code': 1, 'msg': 'success', 'data': config})
+   131→    except Exception as e:
+   132→        logger.error(f"get_security_config error: {e}")
+   133→        return jsonify({'code': 0, 'msg': str(e), 'data': None}), 500
+   134→
+   135→
+   136→# =============================================================================
+   137→# Login Endpoint (Enhanced with security)
+   138→# =============================================================================
+   139→
+   140→@auth_bp.route('/login', methods=['POST'])
+   141→def login():
+   142→    """
+   143→    User login endpoint.
+   144→    
+   145→    Request body:
+   146→        username: str
+   147→        password: str
+   148→        turnstile_token: str (optional, required if Turnstile is enabled)
+   149→    
+   150→    Returns:
+   151→        token: JWT token
+   152→        userinfo: User information
+   153→    """
+   154→    ip_address = _get_client_ip()
+   155→    user_agent = _get_user_agent()
+   156→    
+   157→    try:
+   158→        from app.services.security_service import get_security_service
+   159→        security = get_security_service()
+   160→        
+   161→        data = request.get_json()
+   162→        if not data:
+   163→            return jsonify({'code': 400, 'msg': 'No data provided', 'data': None}), 400
+   164→        
+   165→        username = data.get('username') or data.get('account')
+   166→        password = data.get('password')
+   167→        turnstile_token = data.get('turnstile_token')
+   168→        
+   169→        if not username or not password:
+   170→            return jsonify({'code': 400, 'msg': 'Missing username/email or password', 'data': None}), 400
+   171→        
+   172→        # Step 1: Verify Turnstile (if enabled)
+   173→        turnstile_ok, turnstile_msg = security.verify_turnstile(turnstile_token, ip_address)
+   174→        if not turnstile_ok:
+   175→            return jsonify({'code': 0, 'msg': turnstile_msg, 'data': None}), 400
+   176→        
+   177→        # Step 2: Check rate limiting
+   178→        allowed, block_msg = security.check_login_allowed(username, ip_address)
+   179→        if not allowed:
+   180→            return jsonify({'code': 0, 'msg': block_msg, 'data': {'blocked': True}}), 429
+   181→        
+   182→        user = None
+   183→        
+   184→        # Step 3: Authenticate
+   185→        if not _is_single_user_mode():
+   186→            try:
+   187→                from app.services.user_service import get_user_service
+   188→                user = get_user_service().authenticate(username, password)
+   189→                
+   190→                # Check if user has no password set (code-login user)
+   191→                if user and user.get('_no_password'):
+   192→                    user.pop('_no_password', None)
+   193→                    # Record failed attempt
+   194→                    security.record_login_attempt(ip_address, 'ip', False, ip_address, user_agent)
+   195→                    security.record_login_attempt(username, 'account', False, ip_address, user_agent)
+   196→                    security.log_security_event('login_failed', user.get('id'), ip_address, user_agent, 
+   197→                                               {'username': username, 'reason': 'no_password_set'})
+   198→                    return jsonify({
+   199→                        'code': 0, 
+   200→                        'msg': 'This account was created with email verification code and has no password set. Please use email code login or set a password first in your profile settings.', 
+   201→                        'data': None
+   202→                    }), 401
+   203→            except Exception as e:
+   204→                logger.warning(f"Multi-user auth failed, trying legacy: {e}")
+   205→        
+   206→        # Fallback to legacy single-user mode
+   207→        if not user:
+   208→            user = authenticate_legacy(username, password)
+   209→        
+   210→        if not user:
+   211→            # Record failed attempt
+   212→            security.record_login_attempt(ip_address, 'ip', False, ip_address, user_agent)
+   213→            security.record_login_attempt(username, 'account', False, ip_address, user_agent)
+   214→            security.log_security_event('login_failed', None, ip_address, user_agent, 
+   215→                                       {'username': username, 'reason': 'invalid_credentials'})
+   216→            return jsonify({'code': 0, 'msg': 'Invalid credentials', 'data': None}), 401
+   217→        
+   218→        # Check user status
+   219→        if user.get('status') == 'disabled':
+   220→            security.log_security_event('login_blocked', user.get('id'), ip_address, user_agent,
+   221→                                       {'reason': 'account_disabled'})
+   222→            return jsonify({'code': 0, 'msg': 'Account is disabled', 'data': None}), 403
+   223→        
+   224→        if user.get('status') == 'pending':
+   225→            return jsonify({'code': 0, 'msg': 'Account is pending activation', 'data': None}), 403
+   226→        
+   227→        # Step 4: Increment token_version (invalidates old sessions for single-client login)
+   228→        user_id = user.get('id') or user.get('user_id', 1)
+   229→        try:
+   230→            from app.services.user_service import get_user_service
+   231→            new_token_version = get_user_service().increment_token_version(user_id)
+   232→        except Exception as e:
+   233→            logger.warning(f"Failed to increment token_version: {e}")
+   234→            new_token_version = 1
+   235→        
+   236→        # Step 5: Generate token with new token_version
+   237→        token = generate_token(
+   238→            user_id=user_id,
+   239→            username=user.get('username', username),
+   240→            role=user.get('role', 'admin'),
+   241→            token_version=new_token_version  # 包含新的 token_version
+   242→        )
+   243→        
+   244→        if not token:
+   245→            return jsonify({'code': 500, 'msg': 'Token generation error', 'data': None}), 500
+   246→        
+   247→        # Step 6: Record successful login
+   248→        security.record_login_attempt(ip_address, 'ip', True, ip_address, user_agent)
+   249→        security.record_login_attempt(username, 'account', True, ip_address, user_agent)
+   250→        security.clear_login_attempts(ip_address, 'ip')
+   251→        security.clear_login_attempts(username, 'account')
+   252→        security.log_security_event('login_success', user.get('id'), ip_address, user_agent)
+   253→        
+   254→        # Build user info for frontend
+   255→        userinfo = {
+   256→            'id': user.get('id') or user.get('user_id', 1),
+   257→            'username': user.get('username', username),
+   258→            'nickname': user.get('nickname', 'User'),
+   259→            'avatar': user.get('avatar', '/avatar2.jpg'),
+   260→            'timezone': str(user.get('timezone') or '').strip(),
+   261→            'role': {
+   262→                'id': user.get('role', 'admin'),
+   263→                'permissions': _get_permissions(user.get('role', 'admin'))
+   264→            }
+   265→        }
+   266→        
+   267→        return jsonify({
+   268→            'code': 1,
+   269→            'msg': 'Login successful',
+   270→            'data': {
+   271→                'token': token,
+   272→                'userinfo': userinfo
+   273→            }
+   274→        })
+   275→            
+   276→    except Exception as e:
+   277→        logger.error(f"Login error: {e}")
+   278→        return jsonify({'code': 500, 'msg': str(e), 'data': None}), 500
+   279→
+   280→
+   281→# =============================================================================
+   282→# Email Code Login
+   283→# =============================================================================
+   284→
+   285→@auth_bp.route('/login-code', methods=['POST'])
+   286→def login_with_code():
+   287→    """
+   288→    Login with email verification code (quick login / register).
+   289→    If user doesn't exist, create a new account automatically.
+   290→    
+   291→    Request body:
+   292→        email: str
+   293→        code: str (verification code)
+   294→        turnstile_token: str (optional)
+   295→        referral_code: str (optional, referrer's user ID - only for new users)
+   296→    """
+   297→    ip_address = _get_client_ip()
+   298→    user_agent = _get_user_agent()
+   299→    
+   300→    try:
+   301→        from app.services.security_service import get_security_service
+   302→        from app.services.email_service import get_email_service
+   303→        from app.services.user_service import get_user_service
+   304→        from app.services.billing_service import get_billing_service
+   305→        
+   306→        security = get_security_service()
+   307→        email_service = get_email_service()
+   308→        user_service = get_user_service()
+   309→        billing_service = get_billing_service()
+   310→        
+   311→        data = request.get_json()
+   312→        if not data:
+   313→            return jsonify({'code': 0, 'msg': 'No data provided', 'data': None}), 400
+   314→        
+   315→        email = (data.get('email') or '').strip().lower()
+   316→        code = data.get('code', '').strip()
+   317→        turnstile_token = data.get('turnstile_token')
+   318→        referral_code = data.get('referral_code', '').strip()
+   319→        
+   320→        # Validate inputs
+   321→        if not email or not email_service.is_valid_email(email):
+   322→            return jsonify({'code': 0, 'msg': 'Invalid email address', 'data': None}), 400
+   323→        
+   324→        if not code:
+   325→            return jsonify({'code': 0, 'msg': 'Verification code is required', 'data': None}), 400
+   326→        
+   327→        # Verify Turnstile
+   328→        turnstile_ok, turnstile_msg = security.verify_turnstile(turnstile_token, ip_address)
+   329→        if not turnstile_ok:
+   330→            return jsonify({'code': 0, 'msg': turnstile_msg, 'data': None}), 400
+   331→        
+   332→        # Verify email code
+   333→        code_valid, code_msg = email_service.verify_code(email, code, 'login')
+   334→        if not code_valid:
+   335→            return jsonify({'code': 0, 'msg': code_msg, 'data': None}), 400
+   336→        
+   337→        # Check if user exists
+   338→        user = user_service.get_user_by_email(email)
+   339→        is_new_user = False
+   340→        
+   341→        if not user:
+   342→            # Check if registration is enabled
+   343→            if os.getenv('ENABLE_REGISTRATION', 'true').lower() != 'true':
+   344→                return jsonify({'code': 0, 'msg': 'User not found and registration is disabled', 'data': None}), 403
+   345→            
+   346→            # Auto-create user with email as username
+   347→            import re
+   348→            # Generate username from email (before @)
+   349→            base_username = re.sub(r'[^a-zA-Z0-9_]', '', email.split('@')[0])
+   350→            if not base_username or not base_username[0].isalpha():
+   351→                base_username = 'user_' + base_username
+   352→            
+   353→            # Make sure username is unique
+   354→            username = base_username
+   355→            counter = 1
+   356→            while user_service.get_user_by_username(username):
+   357→                username = f"{base_username}_{counter}"
+   358→                counter += 1
+   359→            
+   360→            # Validate referral code (user ID)
+   361→            referred_by = None
+   362→            if referral_code:
+   363→                try:
+   364→                    referrer_id = int(referral_code)
+   365→                    referrer = user_service.get_user_by_id(referrer_id)
+   366→                    if referrer and referrer.get('status') == 'active':
+   367→                        referred_by = referrer_id
+   368→                except (ValueError, TypeError):
+   369→                    pass  # Invalid referral code, ignore
+   370→            
+   371→            # Create user without password (can set later)
+   372→            user_id = user_service.create_user(
+   373→                username=username,
+   374→                password=None,  # No password for code-login users
+   375→                email=email,
+   376→                nickname=username,
+   377→                role='user',
+   378→                status='active',
+   379→                email_verified=True,
+   380→                referred_by=referred_by
+   381→            )
+   382→            
+   383→            if not user_id:
+   384→                return jsonify({'code': 0, 'msg': 'Failed to create account', 'data': None}), 500
+   385→            
+   386→            # Grant registration bonus credits
+   387→            register_bonus = int(os.getenv('CREDITS_REGISTER_BONUS', '0'))
+   388→            if register_bonus > 0:
+   389→                billing_service.add_credits(
+   390→                    user_id=user_id,
+   391→                    amount=register_bonus,
+   392→                    action='register_bonus',
+   393→                    remark='Registration bonus'
+   394→                )
+   395→            
+   396→            # Grant referral bonus to referrer
+   397→            if referred_by:
+   398→                referral_bonus = int(os.getenv('CREDITS_REFERRAL_BONUS', '0'))
+   399→                if referral_bonus > 0:
+   400→                    billing_service.add_credits(
+   401→                        user_id=referred_by,
+   402→                        amount=referral_bonus,
+   403→                        action='referral_bonus',
+   404→                        remark=f'Referral bonus for inviting user {username}',
+   405→                        reference_id=str(user_id)
+   406→                    )
+   407→            
+   408→            user = user_service.get_user_by_id(user_id)
+   409→            is_new_user = True
+   410→            
+   411→            # Log registration
+   412→            security.log_security_event('register_via_code', user_id, ip_address, user_agent, 
+   413→                                       {'email': email, 'referred_by': referred_by})
+   414→        
+   415→        # Check user status
+   416→        if user.get('status') == 'disabled':
+   417→            security.log_security_event('login_blocked', user.get('id'), ip_address, user_agent,
+   418→                                       {'reason': 'account_disabled'})
+   419→            return jsonify({'code': 0, 'msg': 'Account is disabled', 'data': None}), 403
+   420→        
+   421→        # Increment token_version (invalidates old sessions for single-client login)
+   422→        try:
+   423→            new_token_version = user_service.increment_token_version(user['id'])
+   424→        except Exception as e:
+   425→            logger.warning(f"Failed to increment token_version: {e}")
+   426→            new_token_version = 1
+   427→        
+   428→        # Generate token with new token_version
+   429→        token = generate_token(
+   430→            user_id=user['id'],
+   431→            username=user['username'],
+   432→            role=user.get('role', 'user'),
+   433→            token_version=new_token_version
+   434→        )
+   435→        
+   436→        if not token:
+   437→            return jsonify({'code': 500, 'msg': 'Token generation error', 'data': None}), 500
+   438→        
+   439→        # Update last login time
+   440→        try:
+   441→            from app.utils.db import get_db_connection
+   442→            with get_db_connection() as db:
+   443→                cur = db.cursor()
+   444→                cur.execute(
+   445→                    "UPDATE qd_users SET last_login_at = NOW() WHERE id = ?",
+   446→                    (user['id'],)
+   447→                )
+   448→                db.commit()
+   449→                affected = cur.rowcount
+   450→                cur.close()
+   451→                if affected == 0:
+   452→                    logger.error(f"Failed to update last_login_at: no rows affected for user_id={user['id']}")
+   453→                else:
+   454→                    logger.info(f"Updated last_login_at for user_id={user['id']}")
+   455→        except Exception as e:
+   456→            logger.error(f"Failed to update last_login_at for user_id={user.get('id')}: {e}")
+   457→        
+   458→        # Log login
+   459→        security.log_security_event('login_via_code', user['id'], ip_address, user_agent)
+   460→        
+   461→        return jsonify({
+   462→            'code': 1,
+   463→            'msg': 'Login successful' + (' (new account created)' if is_new_user else ''),
+   464→            'data': {
+   465→                'token': token,
+   466→                'is_new_user': is_new_user,
+   467→                'userinfo': {
+   468→                    'id': user['id'],
+   469→                    'username': user['username'],
+   470→                    'nickname': user.get('nickname', user['username']),
+   471→                    'email': user.get('email'),
+   472→                    'avatar': user.get('avatar', '/avatar2.jpg'),
+   473→                    'timezone': str(user.get('timezone') or '').strip(),
+   474→                    'role': {
+   475→                        'id': user.get('role', 'user'),
+   476→                        'permissions': _get_permissions(user.get('role', 'user'))
+   477→                    }
+   478→                }
+   479→            }
+   480→        })
+   481→        
+   482→    except Exception as e:
+   483→        logger.error(f"login_with_code error: {e}")
+   484→        return jsonify({'code': 0, 'msg': 'Login failed', 'data': None}), 500
+   485→
+   486→
+   487→# =============================================================================
+   488→# Registration Endpoints
+   489→# =============================================================================
+   490→
+   491→@auth_bp.route('/send-code', methods=['POST'])
+   492→def send_verification_code():
+   493→    """
+   494→    Send verification code to email.
+   495→    
+   496→    Request body:
+   497→        email: str
+   498→        type: str (register, reset_password, change_password, change_email)
+   499→        turnstile_token: str (optional)
+   500→    """
+   501→    ip_address = _get_client_ip()
+   502→    
+   503→    try:
+   504→        from app.services.security_service import get_security_service
+   505→        from app.services.email_service import get_email_service
+   506→        
+   507→        security = get_security_service()
+   508→        email_service = get_email_service()
+   509→        
+   510→        data = request.get_json()
+   511→        if not data:
+   512→            return jsonify({'code': 0, 'msg': 'No data provided', 'data': None}), 400
+   513→        
+   514→        email = (data.get('email') or '').strip().lower()
+   515→        code_type = data.get('type', 'register')
+   516→        turnstile_token = data.get('turnstile_token')
+   517→        
+   518→        # Validate email
+   519→        if not email or not email_service.is_valid_email(email):
+   520→            return jsonify({'code': 0, 'msg': 'Invalid email address', 'data': None}), 400
+   521→        
+   522→        # For change_password type with logged-in user, skip Turnstile verification
+   523→        # because user already authenticated
+   524→        skip_turnstile = False
+   525→        if code_type == 'change_password':
+   526→            # Try to get user_id from token (this route doesn't require login)
+   527→            from app.utils.auth import verify_token
+   528→            auth_header = request.headers.get('Authorization')
+   529→            if auth_header:
+   530→                parts = auth_header.split()
+   531→                if len(parts) == 2 and parts[0].lower() == 'bearer':
+   532→                    payload = verify_token(parts[1])
+   533→                    if payload and payload.get('user_id'):
+   534→                        skip_turnstile = True
+   535→        
+   536→        # Verify Turnstile (skip for authenticated change_password requests)
+   537→        if not skip_turnstile:
+   538→            turnstile_ok, turnstile_msg = security.verify_turnstile(turnstile_token, ip_address)
+   539→            if not turnstile_ok:
+   540→                return jsonify({'code': 0, 'msg': turnstile_msg, 'data': None}), 400
+   541→        
+   542→        # Check rate limit
+   543→        can_send, rate_msg = security.can_send_verification_code(email, ip_address)
+   544→        if not can_send:
+   545→            return jsonify({'code': 0, 'msg': rate_msg, 'data': None}), 429
+   546→        
+   547→        # For registration, check if email already exists
+   548→        if code_type == 'register':
+   549→            from app.services.user_service import get_user_service
+   550→            existing = get_user_service().get_user_by_email(email)
+   551→            if existing:
+   552→                return jsonify({'code': 0, 'msg': 'Email already registered', 'data': None}), 400
+   553→        
+   554→        # For login type - always allow (will auto-create if not exists)
+   555→        # No special check needed
+   556→        
+   557→        # For reset_password, check if email exists
+   558→        if code_type == 'reset_password':
+   559→            from app.services.user_service import get_user_service
+   560→            existing = get_user_service().get_user_by_email(email)
+   561→            if not existing:
+   562→                # Don't reveal if email exists or not (security best practice)
+   563→                # But still return success to prevent email enumeration
+   564→                return jsonify({'code': 1, 'msg': 'If the email exists, a verification code has been sent', 'data': None})
+   565→        
+   566→        # Send verification code
+   567→        success, msg = email_service.send_verification_code(email, code_type, ip_address)
+   568→        
+   569→        if success:
+   570→            security.log_security_event('verification_code_sent', None, ip_address, 
+   571→                                       _get_user_agent(), {'email': email, 'type': code_type})
+   572→            return jsonify({'code': 1, 'msg': 'Verification code sent', 'data': None})
+   573→        else:
+   574→            return jsonify({'code': 0, 'msg': msg, 'data': None}), 500
+   575→            
+   576→    except Exception as e:
+   577→        logger.error(f"send_verification_code error: {e}")
+   578→        return jsonify({'code': 0, 'msg': 'Failed to send verification code', 'data': None}), 500
+   579→
+   580→
+   581→@auth_bp.route('/register', methods=['POST'])
+   582→def register():
+   583→    """
+   584→    Register new user with email verification.
+   585→    
+   586→    Request body:
+   587→        email: str
+   588→        code: str (verification code)
+   589→        username: str
+   590→        password: str
+   591→        turnstile_token: str (optional)
+   592→        referral_code: str (optional, referrer's user ID)
+   593→    """
+   594→    ip_address = _get_client_ip()
+   595→    user_agent = _get_user_agent()
+   596→    
+   597→    try:
+   598→        # Check if registration is enabled
+   599→        if os.getenv('ENABLE_REGISTRATION', 'true').lower() != 'true':
+   600→            return jsonify({'code': 0, 'msg': 'Registration is disabled', 'data': None}), 403
+   601→        
+   602→        from app.services.security_service import get_security_service
+   603→        from app.services.email_service import get_email_service
+   604→        from app.services.user_service import get_user_service
+   605→        from app.services.billing_service import get_billing_service
+   606→        
+   607→        security = get_security_service()
+   608→        email_service = get_email_service()
+   609→        user_service = get_user_service()
+   610→        billing_service = get_billing_service()
+   611→        
+   612→        data = request.get_json()
+   613→        if not data:
+   614→            return jsonify({'code': 0, 'msg': 'No data provided', 'data': None}), 400
+   615→        
+   616→        email = (data.get('email') or '').strip().lower()
+   617→        code = data.get('code', '').strip()
+   618→        username = (data.get('username') or '').strip()
+   619→        password = data.get('password', '')
+   620→        turnstile_token = data.get('turnstile_token')
+   621→        referral_code = data.get('referral_code', '').strip()
+   622→        
+   623→        # Validate inputs
+   624→        if not email or not email_service.is_valid_email(email):
+   625→            return jsonify({'code': 0, 'msg': 'Invalid email address', 'data': None}), 400
+   626→        
+   627→        if not code:
+   628→            return jsonify({'code': 0, 'msg': 'Verification code is required', 'data': None}), 400
+   629→        
+   630→        if not username or len(username) < 3 or len(username) > 30:
+   631→            return jsonify({'code': 0, 'msg': 'Username must be 3-30 characters', 'data': None}), 400
+   632→        
+   633→        # Validate username format (alphanumeric and underscore only)
+   634→        import re
+   635→        if not re.match(r'^[a-zA-Z][a-zA-Z0-9_]*$', username):
+   636→            return jsonify({'code': 0, 'msg': 'Username must start with letter and contain only letters, numbers, and underscores', 'data': None}), 400
+   637→        
+   638→        # Validate password strength
+   639→        pwd_valid, pwd_msg = security.validate_password_strength(password)
+   640→        if not pwd_valid:
+   641→            return jsonify({'code': 0, 'msg': pwd_msg, 'data': None}), 400
+   642→        
+   643→        # Verify Turnstile
+   644→        turnstile_ok, turnstile_msg = security.verify_turnstile(turnstile_token, ip_address)
+   645→        if not turnstile_ok:
+   646→            return jsonify({'code': 0, 'msg': turnstile_msg, 'data': None}), 400
+   647→        
+   648→        # Verify email code
+   649→        code_valid, code_msg = email_service.verify_code(email, code, 'register')
+   650→        if not code_valid:
+   651→            return jsonify({'code': 0, 'msg': code_msg, 'data': None}), 400
+   652→        
+   653→        # Check if username already exists
+   654→        existing_user = user_service.get_user_by_username(username)
+   655→        if existing_user:
+   656→            return jsonify({'code': 0, 'msg': 'Username already taken', 'data': None}), 400
+   657→        
+   658→        # Check if email already exists
+   659→        existing_email = user_service.get_user_by_email(email)
+   660→        if existing_email:
+   661→            return jsonify({'code': 0, 'msg': 'Email already registered', 'data': None}), 400
+   662→        
+   663→        # Validate referral code (user ID)
+   664→        referred_by = None
+   665→        if referral_code:
+   666→            try:
+   667→                referrer_id = int(referral_code)
+   668→                referrer = user_service.get_user_by_id(referrer_id)
+   669→                if referrer and referrer.get('status') == 'active':
+   670→                    referred_by = referrer_id
+   671→            except (ValueError, TypeError):
+   672→                pass  # Invalid referral code, ignore
+   673→        
+   674→        # Create user
+   675→        user_id = user_service.create_user(
+   676→            username=username,
+   677→            password=password,
+   678→            email=email,
+   679→            nickname=username,
+   680→            role='user',
+   681→            status='active',
+   682→            email_verified=True,
+   683→            referred_by=referred_by
+   684→        )
+   685→        
+   686→        if not user_id:
+   687→            return jsonify({'code': 0, 'msg': 'Failed to create account', 'data': None}), 500
+   688→        
+   689→        # Grant registration bonus credits
+   690→        register_bonus = int(os.getenv('CREDITS_REGISTER_BONUS', '0'))
+   691→        if register_bonus > 0:
+   692→            billing_service.add_credits(
+   693→                user_id=user_id,
+   694→                amount=register_bonus,
+   695→                action='register_bonus',
+   696→                remark='Registration bonus'
+   697→            )
+   698→        
+   699→        # Grant referral bonus to referrer
+   700→        if referred_by:
+   701→            referral_bonus = int(os.getenv('CREDITS_REFERRAL_BONUS', '0'))
+   702→            if referral_bonus > 0:
+   703→                billing_service.add_credits(
+   704→                    user_id=referred_by,
+   705→                    amount=referral_bonus,
+   706→                    action='referral_bonus',
+   707→                    remark=f'Referral bonus for inviting user {username}',
+   708→                    reference_id=str(user_id)
+   709→                )
+   710→        
+   711→        # Log registration
+   712→        security.log_security_event('register', user_id, ip_address, user_agent, 
+   713→                                   {'email': email, 'referred_by': referred_by})
+   714→        
+   715→        # Auto login after registration (get token_version for new user)
+   716→        try:
+   717→            new_token_version = user_service.get_token_version(user_id)
+   718→        except Exception as e:
+   719→            logger.warning(f"Failed to get token_version: {e}")
+   720→            new_token_version = 1
+   721→        
+   722→        token = generate_token(
+   723→            user_id=user_id, 
+   724→            username=username, 
+   725→            role='user',
+   726→            token_version=new_token_version
+   727→        )
+   728→        
+   729→        return jsonify({
+   730→            'code': 1,
+   731→            'msg': 'Registration successful',
+   732→            'data': {
+   733→                'token': token,
+   734→                'userinfo': {
+   735→                    'id': user_id,
+   736→                    'username': username,
+   737→                    'nickname': username,
+   738→                    'email': email,
+   739→                    'avatar': '/avatar2.jpg',
+   740→                    'timezone': '',
+   741→                    'role': {
+   742→                        'id': 'user',
+   743→                        'permissions': _get_permissions('user')
+   744→                    }
+   745→                }
+   746→            }
+   747→        })
+   748→        
+   749→    except Exception as e:
+   750→        logger.error(f"register error: {e}")
+   751→        return jsonify({'code': 0, 'msg': 'Registration failed', 'data': None}), 500
+   752→
+   753→
+   754→@auth_bp.route('/reset-password', methods=['POST'])
+   755→def reset_password():
+   756→    """
+   757→    Reset password with email verification.
+   758→    
+   759→    Request body:
+   760→        email: str
+   761→        code: str (verification code)
+   762→        new_password: str
+   763→        turnstile_token: str (optional)
+   764→    """
+   765→    ip_address = _get_client_ip()
+   766→    user_agent = _get_user_agent()
+   767→    
+   768→    try:
+   769→        from app.services.security_service import get_security_service
+   770→        from app.services.email_service import get_email_service
+   771→        from app.services.user_service import get_user_service
+   772→        
+   773→        security = get_security_service()
+   774→        email_service = get_email_service()
+   775→        user_service = get_user_service()
+   776→        
+   777→        data = request.get_json()
+   778→        if not data:
+   779→            return jsonify({'code': 0, 'msg': 'No data provided', 'data': None}), 400
+   780→        
+   781→        email = (data.get('email') or '').strip().lower()
+   782→        code = data.get('code', '').strip()
+   783→        new_password = data.get('new_password', '')
+   784→        turnstile_token = data.get('turnstile_token')
+   785→        
+   786→        # Validate inputs
+   787→        if not email or not code or not new_password:
+   788→            return jsonify({'code': 0, 'msg': 'Missing required fields', 'data': None}), 400
+   789→        
+   790→        # Validate password strength
+   791→        pwd_valid, pwd_msg = security.validate_password_strength(new_password)
+   792→        if not pwd_valid:
+   793→            return jsonify({'code': 0, 'msg': pwd_msg, 'data': None}), 400
+   794→        
+   795→        # Verify Turnstile
+   796→        turnstile_ok, turnstile_msg = security.verify_turnstile(turnstile_token, ip_address)
+   797→        if not turnstile_ok:
+   798→            return jsonify({'code': 0, 'msg': turnstile_msg, 'data': None}), 400
+   799→        
+   800→        # Verify email code
+   801→        code_valid, code_msg = email_service.verify_code(email, code, 'reset_password')
+   802→        if not code_valid:
+   803→            return jsonify({'code': 0, 'msg': code_msg, 'data': None}), 400
+   804→        
+   805→        # Get user by email
+   806→        user = user_service.get_user_by_email(email)
+   807→        if not user:
+   808→            return jsonify({'code': 0, 'msg': 'User not found', 'data': None}), 404
+   809→        
+   810→        # Update password
+   811→        success = user_service.update_password(user['id'], new_password)
+   812→        if not success:
+   813→            return jsonify({'code': 0, 'msg': 'Failed to reset password', 'data': None}), 500
+   814→        
+   815→        # Clear any existing login blocks for this account
+   816→        security.clear_login_attempts(user['username'], 'account')
+   817→        
+   818→        # Log password reset
+   819→        security.log_security_event('password_reset', user['id'], ip_address, user_agent)
+   820→        
+   821→        return jsonify({'code': 1, 'msg': 'Password reset successful', 'data': None})
+   822→        
+   823→    except Exception as e:
+   824→        logger.error(f"reset_password error: {e}")
+   825→        return jsonify({'code': 0, 'msg': 'Password reset failed', 'data': None}), 500
+   826→
+   827→
+   828→@auth_bp.route('/change-password', methods=['POST'])
+   829→@login_required
+   830→def change_password():
+   831→    """
+   832→    Change password with email verification (for logged-in users).
+   833→    
+   834→    Request body:
+   835→        code: str (verification code sent to user's email)
+   836→        new_password: str
+   837→    """
+   838→    ip_address = _get_client_ip()
+   839→    user_agent = _get_user_agent()
+   840→    user_id = g.user_id
+   841→    
+   842→    try:
+   843→        from app.services.security_service import get_security_service
+   844→        from app.services.email_service import get_email_service
+   845→        from app.services.user_service import get_user_service
+   846→        
+   847→        security = get_security_service()
+   848→        email_service = get_email_service()
+   849→        user_service = get_user_service()
+   850→        
+   851→        data = request.get_json()
+   852→        if not data:
+   853→            return jsonify({'code': 0, 'msg': 'No data provided', 'data': None}), 400
+   854→        
+   855→        code = data.get('code', '').strip()
+   856→        new_password = data.get('new_password', '')
+   857→        
+   858→        if not code or not new_password:
+   859→            return jsonify({'code': 0, 'msg': 'Missing required fields', 'data': None}), 400
+   860→        
+   861→        # Validate password strength
+   862→        pwd_valid, pwd_msg = security.validate_password_strength(new_password)
+   863→        if not pwd_valid:
+   864→            return jsonify({'code': 0, 'msg': pwd_msg, 'data': None}), 400
+   865→        
+   866→        # Get user
+   867→        user = user_service.get_user_by_id(user_id)
+   868→        if not user or not user.get('email'):
+   869→            return jsonify({'code': 0, 'msg': 'User email not found', 'data': None}), 400
+   870→        
+   871→        # Verify email code
+   872→        code_valid, code_msg = email_service.verify_code(user['email'], code, 'change_password')
+   873→        if not code_valid:
+   874→            return jsonify({'code': 0, 'msg': code_msg, 'data': None}), 400
+   875→        
+   876→        # Update password
+   877→        success = user_service.update_password(user_id, new_password)
+   878→        if not success:
+   879→            return jsonify({'code': 0, 'msg': 'Failed to change password', 'data': None}), 500
+   880→        
+   881→        # Log password change
+   882→        security.log_security_event('password_changed', user_id, ip_address, user_agent)
+   883→        
+   884→        return jsonify({'code': 1, 'msg': 'Password changed successfully', 'data': None})
+   885→        
+   886→    except Exception as e:
+   887→        logger.error(f"change_password error: {e}")
+   888→        return jsonify({'code': 0, 'msg': 'Password change failed', 'data': None}), 500
+   889→
+   890→
+   891→# =============================================================================
+   892→# OAuth Endpoints
+   893→# =============================================================================
+   894→
+   895→@auth_bp.route('/oauth/google', methods=['GET'])
+   896→def oauth_google():
+   897→    """Redirect to Google OAuth authorization page.
+   898→
+   899→    Query params:
+   900→        redirect: optional front-end URL (must be allow-listed). When provided,
+   901→                  after successful login the user is redirected there instead of
+   902→                  the default FRONTEND_URL. Supports multi-frontend (PC + mobile).
+   903→    """
+   904→    try:
+   905→        from app.services.oauth_service import get_oauth_service
+   906→        oauth = get_oauth_service()
+   907→
+   908→        if not oauth.google_enabled:
+   909→            return jsonify({'code': 0, 'msg': 'Google OAuth is not configured', 'data': None}), 400
+   910→
+   911→        redirect_url = (request.args.get('redirect') or '').strip()
+   912→        auth_url, state = oauth.get_google_auth_url(redirect_url=redirect_url)
+   913→        return redirect(auth_url)
+   914→
+   915→    except Exception as e:
+   916→        logger.error(f"oauth_google error: {e}")
+   917→        return jsonify({'code': 0, 'msg': str(e), 'data': None}), 500
+   918→
+   919→
+   920→@auth_bp.route('/oauth/google/callback', methods=['GET'])
+   921→def oauth_google_callback():
+   922→    """Handle Google OAuth callback"""
+   923→    ip_address = _get_client_ip()
+   924→    user_agent = _get_user_agent()
+   925→    
+   926→    try:
+   927→        from app.services.oauth_service import get_oauth_service
+   928→        from app.services.security_service import get_security_service
+   929→        
+   930→        oauth = get_oauth_service()
+   931→        security = get_security_service()
+   932→        
+   933→        code = request.args.get('code')
+   934→        state = request.args.get('state')
+   935→        error = request.args.get('error')
+   936→
+   937→        # Peek the per-state redirect (set when the flow was initiated) before
+   938→        # handle_* consumes the state; fall back to default FRONTEND_URL.
+   939→        state_redirect = oauth.peek_state_redirect(state) if state else ''
+   940→        frontend_url = state_redirect or oauth.frontend_url
+   941→
+   942→        if error:
+   943→            return redirect(_build_frontend_login_redirect(frontend_url, oauth_error=error))
+   944→
+   945→        if not code or not state:
+   946→            return redirect(_build_frontend_login_redirect(frontend_url, oauth_error='missing_params'))
+   947→
+   948→        # Handle callback
+   949→        success, result = oauth.handle_google_callback(code, state)
+   950→        if not success:
+   951→            error_msg = result.get('error', 'unknown_error')
+   952→            return redirect(_build_frontend_login_redirect(frontend_url, oauth_error=error_msg))
+   953→        
+   954→        # Get or create user
+   955→        user_success, user_result = oauth.get_or_create_user_from_oauth(result)
+   956→        if not user_success:
+   957→            error_msg = user_result.get('error', 'user_creation_failed')
+   958→            return redirect(_build_frontend_login_redirect(frontend_url, oauth_error=error_msg))
+   959→        
+   960→        # Increment token_version (invalidates old sessions for single-client login)
+   961→        from app.services.user_service import get_user_service
+   962→        user_service = get_user_service()
+   963→        try:
+   964→            new_token_version = user_service.increment_token_version(user_result['id'])
+   965→        except Exception as e:
+   966→            logger.warning(f"Failed to increment token_version: {e}")
+   967→            new_token_version = 1
+   968→        
+   969→        # Generate token with new token_version
+   970→        token = generate_token(
+   971→            user_id=user_result['id'],
+   972→            username=user_result['username'],
+   973→            role=user_result.get('role', 'user'),
+   974→            token_version=new_token_version
+   975→        )
+   976→        
+   977→        # Log OAuth login
+   978→        security.log_security_event('oauth_login', user_result['id'], ip_address, user_agent,
+   979→                                   {'provider': 'google'})
+   980→        
+   981→        # Redirect to frontend with token
+   982→        return redirect(_build_frontend_login_redirect(frontend_url, oauth_token=token))
+   983→        
+   984→    except Exception as e:
+   985→        logger.error(f"oauth_google_callback error: {e}")
+   986→        from app.services.oauth_service import get_oauth_service
+   987→        frontend_url = get_oauth_service().frontend_url
+   988→        return redirect(_build_frontend_login_redirect(frontend_url, oauth_error='server_error'))
+   989→
+   990→
+   991→@auth_bp.route('/oauth/github', methods=['GET'])
+   992→def oauth_github():
+   993→    """Redirect to GitHub OAuth authorization page.
+   994→
+   995→    Query params:
+   996→        redirect: optional front-end URL (must be allow-listed), see oauth_google.
+   997→    """
+   998→    try:
+   999→        from app.services.oauth_service import get_oauth_service
+  1000→        oauth = get_oauth_service()
+  1001→
+  1002→        if not oauth.github_enabled:
+  1003→            return jsonify({'code': 0, 'msg': 'GitHub OAuth is not configured', 'data': None}), 400
+  1004→
+  1005→        redirect_url = (request.args.get('redirect') or '').strip()
+  1006→        auth_url, state = oauth.get_github_auth_url(redirect_url=redirect_url)
+  1007→        return redirect(auth_url)
+  1008→
+  1009→    except Exception as e:
+  1010→        logger.error(f"oauth_github error: {e}")
+  1011→        return jsonify({'code': 0, 'msg': str(e), 'data': None}), 500
+  1012→
+  1013→
+  1014→@auth_bp.route('/oauth/github/callback', methods=['GET'])
+  1015→def oauth_github_callback():
+  1016→    """Handle GitHub OAuth callback"""
+  1017→    ip_address = _get_client_ip()
+  1018→    user_agent = _get_user_agent()
+  1019→    
+  1020→    try:
+  1021→        from app.services.oauth_service import get_oauth_service
+  1022→        from app.services.security_service import get_security_service
+  1023→        
+  1024→        oauth = get_oauth_service()
+  1025→        security = get_security_service()
+  1026→        
+  1027→        code = request.args.get('code')
+  1028→        state = request.args.get('state')
+  1029→        error = request.args.get('error')
+  1030→
+  1031→        state_redirect = oauth.peek_state_redirect(state) if state else ''
+  1032→        frontend_url = state_redirect or oauth.frontend_url
+  1033→
+  1034→        if error:
+  1035→            return redirect(_build_frontend_login_redirect(frontend_url, oauth_error=error))
+  1036→
+  1037→        if not code or not state:
+  1038→            return redirect(_build_frontend_login_redirect(frontend_url, oauth_error='missing_params'))
+  1039→
+  1040→        # Handle callback
+  1041→        success, result = oauth.handle_github_callback(code, state)
+  1042→        if not success:
+  1043→            error_msg = result.get('error', 'unknown_error')
+  1044→            return redirect(_build_frontend_login_redirect(frontend_url, oauth_error=error_msg))
+  1045→        
+  1046→        # Get or create user
+  1047→        user_success, user_result = oauth.get_or_create_user_from_oauth(result)
+  1048→        if not user_success:
+  1049→            error_msg = user_result.get('error', 'user_creation_failed')
+  1050→            return redirect(_build_frontend_login_redirect(frontend_url, oauth_error=error_msg))
+  1051→        
+  1052→        # Increment token_version (invalidates old sessions for single-client login)
+  1053→        from app.services.user_service import get_user_service
+  1054→        user_service = get_user_service()
+  1055→        try:
+  1056→            new_token_version = user_service.increment_token_version(user_result['id'])
+  1057→        except Exception as e:
+  1058→            logger.warning(f"Failed to increment token_version: {e}")
+  1059→            new_token_version = 1
+  1060→        
+  1061→        # Generate token with new token_version
+  1062→        token = generate_token(
+  1063→            user_id=user_result['id'],
+  1064→            username=user_result['username'],
+  1065→            role=user_result.get('role', 'user'),
+  1066→            token_version=new_token_version
+  1067→        )
+  1068→        
+  1069→        # Log OAuth login
+  1070→        security.log_security_event('oauth_login', user_result['id'], ip_address, user_agent,
+  1071→                                   {'provider': 'github'})
+  1072→        
+  1073→        # Redirect to frontend with token
+  1074→        return redirect(_build_frontend_login_redirect(frontend_url, oauth_token=token))
+  1075→        
+  1076→    except Exception as e:
+  1077→        logger.error(f"oauth_github_callback error: {e}")
+  1078→        from app.services.oauth_service import get_oauth_service
+  1079→        frontend_url = get_oauth_service().frontend_url
+  1080→        return redirect(_build_frontend_login_redirect(frontend_url, oauth_error='server_error'))
+  1081→
+  1082→
+  1083→# =============================================================================
+  1084→# Other Endpoints
+  1085→# =============================================================================
+  1086→
+  1087→@auth_bp.route('/logout', methods=['POST'])
+  1088→def logout():
+  1089→    """Logout (client removes token; server is stateless)."""
+  1090→    return jsonify({'code': 1, 'msg': 'Logout successful', 'data': None})
+  1091→
+  1092→
+  1093→@auth_bp.route('/info', methods=['GET'])
+  1094→@login_required
+  1095→def get_user_info():
+  1096→    """Get current user info."""
+  1097→    try:
+  1098→        user_id = getattr(g, 'user_id', 1)
+  1099→        username = getattr(g, 'user', Config.ADMIN_USER)
+  1100→        role = getattr(g, 'user_role', 'admin')
+  1101→        
+  1102→        # Try to get full user info from database
+  1103→        user_data = None
+  1104→        if not _is_single_user_mode():
+  1105→            try:
+  1106→                from app.services.user_service import get_user_service
+  1107→                user_data = get_user_service().get_user_by_id(user_id)
+  1108→            except Exception as e:
+  1109→                logger.warning(f"Failed to get user from database: {e}")
+  1110→        
+  1111→        if user_data:
+  1112→            return jsonify({
+  1113→                'code': 1,
+  1114→                'msg': 'Success',
+  1115→                'data': {
+  1116→                    'id': user_data.get('id'),
+  1117→                    'username': user_data.get('username'),
+  1118→                    'nickname': user_data.get('nickname', 'User'),
+  1119→                    'email': user_data.get('email'),
+  1120→                    'avatar': user_data.get('avatar', '/avatar2.jpg'),
+  1121→                    'timezone': str(user_data.get('timezone') or '').strip(),
+  1122→                    'role': {
+  1123→                        'id': user_data.get('role', 'user'),
+  1124→                        'permissions': _get_permissions(user_data.get('role', 'user'))
+  1125→                    }
+  1126→                }
+  1127→            })
+  1128→        
+  1129→        # Fallback for legacy mode
+  1130→        return jsonify({
+  1131→            'code': 1,
+  1132→            'msg': 'Success',
+  1133→            'data': {
+  1134→                'id': user_id,
+  1135→                'username': username,
+  1136→                'nickname': 'Admin',
+  1137→                'avatar': '/avatar2.jpg',
+  1138→                'timezone': '',
+  1139→                'role': {
+  1140→                    'id': role,
+  1141→                    'permissions': _get_permissions(role)
+  1142→                }
+  1143→            }
+  1144→        })
+  1145→    except Exception as e:
+  1146→        logger.error(f"get_user_info error: {e}")
+  1147→        return jsonify({'code': 500, 'msg': str(e), 'data': None}), 500
+  1148→
+  1149→
+  1150→def _get_permissions(role: str) -> list:
+  1151→    """Get permissions list for a role"""
+  1152→    try:
+  1153→        from app.services.user_service import get_user_service
+  1154→        return get_user_service().get_user_permissions(role)
+  1155→    except Exception:
+  1156→        # Default permissions for admin
+  1157→        if role == 'admin':
+  1158→            return ['dashboard', 'view', 'indicator', 'backtest', 'strategy', 
+  1159→                    'portfolio', 'settings', 'user_manage', 'credentials']
+  1160→        return ['dashboard', 'view', 'indicator', 'backtest', 'strategy', 'portfolio']
+  1161→

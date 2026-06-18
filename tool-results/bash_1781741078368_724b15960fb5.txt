@@ -1,0 +1,400 @@
+# VIXOR MASTER V2 — Current State Audit
+
+**Audit date:** 2025-06-17
+**Auditor:** Explore sub-agent (single-pass deep audit)
+**Scope:** `/home/z/my-project/src/` + root config + migrations
+**Method:** Read every file referenced in the task brief; cross-checked against `agent-ctx/*.md`, `worklog.md`, `plan.md`.
+
+---
+
+## 1. Executive Summary — Health Rating: **4 / 10**
+
+The codebase is **architecturally sophisticated but operationally crippled by missing environment configuration and several latent defects that the previous agents either caused or failed to surface**. On paper, VIXOR V2 implements a multi-domain DDD-style architecture with a local SMC/ICT analysis engine, multi-agent copilot, debate engine, risk governor, paper trading, chart-truth layer, and P1 intelligence layer (tools + memory + events). In practice, the local sandbox at `/home/z/my-project/` cannot run end-to-end because only one of ~13 required env vars (`DATABASE_URL`) is set.
+
+| User-reported problem | Root cause found in audit |
+|---|---|
+| Top dimensions/layout misaligned | `AppShell` uses `max-w-md lg:max-w-4xl` for header, main, and bottom-nav — narrow `max-w-md` (448px) on mobile creates "floating" centered bottom nav; on desktop `max-w-4xl` (896px) is too narrow for a "Bloomberg Professional" trading app. Header is `fixed top-0` but main has `pt-20` which is correct — but the header itself has safe-area padding that can push it past 56px on iOS PWA. Bottom nav uses `pb-3` outside the safe-area calc so it can sit too high on iOS. |
+| Pages not smoothly connected | `route.tsx` auth-guard catches errors and silently redirects to `/auth` (line 19-23) — every server-fn failure during navigation looks like a logout. Plus, `useStableServerFn` + `useRenderGuard` exists to fight React #310 loops that prior agents hit. SSR is disabled on `_authenticated` (`ssr: false`) so first paint is blank → spinner → page, which feels "disconnected". |
+| Data display not smooth/professional | Most data fetches silently return `[]` or `null` when env vars are missing (price-fetcher returns null → `fetchPrices` returns `[]` → dashboard shows empty "Market data temporarily unavailable" card). 78 `console.warn` calls + 52 `console.error` calls — failures are swallowed rather than surfaced to the user. |
+| UI/UX not professional | Mixed design language: appshell claims "Bloomberg terminal" but uses emoji (`🥇 🇪🇺 🕐`) in pair lists; lots of `text-[9px]` / `text-[10px]` uppercase tracking-widest labels creating a "Bloomberg-try-hard" aesthetic that doesn't mesh with rounded-2xl `gradient-primary` buttons. |
+| Some features/pages don't work | All server fns behind `requireSupabaseAuth` middleware throw "Missing Supabase environment variable(s): SUPABASE_URL" because env not set. The deep-no-op Proxy on the browser client (`supabase/client.ts`) returns `{data:null, error:"Supabase not configured"}` for every call, so every list page shows empty state. |
+| Telegram login doesn't work | `TELEGRAM_BOT_TOKEN` not set in `.env` → `telegramSignIn` server fn throws on line 24 of `auth.functions.ts`. Also `VITE_TELEGRAM_BOT_USERNAME` not set → falls back to `"VixorAIBot"` hard-coded. Login Widget requires BotFather `/setdomain` to be configured for the deployment URL — a manual step the user must perform. |
+| Chart analysis returns "Unable to identify asset" | This string is **dead code** in the live pipeline — `formatExtractionFailureMessage` in `chart-context.ts:145` is **never called**. `chart-validation.ts` always returns `valid: true` (line 41 comment: "ALWAYS valid — never block analysis"). The error only surfaces if a user views an **old analysis row** that was created before the fix and stored `error_message` containing that string. The current code in `analysis/functions.ts:285-291` explicitly rewrites this message to a friendlier one. **Verdict: this is not a live defect — the user is seeing stale DB rows from old failed runs.** |
+
+---
+
+## 2. Tech Stack & Config
+
+### Stack (from `package.json`)
+- **Framework:** TanStack Start `1.168.25` + TanStack Router `1.170.15` + React `19.2.0` + Vite `7.3.1` + Nitro `3.0.260603-beta`
+- **Deploy target:** Vercel preset (`vite.config.ts:24`)
+- **DB:** Supabase JS SDK `2.107.0` + `pg` `8.21.0`
+- **Cache:** Upstash Redis `1.38.0` (with in-memory fallback)
+- **UI:** TailwindCSS `4.2.1` (Vite plugin) + 30+ Radix UI primitives + shadcn/ui "new-york" style + `lucide-react` + `framer-motion` + `recharts` + `lightweight-charts` `5.2.0`
+- **AI:** `z-ai-web-dev-sdk` `0.0.18` (VLM via `glm-4.6v`) + Vercel AI SDK `6.0.197` with `@ai-sdk/google` and `@ai-sdk/openai-compatible`
+- **Forms/validation:** `react-hook-form` + `zod` `4.4.3`
+- **Telegram:** `@telegram-apps/sdk` `3.11.8` + custom HMAC verification
+- **Other:** `docx` (export), `html2canvas` (chart screenshots), `date-fns`, `sonner` (toasts), `vaul` (drawer)
+
+### Scripts
+```
+dev      → vite dev (port 8080, host "::")
+build    → vite build && node scripts/fix-vercel-bundle.mjs
+lint     → eslint .
+format   → prettier --write .
+```
+
+### Critical config observations
+- **`vercel.json`** has only ONE cron entry: `0 0 * * *` → `/api/generate-signals`. Missing: `/api/check-alerts` (also exists, runs alert checks). Alerts will not trigger automatically.
+- **`vite.config.ts`** registers 7 Nitro API handlers explicitly (lines 31-39). All 7 must exist at those exact paths or build fails.
+- **`tsconfig.json`** is strict (`"strict": true`) but disables `noUnusedLocals` and `noUnusedParameters` — dead-code-friendly but allows unused imports to accumulate.
+- **`components.json`** has `"rtl": false` — yet `src/shared/i18n/` implements Arabic RTL. The shadcn generator won't add RTL-aware variants to new components.
+- **`bunfig.toml`** enforces 24h supply-chain guard (good security practice).
+
+### Environment variables (status in `/home/z/my-project/.env`)
+
+| Variable | Required by | Status |
+|---|---|---|
+| `DATABASE_URL` | (referenced in plan.md, not in code) | ✅ SET (only one) |
+| `SUPABASE_URL` | All supabase clients | ❌ MISSING |
+| `SUPABASE_SERVICE_ROLE_KEY` | `client.server.ts` admin client | ❌ MISSING |
+| `SUPABASE_ANON_KEY` / `SUPABASE_PUBLISHABLE_KEY` | `client.ts` browser, `auth-middleware.ts` | ❌ MISSING |
+| `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` | Browser bundle | ❌ MISSING |
+| `TELEGRAM_BOT_TOKEN` | `auth.functions.ts:24`, `linkTelegramAccount`, alert-checker, telegram-webhook | ❌ MISSING |
+| `VITE_TELEGRAM_BOT_USERNAME` | `auth.tsx:42` (defaults to `"VixorAIBot"`) | ❌ MISSING |
+| `TELEGRAM_WEBHOOK_SECRET` | `routes/api/-telegram-webhook.ts:13` | ❌ MISSING |
+| `TWELVEDATA_API_KEY` | `price-fetcher.ts` (4 sites), `twelvedata.ts:24` | ❌ MISSING |
+| `FINNHUB_API_KEY` | `market/functions.ts:31`, `economic-calendar.ts:144` | ❌ MISSING |
+| `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` | `shared/cache.ts:238-239` (falls back to in-memory) | ❌ MISSING (optional, fallback works) |
+| `CRON_SECRET` | All `/api/*` routes for non-Vercel-Cron callers | ❌ MISSING |
+| `ENABLE_PAPER_TRADING` | `paper.engine.ts:76` (gates paper trading) | ❌ MISSING (paper trading disabled) |
+| `ENABLE_DEBATE_ENGINE` | `run-analysis.ts:307` (gates debate engine) | ❌ MISSING (debate engine disabled) |
+| `NODE_ENV` | Several code paths | Set automatically by Vercel/Vite |
+
+> **Note:** The `worklog.md` (Task 3) claims all these vars ARE set on Vercel production (`vixor-app.vercel.app`). So the user's complaints likely come from running the app locally against the sandbox (where only `DATABASE_URL` exists), OR from production where BotFather `/setdomain` was never run.
+
+---
+
+## 3. App Shell & Layout — Specific Bugs
+
+### `src/routes/__root.tsx` (321 lines)
+- **RootShell** sets `<html lang="en" className="dark">` — but `applyDirection()` in `i18n/index.tsx:57` sets `lang="ar"` and adds `.rtl` class only after mount. Causes a brief LTR-then-RTL flash on Arabic users.
+- **Theme bootstrap** is duplicated: defined both in `head.scripts[]` (lines 158-161) AND in inline JSX `<script dangerouslySetInnerHTML>` (lines 182-186). Both write the same IIFE. The first one is reported in `worklog.md` as "silently dropped by TanStack Start's scripts[] config" — so only the JSX one actually fires. Dead config in `scripts[]` array.
+- **Auth state subscription** is attached via dynamic `import("@/shared/supabase/client")` and stored on `window.__vxAuthSub` (line 290) — never unsubscribed on unmount (the cleanup only clears `authDebounce`, not the subscription). Memory leak across HMR reloads in dev.
+- **`useNavigate()` ref pattern** — comment claims it fixes React #310 but it's a workaround; the actual fix is in `useStableServerFn` which avoids `useRouter()`.
+
+### `src/components/vixor/AppShell.tsx` (261 lines) — Layout bugs
+
+| Bug | Location | Severity |
+|---|---|---|
+| `max-w-md lg:max-w-4xl` constraint on mobile bottom-nav | line 200 | HIGH — on devices >448px, the bottom nav floats centered with empty space on both sides (looks disconnected from screen edges) |
+| Header also constrained to `max-w-md` on mobile | line 124 | HIGH — same floating effect; header doesn't span full width on phablets |
+| Header `h-14` (3.5rem) + `pt-20` (5rem) on main = 1.5rem breathing room | lines 99, 125 | MEDIUM — too much top whitespace below header |
+| Bottom nav: `pb-3` + `env(safe-area-inset-bottom)` on parent | lines 197-200 | MEDIUM — double padding on iOS PWA, bottom nav floats higher than expected |
+| `signedIn = path !== "/auth"` | line 51 | LOW — pure client-side check, won't catch the auth state during SSR transition |
+| Telegram auto-link runs on every signedIn mount | lines 64-81 | LOW — wastes a server roundtrip if already linked (only localStorage guards it) |
+| Hardcoded `"ME"` initials in profile avatar | line 171 | LOW — never shows user's actual photo/initials |
+| `lg:max-w-4xl` is 896px — too narrow for "Bloomberg Professional" desktop trading app | line 99 | MEDIUM — leaves 60%+ of horizontal screen unused on 1440p displays |
+| Tab "Portfolio" matches 10 different paths | lines 31-42 | LOW — settings/premium/referral all highlight Portfolio tab; user has no idea where they are |
+| Bottom-nav uses `pointer-events-none` on container, `pointer-events-auto` on inner | lines 197, 200 | OK — intentional pattern to allow tap-through above the nav |
+
+### `src/components/vixor/atoms.tsx` (442 lines)
+- **`highlightSMCTerms`** (line 348) runs `text.split(regex)` on every render — expensive for long analysis text. No memoization.
+- **`EducationLayer`** rebuilds `Object.keys(SMC_GLOSSARY)` array on every render (line 374). Should be module-level constant.
+- **`ConfidenceBar`** has no aria attributes — accessibility issue.
+- **`RecBadge`** uses `text-[11px]` (sm) and `text-sm` (lg) — inconsistent with rest of app which uses `text-xs`/`text-sm`.
+
+### RTL handling
+- `i18n/index.tsx` correctly toggles `dir` and `.rtl` class.
+- `styles.css` has `.rtl` overrides for `terminal-card-accent`, `scenario-primary/alternative/counter`, `bg-gradient-to-r`, `text-left/right`, `items-start` (lines 385-427).
+- BUT: `ExpandableWidget` uses `borderInlineStartColor` (logical property — good, RTL-safe) while `atoms.tsx` uses physical `border-left`-style classes in some places. Inconsistent.
+
+### Mobile responsiveness gaps
+- No tablet breakpoint (only `lg:` at 1024px). Between 640-1023px everything renders as mobile.
+- `grid-cols-2 lg:grid-cols-4` in dashboard Market Pulse — on tablet (768-1023px) shows 2 cols which is fine but wastes space.
+- `copilot.tsx` (1439 lines) — uses `flex flex-col h-[calc(100vh-...)]` patterns that break on landscape mobile.
+
+---
+
+## 4. Routes Inventory
+
+All 17 routes + auth + root route. **All `_authenticated/*` routes have `ssr: false`** (set in `route.tsx`) — first paint is always a blank shell.
+
+| # | Route file | Path | Works? | Issues |
+|---|---|---|---|---|
+| 1 | `__root.tsx` | (shell) | ⚠️ | Duplicated theme script, auth-sub memory leak, theme/RTL flash |
+| 2 | `auth.tsx` | `/auth` | ⚠️ | Login Widget requires BotFather `/setdomain` (manual user step); `TELEGRAM_BOT_TOKEN` env required for WebApp flow; falls back to email/password which requires Supabase Auth enabled |
+| 3 | `_authenticated/route.tsx` | (guard) | ⚠️ | Catches ALL errors and redirects to `/auth` — masks server-fn failures as "logged out" |
+| 4 | `_authenticated/index.tsx` | `/` | ⚠️ | 950 lines. 7 `useQuery` calls. All queries fail silently when env missing. Empty states everywhere. `lg:grid lg:grid-cols-2` pattern at line 494 produces `space-y-5 lg:space-y-0` switching that causes layout reflow on resize. |
+| 5 | `_authenticated/signals.tsx` | `/signals` | ⚠️ | 547 lines. Strategy editor + paginated signals list. Pagination works server-side but filters are client-side only — page reset doesn't preserve filter. |
+| 6 | `_authenticated/portfolio.tsx` | `/portfolio` | ⚠️ | 1218 lines! Trades CRUD + stats + equity curve (recharts). `"use client"` directive at top — redundant in TanStack Start. Equity curve uses 200 points hard-coded. |
+| 7 | `_authenticated/journal.tsx` | `/journal` | ⚠️ | 615 lines. Tabs: overview/history/notes/reports. Reports tab is mostly empty placeholder. |
+| 8 | `_authenticated/trade-desk.tsx` | `/trade-desk` | ⚠️ | 406 lines. Lot calculator + open positions. Only 5 pairs supported (`XAUUSD`, `EURUSD`, `GBPUSD`, `USDJPY`, `BTCUSD`) — out of sync with asset registry which has 20+ pairs. |
+| 9 | `_authenticated/copilot.tsx` | `/copilot` | ⚠️ | 1440 lines! Multi-agent chat with consensus mode. Layout uses absolute positioning that breaks on small screens. Conversations list panel toggles with `PanelLeftClose`/`PanelLeftOpen` but no persistence. |
+| 10 | `_authenticated/daily-loop.tsx` | `/daily-loop` | ⚠️ | 1151 lines. 3-phase daily workflow (morning/session/EOD). Uses `updateStreak` server-side which has a bug: if `existing.last_completed_date` is null, `lastDate` is null, `lastStr` is null, comparison `lastStr === yesterdayStr` is false, streak resets to 1. |
+| 11 | `_authenticated/analyze.tsx` | `/analyze` | ⚠️ | 430 lines. Image upload + pair selection. `pickFile()` infers pair from filename (line 142-145) — bad UX, should use VLM detection. URL screenshot parameter passed via `?screenshot=base64...` — huge URL, hits browser limits. |
+| 12 | `_authenticated/analysis.$id.tsx` | `/analysis/$id` | ⚠️ | 948 lines. Polls `getAnalysis` every 3s. If status==="failed", shows `a.error_message` — this is where the stale "Unable to identify asset" string surfaces to users. |
+| 13 | `_authenticated/charts.tsx` | `/charts` | ⚠️ | 496 lines. TradingView widget integration. "Analyze" button has 60-second cooldown. OHLCV fetch uses `INTERVAL_MAP` reverse lookup that may fail for non-standard intervals. |
+| 14 | `_authenticated/discover.tsx` | `/discover` | ⚠️ | 1307 lines! 5 tabs: watchlist/scanner/calendar/news/heatmap. Heatmap tab has "coming soon" note for interactive features — partial implementation. |
+| 15 | `_authenticated/notifications.tsx` | `/notifications` | ⚠️ | 99 lines. Minimal. No pagination, hardcoded 50-item limit in server fn. No notification preferences UI. |
+| 16 | `_authenticated/premium.tsx` | `/premium` | ⚠️ | 215 lines. Plans + packs + Telegram Stars payment. `subscribePremium` server fn just inserts a row with `current_period_end = now + 30/365 days` — no actual payment verification (worklog calls this "instant grant"). |
+| 17 | `_authenticated/referral.tsx` | `/referral` | ⚠️ | 170 lines. 4-tier system (Bronze/Silver/Gold/Diamond). `claimReferral` server fn credits both parties — but if `credit_points` RPC fails, code throws and rollbacks nothing. |
+| 18 | `_authenticated/profile.tsx` | `/profile` | ⚠️ | 318 lines. Badges are hardcoded (line 30) — no actual achievement logic. XP bar uses `Math.floor(xp / 100) + 1` — every 100 XP = 1 level, but no level-up notification. |
+| 19 | `_authenticated/settings.tsx` | `/settings` | ⚠️ | 337 lines. Theme toggle, language picker, sign-out. Haptics/sound/price-alerts/news-alerts toggles are **non-functional** — they save to local state but no effect. No "Account" section to manage Telegram link. |
+| 20 | `_authenticated/referral.tsx` | (dup) | — | (already listed) |
+
+### API routes (`src/routes/api/`)
+- **`-check-alerts.ts`** (leading-dash = ignored by router, manual handler) + `check-alerts.ts` — DUPLICATE. Same for `-generate-signals.ts`/`generate-signals.ts`, `-telegram-webhook.ts`/`telegram-webhook.ts`, `-migrate.ts`/`migrate.ts`. The dash-prefixed versions are the ones actually wired in `vite.config.ts:32-39`. The non-dashed versions are dead code that the router tries to mount as routes.
+- All API routes gate on `CRON_SECRET` for non-Vercel-Cron callers. In production with no `CRON_SECRET`, they return 500 "Cron not configured".
+
+---
+
+## 5. Domain Modules Map
+
+```
+src/domains/
+├── analysis/        ← Local SMC/ICT engine (DETAILED in §6)
+├── chart-intelligence/ ← VLM extraction (DETAILED in §7)
+├── chart-truth/     ← P1.6 truth layer — validates vision price vs market price (NEVER blocks)
+├── copilot/         ← Multi-agent chat (4 agents: market_analyst, risk_manager, news_analyst, strategy_builder)
+├── daily-loop/      ← 3-phase daily workflow
+├── debate/          ← 4-agent debate engine (analyst/strategist/risk-guard/contrarian) — GATED by ENABLE_DEBATE_ENGINE
+├── market/          ← price-fetcher, economic-calendar, twelvedata (DETAILED in §6)
+├── notes/           ← trading_notes CRUD
+├── paper-trading/   ← Paper engine + trade ledger — GATED by ENABLE_PAPER_TRADING
+├── risk-governor/   ← Synchronous risk evaluator (PROCEED/REDUCE_SIZE/WAIT/BLOCK)
+├── trades/          ← Real trades CRUD + stats + equity curve
+├── trading/         ← Price alerts + daily signals + user strategies
+├── user/            ← Auth, profile, commerce, notifications, referrals, Telegram link
+└── watchlist/       ← Watchlists CRUD
+```
+
+### Cross-cutting shared infrastructure (`src/shared/`)
+- `asset-registry/` — Single source of truth for ~20 trading pairs with Binance/TwelveData/TradingView/Finnhub symbol mappings + per-pair config (decimals, volatility, basePrice).
+- `cache.ts` — Hybrid cache (Upstash Redis primary, in-memory fallback). All API calls cached here.
+- `events/` — Typed event bus with Supabase `domain_events` persistence. Non-blocking.
+- `memory/` — `user_memories` table (5 categories: preference/behavior/mistake/insight/strategy). Used by copilot agent.
+- `supabase/` — Lazy-initialized clients with deep-no-op Proxy fallback (see §9).
+- `tool-registry/` + `tool-router/` — Tool dispatch layer for copilot agent. Currently registers 2 tools (`createAlert`, `journal-analysis`).
+- `i18n/` — English + Arabic translations, RTL handling.
+
+### Duplicate `src/lib/` folder
+After the architecture refactoring (agent-ctx/6), `src/lib/` was converted to backward-compat re-export barrels. Most files are 1-3 line re-exports. `src/lib/vixor.functions.ts` is still actively imported by **every route** — it's the master barrel re-exporting from `@/domains/*/functions`. **This is intentional and works**, but creates an extra layer of indirection.
+
+### Duplicate `src/integrations/supabase/` folder
+Also backward-compat re-exports to `@/shared/supabase/`. Same pattern.
+
+### Duplicate `src/server/*.server.ts` files
+All are 1-3 line re-exports (e.g. `src/server/run-analysis.server.ts` → `@/domains/analysis/server/run-analysis`). The `src/server/api/` folder doesn't exist — the actual API handlers are in `src/routes/api/`. **The root-level `/server/api/` folder** is the one wired into `vite.config.ts` Nitro handlers.
+
+---
+
+## 6. Analysis Engine Deep Dive — Is it actually running?
+
+### Architecture
+```
+User uploads image
+    ↓
+createAnalysis (functions.ts:28)
+    ↓ requires Supabase auth
+    ↓ inserts analyses row (status="processing")
+    ↓ fetches real OHLCV from Binance → TwelveData (4 fallback sources)
+    ↓ calls runChartAnalysis (run-analysis.ts:173)
+        ↓ Step 1: extractChartContext (z-ai VLM glm-4.6v)
+        ↓ Step 2: validateChartContext (SOFT — never blocks, warnings only)
+        ↓ Step 2.5: validateChartTruth (compare vision price vs real market)
+        ↓ Step 3: determine pair (vision > user-selected > filename > "EUR/USD")
+        ↓ Step 4: runLocalAnalysis (engine.ts:68) — THE CORE ENGINE
+            ↓ generate real or synthetic OHLCV bars
+            ↓ analyzeMarketStructure (swing points, BOS, CHoCH)
+            ↓ detectOrderBlocks, detectFVGs, detectLiquidityZones, detectSRLevels
+            ↓ detectCandlestickPatterns (74 patterns), detectChartFormations (20), detectHarmonicPatterns (8)
+            ↓ getLatestIndicators (RSI, MACD, BB, EMA9/21/50/200, ADX, Stoch, volume trend)
+            ↓ calculateRiskReward (ATR-based)
+            ↓ calculateConfluenceScore (12 signals — requires MIN_CONFLUENCE_FOR_TRADE=3)
+            ↓ compose LocalAnalysisResult
+        ↓ Step 5: buildAnalysisResult (merge vision context)
+        ↓ Step 5b: Debate Engine (gated by ENABLE_DEBATE_ENGINE)
+    ↓ update analyses row with results
+    ↓ deduct 10 points (if not premium)
+```
+
+### Is the engine actually running? **YES** — but with caveats
+
+1. **Engine code is sound.** `engine.ts` (1360 lines) implements a full SMC/ICT pipeline: market structure → SMC concepts (OB/FVG/liquidity/SR) → BOS/CHoCH → patterns → indicators → confluence scoring → risk-reward → scenarios → management instructions. Deterministic (seeded PRNG, no `Math.random()`).
+
+2. **Real OHLCV data flow works for crypto pairs.** `fetchBinanceKlines` (price-fetcher.ts:461) hits `api.binance.com/api/v3/klines` — **no API key required**. Crypto analyses get 200 real candles.
+
+3. **Forex/commodity pairs require `TWELVEDATA_API_KEY`.** Without it, `fetchTwelveDataKlines` returns `[]` (line 546). The engine then falls back to **synthetic bars** (`generateSyntheticBars` in engine.ts:1157) — 200 deterministic seeded bars based on pair name + timeframe. Results are tagged "Analysis based on simulated data" (line 248).
+
+4. **Vision extraction (z-ai VLM) is a no-op in the dark.** `extractChartContext` (chart-vision.ts:25) calls `zai.chat.completions.createVision` with `model: "glm-4.6v"`. The `z-ai-web-dev-sdk` requires `ZAI_API_KEY` env var (or similar) to function. If unset, the call throws, caught at line 144, returns `failedExtraction`. **Validation is soft** → analysis proceeds anyway using pair from user selection or `"EUR/USD"` default.
+
+5. **`detectPairFromImage` (engine.ts:375) is a STUB** — `return undefined`. No OCR was ever implemented. The engine relies entirely on user-selected pair or filename heuristic.
+
+### What does the engine produce?
+A `LocalAnalysisResult` object with:
+- `pair`, `timeframe`, `trend` (BULLISH/BEARISH/NEUTRAL)
+- `risk_level` (LOW/MEDIUM/HIGH) + `risk_reasons[]`
+- `liquidity_zones` (buySide/sellSide arrays)
+- `market_structure` (direction, structure, BOS price)
+- `key_levels` (resistance/support/pivot)
+- `recommendation` (BUY/SELL/WAIT) — gated by MIN_CONFLUENCE_FOR_TRADE=3
+- `confidence` (0-100, deterministic formula)
+- `entry`, `stop_loss`, `take_profit[3]`, `rr`
+- `pattern` (summary string)
+- `reasons[3-5]`
+- `scenarios` (conservative/balanced/aggressive with probability, entry, sl, tp1, tp2, rr)
+- `management[3-6]` (step-by-step instructions)
+- `news_impact` (optional — hardcoded mock news in engine.ts line ~1100, NOT real news)
+- `signal_badge` (direction/entry/sl/tp/rr compact form)
+- `vixor_message` (confident summary string)
+
+### Is it wired to UI? **YES**
+- `analyze.tsx` → `createAnalysis` server fn → inserts row → navigates to `/analysis/$id`
+- `analysis.$id.tsx` → polls `getAnalysis` every 3s → renders all fields in 4 tabs (Trade Setup / Market Context / News Impact / Management)
+- `charts.tsx` → `quickAnalyze` server fn (no image, uses real OHLCV directly) → navigates to `/analysis/$id`
+
+### Critical defect: **`news_impact` is hardcoded mock data**
+`engine.ts` lines ~1080-1116 contain a `newsMap` with hardcoded fake news headlines like "Fed Signals Hawkish Pause" / "ECB Maintains Restrictive Stance". This is presented to users as real news analysis. **This is the most misleading mock data in the codebase** — it's not labeled as illustrative.
+
+---
+
+## 7. Chart Intelligence Deep Dive — Why does asset identification always fail?
+
+### The "Unable to identify the asset" string
+**Source:** `src/domains/chart-intelligence/chart-context.ts:145`
+```typescript
+return "Unable to identify the asset in the image with sufficient accuracy. Please upload a clearer screenshot that shows the symbol (e.g., XAUUSD or BTCUSDT) clearly.";
+```
+
+This is returned by `formatExtractionFailureMessage()` when `result.context?.symbol` is null.
+
+### Is this function ever called? **NO — it's dead code.**
+- `formatExtractionFailureMessage` is exported from `chart-context.ts`, re-exported from `index.ts`, imported by `chart-validation.ts` (line 16) — **but never invoked anywhere in the codebase**.
+- The `ChartExtractionRefusedError` class in `run-analysis.ts:36` is also defined but **never thrown**.
+- The current pipeline explicitly states: "Validation is now SOFT (warnings only, never blocks)" (run-analysis.ts:211).
+
+### Why does the user see this error then?
+**Three possible sources:**
+
+1. **Stale database rows.** Before the soft-validation fix, the analysis pipeline DID throw this error and stored it in `analyses.error_message`. The user is viewing old analysis records. The `analysis.$id.tsx` route displays `a.error_message` when `status === "failed"` (line 134).
+
+2. **VLM call throws and the catch in `run-analysis.ts:206` doesn't catch the right thing.** If `extractChartContext` throws a generic error (e.g. `ZAI_API_KEY` missing), `chartContext` stays null. The pipeline continues to Step 3 where `pair = chartContext?.symbol ?? selectedPair ?? detectPairFromFileName(fileName) ?? "EUR/USD"`. If user didn't select a pair AND filename heuristic fails, defaults to EUR/USD. Analysis proceeds. **No "Unable to identify" error is thrown.**
+
+3. **`requireSupabaseAuth` middleware throws "Missing Supabase environment variable(s): SUPABASE_URL".** This becomes the error message. The user might be misremembering or paraphrasing this as "Unable to identify asset".
+
+### What would it need to actually work?
+The vision pipeline (`chart-vision.ts:25`) calls `zai.chat.completions.createVision` with `model: "glm-4.6v"`. For this to work:
+1. **`ZAI_API_KEY` env var must be set** — required by `z-ai-web-dev-sdk`. Currently not in the env list, suggesting it's auto-provisioned by the SDK or missing.
+2. **The model `glm-4.6v` must be available** in the ZAI account.
+3. **Image must be < 8MB** (validated in `analyze.tsx:134`).
+4. **The model's JSON response must contain `isChart: true`** — otherwise `failedExtraction` is returned with a different message.
+
+### Verdict
+**The "Unable to identify asset" error is not a live defect in current code.** It's either:
+- A stale DB row from a pre-fix deployment
+- A misremembered "Missing Supabase environment variable" error
+- A VLM call failure that surfaces a different message
+
+The vision pipeline IS wired and WOULD work if `ZAI_API_KEY` is set. The pair detection logic (`normalizeSymbol` in chart-vision.ts:165) handles 20+ symbol variants (XAUUSD→XAU/USD, BTCUSDT→BTC/USDT, etc.).
+
+---
+
+## 8. Auth/Telegram Flow — Why does login fail?
+
+### The flow
+```
+User opens /auth
+    ↓
+auth.tsx:63 useEffect runs
+    ↓
+Checks if already logged in via supabase.auth.getUser()
+    ↓ If user exists, navigate to "/"
+Waits for Telegram.WebApp.initData (up to 2 seconds, polling every 100ms)
+    ↓
+If initData present (running inside Telegram):
+    ↓
+Calls telegramSignIn server fn (auth.functions.ts:20)
+    ↓ Validates initData HMAC against TELEGRAM_BOT_TOKEN
+    ↓ Creates/finds Supabase user with email tg-{id}@vixor.app
+    ↓ Returns {email, password}
+Client calls supabase.auth.signInWithPassword({email, password})
+    ↓
+Navigate to "/"
+```
+
+### Why it fails — 5 distinct failure modes
+
+| # | Failure mode | Where | Fix |
+|---|---|---|---|
+| 1 | **`TELEGRAM_BOT_TOKEN` not set** | `auth.functions.ts:24` throws `"TELEGRAM_BOT_TOKEN not configured"` | Set env var on Vercel + locally |
+| 2 | **`SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` not set** | `auth.functions.ts:57` imports `supabaseAdmin` → throws on first access | Set Supabase env vars |
+| 3 | **Login Widget requires BotFather `/setdomain`** | Telegram's widget script (`telegram-widget.js`) only renders the login button iframe if the bot's domain whitelist includes the current origin. Without it, the widget shows nothing. | User must run `/setdomain` on `@BotFather` and set `vixor-app.vercel.app` (or whatever the deployment URL is). **This is a manual user action — cannot be automated.** |
+| 4 | **`VITE_TELEGRAM_BOT_USERNAME` not set** | `auth.tsx:42` falls back to hardcoded `"VixorAIBot"` | If the user's bot has a different username, the widget won't render. Set the env var. |
+| 5 | **`auth_date` older than 24h** | `telegram-verify.ts:35` returns null | Telegram WebApp initData is fresh, but if the user opens the app from a cached Telegram message > 24h old, the initData is stale. Solution: handle stale data gracefully. |
+
+### Telegram Login Widget — code analysis (`auth.tsx:121-195`)
+- Loads `https://telegram.org/js/telegram-widget.js?22` with `data-telegram-login=VixorAIBot`, `data-onauth=onTelegramAuth(user)`.
+- 3-second timeout — if widget doesn't load, shows fallback "Open in Telegram" link.
+- 5-second iframe detection — if no iframe appears (BotFather domain not set), shows fallback.
+- `onTelegramAuth` global callback is defined on `window` — receives user object, calls `tgSignIn` with `JSON.stringify(user)`.
+
+### Telegram WebApp flow (`auth.tsx:62-119`)
+- Polls `window.Telegram.WebApp.initData` every 100ms for up to 2 seconds.
+- If found, calls `tgSignIn({data: {initData}})`.
+- Server fn `verifyTelegramInitData` (telegram-verify.ts:16) validates HMAC-SHA256 with `secretKey = HMAC-SHA256("WebAppData", botToken)`.
+- **The verification logic is correct** per [Telegram's spec](https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app).
+
+### Widget verification logic (`telegram-verify.ts:53`)
+- Uses `createHash("sha256").update(botToken).digest()` for secret key — **CORRECT** per [Telegram Login Widget spec](https://core.telegram.org/widgets/login#checking-authorization).
+- (Prior bug fixed in worklog.md: was `createHmac("sha256", "")` — wrong.)
+
+### `linkTelegramAccount` (`user/functions.ts:190`)
+- Called from `AppShell.tsx:75` on every signed-in mount if Telegram initData present and not already linked.
+- Updates `profiles` table with `telegram_id`, `telegram_username`, `telegram_photo_url`.
+- **Bug:** This runs AFTER the user signs in via Telegram. But if they signed in via email/password first and THEN opened in Telegram, this links the accounts. However, the `telegramLinkedRef` guard uses localStorage (`vixor-tg-linked`) which is per-browser, not per-user. If user switches accounts, the link won't re-attempt.
+
+### Verdict
+**Telegram login code is correct.** The failures are:
+1. Missing env vars (fixable by user)
+2. Missing BotFather `/setdomain` configuration (manual user action)
+3. Stale initData edge case (code-level fix needed)
+
+---
+
+## 9. Supabase Layer & Migrations
+
+### Client architecture (`src/shared/supabase/`)
+
+| File | Purpose | Key behavior |
+|---|---|---|
+| `client.ts` (82 lines) | Browser client | **Deep-no-op Proxy fallback** (line 48) — if env vars missing, every method returns `{data:null, error:"Supabase not configured"}`. Prevents "is not a function" errors but silently breaks all features. |
+| `client.server.ts` (45 lines) | Server admin client | **THROWS** on missing env vars (line 22) — fails fast. Correct behavior for server-side. |
+| `auth-middleware.ts` (76 lines) | `requireSupabaseAuth` middleware | Throws "Missing Supabase environment variable(s)" if env missing (line 20). **Every protected server fn fails closed.** |
+| `auth-attacher.ts` (29 lines) | Client middleware | Attaches `Authorization: Bearer <token>` header to all server-fn RPC calls. Catches errors and proceeds without header (line 19). |
+| `types.ts` (1095 lines) | Generated Database types | Comprehensive — covers all tables. |
+
+### Critical issue: deep-no-op Proxy masks all failures
+```typescript
+// client.ts:48
+function deepNoOp(): any {
+  return new Proxy(() => Promise.resolve({ data: null, error: new Error("Supabase not configured") }), {
+    get(_, prop) {
+      if (prop === "then" || prop === "catch" || prop === "finally") return undefined;
+      return deepNoOp();
+    },
+    apply() {
+      return Promise.resolve({ data: null, error: new Error("Supabase not configured") });
+    },
+  });
+}
+```
+This means **the app never crashes when Supabase is misconfigured** — every query returns null and every UI shows empty state. The user sees "No signals", "No alerts", "No analyses" without any error message explaining why. **This is the root cause of the "data display not smooth/professional" complaint.**
+
+### Migrations (12 files in `supabase/migrations/`)
+
+| Migration | Purpose |
+|---|---|
+| `004_watchlists.sql` | `watchlists` + `watchlist_items` tables with RLS |
+| `20260607190000_phase1_add_analysis_context.sql` | Adds context fields to `analyses` (trend, risk_level, liquidity_zones, market_structure, key_levels) + XP/skills fields to `profiles` |
+| `20260609120000_add_signal_badge_vixor_message.sql` | Adds `signal_badge` JSONB + `vixor_message` TEXT to `analyses` |
