@@ -581,3 +581,28 @@ Stage Summary:
 - Both pages show real data from Binance/TwelveData APIs (not mock)
 - Users can buy points via Telegram Stars or get bonus points via referrals
 - New users start with 200 points (signup bonus)
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix all errors visible in screenshots - i18n raw keys, experiment failures, OHLCV data errors
+
+Work Log:
+- Analyzed 2 screenshots: backtest page showing raw i18n keys and "No OHLCV data" error, experiments page showing raw translation key "experiments.failedMsg" and FAILED status with untranslated error
+- Identified root cause 1: Missing i18n keys (common.points, common.remaining, common.create, backtest.timeframe, backtest.risk, backtest.expectancy) in both en.ts and ar.ts
+- Identified root cause 2: Fake local t() function in experiments.tsx at line 343 that returns the key itself instead of translating
+- Identified root cause 3: extractElapsed() only checked result.elapsedMs, not timestamps, causing "---" for failed experiments
+- Identified root cause 4: OHLCV fetch error messages were not helpful, Binance API timeout too short (15s)
+- Added 7 missing translation keys to en.ts and ar.ts
+- Removed fake t() function from experiments.tsx, added useI18n() hook to ExperimentCard component
+- Fixed extractElapsed() to fallback to created_at/completed_at timestamps
+- Improved OHLCV fetch error handling with helpful diagnostic messages
+- Increased Binance API timeout from 15s to 25s
+- Added Nitro Vercel maxDuration: 30s config in vite.config.ts
+- Reduced backtest default candle limit from 1000 to 500
+- Deployed successfully to production: https://vixor-app.vercel.app
+
+Stage Summary:
+- Fixed all i18n issues: translation keys now resolve correctly for both Arabic and English
+- Fixed experiments page: FAILED status shows translated error message, DURATION shows calculated time
+- Improved OHLCV error messages with actionable hints
+- Increased timeouts for better reliability on Vercel serverless
