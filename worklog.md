@@ -50,3 +50,38 @@ Stage Summary:
 - TradingView chart now loads via modern embed-widget-advanced-chart.js
 - CSP headers allow TradingView scripts/images/connections
 - Retry button on failure improves user experience
+
+---
+Task ID: 3
+Agent: Super Z (Main)
+Task: Fix commission/slippage bug + add trade list to backtest UI
+
+Work Log:
+- Fixed commission/slippage unit mismatch: UI now sends percentage (0.1 = 0.1%),
+  handler divides by 100 to convert to fraction for engine
+- Added trade list section showing each trade's P&L, tag, duration, R-multiple
+- Fixed field names (netPnl, tag, durationBars, exitReason) to match Trade type
+
+Stage Summary:
+- Backtest results now show accurate commission/slippage (was 6% → now 0.1%)
+- Trade list displays after each backtest run with actionable details
+
+---
+Task ID: 4
+Agent: Super Z (Main)
+Task: Global rate-limit middleware + Copilot streaming
+
+Work Log:
+- Created server/middleware/rate-limit.ts: 120 req/min general, 30 req/min webhooks
+- Removed duplicate inline rate limit from telegram-webhook.ts
+- Added streamAgent()/streamAI() to agent-orchestrator (AsyncGenerator)
+- Created /api/copilot-stream SSE endpoint with auth + rate limiting
+- Frontend copilot now streams AI responses with progressive text rendering
+- Falls back to non-streaming mutation if SSE fails
+- Registered copilot-stream handler in vite.config.ts
+- Build passes (13.52s), pushed 2 commits (309b5af, 7a681b8)
+
+Stage Summary:
+- All /api/ endpoints now rate-limited globally
+- Copilot responses stream token-by-token via SSE (was full-blob wait)
+- Graceful fallback to non-streaming if SSE unavailable
