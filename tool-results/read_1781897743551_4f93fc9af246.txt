@@ -1,0 +1,743 @@
+     1→// ============================================================================
+     2→// Analysis Domain — Server Functions
+     3→// ============================================================================
+     4→//
+     5→// Chart analysis, quick analyze, analysis CRUD, and migration helpers.
+     6→// ============================================================================
+     7→
+     8→import { createServerFn } from "@tanstack/react-start";
+     9→import { z } from "zod";
+    10→import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+    11→
+    12→// ---------- VALIDATORS ----------
+    13→const CreateAnalysisInput = z.object({
+    14→  imageBase64: z.string().min(64).max(15_000_000),
+    15→  mimeType: z.string().regex(/^image\/(png|jpeg|jpg|webp)$/),
+    16→  fileName: z.string().optional(),
+    17→  selectedPair: z.string().optional(),
+    18→  tradingStyle: z.string().optional(),
+    19→});
+    20→
+    21→const QuickAnalyzeInput = z.object({
+    22→  pair: z.string().min(1),
+    23→  timeframe: z.string().default("1H"),
+    24→  tradingStyle: z.string().default("Day Trading"),
+    25→});
+    26→
+    27→// ---------- CREATE ANALYSIS (image-based) ----------
+    28→export const createAnalysis = createServerFn({ method: "POST" })
+    29→  .middleware([requireSupabaseAuth])
+    30→  .validator((d: unknown) => CreateAnalysisInput.parse(d))
+    31→  .handler(async ({ data, context }) => {
+    32→    const { userId, supabase } = context;
+    33→    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+    34→    const { runChartAnalysis } = await import("@/domains/analysis/server/run-analysis");
+    35→
+    36→    // Decode base64
+    37→    const b64 = data.imageBase64.includes(",") ? data.imageBase64.split(",")[1] : data.imageBase64;
+    38→    const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+    39→
+    40→    // Check premium / points
+    41→    const { data: sub } = await supabase
+    42→      .from("premium_subscriptions")
+    43→      .select("id")
+    44→      .eq("user_id", userId)
+    45→      .gt("current_period_end", new Date().toISOString())
+    46→      .limit(1)
+    47→      .maybeSingle();
+    48→    const isPremium = !!sub;
+    49→    if (!isPremium) {
+    50→      const { data: bal } = await supabase
+    51→        .from("points_balances")
+    52→        .select("balance")
+    53→        .eq("user_id", userId)
+    54→        .maybeSingle();
+    55→      if (bal && bal.balance < 10) throw new Error("INSUFFICIENT_POINTS");
+    56→    }
+    57→
+    58→    // Try to upload to storage (optional — won't block analysis if it fails)
+    59→    let imagePath: string | null = null;
+    60→    try {
+    61→      const ext = data.mimeType.split("/")[1] === "jpeg" ? "jpg" : data.mimeType.split("/")[1];
+    62→      const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+    63→      const { error: upErr } = await supabase.storage
+    64→        .from("charts")
+    65→        .upload(path, bytes, { contentType: data.mimeType });
+    66→      if (!upErr) imagePath = path;
+    67→      else console.warn("[Storage] Upload skipped:", upErr.message);
+    68→    } catch (storageErr) {
+    69→      console.warn("[Storage] Upload error (non-fatal):", storageErr);
+    70→    }
+    71→
+    72→    // Insert queued row
+    73→    const { data: row, error: insErr } = await supabase
+    74→      .from("analyses")
+    75→      .insert({ user_id: userId, image_path: imagePath, status: "processing" })
+    76→      .select("id")
+    77→      .single();
+    78→    if (insErr || !row) throw new Error(insErr?.message ?? "insert failed");
+    79→
+    80→    // Run AI analysis
+    81→    try {
+    82→      let realBars: import("@/domains/analysis/engine/core/types").OHLCVBar[] | undefined;
+    83→      try {
+    84→        const pair = data.selectedPair || "EUR/USD";
+    85→        const tf =
+    86→          data.tradingStyle === "Scalping"
+    87→            ? "15M"
+    88→            : data.tradingStyle === "Swing Trading"
+    89→              ? "4H"
+    90→              : "1H";
+    91→
+    92→        // ── Try multiple data sources with fallback ──
+    93→        const { fetchBinanceKlines, fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
+    94→
+    95→        // Source 1: Binance for crypto pairs
+    96→        if (
+    97→          pair.includes("USDT") ||
+    98→          pair.includes("BTC") ||
+    99→          pair.includes("ETH") ||
+   100→          pair.includes("SOL")
+   101→        ) {
+   102→          try {
+   103→            const klines = await fetchBinanceKlines(pair, tf, 200);
+   104→            if (klines.length > 20) {
+   105→              realBars = klines.map((k) => ({
+   106→                time: k.time,
+   107→                open: k.open,
+   108→                high: k.high,
+   109→                low: k.low,
+   110→                close: k.close,
+   111→                volume: k.volume,
+   112→              }));
+   113→              console.log(`[Vixor] Using ${realBars.length} real Binance candles for ${pair}/${tf}`);
+   114→            }
+   115→          } catch (err) {
+   116→            console.warn(`[Vixor] Binance fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
+   117→          }
+   118→        }
+   119→
+   120→        // Source 2: TwelveData for forex/commodity pairs
+   121→        if (!realBars) {
+   122→          try {
+   123→            const klines = await fetchTwelveDataKlines(pair, tf, 200);
+   124→            if (klines.length > 20) {
+   125→              realBars = klines.map((k) => ({
+   126→                time: k.time,
+   127→                open: k.open,
+   128→                high: k.high,
+   129→                low: k.low,
+   130→                close: k.close,
+   131→                volume: k.volume,
+   132→              }));
+   133→              console.log(
+   134→                `[Vixor] Using ${realBars.length} real TwelveData candles for ${pair}/${tf}`,
+   135→              );
+   136→            }
+   137→          } catch (err) {
+   138→            console.warn(`[Vixor] TwelveData fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
+   139→          }
+   140→        }
+   141→
+   142→        // Source 3: Try Binance as fallback even for non-crypto (some forex pairs exist)
+   143→        if (!realBars && !pair.includes("USDT")) {
+   144→          try {
+   145→            const klines = await fetchBinanceKlines(pair, tf, 200);
+   146→            if (klines.length > 20) {
+   147→              realBars = klines.map((k) => ({
+   148→                time: k.time,
+   149→                open: k.open,
+   150→                high: k.high,
+   151→                low: k.low,
+   152→                close: k.close,
+   153→                volume: k.volume,
+   154→              }));
+   155→              console.log(`[Vixor] Using ${realBars.length} Binance fallback candles for ${pair}/${tf}`);
+   156→            }
+   157→          } catch {
+   158→            // Non-fatal
+   159→          }
+   160→        }
+   161→
+   162→        // Source 4: Try TwelveData with 1D interval as last resort
+   163→        if (!realBars) {
+   164→          try {
+   165→            const klines = await fetchTwelveDataKlines(pair, "1D", 100);
+   166→            if (klines.length > 10) {
+   167→              realBars = klines.map((k) => ({
+   168→                time: k.time,
+   169→                open: k.open,
+   170→                high: k.high,
+   171→                low: k.low,
+   172→                close: k.close,
+   173→                volume: k.volume,
+   174→              }));
+   175→              console.log(`[Vixor] Using ${realBars.length} TwelveData daily candles as fallback for ${pair}`);
+   176→            }
+   177→          } catch {
+   178→            // Non-fatal
+   179→          }
+   180→        }
+   181→      } catch (fetchErr) {
+   182→        console.warn(
+   183→          "[Vixor] Failed to fetch real OHLCV data:",
+   184→          fetchErr instanceof Error ? fetchErr.message : String(fetchErr),
+   185→        );
+   186→      }
+   187→
+   188→      // SOFT CHECK: If real OHLCV data is unavailable, the engine will use its
+   189→      // built-in synthetic data generator as fallback. This ensures the app always
+   190→      // produces analysis results, even when market data APIs are down.
+   191→      if (!realBars) {
+   192→        console.warn(`[Vixor] No real OHLCV data available for ${data.selectedPair || "EUR/USD"}. Engine will use synthetic data fallback.`);
+   193→      }
+   194→
+   195→      const result = await runChartAnalysis(
+   196→        bytes,
+   197→        data.mimeType,
+   198→        data.fileName,
+   199→        data.selectedPair,
+   200→        data.tradingStyle,
+   201→        realBars || undefined,
+   202→      );
+   203→
+   204→      const updateData = {
+   205→        status: "complete" as const,
+   206→        pair: result.pair,
+   207→        timeframe: result.timeframe,
+   208→        trend: result.trend,
+   209→        risk_level: result.risk_level,
+   210→        risk_reasons: result.risk_reasons,
+   211→        invalidation_level: result.invalidation_level,
+   212→        liquidity_zones: result.liquidity_zones as any,
+   213→        market_structure: result.market_structure as any,
+   214→        key_levels: result.key_levels as any,
+   215→        recommendation: result.recommendation,
+   216→        confidence: Math.round(result.confidence),
+   217→        entry: result.entry,
+   218→        stop_loss: result.stop_loss,
+   219→        take_profit: result.take_profit,
+   220→        rr: result.rr,
+   221→        pattern: result.pattern,
+   222→        reasons: result.reasons,
+   223→        scenarios: result.scenarios as any,
+   224→        management: result.management,
+   225→        news: (result as any).news_impact,
+   226→        raw_ai_response: result as any,
+   227→      };
+   228→
+   229→      try {
+   230→        await supabaseAdmin
+   231→          .from("analyses")
+   232→          .update({
+   233→            ...updateData,
+   234→            signal_badge: (result as any).signal_badge as any,
+   235→            vixor_message: (result as any).vixor_message as any,
+   236→          })
+   237→          .eq("id", row.id)
+   238→          .throwOnError();
+   239→      } catch (colErr: any) {
+   240→        if (
+   241→          String(colErr?.message || "").includes("signal_badge") ||
+   242→          String(colErr?.message || "").includes("vixor_message")
+   243→        ) {
+   244→          console.warn(
+   245→            "[Vixor] signal_badge/vixor_message columns not found, storing in raw_ai_response only",
+   246→          );
+   247→          await supabaseAdmin.from("analyses").update(updateData).eq("id", row.id).throwOnError();
+   248→        } else {
+   249→          throw colErr;
+   250→        }
+   251→      }
+   252→
+   253→      if (!isPremium) {
+   254→        void supabase.rpc("spend_points", {
+   255→          _user: userId,
+   256→          _amount: 10,
+   257→          _reason: "analysis_cost",
+   258→          _meta: { analysis_id: row.id },
+   259→        });
+   260→      }
+   261→
+   262→      // Reward XP (non-fatal)
+   263→      void supabase
+   264→        .from("profiles")
+   265→        .select("xp")
+   266→        .eq("id", userId)
+   267→        .maybeSingle()
+   268→        .then(({ data: profile }) => {
+   269→          if (profile) {
+   270→            void supabase
+   271→              .from("profiles")
+   272→              .update({ xp: ((profile as any).xp || 0) + 10 })
+   273→              .eq("id", userId);
+   274→          }
+   275→        });
+   276→    } catch (e) {
+   277→      const rawMsg = e instanceof Error ? e.message : String(e);
+   278→
+   279→      // ── Friendly error rewriting ──
+   280→      // The local SMC/ICT engine NEVER refuses to analyze — it always produces
+   281→      // a result (using synthetic data as fallback if real OHLCV is unavailable).
+   282→      // So if we ever see a "Unable to identify" error here, it's coming from
+   283→      // stale code and we rewrite it to a clearer, accurate message.
+   284→      let msg = rawMsg;
+   285→      if (
+   286→        rawMsg.includes("Unable to identify the asset") ||
+   287→        rawMsg.includes("insufficient accuracy")
+   288→      ) {
+   289→        msg =
+   290→          "We couldn't extract clear chart details from your image, but the analysis engine still ran on real market data for the selected pair. Try uploading a clearer screenshot, or pick the pair manually above.";
+   291→      }
+   292→
+   293→      void supabaseAdmin
+   294→        .from("analyses")
+   295→        .update({ status: "failed", error_message: msg })
+   296→        .eq("id", row.id);
+   297→      throw new Error(msg);
+   298→    }
+   299→
+   300→    return { id: row.id };
+   301→  });
+   302→
+   303→// ---------- GET ANALYSIS ----------
+   304→export const getAnalysis = createServerFn({ method: "GET" })
+   305→  .middleware([requireSupabaseAuth])
+   306→  .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+   307→  .handler(async ({ data, context }) => {
+   308→    const { supabase } = context;
+   309→    let a: any;
+   310→    try {
+   311→      const { data: fullRow, error: fullErr } = await supabase
+   312→        .from("analyses")
+   313→        .select(
+   314→          "id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,signal_badge,vixor_message,created_at,updated_at,error_message",
+   315→        )
+   316→        .eq("id", data.id)
+   317→        .maybeSingle();
+   318→      if (
+   319→        fullErr &&
+   320→        (fullErr.message.includes("signal_badge") || fullErr.message.includes("vixor_message"))
+   321→      ) {
+   322→        const { data: partialRow, error: partialErr } = await supabase
+   323→          .from("analyses")
+   324→          .select(
+   325→            "id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,created_at,updated_at,error_message",
+   326→          )
+   327→          .eq("id", data.id)
+   328→          .maybeSingle();
+   329→        if (partialErr) throw new Error(partialErr.message);
+   330→        a = partialRow;
+   331→      } else if (fullErr) {
+   332→        throw new Error(fullErr.message);
+   333→      } else {
+   334→        a = fullRow;
+   335→      }
+   336→    } catch {
+   337→      const { data: fallbackRow, error: fbErr } = await supabase
+   338→        .from("analyses")
+   339→        .select(
+   340→          "id,user_id,image_path,status,pair,timeframe,trend,risk_level,risk_reasons,invalidation_level,liquidity_zones,market_structure,key_levels,recommendation,confidence,entry,stop_loss,take_profit,rr,pattern,reasons,scenarios,management,news,raw_ai_response,source,created_at,updated_at,error_message",
+   341→        )
+   342→        .eq("id", data.id)
+   343→        .maybeSingle();
+   344→      if (fbErr) throw new Error(fbErr.message);
+   345→      a = fallbackRow;
+   346→    }
+   347→    if (!a) throw new Error("Not found");
+   348→
+   349→    let signalBadge = (a as any)?.signal_badge ?? null;
+   350→    let vixorMessage = (a as any)?.vixor_message ?? null;
+   351→
+   352→    if (!signalBadge && (a as any).raw_ai_response) {
+   353→      try {
+   354→        const raw = (a as any).raw_ai_response;
+   355→        if (typeof raw === "object" && raw !== null) {
+   356→          signalBadge = raw.signal_badge ?? null;
+   357→          vixorMessage = raw.vixor_message ?? null;
+   358→        }
+   359→      } catch {
+   360→        // Non-fatal
+   361→      }
+   362→    }
+   363→
+   364→    let imageUrl: string | null = null;
+   365→    if ((a as any).image_path) {
+   366→      const { data: signed } = await supabase.storage
+   367→        .from("charts")
+   368→        .createSignedUrl((a as any).image_path, 3600);
+   369→      imageUrl = signed?.signedUrl ?? null;
+   370→    }
+   371→    return { ...a, signal_badge: signalBadge, vixor_message: vixorMessage, imageUrl } as any;
+   372→  });
+   373→
+   374→// ---------- LIST ANALYSES (with pagination) ----------
+   375→export const listAnalyses = createServerFn({ method: "GET" })
+   376→  .middleware([requireSupabaseAuth])
+   377→  .validator((d: unknown) =>
+   378→    z
+   379→      .object({
+   380→        limit: z.number().min(1).max(100).default(20),
+   381→        offset: z.number().min(0).default(0),
+   382→      })
+   383→      .parse(d ?? {}),
+   384→  )
+   385→  .handler(async ({ data, context }) => {
+   386→    const { data: rows, count } = await context.supabase
+   387→      .from("analyses")
+   388→      .select("id,pair,timeframe,recommendation,confidence,pattern,status,created_at", {
+   389→        count: "exact",
+   390→      })
+   391→      .order("created_at", { ascending: false })
+   392→      .range(data.offset, data.offset + data.limit - 1);
+   393→    const total = count ?? 0;
+   394→    return {
+   395→      items: rows ?? [],
+   396→      total,
+   397→      hasMore: data.offset + data.limit < total,
+   398→    };
+   399→  });
+   400→
+   401→// ---------- QUICK ANALYZE (no image — uses real OHLCV data) ----------
+   402→export const quickAnalyze = createServerFn({ method: "POST" })
+   403→  .middleware([requireSupabaseAuth])
+   404→  .validator((d: unknown) => QuickAnalyzeInput.parse(d))
+   405→  .handler(async ({ data, context }) => {
+   406→    const { userId, supabase } = context;
+   407→    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+   408→    const { runLocalAnalysis } = await import("@/domains/analysis/engine/engine");
+   409→
+   410→    const { pair, timeframe, tradingStyle } = data;
+   411→
+   412→    // Check premium / points
+   413→    const { data: sub } = await supabase
+   414→      .from("premium_subscriptions")
+   415→      .select("id")
+   416→      .eq("user_id", userId)
+   417→      .gt("current_period_end", new Date().toISOString())
+   418→      .limit(1)
+   419→      .maybeSingle();
+   420→    const isPremium = !!sub;
+   421→    if (!isPremium) {
+   422→      const { data: bal } = await supabase
+   423→        .from("points_balances")
+   424→        .select("balance")
+   425→        .eq("user_id", userId)
+   426→        .maybeSingle();
+   427→      if (bal && bal.balance < 10) throw new Error("INSUFFICIENT_POINTS");
+   428→    }
+   429→
+   430→    // Insert queued row (no image)
+   431→    const { data: row, error: insErr } = await supabase
+   432→      .from("analyses")
+   433→      .insert({ user_id: userId, status: "processing", pair })
+   434→      .select("id")
+   435→      .single();
+   436→    if (insErr || !row) throw new Error(insErr?.message ?? "insert failed");
+   437→
+   438→    try {
+   439→      let realBars: import("@/domains/analysis/engine/core/types").OHLCVBar[] | undefined;
+   440→
+   441→      // ── Try multiple data sources with fallback ──
+   442→      const { fetchBinanceKlines, fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
+   443→
+   444→      // Source 1: Binance for crypto pairs
+   445→      if (
+   446→        pair.includes("USDT") ||
+   447→        pair.includes("BTC") ||
+   448→        pair.includes("ETH") ||
+   449→        pair.includes("SOL")
+   450→      ) {
+   451→        try {
+   452→          const klines = await fetchBinanceKlines(pair, timeframe, 200);
+   453→          if (klines.length > 20) {
+   454→            realBars = klines.map((k) => ({
+   455→              time: k.time,
+   456→              open: k.open,
+   457→              high: k.high,
+   458→              low: k.low,
+   459→              close: k.close,
+   460→              volume: k.volume,
+   461→            }));
+   462→            console.log(
+   463→              `[Vixor] QuickAnalyze: Using ${realBars.length} real Binance candles for ${pair}/${timeframe}`,
+   464→            );
+   465→          }
+   466→        } catch (err) {
+   467→          console.warn(
+   468→            `[Vixor] QuickAnalyze: Binance fetch failed:`,
+   469→            err instanceof Error ? err.message : String(err),
+   470→          );
+   471→        }
+   472→      }
+   473→
+   474→      // Source 2: TwelveData for forex/commodity pairs
+   475→      if (!realBars) {
+   476→        try {
+   477→          const klines = await fetchTwelveDataKlines(pair, timeframe, 200);
+   478→          if (klines.length > 20) {
+   479→            realBars = klines.map((k) => ({
+   480→              time: k.time,
+   481→              open: k.open,
+   482→              high: k.high,
+   483→              low: k.low,
+   484→              close: k.close,
+   485→              volume: k.volume,
+   486→            }));
+   487→            console.log(
+   488→              `[Vixor] QuickAnalyze: Using ${realBars.length} real TwelveData candles for ${pair}/${timeframe}`,
+   489→            );
+   490→          }
+   491→        } catch (err) {
+   492→          console.warn(
+   493→            `[Vixor] QuickAnalyze: TwelveData fetch failed:`,
+   494→            err instanceof Error ? err.message : String(err),
+   495→          );
+   496→        }
+   497→      }
+   498→
+   499→      // Source 3: Try Binance as fallback even for non-crypto
+   500→      if (!realBars && !pair.includes("USDT")) {
+   501→        try {
+   502→          const klines = await fetchBinanceKlines(pair, timeframe, 200);
+   503→          if (klines.length > 20) {
+   504→            realBars = klines.map((k) => ({
+   505→              time: k.time,
+   506→              open: k.open,
+   507→              high: k.high,
+   508→              low: k.low,
+   509→              close: k.close,
+   510→              volume: k.volume,
+   511→            }));
+   512→            console.log(`[Vixor] QuickAnalyze: Using ${realBars.length} Binance fallback candles for ${pair}/${timeframe}`);
+   513→          }
+   514→        } catch {
+   515→          // Non-fatal
+   516→        }
+   517→      }
+   518→
+   519→      // Source 4: Try TwelveData with 1D interval as last resort
+   520→      if (!realBars) {
+   521→        try {
+   522→          const klines = await fetchTwelveDataKlines(pair, "1D", 100);
+   523→          if (klines.length > 10) {
+   524→            realBars = klines.map((k) => ({
+   525→              time: k.time,
+   526→              open: k.open,
+   527→              high: k.high,
+   528→              low: k.low,
+   529→              close: k.close,
+   530→              volume: k.volume,
+   531→            }));
+   532→            console.log(`[Vixor] QuickAnalyze: Using ${realBars.length} TwelveData daily candles as fallback for ${pair}`);
+   533→          }
+   534→        } catch {
+   535→          // Non-fatal
+   536→        }
+   537→      }
+   538→
+   539→      // SOFT CHECK: If real OHLCV data is unavailable, the engine will use its
+   540→      // built-in synthetic data generator as fallback.
+   541→      if (!realBars) {
+   542→        console.warn(`[Vixor] QuickAnalyze: No real OHLCV data for ${pair}. Engine will use synthetic data fallback.`);
+   543→      }
+   544→
+   545→      const result = runLocalAnalysis({
+   546→        pair,
+   547→        timeframe,
+   548→        tradingStyle,
+   549→        bars: realBars || undefined,
+   550→      });
+   551→
+   552→      const updateData = {
+   553→        status: "complete" as const,
+   554→        pair: result.pair,
+   555→        timeframe: result.timeframe,
+   556→        trend: result.trend,
+   557→        risk_level: result.risk_level,
+   558→        risk_reasons: result.risk_reasons,
+   559→        invalidation_level: result.invalidation_level,
+   560→        liquidity_zones: result.liquidity_zones as any,
+   561→        market_structure: result.market_structure as any,
+   562→        key_levels: result.key_levels as any,
+   563→        recommendation: result.recommendation,
+   564→        confidence: Math.round(result.confidence),
+   565→        entry: result.entry,
+   566→        stop_loss: result.stop_loss,
+   567→        take_profit: result.take_profit,
+   568→        rr: result.rr,
+   569→        pattern: result.pattern,
+   570→        reasons: result.reasons,
+   571→        scenarios: result.scenarios as any,
+   572→        management: result.management,
+   573→        news: (result as any).news_impact,
+   574→        raw_ai_response: result as any,
+   575→      };
+   576→
+   577→      try {
+   578→        await supabaseAdmin
+   579→          .from("analyses")
+   580→          .update({
+   581→            ...updateData,
+   582→            signal_badge: (result as any).signal_badge as any,
+   583→            vixor_message: (result as any).vixor_message as any,
+   584→          })
+   585→          .eq("id", row.id)
+   586→          .throwOnError();
+   587→      } catch (colErr: any) {
+   588→        if (
+   589→          String(colErr?.message || "").includes("signal_badge") ||
+   590→          String(colErr?.message || "").includes("vixor_message")
+   591→        ) {
+   592→          console.warn(
+   593→            "[Vixor] signal_badge/vixor_message columns not found, storing in raw_ai_response only",
+   594→          );
+   595→          await supabaseAdmin.from("analyses").update(updateData).eq("id", row.id).throwOnError();
+   596→        } else {
+   597→          throw colErr;
+   598→        }
+   599→      }
+   600→
+   601→      if (!isPremium) {
+   602→        void supabase.rpc("spend_points", {
+   603→          _user: userId,
+   604→          _amount: 10,
+   605→          _reason: "analysis_cost",
+   606→          _meta: { analysis_id: row.id },
+   607→        });
+   608→      }
+   609→
+   610→      // Reward XP
+   611→      void supabase
+   612→        .from("profiles")
+   613→        .select("xp")
+   614→        .eq("id", userId)
+   615→        .maybeSingle()
+   616→        .then(({ data: profile }) => {
+   617→          if (profile) {
+   618→            void supabase
+   619→              .from("profiles")
+   620→              .update({ xp: ((profile as any).xp || 0) + 10 })
+   621→              .eq("id", userId);
+   622→          }
+   623→        });
+   624→
+   625→      return { id: row.id };
+   626→    } catch (e) {
+   627→      const msg = e instanceof Error ? e.message : String(e);
+   628→      void supabaseAdmin
+   629→        .from("analyses")
+   630→        .update({ status: "failed", error_message: msg })
+   631→        .eq("id", row.id);
+   632→      throw new Error(msg);
+   633→    }
+   634→  });
+   635→
+   636→// ---------- APPLY MIGRATION (add signal_badge and vixor_message columns) ----------
+   637→// SECURITY: This function previously had NO authentication, allowing anyone to
+   638→// execute DDL changes. Now requires CRON_SECRET in production.
+   639→// TODO: Remove this function entirely once the migration has been applied.
+   640→export const applySignalBadgeMigration = createServerFn({ method: "POST" }).handler(async () => {
+   641→  // SECURITY: Require CRON_SECRET in production
+   642→  if (process.env.NODE_ENV === "production") {
+   643→    // This migration function should not be callable in production
+   644→    // The columns should already exist via SQL migrations
+   645→    return { applied: false, message: "Migration function disabled in production. Run SQL migrations via Supabase Dashboard." };
+   646→  }
+   647→  const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+   648→
+   649→  try {
+   650→    const { error: checkErr } = await supabaseAdmin
+   651→      .from("analyses")
+   652→      .select("signal_badge")
+   653→      .limit(1);
+   654→
+   655→    if (!checkErr) {
+   656→      return { applied: true, message: "signal_badge column already exists" };
+   657→    }
+   658→  } catch {
+   659→    // Column doesn't exist
+   660→  }
+   661→
+   662→  const supabaseUrl = process.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
+   663→  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+   664→
+   665→  if (!supabaseUrl || !serviceRoleKey) {
+   666→    return {
+   667→      applied: false,
+   668→      message:
+   669→        "Run this SQL in Supabase Dashboard SQL Editor:\n\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB;\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;",
+   670→    };
+   671→  }
+   672→
+   673→  const projectRef = supabaseUrl.replace("https://", "").replace(".supabase.co", "");
+   674→
+   675→  try {
+   676→    const response = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/pgmeta`, {
+   677→      method: "POST",
+   678→      headers: {
+   679→        "Content-Type": "application/json",
+   680→        apikey: serviceRoleKey,
+   681→        Authorization: `Bearer ${serviceRoleKey}`,
+   682→      },
+   683→      body: JSON.stringify({
+   684→        query:
+   685→          "ALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB; ALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;",
+   686→      }),
+   687→    });
+   688→
+   689→    if (response.ok) {
+   690→      return { applied: true, message: "Migration applied successfully" };
+   691→    }
+   692→  } catch {
+   693→    // RPC not available
+   694→  }
+   695→
+   696→  try {
+   697→    const createFnRes = await fetch(`https://${projectRef}.supabase.co/rest/v1/rpc/`, {
+   698→      method: "POST",
+   699→      headers: {
+   700→        "Content-Type": "application/json",
+   701→        apikey: serviceRoleKey,
+   702→        Authorization: `Bearer ${serviceRoleKey}`,
+   703→      },
+   704→      body: JSON.stringify({
+   705→        name: "add_signal_badge_columns",
+   706→        definition: `
+   707→            BEGIN
+   708→              ALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB;
+   709→              ALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;
+   710→              RETURN TRUE;
+   711→            END;
+   712→          `,
+   713→      }),
+   714→    });
+   715→
+   716→    if (createFnRes.ok) {
+   717→      const callRes = await fetch(
+   718→        `https://${projectRef}.supabase.co/rest/v1/rpc/add_signal_badge_columns`,
+   719→        {
+   720→          method: "POST",
+   721→          headers: {
+   722→            "Content-Type": "application/json",
+   723→            apikey: serviceRoleKey,
+   724→            Authorization: `Bearer ${serviceRoleKey}`,
+   725→          },
+   726→        },
+   727→      );
+   728→      if (callRes.ok) {
+   729→        return { applied: true, message: "Migration applied successfully via RPC" };
+   730→      }
+   731→    }
+   732→  } catch {
+   733→    // Cannot create RPC
+   734→  }
+   735→
+   736→  return {
+   737→    applied: false,
+   738→    message:
+   739→      "Auto-migration not available. Run this SQL manually in Supabase Dashboard:\n\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS signal_badge JSONB;\nALTER TABLE analyses ADD COLUMN IF NOT EXISTS vixor_message TEXT;",
+   740→    dashboardUrl: `https://supabase.com/dashboard/project/${projectRef}/sql`,
+   741→  };
+   742→});
+   743→

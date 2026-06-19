@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMe } from "@/domains/user/functions";
+import { listExperiments, createExperiment } from "@/domains/experiment/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   FlaskConical,
   Plus,
@@ -21,8 +22,6 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import type { ExperimentConfig, ExperimentResult } from "@/domains/experiment/runner";
-import type { GenerationStats, Individual } from "@/domains/experiment/evolution";
 
 export const Route = createFileRoute("/_authenticated/experiments")({
   head: () => ({ meta: [{ title: "Experiments — Vixor" }] }),
@@ -33,173 +32,62 @@ export const Route = createFileRoute("/_authenticated/experiments")({
 // Types for UI display
 // ---------------------------------------------------------------------------
 
-type ExperimentStatus = "running" | "completed" | "failed";
+type ExperimentStatus = "running" | "completed" | "failed" | "cancelled";
 
+/** Shape returned from Supabase `experiments` table via listExperiments. */
 interface ExperimentRecord {
   id: string;
-  name: string;
+  user_id: string;
+  config: {
+    name: string;
+    assetSymbol: string;
+    timeframe: string;
+    strategyTemplate: string;
+    generations: number;
+    populationSize: number;
+    createdAt: string;
+  };
+  result: Record<string, unknown> | null;
   status: ExperimentStatus;
-  createdAt: string;
-  assetSymbol: string;
-  timeframe: string;
-  generations: number;
-  populationSize: number;
-  strategyTemplate: string;
-  /** Best score summary (null if not completed) */
-  bestScore: {
-    overall: number;
-    grade: string;
-    totalReturn: number;
-    maxDrawdown: number;
-    sharpe: number;
-  } | null;
-  /** Generation-by-generation stats */
-  generationStats: GenerationStats[] | null;
-  /** Top ranked strategies count */
-  rankedCount: number;
-  elapsedMs: number | null;
+  created_at: string;
+  completed_at: string | null;
 }
 
-// ---------------------------------------------------------------------------
-// Mock data
-// ---------------------------------------------------------------------------
+/** Derived best-score summary from the experiment result. */
+interface BestScoreSummary {
+  overall: number;
+  grade: string;
+  totalReturn: number;
+  maxDrawdown: number;
+  sharpe: number;
+}
 
-const MOCK_EXPERIMENTS: ExperimentRecord[] = [
-  {
-    id: "exp_001",
-    name: "SMA Crossover — BTC/USDT",
-    status: "completed",
-    createdAt: "2024-12-15T10:30:00Z",
-    assetSymbol: "BTC/USDT",
-    timeframe: "1H",
-    generations: 5,
-    populationSize: 12,
-    strategyTemplate: "sma_crossover",
-    bestScore: {
-      overall: 87.4,
-      grade: "B",
-      totalReturn: 32.1,
-      maxDrawdown: 6.8,
-      sharpe: 1.92,
-    },
-    generationStats: [
-      { generation: 0, bestScore: 62.1, avgScore: 45.3, population: [] },
-      { generation: 1, bestScore: 71.5, avgScore: 52.8, population: [] },
-      { generation: 2, bestScore: 79.3, avgScore: 61.2, population: [] },
-      { generation: 3, bestScore: 84.6, avgScore: 67.5, population: [] },
-      { generation: 4, bestScore: 87.4, avgScore: 72.1, population: [] },
-    ],
-    rankedCount: 24,
-    elapsedMs: 18420,
-  },
-  {
-    id: "exp_002",
-    name: "RSI Reversal — ETH/USDT",
-    status: "completed",
-    createdAt: "2024-12-14T08:15:00Z",
-    assetSymbol: "ETH/USDT",
-    timeframe: "4H",
-    generations: 3,
-    populationSize: 10,
-    strategyTemplate: "rsi_reversal",
-    bestScore: {
-      overall: 72.1,
-      grade: "C",
-      totalReturn: 18.4,
-      maxDrawdown: 11.2,
-      sharpe: 1.35,
-    },
-    generationStats: [
-      { generation: 0, bestScore: 55.0, avgScore: 38.7, population: [] },
-      { generation: 1, bestScore: 64.3, avgScore: 48.1, population: [] },
-      { generation: 2, bestScore: 72.1, avgScore: 56.9, population: [] },
-    ],
-    rankedCount: 15,
-    elapsedMs: 12350,
-  },
-  {
-    id: "exp_003",
-    name: "Breakout — XAU/USD",
-    status: "running",
-    createdAt: "2024-12-16T14:00:00Z",
-    assetSymbol: "XAU/USD",
-    timeframe: "1D",
-    generations: 5,
-    populationSize: 15,
-    strategyTemplate: "breakout",
-    bestScore: null,
-    generationStats: null,
-    rankedCount: 0,
-    elapsedMs: null,
-  },
-  {
-    id: "exp_004",
-    name: "MACD Momentum — EUR/USD",
-    status: "failed",
-    createdAt: "2024-12-13T16:45:00Z",
-    assetSymbol: "EUR/USD",
-    timeframe: "1H",
-    generations: 2,
-    populationSize: 8,
-    strategyTemplate: "macd_momentum",
-    bestScore: null,
-    generationStats: null,
-    rankedCount: 0,
-    elapsedMs: 5200,
-  },
-  {
-    id: "exp_005",
-    name: "SMA Crossover — SOL/USDT",
-    status: "completed",
-    createdAt: "2024-12-12T09:20:00Z",
-    assetSymbol: "SOL/USDT",
-    timeframe: "4H",
-    generations: 4,
-    populationSize: 12,
-    strategyTemplate: "sma_crossover",
-    bestScore: {
-      overall: 91.2,
-      grade: "A",
-      totalReturn: 45.7,
-      maxDrawdown: 5.2,
-      sharpe: 2.14,
-    },
-    generationStats: [
-      { generation: 0, bestScore: 68.9, avgScore: 51.2, population: [] },
-      { generation: 1, bestScore: 78.4, avgScore: 59.6, population: [] },
-      { generation: 2, bestScore: 85.7, avgScore: 65.3, population: [] },
-      { generation: 3, bestScore: 91.2, avgScore: 71.8, population: [] },
-    ],
-    rankedCount: 28,
-    elapsedMs: 21500,
-  },
-];
+/** Extract a BestScoreSummary from the serialized experiment result. */
+function extractBestScore(result: Record<string, unknown> | null): BestScoreSummary | null {
+  if (!result) return null;
+  const best = result.bestStrategy as Record<string, unknown> | undefined;
+  if (!best || !best.score) return null;
+  const summary = best.summary as Record<string, unknown> | undefined;
+  const overall = typeof best.score === "number" ? best.score : 0;
+  const totalReturn = (summary?.totalReturn as number) ?? 0;
+  const maxDrawdown = (summary?.maxDrawdown as number) ?? 0;
+  const sharpe = (summary?.sharpe as number) ?? 0;
+  const grade = overall >= 90 ? "A" : overall >= 80 ? "B" : overall >= 70 ? "C" : overall >= 60 ? "D" : "F";
+  return { overall, grade, totalReturn, maxDrawdown, sharpe };
+}
 
-async function createExperimentMock(config: {
-  name: string;
-  assetSymbol: string;
-  timeframe: string;
-  strategyTemplate: string;
-  generations: number;
-  populationSize: number;
-}): Promise<ExperimentRecord> {
-  // TODO: wire to real server function
-  await new Promise((r) => setTimeout(r, 800));
-  return {
-    id: `exp_${String(Date.now()).slice(-6)}`,
-    name: config.name,
-    status: "running",
-    createdAt: new Date().toISOString(),
-    assetSymbol: config.assetSymbol,
-    timeframe: config.timeframe,
-    generations: config.generations,
-    populationSize: config.populationSize,
-    strategyTemplate: config.strategyTemplate,
-    bestScore: null,
-    generationStats: null,
-    rankedCount: 0,
-    elapsedMs: null,
-  };
+/** Extract elapsed time in ms from result. */
+function extractElapsed(result: Record<string, unknown> | null): number | null {
+  if (!result) return null;
+  const ms = result.elapsedMs as number | undefined;
+  return typeof ms === "number" ? ms : null;
+}
+
+/** Extract ranked strategies count from result. */
+function extractRankedCount(result: Record<string, unknown> | null): number {
+  if (!result) return 0;
+  const arr = result.rankedStrategies as unknown[] | undefined;
+  return Array.isArray(arr) ? arr.length : 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -285,6 +173,10 @@ function ExperimentCard({
     }
   };
 
+  const bestScore = extractBestScore(experiment.result);
+  const elapsedMs = extractElapsed(experiment.result);
+  const rankedCount = extractRankedCount(experiment.result);
+
   const gradeColor: Record<string, string> = {
     A: "text-bullish",
     B: "text-primary",
@@ -322,9 +214,9 @@ function ExperimentCard({
               />
             </div>
             <div>
-              <div className="font-bold text-sm">{experiment.name}</div>
+              <div className="font-bold text-sm">{experiment.config.name}</div>
               <div className="text-xs text-muted-foreground font-mono">
-                {experiment.assetSymbol} · {experiment.timeframe}
+                {experiment.config.assetSymbol} · {experiment.config.timeframe}
               </div>
             </div>
           </div>
@@ -344,31 +236,29 @@ function ExperimentCard({
             <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
               Created
             </div>
-            <div className="text-[11px] font-mono">{formatDate(experiment.createdAt)}</div>
+            <div className="text-[11px] font-mono">{formatDate(experiment.created_at)}</div>
           </div>
           <div>
             <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
               Generations
             </div>
             <div className="text-[11px] font-mono font-bold">
-              {experiment.generationStats
-                ? `${experiment.generationStats.length}/${experiment.generations}`
-                : experiment.generations}
+              {experiment.config.generations}
             </div>
           </div>
           <div>
             <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
               Population
             </div>
-            <div className="text-[11px] font-mono">{experiment.populationSize}</div>
+            <div className="text-[11px] font-mono">{experiment.config.populationSize}</div>
           </div>
           <div>
             <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
               Duration
             </div>
             <div className="text-[11px] font-mono">
-              {experiment.elapsedMs
-                ? `${(experiment.elapsedMs / 1000).toFixed(1)}s`
+              {elapsedMs
+                ? `${(elapsedMs / 1000).toFixed(1)}s`
                 : "—"}
             </div>
           </div>
@@ -378,7 +268,7 @@ function ExperimentCard({
       {/* Expanded details */}
       {expanded && (
         <div className="border-t border-border p-4 space-y-3 bg-background/50 animate-in fade-in slide-in-from-top-1 duration-200">
-          {experiment.status === "completed" && experiment.bestScore ? (
+          {experiment.status === "completed" && bestScore ? (
             <>
               {/* Score summary */}
               <div className="grid grid-cols-2 gap-3">
@@ -388,14 +278,14 @@ function ExperimentCard({
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold font-mono text-primary">
-                      {experiment.bestScore.overall}
+                      {bestScore.overall}
                     </span>
                     <span
                       className={`text-lg font-bold ${
-                        gradeColor[experiment.bestScore.grade] || "text-muted-foreground"
+                        gradeColor[bestScore.grade] || "text-muted-foreground"
                       }`}
                     >
-                      {experiment.bestScore.grade}
+                      {bestScore.grade}
                     </span>
                   </div>
                 </div>
@@ -405,11 +295,11 @@ function ExperimentCard({
                   </div>
                   <div
                     className={`text-lg font-bold font-mono ${
-                      experiment.bestScore.totalReturn > 0 ? "text-bullish" : "text-bearish"
+                      bestScore.totalReturn > 0 ? "text-bullish" : "text-bearish"
                     }`}
                   >
-                    {experiment.bestScore.totalReturn > 0 ? "+" : ""}
-                    {experiment.bestScore.totalReturn}%
+                    {bestScore.totalReturn > 0 ? "+" : ""}
+                    {bestScore.totalReturn}%
                   </div>
                 </div>
                 <div className="p-2 rounded-lg bg-background border border-border">
@@ -417,7 +307,7 @@ function ExperimentCard({
                     Max Drawdown
                   </div>
                   <div className="text-lg font-bold font-mono text-bearish">
-                    -{experiment.bestScore.maxDrawdown}%
+                    -{bestScore.maxDrawdown}%
                   </div>
                 </div>
                 <div className="p-2 rounded-lg bg-background border border-border">
@@ -426,58 +316,17 @@ function ExperimentCard({
                   </div>
                   <div
                     className={`text-lg font-bold font-mono ${
-                      experiment.bestScore.sharpe > 1.5
+                      bestScore.sharpe > 1.5
                         ? "text-bullish"
-                        : experiment.bestScore.sharpe > 1
+                        : bestScore.sharpe > 1
                           ? "text-primary"
                           : "text-bearish"
                     }`}
                   >
-                    {experiment.bestScore.sharpe}
+                    {bestScore.sharpe}
                   </div>
                 </div>
               </div>
-
-              {/* Generation progress chart (simplified bars) */}
-              {experiment.generationStats && experiment.generationStats.length > 0 && (
-                <div>
-                  <div className="text-[10px] uppercase font-bold text-muted-foreground mb-2">
-                    Generation Progress
-                  </div>
-                  <div className="flex items-end gap-1.5 h-16">
-                    {experiment.generationStats.map((gen) => (
-                      <div
-                        key={gen.generation}
-                        className="flex-1 flex flex-col items-center gap-0.5"
-                      >
-                        <div className="text-[8px] font-mono text-muted-foreground">
-                          {gen.bestScore?.toFixed(0)}
-                        </div>
-                        <div
-                          className="w-full rounded-t-md gradient-primary glow-primary"
-                          style={{
-                            height: `${((gen.bestScore ?? 0) / 100) * 100}%`,
-                            minHeight: 4,
-                          }}
-                        />
-                        <div className="text-[8px] font-mono text-muted-foreground">
-                          G{gen.generation}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Average score line hint */}
-                  <div className="flex gap-1.5 mt-1">
-                    {experiment.generationStats.map((gen) => (
-                      <div key={gen.generation} className="flex-1 flex justify-center">
-                        <div className="text-[8px] font-mono text-muted-foreground/50">
-                          avg: {gen.avgScore?.toFixed(0)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Strategy info */}
               <div className="grid grid-cols-2 gap-3 mt-2">
@@ -485,20 +334,20 @@ function ExperimentCard({
                   <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
                     Template
                   </div>
-                  <div className="text-xs font-bold font-mono">{experiment.strategyTemplate}</div>
+                  <div className="text-xs font-bold font-mono">{experiment.config.strategyTemplate}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-background">
                   <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
                     Ranked Strategies
                   </div>
-                  <div className="text-xs font-bold font-mono">{experiment.rankedCount}</div>
+                  <div className="text-xs font-bold font-mono">{rankedCount}</div>
                 </div>
               </div>
             </>
           ) : experiment.status === "running" ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin text-primary" />
-              <span>Experiment is running… Generations will appear here once complete.</span>
+              <span>Experiment is running… Results will appear here once complete.</span>
             </div>
           ) : (
             <div className="flex items-center gap-2 text-sm text-bearish">
@@ -540,7 +389,10 @@ const TIMEFRAMES = ["1H", "4H", "1D"];
 
 function ExperimentsPage() {
   const { t } = useI18n();
+  const queryClient = useQueryClient();
   const fetchMe = useStableServerFn(getMe);
+  const fetchExperiments = useStableServerFn(listExperiments);
+  const createExp = useStableServerFn(createExperiment);
 
   const me = useQuery(
     useMemo(
@@ -551,12 +403,30 @@ function ExperimentsPage() {
 
   const isPremium = !!me.data?.isPremium;
 
-  // Local state: experiment list (mock) + new experiment form
-  const [experiments, setExperiments] = useState<ExperimentRecord[]>(MOCK_EXPERIMENTS);
-  const [showNewForm, setShowNewForm] = useState(false);
+  // Fetch real experiments from server
+  const experimentsQuery = useQuery(
+    useMemo(
+      () => ({
+        queryKey: ["experiments"] as const,
+        queryFn: () => fetchExperiments({}),
+        staleTime: 10_000,
+        // Poll every 5 seconds when there's a running experiment
+        refetchInterval: experiments.some((e: ExperimentRecord) => e.status === "running") ? 5_000 : false,
+      }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [fetchExperiments],
+    ),
+  );
+
+  const experiments: ExperimentRecord[] = (experimentsQuery.data as ExperimentRecord[] | undefined) ?? [];
+
+  // Polling flag derived from experiments list
+  const hasRunning = experiments.some((e) => e.status === "running");
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   // New experiment form state
+  const [showNewForm, setShowNewForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [newAsset, setNewAsset] = useState("BTC/USDT");
   const [newTimeframe, setNewTimeframe] = useState("1H");
@@ -567,20 +437,24 @@ function ExperimentsPage() {
   const handleCreate = async () => {
     if (!newName.trim()) return;
     setCreating(true);
+    setCreateError(null);
     try {
-      const exp = await createExperimentMock({
-        name: newName.trim(),
-        assetSymbol: newAsset,
-        timeframe: newTimeframe,
-        strategyTemplate: newStrategy,
-        generations: newGenerations,
-        populationSize: newPopulation,
+      const { id } = await createExp({
+        data: {
+          name: newName.trim(),
+          assetSymbol: newAsset,
+          timeframe: newTimeframe,
+          strategyTemplate: newStrategy,
+          generations: newGenerations,
+          populationSize: newPopulation,
+        },
       });
-      setExperiments((prev) => [exp, ...prev]);
+      // Optimistic: immediately invalidate to refetch the list (which now includes the new row)
+      await queryClient.invalidateQueries({ queryKey: ["experiments"] });
       setShowNewForm(false);
       setNewName("");
-    } catch {
-      // ignore for now
+    } catch (e) {
+      setCreateError(e instanceof Error ? e.message : t("experiments.createFailed") || "Failed to create experiment");
     } finally {
       setCreating(false);
     }
@@ -590,8 +464,9 @@ function ExperimentsPage() {
   const completedCount = experiments.filter((e) => e.status === "completed").length;
   const runningCount = experiments.filter((e) => e.status === "running").length;
   const bestScore = experiments
-    .filter((e) => e.bestScore !== null)
-    .sort((a, b) => (b.bestScore?.overall ?? 0) - (a.bestScore?.overall ?? 0))[0]?.bestScore;
+    .map((e) => extractBestScore(e.result))
+    .filter((s): s is BestScoreSummary => s !== null)
+    .sort((a, b) => b.overall - a.overall)[0];
 
   // Show loading while checking premium status
   if (me.isLoading) {
@@ -602,12 +477,12 @@ function ExperimentsPage() {
             <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
               {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Experiments</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("experiments.title") || "Experiments"}</h1>
           </div>
         </div>
         <div className="vixor-card p-6 text-center">
           <Loader2 className="size-6 animate-spin mx-auto text-primary mb-2" />
-          <div className="text-sm text-muted-foreground">Loading…</div>
+          <div className="text-sm text-muted-foreground">{t("common.loading") || "Loading…"}</div>
         </div>
       </div>
     );
@@ -621,7 +496,7 @@ function ExperimentsPage() {
             <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
               {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Experiments</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("experiments.title") || "Experiments"}</h1>
           </div>
         </div>
         <PremiumWall />
@@ -637,14 +512,14 @@ function ExperimentsPage() {
           <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
             {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Experiments</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("experiments.title") || "Experiments"}</h1>
         </div>
         <button
           onClick={() => setShowNewForm(!showNewForm)}
           className="h-9 px-3 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary flex items-center gap-1.5 hover:scale-[1.02] active:scale-95 transition-transform"
         >
           <Plus className="size-3.5" />
-          New Experiment
+          {t("experiments.newExperiment") || "New Experiment"}
         </button>
       </div>
 
@@ -653,7 +528,7 @@ function ExperimentsPage() {
         <div className="vixor-card p-4 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex items-center gap-2">
             <FlaskConical className="size-4 text-primary" />
-            <span className="text-sm font-bold">New Experiment</span>
+            <span className="text-sm font-bold">{t("experiments.newExperiment") || "New Experiment"}</span>
           </div>
 
           {/* Name */}
@@ -779,10 +654,17 @@ function ExperimentsPage() {
             ) : (
               <>
                 <FlaskConical className="size-4" />
-                Start Experiment
+                {t("experiments.startExperiment") || "Start Experiment"}
               </>
             )}
           </button>
+        </div>
+      )}
+
+      {/* Create error */}
+      {createError && (
+        <div className="vixor-card p-3 border-l-4 border-l-bearish">
+          <div className="text-xs text-bearish">{createError}</div>
         </div>
       )}
 

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Compass, Plus, Brain, Briefcase, Bell, User } from "lucide-react";
+import { Home, Compass, Plus, Brain, Briefcase, Bell, User, FlaskConical, Dna } from "lucide-react";
 import type { ReactNode } from "react";
 import { lazy, Suspense, useEffect, useRef, useState, useCallback, memo } from "react";
 import { getTelegramInitData } from "@/shared/telegram";
@@ -23,6 +23,18 @@ const tabs = [
     label: "Analyze",
     icon: Plus,
     match: (p: string) => p.startsWith("/analyze") || p.startsWith("/analysis"),
+  },
+  {
+    to: "/backtest",
+    label: "Backtest",
+    icon: FlaskConical,
+    match: (p: string) => p.startsWith("/backtest"),
+  },
+  {
+    to: "/experiments",
+    label: "Experiments",
+    icon: Dna,
+    match: (p: string) => p.startsWith("/experiments"),
   },
   { to: "/copilot", label: "Copilot", icon: Brain, match: (p: string) => p.startsWith("/copilot") },
   {

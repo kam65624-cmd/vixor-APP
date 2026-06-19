@@ -1,0 +1,846 @@
+     1→import { createFileRoute } from "@tanstack/react-router";
+     2→import { useQuery } from "@tanstack/react-query";
+     3→import { getMe } from "@/domains/user/functions";
+     4→import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+     5→import { useI18n } from "@/shared/i18n";
+     6→import { useState, useMemo } from "react";
+     7→import {
+     8→  FlaskConical,
+     9→  Plus,
+    10→  Loader2,
+    11→  Crown,
+    12→  ArrowRight,
+    13→  CheckCircle2,
+    14→  XCircle,
+    15→  Clock,
+    16→  TrendingUp,
+    17→  TrendingDown,
+    18→  Target,
+    19→  BarChart3,
+    20→  Activity,
+    21→  ChevronDown,
+    22→  ChevronUp,
+    23→} from "lucide-react";
+    24→import type { ExperimentConfig, ExperimentResult } from "@/domains/experiment/runner";
+    25→import type { GenerationStats, Individual } from "@/domains/experiment/evolution";
+    26→
+    27→export const Route = createFileRoute("/_authenticated/experiments")({
+    28→  head: () => ({ meta: [{ title: "Experiments — Vixor" }] }),
+    29→  component: ExperimentsPage,
+    30→});
+    31→
+    32→// ---------------------------------------------------------------------------
+    33→// Types for UI display
+    34→// ---------------------------------------------------------------------------
+    35→
+    36→type ExperimentStatus = "running" | "completed" | "failed";
+    37→
+    38→interface ExperimentRecord {
+    39→  id: string;
+    40→  name: string;
+    41→  status: ExperimentStatus;
+    42→  createdAt: string;
+    43→  assetSymbol: string;
+    44→  timeframe: string;
+    45→  generations: number;
+    46→  populationSize: number;
+    47→  strategyTemplate: string;
+    48→  /** Best score summary (null if not completed) */
+    49→  bestScore: {
+    50→    overall: number;
+    51→    grade: string;
+    52→    totalReturn: number;
+    53→    maxDrawdown: number;
+    54→    sharpe: number;
+    55→  } | null;
+    56→  /** Generation-by-generation stats */
+    57→  generationStats: GenerationStats[] | null;
+    58→  /** Top ranked strategies count */
+    59→  rankedCount: number;
+    60→  elapsedMs: number | null;
+    61→}
+    62→
+    63→// ---------------------------------------------------------------------------
+    64→// Mock data
+    65→// ---------------------------------------------------------------------------
+    66→
+    67→const MOCK_EXPERIMENTS: ExperimentRecord[] = [
+    68→  {
+    69→    id: "exp_001",
+    70→    name: "SMA Crossover — BTC/USDT",
+    71→    status: "completed",
+    72→    createdAt: "2024-12-15T10:30:00Z",
+    73→    assetSymbol: "BTC/USDT",
+    74→    timeframe: "1H",
+    75→    generations: 5,
+    76→    populationSize: 12,
+    77→    strategyTemplate: "sma_crossover",
+    78→    bestScore: {
+    79→      overall: 87.4,
+    80→      grade: "B",
+    81→      totalReturn: 32.1,
+    82→      maxDrawdown: 6.8,
+    83→      sharpe: 1.92,
+    84→    },
+    85→    generationStats: [
+    86→      { generation: 0, bestScore: 62.1, avgScore: 45.3, population: [] },
+    87→      { generation: 1, bestScore: 71.5, avgScore: 52.8, population: [] },
+    88→      { generation: 2, bestScore: 79.3, avgScore: 61.2, population: [] },
+    89→      { generation: 3, bestScore: 84.6, avgScore: 67.5, population: [] },
+    90→      { generation: 4, bestScore: 87.4, avgScore: 72.1, population: [] },
+    91→    ],
+    92→    rankedCount: 24,
+    93→    elapsedMs: 18420,
+    94→  },
+    95→  {
+    96→    id: "exp_002",
+    97→    name: "RSI Reversal — ETH/USDT",
+    98→    status: "completed",
+    99→    createdAt: "2024-12-14T08:15:00Z",
+   100→    assetSymbol: "ETH/USDT",
+   101→    timeframe: "4H",
+   102→    generations: 3,
+   103→    populationSize: 10,
+   104→    strategyTemplate: "rsi_reversal",
+   105→    bestScore: {
+   106→      overall: 72.1,
+   107→      grade: "C",
+   108→      totalReturn: 18.4,
+   109→      maxDrawdown: 11.2,
+   110→      sharpe: 1.35,
+   111→    },
+   112→    generationStats: [
+   113→      { generation: 0, bestScore: 55.0, avgScore: 38.7, population: [] },
+   114→      { generation: 1, bestScore: 64.3, avgScore: 48.1, population: [] },
+   115→      { generation: 2, bestScore: 72.1, avgScore: 56.9, population: [] },
+   116→    ],
+   117→    rankedCount: 15,
+   118→    elapsedMs: 12350,
+   119→  },
+   120→  {
+   121→    id: "exp_003",
+   122→    name: "Breakout — XAU/USD",
+   123→    status: "running",
+   124→    createdAt: "2024-12-16T14:00:00Z",
+   125→    assetSymbol: "XAU/USD",
+   126→    timeframe: "1D",
+   127→    generations: 5,
+   128→    populationSize: 15,
+   129→    strategyTemplate: "breakout",
+   130→    bestScore: null,
+   131→    generationStats: null,
+   132→    rankedCount: 0,
+   133→    elapsedMs: null,
+   134→  },
+   135→  {
+   136→    id: "exp_004",
+   137→    name: "MACD Momentum — EUR/USD",
+   138→    status: "failed",
+   139→    createdAt: "2024-12-13T16:45:00Z",
+   140→    assetSymbol: "EUR/USD",
+   141→    timeframe: "1H",
+   142→    generations: 2,
+   143→    populationSize: 8,
+   144→    strategyTemplate: "macd_momentum",
+   145→    bestScore: null,
+   146→    generationStats: null,
+   147→    rankedCount: 0,
+   148→    elapsedMs: 5200,
+   149→  },
+   150→  {
+   151→    id: "exp_005",
+   152→    name: "SMA Crossover — SOL/USDT",
+   153→    status: "completed",
+   154→    createdAt: "2024-12-12T09:20:00Z",
+   155→    assetSymbol: "SOL/USDT",
+   156→    timeframe: "4H",
+   157→    generations: 4,
+   158→    populationSize: 12,
+   159→    strategyTemplate: "sma_crossover",
+   160→    bestScore: {
+   161→      overall: 91.2,
+   162→      grade: "A",
+   163→      totalReturn: 45.7,
+   164→      maxDrawdown: 5.2,
+   165→      sharpe: 2.14,
+   166→    },
+   167→    generationStats: [
+   168→      { generation: 0, bestScore: 68.9, avgScore: 51.2, population: [] },
+   169→      { generation: 1, bestScore: 78.4, avgScore: 59.6, population: [] },
+   170→      { generation: 2, bestScore: 85.7, avgScore: 65.3, population: [] },
+   171→      { generation: 3, bestScore: 91.2, avgScore: 71.8, population: [] },
+   172→    ],
+   173→    rankedCount: 28,
+   174→    elapsedMs: 21500,
+   175→  },
+   176→];
+   177→
+   178→async function createExperimentMock(config: {
+   179→  name: string;
+   180→  assetSymbol: string;
+   181→  timeframe: string;
+   182→  strategyTemplate: string;
+   183→  generations: number;
+   184→  populationSize: number;
+   185→}): Promise<ExperimentRecord> {
+   186→  // TODO: wire to real server function
+   187→  await new Promise((r) => setTimeout(r, 800));
+   188→  return {
+   189→    id: `exp_${String(Date.now()).slice(-6)}`,
+   190→    name: config.name,
+   191→    status: "running",
+   192→    createdAt: new Date().toISOString(),
+   193→    assetSymbol: config.assetSymbol,
+   194→    timeframe: config.timeframe,
+   195→    generations: config.generations,
+   196→    populationSize: config.populationSize,
+   197→    strategyTemplate: config.strategyTemplate,
+   198→    bestScore: null,
+   199→    generationStats: null,
+   200→    rankedCount: 0,
+   201→    elapsedMs: null,
+   202→  };
+   203→}
+   204→
+   205→// ---------------------------------------------------------------------------
+   206→// Premium wall
+   207→// ---------------------------------------------------------------------------
+   208→
+   209→function PremiumWall() {
+   210→  const { t } = useI18n();
+   211→  return (
+   212→    <div className="flex flex-col items-center justify-center py-16 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+   213→      <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+   214→        <Crown className="size-8 text-primary" />
+   215→      </div>
+   216→      <h2 className="text-xl font-bold tracking-tight">{t("premium.upgradeNow") || "Premium Feature"}</h2>
+   217→      <p className="text-sm text-muted-foreground text-center max-w-sm">
+   218→        Strategy experiments use AI-powered evolution to discover optimal
+   219→        parameters. Upgrade to premium to unlock this feature.
+   220→      </p>
+   221→      <a
+   222→        href="/premium"
+   223→        className="mt-2 px-6 h-11 rounded-xl gradient-primary text-primary-foreground font-bold flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform"
+   224→      >
+   225→        <Crown className="size-4" />
+   226→        <span>{t("premium.upgradeNow") || "Upgrade Now"}</span>
+   227→        <ArrowRight className="size-4" />
+   228→      </a>
+   229→    </div>
+   230→  );
+   231→}
+   232→
+   233→// ---------------------------------------------------------------------------
+   234→// Status badge
+   235→// ---------------------------------------------------------------------------
+   236→
+   237→function StatusBadge({ status }: { status: ExperimentStatus }) {
+   238→  switch (status) {
+   239→    case "running":
+   240→      return (
+   241→        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+   242→          <Loader2 className="size-3 animate-spin" />
+   243→          Running
+   244→        </span>
+   245→      );
+   246→    case "completed":
+   247→      return (
+   248→        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-bullish/10 text-bullish border border-bullish/20">
+   249→          <CheckCircle2 className="size-3" />
+   250→          Completed
+   251→        </span>
+   252→      );
+   253→    case "failed":
+   254→      return (
+   255→        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-bearish/10 text-bearish border border-bearish/20">
+   256→          <XCircle className="size-3" />
+   257→          Failed
+   258→        </span>
+   259→      );
+   260→  }
+   261→}
+   262→
+   263→// ---------------------------------------------------------------------------
+   264→// Experiment card
+   265→// ---------------------------------------------------------------------------
+   266→
+   267→function ExperimentCard({
+   268→  experiment,
+   269→}: {
+   270→  experiment: ExperimentRecord;
+   271→}) {
+   272→  const [expanded, setExpanded] = useState(false);
+   273→
+   274→  const formatDate = (iso: string) => {
+   275→    try {
+   276→      return new Date(iso).toLocaleDateString("en-US", {
+   277→        month: "short",
+   278→        day: "numeric",
+   279→        year: "numeric",
+   280→        hour: "2-digit",
+   281→        minute: "2-digit",
+   282→      });
+   283→    } catch {
+   284→      return iso;
+   285→    }
+   286→  };
+   287→
+   288→  const gradeColor: Record<string, string> = {
+   289→    A: "text-bullish",
+   290→    B: "text-primary",
+   291→    C: "text-yellow-500",
+   292→    D: "text-bearish",
+   293→    F: "text-bearish",
+   294→  };
+   295→
+   296→  return (
+   297→    <div className="vixor-card overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+   298→      {/* Main row */}
+   299→      <div
+   300→        className="p-4 cursor-pointer hover:bg-card-hover/50 transition-colors"
+   301→        onClick={() => setExpanded(!expanded)}
+   302→      >
+   303→        <div className="flex items-start justify-between mb-2">
+   304→          <div className="flex items-center gap-2.5">
+   305→            <div
+   306→              className={`size-10 rounded-xl flex items-center justify-center ${
+   307→                experiment.status === "running"
+   308→                  ? "bg-primary/10"
+   309→                  : experiment.status === "completed"
+   310→                    ? "bg-bullish/10"
+   311→                    : "bg-bearish/10"
+   312→              }`}
+   313→            >
+   314→              <FlaskConical
+   315→                className={`size-5 ${
+   316→                  experiment.status === "running"
+   317→                    ? "text-primary"
+   318→                    : experiment.status === "completed"
+   319→                      ? "text-bullish"
+   320→                      : "text-bearish"
+   321→                }`}
+   322→              />
+   323→            </div>
+   324→            <div>
+   325→              <div className="font-bold text-sm">{experiment.name}</div>
+   326→              <div className="text-xs text-muted-foreground font-mono">
+   327→                {experiment.assetSymbol} · {experiment.timeframe}
+   328→              </div>
+   329→            </div>
+   330→          </div>
+   331→          <div className="flex items-center gap-2">
+   332→            <StatusBadge status={experiment.status} />
+   333→            <ChevronDown
+   334→              className={`size-4 text-muted-foreground transition-transform ${
+   335→                expanded ? "rotate-180" : ""
+   336→              }`}
+   337→            />
+   338→          </div>
+   339→        </div>
+   340→
+   341→        {/* Quick stats row */}
+   342→        <div className="grid grid-cols-4 gap-3">
+   343→          <div>
+   344→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   345→              Created
+   346→            </div>
+   347→            <div className="text-[11px] font-mono">{formatDate(experiment.createdAt)}</div>
+   348→          </div>
+   349→          <div>
+   350→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   351→              Generations
+   352→            </div>
+   353→            <div className="text-[11px] font-mono font-bold">
+   354→              {experiment.generationStats
+   355→                ? `${experiment.generationStats.length}/${experiment.generations}`
+   356→                : experiment.generations}
+   357→            </div>
+   358→          </div>
+   359→          <div>
+   360→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   361→              Population
+   362→            </div>
+   363→            <div className="text-[11px] font-mono">{experiment.populationSize}</div>
+   364→          </div>
+   365→          <div>
+   366→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   367→              Duration
+   368→            </div>
+   369→            <div className="text-[11px] font-mono">
+   370→              {experiment.elapsedMs
+   371→                ? `${(experiment.elapsedMs / 1000).toFixed(1)}s`
+   372→                : "—"}
+   373→            </div>
+   374→          </div>
+   375→        </div>
+   376→      </div>
+   377→
+   378→      {/* Expanded details */}
+   379→      {expanded && (
+   380→        <div className="border-t border-border p-4 space-y-3 bg-background/50 animate-in fade-in slide-in-from-top-1 duration-200">
+   381→          {experiment.status === "completed" && experiment.bestScore ? (
+   382→            <>
+   383→              {/* Score summary */}
+   384→              <div className="grid grid-cols-2 gap-3">
+   385→                <div className="p-2 rounded-lg bg-background border border-border">
+   386→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   387→                    Overall Score
+   388→                  </div>
+   389→                  <div className="flex items-center gap-2">
+   390→                    <span className="text-lg font-bold font-mono text-primary">
+   391→                      {experiment.bestScore.overall}
+   392→                    </span>
+   393→                    <span
+   394→                      className={`text-lg font-bold ${
+   395→                        gradeColor[experiment.bestScore.grade] || "text-muted-foreground"
+   396→                      }`}
+   397→                    >
+   398→                      {experiment.bestScore.grade}
+   399→                    </span>
+   400→                  </div>
+   401→                </div>
+   402→                <div className="p-2 rounded-lg bg-background border border-border">
+   403→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   404→                    Total Return
+   405→                  </div>
+   406→                  <div
+   407→                    className={`text-lg font-bold font-mono ${
+   408→                      experiment.bestScore.totalReturn > 0 ? "text-bullish" : "text-bearish"
+   409→                    }`}
+   410→                  >
+   411→                    {experiment.bestScore.totalReturn > 0 ? "+" : ""}
+   412→                    {experiment.bestScore.totalReturn}%
+   413→                  </div>
+   414→                </div>
+   415→                <div className="p-2 rounded-lg bg-background border border-border">
+   416→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   417→                    Max Drawdown
+   418→                  </div>
+   419→                  <div className="text-lg font-bold font-mono text-bearish">
+   420→                    -{experiment.bestScore.maxDrawdown}%
+   421→                  </div>
+   422→                </div>
+   423→                <div className="p-2 rounded-lg bg-background border border-border">
+   424→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   425→                    Sharpe Ratio
+   426→                  </div>
+   427→                  <div
+   428→                    className={`text-lg font-bold font-mono ${
+   429→                      experiment.bestScore.sharpe > 1.5
+   430→                        ? "text-bullish"
+   431→                        : experiment.bestScore.sharpe > 1
+   432→                          ? "text-primary"
+   433→                          : "text-bearish"
+   434→                    }`}
+   435→                  >
+   436→                    {experiment.bestScore.sharpe}
+   437→                  </div>
+   438→                </div>
+   439→              </div>
+   440→
+   441→              {/* Generation progress chart (simplified bars) */}
+   442→              {experiment.generationStats && experiment.generationStats.length > 0 && (
+   443→                <div>
+   444→                  <div className="text-[10px] uppercase font-bold text-muted-foreground mb-2">
+   445→                    Generation Progress
+   446→                  </div>
+   447→                  <div className="flex items-end gap-1.5 h-16">
+   448→                    {experiment.generationStats.map((gen) => (
+   449→                      <div
+   450→                        key={gen.generation}
+   451→                        className="flex-1 flex flex-col items-center gap-0.5"
+   452→                      >
+   453→                        <div className="text-[8px] font-mono text-muted-foreground">
+   454→                          {gen.bestScore?.toFixed(0)}
+   455→                        </div>
+   456→                        <div
+   457→                          className="w-full rounded-t-md gradient-primary glow-primary"
+   458→                          style={{
+   459→                            height: `${((gen.bestScore ?? 0) / 100) * 100}%`,
+   460→                            minHeight: 4,
+   461→                          }}
+   462→                        />
+   463→                        <div className="text-[8px] font-mono text-muted-foreground">
+   464→                          G{gen.generation}
+   465→                        </div>
+   466→                      </div>
+   467→                    ))}
+   468→                  </div>
+   469→                  {/* Average score line hint */}
+   470→                  <div className="flex gap-1.5 mt-1">
+   471→                    {experiment.generationStats.map((gen) => (
+   472→                      <div key={gen.generation} className="flex-1 flex justify-center">
+   473→                        <div className="text-[8px] font-mono text-muted-foreground/50">
+   474→                          avg: {gen.avgScore?.toFixed(0)}
+   475→                        </div>
+   476→                      </div>
+   477→                    ))}
+   478→                  </div>
+   479→                </div>
+   480→              )}
+   481→
+   482→              {/* Strategy info */}
+   483→              <div className="grid grid-cols-2 gap-3 mt-2">
+   484→                <div className="p-2 rounded-lg bg-background">
+   485→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   486→                    Template
+   487→                  </div>
+   488→                  <div className="text-xs font-bold font-mono">{experiment.strategyTemplate}</div>
+   489→                </div>
+   490→                <div className="p-2 rounded-lg bg-background">
+   491→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   492→                    Ranked Strategies
+   493→                  </div>
+   494→                  <div className="text-xs font-bold font-mono">{experiment.rankedCount}</div>
+   495→                </div>
+   496→              </div>
+   497→            </>
+   498→          ) : experiment.status === "running" ? (
+   499→            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+   500→              <Loader2 className="size-4 animate-spin text-primary" />
+   501→              <span>Experiment is running… Generations will appear here once complete.</span>
+   502→            </div>
+   503→          ) : (
+   504→            <div className="flex items-center gap-2 text-sm text-bearish">
+   505→              <XCircle className="size-4" />
+   506→              <span>This experiment failed. No results available.</span>
+   507→            </div>
+   508→          )}
+   509→        </div>
+   510→      )}
+   511→    </div>
+   512→  );
+   513→}
+   514→
+   515→// ---------------------------------------------------------------------------
+   516→// New experiment dialog content
+   517→// ---------------------------------------------------------------------------
+   518→
+   519→const STRATEGY_TEMPLATES = [
+   520→  { id: "sma_crossover", label: "SMA Crossover" },
+   521→  { id: "rsi_reversal", label: "RSI Reversal" },
+   522→  { id: "breakout", label: "Breakout" },
+   523→  { id: "macd_momentum", label: "MACD Momentum" },
+   524→];
+   525→
+   526→const ASSET_SYMBOLS = [
+   527→  "BTC/USDT",
+   528→  "ETH/USDT",
+   529→  "XAU/USD",
+   530→  "EUR/USD",
+   531→  "SOL/USDT",
+   532→  "GBP/USD",
+   533→];
+   534→
+   535→const TIMEFRAMES = ["1H", "4H", "1D"];
+   536→
+   537→// ---------------------------------------------------------------------------
+   538→// Main page component
+   539→// ---------------------------------------------------------------------------
+   540→
+   541→function ExperimentsPage() {
+   542→  const { t } = useI18n();
+   543→  const fetchMe = useStableServerFn(getMe);
+   544→
+   545→  const me = useQuery(
+   546→    useMemo(
+   547→      () => ({ queryKey: ["me"] as const, queryFn: () => fetchMe({}), staleTime: 30_000 }),
+   548→      [fetchMe],
+   549→    ),
+   550→  );
+   551→
+   552→  const isPremium = !!me.data?.isPremium;
+   553→
+   554→  // Local state: experiment list (mock) + new experiment form
+   555→  const [experiments, setExperiments] = useState<ExperimentRecord[]>(MOCK_EXPERIMENTS);
+   556→  const [showNewForm, setShowNewForm] = useState(false);
+   557→  const [creating, setCreating] = useState(false);
+   558→
+   559→  // New experiment form state
+   560→  const [newName, setNewName] = useState("");
+   561→  const [newAsset, setNewAsset] = useState("BTC/USDT");
+   562→  const [newTimeframe, setNewTimeframe] = useState("1H");
+   563→  const [newStrategy, setNewStrategy] = useState("sma_crossover");
+   564→  const [newGenerations, setNewGenerations] = useState(5);
+   565→  const [newPopulation, setNewPopulation] = useState(12);
+   566→
+   567→  const handleCreate = async () => {
+   568→    if (!newName.trim()) return;
+   569→    setCreating(true);
+   570→    try {
+   571→      const exp = await createExperimentMock({
+   572→        name: newName.trim(),
+   573→        assetSymbol: newAsset,
+   574→        timeframe: newTimeframe,
+   575→        strategyTemplate: newStrategy,
+   576→        generations: newGenerations,
+   577→        populationSize: newPopulation,
+   578→      });
+   579→      setExperiments((prev) => [exp, ...prev]);
+   580→      setShowNewForm(false);
+   581→      setNewName("");
+   582→    } catch {
+   583→      // ignore for now
+   584→    } finally {
+   585→      setCreating(false);
+   586→    }
+   587→  };
+   588→
+   589→  // Summary stats
+   590→  const completedCount = experiments.filter((e) => e.status === "completed").length;
+   591→  const runningCount = experiments.filter((e) => e.status === "running").length;
+   592→  const bestScore = experiments
+   593→    .filter((e) => e.bestScore !== null)
+   594→    .sort((a, b) => (b.bestScore?.overall ?? 0) - (a.bestScore?.overall ?? 0))[0]?.bestScore;
+   595→
+   596→  // Show loading while checking premium status
+   597→  if (me.isLoading) {
+   598→    return (
+   599→      <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+   600→        <div className="flex items-end justify-between">
+   601→          <div>
+   602→            <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+   603→              {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
+   604→            </div>
+   605→            <h1 className="text-2xl font-bold tracking-tight">Experiments</h1>
+   606→          </div>
+   607→        </div>
+   608→        <div className="vixor-card p-6 text-center">
+   609→          <Loader2 className="size-6 animate-spin mx-auto text-primary mb-2" />
+   610→          <div className="text-sm text-muted-foreground">Loading…</div>
+   611→        </div>
+   612→      </div>
+   613→    );
+   614→  }
+   615→
+   616→  if (!isPremium) {
+   617→    return (
+   618→      <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+   619→        <div className="flex items-end justify-between">
+   620→          <div>
+   621→            <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+   622→              {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
+   623→            </div>
+   624→            <h1 className="text-2xl font-bold tracking-tight">Experiments</h1>
+   625→          </div>
+   626→        </div>
+   627→        <PremiumWall />
+   628→      </div>
+   629→    );
+   630→  }
+   631→
+   632→  return (
+   633→    <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+   634→      {/* Header */}
+   635→      <div className="flex items-end justify-between">
+   636→        <div>
+   637→          <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+   638→            {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
+   639→          </div>
+   640→          <h1 className="text-2xl font-bold tracking-tight">Experiments</h1>
+   641→        </div>
+   642→        <button
+   643→          onClick={() => setShowNewForm(!showNewForm)}
+   644→          className="h-9 px-3 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary flex items-center gap-1.5 hover:scale-[1.02] active:scale-95 transition-transform"
+   645→        >
+   646→          <Plus className="size-3.5" />
+   647→          New Experiment
+   648→        </button>
+   649→      </div>
+   650→
+   651→      {/* New experiment form */}
+   652→      {showNewForm && (
+   653→        <div className="vixor-card p-4 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+   654→          <div className="flex items-center gap-2">
+   655→            <FlaskConical className="size-4 text-primary" />
+   656→            <span className="text-sm font-bold">New Experiment</span>
+   657→          </div>
+   658→
+   659→          {/* Name */}
+   660→          <div>
+   661→            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   662→              Experiment Name
+   663→            </label>
+   664→            <input
+   665→              type="text"
+   666→              value={newName}
+   667→              onChange={(e) => setNewName(e.target.value)}
+   668→              placeholder="e.g. SMA Crossover — BTC/USDT"
+   669→              className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+   670→            />
+   671→          </div>
+   672→
+   673→          {/* Asset + Timeframe */}
+   674→          <div className="grid grid-cols-2 gap-3">
+   675→            <div>
+   676→              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   677→                Asset Symbol
+   678→              </label>
+   679→              <div className="flex flex-wrap gap-1.5">
+   680→                {ASSET_SYMBOLS.map((s) => (
+   681→                  <button
+   682→                    key={s}
+   683→                    onClick={() => setNewAsset(s)}
+   684→                    className={`px-2.5 h-7 rounded-lg text-[11px] font-bold transition-all ${
+   685→                      newAsset === s
+   686→                        ? "bg-primary/10 text-primary border border-primary/30"
+   687→                        : "bg-muted text-muted-foreground border border-border"
+   688→                    }`}
+   689→                  >
+   690→                    {s}
+   691→                  </button>
+   692→                ))}
+   693→              </div>
+   694→            </div>
+   695→            <div>
+   696→              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   697→                Timeframe
+   698→              </label>
+   699→              <div className="flex gap-1.5">
+   700→                {TIMEFRAMES.map((tf) => (
+   701→                  <button
+   702→                    key={tf}
+   703→                    onClick={() => setNewTimeframe(tf)}
+   704→                    className={`flex-1 h-7 rounded-lg text-[11px] font-bold transition-all border flex items-center justify-center ${
+   705→                      newTimeframe === tf
+   706→                        ? "bg-primary text-primary-foreground border-primary glow-primary"
+   707→                        : "bg-card border-border text-muted-foreground hover:bg-card-hover"
+   708→                    }`}
+   709→                  >
+   710→                    {tf}
+   711→                  </button>
+   712→                ))}
+   713→              </div>
+   714→            </div>
+   715→          </div>
+   716→
+   717→          {/* Strategy */}
+   718→          <div>
+   719→            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   720→              Strategy Template
+   721→            </label>
+   722→            <div className="flex flex-wrap gap-1.5">
+   723→              {STRATEGY_TEMPLATES.map((s) => (
+   724→                <button
+   725→                  key={s.id}
+   726→                  onClick={() => setNewStrategy(s.id)}
+   727→                  className={`px-2.5 h-7 rounded-lg text-[11px] font-bold transition-all border ${
+   728→                    newStrategy === s.id
+   729→                      ? "bg-primary text-primary-foreground border-primary glow-primary"
+   730→                      : "bg-card border-border text-muted-foreground hover:bg-card-hover"
+   731→                  }`}
+   732→                >
+   733→                  {s.label}
+   734→                </button>
+   735→              ))}
+   736→            </div>
+   737→          </div>
+   738→
+   739→          {/* Generations + Population */}
+   740→          <div className="grid grid-cols-2 gap-3">
+   741→            <div>
+   742→              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   743→                Generations
+   744→              </label>
+   745→              <input
+   746→                type="number"
+   747→                min={1}
+   748→                max={20}
+   749→                value={newGenerations}
+   750→                onChange={(e) => setNewGenerations(Number(e.target.value))}
+   751→                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+   752→              />
+   753→            </div>
+   754→            <div>
+   755→              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   756→                Population Size
+   757→              </label>
+   758→              <input
+   759→                type="number"
+   760→                min={4}
+   761→                max={50}
+   762→                value={newPopulation}
+   763→                onChange={(e) => setNewPopulation(Number(e.target.value))}
+   764→                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+   765→              />
+   766→            </div>
+   767→          </div>
+   768→
+   769→          <button
+   770→            onClick={handleCreate}
+   771→            disabled={creating || !newName.trim()}
+   772→            className="w-full h-11 rounded-xl gradient-primary text-primary-foreground font-bold flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50"
+   773→          >
+   774→            {creating ? (
+   775→              <>
+   776→                <Loader2 className="size-4 animate-spin" />
+   777→                Creating Experiment…
+   778→              </>
+   779→            ) : (
+   780→              <>
+   781→                <FlaskConical className="size-4" />
+   782→                Start Experiment
+   783→              </>
+   784→            )}
+   785→          </button>
+   786→        </div>
+   787→      )}
+   788→
+   789→      {/* Summary stats */}
+   790→      <div className="vixor-card p-4">
+   791→        <div className="grid grid-cols-3 gap-3">
+   792→          <div className="p-2 rounded-lg bg-background">
+   793→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   794→              Total Experiments
+   795→            </div>
+   796→            <div className="text-lg font-bold font-mono">{experiments.length}</div>
+   797→            {runningCount > 0 && (
+   798→              <div className="text-[10px] text-primary font-bold">{runningCount} running</div>
+   799→            )}
+   800→          </div>
+   801→          <div className="p-2 rounded-lg bg-background">
+   802→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   803→              Completed
+   804→            </div>
+   805→            <div className="text-lg font-bold font-mono text-bullish">{completedCount}</div>
+   806→          </div>
+   807→          <div className="p-2 rounded-lg bg-background">
+   808→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   809→              Best Score
+   810→            </div>
+   811→            <div className="text-lg font-bold font-mono text-primary">
+   812→              {bestScore ? (
+   813→                <>
+   814→                  {bestScore.overall}
+   815→                  <span className="text-xs text-muted-foreground ml-1">{bestScore.grade}</span>
+   816→                </>
+   817→              ) : (
+   818→                "—"
+   819→              )}
+   820→            </div>
+   821→          </div>
+   822→        </div>
+   823→      </div>
+   824→
+   825→      {/* Experiment list */}
+   826→      <div className="space-y-3">
+   827→        {experiments.length === 0 ? (
+   828→          <div className="vixor-card p-6 text-center">
+   829→            <FlaskConical className="size-8 text-muted-foreground/30 mx-auto mb-2" />
+   830→            <div className="text-sm text-muted-foreground mb-2">No experiments yet</div>
+   831→            <button
+   832→              onClick={() => setShowNewForm(true)}
+   833→              className="px-4 h-9 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary"
+   834→            >
+   835→              <Plus className="size-3.5 inline mr-1" />
+   836→              Create Your First Experiment
+   837→            </button>
+   838→          </div>
+   839→        ) : (
+   840→          experiments.map((exp) => <ExperimentCard key={exp.id} experiment={exp} />)
+   841→        )}
+   842→      </div>
+   843→    </div>
+   844→  );
+   845→}
+   846→
