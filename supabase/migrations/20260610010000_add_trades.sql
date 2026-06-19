@@ -1,7 +1,7 @@
 -- Vixor Migration: Trades Table
 -- Run this SQL in the Supabase Dashboard SQL Editor
 
-CREATE TABLE trades (
+CREATE TABLE IF NOT EXISTS trades (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   pair TEXT NOT NULL,
@@ -56,18 +56,22 @@ CREATE TABLE trades (
 -- RLS
 ALTER TABLE trades ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "Users can view own trades" ON trades;
   CREATE POLICY "Users can view own trades" ON trades FOR SELECT USING (auth.uid() = user_id);
+  DROP POLICY IF EXISTS "Users can insert own trades" ON trades;
   CREATE POLICY "Users can insert own trades" ON trades FOR INSERT WITH CHECK (auth.uid() = user_id);
+  DROP POLICY IF EXISTS "Users can update own trades" ON trades;
   CREATE POLICY "Users can update own trades" ON trades FOR UPDATE USING (auth.uid() = user_id);
+  DROP POLICY IF EXISTS "Users can delete own trades" ON trades;
   CREATE POLICY "Users can delete own trades" ON trades FOR DELETE USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- Indexes
-CREATE INDEX idx_trades_user_id ON trades(user_id);
-CREATE INDEX idx_trades_status ON trades(user_id, status);
-CREATE INDEX idx_trades_pair ON trades(user_id, pair);
-CREATE INDEX idx_trades_dates ON trades(user_id, entry_date DESC);
+CREATE INDEX IF NOT EXISTS idx_trades_user_id ON trades(user_id);
+CREATE INDEX IF NOT EXISTS idx_trades_status ON trades(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_trades_pair ON trades(user_id, pair);
+CREATE INDEX IF NOT EXISTS idx_trades_dates ON trades(user_id, entry_date DESC);
 
 -- Auto-update updated_at trigger
 DROP TRIGGER IF EXISTS trades_updated_at ON trades;

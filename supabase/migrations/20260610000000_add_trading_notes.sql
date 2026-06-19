@@ -1,4 +1,4 @@
-CREATE TABLE trading_notes (
+CREATE TABLE IF NOT EXISTS trading_notes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   pair TEXT, -- optional: link to a trading pair like "BTC/USD"
@@ -14,16 +14,20 @@ CREATE TABLE trading_notes (
 
 -- RLS
 ALTER TABLE trading_notes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own notes" ON trading_notes;
 CREATE POLICY "Users can view own notes" ON trading_notes FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can insert own notes" ON trading_notes;
 CREATE POLICY "Users can insert own notes" ON trading_notes FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can update own notes" ON trading_notes;
 CREATE POLICY "Users can update own notes" ON trading_notes FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can delete own notes" ON trading_notes;
 CREATE POLICY "Users can delete own notes" ON trading_notes FOR DELETE USING (auth.uid() = user_id);
 
 -- Indexes
-CREATE INDEX idx_trading_notes_user_id ON trading_notes(user_id);
-CREATE INDEX idx_trading_notes_pair ON trading_notes(pair) WHERE pair IS NOT NULL;
-CREATE INDEX idx_trading_notes_analysis_id ON trading_notes(analysis_id) WHERE analysis_id IS NOT NULL;
-CREATE INDEX idx_trading_notes_pinned ON trading_notes(user_id, is_pinned) WHERE is_pinned = true;
+CREATE INDEX IF NOT EXISTS idx_trading_notes_user_id ON trading_notes(user_id);
+CREATE INDEX IF NOT EXISTS idx_trading_notes_pair ON trading_notes(pair) WHERE pair IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_trading_notes_analysis_id ON trading_notes(analysis_id) WHERE analysis_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_trading_notes_pinned ON trading_notes(user_id, is_pinned) WHERE is_pinned = true;
 
 -- Auto-update updated_at
 CREATE OR REPLACE FUNCTION update_updated_at()

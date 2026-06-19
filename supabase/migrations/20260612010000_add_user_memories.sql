@@ -34,6 +34,7 @@ CREATE INDEX IF NOT EXISTS idx_user_memories_user_category ON user_memories (use
 ALTER TABLE user_memories ENABLE ROW LEVEL SECURITY;
 
 -- Service role can do everything
+DROP POLICY IF EXISTS "Service role can manage user_memories" ON user_memories;
 CREATE POLICY "Service role can manage user_memories"
   ON user_memories
   FOR ALL
@@ -42,6 +43,7 @@ CREATE POLICY "Service role can manage user_memories"
   WITH CHECK (true);
 
 -- Users can read their own memories
+DROP POLICY IF EXISTS "Users can read own memories" ON user_memories;
 CREATE POLICY "Users can read own memories"
   ON user_memories
   FOR SELECT

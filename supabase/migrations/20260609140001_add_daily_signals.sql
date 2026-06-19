@@ -1,5 +1,5 @@
 -- Daily Signals Table
-CREATE TABLE daily_signals (
+CREATE TABLE IF NOT EXISTS daily_signals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   pair TEXT NOT NULL,
   timeframe TEXT NOT NULL,
@@ -16,10 +16,10 @@ CREATE TABLE daily_signals (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_daily_signals_date ON daily_signals(signal_date);
+CREATE INDEX IF NOT EXISTS idx_daily_signals_date ON daily_signals(signal_date);
 
 -- User Strategies Table
-CREATE TABLE user_strategies (
+CREATE TABLE IF NOT EXISTS user_strategies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   name TEXT NOT NULL DEFAULT 'My Strategy',
@@ -31,7 +31,8 @@ CREATE TABLE user_strategies (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_user_strategies_user ON user_strategies(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_strategies_user ON user_strategies(user_id);
 
 ALTER TABLE user_strategies ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can manage their own strategies" ON user_strategies;
 CREATE POLICY "Users can manage their own strategies" ON user_strategies FOR ALL USING (auth.uid() = user_id);

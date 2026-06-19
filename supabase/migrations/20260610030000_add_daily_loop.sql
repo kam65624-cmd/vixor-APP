@@ -50,9 +50,13 @@ CREATE TABLE IF NOT EXISTS daily_loops (
 -- RLS
 ALTER TABLE daily_loops ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "Users can view own daily loops" ON daily_loops;
   CREATE POLICY "Users can view own daily loops" ON daily_loops FOR SELECT USING (auth.uid() = user_id);
+  DROP POLICY IF EXISTS "Users can insert own daily loops" ON daily_loops;
   CREATE POLICY "Users can insert own daily loops" ON daily_loops FOR INSERT WITH CHECK (auth.uid() = user_id);
+  DROP POLICY IF EXISTS "Users can update own daily loops" ON daily_loops;
   CREATE POLICY "Users can update own daily loops" ON daily_loops FOR UPDATE USING (auth.uid() = user_id);
+  DROP POLICY IF EXISTS "Users can delete own daily loops" ON daily_loops;
   CREATE POLICY "Users can delete own daily loops" ON daily_loops FOR DELETE USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
@@ -78,8 +82,11 @@ CREATE TABLE IF NOT EXISTS user_streaks (
 
 ALTER TABLE user_streaks ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "Users can view own streaks" ON user_streaks;
   CREATE POLICY "Users can view own streaks" ON user_streaks FOR SELECT USING (auth.uid() = user_id);
+  DROP POLICY IF EXISTS "Users can update own streaks" ON user_streaks;
   CREATE POLICY "Users can update own streaks" ON user_streaks FOR UPDATE USING (auth.uid() = user_id);
+  DROP POLICY IF EXISTS "Users can insert own streaks" ON user_streaks;
   CREATE POLICY "Users can insert own streaks" ON user_streaks FOR INSERT WITH CHECK (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

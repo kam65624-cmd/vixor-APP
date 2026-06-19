@@ -33,23 +33,30 @@ ALTER TABLE copilot_messages ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   -- Conversations: users can view own
+  DROP POLICY IF EXISTS "Users can view own conversations" ON copilot_conversations;
   CREATE POLICY "Users can view own conversations" ON copilot_conversations FOR SELECT USING (auth.uid() = user_id);
   -- Conversations: users can insert own
+  DROP POLICY IF EXISTS "Users can insert own conversations" ON copilot_conversations;
   CREATE POLICY "Users can insert own conversations" ON copilot_conversations FOR INSERT WITH CHECK (auth.uid() = user_id);
   -- Conversations: users can update own
+  DROP POLICY IF EXISTS "Users can update own conversations" ON copilot_conversations;
   CREATE POLICY "Users can update own conversations" ON copilot_conversations FOR UPDATE USING (auth.uid() = user_id);
   -- Conversations: users can delete own
+  DROP POLICY IF EXISTS "Users can delete own conversations" ON copilot_conversations;
   CREATE POLICY "Users can delete own conversations" ON copilot_conversations FOR DELETE USING (auth.uid() = user_id);
 
   -- Messages: users can view own (via conversation ownership)
+  DROP POLICY IF EXISTS "Users can view own messages" ON copilot_messages;
   CREATE POLICY "Users can view own messages" ON copilot_messages FOR SELECT USING (
     conversation_id IN (SELECT id FROM copilot_conversations WHERE user_id = auth.uid())
   );
   -- Messages: users can insert own
+  DROP POLICY IF EXISTS "Users can insert own messages" ON copilot_messages;
   CREATE POLICY "Users can insert own messages" ON copilot_messages FOR INSERT WITH CHECK (
     conversation_id IN (SELECT id FROM copilot_conversations WHERE user_id = auth.uid())
   );
   -- Messages: users can delete own
+  DROP POLICY IF EXISTS "Users can delete own messages" ON copilot_messages;
   CREATE POLICY "Users can delete own messages" ON copilot_messages FOR DELETE USING (
     conversation_id IN (SELECT id FROM copilot_conversations WHERE user_id = auth.uid())
   );

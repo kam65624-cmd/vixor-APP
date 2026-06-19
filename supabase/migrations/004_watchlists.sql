@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS watchlist_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   watchlist_id UUID NOT NULL REFERENCES watchlists(id) ON DELETE CASCADE,
   pair TEXT NOT NULL,
-  category TEXT NOT NULL DEFAULT 'forex', -- 'forex', 'crypto', 'commodity', 'stocks'
+  category TEXT NOT NULL DEFAULT 'forex',
   notes TEXT,
   sort_order INTEGER NOT NULL DEFAULT 0,
   added_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -29,24 +29,42 @@ CREATE INDEX IF NOT EXISTS idx_watchlist_items_watchlist_id ON watchlist_items(w
 ALTER TABLE watchlists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE watchlist_items ENABLE ROW LEVEL SECURITY;
 
--- Policies
-CREATE POLICY "Users can view own watchlists" ON watchlists FOR SELECT USING (user_id = auth.uid());
-CREATE POLICY "Users can create own watchlists" ON watchlists FOR INSERT WITH CHECK (user_id = auth.uid());
-CREATE POLICY "Users can update own watchlists" ON watchlists FOR UPDATE USING (user_id = auth.uid());
-CREATE POLICY "Users can delete own watchlists" ON watchlists FOR DELETE USING (user_id = auth.uid());
+-- Policies (idempotent — DROP IF EXISTS before CREATE)
+DO $$ BEGIN
+  -- watchlists policies
+  DROP POLICY IF EXISTS "Users can view own watchlists" ON watchlists;
+  CREATE POLICY "Users can view own watchlists" ON watchlists FOR SELECT USING (user_id = auth.uid());
 
-CREATE POLICY "Users can view items in own watchlists" ON watchlist_items FOR SELECT USING (
-  watchlist_id IN (SELECT id FROM watchlists WHERE user_id = auth.uid())
-);
-CREATE POLICY "Users can add items to own watchlists" ON watchlist_items FOR INSERT WITH CHECK (
-  watchlist_id IN (SELECT id FROM watchlists WHERE user_id = auth.uid())
-);
-CREATE POLICY "Users can update items in own watchlists" ON watchlist_items FOR UPDATE USING (
-  watchlist_id IN (SELECT id FROM watchlists WHERE user_id = auth.uid())
-);
-CREATE POLICY "Users can delete items from own watchlists" ON watchlist_items FOR DELETE USING (
-  watchlist_id IN (SELECT id FROM watchlists WHERE user_id = auth.uid())
-);
+  DROP POLICY IF EXISTS "Users can create own watchlists" ON watchlists;
+  CREATE POLICY "Users can create own watchlists" ON watchlists FOR INSERT WITH CHECK (user_id = auth.uid());
+
+  DROP POLICY IF EXISTS "Users can update own watchlists" ON watchlists;
+  CREATE POLICY "Users can update own watchlists" ON watchlists FOR UPDATE USING (user_id = auth.uid());
+
+  DROP POLICY IF EXISTS "Users can delete own watchlists" ON watchlists;
+  CREATE POLICY "Users can delete own watchlists" ON watchlists FOR DELETE USING (user_id = auth.uid());
+
+  -- watchlist_items policies
+  DROP POLICY IF EXISTS "Users can view items in own watchlists" ON watchlist_items;
+  CREATE POLICY "Users can view items in own watchlists" ON watchlist_items FOR SELECT USING (
+    watchlist_id IN (SELECT id FROM watchlists WHERE user_id = auth.uid())
+  );
+
+  DROP POLICY IF EXISTS "Users can add items to own watchlists" ON watchlist_items;
+  CREATE POLICY "Users can add items to own watchlists" ON watchlist_items FOR INSERT WITH CHECK (
+    watchlist_id IN (SELECT id FROM watchlists WHERE user_id = auth.uid())
+  );
+
+  DROP POLICY IF EXISTS "Users can update items in own watchlists" ON watchlist_items;
+  CREATE POLICY "Users can update items in own watchlists" ON watchlist_items FOR UPDATE USING (
+    watchlist_id IN (SELECT id FROM watchlists WHERE user_id = auth.uid())
+  );
+
+  DROP POLICY IF EXISTS "Users can delete items from own watchlists" ON watchlist_items;
+  CREATE POLICY "Users can delete items from own watchlists" ON watchlist_items FOR DELETE USING (
+    watchlist_id IN (SELECT id FROM watchlists WHERE user_id = auth.uid())
+  );
+END $$;
 
 -- Auto-create default watchlist for new users
 CREATE OR REPLACE FUNCTION create_default_watchlist()
@@ -58,7 +76,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE OR REPLACE TRIGGER on_profile_created
+DROP TRIGGER IF EXISTS on_profile_created ON profiles;
+CREATE TRIGGER on_profile_created
   AFTER INSERT ON profiles
   FOR EACH ROW
   EXECUTE FUNCTION create_default_watchlist();

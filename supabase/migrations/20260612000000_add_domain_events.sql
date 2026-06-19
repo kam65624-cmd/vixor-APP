@@ -28,6 +28,7 @@ CREATE INDEX IF NOT EXISTS idx_domain_events_trace_id ON domain_events (trace_id
 ALTER TABLE domain_events ENABLE ROW LEVEL SECURITY;
 
 -- Service role can do everything
+DROP POLICY IF EXISTS "Service role can manage domain_events" ON domain_events;
 CREATE POLICY "Service role can manage domain_events"
   ON domain_events
   FOR ALL
@@ -36,6 +37,7 @@ CREATE POLICY "Service role can manage domain_events"
   WITH CHECK (true);
 
 -- Regular users can read their own events (future: user-scoped events)
+DROP POLICY IF EXISTS "Users can read domain_events" ON domain_events;
 CREATE POLICY "Users can read domain_events"
   ON domain_events
   FOR SELECT

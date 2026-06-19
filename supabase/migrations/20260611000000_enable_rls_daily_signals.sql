@@ -10,18 +10,21 @@
 ALTER TABLE daily_signals ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Any authenticated user can read signals (they are meant to be visible)
+DROP POLICY IF EXISTS "Anyone can read daily signals" ON daily_signals;
 CREATE POLICY "Anyone can read daily signals"
   ON daily_signals
   FOR SELECT
   USING (true);
 
 -- Policy: Only service role can insert signals (cron job generates them)
+DROP POLICY IF EXISTS "Service role can insert daily signals" ON daily_signals;
 CREATE POLICY "Service role can insert daily signals"
   ON daily_signals
   FOR INSERT
   WITH CHECK (false); -- Block direct inserts from anon/authenticated users; use service role only
 
 -- Policy: Only service role can update signals
+DROP POLICY IF EXISTS "Service role can update daily signals" ON daily_signals;
 CREATE POLICY "Service role can update daily signals"
   ON daily_signals
   FOR UPDATE
@@ -29,6 +32,7 @@ CREATE POLICY "Service role can update daily signals"
   WITH CHECK (false);
 
 -- Policy: Only service role can delete signals
+DROP POLICY IF EXISTS "Service role can delete daily signals" ON daily_signals;
 CREATE POLICY "Service role can delete daily signals"
   ON daily_signals
   FOR DELETE
