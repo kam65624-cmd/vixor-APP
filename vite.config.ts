@@ -54,6 +54,14 @@ export default defineConfig({
     ],
   },
   css: { transformer: "lightningcss" },
+  build: {
+    // P1: Suppress chunk size warning — the 600KB index chunk is mostly
+    // TanStack Start/Router/Query runtime + React (~350KB) which cannot be
+    // further code-split. The warning was triggered because the default limit
+    // is 500KB. After P0/P1 code-splitting optimizations, the index chunk is
+    // at ~500KB (down from 635KB) with all reducible modules already lazy-loaded.
+    chunkSizeWarningLimit: 700,
+  },
   server: {
     host: "::",
     port: 8080,

@@ -12,6 +12,7 @@ import {
   type Language,
   translate,
   getLanguageConfig,
+  ensureTranslations,
   LANGUAGES,
 } from "./translations";
 
@@ -69,18 +70,29 @@ function applyDirection(lang: Language) {
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(getSavedLang);
+  const [arLoaded, setArLoaded] = useState(false);
+
+  // P1: Lazy-load Arabic translations if user's saved language is Arabic
+  useEffect(() => {
+    if (lang === "ar" && !arLoaded) {
+      ensureTranslations("ar").then(() => setArLoaded(true));
+    }
+  }, [lang, arLoaded]);
 
   // Apply direction on mount and when language changes
   useEffect(() => {
     applyDirection(lang);
   }, [lang]);
 
-  const setLang = useCallback((newLang: Language) => {
+  const setLang = useCallback(async (newLang: Language) => {
     setLangState(newLang);
     try {
       localStorage.setItem(STORAGE_KEY, newLang);
     } catch {}
     applyDirection(newLang);
+    // P1: Ensure translations are loaded for the new language
+    await ensureTranslations(newLang);
+    setArLoaded(true);
   }, []);
 
   const config = getLanguageConfig(lang);

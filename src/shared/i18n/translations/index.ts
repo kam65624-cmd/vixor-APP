@@ -1,7 +1,26 @@
 import en, { type Translations } from "./en";
-import ar from "./ar";
 
-export const translations: Record<string, Translations> = { en, ar };
+// P1: Lazy-load Arabic translations — saves ~23KB from root chunk
+// Only loaded when user switches to Arabic, not on first page load.
+type TranslationLoader = () => Promise<{ default: Translations }>;
+const langLoaders: Record<string, TranslationLoader> = {
+  ar: () => import("./ar"),
+};
+
+// Synchronous translations map — en is always available
+export const translations: Record<string, Translations> = { en };
+
+/**
+ * Ensure a language's translations are loaded into the map.
+ * Call this before translate() if using a lazy-loaded language.
+ */
+export async function ensureTranslations(lang: string): Promise<void> {
+  if (translations[lang]) return; // already loaded
+  const loader = langLoaders[lang];
+  if (!loader) return; // no loader for this language (already static)
+  const mod = await loader();
+  translations[lang] = mod.default;
+}
 
 export type Language = "en" | "ar";
 

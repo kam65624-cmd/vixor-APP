@@ -1,13 +1,14 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Compass, Plus, Brain, Briefcase, Bell, User } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState, useCallback, memo } from "react";
-import { OnboardingModal } from "./OnboardingModal";
-import { supabase } from "@/shared/supabase/client";
+import { lazy, Suspense, useEffect, useRef, useState, useCallback, memo } from "react";
 import { getTelegramInitData } from "@/shared/telegram";
-import { linkTelegramAccount } from "@/lib/vixor.functions";
-import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useRenderGuard } from "@/shared/hooks/use-render-guard";
+
+// P0: Lazy-load OnboardingModal — shown once, should not be in root chunk
+const OnboardingModal = lazy(() =>
+  import("./OnboardingModal").then((m) => ({ default: m.OnboardingModal }))
+);
 
 const tabs = [
   { to: "/", label: "Home", icon: Home, match: (p: string) => p === "/" },
@@ -50,8 +51,6 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const signedIn = path !== "/auth";
 
-  const linkTelegram = useStableServerFn(linkTelegramAccount);
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (signedIn && !localStorage.getItem("vixor-onboarded")) {
@@ -62,6 +61,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [signedIn]);
 
   const telegramLinkedRef = useRef(false);
+  // P0: Dynamic imports for Telegram linking — avoids pulling supabase + barrel into root chunk
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!signedIn || telegramLinkedRef.current) return;
@@ -72,13 +72,16 @@ export function AppShell({ children }: { children: ReactNode }) {
     const initData = getTelegramInitData();
     if (initData) {
       telegramLinkedRef.current = true;
-      linkTelegram({ data: { initData } })
-        .then(() => {
-          localStorage.setItem("vixor-tg-linked", "1");
-        })
-        .catch((err) => console.error("Failed to link Telegram:", err));
+      // Dynamic import: pulls linkTelegramAccount only when needed, not at page load
+      import("@/domains/user/functions").then(({ linkTelegramAccount }) =>
+        linkTelegramAccount({ data: { initData } })
+          .then(() => {
+            localStorage.setItem("vixor-tg-linked", "1");
+          })
+          .catch((err) => console.error("Failed to link Telegram:", err))
+      );
     }
-  }, [signedIn, linkTelegram]);
+  }, [signedIn]);
 
   const closeOnboarding = useCallback(() => {
     localStorage.setItem("vixor-onboarded", "1");
@@ -106,7 +109,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
       <BottomNav path={path} tabs={tabs} />
 
-      {showOnboarding && <OnboardingModal onClose={closeOnboarding} />}
+      {showOnboarding && (
+        <Suspense fallback={null}>
+          <OnboardingModal onClose={closeOnboarding} />
+        </Suspense>
+      )}
     </div>
   );
 }
