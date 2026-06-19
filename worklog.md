@@ -31,3 +31,22 @@ Stage Summary:
 - payments table created in Supabase production
 - All security gaps from Phase 3 addressed
 - Remaining items: BotFather /setdomain, Telegram Stars live testing, additional LLM keys
+
+---
+Task ID: 2
+Agent: Super Z (Main)
+Task: Fix TradingView chart loading failure
+
+Work Log:
+- Analyzed user screenshot showing "Chart Loading Failed" on Charts page
+- Identified root cause: CSP `script-src 'self'` blocks external TradingView script from s3.tradingview.com
+- Updated vite.config.ts CSP: added s3.tradingview.com to script-src, img-src, connect-src
+- Replaced deprecated tv.js approach with modern Advanced Chart Widget embed
+- Added retry button for better UX on load failure
+- Build passes (13.51s), pushed commit 69a12c3
+- Vercel deployment READY: dpl_9Swt1BG69UywiDLd5rq3zUQWPXG5
+
+Stage Summary:
+- TradingView chart now loads via modern embed-widget-advanced-chart.js
+- CSP headers allow TradingView scripts/images/connections
+- Retry button on failure improves user experience

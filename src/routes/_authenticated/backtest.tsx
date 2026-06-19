@@ -19,6 +19,8 @@ import {
   AlertTriangle,
   ShoppingBag,
   ArrowRight,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import type {
   BacktestResult,
@@ -81,8 +83,8 @@ const defaultForm: BacktestFormState = {
   riskPercent: 2,
   startDate: "2024-01-01",
   endDate: "2024-12-31",
-  commission: 0.06,
-  slippage: 0.02,
+  commission: 0.1,
+  slippage: 0.05,
 };
 
 // ---------------------------------------------------------------------------
@@ -123,8 +125,8 @@ function BacktestPage() {
           riskPercent: form.riskPercent,
           startDate: form.startDate || undefined,
           endDate: form.endDate || undefined,
-          commission: form.commission,
-          slippage: form.slippage,
+          commission: form.commission / 100, // UI uses percentage, backend uses fraction
+          slippage: form.slippage / 100,
         },
       });
       setResult(data);
@@ -529,6 +531,43 @@ function BacktestPage() {
               </div>
             </div>
           </div>
+
+          {/* Trade List */}
+          {result.trades.length > 0 && (
+            <div className="vixor-card p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="size-4 text-primary" />
+                <span className="text-sm font-bold">{t("backtest.tradeList") || "Trade List"}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-auto">
+                  {result.trades.length} trades
+                </span>
+              </div>
+              <div className="space-y-1.5 max-h-72 overflow-y-auto scrollbar-hide">
+                {result.trades.map((trade, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background text-xs"
+                  >
+                    <span className={`font-bold w-5 text-center ${trade.netPnl >= 0 ? "text-bullish" : "text-bearish"}`}>
+                      {trade.netPnl >= 0 ? "+" : ""}
+                    </span>
+                    <span className="font-bold font-mono w-14 text-right">
+                      ${Math.abs(trade.netPnl).toFixed(0)}
+                    </span>
+                    <span className="text-muted-foreground flex-1 truncate">
+                      {trade.tag || trade.exitReason || `#${i + 1}`}
+                    </span>
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                      {trade.durationBars}bars
+                    </span>
+                    <span className={`text-[10px] font-bold ${trade.netPnl >= 0 ? "text-bullish" : "text-bearish"}`}>
+                      {trade.rMultiple?.toFixed(1) || "—"}R
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
