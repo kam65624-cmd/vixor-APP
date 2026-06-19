@@ -48,9 +48,26 @@ export default defineEventHandler(async (event) => {
     if (body.message && body.message.successful_payment) {
       const payment = body.message.successful_payment as Record<string, any>;
       const payload = payment.invoice_payload as string;
+      const chargeId = payment.provider_payment_charge_id as string;
 
       if (payload) {
-        const [userId, packId] = payload.split("_");
+        // Parse payload: userId_packId_timestamp
+        const parts = payload.split("_");
+        const userId = parts[0];
+        const packId = parts[1];
+
+        // Update the payment record to confirmed
+        if (chargeId) {
+          await supabaseAdmin
+            .from("payments")
+            .update({
+              telegram_charge_id: chargeId,
+              status: "confirmed",
+              confirmed_at: new Date().toISOString(),
+            })
+            .eq("payload", payload)
+            .eq("status", "pending");
+        }
 
         const { data: pack } = await supabaseAdmin
           .from("point_packs")
@@ -65,7 +82,7 @@ export default defineEventHandler(async (event) => {
             _user: userId,
             _amount: totalPoints,
             _reason: "pack_purchase" as any,
-            _meta: { pack_id: packId, telegram_payment: payment.provider_payment_charge_id },
+            _meta: { pack_id: packId, telegram_payment: chargeId },
           });
         }
       }

@@ -8,6 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import { structuredLogger } from "@/shared/structured-logger";
 
 // ---------- ME / PROFILE ----------
 export const getMe = createServerFn({ method: "GET" })
@@ -68,8 +69,15 @@ export const getPremiumPlans = createServerFn({ method: "GET" })
 //
 
 /**
- * Verify a Telegram Stars payment by calling the getPayments API.
- * Returns true only if the charge is confirmed and matches the expected payload.
+ * Verify a Telegram Stars payment by calling the Bot API.
+ *
+ * Telegram Stars flow:
+ *   1. Server creates an invoice via createInvoiceLink (stores payload as userId_packId_timestamp)
+ *   2. User pays → Telegram sends successful_payment webhook with the same payload
+ *   3. The webhook handler stores the confirmed chargeId in `payments` table
+ *   4. This function verifies the chargeId exists in confirmed payments
+ *
+ * Returns true only if the payment is confirmed and matches the expected payload.
  */
 async function verifyStarsPayment(
   botToken: string,
@@ -77,39 +85,65 @@ async function verifyStarsPayment(
   expectedPayload: string,
 ): Promise<boolean> {
   try {
-    const res = await fetch(
-      `https://api.telegram.org/bot${botToken}/getSuccessfulPayment`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          // Telegram API doesn't have getSuccessfulPayment; use pre_checkout_query instead
-          // We verify by checking the charge was created for this user
-        }),
-      },
-    );
-    // For Telegram Stars, the webhook delivers `pre_checkout_query` → `successful_payment`.
-    // The chargeId is verified server-side when the webhook confirms the payment.
-    // Here we check that the payload prefix matches (user_id + packId).
-    const payloadPrefix = expectedPayload.split("_").slice(0, 2).join("_");
-    if (chargeId.startsWith(payloadPrefix)) return true;
+    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+    // ── Method 1: Database lookup (webhook-confirmed payments) ──
+    // Check if this chargeId was confirmed by the Telegram webhook
+    const { data: confirmedPayment } = await supabaseAdmin
+      .from("payments")
+      .select("id, payload, status")
+      .eq("telegram_charge_id", chargeId)
+      .eq("status", "confirmed")
+      .maybeSingle();
+
+    if (confirmedPayment && confirmedPayment.payload === expectedPayload) {
+      return true;
+    }
+
+    // ── Method 2: Telegram Bot API verification (fallback) ──
+    // Use checkTransaction to verify with Telegram directly
+    // @ts-expect-error Telegram Bot API endpoint
+    const res = await fetch(`https://api.telegram.org/bot${botToken}/checkTransaction`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        charge_id: chargeId,
+      }),
+    });
+
+    if (res.ok) {
+      const result = await res.json();
+      // checkTransaction returns { ok: true, result: { ... } } if valid
+      if (result.ok && result.result) {
+        // Verify the payload from the transaction matches what we expected
+        if (result.result.invoice_payload === expectedPayload) {
+          return true;
+        }
+      }
+    }
+
     return false;
   } catch {
+    structuredLogger("payment", {
+      level: "error",
+      kind: "verification_failed",
+      chargeId,
+      expectedPayload,
+    });
     return false;
   }
 }
 
 export const purchasePack = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(
-    (d: unknown) =>
-      z
-        .object({
-          packId: z.string().min(1).max(64),
-          paymentMethod: z.enum(["stars", "free"]).optional().default("free"),
-          telegramChargeId: z.string().optional(),
-        })
-        .parse(d),
+  .validator((d: unknown) =>
+    z
+      .object({
+        packId: z.string().min(1).max(64),
+        paymentMethod: z.enum(["stars", "free"]).optional().default("free"),
+        telegramChargeId: z.string().optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { userId } = context;
@@ -157,15 +191,14 @@ export const purchasePack = createServerFn({ method: "POST" })
 
 export const subscribePremium = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(
-    (d: unknown) =>
-      z
-        .object({
-          planId: z.string().min(1).max(64),
-          paymentMethod: z.enum(["stars", "free"]).optional().default("free"),
-          telegramChargeId: z.string().optional(),
-        })
-        .parse(d),
+  .validator((d: unknown) =>
+    z
+      .object({
+        planId: z.string().min(1).max(64),
+        paymentMethod: z.enum(["stars", "free"]).optional().default("free"),
+        telegramChargeId: z.string().optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { userId } = context;
@@ -343,6 +376,18 @@ export const createStarsInvoice = createServerFn({ method: "POST" })
 
     const result = await res.json();
     if (!result.ok) throw new Error(result.description || "Failed to create invoice");
+
+    // Store the payment record so the webhook and verification can find it
+    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+    await supabaseAdmin.from("payments").insert({
+      user_id: context.userId,
+      telegram_charge_id: null, // Will be set when webhook confirms
+      payload: payload,
+      amount_stars: data.amountStars,
+      pack_id: data.packId,
+      status: "pending",
+      telegram_invoice_url: result.result,
+    });
 
     return { invoiceUrl: result.result };
   });
