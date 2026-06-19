@@ -10,6 +10,7 @@
 
 import { fetchPrice } from "@/domains/market/server/price-fetcher";
 import { VixorEvents } from "@/shared/events";
+import { notificationRouter } from "@/shared/notifications";
 
 interface AlertRow {
   id: string;
@@ -240,25 +241,24 @@ export async function checkAllAlerts(): Promise<{
           currentPrice,
         });
 
-        // Create notification
+        // Route notification via NotificationRouter (handles telegram + in-app + email + webhook)
         const conditionText = formatCondition(alert.condition);
-        const title = `🔔 ${alert.pair} Alert Triggered`;
-        const body = `${alert.pair} is now ${conditionText} $${formatAlertPrice(Number(alert.target_price), alert.pair)}. Current: $${formatAlertPrice(currentPrice, alert.pair)}`;
-
-        void supabaseAdmin.from("notifications").insert({
-          user_id: alert.user_id,
-          title,
-          body,
-          type: "alert",
+        void notificationRouter.send({
+          userId: alert.user_id,
+          title: `🔔 {{symbol}} Alert Triggered`,
+          body: `{{symbol}} is now ${conditionText} $${formatAlertPrice(Number(alert.target_price), alert.pair)}. Current: $${formatAlertPrice(currentPrice, alert.pair)}`,
+          payload: {
+            symbol: alert.pair,
+            targetPrice: alert.target_price,
+            currentPrice,
+            timeframe: alert.timeframe,
+            note: alert.note ?? "",
+            alertId: alert.id,
+            condition: alert.condition,
+          },
+          severity: "info",
+          channels: ["telegram", "in-app"],
         });
-
-        // Send Telegram message if user has linked Telegram
-        if (botToken) {
-          const profile = profileMap.get(alert.user_id);
-          if (profile?.telegram_id) {
-            await sendTelegramAlert(botToken, profile.telegram_id, alert, currentPrice);
-          }
-        }
       } else {
         // Update current_price for next check (for crosses_up/crosses_down)
         void supabaseAdmin

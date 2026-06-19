@@ -27,7 +27,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState, useMemo } from "react";
-import { getAnalysis } from "@/lib/vixor.functions";
+import { getAnalysis } from "@/domains/analysis/functions";
 import { getNotesByAnalysis, deleteNote } from "@/domains/notes/functions";
 import type { TradingNote, Mood } from "@/domains/notes/types";
 import { NoteEditorDialog } from "@/components/vixor/NoteEditorDialog";

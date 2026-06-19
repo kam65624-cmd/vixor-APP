@@ -1,6 +1,6 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
-import { renderErrorPage } from "./lib/error-page";
+import { renderErrorPage } from "@/shared/error-page";
 import { attachSupabaseAuth } from "@/shared/supabase/auth-attacher";
 import { structuredLogger } from "@/shared/structured-logger";
 import { metrics } from "@/shared/metrics-store";

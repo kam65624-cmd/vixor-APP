@@ -1,7 +1,8 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { askCopilot, getConsensus, createConversation, listConversations, getConversation, saveMessage, deleteConversation, updateConversationTitle } from "@/lib/vixor.functions";
+import { askCopilot, getConsensus } from "@/domains/copilot/functions";
+import { createConversation, listConversations, getConversation, saveMessage, deleteConversation, updateConversationTitle } from "@/domains/copilot/conversations";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
 import { PaginationBar } from "@/components/vixor/PaginationBar";

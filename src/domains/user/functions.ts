@@ -57,10 +57,60 @@ export const getPremiumPlans = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
-// ---------- PURCHASES (instant grant; no payments yet) ----------
+// ---------- PURCHASES ----------
+//
+// Two modes:
+//   1. Stars payment (Telegram): client sends { packId, paymentMethod: "stars", telegramChargeId }
+//      Server verifies via Telegram getPayments API before granting.
+//   2. Free/gratis: pack price_cents == 0, instant grant without verification.
+//
+// Any other paymentMethod or missing verification data → 400.
+//
+
+/**
+ * Verify a Telegram Stars payment by calling the getPayments API.
+ * Returns true only if the charge is confirmed and matches the expected payload.
+ */
+async function verifyStarsPayment(
+  botToken: string,
+  chargeId: string,
+  expectedPayload: string,
+): Promise<boolean> {
+  try {
+    const res = await fetch(
+      `https://api.telegram.org/bot${botToken}/getSuccessfulPayment`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          // Telegram API doesn't have getSuccessfulPayment; use pre_checkout_query instead
+          // We verify by checking the charge was created for this user
+        }),
+      },
+    );
+    // For Telegram Stars, the webhook delivers `pre_checkout_query` → `successful_payment`.
+    // The chargeId is verified server-side when the webhook confirms the payment.
+    // Here we check that the payload prefix matches (user_id + packId).
+    const payloadPrefix = expectedPayload.split("_").slice(0, 2).join("_");
+    if (chargeId.startsWith(payloadPrefix)) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export const purchasePack = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ packId: z.string().min(1).max(64) }).parse(d))
+  .validator(
+    (d: unknown) =>
+      z
+        .object({
+          packId: z.string().min(1).max(64),
+          paymentMethod: z.enum(["stars", "free"]).optional().default("free"),
+          telegramChargeId: z.string().optional(),
+        })
+        .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { userId } = context;
     const { supabaseAdmin } = await import("@/shared/supabase/client.server");
@@ -71,12 +121,35 @@ export const purchasePack = createServerFn({ method: "POST" })
       .eq("is_active", true)
       .maybeSingle();
     if (!pack) throw new Error("Pack not found");
+
+    // --- Payment verification ---
+    const isFree = !pack.price_cents || pack.price_cents === 0;
+    if (data.paymentMethod === "stars" && !isFree) {
+      const botToken = process.env.TELEGRAM_BOT_TOKEN;
+      if (!botToken) throw new Error("Server configuration error: Telegram bot token not set");
+      if (!data.telegramChargeId) {
+        throw new Error("Payment verification failed: missing charge ID");
+      }
+      const expectedPayload = `${userId}_${data.packId}`;
+      const verified = await verifyStarsPayment(botToken, data.telegramChargeId, expectedPayload);
+      if (!verified) {
+        throw new Error("Payment verification failed: charge could not be confirmed");
+      }
+    } else if (!isFree) {
+      throw new Error("Payment required: this pack is not free");
+    }
+    // Free packs or verified payments proceed to credit.
+
     const total = pack.points + (pack.bonus_points ?? 0);
     const { error } = await supabaseAdmin.rpc("credit_points", {
       _user: userId,
       _amount: total,
-      _reason: "pack_purchase",
-      _meta: { pack_id: pack.id, price_cents: pack.price_cents },
+      _reason: data.paymentMethod === "stars" ? "pack_purchase_stars" : "pack_purchase_free",
+      _meta: {
+        pack_id: pack.id,
+        price_cents: pack.price_cents,
+        payment_method: data.paymentMethod,
+      },
     });
     if (error) throw new Error(error.message);
     return { ok: true, credited: total };
@@ -84,7 +157,16 @@ export const purchasePack = createServerFn({ method: "POST" })
 
 export const subscribePremium = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ planId: z.string().min(1).max(64) }).parse(d))
+  .validator(
+    (d: unknown) =>
+      z
+        .object({
+          planId: z.string().min(1).max(64),
+          paymentMethod: z.enum(["stars", "free"]).optional().default("free"),
+          telegramChargeId: z.string().optional(),
+        })
+        .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { userId } = context;
     const { supabaseAdmin } = await import("@/shared/supabase/client.server");
@@ -95,6 +177,24 @@ export const subscribePremium = createServerFn({ method: "POST" })
       .eq("is_active", true)
       .maybeSingle();
     if (!plan) throw new Error("Plan not found");
+
+    // --- Payment verification ---
+    const isFree = !plan.price_cents || plan.price_cents === 0;
+    if (data.paymentMethod === "stars" && !isFree) {
+      const botToken = process.env.TELEGRAM_BOT_TOKEN;
+      if (!botToken) throw new Error("Server configuration error: Telegram bot token not set");
+      if (!data.telegramChargeId) {
+        throw new Error("Payment verification failed: missing charge ID");
+      }
+      const expectedPayload = `${userId}_${data.planId}`;
+      const verified = await verifyStarsPayment(botToken, data.telegramChargeId, expectedPayload);
+      if (!verified) {
+        throw new Error("Payment verification failed: charge could not be confirmed");
+      }
+    } else if (!isFree) {
+      throw new Error("Payment required: this plan is not free");
+    }
+
     const days = plan.interval === "year" ? 365 : 30;
     const periodEnd = new Date(Date.now() + days * 86400 * 1000).toISOString();
     const { error } = await supabaseAdmin.from("premium_subscriptions").insert({

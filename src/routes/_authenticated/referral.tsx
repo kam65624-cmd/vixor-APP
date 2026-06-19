@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Copy, Share2, Users, Crown } from "lucide-react";
 import { SectionTitle } from "@/components/vixor/atoms";
 import { useState } from "react";
-import { getMe, getReferralStats, claimReferral } from "@/lib/vixor.functions";
+import { getMe, getReferralStats, claimReferral } from "@/domains/user/functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";

@@ -15,7 +15,8 @@ import {
   Flame,
   Star,
 } from "lucide-react";
-import { getMe, getReferralStats, listAnalyses } from "@/lib/vixor.functions";
+import { getMe, getReferralStats } from "@/domains/user/functions";
+import { listAnalyses } from "@/domains/analysis/functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/shared/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";

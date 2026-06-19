@@ -1,0 +1,1307 @@
+     1→import { createFileRoute } from "@tanstack/react-router";
+     2→import {
+     3→  Compass,
+     4→  Search,
+     5→  Flame,
+     6→  ArrowUpRight,
+     7→  ArrowDownRight,
+     8→  Layers,
+     9→  BarChart2,
+    10→  ExternalLink,
+    11→  Plus,
+    12→  Trash2,
+    13→  Eye,
+    14→  ChevronUp,
+    15→  ChevronDown,
+    16→  MessageSquare,
+    17→  StickyNote,
+    18→  CalendarClock,
+    19→  Pencil,
+    20→  ListPlus,
+    21→  MoreHorizontal,
+    22→} from "lucide-react";
+    23→import { useState, useMemo, useCallback } from "react";
+    24→import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+    25→import {
+    26→  getMarketNews,
+    27→  getMarketPrices,
+    28→  getDailySignals,
+    29→  getWatchlists,
+    30→  addToWatchlist,
+    31→  removeFromWatchlist,
+    32→  updateWatchlistItem,
+    33→  getEconomicCalendar,
+    34→  createWatchlist,
+    35→  deleteWatchlist,
+    36→  renameWatchlist,
+    37→} from "@/lib/vixor.functions";
+    38→import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+    39→import { Skeleton } from "@/components/ui/skeleton";
+    40→import { RecBadge } from "@/components/vixor/atoms";
+    41→import { useI18n } from "@/shared/i18n";
+    42→import {
+    43→  Dialog,
+    44→  DialogContent,
+    45→  DialogHeader,
+    46→  DialogTitle,
+    47→  DialogFooter,
+    48→} from "@/components/ui/dialog";
+    49→import {
+    50→  DropdownMenu,
+    51→  DropdownMenuContent,
+    52→  DropdownMenuItem,
+    53→  DropdownMenuSeparator,
+    54→  DropdownMenuTrigger,
+    55→} from "@/components/ui/dropdown-menu";
+    56→import {
+    57→  AlertDialog,
+    58→  AlertDialogAction,
+    59→  AlertDialogCancel,
+    60→  AlertDialogContent,
+    61→  AlertDialogDescription,
+    62→  AlertDialogFooter,
+    63→  AlertDialogHeader,
+    64→  AlertDialogTitle,
+    65→} from "@/components/ui/alert-dialog";
+    66→
+    67→export const Route = createFileRoute("/_authenticated/discover")({
+    68→  head: () => ({ meta: [{ title: "Discover — Vixor" }] }),
+    69→  component: Discover,
+    70→});
+    71→
+    72→const TABS = [
+    73→  "discover.watchlist",
+    74→  "discover.scanner",
+    75→  "discover.calendar",
+    76→  "discover.news",
+    77→  "discover.heatmap",
+    78→] as const;
+    79→
+    80→function DiscoverNews() {
+    81→  const { t } = useI18n();
+    82→  const fetchMarketNews = useStableServerFn(getMarketNews);
+    83→
+    84→  const [category, setCategory] = useState<"forex" | "general" | "crypto" | "merger">("forex");
+    85→
+    86→  const {
+    87→    data: news = [],
+    88→    isLoading,
+    89→    error,
+    90→  } = useQuery(
+    91→    useMemo(
+    92→      () => ({
+    93→        queryKey: ["marketNews", category] as const,
+    94→        queryFn: () => fetchMarketNews({ data: { category } }),
+    95→        refetchInterval: 60_000,
+    96→        staleTime: 30_000,
+    97→      }),
+    98→      [fetchMarketNews, category],
+    99→    ),
+   100→  );
+   101→
+   102→  return (
+   103→    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+   104→      {/* Category Sub-tabs */}
+   105→      <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+   106→        {(["forex", "general", "crypto", "merger"] as const).map((cat) => (
+   107→          <button
+   108→            key={cat}
+   109→            onClick={() => setCategory(cat)}
+   110→            className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize whitespace-nowrap border transition-all ${
+   111→              category === cat
+   112→                ? "bg-primary/10 border-primary text-primary"
+   113→                : "bg-card border-border text-muted-foreground hover:text-foreground"
+   114→            }`}
+   115→          >
+   116→            {cat === "merger"
+   117→              ? t("discover.merger")
+   118→              : cat === "forex"
+   119→                ? t("discover.forex")
+   120→                : cat === "crypto"
+   121→                  ? t("discover.crypto")
+   122→                  : t("discover.general")}
+   123→          </button>
+   124→        ))}
+   125→      </div>
+   126→
+   127→      {isLoading ? (
+   128→        <div className="space-y-3">
+   129→          {[1, 2, 3, 4].map((i) => (
+   130→            <div key={i} className="vixor-card p-4 flex gap-4">
+   131→              <div className="flex-1 space-y-2">
+   132→                <div className="flex gap-2">
+   133→                  <Skeleton className="h-4 w-16" />
+   134→                  <Skeleton className="h-4 w-12" />
+   135→                </div>
+   136→                <Skeleton className="h-5 w-full" />
+   137→                <Skeleton className="h-4 w-4/5" />
+   138→              </div>
+   139→              <Skeleton className="h-16 w-16 rounded-lg shrink-0" />
+   140→            </div>
+   141→          ))}
+   142→        </div>
+   143→      ) : error ? (
+   144→        <div className="vixor-card p-6 text-center text-muted-foreground text-sm">
+   145→          {t("discover.failedToLoadNews")}
+   146→        </div>
+   147→      ) : news.length === 0 ? (
+   148→        <div className="vixor-card p-6 text-center text-muted-foreground text-sm">
+   149→          {t("discover.noNewsArticles")}
+   150→        </div>
+   151→      ) : (
+   152→        <div className="space-y-3">
+   153→          {news.map((item) => (
+   154→            <a
+   155→              key={item.id}
+   156→              href={item.url}
+   157→              target="_blank"
+   158→              rel="noopener noreferrer"
+   159→              className="vixor-card p-4 flex gap-4 hover:border-primary/50 transition-colors group cursor-pointer"
+   160→            >
+   161→              <div className="flex-1 min-w-0 flex flex-col justify-between">
+   162→                <div>
+   163→                  <div className="flex items-center gap-2 mb-1.5 text-[10px] font-bold text-muted-foreground">
+   164→                    <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded capitalize">
+   165→                      {item.source}
+   166→                    </span>
+   167→                    <span>•</span>
+   168→                    <span>{formatTimeAgo(item.time)}</span>
+   169→                  </div>
+   170→                  <h3 className="font-bold text-sm text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2 mb-1">
+   171→                    {item.title}
+   172→                  </h3>
+   173→                  <p className="text-xs text-muted-foreground line-clamp-2 font-medium">
+   174→                    {item.summary}
+   175→                  </p>
+   176→                </div>
+   177→                <div className="flex items-center gap-1 text-[10px] font-bold text-primary mt-2">
+   178→                  {t("discover.readFullArticle")} <ExternalLink className="size-3" />
+   179→                </div>
+   180→              </div>
+   181→              {item.image && (
+   182→                <div className="size-20 rounded-lg overflow-hidden shrink-0 border border-border bg-muted">
+   183→                  <img
+   184→                    src={item.image}
+   185→                    alt=""
+   186→                    className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+   187→                    onError={(e) => {
+   188→                      (e.target as HTMLElement).style.display = "none";
+   189→                    }}
+   190→                  />
+   191→                </div>
+   192→              )}
+   193→            </a>
+   194→          ))}
+   195→        </div>
+   196→      )}
+   197→    </div>
+   198→  );
+   199→}
+   200→
+   201→const AVAILABLE_PAIRS = [
+   202→  { pair: "BTC/USDT", category: "crypto" as const },
+   203→  { pair: "ETH/USDT", category: "crypto" as const },
+   204→  { pair: "SOL/USDT", category: "crypto" as const },
+   205→  { pair: "BNB/USDT", category: "crypto" as const },
+   206→  { pair: "XRP/USDT", category: "crypto" as const },
+   207→  { pair: "EUR/USD", category: "forex" as const },
+   208→  { pair: "GBP/USD", category: "forex" as const },
+   209→  { pair: "USD/JPY", category: "forex" as const },
+   210→  { pair: "GBP/JPY", category: "forex" as const },
+   211→  { pair: "AUD/USD", category: "forex" as const },
+   212→  { pair: "XAU/USD", category: "commodity" as const },
+   213→  { pair: "USD/CHF", category: "forex" as const },
+   214→];
+   215→
+   216→type CategoryFilter = "all" | "forex" | "crypto" | "commodity";
+   217→
+   218→function DiscoverWatchlist() {
+   219→  const { t } = useI18n();
+   220→  const queryClient = useQueryClient();
+   221→
+   222→  // Selected watchlist state
+   223→  const [selectedWatchlistId, setSelectedWatchlistId] = useState<string | null>(null);
+   224→
+   225→  // Dialog states
+   226→  const [showCreateDialog, setShowCreateDialog] = useState(false);
+   227→  const [newWatchlistName, setNewWatchlistName] = useState("");
+   228→  const [showRenameDialog, setShowRenameDialog] = useState(false);
+   229→  const [renameWatchlistName, setRenameWatchlistName] = useState("");
+   230→  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+   231→
+   232→  // Fetch all watchlists with their items
+   233→  const fetchWatchlists = useStableServerFn(getWatchlists);
+   234→  const fetchPrices = useStableServerFn(getMarketPrices);
+   235→  const addFn = useStableServerFn(addToWatchlist);
+   236→  const removeFn = useStableServerFn(removeFromWatchlist);
+   237→  const updateFn = useStableServerFn(updateWatchlistItem);
+   238→  const createFn = useStableServerFn(createWatchlist);
+   239→  const deleteFn = useStableServerFn(deleteWatchlist);
+   240→  const renameFn = useStableServerFn(renameWatchlist);
+   241→
+   242→  const { data: watchlists = [], isLoading: watchlistsLoading } = useQuery(
+   243→    useMemo(
+   244→      () => ({
+   245→        queryKey: ["user-watchlists"] as const,
+   246→        queryFn: () => fetchWatchlists({}),
+   247→        staleTime: 30_000,
+   248→      }),
+   249→      [fetchWatchlists],
+   250→    ),
+   251→  );
+   252→
+   253→  const { data: prices = [], isLoading: pricesLoading } = useQuery(
+   254→    useMemo(
+   255→      () => ({
+   256→        queryKey: ["market-prices"] as const,
+   257→        queryFn: () => fetchPrices({}),
+   258→        staleTime: 30_000,
+   259→        refetchInterval: 60_000,
+   260→      }),
+   261→      [fetchPrices],
+   262→    ),
+   263→  );
+   264→
+   265→  // Build price map for quick lookup
+   266→  const priceMap = useMemo(() => {
+   267→    const map = new Map<string, any>();
+   268→    for (const p of prices) {
+   269→      map.set(p.pair, p);
+   270→    }
+   271→    return map;
+   272→  }, [prices]);
+   273→
+   274→  // Derive the current watchlist from selected ID or default
+   275→  const currentWatchlist = useMemo(() => {
+   276→    if (!watchlists || watchlists.length === 0) return null;
+   277→    if (selectedWatchlistId) {
+   278→      return watchlists.find((w: any) => w.id === selectedWatchlistId) ?? null;
+   279→    }
+   280→    // Auto-select default watchlist
+   281→    const defaultWl = watchlists.find((w: any) => w.is_default) ?? watchlists[0];
+   282→    return defaultWl;
+   283→  }, [watchlists, selectedWatchlistId]);
+   284→
+   285→  const items = (currentWatchlist as any)?.items ?? [];
+   286→  const addedPairs = new Set(items.map((i: any) => i.pair));
+   287→
+   288→  // Create watchlist mutation
+   289→  const createMutation = useMutation({
+   290→    mutationFn: (vars: { name: string; isDefault?: boolean }) =>
+   291→      createFn({ data: vars }),
+   292→    onSuccess: (data: any) => {
+   293→      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
+   294→      setShowCreateDialog(false);
+   295→      setNewWatchlistName("");
+   296→      if (data?.id) {
+   297→        setSelectedWatchlistId(data.id);
+   298→      }
+   299→    },
+   300→  });
+   301→
+   302→  // Delete watchlist mutation
+   303→  const deleteMutation = useMutation({
+   304→    mutationFn: (vars: { watchlistId: string }) =>
+   305→      deleteFn({ data: vars }),
+   306→    onSuccess: () => {
+   307→      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
+   308→      setSelectedWatchlistId(null);
+   309→      setShowDeleteDialog(false);
+   310→    },
+   311→  });
+   312→
+   313→  // Rename watchlist mutation
+   314→  const renameMutation = useMutation({
+   315→    mutationFn: (vars: { watchlistId: string; name: string }) =>
+   316→      renameFn({ data: vars }),
+   317→    onSuccess: () => {
+   318→      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
+   319→      setShowRenameDialog(false);
+   320→      setRenameWatchlistName("");
+   321→    },
+   322→  });
+   323→
+   324→  // Add mutation
+   325→  const addMutation = useMutation({
+   326→    mutationFn: (vars: { watchlistId?: string; pair: string; category: string }) =>
+   327→      addFn({ data: vars }),
+   328→    onSuccess: () => {
+   329→      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
+   330→    },
+   331→  });
+   332→
+   333→  // Remove mutation
+   334→  const removeMutation = useMutation({
+   335→    mutationFn: (vars: { itemId: string }) =>
+   336→      removeFn({ data: vars }),
+   337→    onSuccess: () => {
+   338→      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
+   339→    },
+   340→  });
+   341→
+   342→  // Update notes mutation
+   343→  const updateMutation = useMutation({
+   344→    mutationFn: (vars: { itemId: string; notes?: string; sortOrder?: number }) =>
+   345→      updateFn({ data: vars }),
+   346→    onSuccess: () => {
+   347→      queryClient.invalidateQueries({ queryKey: ["user-watchlists"] });
+   348→    },
+   349→  });
+   350→
+   351→  // Category filter for adding pairs
+   352→  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+   353→  const [searchQuery, setSearchQuery] = useState("");
+   354→  const [editingNotes, setEditingNotes] = useState<string | null>(null);
+   355→  const [notesValue, setNotesValue] = useState("");
+   356→
+   357→  const filteredPairs = useMemo(() => {
+   358→    let filtered = AVAILABLE_PAIRS;
+   359→    if (categoryFilter !== "all") {
+   360→      filtered = filtered.filter((p) => p.category === categoryFilter);
+   361→    }
+   362→    if (searchQuery.trim()) {
+   363→      const q = searchQuery.toLowerCase();
+   364→      filtered = filtered.filter((p) => p.pair.toLowerCase().includes(q));
+   365→    }
+   366→    return filtered;
+   367→  }, [categoryFilter, searchQuery]);
+   368→
+   369→  const getCategoryBadge = (cat: string) => {
+   370→    const styles: Record<string, string> = {
+   371→      forex: "bg-primary/10 text-primary border-primary/20",
+   372→      crypto: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+   373→      commodity: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+   374→      stocks: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+   375→    };
+   376→    return styles[cat] ?? styles.forex;
+   377→  };
+   378→
+   379→  const handleAddPair = (pair: string, category: string) => {
+   380→    addMutation.mutate({
+   381→      pair,
+   382→      category,
+   383→      watchlistId: currentWatchlist?.id,
+   384→    });
+   385→  };
+   386→
+   387→  const handleRemove = (itemId: string) => {
+   388→    removeMutation.mutate({ itemId });
+   389→  };
+   390→
+   391→  const handleSaveNotes = (itemId: string) => {
+   392→    updateMutation.mutate({ itemId, notes: notesValue });
+   393→    setEditingNotes(null);
+   394→  };
+   395→
+   396→  const handleMoveUp = (item: any, index: number) => {
+   397→    if (index === 0) return;
+   398→    const prevItem = items[index - 1];
+   399→    updateMutation.mutate({ itemId: item.id, sortOrder: prevItem.sort_order });
+   400→    updateMutation.mutate({ itemId: prevItem.id, sortOrder: item.sort_order });
+   401→  };
+   402→
+   403→  const handleMoveDown = (item: any, index: number) => {
+   404→    if (index === items.length - 1) return;
+   405→    const nextItem = items[index + 1];
+   406→    updateMutation.mutate({ itemId: item.id, sortOrder: nextItem.sort_order });
+   407→    updateMutation.mutate({ itemId: nextItem.id, sortOrder: item.sort_order });
+   408→  };
+   409→
+   410→  const handleCreateWatchlist = () => {
+   411→    if (!newWatchlistName.trim()) return;
+   412→    createMutation.mutate({ name: newWatchlistName.trim() });
+   413→  };
+   414→
+   415→  const handleDeleteWatchlist = () => {
+   416→    if (!currentWatchlist) return;
+   417→    deleteMutation.mutate({ watchlistId: currentWatchlist.id });
+   418→  };
+   419→
+   420→  const handleRenameWatchlist = () => {
+   421→    if (!currentWatchlist || !renameWatchlistName.trim()) return;
+   422→    renameMutation.mutate({ watchlistId: currentWatchlist.id, name: renameWatchlistName.trim() });
+   423→  };
+   424→
+   425→  const isLoading = watchlistsLoading || pricesLoading;
+   426→
+   427→  return (
+   428→    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+   429→      {/* Header with Watchlist Switcher */}
+   430→      <div className="flex items-center justify-between gap-2">
+   431→        <div className="flex items-center gap-2 min-w-0 flex-1">
+   432→          {/* Watchlist Switcher Dropdown */}
+   433→          <DropdownMenu>
+   434→            <DropdownMenuTrigger asChild>
+   435→              <button className="flex items-center gap-1.5 min-w-0 group">
+   436→                <h2 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
+   437→                  {currentWatchlist?.name ?? t("discover.yourWatchlist")}
+   438→                </h2>
+   439→                <ChevronDown className="size-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+   440→              </button>
+   441→            </DropdownMenuTrigger>
+   442→            <DropdownMenuContent align="start" className="w-56">
+   443→              {watchlists.map((wl: any) => (
+   444→                <DropdownMenuItem
+   445→                  key={wl.id}
+   446→                  onClick={() => setSelectedWatchlistId(wl.id)}
+   447→                  className={currentWatchlist?.id === wl.id ? "bg-primary/10" : ""}
+   448→                >
+   449→                  <span className="truncate">{wl.name}</span>
+   450→                  {wl.is_default && (
+   451→                    <span className="ml-auto text-[9px] font-bold text-muted-foreground">
+   452→                      {t("discover.default") ?? "Default"}
+   453→                    </span>
+   454→                  )}
+   455→                </DropdownMenuItem>
+   456→              ))}
+   457→              <DropdownMenuSeparator />
+   458→              <DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
+   459→                <ListPlus className="size-3.5 mr-2" />
+   460→                <span>{t("discover.newWatchlist") ?? "New Watchlist"}</span>
+   461→              </DropdownMenuItem>
+   462→            </DropdownMenuContent>
+   463→          </DropdownMenu>
+   464→        </div>
+   465→
+   466→        {/* Watchlist Actions */}
+   467→        <div className="flex items-center gap-1 shrink-0">
+   468→          {currentWatchlist && (
+   469→            <DropdownMenu>
+   470→              <DropdownMenuTrigger asChild>
+   471→                <button className="size-8 rounded-lg flex items-center justify-center bg-card border border-border hover:border-primary/30 hover:text-primary transition-colors">
+   472→                  <MoreHorizontal className="size-4" />
+   473→                </button>
+   474→              </DropdownMenuTrigger>
+   475→              <DropdownMenuContent align="end">
+   476→                <DropdownMenuItem
+   477→                  onClick={() => {
+   478→                    setRenameWatchlistName(currentWatchlist.name ?? "");
+   479→                    setShowRenameDialog(true);
+   480→                  }}
+   481→                >
+   482→                  <Pencil className="size-3.5 mr-2" />
+   483→                  <span>{t("discover.renameWatchlist") ?? "Rename"}</span>
+   484→                </DropdownMenuItem>
+   485→                {!currentWatchlist.is_default && (
+   486→                  <>
+   487→                    <DropdownMenuSeparator />
+   488→                    <DropdownMenuItem
+   489→                      onClick={() => setShowDeleteDialog(true)}
+   490→                      className="text-bearish focus:text-bearish"
+   491→                    >
+   492→                      <Trash2 className="size-3.5 mr-2" />
+   493→                      <span>{t("discover.deleteWatchlist") ?? "Delete Watchlist"}</span>
+   494→                    </DropdownMenuItem>
+   495→                  </>
+   496→                )}
+   497→              </DropdownMenuContent>
+   498→            </DropdownMenu>
+   499→          )}
+   500→          <button
+   501→            onClick={() => setShowCreateDialog(true)}
+   502→            className="size-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+   503→            title={t("discover.newWatchlist") ?? "New Watchlist"}
+   504→          >
+   505→            <Plus className="size-4" />
+   506→          </button>
+   507→        </div>
+   508→      </div>
+   509→
+   510→      {/* Subtitle with item count */}
+   511→      {currentWatchlist && items.length > 0 && (
+   512→        <p className="text-xs text-muted-foreground -mt-2">
+   513→          {items.length} {items.length === 1 ? "pair" : "pairs"}
+   514→          {!currentWatchlist.is_default && (
+   515→            <span className="ml-2 text-[9px] font-bold px-1.5 py-0.5 rounded border bg-card border-border text-muted-foreground">
+   516→              {currentWatchlist.name}
+   517→            </span>
+   518→          )}
+   519→        </p>
+   520→      )}
+   521→
+   522→      {/* Watchlist Items */}
+   523→      {isLoading ? (
+   524→        <div className="space-y-3">
+   525→          {[1, 2, 3].map((i) => (
+   526→            <div key={i} className="vixor-card p-4">
+   527→              <div className="flex items-center justify-between">
+   528→                <div className="space-y-2 flex-1">
+   529→                  <Skeleton className="h-5 w-20" />
+   530→                  <Skeleton className="h-4 w-24" />
+   531→                </div>
+   532→                <Skeleton className="h-8 w-16 rounded" />
+   533→              </div>
+   534→            </div>
+   535→          ))}
+   536→        </div>
+   537→      ) : items.length === 0 ? (
+   538→        /* Empty State */
+   539→        <div className="vixor-card p-8 text-center border-dashed">
+   540→          <Eye className="size-10 text-muted-foreground/20 mx-auto mb-3" />
+   541→          <h3 className="font-bold text-sm text-foreground mb-1">{t("discover.watchlistEmpty")}</h3>
+   542→          <p className="text-xs text-muted-foreground mb-4">{t("discover.addFirstPair")}</p>
+   543→        </div>
+   544→      ) : (
+   545→        <div className="space-y-2">
+   546→          {items.map((item: any, index: number) => {
+   547→            const priceData = priceMap.get(item.pair);
+   548→            const change = priceData?.change24h ?? 0;
+   549→            const isPositive = change >= 0;
+   550→
+   551→            return (
+   552→              <div
+   553→                key={item.id}
+   554→                className="vixor-card p-3 group hover:border-primary/30 transition-colors"
+   555→              >
+   556→                <div className="flex items-center gap-3">
+   557→                  {/* Pair Info */}
+   558→                  <div className="flex-1 min-w-0">
+   559→                    <div className="flex items-center gap-2 mb-0.5">
+   560→                      <span className="font-bold text-sm font-mono">{item.pair}</span>
+   561→                      <span
+   562→                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded border capitalize ${getCategoryBadge(item.category)}`}
+   563→                      >
+   564→                        {t(`discover.${item.category}`)}
+   565→                      </span>
+   566→                    </div>
+   567→                    <div className="flex items-center gap-2">
+   568→                      {priceData ? (
+   569→                        <>
+   570→                          <span className="text-xs font-mono font-medium text-muted-foreground">
+   571→                            ${Number(priceData.price).toLocaleString(undefined, {
+   572→                              minimumFractionDigits: 2,
+   573→                              maximumFractionDigits: item.pair?.includes("JPY") ? 2 : 4,
+   574→                            })}
+   575→                          </span>
+   576→                          <span
+   577→                            className={`text-[10px] font-bold font-mono px-1.5 py-0.5 rounded ${
+   578→                              isPositive
+   579→                                ? "bg-bullish/10 text-bullish"
+   580→                                : "bg-bearish/10 text-bearish"
+   581→                            }`}
+   582→                          >
+   583→                            {isPositive ? "+" : ""}
+   584→                            {change.toFixed(2)}%
+   585→                          </span>
+   586→                        </>
+   587→                      ) : (
+   588→                        <span className="text-[10px] text-muted-foreground">—</span>
+   589→                      )}
+   590→                    </div>
+   591→                    {/* Notes */}
+   592→                    {item.notes && editingNotes !== item.id && (
+   593→                      <button
+   594→                        onClick={() => {
+   595→                          setEditingNotes(item.id);
+   596→                          setNotesValue(item.notes ?? "");
+   597→                        }}
+   598→                        className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+   599→                      >
+   600→                        <StickyNote className="size-3" />
+   601→                        <span className="truncate max-w-[180px]">{item.notes}</span>
+   602→                      </button>
+   603→                    )}
+   604→                    {editingNotes === item.id && (
+   605→                      <div className="flex items-center gap-1 mt-1">
+   606→                        <input
+   607→                          type="text"
+   608→                          value={notesValue}
+   609→                          onChange={(e) => setNotesValue(e.target.value)}
+   610→                          placeholder={t("discover.addNotes")}
+   611→                          className="flex-1 h-6 px-2 text-[10px] bg-card border border-border rounded outline-none focus:border-primary"
+   612→                          maxLength={200}
+   613→                          autoFocus
+   614→                          onKeyDown={(e) => {
+   615→                            if (e.key === "Enter") handleSaveNotes(item.id);
+   616→                            if (e.key === "Escape") setEditingNotes(null);
+   617→                          }}
+   618→                        />
+   619→                        <button
+   620→                          onClick={() => handleSaveNotes(item.id)}
+   621→                          className="text-[10px] font-bold text-primary px-2 py-0.5 hover:underline"
+   622→                        >
+   623→                          {t("common.save")}
+   624→                        </button>
+   625→                      </div>
+   626→                    )}
+   627→                  </div>
+   628→
+   629→                  {/* Quick Actions */}
+   630→                  <div className="flex items-center gap-1">
+   631→                    <a
+   632→                      href={`/analyze?pair=${encodeURIComponent(item.pair)}`}
+   633→                      className="size-7 rounded-lg flex items-center justify-center bg-card border border-border hover:border-primary/30 hover:text-primary transition-colors"
+   634→                      title={t("discover.analyzePair")}
+   635→                    >
+   636→                      <Eye className="size-3" />
+   637→                    </a>
+   638→                    <a
+   639→                      href={`/charts?symbol=BINANCE:${item.pair.replace("/", "")}`}
+   640→                      className="size-7 rounded-lg flex items-center justify-center bg-card border border-border hover:border-primary/30 hover:text-primary transition-colors"
+   641→                      title={t("discover.viewChart")}
+   642→                    >
+   643→                      <BarChart2 className="size-3" />
+   644→                    </a>
+   645→                    <button
+   646→                      onClick={() => {
+   647→                        setEditingNotes(item.id);
+   648→                        setNotesValue(item.notes ?? "");
+   649→                      }}
+   650→                      className="size-7 rounded-lg flex items-center justify-center bg-card border border-border hover:border-primary/30 hover:text-primary transition-colors"
+   651→                      title={t("discover.notes")}
+   652→                    >
+   653→                      <MessageSquare className="size-3" />
+   654→                    </button>
+   655→                    <button
+   656→                      onClick={() => handleRemove(item.id)}
+   657→                      className="size-7 rounded-lg flex items-center justify-center bg-card border border-border hover:border-bearish/30 hover:text-bearish transition-colors"
+   658→                      title={t("discover.removePair")}
+   659→                    >
+   660→                      <Trash2 className="size-3" />
+   661→                    </button>
+   662→                    {/* Reorder buttons */}
+   663→                    <div className="flex flex-col">
+   664→                      <button
+   665→                        onClick={() => handleMoveUp(item, index)}
+   666→                        disabled={index === 0}
+   667→                        className="size-4 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors"
+   668→                      >
+   669→                        <ChevronUp className="size-3" />
+   670→                      </button>
+   671→                      <button
+   672→                        onClick={() => handleMoveDown(item, index)}
+   673→                        disabled={index === items.length - 1}
+   674→                        className="size-4 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors"
+   675→                      >
+   676→                        <ChevronDown className="size-3" />
+   677→                      </button>
+   678→                    </div>
+   679→                  </div>
+   680→                </div>
+   681→              </div>
+   682→            );
+   683→          })}
+   684→        </div>
+   685→      )}
+   686→
+   687→      {/* Add Pair Section */}
+   688→      <div className="space-y-3">
+   689→        <h3 className="font-bold text-sm">{t("discover.addPair")}</h3>
+   690→
+   691→        {/* Search */}
+   692→        <div className="relative">
+   693→          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+   694→            <Search className="size-3.5 text-muted-foreground" />
+   695→          </div>
+   696→          <input
+   697→            type="text"
+   698→            value={searchQuery}
+   699→            onChange={(e) => setSearchQuery(e.target.value)}
+   700→            placeholder={t("discover.searchPair")}
+   701→            className="w-full h-9 pl-9 pr-4 bg-card border border-border rounded-lg text-xs outline-none focus:border-primary transition-colors"
+   702→          />
+   703→        </div>
+   704→
+   705→        {/* Category filter tabs */}
+   706→        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+   707→          {(["all", "forex", "crypto", "commodity"] as CategoryFilter[]).map((cat) => (
+   708→            <button
+   709→              key={cat}
+   710→              onClick={() => setCategoryFilter(cat)}
+   711→              className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize whitespace-nowrap border transition-all ${
+   712→                categoryFilter === cat
+   713→                  ? "bg-primary/10 border-primary text-primary"
+   714→                  : "bg-card border-border text-muted-foreground hover:text-foreground"
+   715→              }`}
+   716→            >
+   717→              {cat === "all"
+   718→                ? t("discover.allCategories")
+   719→                : cat === "forex"
+   720→                  ? t("discover.forex")
+   721→                  : cat === "crypto"
+   722→                    ? t("discover.crypto")
+   723→                    : t("discover.commodity")}
+   724→            </button>
+   725→          ))}
+   726→        </div>
+   727→
+   728→        {/* Grid of available pairs */}
+   729→        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+   730→          {filteredPairs.map((p) => {
+   731→            const isAdded = addedPairs.has(p.pair);
+   732→            const priceData = priceMap.get(p.pair);
+   733→            return (
+   734→              <div
+   735→                key={p.pair}
+   736→                className={`vixor-card p-3 flex items-center justify-between gap-2 transition-colors ${
+   737→                  isAdded
+   738→                    ? "opacity-50 cursor-not-allowed"
+   739→                    : "cursor-pointer hover:border-primary/50"
+   740→                }`}
+   741→                onClick={() => {
+   742→                  if (!isAdded) handleAddPair(p.pair, p.category);
+   743→                }}
+   744→              >
+   745→                <div className="min-w-0">
+   746→                  <div className="font-bold text-xs font-mono truncate">{p.pair}</div>
+   747→                  {priceData && (
+   748→                    <div className="text-[9px] text-muted-foreground font-mono">
+   749→                      ${Number(priceData.price).toLocaleString(undefined, {
+   750→                        minimumFractionDigits: 2,
+   751→                        maximumFractionDigits: p.pair.includes("JPY") ? 2 : 4,
+   752→                      })}
+   753→                    </div>
+   754→                  )}
+   755→                </div>
+   756→                {isAdded ? (
+   757→                  <span className="text-[9px] font-bold text-muted-foreground whitespace-nowrap">
+   758→                    {t("discover.alreadyAdded")}
+   759→                  </span>
+   760→                ) : (
+   761→                  <div className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+   762→                    <Plus className="size-3" />
+   763→                  </div>
+   764→                )}
+   765→              </div>
+   766→            );
+   767→          })}
+   768→        </div>
+   769→      </div>
+   770→
+   771→      {/* Create Watchlist Dialog */}
+   772→      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+   773→        <DialogContent className="sm:max-w-[400px]">
+   774→          <DialogHeader>
+   775→            <DialogTitle>{t("discover.createWatchlist") ?? "Create Watchlist"}</DialogTitle>
+   776→          </DialogHeader>
+   777→          <div className="py-4">
+   778→            <input
+   779→              type="text"
+   780→              value={newWatchlistName}
+   781→              onChange={(e) => setNewWatchlistName(e.target.value)}
+   782→              placeholder={t("discover.watchlistNamePlaceholder") ?? "Watchlist name"}
+   783→              className="w-full h-10 px-3 bg-card border border-border rounded-lg text-sm outline-none focus:border-primary transition-colors"
+   784→              maxLength={50}
+   785→              autoFocus
+   786→              onKeyDown={(e) => {
+   787→                if (e.key === "Enter") handleCreateWatchlist();
+   788→              }}
+   789→            />
+   790→          </div>
+   791→          <DialogFooter>
+   792→            <button
+   793→              onClick={() => setShowCreateDialog(false)}
+   794→              className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+   795→            >
+   796→              {t("common.cancel") ?? "Cancel"}
+   797→            </button>
+   798→            <button
+   799→              onClick={handleCreateWatchlist}
+   800→              disabled={!newWatchlistName.trim() || createMutation.isPending}
+   801→              className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+   802→            >
+   803→              {createMutation.isPending ? "..." : (t("common.create") ?? "Create")}
+   804→            </button>
+   805→          </DialogFooter>
+   806→        </DialogContent>
+   807→      </Dialog>
+   808→
+   809→      {/* Rename Watchlist Dialog */}
+   810→      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+   811→        <DialogContent className="sm:max-w-[400px]">
+   812→          <DialogHeader>
+   813→            <DialogTitle>{t("discover.renameWatchlist") ?? "Rename Watchlist"}</DialogTitle>
+   814→          </DialogHeader>
+   815→          <div className="py-4">
+   816→            <input
+   817→              type="text"
+   818→              value={renameWatchlistName}
+   819→              onChange={(e) => setRenameWatchlistName(e.target.value)}
+   820→              placeholder={t("discover.watchlistNamePlaceholder") ?? "Watchlist name"}
+   821→              className="w-full h-10 px-3 bg-card border border-border rounded-lg text-sm outline-none focus:border-primary transition-colors"
+   822→              maxLength={50}
+   823→              autoFocus
+   824→              onKeyDown={(e) => {
+   825→                if (e.key === "Enter") handleRenameWatchlist();
+   826→              }}
+   827→            />
+   828→          </div>
+   829→          <DialogFooter>
+   830→            <button
+   831→              onClick={() => setShowRenameDialog(false)}
+   832→              className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+   833→            >
+   834→              {t("common.cancel") ?? "Cancel"}
+   835→            </button>
+   836→            <button
+   837→              onClick={handleRenameWatchlist}
+   838→              disabled={!renameWatchlistName.trim() || renameMutation.isPending}
+   839→              className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+   840→            >
+   841→              {renameMutation.isPending ? "..." : (t("common.save") ?? "Save")}
+   842→            </button>
+   843→          </DialogFooter>
+   844→        </DialogContent>
+   845→      </Dialog>
+   846→
+   847→      {/* Delete Watchlist Confirmation */}
+   848→      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+   849→        <AlertDialogContent>
+   850→          <AlertDialogHeader>
+   851→            <AlertDialogTitle>
+   852→              {t("discover.deleteWatchlistTitle") ?? "Delete Watchlist?"}
+   853→            </AlertDialogTitle>
+   854→            <AlertDialogDescription>
+   855→              {t("discover.deleteWatchlistDescription") ?? 
+   856→                `Are you sure you want to delete "${currentWatchlist?.name ?? ""}"? All items in this watchlist will be permanently removed. This action cannot be undone.`
+   857→              }
+   858→            </AlertDialogDescription>
+   859→          </AlertDialogHeader>
+   860→          <AlertDialogFooter>
+   861→            <AlertDialogCancel>
+   862→              {t("common.cancel") ?? "Cancel"}
+   863→            </AlertDialogCancel>
+   864→            <AlertDialogAction
+   865→              onClick={handleDeleteWatchlist}
+   866→              disabled={deleteMutation.isPending}
+   867→              className="bg-bearish text-white hover:bg-bearish/90"
+   868→            >
+   869→              {deleteMutation.isPending ? "..." : (t("discover.deleteWatchlist") ?? "Delete")}
+   870→            </AlertDialogAction>
+   871→          </AlertDialogFooter>
+   872→        </AlertDialogContent>
+   873→      </AlertDialog>
+   874→    </div>
+   875→  );
+   876→}
+   877→
+   878→function DiscoverScanner() {
+   879→  const { t } = useI18n();
+   880→  const fetchSignals = useStableServerFn(getDailySignals);
+   881→  const { data: signals = [], isLoading } = useQuery(
+   882→    useMemo(
+   883→      () => ({
+   884→        queryKey: ["daily-signals", "discover"] as const,
+   885→        queryFn: async () => {
+   886→          const r = await fetchSignals({ data: { limit: 20, offset: 0 } });
+   887→          return (r as any)?.items ?? (Array.isArray(r) ? r : []);
+   888→        },
+   889→        staleTime: 120_000,
+   890→      }),
+   891→      [fetchSignals],
+   892→    ),
+   893→  );
+   894→
+   895→  const activeSignals = signals.filter((s: any) => s.recommendation !== "WAIT");
+   896→
+   897→  return (
+   898→    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+   899→      <div className="grid grid-cols-2 gap-3 mb-2">
+   900→        <button className="h-10 rounded-lg bg-primary/10 text-primary font-bold text-xs flex items-center justify-center gap-1.5 border border-primary/20">
+   901→          <Flame className="size-4" /> {t("discover.hotBreakouts")}
+   902→        </button>
+   903→        <button className="h-10 rounded-lg bg-card text-muted-foreground font-bold text-xs flex items-center justify-center gap-1.5 border border-border">
+   904→          <Layers className="size-4" /> {t("discover.volumeSpikes")}
+   905→        </button>
+   906→      </div>
+   907→
+   908→      {isLoading ? (
+   909→        <div className="space-y-3">
+   910→          {[1, 2, 3].map((i) => (
+   911→            <div key={i} className="vixor-card p-4">
+   912→              <div className="flex items-center justify-between mb-2">
+   913→                <Skeleton className="h-5 w-20" />
+   914→                <Skeleton className="h-4 w-10" />
+   915→              </div>
+   916→              <div className="flex items-center gap-2">
+   917→                <Skeleton className="h-4 w-24" />
+   918→                <Skeleton className="h-4 w-16" />
+   919→              </div>
+   920→            </div>
+   921→          ))}
+   922→        </div>
+   923→      ) : activeSignals.length === 0 ? (
+   924→        <div className="vixor-card p-6 text-center">
+   925→          <Flame className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+   926→          <div className="text-xs text-muted-foreground">{t("discover.noActiveSignals")}</div>
+   927→          <div className="text-[10px] text-muted-foreground mt-1">{t("discover.signalsDaily")}</div>
+   928→        </div>
+   929→      ) : (
+   930→        activeSignals.map((s: any) => {
+   931→          const isBuy = s.recommendation === "BUY";
+   932→          return (
+   933→            <div
+   934→              key={s.id}
+   935→              className="vixor-card p-4 border-l-4"
+   936→              style={{ borderLeftColor: isBuy ? "var(--color-bullish)" : "var(--color-bearish)" }}
+   937→            >
+   938→              <div className="flex items-center justify-between mb-2">
+   939→                <span className="font-bold text-lg font-mono">{s.pair}</span>
+   940→                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-muted text-muted-foreground rounded">
+   941→                  {s.timeframe}
+   942→                </span>
+   943→              </div>
+   944→              <div className="flex items-center gap-2 text-sm font-bold">
+   945→                <RecBadge rec={s.recommendation} />
+   946→                <span className="text-muted-foreground font-medium">
+   947→                  {s.confidence}% {t("signals.confidence").toLowerCase()}
+   948→                </span>
+   949→                <a
+   950→                  href={`/charts?symbol=BINANCE:${s.pair.replace("/", "")}`}
+   951→                  className="ml-auto text-xs font-bold text-primary hover:underline"
+   952→                >
+   953→                  {t("discover.analyze")}
+   954→                </a>
+   955→              </div>
+   956→            </div>
+   957→          );
+   958→        })
+   959→      )}
+   960→    </div>
+   961→  );
+   962→}
+   963→
+   964→function DiscoverHeatmap() {
+   965→  const { t } = useI18n();
+   966→  const fetchPrices = useStableServerFn(getMarketPrices);
+   967→  const { data: prices = [], isLoading } = useQuery(
+   968→    useMemo(
+   969→      () => ({
+   970→        queryKey: ["market-prices"] as const,
+   971→        queryFn: () => fetchPrices({}),
+   972→        staleTime: 30_000,
+   973→        refetchInterval: 60_000,
+   974→      }),
+   975→      [fetchPrices],
+   976→    ),
+   977→  );
+   978→
+   979→  return (
+   980→    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+   981→      <div className="flex items-center justify-between">
+   982→        <div>
+   983→          <h3 className="font-bold text-sm">{t("discover.marketHeatmap")}</h3>
+   984→          <p className="text-[10px] text-muted-foreground">{t("discover.24hChange")}</p>
+   985→        </div>
+   986→        <div className="flex items-center gap-2 text-[9px] font-bold text-muted-foreground">
+   987→          <span className="flex items-center gap-1">
+   988→            <span className="size-2 rounded-full bg-bullish" /> {t("discover.gain")}
+   989→          </span>
+   990→          <span className="flex items-center gap-1">
+   991→            <span className="size-2 rounded-full bg-bearish" /> {t("discover.loss")}
+   992→          </span>
+   993→        </div>
+   994→      </div>
+   995→
+   996→      {isLoading ? (
+   997→        <div className="grid grid-cols-3 gap-2">
+   998→          {[1, 2, 3, 4, 5, 6].map((i) => (
+   999→            <div key={i} className="rounded-lg h-20 shimmer" />
+  1000→          ))}
+  1001→        </div>
+  1002→      ) : prices.length === 0 ? (
+  1003→        <div className="vixor-card p-6 text-center">
+  1004→          <BarChart2 className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+  1005→          <div className="text-xs text-muted-foreground">{t("discover.noHeatmapData")}</div>
+  1006→        </div>
+  1007→      ) : (
+  1008→        <div className="grid grid-cols-3 gap-2">
+  1009→          {prices.map((p: any) => {
+  1010→            const change = p.change24h ?? 0;
+  1011→            const isPositive = change >= 0;
+  1012→            const intensity = Math.min(Math.abs(change) / 3, 1);
+  1013→            return (
+  1014→              <div
+  1015→                key={p.pair}
+  1016→                className={`rounded-lg p-3 text-center border transition-all cursor-pointer hover:scale-[1.02] ${
+  1017→                  isPositive
+  1018→                    ? "bg-bullish/5 border-bullish/20 hover:border-bullish/40"
+  1019→                    : "bg-bearish/5 border-bearish/20 hover:border-bearish/40"
+  1020→                }`}
+  1021→                style={{
+  1022→                  backgroundColor: isPositive
+  1023→                    ? `rgba(34, 197, 94, ${0.05 + intensity * 0.2})`
+  1024→                    : `rgba(239, 68, 68, ${0.05 + intensity * 0.2})`,
+  1025→                }}
+  1026→              >
+  1027→                <div className="font-bold text-xs font-mono mb-1">{p.pair}</div>
+  1028→                <div
+  1029→                  className={`text-sm font-bold font-mono ${isPositive ? "text-bullish" : "text-bearish"}`}
+  1030→                >
+  1031→                  {isPositive ? "+" : ""}
+  1032→                  {change.toFixed(2)}%
+  1033→                </div>
+  1034→                <div className="text-[9px] text-muted-foreground font-mono mt-0.5">
+  1035→                  $
+  1036→                  {Number(p.price).toLocaleString(undefined, {
+  1037→                    minimumFractionDigits: 2,
+  1038→                    maximumFractionDigits: p.pair?.includes("JPY") ? 2 : 4,
+  1039→                  })}
+  1040→                </div>
+  1041→              </div>
+  1042→            );
+  1043→          })}
+  1044→        </div>
+  1045→      )}
+  1046→
+  1047→      <div className="vixor-card p-4 flex flex-col items-center justify-center text-center border-dashed">
+  1048→        <BarChart2 className="size-6 text-muted-foreground/30 mb-2" />
+  1049→        <div className="text-xs text-muted-foreground font-medium">
+  1050→          {t("discover.interactiveHeatmapSoon")}
+  1051→        </div>
+  1052→        <div className="text-[10px] text-muted-foreground">
+  1053→          With sector analysis & historical comparison
+  1054→        </div>
+  1055→      </div>
+  1056→    </div>
+  1057→  );
+  1058→}
+  1059→
+  1060→function DiscoverCalendar() {
+  1061→  const { t } = useI18n();
+  1062→  const fetchCalendar = useStableServerFn(getEconomicCalendar);
+  1063→  const [dateFilter, setDateFilter] = useState<"today" | "week" | "nextweek">("week");
+  1064→  const [impactFilter, setImpactFilter] = useState<"all" | "high" | "medium" | "low">("all");
+  1065→  const [currencyFilter, setCurrencyFilter] = useState<"all" | "USD" | "EUR" | "GBP" | "JPY" | "AUD" | "CAD" | "CHF" | "NZD">("all");
+  1066→
+  1067→  const daysMap = { today: 1, week: 7, nextweek: 14 };
+  1068→
+  1069→  const { data: events = [], isLoading } = useQuery(
+  1070→    useMemo(
+  1071→      () => ({
+  1072→        queryKey: ["economic-calendar", dateFilter] as const,
+  1073→        queryFn: () => fetchCalendar({ data: { days: daysMap[dateFilter] } }),
+  1074→        staleTime: 300_000,
+  1075→      }),
+  1076→      [fetchCalendar, dateFilter],
+  1077→    ),
+  1078→  );
+  1079→
+  1080→  const filteredEvents = useMemo(() => {
+  1081→    let filtered = events as any[];
+  1082→    if (impactFilter !== "all") {
+  1083→      filtered = filtered.filter((e) => e.impact === impactFilter);
+  1084→    }
+  1085→    if (currencyFilter !== "all") {
+  1086→      filtered = filtered.filter((e) => e.currency === currencyFilter);
+  1087→    }
+  1088→    return filtered;
+  1089→  }, [events, impactFilter, currencyFilter]);
+  1090→
+  1091→  // Group events by date
+  1092→  const groupedEvents = useMemo(() => {
+  1093→    const groups: Record<string, any[]> = {};
+  1094→    for (const evt of filteredEvents) {
+  1095→      const d = new Date(evt.date);
+  1096→      const key = d.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" });
+  1097→      if (!groups[key]) groups[key] = [];
+  1098→      groups[key].push(evt);
+  1099→    }
+  1100→    return groups;
+  1101→  }, [filteredEvents]);
+  1102→
+  1103→  const flagMap: Record<string, string> = { US: "🇺🇸", EU: "🇪🇺", UK: "🇬🇧", JP: "🇯🇵", AU: "🇦🇺", CA: "🇨🇦", CH: "🇨🇭", NZ: "🇳🇿" };
+  1104→
+  1105→  return (
+  1106→    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+  1107→      {/* Date Selector */}
+  1108→      <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+  1109→        {(["today", "week", "nextweek"] as const).map((df) => (
+  1110→          <button
+  1111→            key={df}
+  1112→            onClick={() => setDateFilter(df)}
+  1113→            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition-all ${
+  1114→              dateFilter === df
+  1115→                ? "bg-primary/10 border-primary text-primary"
+  1116→                : "bg-card border-border text-muted-foreground hover:text-foreground"
+  1117→            }`}
+  1118→          >
+  1119→            {df === "today" ? t("discover.today") : df === "week" ? t("discover.thisWeek") : t("discover.nextWeek")}
+  1120→          </button>
+  1121→        ))}
+  1122→      </div>
+  1123→
+  1124→      {/* Filters Row */}
+  1125→      <div className="flex gap-2 flex-wrap">
+  1126→        {/* Impact Filter */}
+  1127→        <div className="flex gap-1 items-center">
+  1128→          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("discover.impactLevel")}</span>
+  1129→          {(["all", "high", "medium", "low"] as const).map((imp) => (
+  1130→            <button
+  1131→              key={imp}
+  1132→              onClick={() => setImpactFilter(imp)}
+  1133→              className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
+  1134→                impactFilter === imp
+  1135→                  ? imp === "high" ? "bg-bearish/15 border-bearish/40 text-bearish" : imp === "medium" ? "bg-neutral-wait/15 border-neutral-wait/40 text-neutral-wait" : imp === "low" ? "bg-muted border-border text-muted-foreground" : "bg-primary/10 border-primary text-primary"
+  1136→                  : "bg-card border-border text-muted-foreground hover:text-foreground"
+  1137→              }`}
+  1138→            >
+  1139→              {imp === "all" ? t("discover.allImpacts") : imp === "high" ? t("discover.high") : imp === "medium" ? t("discover.medium") : t("discover.low")}
+  1140→            </button>
+  1141→          ))}
+  1142→        </div>
+  1143→
+  1144→        {/* Currency Filter */}
+  1145→        <div className="flex gap-1 items-center flex-wrap">
+  1146→          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("discover.currency") || "Currency"}</span>
+  1147→          {(["all", "USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "NZD"] as const).map((cur) => (
+  1148→            <button
+  1149→              key={cur}
+  1150→              onClick={() => setCurrencyFilter(cur)}
+  1151→              className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
+  1152→                currencyFilter === cur
+  1153→                  ? "bg-primary/10 border-primary text-primary"
+  1154→                  : "bg-card border-border text-muted-foreground hover:text-foreground"
+  1155→              }`}
+  1156→            >
+  1157→              {cur === "all" ? t("discover.allImpacts") : cur}
+  1158→            </button>
+  1159→          ))}
+  1160→        </div>
+  1161→      </div>
+  1162→
+  1163→      {/* Events List */}
+  1164→      {isLoading ? (
+  1165→        <div className="space-y-3">
+  1166→          {[1, 2, 3, 4, 5].map((i) => (
+  1167→            <div key={i} className="vixor-card p-4">
+  1168→              <div className="flex items-center justify-between mb-2">
+  1169→                <Skeleton className="h-4 w-24" />
+  1170→                <Skeleton className="h-4 w-12" />
+  1171→              </div>
+  1172→              <div className="flex items-center gap-2">
+  1173→                <Skeleton className="h-4 w-32" />
+  1174→                <Skeleton className="h-4 w-16" />
+  1175→                <Skeleton className="h-4 w-16" />
+  1176→              </div>
+  1177→            </div>
+  1178→          ))}
+  1179→        </div>
+  1180→      ) : filteredEvents.length === 0 ? (
+  1181→        <div className="vixor-card p-8 text-center">
+  1182→          <CalendarClock className="size-8 text-muted-foreground/20 mx-auto mb-3" />
+  1183→          <h3 className="font-bold text-sm text-foreground mb-1">{t("discover.noEvents")}</h3>
+  1184→        </div>
+  1185→      ) : (
+  1186→        <div className="space-y-4 max-h-[600px] overflow-y-auto">
+  1187→          {Object.entries(groupedEvents).map(([dateKey, dayEvents]) => (
+  1188→            <div key={dateKey}>
+  1189→              <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 sticky top-0 bg-background py-1">
+  1190→                {dateKey}
+  1191→              </h3>
+  1192→              <div className="space-y-2">
+  1193→                {dayEvents.map((evt) => {
+  1194→                  const eventDate = new Date(evt.date);
+  1195→                  const timeStr = eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  1196→                  const impactColor = evt.impact === "high" ? "bg-bearish/15 text-bearish border-bearish/40" : evt.impact === "medium" ? "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40" : "bg-muted text-muted-foreground border-border";
+  1197→                  const impactBorder = evt.impact === "high" ? "border-l-bearish border-l-[3px]" : evt.impact === "medium" ? "border-l-neutral-wait border-l-[3px]" : "";
+  1198→                  return (
+  1199→                    <div
+  1200→                      key={evt.id}
+  1201→                      className={`vixor-card p-3 flex items-center gap-3 ${impactBorder}`}
+  1202→                      style={evt.impact === "high" ? { borderInlineStartColor: "var(--color-bearish)", borderInlineStartWidth: "3px" } : evt.impact === "medium" ? { borderInlineStartColor: "var(--color-neutral-wait)", borderInlineStartWidth: "3px" } : undefined}
+  1203→                    >
+  1204→                      <span className="text-xl shrink-0">{flagMap[evt.country] || "🌍"}</span>
+  1205→                      <div className="flex-1 min-w-0">
+  1206→                        <div className="flex items-center gap-2 mb-0.5">
+  1207→                          <span className="font-bold text-sm truncate">{evt.title}</span>
+  1208→                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase shrink-0 ${impactColor}`}>
+  1209→                            {evt.impact === "high" ? t("discover.high") : evt.impact === "medium" ? t("discover.medium") : t("discover.low")}
+  1210→                          </span>
+  1211→                        </div>
+  1212→                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+  1213→                          <span className="font-mono font-bold">{evt.currency}</span>
+  1214→                          <span>·</span>
+  1215→                          <span className="font-mono">{timeStr}</span>
+  1216→                        </div>
+  1217→                      </div>
+  1218→                      <div className="flex flex-col items-end shrink-0 gap-0.5">
+  1219→                        {evt.actual && (
+  1220→                          <div className="text-right">
+  1221→                            <span className="text-[9px] text-muted-foreground">{t("discover.actual")}: </span>
+  1222→                            <span className="text-xs font-mono font-bold text-foreground">{evt.actual}</span>
+  1223→                          </div>
+  1224→                        )}
+  1225→                        {evt.forecast && (
+  1226→                          <div className="text-right">
+  1227→                            <span className="text-[9px] text-muted-foreground">{t("discover.forecast")}: </span>
+  1228→                            <span className="text-xs font-mono text-muted-foreground">{evt.forecast}</span>
+  1229→                          </div>
+  1230→                        )}
+  1231→                        {evt.previous && (
+  1232→                          <div className="text-right">
+  1233→                            <span className="text-[9px] text-muted-foreground">{t("discover.previous")}: </span>
+  1234→                            <span className="text-xs font-mono text-muted-foreground">{evt.previous}</span>
+  1235→                          </div>
+  1236→                        )}
+  1237→                      </div>
+  1238→                    </div>
+  1239→                  );
+  1240→                })}
+  1241→              </div>
+  1242→            </div>
+  1243→          ))}
+  1244→        </div>
+  1245→      )}
+  1246→    </div>
+  1247→  );
+  1248→}
+  1249→
+  1250→function Discover() {
+  1251→  const { t } = useI18n();
+  1252→  const [tab, setTab] = useState<(typeof TABS)[number]>("discover.watchlist");
+  1253→
+  1254→  return (
+  1255→    <div className="space-y-6 pb-6">
+  1256→      <div className="pt-2">
+  1257→        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+  1258→          <Compass className="size-6 text-primary" /> {t("discover.marketExplorer")}
+  1259→        </h1>
+  1260→        <p className="text-sm text-muted-foreground mt-1">{t("discover.whatsMoving")}</p>
+  1261→      </div>
+  1262→
+  1263→      {/* Global Search */}
+  1264→      <div className="relative">
+  1265→        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+  1266→          <Search className="size-4 text-muted-foreground" />
+  1267→        </div>
+  1268→        <input
+  1269→          type="text"
+  1270→          placeholder={t("discover.searchPlaceholder")}
+  1271→          className="w-full h-12 pl-10 pr-4 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary transition-colors"
+  1272→        />
+  1273→      </div>
+  1274→
+  1275→      {/* Navigation Tabs */}
+  1276→      <div className="flex gap-1 p-1 bg-card border border-border rounded-xl overflow-x-auto">
+  1277→        {TABS.map((tabKey) => (
+  1278→          <button
+  1279→            key={tabKey}
+  1280→            onClick={() => setTab(tabKey)}
+  1281→            className={`flex-1 min-w-[60px] h-9 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap ${tab === tabKey ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+  1282→          >
+  1283→            {t(tabKey)}
+  1284→          </button>
+  1285→        ))}
+  1286→      </div>
+  1287→
+  1288→      {tab === "discover.watchlist" && <DiscoverWatchlist />}
+  1289→      {tab === "discover.scanner" && <DiscoverScanner />}
+  1290→      {tab === "discover.calendar" && <DiscoverCalendar />}
+  1291→      {tab === "discover.news" && <DiscoverNews />}
+  1292→      {tab === "discover.heatmap" && <DiscoverHeatmap />}
+  1293→    </div>
+  1294→  );
+  1295→}
+  1296→
+  1297→function formatTimeAgo(timestamp: number) {
+  1298→  const diff = Date.now() - timestamp;
+  1299→  const mins = Math.floor(diff / 60000);
+  1300→  if (mins < 1) return "Just now";
+  1301→  if (mins < 60) return `${mins}m ago`;
+  1302→  const hours = Math.floor(mins / 60);
+  1303→  if (hours < 24) return `${hours}h ago`;
+  1304→  const days = Math.floor(hours / 24);
+  1305→  return `${days}d ago`;
+  1306→}
+  1307→

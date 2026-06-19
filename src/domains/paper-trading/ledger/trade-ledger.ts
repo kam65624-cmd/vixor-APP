@@ -20,16 +20,11 @@ import type { PaperTrade, PaperAccount } from "../types";
  */
 async function getSupabase(): Promise<any> {
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
     return supabaseAdmin;
   } catch {
-    try {
-      const { supabaseAdmin } = await import("@/shared/supabase/client.server");
-      return supabaseAdmin;
-    } catch {
-      console.error("[TradeLedger] Could not import Supabase client");
-      return null;
-    }
+    console.error("[TradeLedger] Could not import Supabase client");
+    return null;
   }
 }
 

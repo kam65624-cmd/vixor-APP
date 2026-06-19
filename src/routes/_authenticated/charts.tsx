@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getMarketPrices, getOHLCV, quickAnalyze } from "@/lib/vixor.functions";
+import { getMarketPrices, getOHLCV } from "@/domains/market/functions";
+import { quickAnalyze } from "@/domains/analysis/functions";
 import {
   TradingViewChart,
   toTradingViewSymbol,

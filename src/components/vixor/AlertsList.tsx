@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { listAlerts, deleteAlert } from "@/lib/vixor.functions";
+import { listAlerts, deleteAlert } from "@/domains/trading/functions";
 import { Bell, X, Clock, TrendingUp, TrendingDown, ArrowUpDown, Pencil } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SectionTitle } from "./atoms";

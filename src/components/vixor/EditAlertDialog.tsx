@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateAlert } from "@/lib/vixor.functions";
+import { updateAlert } from "@/domains/trading/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 
 interface AlertData {

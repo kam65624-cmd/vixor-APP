@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createAlert } from "@/lib/vixor.functions";
+import { createAlert } from "@/domains/trading/functions";
 import { toTradingViewSymbol } from "./TradingViewChart";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 

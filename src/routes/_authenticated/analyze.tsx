@@ -12,7 +12,8 @@ import {
   Info,
 } from "lucide-react";
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { createAnalysis, getMe } from "@/lib/vixor.functions";
+import { createAnalysis } from "@/domains/analysis/functions";
+import { getMe } from "@/domains/user/functions";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";

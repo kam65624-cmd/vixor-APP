@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, TrendingUp, Gift, Users, Sparkles, Check } from "lucide-react";
-import { listNotifications, markAllNotificationsRead } from "@/lib/vixor.functions";
+import { listNotifications, markAllNotificationsRead } from "@/domains/user/functions";
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";

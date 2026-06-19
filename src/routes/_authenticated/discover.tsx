@@ -22,19 +22,17 @@ import {
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getMarketNews, getMarketPrices, getEconomicCalendar } from "@/domains/market/functions";
+import { getDailySignals } from "@/domains/trading/functions";
 import {
-  getMarketNews,
-  getMarketPrices,
-  getDailySignals,
   getWatchlists,
   addToWatchlist,
   removeFromWatchlist,
   updateWatchlistItem,
-  getEconomicCalendar,
   createWatchlist,
   deleteWatchlist,
   renameWatchlist,
-} from "@/lib/vixor.functions";
+} from "@/domains/watchlist/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecBadge } from "@/components/vixor/atoms";

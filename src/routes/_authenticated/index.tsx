@@ -1,13 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import {
-  getMe,
-  getMarketPrices,
-  getDailySignals,
-  listAlerts,
-  getMarketNews,
-  getDefaultWatchlist,
-  getEconomicCalendar,
-} from "@/lib/vixor.functions";
+import { getMe } from "@/domains/user/functions";
+import { getMarketPrices, getMarketNews, getEconomicCalendar } from "@/domains/market/functions";
+import { getDailySignals, listAlerts } from "@/domains/trading/functions";
+import { getDefaultWatchlist } from "@/domains/watchlist/functions";
 import { useQuery } from "@tanstack/react-query";
 import {
   Sparkles,

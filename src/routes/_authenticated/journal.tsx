@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { listAnalyses } from "@/lib/vixor.functions";
+import { listAnalyses } from "@/domains/analysis/functions";
 import {
   listNotes,
   deleteNote,
