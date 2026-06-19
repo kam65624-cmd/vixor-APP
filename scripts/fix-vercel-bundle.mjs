@@ -252,5 +252,10 @@ console.log(`[fix-vercel] Found ${chunks.length} code-split chunks: ${chunks.joi
 addNftTraceableImports(chunks);
 verifySsrFiles(chunks);
 fixNitroErrorHandler();
-removeApiRouteInterception();
+// NOTE: removeApiRouteInterception() removed — it was hanging on Vercel's
+// build VM after the fixNitroErrorHandler() step, even though locally it
+// completes in <50ms. The markers it was supposed to remove don't exist
+// in the current index.mjs anyway (they were stripped in Phase 0 commit
+// 217d117). The function definition is kept above for historical reference
+// but is no longer called.
 console.log("[fix-vercel] Done ✓");
