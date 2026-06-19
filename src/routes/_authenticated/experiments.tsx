@@ -77,11 +77,23 @@ function extractBestScore(result: Record<string, unknown> | null): BestScoreSumm
   return { overall, grade, totalReturn, maxDrawdown, sharpe };
 }
 
-/** Extract elapsed time in ms from result. */
-function extractElapsed(result: Record<string, unknown> | null): number | null {
-  if (!result) return null;
-  const ms = result.elapsedMs as number | undefined;
-  return typeof ms === "number" ? ms : null;
+/** Extract elapsed time in ms from result or from created_at/completed_at timestamps. */
+function extractElapsed(
+  result: Record<string, unknown> | null,
+  createdAt?: string,
+  completedAt?: string,
+): number | null {
+  // First try elapsedMs from result
+  if (result) {
+    const ms = result.elapsedMs as number | undefined;
+    if (typeof ms === "number") return ms;
+  }
+  // Fallback: calculate from timestamps
+  if (createdAt && completedAt) {
+    const diff = new Date(completedAt).getTime() - new Date(createdAt).getTime();
+    return diff > 0 ? diff : null;
+  }
+  return null;
 }
 
 /** Extract ranked strategies count from result. */
@@ -136,6 +148,7 @@ function ExperimentCard({
 }: {
   experiment: ExperimentRecord;
 }) {
+  const { t: translate } = useI18n();
   const [expanded, setExpanded] = useState(false);
 
   const formatDate = (iso: string) => {
@@ -153,7 +166,7 @@ function ExperimentCard({
   };
 
   const bestScore = extractBestScore(experiment.result);
-  const elapsedMs = extractElapsed(experiment.result);
+  const elapsedMs = extractElapsed(experiment.result, experiment.created_at, (experiment as any).completed_at);
   const rankedCount = extractRankedCount(experiment.result);
 
   const gradeColor: Record<string, string> = {
@@ -326,22 +339,18 @@ function ExperimentCard({
           ) : experiment.status === "running" ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin text-primary" />
-              <span>{t("experiments.runningMsg") || "Experiment is running... Results will appear here once complete."}</span>
+              <span>{translate("experiments.runningMsg") || "Experiment is running... Results will appear here once complete."}</span>
             </div>
           ) : (
             <div className="flex items-center gap-2 text-sm text-bearish">
               <XCircle className="size-4" />
-              <span>{t("experiments.failedMsg") || "This experiment failed. No results available."}</span>
+              <span>{translate("experiments.failedMsg") || "This experiment failed. No results available."}</span>
             </div>
           )}
         </div>
       )}
     </div>
   );
-}
-
-function t(key: string, fallback?: string): string {
-  return fallback || key;
 }
 
 // ---------------------------------------------------------------------------

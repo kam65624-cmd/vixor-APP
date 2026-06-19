@@ -366,13 +366,27 @@ async function fetchOHLCV(
   }>;
 
   if (isCrypto) {
-    klines = await fetchBinanceKlines(pair, timeframe, Math.min(limit, 1000));
+    try {
+      klines = await fetchBinanceKlines(pair, timeframe, Math.min(limit, 1000));
+    } catch (err) {
+      console.error(`[Backtest] Binance fetch error for ${pair}:`, err instanceof Error ? err.message : String(err));
+      throw new Error(`Failed to fetch market data for ${pair}. The exchange API may be temporarily unavailable. Please try again in a moment.`);
+    }
   } else {
-    klines = await fetchTwelveDataKlines(pair, timeframe, Math.min(limit, 1000));
+    try {
+      klines = await fetchTwelveDataKlines(pair, timeframe, Math.min(limit, 1000));
+    } catch (err) {
+      console.error(`[Backtest] TwelveData fetch error for ${pair}:`, err instanceof Error ? err.message : String(err));
+      throw new Error(`Failed to fetch market data for ${pair}. The data provider may be temporarily unavailable. Please try again.`);
+    }
   }
 
   if (!klines || klines.length === 0) {
-    throw new Error(`No OHLCV data available for ${pair} (${timeframe})`);
+    const source = isCrypto ? "Binance" : "TwelveData";
+    const hint = isCrypto
+      ? "Binance API might be temporarily unavailable from the server. Try again in a few seconds."
+      : "TwelveData API key might not be configured or the API might be unavailable. Please check your settings or try again.";
+    throw new Error(`Unable to load price data for ${pair} (${timeframe}) from ${source}. ${hint}`);
   }
 
   return klinesToCandles(klines);
@@ -451,7 +465,7 @@ export const runBacktestServer = createServerFn({ method: "POST" })
     }
 
     // ── 1. Fetch OHLCV data ──
-    const rawCandles = await fetchOHLCV(data.pair, data.timeframe, 1000);
+    const rawCandles = await fetchOHLCV(data.pair, data.timeframe, 500);
 
     // ── 2. Filter by date range if provided ──
     const candles = filterByDateRange(rawCandles, data.startDate, data.endDate);

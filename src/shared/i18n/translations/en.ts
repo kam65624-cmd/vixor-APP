@@ -40,6 +40,8 @@ const en = {
     crossesUp: "Crosses Up",
     crossesDown: "Crosses Down",
     create: "Create",
+    points: "pts",
+    remaining: "remaining",
   },
 
   // ═══ NAVIGATION ═══
@@ -586,6 +588,9 @@ const en = {
     tradingPair: "Trading Pair",
     strategy: "Strategy",
     failed: "Backtest failed",
+    timeframe: "Timeframe",
+    risk: "Risk %",
+    expectancy: "Expectancy",
   },
 
   // ═══ EXPERIMENTS ═══

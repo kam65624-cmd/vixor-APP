@@ -489,9 +489,12 @@ export async function fetchBinanceKlines(
   try {
     const res = await fetch(
       `https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=${binanceInterval}&limit=${limit}`,
-      { signal: AbortSignal.timeout(15000) },
+      { signal: AbortSignal.timeout(25000) },
     );
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.warn(`[PriceFetcher] Binance klines API returned ${res.status} for ${binanceSymbol}`);
+      return [];
+    }
 
     const data = await res.json();
     if (!Array.isArray(data)) return [];

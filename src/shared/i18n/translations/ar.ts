@@ -41,6 +41,9 @@ const ar: Translations = {
     below: "تحت",
     crossesUp: "يعبر لأعلى",
     crossesDown: "يعبر لأسفل",
+    create: "إنشاء",
+    points: "نقطة",
+    remaining: "متبقي",
   },
 
   // ═══ التنقل ═══
@@ -563,6 +566,9 @@ const ar: Translations = {
     tradingPair: "زوج التداول",
     strategy: "الاستراتيجية",
     failed: "فشل الاختبار الرجعي",
+    timeframe: "الإطار الزمني",
+    risk: "نسبة المخاطرة",
+    expectancy: "التوقع",
   },
 
   // ═══ التجارب ═══
