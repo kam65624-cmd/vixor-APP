@@ -40,3 +40,5 @@ dist-ssr
 # Was committed as gitlink (mode 160000) by mistake; breaks Vercel/GitHub Actions
 # checkout because no .gitmodules entry exists. Files stay on disk locally.
 audit/QuantDinger/
+tool-results/
+upload/

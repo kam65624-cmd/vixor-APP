@@ -1,11 +1,29 @@
-import { defineEventHandler, getMethod, readBody, getHeader, createError } from "h3";
+import { defineEventHandler, getMethod, readBody, getHeader, createError, getRequestIP } from "h3";
 import { supabaseAdmin } from "@/shared/supabase/client.server";
+import { SlidingWindowLimiter } from "@/shared/resilience/rate-limiter";
+
+// Rate limit: max 30 webhook calls per IP per minute
+const webhookLimiter = new SlidingWindowLimiter({
+  maxRequests: 30,
+  windowMs: 60_000,
+  keyExtractor: (_args: unknown[]) => {
+    // Default key, overridden per-request below
+    return "default";
+  },
+});
 
 export default defineEventHandler(async (event) => {
   const method = getMethod(event);
 
   if (method !== "POST") {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
+  }
+
+  // Rate limit check
+  const ip = getRequestIP(event, { xForwardedFor: true }) || "unknown";
+  const allowed = webhookLimiter.tryAcquire(ip);
+  if (!allowed) {
+    throw createError({ statusCode: 429, statusMessage: "Too many requests" });
   }
 
   // SECURITY: Verify Telegram webhook secret token

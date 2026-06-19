@@ -1180,6 +1180,111 @@ export type Database = {
           },
         ];
       };
+      // ── Payments table (20260620000000) ──
+      payments: {
+        Row: {
+          id: string;
+          user_id: string;
+          telegram_charge_id: string | null;
+          payload: string;
+          amount_stars: number | null;
+          pack_id: string | null;
+          plan_id: string | null;
+          status: string;
+          telegram_invoice_url: string | null;
+          confirmed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          telegram_charge_id?: string | null;
+          payload: string;
+          amount_stars?: number | null;
+          pack_id?: string | null;
+          plan_id?: string | null;
+          status?: string;
+          telegram_invoice_url?: string | null;
+          confirmed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          telegram_charge_id?: string | null;
+          payload?: string;
+          amount_stars?: number | null;
+          pack_id?: string | null;
+          plan_id?: string | null;
+          status?: string;
+          telegram_invoice_url?: string | null;
+          confirmed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "payments_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "payments_pack_id_fkey"; columns: ["pack_id"]; isOneToOne: false; referencedRelation: "point_packs"; referencedColumns: ["id"] },
+          { foreignKeyName: "payments_plan_id_fkey"; columns: ["plan_id"]; isOneToOne: false; referencedRelation: "premium_plans"; referencedColumns: ["id"] },
+        ];
+      };
+      // ── Domain events table (20260612000000) ──
+      domain_events: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          event_type: string;
+          payload: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          event_type: string;
+          payload?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          event_type?: string;
+          payload?: Json | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      // ── User memories table (20260612010000) ──
+      user_memories: {
+        Row: {
+          id: string;
+          user_id: string;
+          category: string | null;
+          content: string;
+          metadata: Json | null;
+          created_at: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          category?: string | null;
+          content: string;
+          metadata?: Json | null;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          category?: string | null;
+          content?: string;
+          metadata?: Json | null;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          { foreignKeyName: "user_memories_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

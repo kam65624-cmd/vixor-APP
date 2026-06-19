@@ -39,6 +39,26 @@ export default defineConfig({
         allowedHeaders: ["Content-Type", "Authorization", "X-Telegram-Bot-Api-Secret-Token"],
         credentials: true,
       },
+      // Security headers — applied to all routes
+      routeRules: {
+        "/**": {
+          headers: {
+            "X-Frame-Options": "DENY",
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "strict-origin-when-cross-origin",
+            "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+            "Content-Security-Policy": [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "img-src 'self' data: blob: https:",
+              "connect-src 'self' https://*.supabase.co https://api.twelvedata.com https://api.binance.com https://api.telegram.org https://finnhub.io https://api.finnhub.io wss://*.supabase.co",
+              "frame-ancestors 'none'",
+            ].join("; "),
+          },
+        },
+      },
       // Ensure all SSR chunks are included in the Vercel serverless function.
       // @vercel/nft doesn't trace imports within dynamically-loaded modules,
       // so code-split chunks in _ssr/ get excluded from the deployment.

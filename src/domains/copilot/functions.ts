@@ -13,6 +13,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import { SlidingWindowLimiter } from "@/shared/resilience/rate-limiter";
+
+// Rate limit: max 20 copilot requests per user per minute
+const copilotLimiter = new SlidingWindowLimiter({
+  maxRequests: 20,
+  windowMs: 60_000,
+});
 
 const ChatMessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
@@ -42,6 +49,11 @@ export const askCopilot = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
     const { message, history = [], agent, chartSession } = data;
+
+    // Rate limit check per user
+    if (!copilotLimiter.tryAcquire(userId)) {
+      throw new Error("RATE_LIMITED: Too many copilot requests. Please wait a moment.");
+    }
 
     const [
       { data: profile },
