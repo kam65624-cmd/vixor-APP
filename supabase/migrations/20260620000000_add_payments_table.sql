@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS payments (
   telegram_charge_id   TEXT UNIQUE,
   payload             TEXT NOT NULL,           -- userId_packId_timestamp (from createInvoiceLink)
   amount_stars        INT,
-  pack_id             UUID REFERENCES point_packs(id) ON DELETE SET NULL,
-  plan_id             UUID REFERENCES premium_plans(id) ON DELETE SET NULL,
+  pack_id             TEXT REFERENCES point_packs(id) ON DELETE SET NULL,
+  plan_id             TEXT REFERENCES premium_plans(id) ON DELETE SET NULL,
   status              TEXT NOT NULL DEFAULT 'pending',  -- pending | confirmed | failed
   telegram_invoice_url TEXT,
   confirmed_at        TIMESTAMPTZ,
