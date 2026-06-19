@@ -196,6 +196,7 @@ function CopilotPage() {
   const [showAgents, setShowAgents] = useState(false);
   const [consensusMode, setConsensusMode] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -328,11 +329,138 @@ function CopilotPage() {
     },
   });
 
+  // ─── Streaming Copilot ───
+  const streamCopilot = useCallback(async (params: {
+    trimmed: string;
+    history: { role: "user" | "assistant"; content: string }[];
+    agent: AgentId;
+    chartSession?: { pair: string; timeframe: string; currentPrice: number; tradingViewSymbol: string };
+  }) => {
+    const { trimmed, history, agent, chartSession } = params;
+    setIsStreaming(true);
+    setConsensusMode(false);
+
+    // Create an empty assistant message that will be progressively updated
+    const streamMsgId = crypto.randomUUID();
+    const streamMsg: ChatMessage = {
+      id: streamMsgId,
+      role: "assistant",
+      content: "",
+      agent,
+      timestamp: Date.now(),
+    };
+    setMessages((prev) => [...prev, streamMsg]);
+
+    try {
+      const token = typeof window !== "undefined"
+        ? document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("sb-access-token="))
+            ?.split("=")[1] || localStorage.getItem("sb-token") || ""
+        : "";
+
+      if (!token) throw new Error("No auth token found");
+
+      const response = await fetch("/api/copilot-stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          message: chartSession ? `${chartSession.pair} (${chartSession.timeframe}) — ${trimmed}` : trimmed,
+          history,
+          agent,
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "Stream request failed");
+        throw new Error(errText || `HTTP ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
+      const decoder = new TextDecoder();
+      let fullContent = "";
+      let resolvedAgent = agent;
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const chunk = JSON.parse(line.slice(6));
+            if (chunk.agent && chunk.agent !== "auto") resolvedAgent = chunk.agent;
+            if (chunk.delta) {
+              fullContent += chunk.delta;
+              const currentContent = fullContent;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === streamMsgId
+                    ? { ...m, content: currentContent, agent: resolvedAgent }
+                    : m,
+                ),
+              );
+            }
+          } catch {
+            // Skip malformed JSON chunks
+          }
+        }
+      }
+
+      // Save the complete message to conversation
+      if (activeConversationId && fullContent) {
+        try {
+          await saveMessageFn({
+            data: {
+              conversation_id: activeConversationId,
+              role: "assistant",
+              content: fullContent,
+              agent_id: resolvedAgent,
+            },
+          });
+          queryClient.invalidateQueries({ queryKey: ["copilot-conversations"] });
+        } catch {
+          // Silent fail
+        }
+      }
+    } catch (err) {
+      // On streaming error, replace the empty message with the error
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === streamMsgId
+            ? {
+                ...m,
+                content: `⚠️ ${err instanceof Error ? err.message : "Streaming failed"}. Retrying with standard mode...`,
+                agent: "error" as any,
+              }
+            : m,
+        ),
+      );
+      // Remove the failed message after a short delay and re-throw for the fallback
+      setTimeout(() => {
+        setMessages((prev) => prev.filter((m) => m.id !== streamMsgId));
+      }, 1500);
+      throw err;
+    } finally {
+      setIsStreaming(false);
+    }
+  }, [activeConversationId, saveMessageFn, queryClient]);
+
   // ─── Send Message ───
   const sendMessage = useCallback(
     async (text: string, agentOverride?: AgentId) => {
       const trimmed = text.trim();
-      if (!trimmed || copilotMutation.isPending || consensusMutation.isPending) return;
+      if (!trimmed || copilotMutation.isPending || consensusMutation.isPending || isStreaming) return;
       const agent = agentOverride || activeAgent;
       const userMsg: ChatMessage = {
         id: crypto.randomUUID(),
@@ -386,10 +514,14 @@ function CopilotPage() {
       if (consensusMode) {
         consensusMutation.mutate({ message: trimmed });
       } else {
-        copilotMutation.mutate({ message: trimmed, history, agent, chartSession });
+        // Try streaming first, fall back to non-streaming
+        streamCopilot({ trimmed, history, agent, chartSession }).catch(() => {
+          // Fall back to non-streaming mutation
+          copilotMutation.mutate({ message: trimmed, history, agent, chartSession });
+        });
       }
     },
-    [activeAgent, copilotMutation, consensusMutation, messages, consensusMode, activeConversationId, createConversationFn, saveMessageFn, queryClient, chartSession],
+    [activeAgent, copilotMutation, consensusMutation, messages, consensusMode, activeConversationId, createConversationFn, saveMessageFn, queryClient, chartSession, isStreaming, streamCopilot],
   );
 
   const handleSubmit = useCallback(

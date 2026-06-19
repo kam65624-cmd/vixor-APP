@@ -18,7 +18,7 @@ import {
   autoSelectAgent,
 } from "./agents";
 import { LLMRouter } from "@/shared/llm";
-import type { ChatMessage as RouterChatMessage } from "@/shared/llm/types";
+import type { ChatMessage as RouterChatMessage, ChatStreamChunk } from "@/shared/llm/types";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -122,6 +122,74 @@ async function callAI(params: {
         }. ZAI: ${zaiErr instanceof Error ? zaiErr.message : String(zaiErr)}`,
       );
     }
+  }
+}
+
+// ─── Stream the AI model via LLMRouter (for SSE streaming to frontend) ───
+async function* streamAI(params: {
+  systemPrompt: string;
+  messages: ChatMessage[];
+  userMessage: string;
+  maxOutputTokens?: number;
+  temperature?: number;
+}): AsyncGenerator<ChatStreamChunk, void, unknown> {
+  const { systemPrompt, messages, userMessage, temperature = 0.7 } = params;
+
+  const routerMessages: RouterChatMessage[] = [
+    { role: "system", content: systemPrompt },
+    ...messages.map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    })),
+    { role: "user" as const, content: userMessage },
+  ];
+
+  try {
+    const router = getRouter();
+    for await (const chunk of router.stream({
+      messages: routerMessages,
+      temperature,
+      maxTokens: params.maxOutputTokens,
+    })) {
+      yield chunk;
+    }
+  } catch (err) {
+    // Fallback: emit error as a text chunk so the frontend can display it
+    console.warn("[Copilot] Stream failed, sending error chunk:", err instanceof Error ? err.message : String(err));
+    yield {
+      delta: `**Error:** ${err instanceof Error ? err.message : "AI streaming failed"}. Falling back to non-streaming mode...`,
+      done: false,
+    };
+  }
+}
+
+// ─── Run a single agent with streaming ───
+export async function* streamAgent(params: {
+  agent: AgentId;
+  message: string;
+  history: ChatMessage[];
+  context: UserContext;
+}): AsyncGenerator<ChatStreamChunk & { agent?: AgentId }, void, unknown> {
+  const { agent: agentId, message, history, context } = params;
+
+  let selectedAgentId: AgentId = agentId;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (agentId === ("auto" as any)) {
+    selectedAgentId = autoSelectAgent(message);
+  }
+
+  const agentDef = getAgentById(selectedAgentId);
+  const systemPrompt = agentDef.systemPrompt(context);
+
+  // Yield the agent ID as the first "chunk"
+  yield { delta: "", agent: selectedAgentId };
+
+  for await (const chunk of streamAI({
+    systemPrompt,
+    messages: history,
+    userMessage: message,
+  })) {
+    yield chunk;
   }
 }
 

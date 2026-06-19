@@ -73,6 +73,7 @@ export default defineConfig({
         { route: "/api/p1-validate", handler: "./server/api/p1-validate.ts" },
         { route: "/api/health", handler: "./server/api/health.ts" },
         { route: "/api/metrics", handler: "./server/api/metrics.ts" },
+        { route: "/api/copilot-stream", handler: "./server/api/copilot-stream.ts" },
       ],
     }),
     viteReact(),
