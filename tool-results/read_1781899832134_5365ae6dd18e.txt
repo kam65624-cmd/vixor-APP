@@ -1,0 +1,728 @@
+     1→import { createFileRoute } from "@tanstack/react-router";
+     2→import { useQuery, useQueryClient } from "@tanstack/react-query";
+     3→import { getMe } from "@/domains/user/functions";
+     4→import { listExperiments, createExperiment } from "@/domains/experiment/functions";
+     5→import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+     6→import { useI18n } from "@/shared/i18n";
+     7→import { useState, useMemo, useEffect } from "react";
+     8→import {
+     9→  FlaskConical,
+    10→  Plus,
+    11→  Loader2,
+    12→  Crown,
+    13→  ArrowRight,
+    14→  CheckCircle2,
+    15→  XCircle,
+    16→  Clock,
+    17→  TrendingUp,
+    18→  TrendingDown,
+    19→  Target,
+    20→  BarChart3,
+    21→  Activity,
+    22→  ChevronDown,
+    23→  ChevronUp,
+    24→} from "lucide-react";
+    25→
+    26→export const Route = createFileRoute("/_authenticated/experiments")({
+    27→  head: () => ({ meta: [{ title: "Experiments — Vixor" }] }),
+    28→  component: ExperimentsPage,
+    29→});
+    30→
+    31→// ---------------------------------------------------------------------------
+    32→// Types for UI display
+    33→// ---------------------------------------------------------------------------
+    34→
+    35→type ExperimentStatus = "running" | "completed" | "failed" | "cancelled";
+    36→
+    37→/** Shape returned from Supabase `experiments` table via listExperiments. */
+    38→interface ExperimentRecord {
+    39→  id: string;
+    40→  user_id: string;
+    41→  config: {
+    42→    name: string;
+    43→    assetSymbol: string;
+    44→    timeframe: string;
+    45→    strategyTemplate: string;
+    46→    generations: number;
+    47→    populationSize: number;
+    48→    createdAt: string;
+    49→  };
+    50→  result: Record<string, unknown> | null;
+    51→  status: ExperimentStatus;
+    52→  created_at: string;
+    53→  completed_at: string | null;
+    54→}
+    55→
+    56→/** Derived best-score summary from the experiment result. */
+    57→interface BestScoreSummary {
+    58→  overall: number;
+    59→  grade: string;
+    60→  totalReturn: number;
+    61→  maxDrawdown: number;
+    62→  sharpe: number;
+    63→}
+    64→
+    65→/** Extract a BestScoreSummary from the serialized experiment result. */
+    66→function extractBestScore(result: Record<string, unknown> | null): BestScoreSummary | null {
+    67→  if (!result) return null;
+    68→  const best = result.bestStrategy as Record<string, unknown> | undefined;
+    69→  if (!best || !best.score) return null;
+    70→  const summary = best.summary as Record<string, unknown> | undefined;
+    71→  const overall = typeof best.score === "number" ? best.score : 0;
+    72→  const totalReturn = (summary?.totalReturn as number) ?? 0;
+    73→  const maxDrawdown = (summary?.maxDrawdown as number) ?? 0;
+    74→  const sharpe = (summary?.sharpe as number) ?? 0;
+    75→  const grade = overall >= 90 ? "A" : overall >= 80 ? "B" : overall >= 70 ? "C" : overall >= 60 ? "D" : "F";
+    76→  return { overall, grade, totalReturn, maxDrawdown, sharpe };
+    77→}
+    78→
+    79→/** Extract elapsed time in ms from result. */
+    80→function extractElapsed(result: Record<string, unknown> | null): number | null {
+    81→  if (!result) return null;
+    82→  const ms = result.elapsedMs as number | undefined;
+    83→  return typeof ms === "number" ? ms : null;
+    84→}
+    85→
+    86→/** Extract ranked strategies count from result. */
+    87→function extractRankedCount(result: Record<string, unknown> | null): number {
+    88→  if (!result) return 0;
+    89→  const arr = result.rankedStrategies as unknown[] | undefined;
+    90→  return Array.isArray(arr) ? arr.length : 0;
+    91→}
+    92→
+    93→// ---------------------------------------------------------------------------
+    94→// Premium wall
+    95→// ---------------------------------------------------------------------------
+    96→
+    97→function PremiumWall() {
+    98→  const { t } = useI18n();
+    99→  return (
+   100→    <div className="flex flex-col items-center justify-center py-16 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+   101→      <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+   102→        <Crown className="size-8 text-primary" />
+   103→      </div>
+   104→      <h2 className="text-xl font-bold tracking-tight">{t("premium.upgradeNow") || "Premium Feature"}</h2>
+   105→      <p className="text-sm text-muted-foreground text-center max-w-sm">
+   106→        Strategy experiments use AI-powered evolution to discover optimal
+   107→        parameters. Upgrade to premium to unlock this feature.
+   108→      </p>
+   109→      <a
+   110→        href="/premium"
+   111→        className="mt-2 px-6 h-11 rounded-xl gradient-primary text-primary-foreground font-bold flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform"
+   112→      >
+   113→        <Crown className="size-4" />
+   114→        <span>{t("premium.upgradeNow") || "Upgrade Now"}</span>
+   115→        <ArrowRight className="size-4" />
+   116→      </a>
+   117→    </div>
+   118→  );
+   119→}
+   120→
+   121→// ---------------------------------------------------------------------------
+   122→// Status badge
+   123→// ---------------------------------------------------------------------------
+   124→
+   125→function StatusBadge({ status }: { status: ExperimentStatus }) {
+   126→  switch (status) {
+   127→    case "running":
+   128→      return (
+   129→        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+   130→          <Loader2 className="size-3 animate-spin" />
+   131→          Running
+   132→        </span>
+   133→      );
+   134→    case "completed":
+   135→      return (
+   136→        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-bullish/10 text-bullish border border-bullish/20">
+   137→          <CheckCircle2 className="size-3" />
+   138→          Completed
+   139→        </span>
+   140→      );
+   141→    case "failed":
+   142→      return (
+   143→        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-bearish/10 text-bearish border border-bearish/20">
+   144→          <XCircle className="size-3" />
+   145→          Failed
+   146→        </span>
+   147→      );
+   148→  }
+   149→}
+   150→
+   151→// ---------------------------------------------------------------------------
+   152→// Experiment card
+   153→// ---------------------------------------------------------------------------
+   154→
+   155→function ExperimentCard({
+   156→  experiment,
+   157→}: {
+   158→  experiment: ExperimentRecord;
+   159→}) {
+   160→  const [expanded, setExpanded] = useState(false);
+   161→
+   162→  const formatDate = (iso: string) => {
+   163→    try {
+   164→      return new Date(iso).toLocaleDateString("en-US", {
+   165→        month: "short",
+   166→        day: "numeric",
+   167→        year: "numeric",
+   168→        hour: "2-digit",
+   169→        minute: "2-digit",
+   170→      });
+   171→    } catch {
+   172→      return iso;
+   173→    }
+   174→  };
+   175→
+   176→  const bestScore = extractBestScore(experiment.result);
+   177→  const elapsedMs = extractElapsed(experiment.result);
+   178→  const rankedCount = extractRankedCount(experiment.result);
+   179→
+   180→  const gradeColor: Record<string, string> = {
+   181→    A: "text-bullish",
+   182→    B: "text-primary",
+   183→    C: "text-yellow-500",
+   184→    D: "text-bearish",
+   185→    F: "text-bearish",
+   186→  };
+   187→
+   188→  return (
+   189→    <div className="vixor-card overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+   190→      {/* Main row */}
+   191→      <div
+   192→        className="p-4 cursor-pointer hover:bg-card-hover/50 transition-colors"
+   193→        onClick={() => setExpanded(!expanded)}
+   194→      >
+   195→        <div className="flex items-start justify-between mb-2">
+   196→          <div className="flex items-center gap-2.5">
+   197→            <div
+   198→              className={`size-10 rounded-xl flex items-center justify-center ${
+   199→                experiment.status === "running"
+   200→                  ? "bg-primary/10"
+   201→                  : experiment.status === "completed"
+   202→                    ? "bg-bullish/10"
+   203→                    : "bg-bearish/10"
+   204→              }`}
+   205→            >
+   206→              <FlaskConical
+   207→                className={`size-5 ${
+   208→                  experiment.status === "running"
+   209→                    ? "text-primary"
+   210→                    : experiment.status === "completed"
+   211→                      ? "text-bullish"
+   212→                      : "text-bearish"
+   213→                }`}
+   214→              />
+   215→            </div>
+   216→            <div>
+   217→              <div className="font-bold text-sm">{experiment.config.name}</div>
+   218→              <div className="text-xs text-muted-foreground font-mono">
+   219→                {experiment.config.assetSymbol} · {experiment.config.timeframe}
+   220→              </div>
+   221→            </div>
+   222→          </div>
+   223→          <div className="flex items-center gap-2">
+   224→            <StatusBadge status={experiment.status} />
+   225→            <ChevronDown
+   226→              className={`size-4 text-muted-foreground transition-transform ${
+   227→                expanded ? "rotate-180" : ""
+   228→              }`}
+   229→            />
+   230→          </div>
+   231→        </div>
+   232→
+   233→        {/* Quick stats row */}
+   234→        <div className="grid grid-cols-4 gap-3">
+   235→          <div>
+   236→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   237→              Created
+   238→            </div>
+   239→            <div className="text-[11px] font-mono">{formatDate(experiment.created_at)}</div>
+   240→          </div>
+   241→          <div>
+   242→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   243→              Generations
+   244→            </div>
+   245→            <div className="text-[11px] font-mono font-bold">
+   246→              {experiment.config.generations}
+   247→            </div>
+   248→          </div>
+   249→          <div>
+   250→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   251→              Population
+   252→            </div>
+   253→            <div className="text-[11px] font-mono">{experiment.config.populationSize}</div>
+   254→          </div>
+   255→          <div>
+   256→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   257→              Duration
+   258→            </div>
+   259→            <div className="text-[11px] font-mono">
+   260→              {elapsedMs
+   261→                ? `${(elapsedMs / 1000).toFixed(1)}s`
+   262→                : "—"}
+   263→            </div>
+   264→          </div>
+   265→        </div>
+   266→      </div>
+   267→
+   268→      {/* Expanded details */}
+   269→      {expanded && (
+   270→        <div className="border-t border-border p-4 space-y-3 bg-background/50 animate-in fade-in slide-in-from-top-1 duration-200">
+   271→          {experiment.status === "completed" && bestScore ? (
+   272→            <>
+   273→              {/* Score summary */}
+   274→              <div className="grid grid-cols-2 gap-3">
+   275→                <div className="p-2 rounded-lg bg-background border border-border">
+   276→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   277→                    Overall Score
+   278→                  </div>
+   279→                  <div className="flex items-center gap-2">
+   280→                    <span className="text-lg font-bold font-mono text-primary">
+   281→                      {bestScore.overall}
+   282→                    </span>
+   283→                    <span
+   284→                      className={`text-lg font-bold ${
+   285→                        gradeColor[bestScore.grade] || "text-muted-foreground"
+   286→                      }`}
+   287→                    >
+   288→                      {bestScore.grade}
+   289→                    </span>
+   290→                  </div>
+   291→                </div>
+   292→                <div className="p-2 rounded-lg bg-background border border-border">
+   293→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   294→                    Total Return
+   295→                  </div>
+   296→                  <div
+   297→                    className={`text-lg font-bold font-mono ${
+   298→                      bestScore.totalReturn > 0 ? "text-bullish" : "text-bearish"
+   299→                    }`}
+   300→                  >
+   301→                    {bestScore.totalReturn > 0 ? "+" : ""}
+   302→                    {bestScore.totalReturn}%
+   303→                  </div>
+   304→                </div>
+   305→                <div className="p-2 rounded-lg bg-background border border-border">
+   306→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   307→                    Max Drawdown
+   308→                  </div>
+   309→                  <div className="text-lg font-bold font-mono text-bearish">
+   310→                    -{bestScore.maxDrawdown}%
+   311→                  </div>
+   312→                </div>
+   313→                <div className="p-2 rounded-lg bg-background border border-border">
+   314→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   315→                    Sharpe Ratio
+   316→                  </div>
+   317→                  <div
+   318→                    className={`text-lg font-bold font-mono ${
+   319→                      bestScore.sharpe > 1.5
+   320→                        ? "text-bullish"
+   321→                        : bestScore.sharpe > 1
+   322→                          ? "text-primary"
+   323→                          : "text-bearish"
+   324→                    }`}
+   325→                  >
+   326→                    {bestScore.sharpe}
+   327→                  </div>
+   328→                </div>
+   329→              </div>
+   330→
+   331→              {/* Strategy info */}
+   332→              <div className="grid grid-cols-2 gap-3 mt-2">
+   333→                <div className="p-2 rounded-lg bg-background">
+   334→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   335→                    Template
+   336→                  </div>
+   337→                  <div className="text-xs font-bold font-mono">{experiment.config.strategyTemplate}</div>
+   338→                </div>
+   339→                <div className="p-2 rounded-lg bg-background">
+   340→                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   341→                    Ranked Strategies
+   342→                  </div>
+   343→                  <div className="text-xs font-bold font-mono">{rankedCount}</div>
+   344→                </div>
+   345→              </div>
+   346→            </>
+   347→          ) : experiment.status === "running" ? (
+   348→            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+   349→              <Loader2 className="size-4 animate-spin text-primary" />
+   350→              <span>Experiment is running… Results will appear here once complete.</span>
+   351→            </div>
+   352→          ) : (
+   353→            <div className="flex items-center gap-2 text-sm text-bearish">
+   354→              <XCircle className="size-4" />
+   355→              <span>This experiment failed. No results available.</span>
+   356→            </div>
+   357→          )}
+   358→        </div>
+   359→      )}
+   360→    </div>
+   361→  );
+   362→}
+   363→
+   364→// ---------------------------------------------------------------------------
+   365→// New experiment dialog content
+   366→// ---------------------------------------------------------------------------
+   367→
+   368→const STRATEGY_TEMPLATES = [
+   369→  { id: "sma_crossover", label: "SMA Crossover" },
+   370→  { id: "rsi_reversal", label: "RSI Reversal" },
+   371→  { id: "breakout", label: "Breakout" },
+   372→  { id: "macd_momentum", label: "MACD Momentum" },
+   373→];
+   374→
+   375→const ASSET_SYMBOLS = [
+   376→  "BTC/USDT",
+   377→  "ETH/USDT",
+   378→  "XAU/USD",
+   379→  "EUR/USD",
+   380→  "SOL/USDT",
+   381→  "GBP/USD",
+   382→];
+   383→
+   384→const TIMEFRAMES = ["1H", "4H", "1D"];
+   385→
+   386→// ---------------------------------------------------------------------------
+   387→// Main page component
+   388→// ---------------------------------------------------------------------------
+   389→
+   390→function ExperimentsPage() {
+   391→  const { t } = useI18n();
+   392→  const queryClient = useQueryClient();
+   393→  const fetchMe = useStableServerFn(getMe);
+   394→  const fetchExperiments = useStableServerFn(listExperiments);
+   395→  const createExp = useStableServerFn(createExperiment);
+   396→
+   397→  const me = useQuery(
+   398→    useMemo(
+   399→      () => ({ queryKey: ["me"] as const, queryFn: () => fetchMe({}), staleTime: 30_000 }),
+   400→      [fetchMe],
+   401→    ),
+   402→  );
+   403→
+   404→  const isPremium = !!me.data?.isPremium;
+   405→
+   406→  // Fetch real experiments from server
+   407→  const experimentsQuery = useQuery(
+   408→    useMemo(
+   409→      () => ({
+   410→        queryKey: ["experiments"] as const,
+   411→        queryFn: () => fetchExperiments({}),
+   412→        staleTime: 10_000,
+   413→        // Poll every 5 seconds when there's a running experiment
+   414→        refetchInterval: experiments.some((e: ExperimentRecord) => e.status === "running") ? 5_000 : false,
+   415→      }),
+   416→      // eslint-disable-next-line react-hooks/exhaustive-deps
+   417→      [fetchExperiments],
+   418→    ),
+   419→  );
+   420→
+   421→  const experiments: ExperimentRecord[] = (experimentsQuery.data as ExperimentRecord[] | undefined) ?? [];
+   422→
+   423→  // Polling flag derived from experiments list
+   424→  const hasRunning = experiments.some((e) => e.status === "running");
+   425→  const [creating, setCreating] = useState(false);
+   426→  const [createError, setCreateError] = useState<string | null>(null);
+   427→
+   428→  // New experiment form state
+   429→  const [showNewForm, setShowNewForm] = useState(false);
+   430→  const [newName, setNewName] = useState("");
+   431→  const [newAsset, setNewAsset] = useState("BTC/USDT");
+   432→  const [newTimeframe, setNewTimeframe] = useState("1H");
+   433→  const [newStrategy, setNewStrategy] = useState("sma_crossover");
+   434→  const [newGenerations, setNewGenerations] = useState(5);
+   435→  const [newPopulation, setNewPopulation] = useState(12);
+   436→
+   437→  const handleCreate = async () => {
+   438→    if (!newName.trim()) return;
+   439→    setCreating(true);
+   440→    setCreateError(null);
+   441→    try {
+   442→      const { id } = await createExp({
+   443→        data: {
+   444→          name: newName.trim(),
+   445→          assetSymbol: newAsset,
+   446→          timeframe: newTimeframe,
+   447→          strategyTemplate: newStrategy,
+   448→          generations: newGenerations,
+   449→          populationSize: newPopulation,
+   450→        },
+   451→      });
+   452→      // Optimistic: immediately invalidate to refetch the list (which now includes the new row)
+   453→      await queryClient.invalidateQueries({ queryKey: ["experiments"] });
+   454→      setShowNewForm(false);
+   455→      setNewName("");
+   456→    } catch (e) {
+   457→      setCreateError(e instanceof Error ? e.message : t("experiments.createFailed") || "Failed to create experiment");
+   458→    } finally {
+   459→      setCreating(false);
+   460→    }
+   461→  };
+   462→
+   463→  // Summary stats
+   464→  const completedCount = experiments.filter((e) => e.status === "completed").length;
+   465→  const runningCount = experiments.filter((e) => e.status === "running").length;
+   466→  const bestScore = experiments
+   467→    .map((e) => extractBestScore(e.result))
+   468→    .filter((s): s is BestScoreSummary => s !== null)
+   469→    .sort((a, b) => b.overall - a.overall)[0];
+   470→
+   471→  // Show loading while checking premium status
+   472→  if (me.isLoading) {
+   473→    return (
+   474→      <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+   475→        <div className="flex items-end justify-between">
+   476→          <div>
+   477→            <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+   478→              {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
+   479→            </div>
+   480→            <h1 className="text-2xl font-bold tracking-tight">{t("experiments.title") || "Experiments"}</h1>
+   481→          </div>
+   482→        </div>
+   483→        <div className="vixor-card p-6 text-center">
+   484→          <Loader2 className="size-6 animate-spin mx-auto text-primary mb-2" />
+   485→          <div className="text-sm text-muted-foreground">{t("common.loading") || "Loading…"}</div>
+   486→        </div>
+   487→      </div>
+   488→    );
+   489→  }
+   490→
+   491→  if (!isPremium) {
+   492→    return (
+   493→      <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+   494→        <div className="flex items-end justify-between">
+   495→          <div>
+   496→            <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+   497→              {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
+   498→            </div>
+   499→            <h1 className="text-2xl font-bold tracking-tight">{t("experiments.title") || "Experiments"}</h1>
+   500→          </div>
+   501→        </div>
+   502→        <PremiumWall />
+   503→      </div>
+   504→    );
+   505→  }
+   506→
+   507→  return (
+   508→    <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+   509→      {/* Header */}
+   510→      <div className="flex items-end justify-between">
+   511→        <div>
+   512→          <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+   513→            {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
+   514→          </div>
+   515→          <h1 className="text-2xl font-bold tracking-tight">{t("experiments.title") || "Experiments"}</h1>
+   516→        </div>
+   517→        <button
+   518→          onClick={() => setShowNewForm(!showNewForm)}
+   519→          className="h-9 px-3 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary flex items-center gap-1.5 hover:scale-[1.02] active:scale-95 transition-transform"
+   520→        >
+   521→          <Plus className="size-3.5" />
+   522→          {t("experiments.newExperiment") || "New Experiment"}
+   523→        </button>
+   524→      </div>
+   525→
+   526→      {/* New experiment form */}
+   527→      {showNewForm && (
+   528→        <div className="vixor-card p-4 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+   529→          <div className="flex items-center gap-2">
+   530→            <FlaskConical className="size-4 text-primary" />
+   531→            <span className="text-sm font-bold">{t("experiments.newExperiment") || "New Experiment"}</span>
+   532→          </div>
+   533→
+   534→          {/* Name */}
+   535→          <div>
+   536→            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   537→              Experiment Name
+   538→            </label>
+   539→            <input
+   540→              type="text"
+   541→              value={newName}
+   542→              onChange={(e) => setNewName(e.target.value)}
+   543→              placeholder="e.g. SMA Crossover — BTC/USDT"
+   544→              className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+   545→            />
+   546→          </div>
+   547→
+   548→          {/* Asset + Timeframe */}
+   549→          <div className="grid grid-cols-2 gap-3">
+   550→            <div>
+   551→              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   552→                Asset Symbol
+   553→              </label>
+   554→              <div className="flex flex-wrap gap-1.5">
+   555→                {ASSET_SYMBOLS.map((s) => (
+   556→                  <button
+   557→                    key={s}
+   558→                    onClick={() => setNewAsset(s)}
+   559→                    className={`px-2.5 h-7 rounded-lg text-[11px] font-bold transition-all ${
+   560→                      newAsset === s
+   561→                        ? "bg-primary/10 text-primary border border-primary/30"
+   562→                        : "bg-muted text-muted-foreground border border-border"
+   563→                    }`}
+   564→                  >
+   565→                    {s}
+   566→                  </button>
+   567→                ))}
+   568→              </div>
+   569→            </div>
+   570→            <div>
+   571→              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   572→                Timeframe
+   573→              </label>
+   574→              <div className="flex gap-1.5">
+   575→                {TIMEFRAMES.map((tf) => (
+   576→                  <button
+   577→                    key={tf}
+   578→                    onClick={() => setNewTimeframe(tf)}
+   579→                    className={`flex-1 h-7 rounded-lg text-[11px] font-bold transition-all border flex items-center justify-center ${
+   580→                      newTimeframe === tf
+   581→                        ? "bg-primary text-primary-foreground border-primary glow-primary"
+   582→                        : "bg-card border-border text-muted-foreground hover:bg-card-hover"
+   583→                    }`}
+   584→                  >
+   585→                    {tf}
+   586→                  </button>
+   587→                ))}
+   588→              </div>
+   589→            </div>
+   590→          </div>
+   591→
+   592→          {/* Strategy */}
+   593→          <div>
+   594→            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   595→              Strategy Template
+   596→            </label>
+   597→            <div className="flex flex-wrap gap-1.5">
+   598→              {STRATEGY_TEMPLATES.map((s) => (
+   599→                <button
+   600→                  key={s.id}
+   601→                  onClick={() => setNewStrategy(s.id)}
+   602→                  className={`px-2.5 h-7 rounded-lg text-[11px] font-bold transition-all border ${
+   603→                    newStrategy === s.id
+   604→                      ? "bg-primary text-primary-foreground border-primary glow-primary"
+   605→                      : "bg-card border-border text-muted-foreground hover:bg-card-hover"
+   606→                  }`}
+   607→                >
+   608→                  {s.label}
+   609→                </button>
+   610→              ))}
+   611→            </div>
+   612→          </div>
+   613→
+   614→          {/* Generations + Population */}
+   615→          <div className="grid grid-cols-2 gap-3">
+   616→            <div>
+   617→              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   618→                Generations
+   619→              </label>
+   620→              <input
+   621→                type="number"
+   622→                min={1}
+   623→                max={20}
+   624→                value={newGenerations}
+   625→                onChange={(e) => setNewGenerations(Number(e.target.value))}
+   626→                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+   627→              />
+   628→            </div>
+   629→            <div>
+   630→              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+   631→                Population Size
+   632→              </label>
+   633→              <input
+   634→                type="number"
+   635→                min={4}
+   636→                max={50}
+   637→                value={newPopulation}
+   638→                onChange={(e) => setNewPopulation(Number(e.target.value))}
+   639→                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+   640→              />
+   641→            </div>
+   642→          </div>
+   643→
+   644→          <button
+   645→            onClick={handleCreate}
+   646→            disabled={creating || !newName.trim()}
+   647→            className="w-full h-11 rounded-xl gradient-primary text-primary-foreground font-bold flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50"
+   648→          >
+   649→            {creating ? (
+   650→              <>
+   651→                <Loader2 className="size-4 animate-spin" />
+   652→                Creating Experiment…
+   653→              </>
+   654→            ) : (
+   655→              <>
+   656→                <FlaskConical className="size-4" />
+   657→                {t("experiments.startExperiment") || "Start Experiment"}
+   658→              </>
+   659→            )}
+   660→          </button>
+   661→        </div>
+   662→      )}
+   663→
+   664→      {/* Create error */}
+   665→      {createError && (
+   666→        <div className="vixor-card p-3 border-l-4 border-l-bearish">
+   667→          <div className="text-xs text-bearish">{createError}</div>
+   668→        </div>
+   669→      )}
+   670→
+   671→      {/* Summary stats */}
+   672→      <div className="vixor-card p-4">
+   673→        <div className="grid grid-cols-3 gap-3">
+   674→          <div className="p-2 rounded-lg bg-background">
+   675→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   676→              Total Experiments
+   677→            </div>
+   678→            <div className="text-lg font-bold font-mono">{experiments.length}</div>
+   679→            {runningCount > 0 && (
+   680→              <div className="text-[10px] text-primary font-bold">{runningCount} running</div>
+   681→            )}
+   682→          </div>
+   683→          <div className="p-2 rounded-lg bg-background">
+   684→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   685→              Completed
+   686→            </div>
+   687→            <div className="text-lg font-bold font-mono text-bullish">{completedCount}</div>
+   688→          </div>
+   689→          <div className="p-2 rounded-lg bg-background">
+   690→            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+   691→              Best Score
+   692→            </div>
+   693→            <div className="text-lg font-bold font-mono text-primary">
+   694→              {bestScore ? (
+   695→                <>
+   696→                  {bestScore.overall}
+   697→                  <span className="text-xs text-muted-foreground ml-1">{bestScore.grade}</span>
+   698→                </>
+   699→              ) : (
+   700→                "—"
+   701→              )}
+   702→            </div>
+   703→          </div>
+   704→        </div>
+   705→      </div>
+   706→
+   707→      {/* Experiment list */}
+   708→      <div className="space-y-3">
+   709→        {experiments.length === 0 ? (
+   710→          <div className="vixor-card p-6 text-center">
+   711→            <FlaskConical className="size-8 text-muted-foreground/30 mx-auto mb-2" />
+   712→            <div className="text-sm text-muted-foreground mb-2">No experiments yet</div>
+   713→            <button
+   714→              onClick={() => setShowNewForm(true)}
+   715→              className="px-4 h-9 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary"
+   716→            >
+   717→              <Plus className="size-3.5 inline mr-1" />
+   718→              Create Your First Experiment
+   719→            </button>
+   720→          </div>
+   721→        ) : (
+   722→          experiments.map((exp) => <ExperimentCard key={exp.id} experiment={exp} />)
+   723→        )}
+   724→      </div>
+   725→    </div>
+   726→  );
+   727→}
+   728→

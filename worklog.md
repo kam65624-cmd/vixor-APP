@@ -551,3 +551,33 @@ Stage Summary:
 - All changes are backward-compatible (dynamic imports resolve to same functions)
 - Build succeeds, QA clean (0 fails)
 - User must: git push origin main from their local machine with credentials
+---
+Task ID: 1
+Agent: Main Agent
+Task: Replace premium paywall with points-based access for backtest & experiments
+
+Work Log:
+- Analyzed screenshots showing premium paywall blocking backtest/experiments pages
+- Reviewed full codebase: backtest engine, experiment runner, points system, premium logic
+- Confirmed backtest engine already uses REAL data (Binance API for crypto, TwelveData for forex)
+- Confirmed experiment runner already uses REAL OHLCV data with genetic evolution
+- Removed PremiumWall component from backtest.tsx, replaced with points-based access
+- Removed PremiumWall component from experiments.tsx, replaced with points-based access
+- Added spend_points RPC call to runBacktestServer (10 points per run)
+- Added spend_points RPC call to createExperiment (25 points per experiment)
+- Added points balance badge in page headers (green if enough, red if low)
+- Added cost warning banner when insufficient points
+- Added disabled state for run/create buttons when not enough points
+- Added INSUFFICIENT_POINTS error handling with friendly Arabic messages
+- Updated i18n translations (ar.ts + en.ts) with new keys
+- TypeScript check passed (no new errors from changes)
+- Committed: 23a3df7
+- Pushed to GitHub: main
+- Deployed to Vercel: READY
+
+Stage Summary:
+- Backtest: No longer requires premium subscription. Uses 10 points per run.
+- Experiments: No longer requires premium subscription. Uses 25 points per run.
+- Both pages show real data from Binance/TwelveData APIs (not mock)
+- Users can buy points via Telegram Stars or get bonus points via referrals
+- New users start with 200 points (signup bonus)
