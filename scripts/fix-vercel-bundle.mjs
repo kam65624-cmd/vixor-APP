@@ -158,38 +158,83 @@ function fixNitroErrorHandler() {
 
 function removeApiRouteInterception() {
   const indexPath = join(FUNC_DIR, "index.mjs");
-  if (!existsSync(indexPath)) return;
+  if (!existsSync(indexPath)) {
+    console.log("[fix-vercel] index.mjs not found, skipping API interception removal");
+    return;
+  }
 
   let content = readFileSync(indexPath, "utf-8");
+
+  // Fast pre-check: if NONE of the markers exist, skip entirely.
+  // Avoids any regex work on a 295KB file when nothing needs to be removed.
+  if (!content.includes("__vixor_api__") &&
+      !content.includes("async fetch(req, context)")) {
+    console.log("[fix-vercel] No API route interception found (already clean)");
+    return;
+  }
+
   let modified = false;
 
-  // Remove the __vixor_api__ function definition
+  // Remove the __vixor_api__ function definition using bracket-matching
+  // (NOT regex — regex with [\s\S]*? on a 295KB file causes catastrophic
+  // backtracking on Vercel's slower single-core build VMs, hanging the build
+  // after "[fix-vercel] Patched index.mjs - added debug error handler").
   if (content.includes("__vixor_api__")) {
-    // Remove the entire __vixor_api__ function block
-    content = content.replace(
-      /\/\/ ── Vixor: API Route Interception ──[\s\S]*?^\}\n/m,
-      "// [REMOVED] API route interception — VIXOR MASTER V2 Phase 0\n"
-    );
-    modified = true;
-    console.log("[fix-vercel] Removed __vixor_api__ function from index.mjs");
+    const startMarker = "// ── Vixor: API Route Interception ──";
+    const startIdx = content.indexOf(startMarker);
+    if (startIdx !== -1) {
+      // Find the function opening brace after the marker
+      const braceIdx = content.indexOf("{", startIdx);
+      if (braceIdx !== -1) {
+        // Walk the string, matching braces, to find the function's closing brace
+        let depth = 1;
+        let i = braceIdx + 1;
+        const len = content.length;
+        while (i < len && depth > 0) {
+          const ch = content[i];
+          if (ch === "{") depth++;
+          else if (ch === "}") depth--;
+          i++;
+        }
+        if (depth === 0) {
+          // Include the trailing newline if present
+          let endIdx = i;
+          if (content[endIdx] === "\n") endIdx++;
+          content = content.slice(0, startIdx) +
+            "// [REMOVED] API route interception — VIXOR MASTER V2 Phase 0\n" +
+            content.slice(endIdx);
+          modified = true;
+          console.log("[fix-vercel] Removed __vixor_api__ function from index.mjs");
+        }
+      }
+    }
   }
 
-  // Remove the API interception call in fetch()
-  if (content.includes("const apiResponse = __vixor_api__")) {
-    content = content.replace(
-      /\s*const apiResponse = __vixor_api__\(req\);\s*\n\s*if \(apiResponse\) return apiResponse;\s*\n/,
-      "\n"
-    );
-    modified = true;
-    console.log("[fix-vercel] Removed API interception call from fetch()");
+  // Remove the API interception call in fetch() — string replacement, no regex
+  const apiCallMarker = "const apiResponse = __vixor_api__(req);";
+  const apiCallIdx = content.indexOf(apiCallMarker);
+  if (apiCallIdx !== -1) {
+    // Find the end of "if (apiResponse) return apiResponse;\n"
+    const ifMarker = "if (apiResponse) return apiResponse;";
+    const ifIdx = content.indexOf(ifMarker, apiCallIdx);
+    if (ifIdx !== -1) {
+      let endIdx = ifIdx + ifMarker.length;
+      if (content[endIdx] === "\n") endIdx++;
+      // Also strip leading whitespace/newline before apiCallMarker
+      let startIdx = apiCallIdx;
+      while (startIdx > 0 && (content[startIdx - 1] === " " || content[startIdx - 1] === "\t")) {
+        startIdx--;
+      }
+      if (content[startIdx - 1] === "\n") startIdx--;
+      content = content.slice(0, startIdx) + "\n" + content.slice(endIdx);
+      modified = true;
+      console.log("[fix-vercel] Removed API interception call from fetch()");
+    }
   }
 
-  // Revert async fetch back to sync if we were the ones who made it async
+  // Revert async fetch back to sync — simple string replacement
   if (content.includes("async fetch(req, context)")) {
-    content = content.replace(
-      "async fetch(req, context)",
-      "fetch(req, context)"
-    );
+    content = content.split("async fetch(req, context)").join("fetch(req, context)");
     modified = true;
     console.log("[fix-vercel] Reverted fetch() from async to sync");
   }
@@ -197,8 +242,6 @@ function removeApiRouteInterception() {
   if (modified) {
     writeFileSync(indexPath, content, "utf-8");
     console.log("[fix-vercel] API route interception CLEANED from index.mjs");
-  } else {
-    console.log("[fix-vercel] No API route interception found (already clean)");
   }
 }
 
