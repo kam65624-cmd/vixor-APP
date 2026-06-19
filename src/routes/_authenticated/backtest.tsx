@@ -15,7 +15,9 @@ import {
   Target,
   BarChart3,
   Activity,
-  Crown,
+  Coins,
+  AlertTriangle,
+  ShoppingBag,
   ArrowRight,
 } from "lucide-react";
 import type {
@@ -30,6 +32,8 @@ export const Route = createFileRoute("/_authenticated/backtest")({
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
+
+const BACKTEST_COST = 10;
 
 const PAIRS = [
   "BTC/USDT",
@@ -82,35 +86,6 @@ const defaultForm: BacktestFormState = {
 };
 
 // ---------------------------------------------------------------------------
-// Premium wall component
-// ---------------------------------------------------------------------------
-
-function PremiumWall() {
-  const navigate = { to: "/premium" } as any; // avoid import for now
-  const { t } = useI18n();
-  return (
-    <div className="flex flex-col items-center justify-center py-16 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-        <Crown className="size-8 text-primary" />
-      </div>
-      <h2 className="text-xl font-bold tracking-tight">{t("premium.upgradeNow") || "Premium Feature"}</h2>
-      <p className="text-sm text-muted-foreground text-center max-w-sm">
-        Backtesting is available for premium users. Upgrade to run strategy
-        simulations and analyze historical performance.
-      </p>
-      <a
-        href="/premium"
-        className="mt-2 px-6 h-11 rounded-xl gradient-primary text-primary-foreground font-bold flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform"
-      >
-        <Crown className="size-4" />
-        <span>{t("premium.upgradeNow") || "Upgrade Now"}</span>
-        <ArrowRight className="size-4" />
-      </a>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Main page component
 // ---------------------------------------------------------------------------
 
@@ -126,7 +101,8 @@ function BacktestPage() {
     ),
   );
 
-  const isPremium = !!me.data?.isPremium;
+  const pointsBalance = me.data?.balance?.balance ?? 0;
+  const hasEnoughPoints = pointsBalance >= BACKTEST_COST;
 
   const [form, setForm] = useState<BacktestFormState>(defaultForm);
   const [running, setRunning] = useState(false);
@@ -153,13 +129,18 @@ function BacktestPage() {
       });
       setResult(data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("backtest.failed") || "Backtest failed");
+      const msg = e instanceof Error ? e.message : t("backtest.failed") || "Backtest failed";
+      if (msg.startsWith("INSUFFICIENT_POINTS:")) {
+        setError(t("backtest.insufficientPoints") || "Insufficient points to run this backtest.");
+      } else {
+        setError(msg);
+      }
     } finally {
       setRunning(false);
     }
   };
 
-  // Show loading while checking premium status
+  // Show loading
   if (me.isLoading) {
     return (
       <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -173,37 +154,26 @@ function BacktestPage() {
         </div>
         <div className="vixor-card p-6 text-center">
           <Loader2 className="size-6 animate-spin mx-auto text-primary mb-2" />
-          <div className="text-sm text-muted-foreground">{t("common.loading") || "Loading…"}</div>
+          <div className="text-sm text-muted-foreground">{t("common.loading") || "Loading..."}</div>
         </div>
-      </div>
-    );
-  }
-
-  if (!isPremium) {
-    return (
-      <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-        <div className="flex items-end justify-between">
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
-              {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight">{t("backtest.title") || "Backtest"}</h1>
-          </div>
-        </div>
-        <PremiumWall />
       </div>
     );
   }
 
   return (
     <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      {/* Header */}
+      {/* Header + Points Balance */}
       <div className="flex items-end justify-between">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
             {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
           </div>
           <h1 className="text-2xl font-bold tracking-tight">{t("backtest.title") || "Backtest"}</h1>
+        </div>
+        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${hasEnoughPoints ? "bg-primary/10 text-primary" : "bg-bearish/10 text-bearish"}`}>
+          <Coins className="size-3.5" />
+          <span>{pointsBalance}</span>
+          <span className="text-muted-foreground font-normal">{t("common.points") || "pts"}</span>
         </div>
       </div>
 
@@ -352,21 +322,35 @@ function BacktestPage() {
           </div>
         </div>
 
+        {/* Cost warning if low balance */}
+        {!hasEnoughPoints && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-bearish/5 border border-bearish/20">
+            <AlertTriangle className="size-4 text-bearish shrink-0" />
+            <span className="text-xs text-bearish">
+              {t("backtest.needMorePoints") || `You need ${BACKTEST_COST} points. You have ${pointsBalance}.`}
+            </span>
+            <a href="/premium" className="ml-auto text-[10px] font-bold text-primary whitespace-nowrap">
+              {t("premium.getPoints") || "Get Points"}
+            </a>
+          </div>
+        )}
+
         {/* Run button */}
         <button
           onClick={handleRun}
-          disabled={running}
-          className="w-full h-11 rounded-xl gradient-primary text-primary-foreground font-bold flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50"
+          disabled={running || !hasEnoughPoints}
+          className={`w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform disabled:opacity-50 ${hasEnoughPoints ? "gradient-primary text-primary-foreground glow-primary hover:scale-[1.02] active:scale-95" : "bg-muted text-muted-foreground"}`}
         >
           {running ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              {t("backtest.running") || "Running Backtest…"}
+              {t("backtest.running") || "Running Backtest..."}
             </>
           ) : (
             <>
               <Play className="size-4" />
-              {t("backtest.runBacktest") || "Run Backtest"}
+              <span>{t("backtest.runBacktest") || "Run Backtest"}</span>
+              <span className="text-xs opacity-75">(-{BACKTEST_COST} pts)</span>
             </>
           )}
         </button>
@@ -382,6 +366,17 @@ function BacktestPage() {
       {/* Results */}
       {result && (
         <>
+          {/* Points spent feedback */}
+          <div className="vixor-card p-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Coins className="size-3.5 text-primary" />
+              <span>-{BACKTEST_COST} {t("common.points") || "pts"}</span>
+            </div>
+            <div className="text-xs font-bold text-primary">
+              {(result as any).remainingBalance ?? pointsBalance - BACKTEST_COST} {t("common.points") || "pts"} {t("common.remaining") || "remaining"}
+            </div>
+          </div>
+
           {/* Metrics Grid */}
           <div className="vixor-card p-4 space-y-3">
             <div className="flex items-center gap-2">

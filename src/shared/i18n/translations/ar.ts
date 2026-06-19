@@ -508,6 +508,7 @@ const ar: Translations = {
   // ═══ بريميوم ═══
   premium: {
     title: "بريميوم",
+    getPoints: "اشتري نقاط",
     vixorPremium: "Vixor بريميوم",
     activeUntil: "نشط حتى {date}",
     unlockUnlimited: "تحليلات غير محدودة. إعدادات أذكى.",
@@ -556,8 +557,12 @@ const ar: Translations = {
     cagr: "معدل النمو السنوي المركب",
     equityCurve: "منحنى رأس المال",
     noResults: "شغّل اختباراً رجعياً لعرض النتائج",
-    premiumRequired: "الاختبار الرجعي يتطلب اشتراك بريميوم",
-    upgradePremium: "ترقية إلى بريميوم",
+    insufficientPoints: "نقاط غير كافية",
+    needMorePoints: "تحتاج 10 نقاط لتشغيل الاختبار الرجعي",
+    configuration: "الإعدادات",
+    tradingPair: "زوج التداول",
+    strategy: "الاستراتيجية",
+    failed: "فشل الاختبار الرجعي",
   },
 
   // ═══ التجارب ═══
@@ -580,8 +585,12 @@ const ar: Translations = {
     statusCompleted: "مكتملة",
     statusFailed: "فشلت",
     noExperiments: "لا توجد تجارب بعد. أنشئ واحدة للبدء.",
-    premiumRequired: "التجارب تتطلب اشتراك بريميوم",
-    upgradePremium: "ترقية إلى بريميوم",
+    insufficientPoints: "نقاط غير كافية",
+    needMorePoints: "تحتاج 25 نقطة لإنشاء تجربة",
+    createFailed: "فشل إنشاء التجربة",
+    runningMsg: "التجربة قيد التشغيل... ستظهر النتائج هنا عند الاكتمال.",
+    failedMsg: "فشلت هذه التجربة. لا توجد نتائج متاحة.",
+    createFirst: "أنشئ تجربتك الأولى",
   },
 
   // ═══ الإحالات ═══

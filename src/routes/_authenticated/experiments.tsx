@@ -4,29 +4,30 @@ import { getMe } from "@/domains/user/functions";
 import { listExperiments, createExperiment } from "@/domains/experiment/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   FlaskConical,
   Plus,
   Loader2,
-  Crown,
   ArrowRight,
   CheckCircle2,
   XCircle,
-  Clock,
-  TrendingUp,
-  TrendingDown,
-  Target,
-  BarChart3,
-  Activity,
+  Coins,
+  AlertTriangle,
+  ShoppingBag,
   ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/experiments")({
   head: () => ({ meta: [{ title: "Experiments — Vixor" }] }),
   component: ExperimentsPage,
 });
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const EXPERIMENT_COST = 25;
 
 // ---------------------------------------------------------------------------
 // Types for UI display
@@ -91,34 +92,6 @@ function extractRankedCount(result: Record<string, unknown> | null): number {
 }
 
 // ---------------------------------------------------------------------------
-// Premium wall
-// ---------------------------------------------------------------------------
-
-function PremiumWall() {
-  const { t } = useI18n();
-  return (
-    <div className="flex flex-col items-center justify-center py-16 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-        <Crown className="size-8 text-primary" />
-      </div>
-      <h2 className="text-xl font-bold tracking-tight">{t("premium.upgradeNow") || "Premium Feature"}</h2>
-      <p className="text-sm text-muted-foreground text-center max-w-sm">
-        Strategy experiments use AI-powered evolution to discover optimal
-        parameters. Upgrade to premium to unlock this feature.
-      </p>
-      <a
-        href="/premium"
-        className="mt-2 px-6 h-11 rounded-xl gradient-primary text-primary-foreground font-bold flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform"
-      >
-        <Crown className="size-4" />
-        <span>{t("premium.upgradeNow") || "Upgrade Now"}</span>
-        <ArrowRight className="size-4" />
-      </a>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Status badge
 // ---------------------------------------------------------------------------
 
@@ -128,21 +101,27 @@ function StatusBadge({ status }: { status: ExperimentStatus }) {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
           <Loader2 className="size-3 animate-spin" />
-          Running
+          {status}
         </span>
       );
     case "completed":
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-bullish/10 text-bullish border border-bullish/20">
           <CheckCircle2 className="size-3" />
-          Completed
+          {status}
         </span>
       );
     case "failed":
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-bearish/10 text-bearish border border-bearish/20">
           <XCircle className="size-3" />
-          Failed
+          {status}
+        </span>
+      );
+    default:
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground border border-border">
+          {status}
         </span>
       );
   }
@@ -259,7 +238,7 @@ function ExperimentCard({
             <div className="text-[11px] font-mono">
               {elapsedMs
                 ? `${(elapsedMs / 1000).toFixed(1)}s`
-                : "—"}
+                : "---"}
             </div>
           </div>
         </div>
@@ -347,18 +326,22 @@ function ExperimentCard({
           ) : experiment.status === "running" ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin text-primary" />
-              <span>Experiment is running… Results will appear here once complete.</span>
+              <span>{t("experiments.runningMsg") || "Experiment is running... Results will appear here once complete."}</span>
             </div>
           ) : (
             <div className="flex items-center gap-2 text-sm text-bearish">
               <XCircle className="size-4" />
-              <span>This experiment failed. No results available.</span>
+              <span>{t("experiments.failedMsg") || "This experiment failed. No results available."}</span>
             </div>
           )}
         </div>
       )}
     </div>
   );
+}
+
+function t(key: string, fallback?: string): string {
+  return fallback || key;
 }
 
 // ---------------------------------------------------------------------------
@@ -388,7 +371,7 @@ const TIMEFRAMES = ["1H", "4H", "1D"];
 // ---------------------------------------------------------------------------
 
 function ExperimentsPage() {
-  const { t } = useI18n();
+  const { t: useT } = useI18n();
   const queryClient = useQueryClient();
   const fetchMe = useStableServerFn(getMe);
   const fetchExperiments = useStableServerFn(listExperiments);
@@ -401,7 +384,8 @@ function ExperimentsPage() {
     ),
   );
 
-  const isPremium = !!me.data?.isPremium;
+  const pointsBalance = me.data?.balance?.balance ?? 0;
+  const hasEnoughPoints = pointsBalance >= EXPERIMENT_COST;
 
   // Fetch real experiments from server
   const experimentsQuery = useQuery(
@@ -410,18 +394,24 @@ function ExperimentsPage() {
         queryKey: ["experiments"] as const,
         queryFn: () => fetchExperiments({}),
         staleTime: 10_000,
-        // Poll every 5 seconds when there's a running experiment
-        refetchInterval: experiments.some((e: ExperimentRecord) => e.status === "running") ? 5_000 : false,
       }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       [fetchExperiments],
     ),
   );
 
   const experiments: ExperimentRecord[] = (experimentsQuery.data as ExperimentRecord[] | undefined) ?? [];
 
-  // Polling flag derived from experiments list
+  // Polling: refetch every 5 seconds when there's a running experiment
   const hasRunning = experiments.some((e) => e.status === "running");
+  useMemo(() => {
+    if (hasRunning) {
+      const interval = setInterval(() => {
+        queryClient.invalidateQueries({ queryKey: ["experiments"] });
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [hasRunning]);
+
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -439,7 +429,7 @@ function ExperimentsPage() {
     setCreating(true);
     setCreateError(null);
     try {
-      const { id } = await createExp({
+      await createExp({
         data: {
           name: newName.trim(),
           assetSymbol: newAsset,
@@ -449,12 +439,18 @@ function ExperimentsPage() {
           populationSize: newPopulation,
         },
       });
-      // Optimistic: immediately invalidate to refetch the list (which now includes the new row)
+      // Invalidate to refetch with the new experiment
       await queryClient.invalidateQueries({ queryKey: ["experiments"] });
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
       setShowNewForm(false);
       setNewName("");
     } catch (e) {
-      setCreateError(e instanceof Error ? e.message : t("experiments.createFailed") || "Failed to create experiment");
+      const msg = e instanceof Error ? e.message : useT("experiments.createFailed") || "Failed to create experiment";
+      if (msg.startsWith("INSUFFICIENT_POINTS:")) {
+        setCreateError(useT("experiments.insufficientPoints") || "Insufficient points to create an experiment.");
+      } else {
+        setCreateError(msg);
+      }
     } finally {
       setCreating(false);
     }
@@ -463,64 +459,55 @@ function ExperimentsPage() {
   // Summary stats
   const completedCount = experiments.filter((e) => e.status === "completed").length;
   const runningCount = experiments.filter((e) => e.status === "running").length;
-  const bestScore = experiments
+  const bestOverall = experiments
     .map((e) => extractBestScore(e.result))
     .filter((s): s is BestScoreSummary => s !== null)
     .sort((a, b) => b.overall - a.overall)[0];
 
-  // Show loading while checking premium status
+  // Show loading
   if (me.isLoading) {
     return (
       <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
         <div className="flex items-end justify-between">
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
-              {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
+              {useT("signals.vixorIntelligence") || "VIXOR ENGINE"}
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">{t("experiments.title") || "Experiments"}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{useT("experiments.title") || "Experiments"}</h1>
           </div>
         </div>
         <div className="vixor-card p-6 text-center">
           <Loader2 className="size-6 animate-spin mx-auto text-primary mb-2" />
-          <div className="text-sm text-muted-foreground">{t("common.loading") || "Loading…"}</div>
+          <div className="text-sm text-muted-foreground">{useT("common.loading") || "Loading..."}</div>
         </div>
-      </div>
-    );
-  }
-
-  if (!isPremium) {
-    return (
-      <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-        <div className="flex items-end justify-between">
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
-              {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight">{t("experiments.title") || "Experiments"}</h1>
-          </div>
-        </div>
-        <PremiumWall />
       </div>
     );
   }
 
   return (
     <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      {/* Header */}
+      {/* Header + Points Balance */}
       <div className="flex items-end justify-between">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
-            {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
+            {useT("signals.vixorIntelligence") || "VIXOR ENGINE"}
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("experiments.title") || "Experiments"}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{useT("experiments.title") || "Experiments"}</h1>
         </div>
-        <button
-          onClick={() => setShowNewForm(!showNewForm)}
-          className="h-9 px-3 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary flex items-center gap-1.5 hover:scale-[1.02] active:scale-95 transition-transform"
-        >
-          <Plus className="size-3.5" />
-          {t("experiments.newExperiment") || "New Experiment"}
-        </button>
+        <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${hasEnoughPoints ? "bg-primary/10 text-primary" : "bg-bearish/10 text-bearish"}`}>
+            <Coins className="size-3.5" />
+            <span>{pointsBalance}</span>
+            <span className="text-muted-foreground font-normal">{useT("common.points") || "pts"}</span>
+          </div>
+          <button
+            onClick={() => setShowNewForm(!showNewForm)}
+            className="h-9 px-3 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary flex items-center gap-1.5 hover:scale-[1.02] active:scale-95 transition-transform"
+          >
+            <Plus className="size-3.5" />
+            {useT("experiments.newExperiment") || "New Experiment"}
+          </button>
+        </div>
       </div>
 
       {/* New experiment form */}
@@ -528,19 +515,33 @@ function ExperimentsPage() {
         <div className="vixor-card p-4 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex items-center gap-2">
             <FlaskConical className="size-4 text-primary" />
-            <span className="text-sm font-bold">{t("experiments.newExperiment") || "New Experiment"}</span>
+            <span className="text-sm font-bold">{useT("experiments.newExperiment") || "New Experiment"}</span>
+            <span className="ml-auto text-[10px] font-bold text-primary">-{EXPERIMENT_COST} pts</span>
           </div>
+
+          {/* Insufficient points warning */}
+          {!hasEnoughPoints && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-bearish/5 border border-bearish/20">
+              <AlertTriangle className="size-4 text-bearish shrink-0" />
+              <span className="text-xs text-bearish">
+                {useT("experiments.needMorePoints") || `You need ${EXPERIMENT_COST} points. You have ${pointsBalance}.`}
+              </span>
+              <a href="/premium" className="ml-auto text-[10px] font-bold text-primary whitespace-nowrap">
+                {useT("premium.getPoints") || "Get Points"}
+              </a>
+            </div>
+          )}
 
           {/* Name */}
           <div>
             <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-              Experiment Name
+              {useT("experiments.experimentName") || "Experiment Name"}
             </label>
             <input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="e.g. SMA Crossover — BTC/USDT"
+              placeholder="e.g. SMA Crossover - BTC/USDT"
               className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
@@ -549,7 +550,7 @@ function ExperimentsPage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                Asset Symbol
+                {useT("experiments.assetSymbol") || "Asset Symbol"}
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {ASSET_SYMBOLS.map((s) => (
@@ -569,7 +570,7 @@ function ExperimentsPage() {
             </div>
             <div>
               <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                Timeframe
+                {useT("experiments.timeframe") || "Timeframe"}
               </label>
               <div className="flex gap-1.5">
                 {TIMEFRAMES.map((tf) => (
@@ -592,7 +593,7 @@ function ExperimentsPage() {
           {/* Strategy */}
           <div>
             <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-              Strategy Template
+              {useT("experiments.strategyTemplate") || "Strategy Template"}
             </label>
             <div className="flex flex-wrap gap-1.5">
               {STRATEGY_TEMPLATES.map((s) => (
@@ -615,7 +616,7 @@ function ExperimentsPage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                Generations
+                {useT("experiments.generations") || "Generations"}
               </label>
               <input
                 type="number"
@@ -628,7 +629,7 @@ function ExperimentsPage() {
             </div>
             <div>
               <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                Population Size
+                {useT("experiments.populationSize") || "Population Size"}
               </label>
               <input
                 type="number"
@@ -643,18 +644,19 @@ function ExperimentsPage() {
 
           <button
             onClick={handleCreate}
-            disabled={creating || !newName.trim()}
-            className="w-full h-11 rounded-xl gradient-primary text-primary-foreground font-bold flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50"
+            disabled={creating || !newName.trim() || !hasEnoughPoints}
+            className={`w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform disabled:opacity-50 ${hasEnoughPoints ? "gradient-primary text-primary-foreground glow-primary hover:scale-[1.02] active:scale-95" : "bg-muted text-muted-foreground"}`}
           >
             {creating ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Creating Experiment…
+                {useT("experiments.starting") || "Starting experiment..."}
               </>
             ) : (
               <>
                 <FlaskConical className="size-4" />
-                {t("experiments.startExperiment") || "Start Experiment"}
+                <span>{useT("experiments.startExperiment") || "Start Experiment"}</span>
+                <span className="text-xs opacity-75">(-{EXPERIMENT_COST} pts)</span>
               </>
             )}
           </button>
@@ -673,7 +675,7 @@ function ExperimentsPage() {
         <div className="grid grid-cols-3 gap-3">
           <div className="p-2 rounded-lg bg-background">
             <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-              Total Experiments
+              {useT("experiments.totalExperiments") || "Total"}
             </div>
             <div className="text-lg font-bold font-mono">{experiments.length}</div>
             {runningCount > 0 && (
@@ -682,22 +684,22 @@ function ExperimentsPage() {
           </div>
           <div className="p-2 rounded-lg bg-background">
             <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-              Completed
+              {useT("experiments.completed") || "Completed"}
             </div>
             <div className="text-lg font-bold font-mono text-bullish">{completedCount}</div>
           </div>
           <div className="p-2 rounded-lg bg-background">
             <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-              Best Score
+              {useT("experiments.bestScore") || "Best Score"}
             </div>
             <div className="text-lg font-bold font-mono text-primary">
-              {bestScore ? (
+              {bestOverall ? (
                 <>
-                  {bestScore.overall}
-                  <span className="text-xs text-muted-foreground ml-1">{bestScore.grade}</span>
+                  {bestOverall.overall}
+                  <span className="text-xs text-muted-foreground ml-1">{bestOverall.grade}</span>
                 </>
               ) : (
-                "—"
+                "---"
               )}
             </div>
           </div>
@@ -709,13 +711,13 @@ function ExperimentsPage() {
         {experiments.length === 0 ? (
           <div className="vixor-card p-6 text-center">
             <FlaskConical className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-            <div className="text-sm text-muted-foreground mb-2">No experiments yet</div>
+            <div className="text-sm text-muted-foreground mb-2">{useT("experiments.noExperiments") || "No experiments yet. Create one to get started."}</div>
             <button
               onClick={() => setShowNewForm(true)}
               className="px-4 h-9 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary"
             >
               <Plus className="size-3.5 inline mr-1" />
-              Create Your First Experiment
+              {useT("experiments.createFirst") || "Create Your First Experiment"}
             </button>
           </div>
         ) : (

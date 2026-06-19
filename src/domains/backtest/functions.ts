@@ -9,6 +9,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import { supabaseAdmin } from "@/shared/supabase/client.server";
 import { AssetRegistry } from "@/shared/asset-registry";
 import { runBacktest } from "./engine";
 import type { Candle, CompiledStrategy } from "./engine/types";
@@ -402,6 +403,8 @@ const VALID_TIMEFRAMES = ["1M", "5M", "15M", "30M", "1H", "4H", "1D", "1W"];
 // Server Function 1: runBacktestServer (POST)
 // ============================================================================
 
+const BACKTEST_POINT_COST = 10;
+
 export const runBacktestServer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => RunBacktestInput.parse(d))
@@ -411,6 +414,29 @@ export const runBacktestServer = createServerFn({ method: "POST" })
     console.log(
       `[Backtest] User ${userId} running backtest: ${data.pair} ${data.timeframe} ${data.strategyPreset}`,
     );
+
+    // ── 0. Deduct points ──
+    const { data: balBefore } = await supabaseAdmin
+      .from("points_balances")
+      .select("balance")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const currentBalance = (balBefore as { balance: number } | null)?.balance ?? 0;
+    if (currentBalance < BACKTEST_POINT_COST) {
+      throw new Error(
+        `INSUFFICIENT_POINTS:${BACKTEST_POINT_COST}:${currentBalance}`,
+      );
+    }
+    const { error: spendErr } = await supabaseAdmin.rpc("spend_points", {
+      _user: userId,
+      _amount: BACKTEST_POINT_COST,
+      _reason: "analysis_cost",
+      _meta: { action: "backtest", pair: data.pair, timeframe: data.timeframe, strategy: data.strategyPreset },
+    });
+    if (spendErr) {
+      console.error(`[Backtest] Failed to spend points for ${userId}:`, spendErr.message);
+      throw new Error("Failed to deduct points. Please try again.");
+    }
 
     // ── Validate inputs ──
     if (!VALID_PRESETS.includes(data.strategyPreset)) {
@@ -469,23 +495,11 @@ export const runBacktestServer = createServerFn({ method: "POST" })
         `Sharpe ${result.metrics.sharpe.toFixed(2)}`,
     );
 
-    // TODO: Persist result to `backtest_results` Supabase table
-    // await supabase.from("backtest_results").insert({
-    //   user_id: userId,
-    //   pair: data.pair,
-    //   timeframe: data.timeframe,
-    //   strategy: data.strategyPreset,
-    //   initial_capital: data.initialCapital,
-    //   final_equity: result.finalEquity,
-    //   total_return: result.metrics.totalReturn,
-    //   sharpe: result.metrics.sharpe,
-    //   max_drawdown: result.metrics.maxDrawdown,
-    //   total_trades: result.metrics.totalTrades,
-    //   win_rate: result.metrics.winRate,
-    //   created_at: new Date().toISOString(),
-    // });
-
-    return result;
+    return {
+      ...result,
+      pointsCost: BACKTEST_POINT_COST,
+      remainingBalance: currentBalance - BACKTEST_POINT_COST,
+    };
   });
 
 // ============================================================================

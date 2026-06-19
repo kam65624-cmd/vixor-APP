@@ -530,6 +530,7 @@ const en = {
   // ═══ PREMIUM ═══
   premium: {
     title: "Premium",
+    getPoints: "Get Points",
     vixorPremium: "Vixor Premium",
     activeUntil: "Active until {date}",
     unlockUnlimited: "Unlimited analyses. Smarter setups.",
@@ -579,8 +580,12 @@ const en = {
     cagr: "CAGR",
     equityCurve: "Equity Curve",
     noResults: "Run a backtest to see results",
-    premiumRequired: "Backtesting requires a Premium subscription",
-    upgradePremium: "Upgrade to Premium",
+    insufficientPoints: "Insufficient Points",
+    needMorePoints: "You need 10 points to run a backtest",
+    configuration: "Configuration",
+    tradingPair: "Trading Pair",
+    strategy: "Strategy",
+    failed: "Backtest failed",
   },
 
   // ═══ EXPERIMENTS ═══
@@ -603,8 +608,12 @@ const en = {
     statusCompleted: "Completed",
     statusFailed: "Failed",
     noExperiments: "No experiments yet. Create one to get started.",
-    premiumRequired: "Experiments require a Premium subscription",
-    upgradePremium: "Upgrade to Premium",
+    insufficientPoints: "Insufficient Points",
+    needMorePoints: "You need 25 points to create an experiment",
+    createFailed: "Failed to create experiment",
+    runningMsg: "Experiment is running... Results will appear here once complete.",
+    failedMsg: "This experiment failed. No results available.",
+    createFirst: "Create Your First Experiment",
   },
 
   // ═══ REFERRAL ═══

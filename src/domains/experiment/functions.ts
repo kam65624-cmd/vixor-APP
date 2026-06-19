@@ -85,6 +85,8 @@ export const getExperiment = createServerFn({ method: "GET" })
 // 3. createExperiment
 // ---------------------------------------------------------------------------
 
+const EXPERIMENT_POINT_COST = 25;
+
 export const createExperiment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(
@@ -102,6 +104,29 @@ export const createExperiment = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { userId } = context;
+
+    // ── 0. Deduct points ──
+    const { data: balBefore } = await supabaseAdmin
+      .from("points_balances")
+      .select("balance")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const currentBalance = (balBefore as { balance: number } | null)?.balance ?? 0;
+    if (currentBalance < EXPERIMENT_POINT_COST) {
+      throw new Error(
+        `INSUFFICIENT_POINTS:${EXPERIMENT_POINT_COST}:${currentBalance}`,
+      );
+    }
+    const { error: spendErr } = await supabaseAdmin.rpc("spend_points", {
+      _user: userId,
+      _amount: EXPERIMENT_POINT_COST,
+      _reason: "analysis_cost",
+      _meta: { action: "experiment", name: data.name, assetSymbol: data.assetSymbol, strategyTemplate: data.strategyTemplate },
+    });
+    if (spendErr) {
+      console.error(`[Experiment] Failed to spend points for ${userId}:`, spendErr.message);
+      throw new Error("Failed to deduct points. Please try again.");
+    }
 
     const config = {
       name: data.name,
@@ -129,7 +154,7 @@ export const createExperiment = createServerFn({ method: "POST" })
     // Fire-and-forget: run the experiment asynchronously
     void runExperimentAsync(experiment.id, userId, config);
 
-    return { id: experiment.id, status: "running" };
+    return { id: experiment.id, status: "running", pointsCost: EXPERIMENT_POINT_COST, remainingBalance: currentBalance - EXPERIMENT_POINT_COST };
   });
 
 // ---------------------------------------------------------------------------
