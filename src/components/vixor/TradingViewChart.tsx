@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, memo, useCallback } from "react";
+import { useEffect, useRef, memo, useCallback, useState } from "react";
 
 // Symbol mapping: user-friendly pair names to TradingView symbols
 export const SYMBOL_MAP: Record<string, string> = {
@@ -79,22 +79,6 @@ interface TradingViewChartProps {
   chartContainerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-// Declare TradingView widget type on window
-declare global {
-  interface Window {
-    TradingView?: {
-      widget: new (config: Record<string, unknown>) => {
-        activeChart: () => {
-          onIntervalChanged: () => {
-            subscribe: (null_: null, cb: () => void) => void;
-          };
-          interval: () => string;
-        };
-      };
-    };
-  }
-}
-
 function TradingViewChartInner({
   symbol,
   interval = "240",
@@ -104,8 +88,8 @@ function TradingViewChartInner({
   chartContainerRef,
 }: TradingViewChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const widgetRef = useRef<unknown>(null);
-  const scriptRef = useRef<HTMLScriptElement | null>(null);
+  const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Sync the internal ref to the external ref for screenshot capture
   useEffect(() => {
@@ -118,111 +102,118 @@ function TradingViewChartInner({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Clean up any existing widget content
+    setHasError(false);
+    setIsLoaded(false);
+
+    // Clean up any existing content
     const container = containerRef.current;
     container.innerHTML = "";
 
-    // Create the inner div for the chart
-    const chartDiv = document.createElement("div");
-    chartDiv.id = `tv_chart_${symbol.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`;
-    chartDiv.style.height = "100%";
-    chartDiv.style.width = "100%";
-    container.appendChild(chartDiv);
+    // Create a unique container ID for the widget
+    const widgetId = `tv_widget_${symbol.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`;
 
-    function initWidget() {
-      if (!window.TradingView) return;
+    // Build the widget container structure
+    const widgetContainer = document.createElement("div");
+    widgetContainer.className = "tradingview-widget-container";
+    widgetContainer.style.height = "100%";
+    widgetContainer.style.width = "100%";
 
-      try {
-        const widget = new window.TradingView.widget({
-          autosize: true,
-          symbol: symbol,
-          interval: interval,
-          timezone: "Etc/UTC",
-          theme: theme,
-          style: "1",
-          locale: "en",
-          enable_publishing: false,
-          allow_symbol_change: true,
-          container_id: chartDiv.id,
-          hide_top_toolbar: false,
-          hide_legend: false,
-          save_image: false,
-          backgroundColor: "rgba(15, 17, 23, 1)",
-          gridColor: "rgba(255, 255, 255, 0.03)",
-        });
-        widgetRef.current = widget;
+    const widgetDiv = document.createElement("div");
+    widgetDiv.id = widgetId;
+    widgetDiv.style.height = "100%";
+    widgetDiv.style.width = "100%";
+    widgetContainer.appendChild(widgetDiv);
+    container.appendChild(widgetContainer);
 
-        // Listen for interval changes from the TradingView widget
-        if (onIntervalChange && widget && typeof (widget as any).activeChart === "function") {
-          try {
-            const chart = (widget as any).activeChart();
-            if (chart && chart.onIntervalChanged) {
-              chart.onIntervalChanged().subscribe(null, () => {
-                try {
-                  const currentInterval = chart.interval();
-                  if (currentInterval && onIntervalChange) {
-                    onIntervalChange(currentInterval);
-                  }
-                } catch (e) {
-                  // Ignore errors from interval subscription
-                }
-              });
-            }
-          } catch (e) {
-            // Widget may not support interval subscription
-          }
-        }
-      } catch (err) {
-        console.warn("[TradingView] Widget init error:", err);
-      }
-    }
+    // Create the embed script for the TradingView Advanced Chart Widget
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.async = true;
+    script.type = "text/javascript";
 
-    // Check if the script is already loaded
-    if (window.TradingView) {
-      initWidget();
-    } else {
-      // Remove any previously added script
-      const existingScript = document.querySelector(
-        'script[src="https://s3.tradingview.com/tv.js"]',
-      );
-      if (existingScript) {
-        existingScript.remove();
-      }
+    const config = {
+      autosize: true,
+      symbol: symbol,
+      interval: interval,
+      timezone: "Etc/UTC",
+      theme: theme,
+      style: "1",
+      locale: "en",
+      enable_publishing: false,
+      allow_symbol_change: true,
+      hide_top_toolbar: false,
+      hide_legend: false,
+      save_image: false,
+      backgroundColor: "rgba(15, 17, 23, 1)",
+      gridColor: "rgba(255, 255, 255, 0.03)",
+      withdateranges: true,
+      details: true,
+      hotlist: false,
+      calendar: false,
+      show_popup_button: true,
+      popup_width: "1000",
+      popup_height: "650",
+    };
 
-      const script = document.createElement("script");
-      script.src = "https://s3.tradingview.com/tv.js";
-      script.async = true;
-      script.onload = () => {
-        initWidget();
-      };
-      script.onerror = () => {
-        console.warn("[TradingView] Failed to load script");
-        // Show fallback
-        container.innerHTML = `
-          <div class="flex items-center justify-center h-full text-muted-foreground">
-            <div class="text-center p-6">
-              <div class="text-lg font-semibold mb-2">Chart Loading Failed</div>
-              <div class="text-sm">Unable to load TradingView widget. Please check your internet connection and try again.</div>
-            </div>
-          </div>
-        `;
-      };
-      document.head.appendChild(script);
-      scriptRef.current = script;
-    }
+    script.textContent = JSON.stringify(config);
+
+    script.onload = () => {
+      setIsLoaded(true);
+    };
+
+    script.onerror = () => {
+      console.warn("[TradingView] Failed to load Advanced Chart Widget script");
+      setHasError(true);
+    };
+
+    widgetContainer.appendChild(script);
 
     return () => {
-      // Cleanup: remove the widget and script
-      widgetRef.current = null;
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
-      }
-      if (scriptRef.current && scriptRef.current.parentNode) {
-        scriptRef.current.parentNode.removeChild(scriptRef.current);
-        scriptRef.current = null;
-      }
+      widgetRefCleanup(container, widgetContainer);
     };
-  }, [symbol, interval, theme, onIntervalChange]);
+  }, [symbol, interval, theme]);
+
+  if (hasError) {
+    return (
+      <div
+        className="w-full rounded-xl overflow-hidden border border-border flex items-center justify-center"
+        style={{ height }}
+      >
+        <div className="text-center p-6 text-muted-foreground">
+          <svg
+            className="mx-auto mb-3 size-10 opacity-40"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+            />
+          </svg>
+          <div className="text-sm font-semibold mb-1">Chart Loading Failed</div>
+          <div className="text-xs opacity-70">
+            Unable to load TradingView widget. Check your connection and try again.
+          </div>
+          <button
+            onClick={() => {
+              setHasError(false);
+              // Force re-render by toggling a key-equivalent
+              const container = containerRef.current;
+              if (container) {
+                container.innerHTML = "";
+              }
+            }}
+            className="mt-3 px-4 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -231,6 +222,15 @@ function TradingViewChartInner({
       style={{ height }}
     />
   );
+}
+
+function widgetRefCleanup(
+  container: HTMLDivElement,
+  widgetContainer: HTMLElement,
+) {
+  if (container && container.contains(widgetContainer)) {
+    container.innerHTML = "";
+  }
 }
 
 export const TradingViewChart = memo(TradingViewChartInner);
