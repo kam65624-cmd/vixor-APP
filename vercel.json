@@ -9,13 +9,5 @@
       "path": "/api/check-alerts",
       "schedule": "0 0 * * *"
     }
-  ],
-  "functions": {
-    "src/routes/**/*.ts": {
-      "maxDuration": 30
-    },
-    "api/**/*.ts": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }

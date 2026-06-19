@@ -22,6 +22,10 @@ export default defineConfig({
     }),
     nitro({
       preset: "vercel",
+      // Increase serverless function timeout for Binance/TwelveData API calls
+      vercel: {
+        maxDuration: 30,
+      },
       // Ensure all SSR chunks are included in the Vercel serverless function.
       // @vercel/nft doesn't trace imports within dynamically-loaded modules,
       // so code-split chunks in _ssr/ get excluded from the deployment.
