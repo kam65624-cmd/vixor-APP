@@ -142,3 +142,29 @@ Stage Summary:
 - Tests: ✅ 82/82 passing (21 new arbitrage tests)
 - Lint: ✅ 0 errors
 - Phase A + B.1 COMPLETE
+---
+Task ID: phase-b2
+Agent: Super Z (Main)
+Task: Phase B.2 — Wallet Hub (non-custodial wallet connection system)
+
+Work Log:
+- Installed wallet dependencies: @solana/wallet-adapter-*, wagmi, viem, @noble/ed25519
+- Created src/domains/wallet/ domain (13 files): types, config, functions, server exports, adapter components
+- Built WalletProvider (React context) with connect/disconnect/clearError
+- Built WalletConnectButton (4 states: disconnected/connecting/connected/error)
+- Created API endpoints: /api/wallet/connect (GET challenge + POST verify) and /api/wallet/session
+- Created Supabase migration: 3 tables (wallet_sessions, web3_transactions, nft_badges) + RLS
+- Added WalletProvider to __root.tsx, lazy-loaded WalletConnectButton in AppShell Header
+- Added WALLET_SOLANA_RPC_URL + WALLET_EVM_RPC_URL to .env.example
+- Wrote 22 unit tests (config: 14, session/JWT: 8)
+
+Security Audit (36 checks):
+- 27 PASS, 9 PARTIAL, 0 FAIL
+- Fixed 4 HIGH priority items: bs58 import, truncateAddress arg, barrel split, @noble/ed25519 install
+- Non-custodial model verified, JWT HS256, IP fingerprinting, RLS on all tables
+
+Stage Summary:
+- Build: ✅ 14.24s clean
+- Tests: ✅ 104/104 passing (22 new wallet tests)
+- Lint: ✅ 0 errors
+- Commit: 4101d87
