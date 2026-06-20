@@ -19,6 +19,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { AppShell } from "@/components/vixor/AppShell";
+import { WalletProvider } from "@/domains/wallet/adapter";
 import {
   wasRenderLoopDetected,
   getRenderLoopComponent,
@@ -309,11 +310,13 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
-        <GlobalErrorBoundary onReset={handleErrorReset}>
-          <AppShell>
-            <Outlet />
-          </AppShell>
-        </GlobalErrorBoundary>
+        <WalletProvider>
+          <GlobalErrorBoundary onReset={handleErrorReset}>
+            <AppShell>
+              <Outlet />
+            </AppShell>
+          </GlobalErrorBoundary>
+        </WalletProvider>
       </I18nProvider>
     </QueryClientProvider>
   );

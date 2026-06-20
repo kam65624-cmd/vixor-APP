@@ -5,6 +5,13 @@ import { lazy, Suspense, useEffect, useRef, useState, useCallback, memo } from "
 import { getTelegramInitData } from "@/shared/telegram";
 import { useRenderGuard } from "@/shared/hooks/use-render-guard";
 
+// Lazy-load wallet connect button (Web3 deps are large — load only when needed)
+const WalletConnectButton = lazy(() =>
+  import("@/domains/wallet/adapter").then((m) => ({
+    default: m.WalletConnectButton,
+  }))
+);
+
 // P0: Lazy-load OnboardingModal — shown once, should not be in root chunk
 const OnboardingModal = lazy(() =>
   import("./OnboardingModal").then((m) => ({ default: m.OnboardingModal }))
@@ -255,6 +262,9 @@ const Header = memo(function Header() {
             <span className="font-bold tracking-tight text-lg">Vixor</span>
           </Link>
           <div className="flex items-center gap-2">
+            <Suspense fallback={null}>
+              <WalletConnectButton />
+            </Suspense>
             <Link
               to="/notifications"
               aria-label="Notifications"
