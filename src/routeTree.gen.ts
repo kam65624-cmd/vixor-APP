@@ -27,6 +27,7 @@ import { Route as AuthenticatedDailyLoopRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCopilotRouteImport } from './routes/_authenticated/copilot'
 import { Route as AuthenticatedChartsRouteImport } from './routes/_authenticated/charts'
 import { Route as AuthenticatedBacktestRouteImport } from './routes/_authenticated/backtest'
+import { Route as AuthenticatedArbitrageRouteImport } from './routes/_authenticated/arbitrage'
 import { Route as AuthenticatedAnalyzeRouteImport } from './routes/_authenticated/analyze'
 import { Route as AuthenticatedAnalysisIdRouteImport } from './routes/_authenticated/analysis.$id'
 
@@ -121,6 +122,11 @@ const AuthenticatedBacktestRoute = AuthenticatedBacktestRouteImport.update({
   path: '/backtest',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedArbitrageRoute = AuthenticatedArbitrageRouteImport.update({
+  id: '/arbitrage',
+  path: '/arbitrage',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAnalyzeRoute = AuthenticatedAnalyzeRouteImport.update({
   id: '/analyze',
   path: '/analyze',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/analyze': typeof AuthenticatedAnalyzeRoute
+  '/arbitrage': typeof AuthenticatedArbitrageRoute
   '/backtest': typeof AuthenticatedBacktestRoute
   '/charts': typeof AuthenticatedChartsRoute
   '/copilot': typeof AuthenticatedCopilotRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/analyze': typeof AuthenticatedAnalyzeRoute
+  '/arbitrage': typeof AuthenticatedArbitrageRoute
   '/backtest': typeof AuthenticatedBacktestRoute
   '/charts': typeof AuthenticatedChartsRoute
   '/copilot': typeof AuthenticatedCopilotRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/analyze': typeof AuthenticatedAnalyzeRoute
+  '/_authenticated/arbitrage': typeof AuthenticatedArbitrageRoute
   '/_authenticated/backtest': typeof AuthenticatedBacktestRoute
   '/_authenticated/charts': typeof AuthenticatedChartsRoute
   '/_authenticated/copilot': typeof AuthenticatedCopilotRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/analyze'
+    | '/arbitrage'
     | '/backtest'
     | '/charts'
     | '/copilot'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/analyze'
+    | '/arbitrage'
     | '/backtest'
     | '/charts'
     | '/copilot'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/analyze'
+    | '/_authenticated/arbitrage'
     | '/_authenticated/backtest'
     | '/_authenticated/charts'
     | '/_authenticated/copilot'
@@ -397,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBacktestRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/arbitrage': {
+      id: '/_authenticated/arbitrage'
+      path: '/arbitrage'
+      fullPath: '/arbitrage'
+      preLoaderRoute: typeof AuthenticatedArbitrageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/analyze': {
       id: '/_authenticated/analyze'
       path: '/analyze'
@@ -416,6 +435,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyzeRoute: typeof AuthenticatedAnalyzeRoute
+  AuthenticatedArbitrageRoute: typeof AuthenticatedArbitrageRoute
   AuthenticatedBacktestRoute: typeof AuthenticatedBacktestRoute
   AuthenticatedChartsRoute: typeof AuthenticatedChartsRoute
   AuthenticatedCopilotRoute: typeof AuthenticatedCopilotRoute
@@ -437,6 +457,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyzeRoute: AuthenticatedAnalyzeRoute,
+  AuthenticatedArbitrageRoute: AuthenticatedArbitrageRoute,
   AuthenticatedBacktestRoute: AuthenticatedBacktestRoute,
   AuthenticatedChartsRoute: AuthenticatedChartsRoute,
   AuthenticatedCopilotRoute: AuthenticatedCopilotRoute,
