@@ -4,7 +4,7 @@ import { getMe } from "@/domains/user/functions";
 import { listExperiments, createExperiment } from "@/domains/experiment/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   FlaskConical,
   Plus,
@@ -412,14 +412,13 @@ function ExperimentsPage() {
 
   // Polling: refetch every 5 seconds when there's a running experiment
   const hasRunning = experiments.some((e) => e.status === "running");
-  useMemo(() => {
-    if (hasRunning) {
-      const interval = setInterval(() => {
-        queryClient.invalidateQueries({ queryKey: ["experiments"] });
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [hasRunning]);
+  useEffect(() => {
+    if (!hasRunning) return;
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["experiments"] });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [hasRunning, queryClient]);
 
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);

@@ -28,11 +28,12 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   if (!contentType.includes("application/json")) return response;
 
   const body = await response.clone().text();
-  console.error("[Vixor] 500 JSON response body:", body.substring(0, 2000));
+  // Log error details server-side only (never exposed to client in production)
+  console.error("[Vixor] 500 JSON response body:", body.substring(0, 500));
 
   const captured = consumeLastCapturedError() as Error | undefined;
   if (captured) {
-    console.error("[Vixor] Captured SSR error:", captured);
+    console.error("[Vixor] Captured SSR error:", captured.message);
   }
 
   // For ANY 500 JSON response, show debug info
@@ -63,34 +64,34 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 }
 
 function renderDebugErrorPage(message: string, stack?: string): string {
+  // SECURITY: In production, never expose stack traces, error details, or env status
+  const isDev = typeof process !== "undefined" && process.env.NODE_ENV !== "production";
+
+  if (!isDev) {
+    // Production: return safe generic error page (no leaks)
+    return renderErrorPage();
+  }
+
+  // Development only: show full debug info
   const safeMsg = (message || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const safeStack = (stack || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const su = typeof process !== "undefined" && process.env.SUPABASE_URL ? "set" : "missing";
-  const sk = typeof process !== "undefined" && (process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY) ? "set" : "missing";
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Vixor Server Error</title>
+    <title>Vixor Server Error (Dev)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       body { font: 13px/1.6 'SF Mono', 'Fira Code', monospace; background: #0a0a0f; color: #e0e0e0; padding: 2rem; max-width: 900px; margin: 0 auto; }
       h1 { color: #ff6b6b; font-size: 1.1rem; margin-bottom: 0.5rem; }
       .msg { background: #1a1a2e; padding: 1rem; border-radius: 8px; border-left: 3px solid #ff6b6b; margin-bottom: 1rem; word-break: break-word; }
       .stack { white-space: pre-wrap; background: #16213e; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 11px; color: #a8d8ea; max-height: 400px; overflow-y: auto; }
-      .env-info { background: #16213e; padding: 0.75rem; border-radius: 8px; font-size: 11px; color: #888; margin-top: 1rem; }
     </style>
   </head>
   <body>
-    <h1>Vixor Server Error</h1>
+    <h1>Vixor Server Error (Development)</h1>
     <div class="msg">${safeMsg}</div>
     ${safeStack ? `<details><summary>Stack Trace</summary><div class="stack">${safeStack}</div></details>` : ""}
-    <div class="env-info">
-      Node: ${typeof process !== "undefined" ? process.version : "N/A"} |
-      BUILD_FIX: v3 |
-      SUPABASE_URL: ${su} |
-      ANON_KEY: ${sk}
-    </div>
   </body>
 </html>`;
 }

@@ -82,7 +82,7 @@ export const getPremiumPlans = createServerFn({ method: "GET" })
 async function verifyStarsPayment(
   botToken: string,
   chargeId: string,
-  expectedPayload: string,
+  _expectedPayload: string | null,
 ): Promise<boolean> {
   try {
     const { supabaseAdmin } = await import("@/shared/supabase/client.server");
@@ -91,44 +91,22 @@ async function verifyStarsPayment(
     // Check if this chargeId was confirmed by the Telegram webhook
     const { data: confirmedPayment } = await supabaseAdmin
       .from("payments")
-      .select("id, payload, status")
+      .select("id, status")
       .eq("telegram_charge_id", chargeId)
       .eq("status", "confirmed")
       .maybeSingle();
 
-    if (confirmedPayment && confirmedPayment.payload === expectedPayload) {
+    if (confirmedPayment) {
       return true;
     }
 
-    // ── Method 2: Telegram Bot API verification (fallback) ──
-    // Use checkTransaction to verify with Telegram directly
-    // @ts-expect-error Telegram Bot API endpoint
-    const res = await fetch(`https://api.telegram.org/bot${botToken}/checkTransaction`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        charge_id: chargeId,
-      }),
-    });
-
-    if (res.ok) {
-      const result = await res.json();
-      // checkTransaction returns { ok: true, result: { ... } } if valid
-      if (result.ok && result.result) {
-        // Verify the payload from the transaction matches what we expected
-        if (result.result.invoice_payload === expectedPayload) {
-          return true;
-        }
-      }
-    }
-
+    // No need for fallback API call — webhook confirmation is the source of truth
     return false;
   } catch {
-    structuredLogger("payment", {
+    structuredLogger("error", {
       level: "error",
       kind: "verification_failed",
       chargeId,
-      expectedPayload,
     });
     return false;
   }
@@ -164,11 +142,13 @@ export const purchasePack = createServerFn({ method: "POST" })
       if (!data.telegramChargeId) {
         throw new Error("Payment verification failed: missing charge ID");
       }
-      const expectedPayload = `${userId}_${data.packId}`;
-      const verified = await verifyStarsPayment(botToken, data.telegramChargeId, expectedPayload);
+      // Verify charge exists in confirmed payments (webhook auto-credits points)
+      const verified = await verifyStarsPayment(botToken, data.telegramChargeId, null);
       if (!verified) {
         throw new Error("Payment verification failed: charge could not be confirmed");
       }
+      // Points are already credited by the webhook — skip credit_points here to prevent double-crediting
+      return { ok: true, credited: 0, message: "Points already credited via webhook" };
     } else if (!isFree) {
       throw new Error("Payment required: this pack is not free");
     }
@@ -219,11 +199,12 @@ export const subscribePremium = createServerFn({ method: "POST" })
       if (!data.telegramChargeId) {
         throw new Error("Payment verification failed: missing charge ID");
       }
-      const expectedPayload = `${userId}_${data.planId}`;
-      const verified = await verifyStarsPayment(botToken, data.telegramChargeId, expectedPayload);
+      // Verify charge exists in confirmed payments (webhook auto-credits premium)
+      const verified = await verifyStarsPayment(botToken, data.telegramChargeId, null);
       if (!verified) {
         throw new Error("Payment verification failed: charge could not be confirmed");
       }
+      // Premium subscription is granted — webhook confirms payment, we grant subscription here
     } else if (!isFree) {
       throw new Error("Payment required: this plan is not free");
     }

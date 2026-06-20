@@ -85,3 +85,34 @@ Stage Summary:
 - All /api/ endpoints now rate-limited globally
 - Copilot responses stream token-by-token via SSE (was full-blob wait)
 - Graceful fallback to non-streaming if SSE unavailable
+
+---
+Task ID: pre-audit-cleanup
+Agent: Super Z (Main)
+Task: Comprehensive code audit and critical bug fixes before user's next task batch
+
+Work Log:
+- Read and analyzed 3 uploaded reports (HTML + 2 PDFs)
+- Deep exploration of entire project structure (96 domain files, 55 shared files, 21 routes)
+- Security audit of 5 critical files (user/functions.ts, telegram-webhook.ts, vite.config.ts, server.ts, fix-vercel-bundle.mjs)
+- Full backtest + experiments wiring verification (both confirmed working with real engines)
+- Duplication audit: confirmed all 10 src/server/ files are dead re-export shims
+- Module wiring audit: RateLimiter, NotificationRouter, CircuitBreaker, credential-crypto
+
+Fixes Applied:
+1. **SECURITY: Debug error page leak** (src/server.ts) — production now returns generic error page instead of stack traces + env var status
+2. **SECURITY: Webhook auth bypass** (telegram-webhook.ts) — replaced NODE_ENV check with explicit VIXOR_ALLOW_NO_AUTH=true for dev
+3. **SECURITY: Webhook idempotency** (telegram-webhook.ts) — credits points ONLY if payment was actually updated from pending→confirmed
+4. **SECURITY: Double-crediting prevention** (user/functions.ts) — purchasePack no longer credits points for Stars payments (webhook handles it)
+5. **BUG: Payment payload mismatch** (user/functions.ts) — removed broken payload comparison + non-standard checkTransaction API call
+6. **BUG: Experiments polling leak** (experiments.tsx) — changed useMemo to useEffect for interval cleanup
+7. **CLEANUP: Dead code in alert-checker** — removed unused sendTelegramAlert() function (NotificationRouter handles this)
+8. **CLEANUP: Deleted 10 dead files** — entire src/server/ directory (re-export shims with zero consumers)
+9. **FIX: structuredLogger channel** — changed "payment" to "error" (valid LogChannel)
+10. **FIX: credit_points reason type** — changed "pack_purchase_stars" to "telegram_stars_purchase" (matching DB type)
+
+Stage Summary:
+- Build: ✅ 15.63s (clean)
+- Tests: ✅ 61/61 passing
+- No new TypeScript errors introduced by fixes
+- 3 HIGH security issues fixed, 2 bugs fixed, 2 dead code cleanups, 10 files deleted

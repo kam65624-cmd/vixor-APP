@@ -82,48 +82,6 @@ function formatAlertPrice(price: number, pair: string): string {
 }
 
 /**
- * Send a Telegram notification for a triggered alert.
- */
-async function sendTelegramAlert(
-  botToken: string,
-  chatId: string | number,
-  alert: AlertRow,
-  currentPrice: number,
-): Promise<void> {
-  const conditionText = formatCondition(alert.condition);
-  const priceStr = formatAlertPrice(alert.target_price, alert.pair);
-  const currentStr = formatAlertPrice(currentPrice, alert.pair);
-
-  const text = `🔔 <b>Price Alert Triggered!</b>
-
-<b>${alert.pair}</b> is now ${conditionText} <b>$${priceStr}</b>
-
-📊 Target: $${priceStr}
-📈 Current: $${currentStr}
-⏰ Timeframe: ${alert.timeframe}
-${alert.note ? `📝 Note: ${alert.note}` : ""}
-
-— <i>Vixor Trading Intelligence</i>`;
-
-  try {
-    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: "HTML",
-      }),
-    });
-  } catch (err) {
-    console.warn(
-      "[AlertChecker] Telegram send failed:",
-      err instanceof Error ? err.message : String(err),
-    );
-  }
-}
-
-/**
  * Main alert checking function.
  * Called by the API endpoint /api/check-alerts or as a scheduled task.
  *
@@ -199,8 +157,6 @@ export async function checkAllAlerts(): Promise<{
     }
 
     // 5. Check each alert against current price
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-
     for (const alert of alerts as AlertRow[]) {
       const currentPrice = priceCache.get(alert.pair);
       if (currentPrice === undefined) continue;

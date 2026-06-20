@@ -19,11 +19,14 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
   } else {
-    if (process.env.NODE_ENV === "production") {
-      console.error("[Telegram Webhook] CRITICAL: TELEGRAM_WEBHOOK_SECRET not set in production!");
+    // SECURITY: Reject all requests when webhook secret is not configured
+    // Use VIXOR_ALLOW_NO_AUTH=true explicitly for local development
+    const allowNoAuth = process.env.VIXOR_ALLOW_NO_AUTH === "true";
+    if (!allowNoAuth) {
+      console.error("[Telegram Webhook] TELEGRAM_WEBHOOK_SECRET not set and VIXOR_ALLOW_NO_AUTH is not true. Rejecting request.");
       throw createError({ statusCode: 500, statusMessage: "Webhook not configured" });
     }
-    console.warn("[Telegram Webhook] WARNING: No TELEGRAM_WEBHOOK_SECRET set (development only)");
+    console.warn("[Telegram Webhook] WARNING: Running without webhook secret (VIXOR_ALLOW_NO_AUTH=true)");
   }
 
   try {
@@ -33,6 +36,10 @@ export default defineEventHandler(async (event) => {
     if (body.pre_checkout_query) {
       const queryId = body.pre_checkout_query.id as string;
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
+      if (!botToken) {
+        console.error("[Telegram Webhook] TELEGRAM_BOT_TOKEN not set");
+        return "Bot not configured";
+      }
 
       await fetch(`https://api.telegram.org/bot${botToken}/answerPreCheckoutQuery`, {
         method: "POST",
@@ -60,7 +67,8 @@ export default defineEventHandler(async (event) => {
 
         // Update the payment record to confirmed
         if (chargeId) {
-          await supabaseAdmin
+          // SECURITY: Only update + credit if payment was pending (idempotency guard)
+          const { data: updatedPayment, error: updateError } = await supabaseAdmin
             .from("payments")
             .update({
               telegram_charge_id: chargeId,
@@ -68,7 +76,14 @@ export default defineEventHandler(async (event) => {
               confirmed_at: new Date().toISOString(),
             })
             .eq("payload", payload)
-            .eq("status", "pending");
+            .eq("status", "pending")
+            .select("id")
+            .maybeSingle();
+
+          if (updateError || !updatedPayment) {
+            // Payment already confirmed or not found — skip silently (idempotent)
+            return "OK";
+          }
         }
 
         const { data: pack } = await supabaseAdmin
@@ -83,7 +98,7 @@ export default defineEventHandler(async (event) => {
           await supabaseAdmin.rpc("credit_points", {
             _user: userId,
             _amount: totalPoints,
-            _reason: "pack_purchase" as any,
+            _reason: "telegram_stars_purchase" as const,
             _meta: { pack_id: packId, telegram_payment: chargeId },
           });
         }
