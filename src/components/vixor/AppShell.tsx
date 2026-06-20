@@ -9,12 +9,19 @@ import { useRenderGuard } from "@/shared/hooks/use-render-guard";
 const WalletConnectButton = lazy(() =>
   import("@/domains/wallet/adapter").then((m) => ({
     default: m.WalletConnectButton,
-  }))
+  })),
 );
 
 // P0: Lazy-load OnboardingModal — shown once, should not be in root chunk
 const OnboardingModal = lazy(() =>
-  import("./OnboardingModal").then((m) => ({ default: m.OnboardingModal }))
+  import("./OnboardingModal").then((m) => ({ default: m.OnboardingModal })),
+);
+
+// Lazy-load WorkspaceSwitcher — Web3 terminal deps are only needed when user interacts
+const WorkspaceSwitcher = lazy(() =>
+  import("@/experience/components/WorkspaceSwitcher").then((m) => ({
+    default: m.WorkspaceSwitcher,
+  })),
 );
 
 const tabs = [
@@ -97,7 +104,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           .then(() => {
             localStorage.setItem("vixor-tg-linked", "1");
           })
-          .catch((err) => console.error("Failed to link Telegram:", err))
+          .catch((err) => console.error("Failed to link Telegram:", err)),
       );
     }
   }, [signedIn]);
@@ -261,6 +268,9 @@ const Header = memo(function Header() {
             </div>
             <span className="font-bold tracking-tight text-lg">Vixor</span>
           </Link>
+          <Suspense fallback={null}>
+            <WorkspaceSwitcher />
+          </Suspense>
           <div className="flex items-center gap-2">
             <Suspense fallback={null}>
               <WalletConnectButton />

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedWalletWeb3RouteImport } from './routes/_authenticated/wallet-web3'
 import { Route as AuthenticatedTradeDeskRouteImport } from './routes/_authenticated/trade-desk'
 import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -25,10 +26,13 @@ import { Route as AuthenticatedExperimentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
 import { Route as AuthenticatedDailyLoopRouteImport } from './routes/_authenticated/daily-loop'
 import { Route as AuthenticatedCopilotRouteImport } from './routes/_authenticated/copilot'
+import { Route as AuthenticatedCommunitiesRouteImport } from './routes/_authenticated/communities'
 import { Route as AuthenticatedChartsRouteImport } from './routes/_authenticated/charts'
 import { Route as AuthenticatedBacktestRouteImport } from './routes/_authenticated/backtest'
 import { Route as AuthenticatedArbitrageRouteImport } from './routes/_authenticated/arbitrage'
 import { Route as AuthenticatedAnalyzeRouteImport } from './routes/_authenticated/analyze'
+import { Route as AuthenticatedActivityWeb3RouteImport } from './routes/_authenticated/activity-web3'
+import { Route as AuthenticatedTokenSymbolRouteImport } from './routes/_authenticated/token.$symbol'
 import { Route as AuthenticatedAnalysisIdRouteImport } from './routes/_authenticated/analysis.$id'
 
 const AuthRoute = AuthRouteImport.update({
@@ -43,6 +47,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWalletWeb3Route = AuthenticatedWalletWeb3RouteImport.update({
+  id: '/wallet-web3',
+  path: '/wallet-web3',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTradeDeskRoute = AuthenticatedTradeDeskRouteImport.update({
@@ -112,6 +121,12 @@ const AuthenticatedCopilotRoute = AuthenticatedCopilotRouteImport.update({
   path: '/copilot',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCommunitiesRoute =
+  AuthenticatedCommunitiesRouteImport.update({
+    id: '/communities',
+    path: '/communities',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChartsRoute = AuthenticatedChartsRouteImport.update({
   id: '/charts',
   path: '/charts',
@@ -132,6 +147,18 @@ const AuthenticatedAnalyzeRoute = AuthenticatedAnalyzeRouteImport.update({
   path: '/analyze',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedActivityWeb3Route =
+  AuthenticatedActivityWeb3RouteImport.update({
+    id: '/activity-web3',
+    path: '/activity-web3',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedTokenSymbolRoute =
+  AuthenticatedTokenSymbolRouteImport.update({
+    id: '/token/$symbol',
+    path: '/token/$symbol',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAnalysisIdRoute = AuthenticatedAnalysisIdRouteImport.update({
   id: '/analysis/$id',
   path: '/analysis/$id',
@@ -141,10 +168,12 @@ const AuthenticatedAnalysisIdRoute = AuthenticatedAnalysisIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
+  '/activity-web3': typeof AuthenticatedActivityWeb3Route
   '/analyze': typeof AuthenticatedAnalyzeRoute
   '/arbitrage': typeof AuthenticatedArbitrageRoute
   '/backtest': typeof AuthenticatedBacktestRoute
   '/charts': typeof AuthenticatedChartsRoute
+  '/communities': typeof AuthenticatedCommunitiesRoute
   '/copilot': typeof AuthenticatedCopilotRoute
   '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
@@ -158,14 +187,18 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/signals': typeof AuthenticatedSignalsRoute
   '/trade-desk': typeof AuthenticatedTradeDeskRoute
+  '/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
+  '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/activity-web3': typeof AuthenticatedActivityWeb3Route
   '/analyze': typeof AuthenticatedAnalyzeRoute
   '/arbitrage': typeof AuthenticatedArbitrageRoute
   '/backtest': typeof AuthenticatedBacktestRoute
   '/charts': typeof AuthenticatedChartsRoute
+  '/communities': typeof AuthenticatedCommunitiesRoute
   '/copilot': typeof AuthenticatedCopilotRoute
   '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
@@ -179,17 +212,21 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/signals': typeof AuthenticatedSignalsRoute
   '/trade-desk': typeof AuthenticatedTradeDeskRoute
+  '/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/': typeof AuthenticatedIndexRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
+  '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/activity-web3': typeof AuthenticatedActivityWeb3Route
   '/_authenticated/analyze': typeof AuthenticatedAnalyzeRoute
   '/_authenticated/arbitrage': typeof AuthenticatedArbitrageRoute
   '/_authenticated/backtest': typeof AuthenticatedBacktestRoute
   '/_authenticated/charts': typeof AuthenticatedChartsRoute
+  '/_authenticated/communities': typeof AuthenticatedCommunitiesRoute
   '/_authenticated/copilot': typeof AuthenticatedCopilotRoute
   '/_authenticated/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/_authenticated/discover': typeof AuthenticatedDiscoverRoute
@@ -203,18 +240,22 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/signals': typeof AuthenticatedSignalsRoute
   '/_authenticated/trade-desk': typeof AuthenticatedTradeDeskRoute
+  '/_authenticated/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/analysis/$id': typeof AuthenticatedAnalysisIdRoute
+  '/_authenticated/token/$symbol': typeof AuthenticatedTokenSymbolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/activity-web3'
     | '/analyze'
     | '/arbitrage'
     | '/backtest'
     | '/charts'
+    | '/communities'
     | '/copilot'
     | '/daily-loop'
     | '/discover'
@@ -228,14 +269,18 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signals'
     | '/trade-desk'
+    | '/wallet-web3'
     | '/analysis/$id'
+    | '/token/$symbol'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/activity-web3'
     | '/analyze'
     | '/arbitrage'
     | '/backtest'
     | '/charts'
+    | '/communities'
     | '/copilot'
     | '/daily-loop'
     | '/discover'
@@ -249,16 +294,20 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signals'
     | '/trade-desk'
+    | '/wallet-web3'
     | '/'
     | '/analysis/$id'
+    | '/token/$symbol'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/activity-web3'
     | '/_authenticated/analyze'
     | '/_authenticated/arbitrage'
     | '/_authenticated/backtest'
     | '/_authenticated/charts'
+    | '/_authenticated/communities'
     | '/_authenticated/copilot'
     | '/_authenticated/daily-loop'
     | '/_authenticated/discover'
@@ -272,8 +321,10 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/signals'
     | '/_authenticated/trade-desk'
+    | '/_authenticated/wallet-web3'
     | '/_authenticated/'
     | '/_authenticated/analysis/$id'
+    | '/_authenticated/token/$symbol'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -302,6 +353,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/wallet-web3': {
+      id: '/_authenticated/wallet-web3'
+      path: '/wallet-web3'
+      fullPath: '/wallet-web3'
+      preLoaderRoute: typeof AuthenticatedWalletWeb3RouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/trade-desk': {
@@ -395,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCopilotRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/communities': {
+      id: '/_authenticated/communities'
+      path: '/communities'
+      fullPath: '/communities'
+      preLoaderRoute: typeof AuthenticatedCommunitiesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/charts': {
       id: '/_authenticated/charts'
       path: '/charts'
@@ -423,6 +488,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyzeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/activity-web3': {
+      id: '/_authenticated/activity-web3'
+      path: '/activity-web3'
+      fullPath: '/activity-web3'
+      preLoaderRoute: typeof AuthenticatedActivityWeb3RouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/token/$symbol': {
+      id: '/_authenticated/token/$symbol'
+      path: '/token/$symbol'
+      fullPath: '/token/$symbol'
+      preLoaderRoute: typeof AuthenticatedTokenSymbolRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/analysis/$id': {
       id: '/_authenticated/analysis/$id'
       path: '/analysis/$id'
@@ -434,10 +513,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedActivityWeb3Route: typeof AuthenticatedActivityWeb3Route
   AuthenticatedAnalyzeRoute: typeof AuthenticatedAnalyzeRoute
   AuthenticatedArbitrageRoute: typeof AuthenticatedArbitrageRoute
   AuthenticatedBacktestRoute: typeof AuthenticatedBacktestRoute
   AuthenticatedChartsRoute: typeof AuthenticatedChartsRoute
+  AuthenticatedCommunitiesRoute: typeof AuthenticatedCommunitiesRoute
   AuthenticatedCopilotRoute: typeof AuthenticatedCopilotRoute
   AuthenticatedDailyLoopRoute: typeof AuthenticatedDailyLoopRoute
   AuthenticatedDiscoverRoute: typeof AuthenticatedDiscoverRoute
@@ -451,15 +532,19 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRoute
   AuthenticatedTradeDeskRoute: typeof AuthenticatedTradeDeskRoute
+  AuthenticatedWalletWeb3Route: typeof AuthenticatedWalletWeb3Route
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAnalysisIdRoute: typeof AuthenticatedAnalysisIdRoute
+  AuthenticatedTokenSymbolRoute: typeof AuthenticatedTokenSymbolRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedActivityWeb3Route: AuthenticatedActivityWeb3Route,
   AuthenticatedAnalyzeRoute: AuthenticatedAnalyzeRoute,
   AuthenticatedArbitrageRoute: AuthenticatedArbitrageRoute,
   AuthenticatedBacktestRoute: AuthenticatedBacktestRoute,
   AuthenticatedChartsRoute: AuthenticatedChartsRoute,
+  AuthenticatedCommunitiesRoute: AuthenticatedCommunitiesRoute,
   AuthenticatedCopilotRoute: AuthenticatedCopilotRoute,
   AuthenticatedDailyLoopRoute: AuthenticatedDailyLoopRoute,
   AuthenticatedDiscoverRoute: AuthenticatedDiscoverRoute,
@@ -473,8 +558,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSignalsRoute: AuthenticatedSignalsRoute,
   AuthenticatedTradeDeskRoute: AuthenticatedTradeDeskRoute,
+  AuthenticatedWalletWeb3Route: AuthenticatedWalletWeb3Route,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAnalysisIdRoute: AuthenticatedAnalysisIdRoute,
+  AuthenticatedTokenSymbolRoute: AuthenticatedTokenSymbolRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
