@@ -116,3 +116,29 @@ Stage Summary:
 - Tests: ✅ 61/61 passing
 - No new TypeScript errors introduced by fixes
 - 3 HIGH security issues fixed, 2 bugs fixed, 2 dead code cleanups, 10 files deleted
+---
+Task ID: phase-b1
+Agent: Super Z (Main)
+Task: Phase B.1 — Port axiom-arbitrage engine to src/domains/arbitrage/
+
+Work Log:
+- Read all 10 deliverable files (GLM5_MASTER_PROMPT.md, 6 PODs, README, patch, script, PDF)
+- Applied vixor-phase-a-b1.patch (29 files, 2465 lines) — applied clean
+- Fixed 55 broken relative imports across 15 files (old axiom-arbitrage paths)
+- Created constants.ts to break circular dependency between config.ts and token-registry.ts
+- Fixed Zod boolean parsing for ARBITRAGE_DRY_RUN and ARBITRAGE_EXECUTION_ENABLED (string→boolean)
+- Removed duplicate LAMPORTS_PER_SOL from config.ts (now in constants.ts)
+- Auto-fixed 255 prettier quote issues (single→double) across arbitrage domain
+- Added @solana/web3.js@^1.98.4 + bs58@^6.0.0 to package.json
+
+Files Created (32 total):
+- src/domains/arbitrage/ (25 files): engine, executor, risk, config, types, constants, logger, math, price-feed, token-registry, index, 3 exchange clients, 2 mock clients, 3 strategies, 3 test files
+- server/api/arbitrage-scan.ts
+- src/routes/_authenticated/arbitrage.tsx
+- supabase/migrations/20260621000000_add_arbitrage_domain.sql
+
+Stage Summary:
+- Build: ✅ 13.44s clean
+- Tests: ✅ 82/82 passing (21 new arbitrage tests)
+- Lint: ✅ 0 errors
+- Phase A + B.1 COMPLETE
