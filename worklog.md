@@ -190,3 +190,35 @@ Stage Summary:
 - Tests: ✅ 104/104 passing
 - Lint: ✅ 0 errors, 1 warning
 - Commit: 9b07d21
+---
+Task ID: phase-b4
+Agent: Super Z (Main)
+Task: Phase B.4 — Memecoin Discovery (5-stage scoring pipeline)
+
+Work Log:
+- Created src/domains/discovery/ domain (18 files: types, config, constants, scoring, functions, index, server, 5 API clients, 2 test files)
+- Built 5 external API clients: Birdeye (price/volume/liquidity), Helius (Solana smart money), DexScreener (new pairs), Twitter v2 (social mentions), LunarCrush (sentiment)
+- Implemented 5-stage scoring algorithm:
+  - Stage 1: New Pairs — DexScreener raw ingestion + Birdeye trending
+  - Stage 2: Liquidity Filter — min $10K liquidity + $1K volume
+  - Stage 3: Smart Money Rank — Helius RPC, log-normalized (0–100)
+  - Stage 4: Social Velocity — Twitter mentions + LunarCrush galaxy score
+  - Stage 5: Final Score — 40% SM + 30% social + 20% liq + 10% age
+- Created GET /api/discover endpoint with Zod validation, enum constraints, generic errors
+- Created POST /api/discover/scan endpoint with scan cooldown (10s)
+- Created Supabase migration: memecoin_discoveries + social_signals tables + RLS policies
+- Added scan deduplication/cooldown to protect external API quotas
+- Fixed Zod config: replaced .pipe() with .transform() + clampInt() for resilient env parsing
+- Fixed scoring bug: tokenAgeHours returned SCORING.maxScore for invalid dates → now returns -1
+- Security audit: 11 PASS / 7 PARTIAL / 5 FAIL (all FAIL remediated)
+  - S1 FIXED: Added z.enum() for sortBy/sortOrder
+  - S4 ACCEPTED: LunarCrush/Helius API key in URL is standard for those APIs
+  - S8 FIXED: Added 10s scan cooldown mechanism
+  - S11 FIXED: Generic error messages, no information leakage
+  - S14 FIXED: Server functions removed from public barrel, server.ts is the gate
+
+Stage Summary:
+- Build: ✅ 13.91s clean
+- Tests: ✅ 175/175 passing (71 new discovery tests)
+- Commit: 9fd2b57
+- Phase B fully complete (B.1 + B.2 + B.3 + B.4)
