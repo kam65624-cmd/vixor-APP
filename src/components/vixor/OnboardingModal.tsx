@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, Upload, Calculator, Gift, ChevronRight } from "lucide-react";
 
 const slides = [
@@ -24,11 +24,49 @@ const slides = [
   },
 ];
 
+const ONBOARDING_DONE_KEY = "vixor-onboarded";
+
 export function OnboardingModal({ onClose }: { onClose: () => void }) {
   const [i, setI] = useState(0);
   const s = slides[i];
   const Icon = s.icon;
   const last = i === slides.length - 1;
+
+  // ── Safety net: check localStorage directly in the modal ──
+  // If onboarding was already completed (e.g. onClose set the key), don't render.
+  // This prevents the overlay from appearing on re-mount or navigation.
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return !!localStorage.getItem(ONBOARDING_DONE_KEY);
+    } catch {
+      return false;
+    }
+  });
+
+  // Also check on mount in case localStorage was set between SSR and hydration
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (localStorage.getItem(ONBOARDING_DONE_KEY)) {
+        setDismissed(true);
+      }
+    } catch {
+      // noop
+    }
+  }, []);
+
+  if (dismissed) return null;
+
+  const handleClose = () => {
+    try {
+      localStorage.setItem(ONBOARDING_DONE_KEY, "1");
+    } catch {
+      // localStorage might be unavailable in private browsing
+    }
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
       <div className="vixor-card w-full max-w-md p-6 space-y-6 animate-in slide-in-from-bottom-4">
@@ -41,7 +79,10 @@ export function OnboardingModal({ onClose }: { onClose: () => void }) {
               />
             ))}
           </div>
-          <button onClick={onClose} className="text-xs text-muted-foreground hover:text-foreground">
+          <button
+            onClick={handleClose}
+            className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-card-hover"
+          >
             Skip
           </button>
         </div>
@@ -55,7 +96,7 @@ export function OnboardingModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <button
-          onClick={() => (last ? onClose() : setI(i + 1))}
+          onClick={() => (last ? handleClose() : setI(i + 1))}
           className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 glow-primary"
         >
           {last ? "Claim +10 points" : "Continue"}

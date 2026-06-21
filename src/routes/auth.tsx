@@ -209,8 +209,14 @@ function AuthPage() {
           if (error) {
             if (error.message.includes("Email not confirmed")) {
               setErr("Email not confirmed. Please check your inbox or use Telegram sign-in.");
-            } else if (error.message.includes("Invalid login")) {
+            } else if (error.message.includes("Invalid login") || error.message.includes("Invalid credentials")) {
               setErr("Wrong email or password. Please try again.");
+            } else if (
+              error.status === 400 ||
+              error.message.includes("disabled") ||
+              error.message.includes("not enabled")
+            ) {
+              setErr("Email sign-in is not available. Please use Telegram sign-in instead.");
             } else {
               throw error;
             }
@@ -226,7 +232,19 @@ function AuthPage() {
               data: { display_name: email.split("@")[0] },
             },
           });
-          if (error) throw error;
+          if (error) {
+            if (
+              error.status === 422 ||
+              error.message.includes("disabled") ||
+              error.message.includes("not enabled") ||
+              error.message.includes("not allowed")
+            ) {
+              setErr("Email sign-up is not available. Please use Telegram sign-in instead.");
+            } else {
+              throw error;
+            }
+            return;
+          }
           const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
           if (signInErr) {
             setSuccess("Account created! Check your email to confirm, then sign in.");

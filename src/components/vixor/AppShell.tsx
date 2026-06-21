@@ -103,7 +103,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [signedIn]);
 
   const closeOnboarding = useCallback(() => {
-    localStorage.setItem("vixor-onboarded", "1");
+    try {
+      localStorage.setItem("vixor-onboarded", "1");
+    } catch {
+      // localStorage may be unavailable in private browsing
+    }
     setShowOnboarding(false);
   }, []);
 

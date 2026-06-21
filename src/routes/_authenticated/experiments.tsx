@@ -523,8 +523,8 @@ function ExperimentsPage() {
             </span>
           </div>
           <button
-            onClick={() => setShowNewForm(!showNewForm)}
-            className="h-9 px-3 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary flex items-center gap-1.5 hover:scale-[1.02] active:scale-95 transition-transform"
+            onClick={() => setShowNewForm((prev) => !prev)}
+            className="h-9 px-3 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary flex items-center gap-1.5 hover:scale-[1.02] active:scale-95 transition-transform cursor-pointer"
           >
             <Plus className="size-3.5" />
             {useT("experiments.newExperiment") || "New Experiment"}

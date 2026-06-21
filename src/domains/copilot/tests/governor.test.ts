@@ -50,6 +50,7 @@ describe("Governor Agent", () => {
     it("includes trade parameters", () => {
       const msg = buildGovernorUserMessage(
         {
+          userId: "test-user",
           action: "buy",
           token: "BTC",
           amount: 0.5,
@@ -67,6 +68,7 @@ describe("Governor Agent", () => {
     it("handles zero portfolio value", () => {
       const msg = buildGovernorUserMessage(
         {
+          userId: "test-user",
           action: "sell",
           token: "ETH",
           amount: 1,
