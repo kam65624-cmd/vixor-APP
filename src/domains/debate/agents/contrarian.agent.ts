@@ -21,9 +21,11 @@ import type { AnalysisResult } from "@/domains/analysis/server/run-analysis";
 export function contrarianVote(result: AnalysisResult): AgentVote {
   // Determine the analyst direction
   const analystDirection: AgentSide =
-    result.recommendation === "BUY" ? "BULL" :
-    result.recommendation === "SELL" ? "BEAR" :
-    "NEUTRAL";
+    result.recommendation === "BUY"
+      ? "BULL"
+      : result.recommendation === "SELL"
+        ? "BEAR"
+        : "NEUTRAL";
 
   // Always vote opposite
   let side: AgentSide;
@@ -31,10 +33,12 @@ export function contrarianVote(result: AnalysisResult): AgentVote {
 
   if (analystDirection === "BULL") {
     side = "BEAR";
-    reasoning = "Devil's advocate: challenging the bullish thesis. What if the trend reverses or support breaks?";
+    reasoning =
+      "Devil's advocate: challenging the bullish thesis. What if the trend reverses or support breaks?";
   } else if (analystDirection === "BEAR") {
     side = "BULL";
-    reasoning = "Devil's advocate: challenging the bearish thesis. What if this is a false breakdown or a buying opportunity?";
+    reasoning =
+      "Devil's advocate: challenging the bearish thesis. What if this is a false breakdown or a buying opportunity?";
   } else {
     side = "NEUTRAL";
     reasoning = "Devil's advocate: the analysis is already neutral — no counter-position to take.";

@@ -6,7 +6,4 @@
 export * from "./functions";
 
 // Types
-export type {
-  Watchlist,
-  WatchlistItem,
-} from "./types";
+export type { Watchlist, WatchlistItem } from "./types";

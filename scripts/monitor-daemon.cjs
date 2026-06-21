@@ -41,7 +41,10 @@ if (fs.existsSync(envPath)) {
 }
 
 const BASE = process.env.VIXOR_BASE_URL || "https://vixor-app.vercel.app";
-const INTERVAL_S = parseInt(process.argv.find((a) => a.startsWith("--interval="))?.split("=")[1] || "300", 10);
+const INTERVAL_S = parseInt(
+  process.argv.find((a) => a.startsWith("--interval="))?.split("=")[1] || "300",
+  10,
+);
 const WATCH = process.argv.includes("--watch") || !process.argv.some((a) => a.startsWith("--once"));
 const LOG_DIR = "/home/z/my-project/logs";
 const LOG_FILE = path.join(LOG_DIR, "monitor.log");
@@ -81,10 +84,12 @@ function emitAlert(kind, ctx) {
           headers: {
             "content-type": "application/json",
             "content-length": Buffer.byteLength(body),
-            ...(process.env.ALERT_WEBHOOK_TOKEN ? { authorization: `Bearer ${process.env.ALERT_WEBHOOK_TOKEN}` } : {}),
+            ...(process.env.ALERT_WEBHOOK_TOKEN
+              ? { authorization: `Bearer ${process.env.ALERT_WEBHOOK_TOKEN}` }
+              : {}),
           },
         },
-        () => {}
+        () => {},
       );
       req.on("error", () => {});
       req.end(body);
@@ -108,7 +113,14 @@ async function probe(url, opts = {}) {
       headers: Object.fromEntries(res.headers.entries()),
     };
   } catch (e) {
-    return { ok: false, status: 0, durationMs: Date.now() - startedAt, body: "", headers: {}, error: String(e?.message || e) };
+    return {
+      ok: false,
+      status: 0,
+      durationMs: Date.now() - startedAt,
+      body: "",
+      headers: {},
+      error: String(e?.message || e),
+    };
   }
 }
 
@@ -168,7 +180,11 @@ async function checkAppHealth(state) {
     state.consecutiveFailures += 1;
     log("error", "app health: FAIL", { status: r.status, error: r.error });
     if (state.consecutiveFailures >= 2) {
-      emitAlert("app_down", { status: r.status, consecutive: state.consecutiveFailures, error: r.error });
+      emitAlert("app_down", {
+        status: r.status,
+        consecutive: state.consecutiveFailures,
+        error: r.error,
+      });
     }
   }
 }
@@ -198,7 +214,10 @@ async function checkRedis(state) {
   const rUrl = process.env.UPSTASH_REDIS_REST_URL;
   const rToken = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!rUrl || !rToken) {
-    log("warn", "redis: UPSTASH_REDIS_REST_URL/TOKEN not set — skipping direct ping (app uses in-memory fallback)");
+    log(
+      "warn",
+      "redis: UPSTASH_REDIS_REST_URL/TOKEN not set — skipping direct ping (app uses in-memory fallback)",
+    );
     return;
   }
   const r = await probe(`${rUrl}/ping`, { headers: { authorization: `Bearer ${rToken}` } });
@@ -216,9 +235,22 @@ async function checkRedis(state) {
 
 async function checkFrontendRoutes(state) {
   const routes = [
-    "/", "/auth", "/analyze", "/signals", "/portfolio",
-    "/journal", "/charts", "/copilot", "/discover", "/daily-loop",
-    "/trade-desk", "/notifications", "/profile", "/settings", "/referral", "/premium",
+    "/",
+    "/auth",
+    "/analyze",
+    "/signals",
+    "/portfolio",
+    "/journal",
+    "/charts",
+    "/copilot",
+    "/discover",
+    "/daily-loop",
+    "/trade-desk",
+    "/notifications",
+    "/profile",
+    "/settings",
+    "/referral",
+    "/premium",
   ];
   for (const route of routes) {
     const r = await probe(`${BASE}${route}`);
@@ -241,7 +273,10 @@ async function checkFrontendRoutes(state) {
       const lastAlertTs = state.lastAlerts[alertKey];
       // Re-alert at most every 30 min
       if (!lastAlertTs || Date.now() - new Date(lastAlertTs).getTime() > 30 * 60 * 1000) {
-        emitAlert(r.status === 404 ? "frontend_404" : "frontend_5xx", { route: key, status: r.status });
+        emitAlert(r.status === 404 ? "frontend_404" : "frontend_5xx", {
+          route: key,
+          status: r.status,
+        });
         state.lastAlerts[alertKey] = ts();
       }
     }
@@ -267,11 +302,22 @@ async function tick() {
     const p50 = allSamples[Math.floor(allSamples.length * 0.5)];
     const p95 = allSamples[Math.floor(allSamples.length * 0.95)];
     const p99 = allSamples[Math.floor(allSamples.length * 0.99)];
-    log("info", "response time metrics", { samples: allSamples.length, p50Ms: p50, p95Ms: p95, p99Ms: p99 });
+    log("info", "response time metrics", {
+      samples: allSamples.length,
+      p50Ms: p50,
+      p95Ms: p95,
+      p99Ms: p99,
+    });
   }
 
-  const uptimePct = state.uptime.checks ? ((state.uptime.ok / state.uptime.checks) * 100).toFixed(2) : "0.00";
-  log("info", "uptime summary", { checks: state.uptime.checks, ok: state.uptime.ok, pct: uptimePct });
+  const uptimePct = state.uptime.checks
+    ? ((state.uptime.ok / state.uptime.checks) * 100).toFixed(2)
+    : "0.00";
+  log("info", "uptime summary", {
+    checks: state.uptime.checks,
+    ok: state.uptime.ok,
+    pct: uptimePct,
+  });
 
   saveState(state);
 }

@@ -81,7 +81,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (err) {
     errors.push(`Asset Registry: ${err instanceof Error ? err.message : String(err)}`);
-    results.assetRegistry = { status: "ERROR", error: err instanceof Error ? err.message : String(err) };
+    results.assetRegistry = {
+      status: "ERROR",
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -93,7 +96,9 @@ export default defineEventHandler(async (event) => {
 
     // Test emit a signal event
     let eventReceived = false;
-    const testHandler = () => { eventReceived = true; };
+    const testHandler = () => {
+      eventReceived = true;
+    };
     VixorEvents.on("signal.generated", testHandler);
     await VixorEvents.emit("signal.generated", {
       pair: "BTC/USDT",
@@ -115,7 +120,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (err) {
     errors.push(`Event Orchestrator: ${err instanceof Error ? err.message : String(err)}`);
-    results.eventOrchestrator = { status: "ERROR", error: err instanceof Error ? err.message : String(err) };
+    results.eventOrchestrator = {
+      status: "ERROR",
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -139,7 +147,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (err) {
     errors.push(`Tool Registry: ${err instanceof Error ? err.message : String(err)}`);
-    results.toolRegistry = { status: "ERROR", error: err instanceof Error ? err.message : String(err) };
+    results.toolRegistry = {
+      status: "ERROR",
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -181,7 +192,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (err) {
     errors.push(`Tool Router: ${err instanceof Error ? err.message : String(err)}`);
-    results.toolRouter = { status: "ERROR", error: err instanceof Error ? err.message : String(err) };
+    results.toolRouter = {
+      status: "ERROR",
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -194,14 +208,26 @@ export default defineEventHandler(async (event) => {
     const testKey = `test_${Date.now()}`;
 
     // Store
-    const storeResult = await MemoryStore.store(testUserId, "behavior", testKey, { test: true }, { confidence: 0.9, source: "validation" });
+    const storeResult = await MemoryStore.store(
+      testUserId,
+      "behavior",
+      testKey,
+      { test: true },
+      { confidence: 0.9, source: "validation" },
+    );
 
     // Retrieve
     const retrieved = await MemoryStore.retrieve(testUserId, "behavior", testKey);
 
     // Learn (reinforcement) — use a real-like user ID format
     const testUserId2 = "validation-test-user";
-    const learnResult = await MemoryStore.store(testUserId2, "behavior", "test_learn", { test: true }, { confidence: 0.5, source: "validation" });
+    const learnResult = await MemoryStore.store(
+      testUserId2,
+      "behavior",
+      "test_learn",
+      { test: true },
+      { confidence: 0.5, source: "validation" },
+    );
 
     // Context for prompt
     const contextResult = await MemoryStore.contextForPrompt(testUserId2);
@@ -219,7 +245,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (err) {
     errors.push(`Memory Store: ${err instanceof Error ? err.message : String(err)}`);
-    results.memoryStore = { status: "ERROR", error: err instanceof Error ? err.message : String(err) };
+    results.memoryStore = {
+      status: "ERROR",
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -236,7 +265,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (err) {
     errors.push(`Copilot Agent: ${err instanceof Error ? err.message : String(err)}`);
-    results.copilotAgent = { status: "ERROR", error: err instanceof Error ? err.message : String(err) };
+    results.copilotAgent = {
+      status: "ERROR",
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════════

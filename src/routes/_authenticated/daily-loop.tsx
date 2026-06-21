@@ -50,18 +50,49 @@ export const Route = createFileRoute("/_authenticated/daily-loop")({
 // EMOTIONAL STATE CONFIG
 // ═══════════════════════════════════════════════
 const EMOTIONAL_STATES: { value: EmotionalState; emoji: string; label: string; color: string }[] = [
-  { value: "disciplined", emoji: "💪", label: "Disciplined", color: "bg-bullish/15 text-bullish border-bullish/40" },
+  {
+    value: "disciplined",
+    emoji: "💪",
+    label: "Disciplined",
+    color: "bg-bullish/15 text-bullish border-bullish/40",
+  },
   { value: "calm", emoji: "🧘", label: "Calm", color: "bg-info/15 text-info border-info/40" },
-  { value: "anxious", emoji: "😰", label: "Anxious", color: "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40" },
-  { value: "fomo", emoji: "🏃", label: "FOMO", color: "bg-[#FF9800]/15 text-[#FF9800] border-[#FF9800]/40" },
-  { value: "revenge", emoji: "🔥", label: "Revenge", color: "bg-bearish/15 text-bearish border-bearish/40" },
-  { value: "tired", emoji: "😴", label: "Tired", color: "bg-muted text-muted-foreground border-border" },
+  {
+    value: "anxious",
+    emoji: "😰",
+    label: "Anxious",
+    color: "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40",
+  },
+  {
+    value: "fomo",
+    emoji: "🏃",
+    label: "FOMO",
+    color: "bg-[#FF9800]/15 text-[#FF9800] border-[#FF9800]/40",
+  },
+  {
+    value: "revenge",
+    emoji: "🔥",
+    label: "Revenge",
+    color: "bg-bearish/15 text-bearish border-bearish/40",
+  },
+  {
+    value: "tired",
+    emoji: "😴",
+    label: "Tired",
+    color: "bg-muted text-muted-foreground border-border",
+  },
 ];
 
 // ═══════════════════════════════════════════════
 // SESSION CONFIG
 // ═══════════════════════════════════════════════
-const SESSIONS: { key: TradingSession; label: string; hours: string; startHour: number; endHour: number }[] = [
+const SESSIONS: {
+  key: TradingSession;
+  label: string;
+  hours: string;
+  startHour: number;
+  endHour: number;
+}[] = [
   { key: "london", label: "London", hours: "8:00–16:00 UTC", startHour: 8, endHour: 16 },
   { key: "ny", label: "New York", hours: "13:00–22:00 UTC", startHour: 13, endHour: 22 },
   { key: "asian", label: "Asian", hours: "0:00–8:00 UTC", startHour: 0, endHour: 8 },
@@ -137,15 +168,23 @@ function DailyLoopPage() {
 
   // Morning prep mutation
   const morningMutation = useMutation({
-    mutationFn: (data: { loopId: string; market_bias: MarketBias; key_levels: string; watchlist_reviewed: boolean }) =>
-      morningPrepFn({ data }),
+    mutationFn: (data: {
+      loopId: string;
+      market_bias: MarketBias;
+      key_levels: string;
+      watchlist_reviewed: boolean;
+    }) => morningPrepFn({ data }),
     onSuccess: invalidateAll,
   });
 
   // Session mutation
   const sessionMutation = useMutation({
-    mutationFn: (data: { loopId: string; session: TradingSession; traded: boolean; notes: string }) =>
-      sessionFn({ data }),
+    mutationFn: (data: {
+      loopId: string;
+      session: TradingSession;
+      traded: boolean;
+      notes: string;
+    }) => sessionFn({ data }),
     onSuccess: invalidateAll,
   });
 
@@ -239,7 +278,10 @@ function TodayTab({
 }: {
   loop: DailyLoop | undefined;
   isLoading: boolean;
-  streak: { current_streak: number; longest_streak: number; last_completed_date: string | null } | null | undefined;
+  streak:
+    | { current_streak: number; longest_streak: number; last_completed_date: string | null }
+    | null
+    | undefined;
   history: DailyLoop[];
   morningMutation: any;
   sessionMutation: any;
@@ -248,7 +290,17 @@ function TodayTab({
   // ── Progress calculation ──
   const phases = [
     { label: "Morning Prep", done: loop?.morning_prep_completed ?? false },
-    { label: "Session Tracking", done: !!(loop?.london_session_traded || loop?.ny_session_traded || loop?.asian_session_traded || loop?.london_session_notes || loop?.ny_session_notes || loop?.asian_session_notes) },
+    {
+      label: "Session Tracking",
+      done: !!(
+        loop?.london_session_traded ||
+        loop?.ny_session_traded ||
+        loop?.asian_session_traded ||
+        loop?.london_session_notes ||
+        loop?.ny_session_notes ||
+        loop?.asian_session_notes
+      ),
+    },
     { label: "EOD Review", done: loop?.eod_review_completed ?? false },
   ];
   const completedPhases = phases.filter((p) => p.done).length;
@@ -338,7 +390,10 @@ function StreakWidget({
   streak,
   history,
 }: {
-  streak: { current_streak: number; longest_streak: number; last_completed_date: string | null } | null | undefined;
+  streak:
+    | { current_streak: number; longest_streak: number; last_completed_date: string | null }
+    | null
+    | undefined;
   history: DailyLoop[];
 }) {
   const currentStreak = streak?.current_streak ?? 0;
@@ -366,7 +421,9 @@ function StreakWidget({
     <div className="vixor-card p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Flame className={cn("size-4", currentStreak > 0 ? "text-[#FF9800]" : "text-muted-foreground")} />
+          <Flame
+            className={cn("size-4", currentStreak > 0 ? "text-[#FF9800]" : "text-muted-foreground")}
+          />
           <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             Streak
           </span>
@@ -451,9 +508,13 @@ function MorningPrepPhase({
   loop: DailyLoop | undefined;
   isCompleted: boolean;
   isSaving: boolean;
-  onSubmit: (data: { market_bias: MarketBias; key_levels: string; watchlist_reviewed: boolean }) => void;
+  onSubmit: (data: {
+    market_bias: MarketBias;
+    key_levels: string;
+    watchlist_reviewed: boolean;
+  }) => void;
 }) {
-  const [bias, setBias] = useState<MarketBias>(loop?.market_bias as MarketBias ?? "neutral");
+  const [bias, setBias] = useState<MarketBias>((loop?.market_bias as MarketBias) ?? "neutral");
   const [keyLevels, setKeyLevels] = useState(loop?.key_levels ?? "");
   const [watchlistReviewed, setWatchlistReviewed] = useState(loop?.watchlist_reviewed ?? false);
 
@@ -487,7 +548,11 @@ function MorningPrepPhase({
                     : "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40",
               )}
             >
-              {loop?.market_bias === "bullish" ? "📈 Bullish" : loop?.market_bias === "bearish" ? "📉 Bearish" : "↔️ Neutral"}
+              {loop?.market_bias === "bullish"
+                ? "📈 Bullish"
+                : loop?.market_bias === "bearish"
+                  ? "📉 Bearish"
+                  : "↔️ Neutral"}
             </span>
           </div>
           {loop?.key_levels && (
@@ -513,11 +578,26 @@ function MorningPrepPhase({
               Market Bias
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {([
-                { value: "bullish" as MarketBias, emoji: "📈", label: "Bullish", color: "bg-bullish/15 text-bullish border-bullish/40" },
-                { value: "bearish" as MarketBias, emoji: "📉", label: "Bearish", color: "bg-bearish/15 text-bearish border-bearish/40" },
-                { value: "neutral" as MarketBias, emoji: "↔️", label: "Neutral", color: "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40" },
-              ]).map((opt) => (
+              {[
+                {
+                  value: "bullish" as MarketBias,
+                  emoji: "📈",
+                  label: "Bullish",
+                  color: "bg-bullish/15 text-bullish border-bullish/40",
+                },
+                {
+                  value: "bearish" as MarketBias,
+                  emoji: "📉",
+                  label: "Bearish",
+                  color: "bg-bearish/15 text-bearish border-bearish/40",
+                },
+                {
+                  value: "neutral" as MarketBias,
+                  emoji: "↔️",
+                  label: "Neutral",
+                  color: "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40",
+                },
+              ].map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setBias(opt.value)}
@@ -559,7 +639,12 @@ function MorningPrepPhase({
             ) : (
               <Circle className="size-4 text-muted-foreground" />
             )}
-            <span className={cn("text-xs font-bold", watchlistReviewed ? "text-primary" : "text-muted-foreground")}>
+            <span
+              className={cn(
+                "text-xs font-bold",
+                watchlistReviewed ? "text-primary" : "text-muted-foreground",
+              )}
+            >
               Watchlist Reviewed
             </span>
           </button>
@@ -619,8 +704,8 @@ function SessionTrackingPhase({
         {SESSIONS.map((session) => {
           const tradedField = `${session.key}_session_traded` as keyof DailyLoop;
           const notesField = `${session.key}_session_notes` as keyof DailyLoop;
-          const isTraded = loop?.[tradedField] as boolean ?? false;
-          const notes = loop?.[notesField] as string ?? "";
+          const isTraded = (loop?.[tradedField] as boolean) ?? false;
+          const notes = (loop?.[notesField] as string) ?? "";
           const isActive = activeSession === session.key;
 
           return (
@@ -754,7 +839,9 @@ function EodReviewPhase({
     rules_broken?: number;
   }) => void;
 }) {
-  const [emotionalState, setEmotionalState] = useState<EmotionalState>(loop?.emotional_state ?? "calm");
+  const [emotionalState, setEmotionalState] = useState<EmotionalState>(
+    loop?.emotional_state ?? "calm",
+  );
   const [lessons, setLessons] = useState(loop?.lessons_learned ?? "");
   const [tomorrowPlan, setTomorrowPlan] = useState(loop?.tomorrow_plan ?? "");
   const [dailyPnl, setDailyPnl] = useState(loop?.daily_pnl?.toString() ?? "");
@@ -772,7 +859,16 @@ function EodReviewPhase({
       rules_followed: parseInt(rulesFollowed) || 0,
       rules_broken: parseInt(rulesBroken) || 0,
     });
-  }, [emotionalState, lessons, tomorrowPlan, dailyPnl, tradesTaken, rulesFollowed, rulesBroken, onSubmit]);
+  }, [
+    emotionalState,
+    lessons,
+    tomorrowPlan,
+    dailyPnl,
+    tradesTaken,
+    rulesFollowed,
+    rulesBroken,
+    onSubmit,
+  ]);
 
   return (
     <ExpandableWidget
@@ -796,7 +892,7 @@ function EodReviewPhase({
                   loop.daily_pnl >= 0 ? "text-bullish" : "text-bearish",
                 )}
               >
-                {(loop.daily_pnl >= 0 ? "+" : "")}${Number(loop.daily_pnl).toFixed(2)}
+                {loop.daily_pnl >= 0 ? "+" : ""}${Number(loop.daily_pnl).toFixed(2)}
               </span>
             </div>
           )}
@@ -806,11 +902,15 @@ function EodReviewPhase({
               <div className="text-[9px] text-muted-foreground">Trades</div>
             </div>
             <div>
-              <div className="text-sm font-bold font-mono text-bullish">{loop?.rules_followed ?? 0}</div>
+              <div className="text-sm font-bold font-mono text-bullish">
+                {loop?.rules_followed ?? 0}
+              </div>
               <div className="text-[9px] text-muted-foreground">Rules ✓</div>
             </div>
             <div>
-              <div className="text-sm font-bold font-mono text-bearish">{loop?.rules_broken ?? 0}</div>
+              <div className="text-sm font-bold font-mono text-bearish">
+                {loop?.rules_broken ?? 0}
+              </div>
               <div className="text-[9px] text-muted-foreground">Rules ✗</div>
             </div>
           </div>
@@ -983,7 +1083,10 @@ function HistoryTab({
 }: {
   history: DailyLoop[];
   isLoading: boolean;
-  streak: { current_streak: number; longest_streak: number; last_completed_date: string | null } | null | undefined;
+  streak:
+    | { current_streak: number; longest_streak: number; last_completed_date: string | null }
+    | null
+    | undefined;
   page: number;
   pageSize: number;
   total: number;
@@ -1006,7 +1109,9 @@ function HistoryTab({
       <div className="vixor-card p-8 text-center border-dashed border-2">
         <History className="size-8 text-muted-foreground/30 mx-auto mb-3" />
         <h3 className="text-sm font-bold text-foreground mb-1">No History Yet</h3>
-        <p className="text-xs text-muted-foreground">Complete your first daily loop to start building your track record.</p>
+        <p className="text-xs text-muted-foreground">
+          Complete your first daily loop to start building your track record.
+        </p>
       </div>
     );
   }
@@ -1021,14 +1126,15 @@ function HistoryTab({
         {history.map((loop) => {
           const isExpanded = expandedId === loop.id;
           const date = new Date(loop.date);
-          const dateStr = date.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+          const dateStr = date.toLocaleDateString([], {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          });
           const emotion = EMOTIONAL_STATES.find((e) => e.value === loop.emotional_state);
 
           return (
-            <div
-              key={loop.id}
-              className="vixor-card overflow-hidden"
-            >
+            <div key={loop.id} className="vixor-card overflow-hidden">
               <button
                 onClick={() => setExpandedId(isExpanded ? null : loop.id)}
                 className="w-full flex items-center justify-between p-3 text-left"
@@ -1069,9 +1175,7 @@ function HistoryTab({
                           {loop.market_bias.toUpperCase()}
                         </span>
                       )}
-                      {emotion && (
-                        <span className="text-[10px]">{emotion.emoji}</span>
-                      )}
+                      {emotion && <span className="text-[10px]">{emotion.emoji}</span>}
                     </div>
                   </div>
                 </div>
@@ -1083,7 +1187,7 @@ function HistoryTab({
                         loop.daily_pnl >= 0 ? "text-bullish" : "text-bearish",
                       )}
                     >
-                      {(loop.daily_pnl >= 0 ? "+" : "")}${Number(loop.daily_pnl).toFixed(2)}
+                      {loop.daily_pnl >= 0 ? "+" : ""}${Number(loop.daily_pnl).toFixed(2)}
                     </span>
                   )}
                   <ChevronRight
@@ -1103,29 +1207,41 @@ function HistoryTab({
                       <div className="text-[8px] text-muted-foreground uppercase">Trades</div>
                     </div>
                     <div>
-                      <div className="text-xs font-bold font-mono text-bullish">{loop.rules_followed}</div>
+                      <div className="text-xs font-bold font-mono text-bullish">
+                        {loop.rules_followed}
+                      </div>
                       <div className="text-[8px] text-muted-foreground uppercase">Rules ✓</div>
                     </div>
                     <div>
-                      <div className="text-xs font-bold font-mono text-bearish">{loop.rules_broken}</div>
+                      <div className="text-xs font-bold font-mono text-bearish">
+                        {loop.rules_broken}
+                      </div>
                       <div className="text-[8px] text-muted-foreground uppercase">Rules ✗</div>
                     </div>
                   </div>
                   {loop.key_levels && (
                     <div>
-                      <span className="text-[9px] font-bold uppercase text-muted-foreground">Key Levels:</span>
+                      <span className="text-[9px] font-bold uppercase text-muted-foreground">
+                        Key Levels:
+                      </span>
                       <p className="text-[11px] text-foreground/90 mt-0.5">{loop.key_levels}</p>
                     </div>
                   )}
                   {loop.lessons_learned && (
                     <div>
-                      <span className="text-[9px] font-bold uppercase text-muted-foreground">Lessons:</span>
-                      <p className="text-[11px] text-foreground/90 mt-0.5">{loop.lessons_learned}</p>
+                      <span className="text-[9px] font-bold uppercase text-muted-foreground">
+                        Lessons:
+                      </span>
+                      <p className="text-[11px] text-foreground/90 mt-0.5">
+                        {loop.lessons_learned}
+                      </p>
                     </div>
                   )}
                   {loop.tomorrow_plan && (
                     <div>
-                      <span className="text-[9px] font-bold uppercase text-muted-foreground">Tomorrow:</span>
+                      <span className="text-[9px] font-bold uppercase text-muted-foreground">
+                        Tomorrow:
+                      </span>
                       <p className="text-[11px] text-foreground/90 mt-0.5">{loop.tomorrow_plan}</p>
                     </div>
                   )}
@@ -1138,12 +1254,7 @@ function HistoryTab({
 
       {/* Pagination */}
       {total > pageSize && (
-        <PaginationBar
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          onPageChange={onPageChange}
-        />
+        <PaginationBar page={page} pageSize={pageSize} total={total} onPageChange={onPageChange} />
       )}
     </div>
   );

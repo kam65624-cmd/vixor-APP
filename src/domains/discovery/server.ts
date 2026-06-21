@@ -6,8 +6,4 @@
 
 export { scanDiscovery, searchTokens } from "./functions";
 export { getDiscoveryConfig, loadDiscoveryConfig } from "./config";
-export type {
-  DiscoveryFilterParams,
-  DiscoveryScanResult,
-  ScoredToken,
-} from "./types";
+export type { DiscoveryFilterParams, DiscoveryScanResult, ScoredToken } from "./types";

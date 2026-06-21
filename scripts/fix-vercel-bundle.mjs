@@ -33,8 +33,8 @@ const SSR_DIR = join(FUNC_DIR, "_ssr");
 function findChunks() {
   if (!existsSync(SSR_DIR)) return [];
   const files = readdirSync(SSR_DIR);
-  return files.filter(
-    (f) => /^(start|server|router|empty-plugin-adapters)-[A-Za-z0-9_-]+\.mjs$/.test(f),
+  return files.filter((f) =>
+    /^(start|server|router|empty-plugin-adapters)-[A-Za-z0-9_-]+\.mjs$/.test(f),
   );
 }
 
@@ -55,9 +55,7 @@ function addNftTraceableImports(chunks) {
   }
 
   // Build the traceable import block
-  const importCalls = chunks.map(
-    (chunk) => `import("./_ssr/${chunk}")`
-  );
+  const importCalls = chunks.map((chunk) => `import("./_ssr/${chunk}")`);
 
   const traceBlock = [
     "// ── Vixor: @vercel/nft traceable imports for _ssr chunks ──",
@@ -75,7 +73,9 @@ function addNftTraceableImports(chunks) {
   content = lines.join("\n");
 
   writeFileSync(indexPath, content, "utf-8");
-  console.log(`[fix-vercel] Added ${chunks.length} @vercel/nft-traceable imports to main index.mjs`);
+  console.log(
+    `[fix-vercel] Added ${chunks.length} @vercel/nft-traceable imports to main index.mjs`,
+  );
 }
 
 function verifySsrFiles(chunks) {
@@ -83,7 +83,9 @@ function verifySsrFiles(chunks) {
   for (const chunk of chunks) {
     const chunkPath = join(SSR_DIR, chunk);
     if (existsSync(chunkPath)) {
-      console.log(`[fix-vercel]   ✅ ${chunk} (${(readFileSync(chunkPath).length / 1024).toFixed(1)} KB)`);
+      console.log(
+        `[fix-vercel]   ✅ ${chunk} (${(readFileSync(chunkPath).length / 1024).toFixed(1)} KB)`,
+      );
     } else {
       console.error(`[fix-vercel]   ❌ ${chunk} MISSING!`);
     }
@@ -128,7 +130,10 @@ function fixNitroErrorHandler() {
     "}",
   ].join("\n");
 
-  content = content.replace(marker, wrapperCode + "\nconst errorHandlers = [__vixor_error_handler__, errorHandler$1];");
+  content = content.replace(
+    marker,
+    wrapperCode + "\nconst errorHandlers = [__vixor_error_handler__, errorHandler$1];",
+  );
   writeFileSync(indexPath, content, "utf-8");
   console.log("[fix-vercel] Patched index.mjs - added production-safe error handler");
 }

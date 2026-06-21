@@ -40,10 +40,15 @@ export function structuredLogger(channel: LogChannel, payload: Record<string, an
 
 /** Convenience helpers */
 export const log = {
-  info: (msg: string, ctx: Record<string, any> = {}) => structuredLogger("info", { level: "info", msg, ...ctx }),
-  warn: (msg: string, ctx: Record<string, any> = {}) => structuredLogger("warn", { level: "warn", msg, ...ctx }),
-  error: (msg: string, ctx: Record<string, any> = {}) => structuredLogger("error", { level: "error", msg, ...ctx }),
-  debug: (msg: string, ctx: Record<string, any> = {}) => structuredLogger("debug", { level: "debug", msg, ...ctx }),
-  alert: (kind: string, ctx: Record<string, any> = {}) => structuredLogger("alert", { level: "error", kind, ...ctx }),
+  info: (msg: string, ctx: Record<string, any> = {}) =>
+    structuredLogger("info", { level: "info", msg, ...ctx }),
+  warn: (msg: string, ctx: Record<string, any> = {}) =>
+    structuredLogger("warn", { level: "warn", msg, ...ctx }),
+  error: (msg: string, ctx: Record<string, any> = {}) =>
+    structuredLogger("error", { level: "error", msg, ...ctx }),
+  debug: (msg: string, ctx: Record<string, any> = {}) =>
+    structuredLogger("debug", { level: "debug", msg, ...ctx }),
+  alert: (kind: string, ctx: Record<string, any> = {}) =>
+    structuredLogger("alert", { level: "error", kind, ...ctx }),
   http: (ctx: Record<string, any>) => structuredLogger("http", ctx),
 };

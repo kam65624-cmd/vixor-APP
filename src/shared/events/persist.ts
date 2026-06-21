@@ -14,6 +14,7 @@
 // ============================================================================
 
 import { VixorEvents, type EventLogEntry } from "./orchestrator";
+import type { Json } from "@/shared/supabase/types";
 
 /**
  * Persist an event to the domain_events table.
@@ -25,16 +26,12 @@ async function persistEvent(entry: EventLogEntry): Promise<void> {
 
     const { error } = await supabaseAdmin.from("domain_events").insert({
       event_type: entry.event_type,
-      payload: entry.payload,
-      source: entry.source || null,
-      trace_id: entry.trace_id || null,
+      payload: entry.payload as Json,
     });
 
     if (error) {
       // Don't throw — event persistence should never break the main flow
-      console.warn(
-        `[EventPersist] Failed to persist ${entry.event_type}: ${error.message}`,
-      );
+      console.warn(`[EventPersist] Failed to persist ${entry.event_type}: ${error.message}`);
     }
   } catch (err) {
     console.warn(

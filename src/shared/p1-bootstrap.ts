@@ -24,4 +24,6 @@ import { configureEventPersistence } from "./events/persist";
 // ── Execute initialization ──────────────────────────────────────────────────
 configureEventPersistence();
 
-console.log("[P1 Bootstrap] ✓ Intelligence Layer activated — Tools registered, Event Persistence configured");
+console.log(
+  "[P1 Bootstrap] ✓ Intelligence Layer activated — Tools registered, Event Persistence configured",
+);

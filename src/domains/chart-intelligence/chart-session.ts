@@ -14,10 +14,7 @@
 // This eliminates the need for screenshots for in-app chart questions.
 // ============================================================================
 
-import {
-  type ChartContext,
-  createSessionContext,
-} from "./chart-context";
+import { type ChartContext, createSessionContext } from "./chart-context";
 
 // ── Chart Session Store ──
 // In a server-rendered app, we can't persist this across requests on the server.
@@ -54,10 +51,7 @@ export function sessionToContext(session: ChartSession): ChartContext {
 export function buildChartSessionPrompt(context: ChartContext): string {
   if (!context.symbol) return "";
 
-  const parts: string[] = [
-    `## Current Chart Context`,
-    `- Asset: ${context.symbol}`,
-  ];
+  const parts: string[] = [`## Current Chart Context`, `- Asset: ${context.symbol}`];
 
   if (context.timeframe) {
     parts.push(`- Timeframe: ${context.timeframe}`);
@@ -74,7 +68,9 @@ export function buildChartSessionPrompt(context: ChartContext): string {
   }
 
   parts.push("");
-  parts.push("The user is currently viewing this chart. Any questions they ask are likely about THIS asset and THIS timeframe. Use this context to provide relevant analysis.");
+  parts.push(
+    "The user is currently viewing this chart. Any questions they ask are likely about THIS asset and THIS timeframe. Use this context to provide relevant analysis.",
+  );
 
   return parts.join("\n");
 }

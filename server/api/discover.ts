@@ -45,10 +45,7 @@ const discoverQuerySchema = z.object({
     .enum(["trending", "volume", "change", "liquidity", "smart"])
     .optional()
     .default("trending"),
-  sortOrder: z
-    .enum(["asc", "desc"])
-    .optional()
-    .default("desc"),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
   limit: z
     .string()
     .optional()
@@ -93,7 +90,9 @@ export default defineEventHandler(async (event) => {
     }
 
     const result = await scanDiscovery({
-      chains: params.chain ? [params.chain as "solana" | "ethereum" | "base" | "arbitrum" | "polygon"] : undefined,
+      chains: params.chain
+        ? [params.chain as "solana" | "ethereum" | "base" | "arbitrum" | "polygon"]
+        : undefined,
       minLiquidity: params.minLiquidity || undefined,
       minVolume24h: params.minVolume || undefined,
       minMarketCap: params.minMarketCap || undefined,

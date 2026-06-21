@@ -23,10 +23,14 @@ export default defineEventHandler(async (event) => {
     // Use VIXOR_ALLOW_NO_AUTH=true explicitly for local development
     const allowNoAuth = process.env.VIXOR_ALLOW_NO_AUTH === "true";
     if (!allowNoAuth) {
-      console.error("[Telegram Webhook] TELEGRAM_WEBHOOK_SECRET not set and VIXOR_ALLOW_NO_AUTH is not true. Rejecting request.");
+      console.error(
+        "[Telegram Webhook] TELEGRAM_WEBHOOK_SECRET not set and VIXOR_ALLOW_NO_AUTH is not true. Rejecting request.",
+      );
       throw createError({ statusCode: 500, statusMessage: "Webhook not configured" });
     }
-    console.warn("[Telegram Webhook] WARNING: Running without webhook secret (VIXOR_ALLOW_NO_AUTH=true)");
+    console.warn(
+      "[Telegram Webhook] WARNING: Running without webhook secret (VIXOR_ALLOW_NO_AUTH=true)",
+    );
   }
 
   try {

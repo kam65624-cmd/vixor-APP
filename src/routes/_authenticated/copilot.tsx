@@ -2,7 +2,14 @@ import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { askCopilot, getConsensus } from "@/domains/copilot/functions";
-import { createConversation, listConversations, getConversation, saveMessage, deleteConversation, updateConversationTitle } from "@/domains/copilot/conversations";
+import {
+  createConversation,
+  listConversations,
+  getConversation,
+  saveMessage,
+  deleteConversation,
+  updateConversationTitle,
+} from "@/domains/copilot/conversations";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
@@ -94,7 +101,12 @@ const AGENTS: AgentConfig[] = [
     color: "text-emerald-400",
     bgColor: "bg-emerald-500/10",
     desc: "SMC/ICT Technical Analysis",
-    capabilities: ["Market structure (BOS/ChoCh)", "Order Blocks & FVGs", "Entry/SL/TP levels", "Liquidity mapping"],
+    capabilities: [
+      "Market structure (BOS/ChoCh)",
+      "Order Blocks & FVGs",
+      "Entry/SL/TP levels",
+      "Liquidity mapping",
+    ],
   },
   {
     id: "risk_manager",
@@ -103,7 +115,12 @@ const AGENTS: AgentConfig[] = [
     color: "text-amber-400",
     bgColor: "bg-amber-500/10",
     desc: "Position Sizing & Risk Control",
-    capabilities: ["Position sizing", "Risk-reward optimization", "Exposure analysis", "Stop loss placement"],
+    capabilities: [
+      "Position sizing",
+      "Risk-reward optimization",
+      "Exposure analysis",
+      "Stop loss placement",
+    ],
   },
   {
     id: "news_analyst",
@@ -112,7 +129,12 @@ const AGENTS: AgentConfig[] = [
     color: "text-sky-400",
     bgColor: "bg-sky-500/10",
     desc: "Fundamental News Impact",
-    capabilities: ["Economic calendar", "Central bank analysis", "Sentiment scoring", "Event timing"],
+    capabilities: [
+      "Economic calendar",
+      "Central bank analysis",
+      "Sentiment scoring",
+      "Event timing",
+    ],
   },
   {
     id: "strategy_builder",
@@ -234,7 +256,12 @@ function CopilotPage() {
       message: string;
       history: { role: "user" | "assistant"; content: string }[];
       agent: AgentId;
-      chartSession?: { pair: string; timeframe: string; currentPrice: number; tradingViewSymbol: string };
+      chartSession?: {
+        pair: string;
+        timeframe: string;
+        currentPrice: number;
+        tradingViewSymbol: string;
+      };
     }) => askCopilotFn({ data }),
     onSuccess: async (result) => {
       const assistantMsg: ChatMessage = {
@@ -330,137 +357,151 @@ function CopilotPage() {
   });
 
   // ─── Streaming Copilot ───
-  const streamCopilot = useCallback(async (params: {
-    trimmed: string;
-    history: { role: "user" | "assistant"; content: string }[];
-    agent: AgentId;
-    chartSession?: { pair: string; timeframe: string; currentPrice: number; tradingViewSymbol: string };
-  }) => {
-    const { trimmed, history, agent, chartSession } = params;
-    setIsStreaming(true);
-    setConsensusMode(false);
+  const streamCopilot = useCallback(
+    async (params: {
+      trimmed: string;
+      history: { role: "user" | "assistant"; content: string }[];
+      agent: AgentId;
+      chartSession?: {
+        pair: string;
+        timeframe: string;
+        currentPrice: number;
+        tradingViewSymbol: string;
+      };
+    }) => {
+      const { trimmed, history, agent, chartSession } = params;
+      setIsStreaming(true);
+      setConsensusMode(false);
 
-    // Create an empty assistant message that will be progressively updated
-    const streamMsgId = crypto.randomUUID();
-    const streamMsg: ChatMessage = {
-      id: streamMsgId,
-      role: "assistant",
-      content: "",
-      agent,
-      timestamp: Date.now(),
-    };
-    setMessages((prev) => [...prev, streamMsg]);
+      // Create an empty assistant message that will be progressively updated
+      const streamMsgId = crypto.randomUUID();
+      const streamMsg: ChatMessage = {
+        id: streamMsgId,
+        role: "assistant",
+        content: "",
+        agent,
+        timestamp: Date.now(),
+      };
+      setMessages((prev) => [...prev, streamMsg]);
 
-    try {
-      const token = typeof window !== "undefined"
-        ? document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("sb-access-token="))
-            ?.split("=")[1] || localStorage.getItem("sb-token") || ""
-        : "";
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("sb-access-token="))
+                ?.split("=")[1] ||
+              localStorage.getItem("sb-token") ||
+              ""
+            : "";
 
-      if (!token) throw new Error("No auth token found");
+        if (!token) throw new Error("No auth token found");
 
-      const response = await fetch("/api/copilot-stream", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          message: chartSession ? `${chartSession.pair} (${chartSession.timeframe}) — ${trimmed}` : trimmed,
-          history,
-          agent,
-        }),
-      });
+        const response = await fetch("/api/copilot-stream", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            message: chartSession
+              ? `${chartSession.pair} (${chartSession.timeframe}) — ${trimmed}`
+              : trimmed,
+            history,
+            agent,
+          }),
+        });
 
-      if (!response.ok) {
-        const errText = await response.text().catch(() => "Stream request failed");
-        throw new Error(errText || `HTTP ${response.status}`);
-      }
+        if (!response.ok) {
+          const errText = await response.text().catch(() => "Stream request failed");
+          throw new Error(errText || `HTTP ${response.status}`);
+        }
 
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response body");
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("No response body");
 
-      const decoder = new TextDecoder();
-      let fullContent = "";
-      let resolvedAgent = agent;
-      let buffer = "";
+        const decoder = new TextDecoder();
+        let fullContent = "";
+        let resolvedAgent = agent;
+        let buffer = "";
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const chunk = JSON.parse(line.slice(6));
-            if (chunk.agent && chunk.agent !== "auto") resolvedAgent = chunk.agent;
-            if (chunk.delta) {
-              fullContent += chunk.delta;
-              const currentContent = fullContent;
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === streamMsgId
-                    ? { ...m, content: currentContent, agent: resolvedAgent }
-                    : m,
-                ),
-              );
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            try {
+              const chunk = JSON.parse(line.slice(6));
+              if (chunk.agent && chunk.agent !== "auto") resolvedAgent = chunk.agent;
+              if (chunk.delta) {
+                fullContent += chunk.delta;
+                const currentContent = fullContent;
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === streamMsgId
+                      ? { ...m, content: currentContent, agent: resolvedAgent }
+                      : m,
+                  ),
+                );
+              }
+            } catch {
+              // Skip malformed JSON chunks
             }
-          } catch {
-            // Skip malformed JSON chunks
           }
         }
-      }
 
-      // Save the complete message to conversation
-      if (activeConversationId && fullContent) {
-        try {
-          await saveMessageFn({
-            data: {
-              conversation_id: activeConversationId,
-              role: "assistant",
-              content: fullContent,
-              agent_id: resolvedAgent,
-            },
-          });
-          queryClient.invalidateQueries({ queryKey: ["copilot-conversations"] });
-        } catch {
-          // Silent fail
+        // Save the complete message to conversation
+        if (activeConversationId && fullContent) {
+          try {
+            await saveMessageFn({
+              data: {
+                conversation_id: activeConversationId,
+                role: "assistant",
+                content: fullContent,
+                agent_id: resolvedAgent,
+              },
+            });
+            queryClient.invalidateQueries({ queryKey: ["copilot-conversations"] });
+          } catch {
+            // Silent fail
+          }
         }
+      } catch (err) {
+        // On streaming error, replace the empty message with the error
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === streamMsgId
+              ? {
+                  ...m,
+                  content: `⚠️ ${err instanceof Error ? err.message : "Streaming failed"}. Retrying with standard mode...`,
+                  agent: "error" as any,
+                }
+              : m,
+          ),
+        );
+        // Remove the failed message after a short delay and re-throw for the fallback
+        setTimeout(() => {
+          setMessages((prev) => prev.filter((m) => m.id !== streamMsgId));
+        }, 1500);
+        throw err;
+      } finally {
+        setIsStreaming(false);
       }
-    } catch (err) {
-      // On streaming error, replace the empty message with the error
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === streamMsgId
-            ? {
-                ...m,
-                content: `⚠️ ${err instanceof Error ? err.message : "Streaming failed"}. Retrying with standard mode...`,
-                agent: "error" as any,
-              }
-            : m,
-        ),
-      );
-      // Remove the failed message after a short delay and re-throw for the fallback
-      setTimeout(() => {
-        setMessages((prev) => prev.filter((m) => m.id !== streamMsgId));
-      }, 1500);
-      throw err;
-    } finally {
-      setIsStreaming(false);
-    }
-  }, [activeConversationId, saveMessageFn, queryClient]);
+    },
+    [activeConversationId, saveMessageFn, queryClient],
+  );
 
   // ─── Send Message ───
   const sendMessage = useCallback(
     async (text: string, agentOverride?: AgentId) => {
       const trimmed = text.trim();
-      if (!trimmed || copilotMutation.isPending || consensusMutation.isPending || isStreaming) return;
+      if (!trimmed || copilotMutation.isPending || consensusMutation.isPending || isStreaming)
+        return;
       const agent = agentOverride || activeAgent;
       const userMsg: ChatMessage = {
         id: crypto.randomUUID(),
@@ -469,7 +510,9 @@ function CopilotPage() {
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, userMsg]);
-      const history = messages.slice(-10).map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+      const history = messages
+        .slice(-10)
+        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
       // ─── Persistence: Create conversation if needed ───
       let convId = activeConversationId;
@@ -521,7 +564,20 @@ function CopilotPage() {
         });
       }
     },
-    [activeAgent, copilotMutation, consensusMutation, messages, consensusMode, activeConversationId, createConversationFn, saveMessageFn, queryClient, chartSession, isStreaming, streamCopilot],
+    [
+      activeAgent,
+      copilotMutation,
+      consensusMutation,
+      messages,
+      consensusMode,
+      activeConversationId,
+      createConversationFn,
+      saveMessageFn,
+      queryClient,
+      chartSession,
+      isStreaming,
+      streamCopilot,
+    ],
   );
 
   const handleSubmit = useCallback(
@@ -688,7 +744,10 @@ function CopilotPage() {
       {/* ─── Mobile Drawer Overlay ─── */}
       {mobileDrawerOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileDrawerOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setMobileDrawerOpen(false)}
+          />
           <div className="relative w-80 max-w-[85vw] h-full bg-background border-r border-border animate-in slide-in-from-left duration-200">
             <ConversationSidebar
               conversations={conversations}
@@ -797,7 +856,9 @@ function CopilotPage() {
                 }`}
               >
                 <Users className="size-4" />
-                <span className="hidden sm:inline">{t("copilot.consensusMode") || "Consensus"}</span>
+                <span className="hidden sm:inline">
+                  {t("copilot.consensusMode") || "Consensus"}
+                </span>
                 <span className="sm:hidden">{t("copilot.consensusShort") || "All"}</span>
               </button>
             </div>
@@ -828,14 +889,20 @@ function CopilotPage() {
                         if (agent.id === "auto") setConsensusMode(false);
                       }}
                       className={`w-full p-3 rounded-xl border text-left transition-all ${
-                        isActive ? "bg-primary/10 border-primary/30" : "bg-card border-border hover:bg-card-hover"
+                        isActive
+                          ? "bg-primary/10 border-primary/30"
+                          : "bg-card border-border hover:bg-card-hover"
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1.5">
-                        <div className={`size-6 rounded-lg ${agent.bgColor} flex items-center justify-center`}>
+                        <div
+                          className={`size-6 rounded-lg ${agent.bgColor} flex items-center justify-center`}
+                        >
                           <Icon className={`size-3.5 ${agent.color}`} />
                         </div>
-                        <span className={`text-xs font-bold ${isActive ? "text-primary" : "text-foreground"}`}>
+                        <span
+                          className={`text-xs font-bold ${isActive ? "text-primary" : "text-foreground"}`}
+                        >
                           {agent.label}
                         </span>
                         {agent.id === "auto" && (
@@ -868,7 +935,17 @@ function CopilotPage() {
           {messages.length === 0 ? (
             <EmptyState onQuickAction={sendMessage} onConsensus={setConsensusMode} />
           ) : (
-            messages.map((msg) => <MessageBubble key={msg.id} message={msg} onConsultAgent={(agent) => { setActiveAgent(agent); setShowAgents(false); sendMessage(msg.role === "user" ? msg.content : "", agent); }} />)
+            messages.map((msg) => (
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                onConsultAgent={(agent) => {
+                  setActiveAgent(agent);
+                  setShowAgents(false);
+                  sendMessage(msg.role === "user" ? msg.content : "", agent);
+                }}
+              />
+            ))
           )}
 
           {copilotMutation.isPending && (
@@ -880,7 +957,9 @@ function CopilotPage() {
                 <div className="flex items-center gap-2">
                   <Loader2 className="size-4 animate-spin text-primary" />
                   <span className="text-xs text-muted-foreground">
-                    {consensusMode ? "Getting consensus from all agents..." : "Vixor is thinking..."}
+                    {consensusMode
+                      ? "Getting consensus from all agents..."
+                      : "Vixor is thinking..."}
                   </span>
                 </div>
               </div>
@@ -898,8 +977,12 @@ function CopilotPage() {
                   <span className="text-xs text-muted-foreground">Consulting all 4 agents...</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {AGENTS.filter(a => a.id !== "auto").map((agent, i) => (
-                    <div key={agent.id} className="flex items-center gap-1.5 text-[10px] text-muted-foreground animate-pulse" style={{ animationDelay: `${i * 300}ms` }}>
+                  {AGENTS.filter((a) => a.id !== "auto").map((agent, i) => (
+                    <div
+                      key={agent.id}
+                      className="flex items-center gap-1.5 text-[10px] text-muted-foreground animate-pulse"
+                      style={{ animationDelay: `${i * 300}ms` }}
+                    >
                       <agent.icon className={`size-3 ${agent.color}`} />
                       {agent.label}
                     </div>
@@ -923,7 +1006,8 @@ function CopilotPage() {
                 onKeyDown={handleKeyDown}
                 placeholder={
                   consensusMode
-                    ? t("copilot.consensusPlaceholder") || "Ask all 4 agents for their perspective..."
+                    ? t("copilot.consensusPlaceholder") ||
+                      "Ask all 4 agents for their perspective..."
                     : t("copilot.placeholder") || "Ask Vixor anything about trading..."
                 }
                 rows={1}
@@ -1115,15 +1199,21 @@ function ConversationSidebar({
                       onClick={() => onSelect(conv.id)}
                       className="flex items-center gap-2 flex-1 min-w-0 text-left"
                     >
-                      <div className={`size-6 rounded-lg ${isActive ? "bg-primary/15" : "bg-card"} border border-border flex items-center justify-center shrink-0`}>
+                      <div
+                        className={`size-6 rounded-lg ${isActive ? "bg-primary/15" : "bg-card"} border border-border flex items-center justify-center shrink-0`}
+                      >
                         {conv.is_consensus ? (
                           <Users className={`size-3 ${isActive ? "text-primary" : agentColor}`} />
                         ) : (
-                          <AgentIcon className={`size-3 ${isActive ? "text-primary" : agentColor}`} />
+                          <AgentIcon
+                            className={`size-3 ${isActive ? "text-primary" : agentColor}`}
+                          />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className={`text-xs font-medium truncate ${isActive ? "text-primary" : "text-foreground"}`}>
+                        <div
+                          className={`text-xs font-medium truncate ${isActive ? "text-primary" : "text-foreground"}`}
+                        >
                           {conv.title}
                         </div>
                         <div className="text-[9px] text-muted-foreground">
@@ -1285,7 +1375,13 @@ function MessageBubble({
   const isConsensus = message.role === "consensus";
 
   if (isConsensus && message.consensusData) {
-    return <ConsensusBubble data={message.consensusData} timestamp={message.timestamp} onConsultAgent={onConsultAgent} />;
+    return (
+      <ConsensusBubble
+        data={message.consensusData}
+        timestamp={message.timestamp}
+        onConsultAgent={onConsultAgent}
+      />
+    );
   }
 
   const agentConfig = AGENTS.find((a) => a.id === message.agent);
@@ -1316,7 +1412,11 @@ function MessageBubble({
       </div>
       <div
         className={`max-w-[85%] vixor-card p-4 ${
-          isUser ? "bg-primary/5 border-primary/15" : isError ? "border-bearish/20 bg-bearish/5" : ""
+          isUser
+            ? "bg-primary/5 border-primary/15"
+            : isError
+              ? "border-bearish/20 bg-bearish/5"
+              : ""
         }`}
       >
         {!isUser && !isError && agentConfig && (
@@ -1345,7 +1445,8 @@ function MessageBubble({
                 >
                   <HIcon className={`size-3 ${hConfig.color}`} />
                   <span className={hConfig.color}>
-                    {t("copilot.consultAgent", { agent: hConfig.label }) || `Consult ${hConfig.label}`}
+                    {t("copilot.consultAgent", { agent: hConfig.label }) ||
+                      `Consult ${hConfig.label}`}
                   </span>
                 </button>
               );
@@ -1412,10 +1513,14 @@ function ConsensusBubble({
                 onClick={() => setExpandedAgent(isExpanded ? null : r.agent)}
                 className="w-full flex items-center gap-2 p-3 hover:bg-card-hover transition-colors"
               >
-                <div className={`size-6 rounded-lg ${agentConfig.bgColor} flex items-center justify-center`}>
+                <div
+                  className={`size-6 rounded-lg ${agentConfig.bgColor} flex items-center justify-center`}
+                >
                   <AIcon className={`size-3 ${agentConfig.color}`} />
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${agentConfig.color}`}>
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-widest ${agentConfig.color}`}
+                >
                   {agentConfig.label}
                 </span>
                 <ChevronDown
@@ -1433,7 +1538,8 @@ function ConsensusBubble({
                   >
                     <AIcon className={`size-3 ${agentConfig.color}`} />
                     <span className={agentConfig.color}>
-                      {t("copilot.consultAgent", { agent: agentConfig.label }) || `Consult ${agentConfig.label}`}
+                      {t("copilot.consultAgent", { agent: agentConfig.label }) ||
+                        `Consult ${agentConfig.label}`}
                     </span>
                   </button>
                 </div>
@@ -1464,7 +1570,10 @@ function detectHandoffAgents(content: string): AgentId[] {
   if (lower.includes("consult the news analyst") || lower.includes("consult news analyst")) {
     if (!agents.includes("news_analyst")) agents.push("news_analyst");
   }
-  if (lower.includes("consult the strategy builder") || lower.includes("consult strategy builder")) {
+  if (
+    lower.includes("consult the strategy builder") ||
+    lower.includes("consult strategy builder")
+  ) {
     if (!agents.includes("strategy_builder")) agents.push("strategy_builder");
   }
 

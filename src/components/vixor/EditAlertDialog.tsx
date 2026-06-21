@@ -43,12 +43,7 @@ const CONDITIONS = [
   { value: "crosses_down", label: "Price crosses down" },
 ];
 
-export function EditAlertDialog({
-  open,
-  onOpenChange,
-  alert,
-  onSuccess,
-}: EditAlertDialogProps) {
+export function EditAlertDialog({ open, onOpenChange, alert, onSuccess }: EditAlertDialogProps) {
   const [condition, setCondition] = useState("above");
   const [targetPrice, setTargetPrice] = useState("");
   const [note, setNote] = useState("");
@@ -102,7 +97,11 @@ export function EditAlertDialog({
 
   // Format suggested price based on pair
   const formatSuggestedPrice = (p: number) => {
-    if (alert?.pair?.includes("JPY") || alert?.pair === "XAU/USD" || alert?.pair?.includes("USDT")) {
+    if (
+      alert?.pair?.includes("JPY") ||
+      alert?.pair === "XAU/USD" ||
+      alert?.pair?.includes("USDT")
+    ) {
       return p.toFixed(2);
     }
     return p.toFixed(4);
@@ -110,13 +109,14 @@ export function EditAlertDialog({
 
   // Quick price suggestions based on condition
   const currentTarget = parseFloat(targetPrice) || 0;
-  const suggestedPrices = currentTarget > 0
-    ? condition === "above"
-      ? [currentTarget * 1.01, currentTarget * 1.02, currentTarget * 1.05]
-      : condition === "below"
-        ? [currentTarget * 0.99, currentTarget * 0.98, currentTarget * 0.95]
-        : [currentTarget * 1.01, currentTarget * 0.99, currentTarget * 1.02]
-    : [];
+  const suggestedPrices =
+    currentTarget > 0
+      ? condition === "above"
+        ? [currentTarget * 1.01, currentTarget * 1.02, currentTarget * 1.05]
+        : condition === "below"
+          ? [currentTarget * 0.99, currentTarget * 0.98, currentTarget * 0.95]
+          : [currentTarget * 1.01, currentTarget * 0.99, currentTarget * 1.02]
+      : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -138,9 +138,7 @@ export function EditAlertDialog({
               <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                 Pair
               </div>
-              <div className="text-xl font-bold font-mono text-foreground">
-                {alert?.pair}
-              </div>
+              <div className="text-xl font-bold font-mono text-foreground">{alert?.pair}</div>
             </div>
             <div className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs font-bold">
               Cannot change
@@ -176,7 +174,13 @@ export function EditAlertDialog({
               value={targetPrice}
               onChange={(e) => setTargetPrice(e.target.value)}
               placeholder="0.00"
-              step={alert?.pair?.includes("JPY") ? "0.01" : alert?.pair === "XAU/USD" ? "0.01" : "0.0001"}
+              step={
+                alert?.pair?.includes("JPY")
+                  ? "0.01"
+                  : alert?.pair === "XAU/USD"
+                    ? "0.01"
+                    : "0.0001"
+              }
               className="w-full h-11 px-3 rounded-xl bg-background border border-border text-foreground font-mono text-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
             {suggestedPrices.length > 0 && (

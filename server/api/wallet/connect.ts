@@ -99,6 +99,30 @@ async function handleConnect(event: Parameters<typeof defineEventHandler>[0]) {
     throw createError({ statusCode: 400, statusMessage: `Invalid ${chain} wallet address` });
   }
 
+  // Verify nonce was actually issued by server (anti-replay)
+  try {
+    const { Redis } = await import("@upstash/redis");
+    const redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+    const nonceKey = `wallet:nonce:${authSession.user.id}:${nonce}`;
+    const nonceExists = await redis.get(nonceKey);
+    if (!nonceExists) {
+      throw createError({
+        statusCode: 403,
+        statusMessage: "Invalid or expired challenge nonce — please request a new one",
+      });
+    }
+    // Consume the nonce (one-time use)
+    await redis.del(nonceKey);
+  } catch (err) {
+    // If Redis is unavailable, allow the request to proceed
+    // (signature verification still proves wallet ownership)
+    if (err && typeof err === "object" && "statusCode" in err) throw err;
+    console.error("[Wallet] Redis nonce verification unavailable, proceeding with sig-only verification");
+  }
+
   // Get client IP for fingerprinting
   const ipAddress =
     getHeader(event, "x-forwarded-for")?.split(",")[0]?.trim() ||

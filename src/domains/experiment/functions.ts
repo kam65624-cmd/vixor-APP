@@ -89,18 +89,17 @@ const EXPERIMENT_POINT_COST = 25;
 
 export const createExperiment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(
-    (d: unknown) =>
-      z
-        .object({
-          name: z.string().min(1).max(128),
-          assetSymbol: z.string().min(1).max(32),
-          timeframe: z.string().min(1).max(16),
-          strategyTemplate: z.string().min(1).max(64).default("sma_crossover"),
-          generations: z.number().int().min(1).max(20).default(3),
-          populationSize: z.number().int().min(2).max(50).default(8),
-        })
-        .parse(d),
+  .validator((d: unknown) =>
+    z
+      .object({
+        name: z.string().min(1).max(128),
+        assetSymbol: z.string().min(1).max(32),
+        timeframe: z.string().min(1).max(16),
+        strategyTemplate: z.string().min(1).max(64).default("sma_crossover"),
+        generations: z.number().int().min(1).max(20).default(3),
+        populationSize: z.number().int().min(2).max(50).default(8),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { userId } = context;
@@ -113,15 +112,18 @@ export const createExperiment = createServerFn({ method: "POST" })
       .maybeSingle();
     const currentBalance = (balBefore as { balance: number } | null)?.balance ?? 0;
     if (currentBalance < EXPERIMENT_POINT_COST) {
-      throw new Error(
-        `INSUFFICIENT_POINTS:${EXPERIMENT_POINT_COST}:${currentBalance}`,
-      );
+      throw new Error(`INSUFFICIENT_POINTS:${EXPERIMENT_POINT_COST}:${currentBalance}`);
     }
     const { error: spendErr } = await supabaseAdmin.rpc("spend_points", {
       _user: userId,
       _amount: EXPERIMENT_POINT_COST,
       _reason: "analysis_cost",
-      _meta: { action: "experiment", name: data.name, assetSymbol: data.assetSymbol, strategyTemplate: data.strategyTemplate },
+      _meta: {
+        action: "experiment",
+        name: data.name,
+        assetSymbol: data.assetSymbol,
+        strategyTemplate: data.strategyTemplate,
+      },
     });
     if (spendErr) {
       console.error(`[Experiment] Failed to spend points for ${userId}:`, spendErr.message);
@@ -154,7 +156,12 @@ export const createExperiment = createServerFn({ method: "POST" })
     // Fire-and-forget: run the experiment asynchronously
     void runExperimentAsync(experiment.id, userId, config);
 
-    return { id: experiment.id, status: "running", pointsCost: EXPERIMENT_POINT_COST, remainingBalance: currentBalance - EXPERIMENT_POINT_COST };
+    return {
+      id: experiment.id,
+      status: "running",
+      pointsCost: EXPERIMENT_POINT_COST,
+      remainingBalance: currentBalance - EXPERIMENT_POINT_COST,
+    };
   });
 
 // ---------------------------------------------------------------------------
@@ -218,9 +225,7 @@ async function runExperimentAsync(
     // ----------------------------------------------------------
     const candles = await fetchCandles(assetSymbol, timeframe, 200);
     if (!candles || candles.length < 30) {
-      throw new Error(
-        `Insufficient candle data: got ${candles?.length ?? 0} bars (need ≥ 30)`,
-      );
+      throw new Error(`Insufficient candle data: got ${candles?.length ?? 0} bars (need ≥ 30)`);
     }
 
     // ----------------------------------------------------------
@@ -236,8 +241,7 @@ async function runExperimentAsync(
     const experimentConfig: ExperimentConfig = {
       strategyTemplate,
       parameterSpace,
-      buildBacktest: (params) =>
-        buildSmaBacktestConfig(candles, params, timeframe),
+      buildBacktest: (params) => buildSmaBacktestConfig(candles, params, timeframe),
       generations,
       populationSize,
       method: "grid",
@@ -271,7 +275,7 @@ async function runExperimentAsync(
         population: gen.population.map((p) => ({
           params: p.params,
           score: p.score,
-        })),
+        })) as import("@/shared/supabase/types").Json,
       });
     }
 
@@ -285,14 +289,12 @@ async function runExperimentAsync(
       .from("experiments")
       .update({
         status: "completed",
-        result: serializableResult,
+        result: serializableResult as import("@/shared/supabase/types").Json,
         completed_at: new Date().toISOString(),
       })
       .eq("id", experimentId);
 
-    console.log(
-      `[ExperimentRunner] Experiment ${experimentId} completed in ${result.elapsedMs}ms`,
-    );
+    console.log(`[ExperimentRunner] Experiment ${experimentId} completed in ${result.elapsedMs}ms`);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`[ExperimentRunner] Experiment ${experimentId} failed:`, message);
@@ -350,9 +352,7 @@ async function fetchCandles(
  * Build a parameter space based on the strategy template name.
  * Returns a ParameterSpace dict with tunable ranges.
  */
-function buildParameterSpace(
-  strategyTemplate: string,
-): ParameterSpace {
+function buildParameterSpace(strategyTemplate: string): ParameterSpace {
   switch (strategyTemplate) {
     case "sma_crossover":
     default:
@@ -440,12 +440,7 @@ function buildSmaBacktestConfig(
 
       if (ctx.position.side === "flat") {
         // Buy signal: fast SMA crosses above slow SMA
-        if (
-          prevFast !== null &&
-          prevSlow !== null &&
-          prevFast <= prevSlow &&
-          fast > slow
-        ) {
+        if (prevFast !== null && prevSlow !== null && prevFast <= prevSlow && fast > slow) {
           ctx.buy({
             stopLoss: stopLossPct > 0 ? price * (1 - stopLossPct) : undefined,
             takeProfit: takeProfitPct > 0 ? price * (1 + takeProfitPct) : undefined,
@@ -453,12 +448,7 @@ function buildSmaBacktestConfig(
         }
       } else {
         // Close signal: fast SMA crosses below slow SMA
-        if (
-          prevFast !== null &&
-          prevSlow !== null &&
-          prevFast >= prevSlow &&
-          fast < slow
-        ) {
+        if (prevFast !== null && prevSlow !== null && prevFast >= prevSlow && fast < slow) {
           ctx.close();
         }
       }
@@ -485,10 +475,7 @@ function buildSmaBacktestConfig(
  * Simple SMA computation. Returns array same length as candles, with null
  * for indices where there isn't enough data.
  */
-function computeSma(
-  candles: Candle[],
-  period: number,
-): (number | null)[] {
+function computeSma(candles: Candle[], period: number): (number | null)[] {
   const result: (number | null)[] = new Array(candles.length).fill(null);
   if (period <= 0 || candles.length < period) return result;
 

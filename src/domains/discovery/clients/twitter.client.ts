@@ -84,10 +84,7 @@ export async function fetchTwitterMentions(
     const url = new URL(`${TWITTER_BASE_URL}/tweets/search/recent`);
     url.searchParams.set("query", `${query} -is:retweet lang:en`);
     url.searchParams.set("max_results", String(Math.min(maxResults, 100)));
-    url.searchParams.set(
-      "tweet.fields",
-      "public_metrics,created_at,author_id,lang",
-    );
+    url.searchParams.set("tweet.fields", "public_metrics,created_at,author_id,lang");
 
     const response = await fetch(url.toString(), {
       headers: {
@@ -142,10 +139,7 @@ export async function fetchTwitterMentions(
 
     for (const tweet of tweets) {
       const metrics = tweet.public_metrics;
-      totalEngagement +=
-        metrics.like_count +
-        metrics.retweet_count +
-        metrics.reply_count;
+      totalEngagement += metrics.like_count + metrics.retweet_count + metrics.reply_count;
 
       // Simple heuristic: high impressions suggest influencer reach
       if (metrics.impression_count > 10_000) {
@@ -157,9 +151,7 @@ export async function fetchTwitterMentions(
     // (In production, use NLP model for actual sentiment analysis)
     const avgSentiment = totalMentions > 0 ? 0.2 : 0; // neutral-positive default
     const influencerScore =
-      tweets.length > 0
-        ? Math.min(100, Math.round((highFollowerCount / tweets.length) * 100))
-        : 0;
+      tweets.length > 0 ? Math.min(100, Math.round((highFollowerCount / tweets.length) * 100)) : 0;
 
     const result: TwitterSearchResult = {
       mentionCount: totalMentions,

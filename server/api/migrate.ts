@@ -12,7 +12,10 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
   } else if (process.env.NODE_ENV === "production") {
-    throw createError({ statusCode: 403, statusMessage: "Migrations not accessible in production without CRON_SECRET" });
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Migrations not accessible in production without CRON_SECRET",
+    });
   }
 
   if (method === "GET") {

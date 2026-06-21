@@ -125,7 +125,8 @@ export class AgentGateway {
       ? this.adapters.get(exchangeId)
       : this.getAdapter(this.config.primaryExchange);
 
-    if (!adapter) throw new Error(`Adapter not found: ${exchangeId ?? this.config.primaryExchange}`);
+    if (!adapter)
+      throw new Error(`Adapter not found: ${exchangeId ?? this.config.primaryExchange}`);
 
     return adapter.cancelOrder(orderId);
   }
@@ -193,7 +194,13 @@ export class AgentGateway {
     const adapter = this.getAdapter(this.config.primaryExchange);
     if (!adapter) {
       return {
-        balance: { totalBalance: 0, availableBalance: 0, unrealizedPnl: 0, marginUsed: 0, currency: "USD" },
+        balance: {
+          totalBalance: 0,
+          availableBalance: 0,
+          unrealizedPnl: 0,
+          marginUsed: 0,
+          currency: "USD",
+        },
         positions: [],
         totalUnrealizedPnl: 0,
         connectedExchanges: [],
@@ -230,7 +237,10 @@ export class AgentGateway {
   /** True when the primary adapter (or fallback) is connected. */
   isReady(): boolean {
     if (this.getAdapter(this.config.primaryExchange)?.isConnected()) return true;
-    if (this.config.fallbackExchange && this.getAdapter(this.config.fallbackExchange)?.isConnected()) {
+    if (
+      this.config.fallbackExchange &&
+      this.getAdapter(this.config.fallbackExchange)?.isConnected()
+    ) {
       return true;
     }
     return false;

@@ -33,9 +33,10 @@ export function analystVote(result: AnalysisResult): AgentVote {
   // Clamp confidence to 0-1 range
   confidence = Math.max(0, Math.min(1, confidence));
 
-  const reasoning = result.reasons.length > 0
-    ? result.reasons[0]
-    : `Analysis recommends ${result.recommendation} with ${result.confidence}% confidence`;
+  const reasoning =
+    result.reasons.length > 0
+      ? result.reasons[0]
+      : `Analysis recommends ${result.recommendation} with ${result.confidence}% confidence`;
 
   return {
     agent: "Analyst",

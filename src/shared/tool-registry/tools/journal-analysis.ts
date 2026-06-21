@@ -8,15 +8,32 @@ import { ToolRegistry, type ToolContext, type ToolResult } from "../types";
 
 ToolRegistry.register({
   name: "createJournalEntry",
-  description: "Create a trading journal note. Can include mood, pair context, and link to an analysis.",
+  description:
+    "Create a trading journal note. Can include mood, pair context, and link to an analysis.",
   category: "journal",
   permissions: ["authenticated"],
   mutative: true,
   parameters: [
     { name: "content", type: "string", description: "The journal entry content", required: true },
-    { name: "pair", type: "string", description: "Related trading pair (optional)", required: false },
-    { name: "mood", type: "string", description: "Trading mood", required: false, enum: ["confident", "cautious", "anxious", "neutral"] },
-    { name: "analysisId", type: "string", description: "Link to an analysis ID (optional)", required: false },
+    {
+      name: "pair",
+      type: "string",
+      description: "Related trading pair (optional)",
+      required: false,
+    },
+    {
+      name: "mood",
+      type: "string",
+      description: "Trading mood",
+      required: false,
+      enum: ["confident", "cautious", "anxious", "neutral"],
+    },
+    {
+      name: "analysisId",
+      type: "string",
+      description: "Link to an analysis ID (optional)",
+      required: false,
+    },
   ],
   execute: async (input, context: ToolContext): Promise<ToolResult> => {
     try {
@@ -29,7 +46,7 @@ ToolRegistry.register({
           user_id: context.userId,
           content: input.content as string,
           pair: (input.pair as string) || null,
-          mood: (input.mood as string) || null,
+          mood: (input.mood as "confident" | "cautious" | "anxious" | "neutral") || null,
           analysis_id: (input.analysisId as string) || null,
         })
         .select("*")
@@ -55,18 +72,30 @@ ToolRegistry.register({
 
 ToolRegistry.register({
   name: "analyzeAsset",
-  description: "Run SMC/ICT technical analysis on a trading pair. Returns market structure, order blocks, FVGs, liquidity zones, and a trade recommendation.",
+  description:
+    "Run SMC/ICT technical analysis on a trading pair. Returns market structure, order blocks, FVGs, liquidity zones, and a trade recommendation.",
   category: "analysis",
   permissions: ["authenticated"],
   mutative: false,
   parameters: [
-    { name: "pair", type: "string", description: "Trading pair to analyze (e.g., BTC/USDT, XAU/USD)", required: true },
-    { name: "timeframe", type: "string", description: "Analysis timeframe (e.g., 1H, 4H, 1D)", required: false },
+    {
+      name: "pair",
+      type: "string",
+      description: "Trading pair to analyze (e.g., BTC/USDT, XAU/USD)",
+      required: true,
+    },
+    {
+      name: "timeframe",
+      type: "string",
+      description: "Analysis timeframe (e.g., 1H, 4H, 1D)",
+      required: false,
+    },
   ],
   execute: async (input, context: ToolContext): Promise<ToolResult> => {
     try {
       const { runLocalAnalysis } = await import("@/domains/analysis/engine/engine");
-      const { fetchBinanceKlines, fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
+      const { fetchBinanceKlines, fetchTwelveDataKlines } =
+        await import("@/domains/market/server/price-fetcher");
       const { AssetRegistry } = await import("@/shared/asset-registry");
       const { VixorEvents } = await import("@/shared/events");
 
@@ -116,7 +145,12 @@ ToolRegistry.register({
   permissions: ["authenticated"],
   mutative: false,
   parameters: [
-    { name: "limit", type: "number", description: "Max number of trades to return (default 20)", required: false },
+    {
+      name: "limit",
+      type: "number",
+      description: "Max number of trades to return (default 20)",
+      required: false,
+    },
   ],
   execute: async (input, context: ToolContext): Promise<ToolResult> => {
     try {

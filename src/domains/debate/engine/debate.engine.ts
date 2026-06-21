@@ -54,9 +54,8 @@ export class DebateEngine {
       const winner = sortedSides[0];
 
       // ── Step 4: Calculate final confidence ──
-      const finalConfidence = totalScore > 0
-        ? Math.round((sideScores[winner] / totalScore) * 100)
-        : 0;
+      const finalConfidence =
+        totalScore > 0 ? Math.round((sideScores[winner] / totalScore) * 100) : 0;
 
       // ── Step 5: Check consensus ──
       const winnerVoteCount = votes.filter((v) => v.side === winner).length;
@@ -64,8 +63,7 @@ export class DebateEngine {
 
       // ── Step 6: Check risk override ──
       const riskGuard = votes.find((v) => v.agent === "RiskGuard")!;
-      const riskOverride =
-        riskGuard.side === "NEUTRAL" && result.risk_level === "HIGH";
+      const riskOverride = riskGuard.side === "NEUTRAL" && result.risk_level === "HIGH";
 
       // ── Step 7: Build summary ──
       const summary = buildSummary(votes, winner, winnerVoteCount, riskOverride, finalConfidence);

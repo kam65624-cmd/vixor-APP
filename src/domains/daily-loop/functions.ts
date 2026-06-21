@@ -10,13 +10,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
-import type {
-  DailyLoop,
-  UserStreak,
-  MarketBias,
-  EmotionalState,
-  TradingSession,
-} from "./types";
+import type { DailyLoop, UserStreak, MarketBias, EmotionalState, TradingSession } from "./types";
 
 // ── Helper: Calculate completion percentage from a raw DB row ──
 function calcCompletion(loop: Record<string, any>): number {
@@ -50,9 +44,7 @@ async function updateStreak(supabase: any, userId: string, date: string) {
   const todayStr = today.toISOString().split("T")[0];
 
   if (existing) {
-    const lastDate = existing.last_completed_date
-      ? new Date(existing.last_completed_date)
-      : null;
+    const lastDate = existing.last_completed_date ? new Date(existing.last_completed_date) : null;
     const lastStr = lastDate ? lastDate.toISOString().split("T")[0] : null;
 
     // Already counted today

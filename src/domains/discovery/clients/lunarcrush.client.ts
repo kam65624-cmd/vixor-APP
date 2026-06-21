@@ -191,13 +191,12 @@ export async function batchFetchSocialData(
   const batchSize = 5;
   for (let i = 0; i < symbols.length; i += batchSize) {
     const batch = symbols.slice(i, i + batchSize);
-    const results = await Promise.all(
-      batch.map((sym) => fetchTokenSocialData(apiKey, sym)),
-    );
+    const results = await Promise.all(batch.map((sym) => fetchTokenSocialData(apiKey, sym)));
 
     for (let j = 0; j < batch.length; j++) {
-      if (results[j].success && results[j].data) {
-        result.set(batch[j], results[j].data);
+      const r = results[j];
+      if (r.success && r.data) {
+        result.set(batch[j], r.data);
       }
     }
 

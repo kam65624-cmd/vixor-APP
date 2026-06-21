@@ -23,6 +23,31 @@
 
 import { VixorEvents } from "../events";
 
+// ── Type helper for dynamic table access ────────────────────────────────────
+// Supabase generates strict table name unions that don't work with dynamic
+// table access patterns. This helper provides a loosely-typed query builder
+// for the execution engine which operates on arbitrary tables.
+
+type QueryResult = {
+  select: (cols: string) => {
+    single: () => Promise<{
+      data: Record<string, unknown> | null;
+      error: { message: string } | null;
+    }>;
+  };
+};
+
+type FilterableQuery = QueryResult & {
+  eq: (col: string, val: unknown) => FilterableQuery;
+};
+
+type LooseSupabaseClient = {
+  from: (table: string) => {
+    insert: (data: Record<string, unknown>) => QueryResult;
+    update: (data: Record<string, unknown>) => FilterableQuery;
+  };
+};
+
 // ── Execution Types ──────────────────────────────────────────────────────────
 
 export interface ExecutionInput {
@@ -70,16 +95,15 @@ class ExecutionEngineClass {
    * Insert a row into a Supabase table with audit logging and event emission.
    */
   async insert(input: ExecutionInput): Promise<ExecutionResult> {
-    console.log(`[ExecEngine] INSERT ${input.table} — ${input.description} (user: ${input.userId})`);
+    console.log(
+      `[ExecEngine] INSERT ${input.table} — ${input.description} (user: ${input.userId})`,
+    );
 
     try {
       const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+      const db = supabaseAdmin as unknown as LooseSupabaseClient;
 
-      const { data, error } = await supabaseAdmin
-        .from(input.table)
-        .insert(input.data)
-        .select("*")
-        .single();
+      const { data, error } = await db.from(input.table).insert(input.data).select("*").single();
 
       if (error) {
         console.error(`[ExecEngine] INSERT FAILED ${input.table}: ${error.message}`);
@@ -106,12 +130,15 @@ class ExecutionEngineClass {
    * Update rows in a Supabase table with audit logging and event emission.
    */
   async update(input: UpdateExecutionInput): Promise<ExecutionResult> {
-    console.log(`[ExecEngine] UPDATE ${input.table} — ${input.description} (user: ${input.userId})`);
+    console.log(
+      `[ExecEngine] UPDATE ${input.table} — ${input.description} (user: ${input.userId})`,
+    );
 
     try {
       const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+      const db = supabaseAdmin as unknown as LooseSupabaseClient;
 
-      let query = supabaseAdmin.from(input.table).update(input.data);
+      let query = db.from(input.table).update(input.data);
 
       // Apply filters
       for (const [key, value] of Object.entries(input.filter)) {

@@ -48,7 +48,12 @@ const candles = makeCandles(200);
 
 // SMA-crossover compiled strategy (matches the test fixture).
 const strategy = {
-  onBar(ctx: { bars: Array<{ close: number }>; position: { side: string }; buy(o: unknown): void; close(): void }) {
+  onBar(ctx: {
+    bars: Array<{ close: number }>;
+    position: { side: string };
+    buy(o: unknown): void;
+    close(): void;
+  }) {
     const closes = ctx.bars.map((b) => b.close);
     if (closes.length < 20) return;
     let s5 = 0;

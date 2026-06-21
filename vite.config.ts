@@ -11,13 +11,6 @@ export default defineConfig({
     tsconfigPaths({ projects: ["./tsconfig.json"] }),
     tanstackStart({
       server: { entry: "server" },
-      serverFns: {
-        // CSRF protection enabled with strict mode for mutations
-        csrf: {
-          // Only enforce CSRF on mutation requests (POST/PUT/DELETE/PATCH)
-          protectedMethods: ["POST", "PUT", "DELETE", "PATCH"],
-        },
-      },
       importProtection: {
         behavior: "error",
         client: {
@@ -28,17 +21,6 @@ export default defineConfig({
     }),
     nitro({
       preset: "vercel",
-      // Increase serverless function timeout for Binance/TwelveData API calls
-      vercel: {
-        maxDuration: 30,
-      },
-      // CORS: Restrict to allowed origins (Vercel deployment + local dev)
-      cors: {
-        origin: ["https://vixor-app.vercel.app", "http://localhost:8080", "http://localhost:3000"],
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization", "X-Telegram-Bot-Api-Secret-Token"],
-        credentials: true,
-      },
       // Security headers — applied to all routes
       routeRules: {
         "/**": {
@@ -59,10 +41,6 @@ export default defineConfig({
           },
         },
       },
-      // Ensure all SSR chunks are included in the Vercel serverless function.
-      // @vercel/nft doesn't trace imports within dynamically-loaded modules,
-      // so code-split chunks in _ssr/ get excluded from the deployment.
-      includeFiles: ["_ssr/**"],
       // API handlers: server/api/*.ts exports defineEventHandler from h3.
       // These are registered as Nitro route handlers alongside the SSR renderer.
       handlers: [

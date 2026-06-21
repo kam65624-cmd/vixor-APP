@@ -179,11 +179,13 @@ export function WalletProvider({ children }: WalletProviderProps) {
         };
 
         setWallet(walletInfo);
-        setSessions((prev) => [connectData.session, ...prev]);
+        const session = connectData.session as WalletSession;
+        setSessions((prev) => [session, ...prev]);
 
         // Persist to localStorage (no private keys!)
         localStorage.setItem("vixor-wallet", JSON.stringify(walletInfo));
         localStorage.setItem(`vixor-wallet-token-${chain}`, connectData.token);
+        localStorage.setItem("vixor-wallet-session-id", session.id);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Wallet connection failed";
         setError(message);
@@ -200,21 +202,30 @@ export function WalletProvider({ children }: WalletProviderProps) {
     if (!wallet) return;
     setLoading(true);
 
+    // Get the actual session ID to deactivate on server
+    const currentSessionId =
+      sessions.length > 0
+        ? sessions[0].id
+        : typeof window !== "undefined"
+          ? localStorage.getItem("vixor-wallet-session-id")
+          : null;
+
     try {
-      // Call server to deactivate session
-      await fetch("/api/wallet/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: "current", // Server handles deactivation of latest session
-        }),
-      }).catch(() => {
-        // Ignore server errors — still clear local state
-      });
+      // Call server to deactivate session using the real session ID
+      if (currentSessionId) {
+        await fetch("/api/wallet/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: currentSessionId }),
+        }).catch(() => {
+          // Ignore server errors — still clear local state
+        });
+      }
 
       setWallet(null);
       setSessions([]);
       localStorage.removeItem("vixor-wallet");
+      localStorage.removeItem("vixor-wallet-session-id");
       if (wallet) {
         localStorage.removeItem(`vixor-wallet-token-${wallet.chain}`);
       }

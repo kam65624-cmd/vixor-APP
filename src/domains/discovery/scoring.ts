@@ -23,12 +23,7 @@ import type {
   RiskLevel,
   NftBadgeState,
 } from "./types";
-import {
-  DEFAULT_SCORING_WEIGHTS,
-  DEFAULT_THRESHOLDS,
-  RISK_THRESHOLDS,
-  SCORING,
-} from "./constants";
+import { DEFAULT_SCORING_WEIGHTS, DEFAULT_THRESHOLDS, RISK_THRESHOLDS, SCORING } from "./constants";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -44,8 +39,7 @@ function clamp(value: number, min: number, max: number): number {
  * Accepts ISO 8601 strings or epoch milliseconds.
  */
 function tokenAgeHours(createdAt: string | number): number {
-  const created =
-    typeof createdAt === "string" ? new Date(createdAt).getTime() : createdAt;
+  const created = typeof createdAt === "string" ? new Date(createdAt).getTime() : createdAt;
   if (Number.isNaN(created)) return -1; // invalid date → treat as "just created" in caller
   return (Date.now() - created) / (1000 * 60 * 60);
 }
@@ -96,9 +90,7 @@ export function stage2_liquidityFilter(
   const minLiq = thresholds?.minLiquidity ?? DEFAULT_THRESHOLDS.minLiquidity;
   const minVol = thresholds?.minVolume24h ?? DEFAULT_THRESHOLDS.minVolume24h;
 
-  return tokens.filter(
-    (t) => t.liquidity >= minLiq && t.volume24h >= minVol,
-  );
+  return tokens.filter((t) => t.liquidity >= minLiq && t.volume24h >= minVol);
 }
 
 // ── Stage 3: Smart Money Score ──────────────────────────────────────────────
@@ -133,10 +125,7 @@ export function stage3_smartMoneyScore(holderCount: number): number {
  * @param sentiment - Sentiment score (-1 to 1, where 1 = very positive).
  * @returns Score from 0 to 100.
  */
-export function stage4_socialVelocityScore(
-  mentions: number,
-  sentiment: number,
-): number {
+export function stage4_socialVelocityScore(mentions: number, sentiment: number): number {
   if (mentions <= 0) return SCORING.noDataSocial;
 
   const volumeScore = logNormalize(mentions, 50);
@@ -213,7 +202,11 @@ export function calculateLiquidityScore(
   const lockBonus = (lockedPct / 100) * 20; // up to +20 for full lock
   const concentrationPenalty = topHolderPct > 80 ? (topHolderPct - 80) * 1.5 : 0; // penalize > 80%
 
-  return clamp(liquidityValue + lockBonus - concentrationPenalty, SCORING.minScore, SCORING.maxScore);
+  return clamp(
+    liquidityValue + lockBonus - concentrationPenalty,
+    SCORING.minScore,
+    SCORING.maxScore,
+  );
 }
 
 // ── Age Score ────────────────────────────────────────────────────────────────
@@ -298,10 +291,7 @@ export function determineNftBadge(
 export function runDiscoveryPipeline(
   rawTokens: RawTokenData[],
   smartMoneyMap: Map<string, number> = new Map(),
-  socialMap: Map<
-    string,
-    { mentions: number; sentiment: number }
-  > = new Map(),
+  socialMap: Map<string, { mentions: number; sentiment: number }> = new Map(),
   options?: {
     thresholds?: Partial<DiscoveryThresholds>;
     weights?: Partial<ScoringWeights>;
@@ -328,19 +318,12 @@ export function runDiscoveryPipeline(
       mentions: 0,
       sentiment: 0,
     };
-    const socialScore = stage4_socialVelocityScore(
-      social.mentions,
-      social.sentiment,
-    );
+    const socialScore = stage4_socialVelocityScore(social.mentions, social.sentiment);
 
     // Liquidity Health Score
     const lockedPct = options?.lockedLiqMap?.get(token.address) ?? 0;
     const topHolderPct = options?.topHolderMap?.get(token.address) ?? 50;
-    const liqScore = calculateLiquidityScore(
-      token.liquidity,
-      lockedPct,
-      topHolderPct,
-    );
+    const liqScore = calculateLiquidityScore(token.liquidity, lockedPct, topHolderPct);
 
     // Age Score
     const maxAge = options?.thresholds?.maxNewAgeHours;

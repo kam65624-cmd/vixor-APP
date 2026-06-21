@@ -158,7 +158,10 @@ export const purchasePack = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.rpc("credit_points", {
       _user: userId,
       _amount: total,
-      _reason: data.paymentMethod === "stars" ? "pack_purchase_stars" : "pack_purchase_free",
+      _reason:
+        data.paymentMethod === "stars"
+          ? ("telegram_stars_purchase" as const)
+          : ("pack_purchase" as const),
       _meta: {
         pack_id: pack.id,
         price_cents: pack.price_cents,

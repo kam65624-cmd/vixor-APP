@@ -45,14 +45,20 @@ function detectIntent(message: string): IntentMatch | null {
   const lower = message.toLowerCase();
 
   // ── Alert intents ────────────────────────────────────────────────
-  if (/(create|set|add|make|place).*(alert|notification|reminder)/i.test(lower) ||
-      /alert.*above|alert.*below|notify.*when/i.test(lower)) {
+  if (
+    /(create|set|add|make|place).*(alert|notification|reminder)/i.test(lower) ||
+    /alert.*above|alert.*below|notify.*when/i.test(lower)
+  ) {
     const pair = extractPair(lower);
-    const condition = /above|over|higher/i.test(lower) ? "above"
-      : /below|under|lower/i.test(lower) ? "below"
-      : /cross.*up|break.*up/i.test(lower) ? "crosses_up"
-      : /cross.*down|break.*down/i.test(lower) ? "crosses_down"
-      : "above";
+    const condition = /above|over|higher/i.test(lower)
+      ? "above"
+      : /below|under|lower/i.test(lower)
+        ? "below"
+        : /cross.*up|break.*up/i.test(lower)
+          ? "crosses_up"
+          : /cross.*down|break.*down/i.test(lower)
+            ? "crosses_down"
+            : "above";
     const price = extractPrice(lower);
 
     return {
@@ -88,8 +94,10 @@ function detectIntent(message: string): IntentMatch | null {
   }
 
   // ── Signal intents ──────────────────────────────────────────────
-  if (/(signal|signals|recommendation|daily).*(today|signal|get|show|view)/i.test(lower) ||
-      /what.*(signal|recommend|buy|sell)/i.test(lower)) {
+  if (
+    /(signal|signals|recommendation|daily).*(today|signal|get|show|view)/i.test(lower) ||
+    /what.*(signal|recommend|buy|sell)/i.test(lower)
+  ) {
     const pair = extractPair(lower);
     return {
       toolName: "fetchSignals",
@@ -127,8 +135,10 @@ function detectIntent(message: string): IntentMatch | null {
   }
 
   // ── Journal intents ────────────────────────────────────────────
-  if (/(journal|note|diary|log|write|record).*(trade|entry|note|feeling|mood)/i.test(lower) ||
-      /(write|add|create|log).*(note|journal|entry)/i.test(lower)) {
+  if (
+    /(journal|note|diary|log|write|record).*(trade|entry|note|feeling|mood)/i.test(lower) ||
+    /(write|add|create|log).*(note|journal|entry)/i.test(lower)
+  ) {
     return {
       toolName: "createJournalEntry",
       confidence: 0.8,
@@ -153,8 +163,15 @@ function detectIntent(message: string): IntentMatch | null {
 // ── Parameter Extraction Helpers ──────────────────────────────────────────────
 
 const COMMON_PAIRS = [
-  "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT",
-  "XAU/USD", "EUR/USD", "GBP/USD", "USD/JPY", "GBP/JPY",
+  "BTC/USDT",
+  "ETH/USDT",
+  "SOL/USDT",
+  "BNB/USDT",
+  "XAU/USD",
+  "EUR/USD",
+  "GBP/USD",
+  "USD/JPY",
+  "GBP/JPY",
 ];
 
 function extractPair(text: string): string | null {
@@ -227,9 +244,7 @@ export async function processWithAgent(
   }
 
   // 2. Check if required params are present
-  const tool = ToolRouter.isValidTool(intent.toolName)
-    ? ToolRegistry.get(intent.toolName)
-    : null;
+  const tool = ToolRouter.isValidTool(intent.toolName) ? ToolRegistry.get(intent.toolName) : null;
 
   if (!tool) {
     return {
@@ -241,9 +256,7 @@ export async function processWithAgent(
 
   // Check for missing required params
   const requiredParams = tool.parameters.filter((p) => p.required);
-  const missingParams = requiredParams.filter(
-    (p) => intent.extractedParams[p.name] === undefined,
-  );
+  const missingParams = requiredParams.filter((p) => intent.extractedParams[p.name] === undefined);
 
   if (missingParams.length > 0) {
     // We detected intent but are missing required params
@@ -301,10 +314,11 @@ function formatToolResponse(toolName: string, data: unknown): string {
     }
     case "listAlerts": {
       const alerts = data as Array<Record<string, unknown>>;
-      if (alerts.length === 0) return "You don't have any alerts yet. Would you like to create one?";
-      const lines = alerts.slice(0, 5).map((a) =>
-        `- **${a.pair}** ${a.condition} $${a.target_price} (${a.status})`
-      );
+      if (alerts.length === 0)
+        return "You don't have any alerts yet. Would you like to create one?";
+      const lines = alerts
+        .slice(0, 5)
+        .map((a) => `- **${a.pair}** ${a.condition} $${a.target_price} (${a.status})`);
       return `📋 Your alerts:\n${lines.join("\n")}${alerts.length > 5 ? `\n...and ${alerts.length - 5} more` : ""}`;
     }
     case "deleteAlert": {
@@ -312,10 +326,14 @@ function formatToolResponse(toolName: string, data: unknown): string {
     }
     case "fetchSignals": {
       const signals = data as Array<Record<string, unknown>>;
-      if (signals.length === 0) return "No signals available for today yet. Signals are generated daily at midnight UTC.";
-      const lines = signals.slice(0, 5).map((s) =>
-        `- **${s.pair}** (${s.timeframe}): ${s.recommendation} — Confidence: ${s.confidence}%, Entry: $${s.entry}`
-      );
+      if (signals.length === 0)
+        return "No signals available for today yet. Signals are generated daily at midnight UTC.";
+      const lines = signals
+        .slice(0, 5)
+        .map(
+          (s) =>
+            `- **${s.pair}** (${s.timeframe}): ${s.recommendation} — Confidence: ${s.confidence}%, Entry: $${s.entry}`,
+        );
       return `📊 Today's signals:\n${lines.join("\n")}${signals.length > 5 ? `\n...and ${signals.length - 5} more` : ""}`;
     }
     case "analyzeAsset": {
@@ -325,9 +343,10 @@ function formatToolResponse(toolName: string, data: unknown): string {
     case "getAssetState": {
       const state = data as Record<string, unknown>;
       const change = state.change24h as number | undefined;
-      const changeStr = change !== null && change !== undefined
-        ? `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`
-        : "N/A";
+      const changeStr =
+        change !== null && change !== undefined
+          ? `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`
+          : "N/A";
       return `💰 **${state.name}** (${state.pair}):\n- Price: $${state.price ?? "Unavailable"}\n- 24h Change: ${changeStr}\n- Category: ${state.category}`;
     }
     case "createJournalEntry": {
@@ -335,7 +354,8 @@ function formatToolResponse(toolName: string, data: unknown): string {
     }
     case "fetchPortfolio": {
       const trades = data as Array<Record<string, unknown>>;
-      if (trades.length === 0) return "Your trade journal is empty. Start by logging your first trade!";
+      if (trades.length === 0)
+        return "Your trade journal is empty. Start by logging your first trade!";
       return `📊 You have ${trades.length} trade(s) in your journal. Would you like me to analyze your trading patterns?`;
     }
     default:

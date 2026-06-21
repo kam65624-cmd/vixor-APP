@@ -90,7 +90,8 @@ export const createAnalysis = createServerFn({ method: "POST" })
               : "1H";
 
         // ── Try multiple data sources with fallback ──
-        const { fetchBinanceKlines, fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
+        const { fetchBinanceKlines, fetchTwelveDataKlines } =
+          await import("@/domains/market/server/price-fetcher");
 
         // Source 1: Binance for crypto pairs
         if (
@@ -110,10 +111,15 @@ export const createAnalysis = createServerFn({ method: "POST" })
                 close: k.close,
                 volume: k.volume,
               }));
-              console.log(`[Vixor] Using ${realBars.length} real Binance candles for ${pair}/${tf}`);
+              console.log(
+                `[Vixor] Using ${realBars.length} real Binance candles for ${pair}/${tf}`,
+              );
             }
           } catch (err) {
-            console.warn(`[Vixor] Binance fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
+            console.warn(
+              `[Vixor] Binance fetch failed for ${pair}:`,
+              err instanceof Error ? err.message : String(err),
+            );
           }
         }
 
@@ -135,7 +141,10 @@ export const createAnalysis = createServerFn({ method: "POST" })
               );
             }
           } catch (err) {
-            console.warn(`[Vixor] TwelveData fetch failed for ${pair}:`, err instanceof Error ? err.message : String(err));
+            console.warn(
+              `[Vixor] TwelveData fetch failed for ${pair}:`,
+              err instanceof Error ? err.message : String(err),
+            );
           }
         }
 
@@ -152,7 +161,9 @@ export const createAnalysis = createServerFn({ method: "POST" })
                 close: k.close,
                 volume: k.volume,
               }));
-              console.log(`[Vixor] Using ${realBars.length} Binance fallback candles for ${pair}/${tf}`);
+              console.log(
+                `[Vixor] Using ${realBars.length} Binance fallback candles for ${pair}/${tf}`,
+              );
             }
           } catch {
             // Non-fatal
@@ -172,7 +183,9 @@ export const createAnalysis = createServerFn({ method: "POST" })
                 close: k.close,
                 volume: k.volume,
               }));
-              console.log(`[Vixor] Using ${realBars.length} TwelveData daily candles as fallback for ${pair}`);
+              console.log(
+                `[Vixor] Using ${realBars.length} TwelveData daily candles as fallback for ${pair}`,
+              );
             }
           } catch {
             // Non-fatal
@@ -189,7 +202,9 @@ export const createAnalysis = createServerFn({ method: "POST" })
       // built-in synthetic data generator as fallback. This ensures the app always
       // produces analysis results, even when market data APIs are down.
       if (!realBars) {
-        console.warn(`[Vixor] No real OHLCV data available for ${data.selectedPair || "EUR/USD"}. Engine will use synthetic data fallback.`);
+        console.warn(
+          `[Vixor] No real OHLCV data available for ${data.selectedPair || "EUR/USD"}. Engine will use synthetic data fallback.`,
+        );
       }
 
       const result = await runChartAnalysis(
@@ -439,7 +454,8 @@ export const quickAnalyze = createServerFn({ method: "POST" })
       let realBars: import("@/domains/analysis/engine/core/types").OHLCVBar[] | undefined;
 
       // ── Try multiple data sources with fallback ──
-      const { fetchBinanceKlines, fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
+      const { fetchBinanceKlines, fetchTwelveDataKlines } =
+        await import("@/domains/market/server/price-fetcher");
 
       // Source 1: Binance for crypto pairs
       if (
@@ -509,7 +525,9 @@ export const quickAnalyze = createServerFn({ method: "POST" })
               close: k.close,
               volume: k.volume,
             }));
-            console.log(`[Vixor] QuickAnalyze: Using ${realBars.length} Binance fallback candles for ${pair}/${timeframe}`);
+            console.log(
+              `[Vixor] QuickAnalyze: Using ${realBars.length} Binance fallback candles for ${pair}/${timeframe}`,
+            );
           }
         } catch {
           // Non-fatal
@@ -529,7 +547,9 @@ export const quickAnalyze = createServerFn({ method: "POST" })
               close: k.close,
               volume: k.volume,
             }));
-            console.log(`[Vixor] QuickAnalyze: Using ${realBars.length} TwelveData daily candles as fallback for ${pair}`);
+            console.log(
+              `[Vixor] QuickAnalyze: Using ${realBars.length} TwelveData daily candles as fallback for ${pair}`,
+            );
           }
         } catch {
           // Non-fatal
@@ -539,7 +559,9 @@ export const quickAnalyze = createServerFn({ method: "POST" })
       // SOFT CHECK: If real OHLCV data is unavailable, the engine will use its
       // built-in synthetic data generator as fallback.
       if (!realBars) {
-        console.warn(`[Vixor] QuickAnalyze: No real OHLCV data for ${pair}. Engine will use synthetic data fallback.`);
+        console.warn(
+          `[Vixor] QuickAnalyze: No real OHLCV data for ${pair}. Engine will use synthetic data fallback.`,
+        );
       }
 
       const result = runLocalAnalysis({
@@ -642,7 +664,11 @@ export const applySignalBadgeMigration = createServerFn({ method: "POST" }).hand
   if (process.env.NODE_ENV === "production") {
     // This migration function should not be callable in production
     // The columns should already exist via SQL migrations
-    return { applied: false, message: "Migration function disabled in production. Run SQL migrations via Supabase Dashboard." };
+    return {
+      applied: false,
+      message:
+        "Migration function disabled in production. Run SQL migrations via Supabase Dashboard.",
+    };
   }
   const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 

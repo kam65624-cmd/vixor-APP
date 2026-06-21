@@ -223,7 +223,7 @@ export class BinanceAdapter implements ExchangeAdapter {
     // Sum non-zero balances; prioritise USDT as the primary currency
     let totalBalance = 0;
     let availableBalance = 0;
-    let primaryCurrency = "USDT";
+    const primaryCurrency = "USDT";
 
     for (const b of account.balances) {
       const free = parseFloat(b.free) || 0;
@@ -311,7 +311,8 @@ export class BinanceAdapter implements ExchangeAdapter {
       side: mapSideInverse(order.side),
       type: mapOrderTypeInverse(order.type),
       quantity: parseFloat(order.origQty),
-      price: parseFloat(order.price) || (parseFloat(order.executedQty) > 0 ? request.price ?? 0 : 0),
+      price:
+        parseFloat(order.price) || (parseFloat(order.executedQty) > 0 ? (request.price ?? 0) : 0),
       status: mapOrderStatus(order.status),
       filledAt: order.transactTime ? new Date(order.transactTime).toISOString() : undefined,
       fee,
@@ -502,9 +503,13 @@ export class BinanceAdapter implements ExchangeAdapter {
       price: string;
     }
 
-    const priceData = await this.apiGet<PriceResponse>("/api/v3/ticker/price", {
-      symbol,
-    }, false);
+    const priceData = await this.apiGet<PriceResponse>(
+      "/api/v3/ticker/price",
+      {
+        symbol,
+      },
+      false,
+    );
 
     interface BookTickerResponse {
       bidPrice: string;
@@ -517,9 +522,13 @@ export class BinanceAdapter implements ExchangeAdapter {
     let ask: number;
 
     try {
-      const bookData = await this.apiGet<BookTickerResponse>("/api/v3/ticker/bookTicker", {
-        symbol,
-      }, false);
+      const bookData = await this.apiGet<BookTickerResponse>(
+        "/api/v3/ticker/bookTicker",
+        {
+          symbol,
+        },
+        false,
+      );
       bid = parseFloat(bookData.bidPrice);
       ask = parseFloat(bookData.askPrice);
     } catch {
@@ -561,7 +570,8 @@ export class BinanceAdapter implements ExchangeAdapter {
     }
 
     // Determine environment: testnet if BINANCE_USE_TESTNET is set, else mainnet
-    const useTestnet = credentials.testnet !== "false" && process.env.BINANCE_USE_TESTNET !== "false";
+    const useTestnet =
+      credentials.testnet !== "false" && process.env.BINANCE_USE_TESTNET !== "false";
     this.baseUrl = useTestnet ? BINANCE_TESTNET_URL : BINANCE_REST_URL;
 
     // Verify connectivity with a signed system status call

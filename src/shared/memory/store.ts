@@ -21,6 +21,8 @@
 //   const pairs = await MemoryStore.retrieve(userId, "preference", "preferred_pairs");
 // ============================================================================
 
+import type { Json } from "@/shared/supabase/types";
+
 // ── Memory Types ─────────────────────────────────────────────────────────────
 
 export type MemoryCategory = "preference" | "behavior" | "mistake" | "insight" | "strategy";
@@ -35,6 +37,31 @@ export interface MemoryEntry {
   source: string; // what generated this memory (e.g., "copilot", "user_action", "system")
   created_at?: string;
   updated_at?: string;
+}
+
+// ── Internal DB row shape ────────────────────────────────────────────────────
+
+interface MemoryRow {
+  id: string;
+  user_id: string;
+  category: string | null;
+  content: string;
+  metadata: Json | null;
+  created_at: string;
+  updated_at: string | null;
+}
+
+/** Extract structured fields from the JSONB metadata column. */
+function decodeMetadata(meta: Json | null): { key: string; confidence: number; source: string } {
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) {
+    return { key: "", confidence: 0.5, source: "system" };
+  }
+  const m = meta as Record<string, unknown>;
+  return {
+    key: String(m.key ?? ""),
+    confidence: typeof m.confidence === "number" ? m.confidence : 0.5,
+    source: String(m.source ?? "system"),
+  };
 }
 
 // ── Memory Store Class ───────────────────────────────────────────────────────
@@ -55,22 +82,20 @@ class MemoryStoreClass {
     try {
       const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
-      // Upsert: update if exists, insert if not
-      const { error } = await supabaseAdmin
-        .from("user_memories")
-        .upsert(
-          {
-            user_id: userId,
-            category,
-            key,
-            value: JSON.stringify(value),
-            confidence,
-            source,
-          },
-          {
-            onConflict: "user_id,category,key",
-          },
-        );
+      const metadata: Json = { key, confidence, source };
+
+      // Upsert: insert (or update if unique constraint exists)
+      const { error } = await supabaseAdmin.from("user_memories").upsert(
+        {
+          user_id: userId,
+          category,
+          content: JSON.stringify(value),
+          metadata,
+        },
+        {
+          onConflict: "user_id,category,content",
+        },
+      );
 
       if (error) {
         console.warn(`[MemoryStore] Store failed: ${error.message}`);
@@ -85,7 +110,7 @@ class MemoryStoreClass {
   }
 
   /**
-   * Retrieve a specific memory entry.
+   * Retrieve a specific memory entry by category and key.
    */
   async retrieve<T = unknown>(
     userId: string,
@@ -97,15 +122,17 @@ class MemoryStoreClass {
 
       const { data, error } = await supabaseAdmin
         .from("user_memories")
-        .select("value")
+        .select("content, metadata")
         .eq("user_id", userId)
         .eq("category", category)
-        .eq("key", key)
         .maybeSingle();
 
       if (error || !data) return null;
 
-      return JSON.parse(data.value as string) as T;
+      const { key: rowKey } = decodeMetadata(data.metadata);
+      if (rowKey !== key) return null;
+
+      return JSON.parse(data.content) as T;
     } catch {
       return null;
     }
@@ -123,19 +150,21 @@ class MemoryStoreClass {
 
       const { data, error } = await supabaseAdmin
         .from("user_memories")
-        .select("key, value, confidence, source")
+        .select("content, metadata")
         .eq("user_id", userId)
-        .eq("category", category)
-        .order("confidence", { ascending: false });
+        .eq("category", category);
 
       if (error || !data) return [];
 
-      return data.map((row) => ({
-        key: row.key as string,
-        value: JSON.parse(row.value as string) as T,
-        confidence: row.confidence as number,
-        source: row.source as string,
-      }));
+      return data.map((row) => {
+        const { key, confidence, source } = decodeMetadata(row.metadata);
+        return {
+          key,
+          value: JSON.parse(row.content) as T,
+          confidence,
+          source,
+        };
+      });
     } catch {
       return [];
     }
@@ -152,9 +181,8 @@ class MemoryStoreClass {
 
       const { data, error } = await supabaseAdmin
         .from("user_memories")
-        .select("category, key, value, confidence")
-        .eq("user_id", userId)
-        .order("confidence", { ascending: false });
+        .select("category, content, metadata")
+        .eq("user_id", userId);
 
       if (error || !data) {
         return { preference: [], behavior: [], mistake: [], insight: [], strategy: [] };
@@ -169,16 +197,20 @@ class MemoryStoreClass {
       };
 
       for (const row of data) {
-        const cat = row.category as string;
+        const cat = (row.category ?? "preference") as string;
         if (!grouped[cat]) grouped[cat] = [];
+        const { key, confidence } = decodeMetadata(row.metadata);
         grouped[cat].push({
-          key: row.key as string,
-          value: JSON.parse(row.value as string),
-          confidence: row.confidence as number,
+          key,
+          value: JSON.parse(row.content),
+          confidence,
         });
       }
 
-      return grouped as Record<MemoryCategory, Array<{ key: string; value: unknown; confidence: number }>>;
+      return grouped as Record<
+        MemoryCategory,
+        Array<{ key: string; value: unknown; confidence: number }>
+      >;
     } catch {
       return { preference: [], behavior: [], mistake: [], insight: [], strategy: [] };
     }
@@ -199,8 +231,7 @@ class MemoryStoreClass {
         .from("user_memories")
         .delete()
         .eq("user_id", userId)
-        .eq("category", category)
-        .eq("key", key);
+        .eq("category", category);
 
       return { success: !error };
     } catch {
@@ -223,22 +254,21 @@ class MemoryStoreClass {
     const existing = await this.retrieve(userId, category, key);
 
     if (existing !== null) {
-      // Memory exists — increase confidence
+      // Memory exists — update with max confidence
       try {
         const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
-        // Increment confidence (capped at 1.0)
+        const metadata: Json = { key, confidence: 1, source };
+
         await supabaseAdmin
           .from("user_memories")
           .update({
-            confidence: 1, // Max confidence after reinforcement
-            value: JSON.stringify(value),
-            source,
+            content: JSON.stringify(value),
+            metadata,
             updated_at: new Date().toISOString(),
           })
           .eq("user_id", userId)
-          .eq("category", category)
-          .eq("key", key);
+          .eq("category", category);
       } catch {
         // Non-critical
       }

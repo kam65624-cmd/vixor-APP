@@ -23,7 +23,9 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
   } else if (process.env.NODE_ENV === "production") {
-    console.error("[CRON SECURITY] Request is not from Vercel Cron and CRON_SECRET is not set. Refusing.");
+    console.error(
+      "[CRON SECURITY] Request is not from Vercel Cron and CRON_SECRET is not set. Refusing.",
+    );
     throw createError({ statusCode: 500, statusMessage: "Cron not configured" });
   }
 

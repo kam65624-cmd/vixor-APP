@@ -4,11 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  loadDiscoveryConfig,
-  invalidateDiscoveryConfig,
-  getDiscoveryConfig,
-} from "../config";
+import { loadDiscoveryConfig, invalidateDiscoveryConfig, getDiscoveryConfig } from "../config";
 
 describe("Discovery Config", () => {
   beforeEach(() => {
@@ -22,9 +18,7 @@ describe("Discovery Config", () => {
     expect(config.DISCOVERY_PRICE_CACHE_TTL_S).toBe(30);
     expect(config.DISCOVERY_SOCIAL_CACHE_TTL_S).toBe(300);
     expect(config.DISCOVERY_MAX_TOKENS).toBe(100);
-    expect(config.DEXSCREENER_API_URL).toBe(
-      "https://api.dexscreener.com/latest",
-    );
+    expect(config.DEXSCREENER_API_URL).toBe("https://api.dexscreener.com/latest");
   });
 
   it("parses DISCOVERY_ENABLED=true from string", () => {

@@ -51,7 +51,8 @@ export { createExchangeClients } from "./exchanges/index";
 
 export { TradeExecutor } from "./executor";
 export { PriceFeed } from "./price-feed";
-export { resolveTokens, SOL_MINT, USDC_MINT } from "./token-registry";
+export { resolveTokens } from "./token-registry";
+export { SOL_MINT, USDC_MINT } from "./constants";
 export { loadArbitrageConfig, type ArbitrageConfig } from "./config";
 export { logger as arbitrageLogger } from "./logger";
 

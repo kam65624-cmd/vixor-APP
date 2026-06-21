@@ -48,7 +48,9 @@ class ToolRouterClass {
       }
       return {
         success: false,
-        error: `Tool "${toolName}" is not registered. Available tools: ${ToolRegistry.all().map((t) => t.name).join(", ")}`,
+        error: `Tool "${toolName}" is not registered. Available tools: ${ToolRegistry.all()
+          .map((t) => t.name)
+          .join(", ")}`,
         metadata: { executionTime: Date.now() - startTime, toolName },
       };
     }
@@ -60,7 +62,9 @@ class ToolRouterClass {
 
     if (missingParams.length > 0) {
       if (verbose) {
-        console.warn(`[ToolRouter] Missing required params for ${toolName}: ${missingParams.join(", ")}`);
+        console.warn(
+          `[ToolRouter] Missing required params for ${toolName}: ${missingParams.join(", ")}`,
+        );
       }
       return {
         success: false,
@@ -71,7 +75,9 @@ class ToolRouterClass {
 
     // 3. Execute via ToolRegistry (includes permission check)
     if (verbose) {
-      console.log(`[ToolRouter] Dispatching: ${toolName} (${tool.category}${tool.mutative ? ", mutative" : ""}) for user ${context.userId}`);
+      console.log(
+        `[ToolRouter] Dispatching: ${toolName} (${tool.category}${tool.mutative ? ", mutative" : ""}) for user ${context.userId}`,
+      );
     }
 
     const result = await ToolRegistry.execute(toolName, input, context);

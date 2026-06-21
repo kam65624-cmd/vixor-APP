@@ -166,7 +166,8 @@ export const runAlertCheck = createServerFn({ method: "POST" }).handler(async ()
 // ---------- DAILY SIGNALS ----------
 export const generateDailySignals = createServerFn({ method: "POST" }).handler(async () => {
   const { supabaseAdmin } = await import("@/shared/supabase/client.server");
-  const { fetchBinanceKlines, fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
+  const { fetchBinanceKlines, fetchTwelveDataKlines } =
+    await import("@/domains/market/server/price-fetcher");
   const { runLocalAnalysis } = await import("@/domains/analysis/engine/engine");
 
   const pairs = ["BTC/USDT", "ETH/USDT", "XAU/USD", "EUR/USD", "GBP/JPY", "SOL/USDT"];

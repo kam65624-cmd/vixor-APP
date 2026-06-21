@@ -1222,9 +1222,27 @@ export type Database = {
           created_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "payments_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
-          { foreignKeyName: "payments_pack_id_fkey"; columns: ["pack_id"]; isOneToOne: false; referencedRelation: "point_packs"; referencedColumns: ["id"] },
-          { foreignKeyName: "payments_plan_id_fkey"; columns: ["plan_id"]; isOneToOne: false; referencedRelation: "premium_plans"; referencedColumns: ["id"] },
+          {
+            foreignKeyName: "payments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payments_pack_id_fkey";
+            columns: ["pack_id"];
+            isOneToOne: false;
+            referencedRelation: "point_packs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payments_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "premium_plans";
+            referencedColumns: ["id"];
+          },
         ];
       };
       // ── Domain events table (20260612000000) ──
@@ -1282,7 +1300,13 @@ export type Database = {
           updated_at?: string | null;
         };
         Relationships: [
-          { foreignKeyName: "user_memories_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          {
+            foreignKeyName: "user_memories_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
         ];
       };
     };

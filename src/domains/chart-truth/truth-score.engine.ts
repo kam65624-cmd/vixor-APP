@@ -50,13 +50,17 @@ export function calculateTruthScore(params: TruthScoreParams): TruthValidationRe
   // ── Symbol match score (0 or 0.5) ──
   const symbolScore = symbolMatch ? 0.5 : 0;
   if (!symbolMatch) {
-    warnings.push("Vision-detected symbol does not match any known trading pair in the asset registry.");
+    warnings.push(
+      "Vision-detected symbol does not match any known trading pair in the asset registry.",
+    );
   }
 
   // ── Timeframe detection score (0 or 0.2) ──
   const timeframeScore = timeframeDetected ? 0.2 : 0;
   if (!timeframeDetected) {
-    warnings.push("No timeframe was detected from the chart image — analysis may use an inferred default.");
+    warnings.push(
+      "No timeframe was detected from the chart image — analysis may use an inferred default.",
+    );
   }
 
   // ── Price delta score (0 to 0.3, with penalties) ──
@@ -68,16 +72,24 @@ export function calculateTruthScore(params: TruthScoreParams): TruthValidationRe
     priceScore = 0.3; // Excellent match
   } else if (priceDelta <= 3) {
     priceScore = 0.2; // Acceptable match
-    warnings.push(`Vision price is ${priceDelta}% away from the real market price — minor discrepancy.`);
+    warnings.push(
+      `Vision price is ${priceDelta}% away from the real market price — minor discrepancy.`,
+    );
   } else if (priceDelta <= 5) {
     priceScore = 0.1; // Marginal match
-    warnings.push(`Vision price is ${priceDelta}% away from the real market price — significant discrepancy.`);
+    warnings.push(
+      `Vision price is ${priceDelta}% away from the real market price — significant discrepancy.`,
+    );
   } else if (priceDelta <= 15) {
     priceScore = 0.02; // Very poor match
-    warnings.push(`Vision price is ${priceDelta}% away from the real market price — the detected price may be incorrect.`);
+    warnings.push(
+      `Vision price is ${priceDelta}% away from the real market price — the detected price may be incorrect.`,
+    );
   } else {
     priceScore = 0; // Completely unreliable
-    warnings.push(`Vision price is ${priceDelta}% away from the real market price — vision extraction is unreliable.`);
+    warnings.push(
+      `Vision price is ${priceDelta}% away from the real market price — vision extraction is unreliable.`,
+    );
   }
 
   // ── Calculate composite truth score ──

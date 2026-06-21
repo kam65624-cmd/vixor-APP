@@ -1,4 +1,11 @@
-import { defineEventHandler, getMethod, readBody, createError, setResponseStatus, getHeader } from "h3";
+import {
+  defineEventHandler,
+  getMethod,
+  readBody,
+  createError,
+  setResponseStatus,
+  getHeader,
+} from "h3";
 import { SlidingWindowLimiter } from "@/shared/resilience/rate-limiter";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/shared/supabase/types";
@@ -10,7 +17,11 @@ const streamLimiter = new SlidingWindowLimiter({
 });
 
 /** Extract user ID from Bearer token in h3 request */
-async function authenticateRequest(event: ReturnType<typeof defineEventHandler> extends (...args: any[]) => Promise<any> ? any : never): Promise<string | null> {
+async function authenticateRequest(
+  event: ReturnType<typeof defineEventHandler> extends (...args: any[]) => Promise<any>
+    ? any
+    : never,
+): Promise<string | null> {
   const authHeader = getHeader(event, "authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
 

@@ -50,11 +50,13 @@ function fetchRaw(url, opts = {}) {
             headers: res.headers,
             body,
             durationMs: 0, // set below
-          })
+          }),
         );
-      }
+      },
     );
-    req.on("error", (e) => resolve({ status: 0, error: String(e), body: "", headers: {}, durationMs: 0 }));
+    req.on("error", (e) =>
+      resolve({ status: 0, error: String(e), body: "", headers: {}, durationMs: 0 }),
+    );
     req.on("timeout", () => {
       req.destroy(new Error("timeout"));
     });
@@ -78,7 +80,11 @@ async function probe(url, opts = {}) {
   try {
     const controller = new AbortController();
     const to = setTimeout(() => controller.abort(), 25000);
-    const res = await fetch(url, { ...opts, signal: controller.signal, redirect: opts.redirect || "manual" });
+    const res = await fetch(url, {
+      ...opts,
+      signal: controller.signal,
+      redirect: opts.redirect || "manual",
+    });
     clearTimeout(to);
     const text = await res.text();
     return {
@@ -119,25 +125,47 @@ function recordSuite(name, tests) {
   console.log(`\n=== ${name} ===  pass=${pass}  fail=${fail}  warn=${warn}`);
   for (const t of tests) {
     const icon = t.status === "pass" ? "✓" : t.status === "warn" ? "!" : "✗";
-    console.log(`  ${icon} [${t.status.toUpperCase()}] ${t.name} — ${t.detail || ""} (${t.durationMs ?? 0}ms)`);
+    console.log(
+      `  ${icon} [${t.status.toUpperCase()}] ${t.name} — ${t.detail || ""} (${t.durationMs ?? 0}ms)`,
+    );
   }
 }
 
 // ─── Suite 1: Frontend routing ─────────────────────────────────────────────
 async function testFrontendRoutes() {
   const routes = [
-    "/", "/auth", "/analyze", "/charts", "/copilot", "/daily-loop",
-    "/discover", "/journal", "/notifications", "/portfolio", "/premium",
-    "/profile", "/referral", "/settings", "/signals", "/trade-desk",
+    "/",
+    "/auth",
+    "/analyze",
+    "/charts",
+    "/copilot",
+    "/daily-loop",
+    "/discover",
+    "/journal",
+    "/notifications",
+    "/portfolio",
+    "/premium",
+    "/profile",
+    "/referral",
+    "/settings",
+    "/signals",
+    "/trade-desk",
   ];
   const tests = [];
   for (const route of routes) {
     const r = await probe(BASE + route);
-    const isAuthRedirect = r.status === 302 || r.status === 307 || r.status === 308 ||
-                          (r.status === 200 && r.url.includes("/auth"));
+    const isAuthRedirect =
+      r.status === 302 ||
+      r.status === 307 ||
+      r.status === 308 ||
+      (r.status === 200 && r.url.includes("/auth"));
     const isOk = r.status === 200;
     const hasContent = r.body.length > 500;
-    const isReact = r.body.includes("__tanstack") || r.body.includes("root") || r.body.includes("vixor") || r.body.includes("<div");
+    const isReact =
+      r.body.includes("__tanstack") ||
+      r.body.includes("root") ||
+      r.body.includes("vixor") ||
+      r.body.includes("<div");
 
     let status = "pass";
     let detail = `HTTP ${r.status}`;
@@ -154,13 +182,24 @@ async function testFrontendRoutes() {
       status = "pass";
       detail = "auth-redirect (expected for protected route)";
     }
-    tests.push({ name: `GET ${route}`, status, detail, durationMs: r.durationMs, httpStatus: r.status });
+    tests.push({
+      name: `GET ${route}`,
+      status,
+      detail,
+      durationMs: r.durationMs,
+      httpStatus: r.status,
+    });
   }
   // Test a deliberate 404
   const notFound = await probe(BASE + "/this-route-does-not-exist-" + Date.now());
   tests.push({
     name: "GET /<non-existent> (404 page)",
-    status: notFound.status === 404 ? "pass" : notFound.status === 200 && notFound.body.includes("404") ? "pass" : "warn",
+    status:
+      notFound.status === 404
+        ? "pass"
+        : notFound.status === 200 && notFound.body.includes("404")
+          ? "pass"
+          : "warn",
     detail: `HTTP ${notFound.status} — ${notFound.body.includes("404") ? "404 text present" : "no 404 marker"}`,
     durationMs: notFound.durationMs,
     httpStatus: notFound.status,
@@ -173,7 +212,9 @@ async function testResponsive() {
   // Use Vercel's user-agent sniffing + viewport meta check by fetching the HTML
   const r = await probe(BASE + "/");
   const tests = [];
-  const hasViewportMeta = /<meta[^>]*name=["']viewport["'][^>]*content=["'][^"']*[a-z]/i.test(r.body);
+  const hasViewportMeta = /<meta[^>]*name=["']viewport["'][^>]*content=["'][^"']*[a-z]/i.test(
+    r.body,
+  );
   tests.push({
     name: "viewport meta tag present",
     status: hasViewportMeta ? "pass" : "fail",
@@ -186,11 +227,14 @@ async function testResponsive() {
   if (cssMatch) {
     const cssUrl = cssMatch[1].startsWith("http") ? cssMatch[1] : BASE + cssMatch[1];
     const cssRes = await probe(cssUrl);
-    hasBreakpoints = cssRes.body.includes("@media") && /min-width:\s*(640|768|1024|1280)px/.test(cssRes.body);
+    hasBreakpoints =
+      cssRes.body.includes("@media") && /min-width:\s*(640|768|1024|1280)px/.test(cssRes.body);
     tests.push({
       name: "Tailwind responsive breakpoints in CSS",
       status: hasBreakpoints ? "pass" : "warn",
-      detail: hasBreakpoints ? "media queries for sm/md/lg present" : "no @media (min-width: ...) found",
+      detail: hasBreakpoints
+        ? "media queries for sm/md/lg present"
+        : "no @media (min-width: ...) found",
       durationMs: cssRes.durationMs,
     });
   } else {
@@ -211,7 +255,10 @@ async function testResponsive() {
   });
   // Mobile UA test
   const mobileRes = await probe(BASE + "/", {
-    headers: { "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1" },
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+    },
   });
   tests.push({
     name: "Mobile UA returns 200",
@@ -244,7 +291,7 @@ async function testThemeSwitching() {
   // theme-color meta
   const hasThemeColor = /<meta[^>]*name=["']theme-color["']/i.test(r.body);
   tests.push({
-    name: 'theme-color meta tag',
+    name: "theme-color meta tag",
     status: hasThemeColor ? "pass" : "warn",
     detail: hasThemeColor ? "<meta name=theme-color> present" : "missing",
     durationMs: 0,
@@ -295,7 +342,9 @@ async function testFormValidation() {
     name: "Auth form: HTML5 required attribute",
     status: hasRequiredAttr ? "pass" : "warn",
     detail: hasRequiredAttr
-      ? hasRequiredSSR ? "required attribute found in SSR" : "required attribute found in bundled JS (client-rendered)"
+      ? hasRequiredSSR
+        ? "required attribute found in SSR"
+        : "required attribute found in bundled JS (client-rendered)"
       : "no required attrs (may use JS validation)",
     durationMs: authRes.durationMs,
   });
@@ -303,7 +352,9 @@ async function testFormValidation() {
     name: "Auth form: type=email input",
     status: hasEmailType ? "pass" : "warn",
     detail: hasEmailType
-      ? hasEmailTypeSSR ? "type=email present in SSR" : "type=email present in bundled JS (client-rendered)"
+      ? hasEmailTypeSSR
+        ? "type=email present in SSR"
+        : "type=email present in bundled JS (client-rendered)"
       : "no type=email input",
     durationMs: 0,
   });
@@ -311,7 +362,9 @@ async function testFormValidation() {
     name: "Auth form: minlength constraint",
     status: hasMinLength ? "pass" : "warn",
     detail: hasMinLength
-      ? hasMinLengthSSR ? "minlength found on input in SSR" : "minLength found on input in bundled JS (client-rendered)"
+      ? hasMinLengthSSR
+        ? "minlength found on input in SSR"
+        : "minLength found on input in bundled JS (client-rendered)"
       : "no minlength attribute",
     durationMs: 0,
   });
@@ -350,7 +403,11 @@ async function testFormValidation() {
 async function testApiErrors() {
   const tests = [];
   // 405 — wrong method
-  const m405 = await probe(BASE + "/api/check-alerts", { method: "PUT", body: "{}", headers: { "content-type": "application/json" } });
+  const m405 = await probe(BASE + "/api/check-alerts", {
+    method: "PUT",
+    body: "{}",
+    headers: { "content-type": "application/json" },
+  });
   tests.push({
     name: "API: 405 on disallowed method (PUT /api/check-alerts)",
     status: m405.status === 405 || m405.status === 401 || m405.status === 500 ? "pass" : "warn",
@@ -358,7 +415,11 @@ async function testApiErrors() {
     durationMs: m405.durationMs,
   });
   // 401 — no auth
-  const m401 = await probe(BASE + "/api/generate-signals", { method: "POST", body: "{}", headers: { "content-type": "application/json" } });
+  const m401 = await probe(BASE + "/api/generate-signals", {
+    method: "POST",
+    body: "{}",
+    headers: { "content-type": "application/json" },
+  });
   tests.push({
     name: "API: 401/500 on unauthorized POST /api/generate-signals",
     status: m401.status === 401 || m401.status === 500 ? "pass" : "warn",
@@ -514,7 +575,9 @@ async function testPagination() {
 
   for (const p of pages) {
     const r = await probe(BASE + p);
-    const hasSsrMarkup = /page-size|pageSize|page-number|currentPage|class="[^"]*pagination/i.test(r.body);
+    const hasSsrMarkup = /page-size|pageSize|page-number|currentPage|class="[^"]*pagination/i.test(
+      r.body,
+    );
     const status = hasSsrMarkup ? "pass" : bundleHasPaginationBar ? "pass" : "warn";
     const detail = hasSsrMarkup
       ? "pagination markup detected in SSR HTML"
@@ -531,7 +594,8 @@ async function testPagination() {
   tests.push({
     name: "Backend supports pagination (limit+offset+total+hasMore)",
     status: "pass",
-    detail: "listAnalyses/listTrades/getDailySignals/listConversations/getLoopHistory/listAlerts all accept limit+offset and return {items,total,hasMore}",
+    detail:
+      "listAnalyses/listTrades/getDailySignals/listConversations/getLoopHistory/listAlerts all accept limit+offset and return {items,total,hasMore}",
     durationMs: 0,
   });
   recordSuite("8. Pagination", tests);
@@ -548,7 +612,9 @@ async function testSearchFilter() {
   ];
   for (const c of cases) {
     const r = await probe(BASE + c.path);
-    const hasSearch = /placeholder=["'][^"']*(search|بحث|بحث|filter|تصفية)/i.test(r.body) || /<input[^>]*search/i.test(r.body);
+    const hasSearch =
+      /placeholder=["'][^"']*(search|بحث|بحث|filter|تصفية)/i.test(r.body) ||
+      /<input[^>]*search/i.test(r.body);
     const hasSelect = /<select/i.test(r.body);
     const hasButtonFilter = /role=["']tab["']|class="[^"]*(tab|filter|chip)/i.test(r.body);
     const ok = hasSearch || hasSelect || hasButtonFilter;
@@ -698,17 +764,19 @@ async function testPhase0Fixes() {
   // Probe analyze page bundle for absence of "newsMap" + absence of "Fed Signals Hawkish Pause"
   const analyzeR = await probe(BASE + "/analyze");
   const analyzeBundleR = await probe(BASE + "/assets/" + findJsAsset(analyzeR.body, "analyze"));
-  const hasFakeNews = analyzeBundleR.body.includes("Fed Signals Hawkish Pause") ||
+  const hasFakeNews =
+    analyzeBundleR.body.includes("Fed Signals Hawkish Pause") ||
     analyzeBundleR.body.includes("ECB Maintains Restrictive Stance");
   const hasNewsMap = analyzeBundleR.body.includes("newsMap");
   tests.push({
     name: "P0.3 Fake newsMap removed from analysis engine",
     status: !hasFakeNews && !hasNewsMap ? "pass" : hasFakeNews ? "fail" : "warn",
-    detail: !hasFakeNews && !hasNewsMap
-      ? "No fabricated news headlines or newsMap found in analyze bundle"
-      : hasFakeNews
-        ? "FAKE NEWS still present in bundle (deploy pending or rollback needed)"
-        : "newsMap reference still present (may be a comment, not a runtime value)",
+    detail:
+      !hasFakeNews && !hasNewsMap
+        ? "No fabricated news headlines or newsMap found in analyze bundle"
+        : hasFakeNews
+          ? "FAKE NEWS still present in bundle (deploy pending or rollback needed)"
+          : "newsMap reference still present (may be a comment, not a runtime value)",
     durationMs: analyzeBundleR.durationMs,
   });
 
@@ -719,17 +787,21 @@ async function testPhase0Fixes() {
   let foundFailFast = false;
   for (const b of bundles) {
     if (b.body.includes("deepNoOp")) foundDeepNoOp = true;
-    if (b.body.includes("getSupabaseOrNull") || b.body.includes("Supabase browser client is not configured"))
+    if (
+      b.body.includes("getSupabaseOrNull") ||
+      b.body.includes("Supabase browser client is not configured")
+    )
       foundFailFast = true;
   }
   tests.push({
     name: "P0.2 Supabase fail-fast guard (replaces deep-no-op Proxy)",
     status: !foundDeepNoOp && foundFailFast ? "pass" : foundDeepNoOp ? "fail" : "warn",
-    detail: !foundDeepNoOp && foundFailFast
-      ? "deepNoOp removed; getSupabaseOrNull / configuration error present"
-      : foundDeepNoOp
-        ? "deepNoOp still in bundle (deploy pending)"
-        : "neither pattern found in probed bundles (try different bundle)",
+    detail:
+      !foundDeepNoOp && foundFailFast
+        ? "deepNoOp removed; getSupabaseOrNull / configuration error present"
+        : foundDeepNoOp
+          ? "deepNoOp still in bundle (deploy pending)"
+          : "neither pattern found in probed bundles (try different bundle)",
     durationMs: homeBundleR.durationMs,
   });
 
@@ -754,11 +826,12 @@ async function testPhase0Fixes() {
   tests.push({
     name: "P0.9 Settings toggles persist to localStorage (vixor-prefs)",
     status: foundPrefsKey && foundPrefsEvent ? "pass" : foundPrefsKey ? "warn" : "warn",
-    detail: foundPrefsKey && foundPrefsEvent
-      ? "vixor-prefs key + change event both found"
-      : foundPrefsKey
-        ? "vixor-prefs key found but change event missing (partial deploy?)"
-        : "vixor-prefs not yet deployed (deploy pending)",
+    detail:
+      foundPrefsKey && foundPrefsEvent
+        ? "vixor-prefs key + change event both found"
+        : foundPrefsKey
+          ? "vixor-prefs key found but change event missing (partial deploy?)"
+          : "vixor-prefs not yet deployed (deploy pending)",
     durationMs: settingsR.durationMs,
   });
 
@@ -837,7 +910,9 @@ function findCssAsset(htmlBody) {
   fs.writeFileSync("/home/z/my-project/logs/qa-results.md", md);
 
   console.log(`\n=== SUMMARY ===`);
-  console.log(`Pass: ${results.totalPass}   Fail: ${results.totalFail}   Warn: ${results.totalWarn}`);
+  console.log(
+    `Pass: ${results.totalPass}   Fail: ${results.totalFail}   Warn: ${results.totalWarn}`,
+  );
   console.log(`\nResults saved to:`);
   console.log(`  /home/z/my-project/logs/qa-results.json`);
   console.log(`  /home/z/my-project/logs/qa-results.md`);

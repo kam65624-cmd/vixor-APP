@@ -15,9 +15,18 @@ import { createNote, updateNote } from "@/domains/notes/functions";
 import type { TradingNote, Mood } from "@/domains/notes/types";
 
 const AVAILABLE_PAIRS = [
-  "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT",
-  "EUR/USD", "GBP/USD", "USD/JPY", "GBP/JPY", "AUD/USD",
-  "XAU/USD", "USD/CHF",
+  "BTC/USDT",
+  "ETH/USDT",
+  "SOL/USDT",
+  "BNB/USDT",
+  "XRP/USDT",
+  "EUR/USD",
+  "GBP/USD",
+  "USD/JPY",
+  "GBP/JPY",
+  "AUD/USD",
+  "XAU/USD",
+  "USD/CHF",
 ];
 
 const MOODS: { value: Mood; emoji: string; label: string }[] = [
@@ -157,7 +166,9 @@ export function NoteEditorDialog({
             {isEditing ? "Edit Note" : "New Note"}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            {isEditing ? "Update your trading note" : "Capture your trading thoughts and observations"}
+            {isEditing
+              ? "Update your trading note"
+              : "Capture your trading thoughts and observations"}
           </DialogDescription>
         </DialogHeader>
 
@@ -293,7 +304,10 @@ export function NoteEditorDialog({
                     className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold flex items-center gap-1"
                   >
                     {tag}
-                    <button onClick={() => removeTag(tag)} className="hover:text-bearish transition-colors">
+                    <button
+                      onClick={() => removeTag(tag)}
+                      className="hover:text-bearish transition-colors"
+                    >
                       ×
                     </button>
                   </span>

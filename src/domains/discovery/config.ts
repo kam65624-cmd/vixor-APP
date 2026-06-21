@@ -31,55 +31,42 @@ const discoveryEnvSchema = z.object({
   LUNARCRUSH_API_KEY: z.string().optional().default(""),
 
   /** DexScreener API base URL. */
-  DEXSCREENER_API_URL: z
-    .string()
-    .optional()
-    .default("https://api.dexscreener.com/latest"),
+  DEXSCREENER_API_URL: z.string().optional().default("https://api.dexscreener.com/latest"),
 
   /** Discovery scan interval in seconds (default 30, clamped [5, 300]). */
   DISCOVERY_SCAN_INTERVAL_S: z
     .union([z.string(), z.number()])
     .optional()
     .default("30")
-    .transform((v) =>
-      typeof v === "number" ? v : clampInt(v, 30, 5, 300),
-    ),
+    .transform((v) => (typeof v === "number" ? v : clampInt(v, 30, 5, 300))),
 
   /** Cache TTL for price data in seconds (default 30, clamped [5, 120]). */
   DISCOVERY_PRICE_CACHE_TTL_S: z
     .union([z.string(), z.number()])
     .optional()
     .default("30")
-    .transform((v) =>
-      typeof v === "number" ? v : clampInt(v, 30, 5, 120),
-    ),
+    .transform((v) => (typeof v === "number" ? v : clampInt(v, 30, 5, 120))),
 
   /** Cache TTL for social data in seconds (default 300, clamped [30, 3600]). */
   DISCOVERY_SOCIAL_CACHE_TTL_S: z
     .union([z.string(), z.number()])
     .optional()
     .default("300")
-    .transform((v) =>
-      typeof v === "number" ? v : clampInt(v, 300, 30, 3600),
-    ),
+    .transform((v) => (typeof v === "number" ? v : clampInt(v, 300, 30, 3600))),
 
   /** Maximum number of tokens returned per scan (default 100, clamped [10, 500]). */
   DISCOVERY_MAX_TOKENS: z
     .union([z.string(), z.number()])
     .optional()
     .default("100")
-    .transform((v) =>
-      typeof v === "number" ? v : clampInt(v, 100, 10, 500),
-    ),
+    .transform((v) => (typeof v === "number" ? v : clampInt(v, 100, 10, 500))),
 
   /** Enable or disable the discovery module entirely. */
   DISCOVERY_ENABLED: z
     .union([z.string(), z.boolean()])
     .optional()
     .default("true")
-    .transform((v) =>
-      typeof v === "string" ? v !== "false" && v !== "0" : v,
-    ),
+    .transform((v) => (typeof v === "string" ? v !== "false" && v !== "0" : v)),
 
   /** Minimum liquidity filter in USD (default 10000). */
   DISCOVERY_MIN_LIQUIDITY: z

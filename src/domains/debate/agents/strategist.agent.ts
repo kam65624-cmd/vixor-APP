@@ -57,13 +57,13 @@ export function strategistVote(result: AnalysisResult): AgentVote {
   // Bullish trend + good RR
   else if (isBullishTrend && rr >= 1.5) {
     side = "BULL";
-    confidence = Math.min(0.9, 0.6 + (rr / 10)); // Higher RR = higher confidence
+    confidence = Math.min(0.9, 0.6 + rr / 10); // Higher RR = higher confidence
     reasoning = `Bullish trend with strong RR (${result.rr}) — favorable setup for longs.`;
   }
   // Bearish trend + good RR
   else if (isBearishTrend && rr >= 1.5) {
     side = "BEAR";
-    confidence = Math.min(0.9, 0.6 + (rr / 10));
+    confidence = Math.min(0.9, 0.6 + rr / 10);
     reasoning = `Bearish trend with strong RR (${result.rr}) — favorable setup for shorts.`;
   }
   // Trend aligned but mediocre RR (1.0 - 1.5)
@@ -71,8 +71,7 @@ export function strategistVote(result: AnalysisResult): AgentVote {
     side = "BULL";
     confidence = 0.5;
     reasoning = `Bullish trend but mediocre RR (${result.rr}) — trade with caution.`;
-  }
-  else if (isBearishTrend) {
+  } else if (isBearishTrend) {
     side = "BEAR";
     confidence = 0.5;
     reasoning = `Bearish trend but mediocre RR (${result.rr}) — trade with caution.`;

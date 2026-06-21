@@ -12,7 +12,14 @@ import {
   Star,
 } from "lucide-react";
 import { useState } from "react";
-import { getPremiumPlans, getPointPacks, subscribePremium, purchasePack, getMe, createStarsInvoice } from "@/domains/user/functions";
+import {
+  getPremiumPlans,
+  getPointPacks,
+  subscribePremium,
+  purchasePack,
+  getMe,
+  createStarsInvoice,
+} from "@/domains/user/functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isInsideTelegram, openTelegramInvoice } from "@/shared/telegram";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";

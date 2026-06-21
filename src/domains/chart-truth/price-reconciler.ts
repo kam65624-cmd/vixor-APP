@@ -16,14 +16,11 @@
  * @param marketPrice  - Real market price fetched from APIs (Binance, TwelveData, etc.)
  * @returns Percentage difference (absolute value), or 0 if either input is null
  */
-export function reconcilePrice(
-  visionPrice: number | null,
-  marketPrice: number | null,
-): number {
+export function reconcilePrice(visionPrice: number | null, marketPrice: number | null): number {
   // If either price is missing, we can't reconcile — return 0 (no delta info)
   if (visionPrice === null || marketPrice === null) return 0;
   if (visionPrice <= 0 || marketPrice <= 0) return 0;
 
-  const delta = Math.abs(visionPrice - marketPrice) / marketPrice * 100;
+  const delta = (Math.abs(visionPrice - marketPrice) / marketPrice) * 100;
   return Math.round(delta * 100) / 100; // Round to 2 decimal places
 }

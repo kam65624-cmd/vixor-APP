@@ -46,7 +46,8 @@ const COUNTRY_CURRENCY_MAP: Record<string, { country: string; currency: string }
 function mapImpact(level: string): "high" | "medium" | "low" {
   const normalized = String(level).toLowerCase().trim();
   if (normalized === "high" || normalized === "3" || normalized === "high impact") return "high";
-  if (normalized === "medium" || normalized === "2" || normalized === "medium impact") return "medium";
+  if (normalized === "medium" || normalized === "2" || normalized === "medium impact")
+    return "medium";
   return "low";
 }
 

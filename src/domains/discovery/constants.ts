@@ -45,13 +45,7 @@ export const CHAIN_META: Record<DiscoveryChain, { label: string; short: string; 
 };
 
 /** All supported chains as an array. */
-export const ALL_CHAINS: DiscoveryChain[] = [
-  "solana",
-  "ethereum",
-  "base",
-  "arbitrum",
-  "polygon",
-];
+export const ALL_CHAINS: DiscoveryChain[] = ["solana", "ethereum", "base", "arbitrum", "polygon"];
 
 // ── Risk Thresholds ──────────────────────────────────────────────────────────
 

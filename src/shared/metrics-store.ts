@@ -18,7 +18,6 @@ export interface MetricStore {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __VIXOR_METRICS__: MetricStore | undefined;
 }
 

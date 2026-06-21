@@ -185,7 +185,9 @@ export const getOHLCV = createServerFn({ method: "GET" })
 
 // ---------- ECONOMIC CALENDAR (public — no auth required) ----------
 export const getEconomicCalendar = createServerFn({ method: "GET" })
-  .validator((d: unknown) => z.object({ days: z.number().min(1).max(30).default(7) }).parse(d ?? {}))
+  .validator((d: unknown) =>
+    z.object({ days: z.number().min(1).max(30).default(7) }).parse(d ?? {}),
+  )
   .handler(async ({ data }) => {
     const { fetchEconomicCalendar } = await import("@/domains/market/server/economic-calendar");
     return await fetchEconomicCalendar(data.days);

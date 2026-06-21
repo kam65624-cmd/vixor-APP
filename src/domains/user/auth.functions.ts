@@ -26,7 +26,13 @@ export const telegramSignIn = createServerFn({ method: "POST" })
     // ── Determine auth type ──
     // WebApp initData looks like: "query_id=...&user=...&auth_date=...&hash=..."
     // Widget auth data is JSON: {"id":123,"first_name":"...","hash":"..."}
-    let tgUser: { id: number; first_name?: string; last_name?: string; username?: string; photo_url?: string } | null = null;
+    let tgUser: {
+      id: number;
+      first_name?: string;
+      last_name?: string;
+      username?: string;
+      photo_url?: string;
+    } | null = null;
 
     const isJson = data.initData.trimStart().startsWith("{");
 
@@ -65,7 +71,9 @@ export const telegramSignIn = createServerFn({ method: "POST" })
     // This avoids the expensive and unreliable listUsers() pagination.
 
     const displayName =
-      [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") || tgUser.username || "Trader";
+      [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") ||
+      tgUser.username ||
+      "Trader";
 
     const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
       email,

@@ -162,6 +162,7 @@ export interface DiscoveryScanResult {
   filteredOut: number;
   scanDurationMs: number;
   scanTimestamp: string;
+  error?: string;
 }
 
 // ── Cached Discovery Record (DB) ───────────────────────────────────────────

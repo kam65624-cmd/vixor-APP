@@ -155,7 +155,10 @@ async function* streamAI(params: {
     }
   } catch (err) {
     // Fallback: emit error as a text chunk so the frontend can display it
-    console.warn("[Copilot] Stream failed, sending error chunk:", err instanceof Error ? err.message : String(err));
+    console.warn(
+      "[Copilot] Stream failed, sending error chunk:",
+      err instanceof Error ? err.message : String(err),
+    );
     yield {
       delta: `**Error:** ${err instanceof Error ? err.message : "AI streaming failed"}. Falling back to non-streaming mode...`,
       done: false,

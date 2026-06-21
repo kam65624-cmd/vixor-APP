@@ -47,7 +47,9 @@ export default defineEventHandler((event) => {
   for (const [key, val] of s.httpRequests.entries()) {
     const [m, r, st] = key.split("|");
     const routeLabel = r.replace(/[^a-zA-Z0-9_/\-]/g, "_").slice(0, 80) || "root";
-    lines.push(`vixor_http_requests_total{method="${m}",route="${routeLabel}",status="${st}"} ${val}`);
+    lines.push(
+      `vixor_http_requests_total{method="${m}",route="${routeLabel}",status="${st}"} ${val}`,
+    );
   }
   lines.push("");
   lines.push("# HELP vixor_http_request_duration_seconds HTTP request duration");

@@ -188,10 +188,7 @@ class EventOrchestrator {
    * Multiple handlers can be registered for the same event.
    * Handlers are called in registration order.
    */
-  on<K extends keyof VixorEventMap>(
-    eventType: K,
-    handler: EventHandler<VixorEventMap[K]>,
-  ): void {
+  on<K extends keyof VixorEventMap>(eventType: K, handler: EventHandler<VixorEventMap[K]>): void {
     if (!this.handlers.has(eventType as string)) {
       this.handlers.set(eventType as string, new Set());
     }
@@ -201,10 +198,7 @@ class EventOrchestrator {
   /**
    * Remove a previously registered handler.
    */
-  off<K extends keyof VixorEventMap>(
-    eventType: K,
-    handler: EventHandler<VixorEventMap[K]>,
-  ): void {
+  off<K extends keyof VixorEventMap>(eventType: K, handler: EventHandler<VixorEventMap[K]>): void {
     this.handlers.get(eventType as string)?.delete(handler as EventHandler<unknown>);
   }
 
@@ -227,10 +221,7 @@ class EventOrchestrator {
     const eventTypeStr = eventType as string;
 
     // Log the event
-    console.log(
-      `[VixorEvents] ${eventTypeStr}`,
-      JSON.stringify(payload).slice(0, 200),
-    );
+    console.log(`[VixorEvents] ${eventTypeStr}`, JSON.stringify(payload).slice(0, 200));
 
     // Persist event (non-blocking)
     if (this.persistEnabled && this.persistFn) {
@@ -266,10 +257,7 @@ class EventOrchestrator {
     // Log handler failures
     for (const result of results) {
       if (result.status === "rejected") {
-        console.error(
-          `[VixorEvents] Handler failed for ${eventTypeStr}:`,
-          result.reason,
-        );
+        console.error(`[VixorEvents] Handler failed for ${eventTypeStr}:`, result.reason);
       }
     }
   }

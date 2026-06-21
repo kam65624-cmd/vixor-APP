@@ -51,7 +51,9 @@ export async function validateChartTruth(
       const priceResult = await fetchPrice(symbol);
       if (priceResult && priceResult.price > 0) {
         marketPrice = priceResult.price;
-        console.log(`[ChartTruth] Real market price for ${symbol}: ${marketPrice} (source: ${priceResult.source})`);
+        console.log(
+          `[ChartTruth] Real market price for ${symbol}: ${marketPrice} (source: ${priceResult.source})`,
+        );
       } else {
         console.warn(`[ChartTruth] No real market price available for ${symbol}`);
       }
@@ -75,8 +77,8 @@ export async function validateChartTruth(
     // ── Step 5: Log the result ──
     console.log(
       `[ChartTruth] Truth validation for ${symbol}: score=${result.truthScore}, status=${result.status}, ` +
-      `priceDelta=${priceDelta > 0 ? `${priceDelta}%` : "N/A"}, ` +
-      `visionPrice=${chartContext.currentPrice ?? "N/A"}, marketPrice=${marketPrice ?? "N/A"}`,
+        `priceDelta=${priceDelta > 0 ? `${priceDelta}%` : "N/A"}, ` +
+        `visionPrice=${chartContext.currentPrice ?? "N/A"}, marketPrice=${marketPrice ?? "N/A"}`,
     );
 
     if (result.warnings.length > 0) {

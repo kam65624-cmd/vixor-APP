@@ -6,11 +6,7 @@
 export * from "./functions";
 
 // Types
-export type {
-  PriceAlert,
-  DailySignal,
-  UserStrategy,
-} from "./types";
+export type { PriceAlert, DailySignal, UserStrategy } from "./types";
 
 // Server modules
 export { checkAllAlerts } from "./server/alert-checker";

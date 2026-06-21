@@ -12,10 +12,7 @@ import {
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listAnalyses } from "@/domains/analysis/functions";
-import {
-  listNotes,
-  deleteNote,
-} from "@/domains/notes/functions";
+import { listNotes, deleteNote } from "@/domains/notes/functions";
 import type { TradingNote, Mood } from "@/domains/notes/types";
 import { NoteEditorDialog } from "@/components/vixor/NoteEditorDialog";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
@@ -45,9 +42,18 @@ const MOOD_EMOJI: Record<Mood, string> = {
 };
 
 const AVAILABLE_PAIRS = [
-  "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT",
-  "EUR/USD", "GBP/USD", "USD/JPY", "GBP/JPY", "AUD/USD",
-  "XAU/USD", "USD/CHF",
+  "BTC/USDT",
+  "ETH/USDT",
+  "SOL/USDT",
+  "BNB/USDT",
+  "XRP/USDT",
+  "EUR/USD",
+  "GBP/USD",
+  "USD/JPY",
+  "GBP/JPY",
+  "AUD/USD",
+  "XAU/USD",
+  "USD/CHF",
 ];
 
 function getMostAnalyzedPair(analyses: any[]): string {
@@ -468,7 +474,9 @@ function NotesTab() {
                   {/* Title row */}
                   <div className="flex items-center gap-2 mb-1">
                     {note.is_pinned && <Pin className="size-3 text-primary shrink-0" />}
-                    <span className="font-bold text-sm text-foreground truncate">{note.title || "Untitled"}</span>
+                    <span className="font-bold text-sm text-foreground truncate">
+                      {note.title || "Untitled"}
+                    </span>
                     <span className="text-sm shrink-0">{MOOD_EMOJI[note.mood]}</span>
                   </div>
 

@@ -81,7 +81,15 @@ function TradeDesk() {
   const openTradesTotal = openTradesRaw?.total ?? 0;
 
   const saveMutation = useMutation({
-    mutationFn: (data: { pair: string; direction: TradeDirection; entry_price: number; quantity?: number | null; stop_loss?: number | null; notes?: string | null; strategy?: string | null }) => createTradeFn({ data }),
+    mutationFn: (data: {
+      pair: string;
+      direction: TradeDirection;
+      entry_price: number;
+      quantity?: number | null;
+      stop_loss?: number | null;
+      notes?: string | null;
+      strategy?: string | null;
+    }) => createTradeFn({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["open-trades-desk"] });
       queryClient.invalidateQueries({ queryKey: ["open-trades"] });
@@ -121,9 +129,7 @@ function TradeDesk() {
     const entry = parseFloat(entryPrice);
 
     // Calculate SL/TP from pips
-    const slPrice = direction === "long"
-      ? entry - sl * pipSize
-      : entry + sl * pipSize;
+    const slPrice = direction === "long" ? entry - sl * pipSize : entry + sl * pipSize;
 
     saveMutation.mutate({
       pair,
@@ -251,7 +257,9 @@ function TradeDesk() {
           <div className="grid grid-cols-2 gap-3 mb-3">
             {/* Direction */}
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground">Direction</label>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground">
+                Direction
+              </label>
               <div className="grid grid-cols-2 gap-1.5">
                 <button
                   onClick={() => setDirection("long")}
@@ -282,7 +290,9 @@ function TradeDesk() {
 
             {/* Entry Price */}
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground">Entry Price</label>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground">
+                Entry Price
+              </label>
               <input
                 type="number"
                 step="any"
@@ -336,7 +346,9 @@ function TradeDesk() {
             <div className="size-14 rounded-2xl bg-info/10 flex items-center justify-center mx-auto mb-3">
               <LayoutDashboard className="size-6 text-info" />
             </div>
-            <p className="text-sm font-medium text-muted-foreground">{t("tradeDesk.noPositions")}</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              {t("tradeDesk.noPositions")}
+            </p>
             <p className="text-xs text-muted-foreground/70 mt-1">
               Use "Save as Trade" above to log your first position.
             </p>
@@ -344,14 +356,13 @@ function TradeDesk() {
         ) : (
           <div className="space-y-2">
             {openTrades.map((trade) => (
-              <div
-                key={trade.id}
-                className="vixor-card p-3 flex items-center gap-3"
-              >
-                <div className={cn(
-                  "size-9 rounded-lg flex items-center justify-center shrink-0",
-                  trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
-                )}>
+              <div key={trade.id} className="vixor-card p-3 flex items-center gap-3">
+                <div
+                  className={cn(
+                    "size-9 rounded-lg flex items-center justify-center shrink-0",
+                    trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+                  )}
+                >
                   {trade.direction === "long" ? (
                     <ArrowUpRight className="size-4 text-bullish" />
                   ) : (
@@ -361,12 +372,14 @@ function TradeDesk() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold font-mono">{trade.pair}</span>
-                    <span className={cn(
-                      "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded",
-                      trade.direction === "long"
-                        ? "bg-bullish/15 text-bullish"
-                        : "bg-bearish/15 text-bearish",
-                    )}>
+                    <span
+                      className={cn(
+                        "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded",
+                        trade.direction === "long"
+                          ? "bg-bullish/15 text-bullish"
+                          : "bg-bearish/15 text-bearish",
+                      )}
+                    >
                       {trade.direction.toUpperCase()}
                     </span>
                   </div>

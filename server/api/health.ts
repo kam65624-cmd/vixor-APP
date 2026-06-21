@@ -31,14 +31,24 @@ export default defineEventHandler(async (event) => {
   }
 
   const startedAt = Date.now();
-  const checks: Record<string, { status: "ok" | "degraded" | "down"; latencyMs: number; detail?: string }> = {};
+  const checks: Record<
+    string,
+    { status: "ok" | "degraded" | "down"; latencyMs: number; detail?: string }
+  > = {};
 
   // --- Supabase ping -------------------------------------------------------
   try {
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-    const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+    const anonKey =
+      process.env.SUPABASE_PUBLISHABLE_KEY ||
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.SUPABASE_ANON_KEY;
     if (!supabaseUrl || !anonKey) {
-      checks.supabase = { status: "degraded", latencyMs: 0, detail: "SUPABASE_URL or anon key missing" };
+      checks.supabase = {
+        status: "degraded",
+        latencyMs: 0,
+        detail: "SUPABASE_URL or anon key missing",
+      };
     } else {
       const t0 = Date.now();
       const r = await fetch(`${supabaseUrl}/rest/v1/?apikey=${anonKey}`, { method: "GET" });
@@ -85,7 +95,11 @@ export default defineEventHandler(async (event) => {
   // --- Env presence --------------------------------------------------------
   const envPresence = {
     SUPABASE_URL: !!process.env.SUPABASE_URL,
-    SUPABASE_ANON_KEY: !!(process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY),
+    SUPABASE_ANON_KEY: !!(
+      process.env.SUPABASE_PUBLISHABLE_KEY ||
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY
+    ),
     SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
     UPSTASH_REDIS_REST_URL: !!process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: !!process.env.UPSTASH_REDIS_REST_TOKEN,
@@ -98,8 +112,8 @@ export default defineEventHandler(async (event) => {
   const overall = Object.values(checks).some((c) => c.status === "down")
     ? "down"
     : Object.values(checks).some((c) => c.status === "degraded")
-    ? "degraded"
-    : "ok";
+      ? "degraded"
+      : "ok";
 
   return {
     status: overall,

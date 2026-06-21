@@ -73,8 +73,14 @@ function renderDebugErrorPage(message: string, stack?: string): string {
   }
 
   // Development only: show full debug info
-  const safeMsg = (message || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const safeStack = (stack || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const safeMsg = (message || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  const safeStack = (stack || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
   return `<!doctype html>
 <html lang="en">
   <head>

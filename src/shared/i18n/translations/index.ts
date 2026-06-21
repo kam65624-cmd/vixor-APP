@@ -24,13 +24,18 @@ export async function ensureTranslations(lang: string): Promise<void> {
 
 export type Language = "en" | "ar";
 
-export const LANGUAGES: { code: Language; label: string; nativeLabel: string; dir: "ltr" | "rtl" }[] = [
+export const LANGUAGES: {
+  code: Language;
+  label: string;
+  nativeLabel: string;
+  dir: "ltr" | "rtl";
+}[] = [
   { code: "en", label: "English", nativeLabel: "English", dir: "ltr" },
   { code: "ar", label: "Arabic", nativeLabel: "العربية", dir: "rtl" },
 ];
 
 export function getLanguageConfig(lang: Language) {
-  return LANGUAGES.find(l => l.code === lang) ?? LANGUAGES[0];
+  return LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
 }
 
 /**
@@ -62,7 +67,11 @@ function interpolate(template: string, params?: Record<string, string | number>)
 /**
  * Main translate function.
  */
-export function translate(lang: Language, key: string, params?: Record<string, string | number>): string {
+export function translate(
+  lang: Language,
+  key: string,
+  params?: Record<string, string | number>,
+): string {
   const dict = translations[lang] ?? translations.en;
   const value = resolve(dict as unknown as Record<string, unknown>, key);
   if (value !== undefined) return interpolate(value, params);

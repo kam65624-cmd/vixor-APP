@@ -108,9 +108,7 @@ class ToolRegistryClass {
   /**
    * Register a tool. Throws if a tool with the same name already exists.
    */
-  register<TInput extends ToolInput, TOutput>(
-    tool: ToolDefinition<TInput, TOutput>,
-  ): void {
+  register<TInput extends ToolInput, TOutput>(tool: ToolDefinition<TInput, TOutput>): void {
     if (this.tools.has(tool.name)) {
       throw new Error(`[ToolRegistry] Tool "${tool.name}" is already registered`);
     }
@@ -131,11 +129,7 @@ class ToolRegistryClass {
    * Execute a tool by name with input and context.
    * Validates permissions, executes, and returns structured result.
    */
-  async execute(
-    name: string,
-    input: ToolInput,
-    context: ToolContext,
-  ): Promise<ToolResult> {
+  async execute(name: string, input: ToolInput, context: ToolContext): Promise<ToolResult> {
     const tool = this.tools.get(name);
     if (!tool) {
       return {
@@ -202,9 +196,7 @@ class ToolRegistryClass {
    * Get tools that a user has permission to execute.
    */
   availableForUser(context: ToolContext): ToolDefinition[] {
-    return [...this.tools.values()].filter(
-      (t) => !this.checkPermissions(t, context),
-    );
+    return [...this.tools.values()].filter((t) => !this.checkPermissions(t, context));
   }
 
   /**
@@ -225,10 +217,7 @@ class ToolRegistryClass {
 
   // ── Permission Check ──────────────────────────────────────────────────────
 
-  private checkPermissions(
-    tool: ToolDefinition,
-    context: ToolContext,
-  ): string | null {
+  private checkPermissions(tool: ToolDefinition, context: ToolContext): string | null {
     for (const perm of tool.permissions) {
       switch (perm) {
         case "authenticated":

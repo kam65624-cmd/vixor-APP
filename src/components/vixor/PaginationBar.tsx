@@ -45,7 +45,11 @@ interface PaginationBarProps {
  * Example for 10 pages, current=5, sibling=1:
  *   [1, "...", 4, 5, 6, "...", 10]
  */
-function buildPageRange(currentPage: number, totalPages: number, siblingCount: number): (number | "ellipsis")[] {
+function buildPageRange(
+  currentPage: number,
+  totalPages: number,
+  siblingCount: number,
+): (number | "ellipsis")[] {
   if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
@@ -137,11 +141,7 @@ export function PaginationBar({
           }
           return (
             <PaginationItem key={p}>
-              <PaginationLink
-                href="#"
-                isActive={p === safePage}
-                onClick={(e) => handleClick(e, p)}
-              >
+              <PaginationLink href="#" isActive={p === safePage} onClick={(e) => handleClick(e, p)}>
                 {p}
               </PaginationLink>
             </PaginationItem>

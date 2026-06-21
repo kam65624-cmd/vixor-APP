@@ -100,14 +100,70 @@ export interface TimeframeDefinition {
 }
 
 export const TIMEFRAMES: TimeframeDefinition[] = [
-  { key: "1M", label: "1 Min", binanceInterval: "1m", twelveDataInterval: "1min", seconds: 60, popular: false },
-  { key: "5M", label: "5 Min", binanceInterval: "5m", twelveDataInterval: "5min", seconds: 300, popular: false },
-  { key: "15M", label: "15 Min", binanceInterval: "15m", twelveDataInterval: "15min", seconds: 900, popular: true },
-  { key: "30M", label: "30 Min", binanceInterval: "30m", twelveDataInterval: "30min", seconds: 1800, popular: false },
-  { key: "1H", label: "1 Hour", binanceInterval: "1h", twelveDataInterval: "1h", seconds: 3600, popular: true },
-  { key: "4H", label: "4 Hour", binanceInterval: "4h", twelveDataInterval: "4h", seconds: 14400, popular: true },
-  { key: "1D", label: "1 Day", binanceInterval: "1d", twelveDataInterval: "1day", seconds: 86400, popular: true },
-  { key: "1W", label: "1 Week", binanceInterval: "1w", twelveDataInterval: "1week", seconds: 604800, popular: false },
+  {
+    key: "1M",
+    label: "1 Min",
+    binanceInterval: "1m",
+    twelveDataInterval: "1min",
+    seconds: 60,
+    popular: false,
+  },
+  {
+    key: "5M",
+    label: "5 Min",
+    binanceInterval: "5m",
+    twelveDataInterval: "5min",
+    seconds: 300,
+    popular: false,
+  },
+  {
+    key: "15M",
+    label: "15 Min",
+    binanceInterval: "15m",
+    twelveDataInterval: "15min",
+    seconds: 900,
+    popular: true,
+  },
+  {
+    key: "30M",
+    label: "30 Min",
+    binanceInterval: "30m",
+    twelveDataInterval: "30min",
+    seconds: 1800,
+    popular: false,
+  },
+  {
+    key: "1H",
+    label: "1 Hour",
+    binanceInterval: "1h",
+    twelveDataInterval: "1h",
+    seconds: 3600,
+    popular: true,
+  },
+  {
+    key: "4H",
+    label: "4 Hour",
+    binanceInterval: "4h",
+    twelveDataInterval: "4h",
+    seconds: 14400,
+    popular: true,
+  },
+  {
+    key: "1D",
+    label: "1 Day",
+    binanceInterval: "1d",
+    twelveDataInterval: "1day",
+    seconds: 86400,
+    popular: true,
+  },
+  {
+    key: "1W",
+    label: "1 Week",
+    binanceInterval: "1w",
+    twelveDataInterval: "1week",
+    seconds: 604800,
+    popular: false,
+  },
 ];
 
 // ── Asset Definitions ───────────────────────────────────────────────────────
@@ -217,7 +273,13 @@ const ASSETS: AssetDefinition[] = [
       twelveData: "ADA/USDT",
       tradingView: "BINANCE:ADAUSDT",
     },
-    config: { pipSize: 0.0001, decimals: 4, volatility: 0.028, typicalRange: 0.035, basePrice: 0.75 },
+    config: {
+      pipSize: 0.0001,
+      decimals: 4,
+      volatility: 0.028,
+      typicalRange: 0.035,
+      basePrice: 0.75,
+    },
     active: true,
     popular: false,
     priority: 12,
@@ -235,7 +297,13 @@ const ASSETS: AssetDefinition[] = [
       twelveData: "DOGE/USDT",
       tradingView: "BINANCE:DOGEUSDT",
     },
-    config: { pipSize: 0.00001, decimals: 5, volatility: 0.04, typicalRange: 0.05, basePrice: 0.22 },
+    config: {
+      pipSize: 0.00001,
+      decimals: 5,
+      volatility: 0.04,
+      typicalRange: 0.05,
+      basePrice: 0.22,
+    },
     active: true,
     popular: false,
     priority: 13,
@@ -312,7 +380,13 @@ const ASSETS: AssetDefinition[] = [
       tradingView: "FX:EURUSD",
       exchangeRate: { base: "EUR", quote: "USD" },
     },
-    config: { pipSize: 0.0001, decimals: 4, volatility: 0.005, typicalRange: 0.008, basePrice: 1.13 },
+    config: {
+      pipSize: 0.0001,
+      decimals: 4,
+      volatility: 0.005,
+      typicalRange: 0.008,
+      basePrice: 1.13,
+    },
     active: true,
     popular: true,
     priority: 5,
@@ -331,7 +405,13 @@ const ASSETS: AssetDefinition[] = [
       tradingView: "FX:GBPUSD",
       exchangeRate: { base: "GBP", quote: "USD" },
     },
-    config: { pipSize: 0.0001, decimals: 4, volatility: 0.006, typicalRange: 0.009, basePrice: 1.34 },
+    config: {
+      pipSize: 0.0001,
+      decimals: 4,
+      volatility: 0.006,
+      typicalRange: 0.009,
+      basePrice: 1.34,
+    },
     active: true,
     popular: false,
     priority: 20,
@@ -388,7 +468,13 @@ const ASSETS: AssetDefinition[] = [
       tradingView: "FX:AUDUSD",
       exchangeRate: { base: "AUD", quote: "USD" },
     },
-    config: { pipSize: 0.0001, decimals: 4, volatility: 0.006, typicalRange: 0.009, basePrice: 0.65 },
+    config: {
+      pipSize: 0.0001,
+      decimals: 4,
+      volatility: 0.006,
+      typicalRange: 0.009,
+      basePrice: 0.65,
+    },
     active: true,
     popular: false,
     priority: 22,
@@ -407,7 +493,13 @@ const ASSETS: AssetDefinition[] = [
       tradingView: "FX:NZDUSD",
       exchangeRate: { base: "NZD", quote: "USD" },
     },
-    config: { pipSize: 0.0001, decimals: 4, volatility: 0.006, typicalRange: 0.009, basePrice: 0.60 },
+    config: {
+      pipSize: 0.0001,
+      decimals: 4,
+      volatility: 0.006,
+      typicalRange: 0.009,
+      basePrice: 0.6,
+    },
     active: true,
     popular: false,
     priority: 23,
@@ -426,7 +518,13 @@ const ASSETS: AssetDefinition[] = [
       tradingView: "FX:USDCAD",
       exchangeRate: { base: "USD", quote: "CAD" },
     },
-    config: { pipSize: 0.0001, decimals: 4, volatility: 0.005, typicalRange: 0.007, basePrice: 1.37 },
+    config: {
+      pipSize: 0.0001,
+      decimals: 4,
+      volatility: 0.005,
+      typicalRange: 0.007,
+      basePrice: 1.37,
+    },
     active: true,
     popular: false,
     priority: 24,
@@ -445,7 +543,13 @@ const ASSETS: AssetDefinition[] = [
       tradingView: "FX:USDCHF",
       exchangeRate: { base: "USD", quote: "CHF" },
     },
-    config: { pipSize: 0.0001, decimals: 4, volatility: 0.005, typicalRange: 0.007, basePrice: 0.82 },
+    config: {
+      pipSize: 0.0001,
+      decimals: 4,
+      volatility: 0.005,
+      typicalRange: 0.007,
+      basePrice: 0.82,
+    },
     active: true,
     popular: false,
     priority: 25,
@@ -464,7 +568,13 @@ const ASSETS: AssetDefinition[] = [
       tradingView: "FX:EURGBP",
       exchangeRate: { base: "EUR", quote: "GBP" },
     },
-    config: { pipSize: 0.0001, decimals: 4, volatility: 0.004, typicalRange: 0.006, basePrice: 0.84 },
+    config: {
+      pipSize: 0.0001,
+      decimals: 4,
+      volatility: 0.004,
+      typicalRange: 0.006,
+      basePrice: 0.84,
+    },
     active: true,
     popular: false,
     priority: 26,
@@ -502,7 +612,13 @@ const ASSETS: AssetDefinition[] = [
       twelveData: "NDX",
       tradingView: "NASDAQ:NDX",
     },
-    config: { pipSize: 0.01, decimals: 2, volatility: 0.012, typicalRange: 0.018, basePrice: 18500 },
+    config: {
+      pipSize: 0.01,
+      decimals: 2,
+      volatility: 0.012,
+      typicalRange: 0.018,
+      basePrice: 18500,
+    },
     active: true,
     popular: false,
     priority: 30,
@@ -651,7 +767,15 @@ class AssetRegistryClass {
   }
 
   /** Get the PairConfig format expected by the analysis engine */
-  pairConfig(pair: string): { basePrice: number; volatility: number; pipSize: number; decimals: number; typicalRange: number } | undefined {
+  pairConfig(pair: string):
+    | {
+        basePrice: number;
+        volatility: number;
+        pipSize: number;
+        decimals: number;
+        typicalRange: number;
+      }
+    | undefined {
     const asset = this.find(pair);
     if (!asset) return undefined;
     return {

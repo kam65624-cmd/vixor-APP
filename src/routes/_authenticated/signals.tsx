@@ -1,6 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getDailySignals, getUserStrategy, updateUserStrategy, generateDailySignals, createAlert } from "@/domains/trading/functions";
+import {
+  getDailySignals,
+  getUserStrategy,
+  updateUserStrategy,
+  generateDailySignals,
+  createAlert,
+} from "@/domains/trading/functions";
 import { useState, useMemo } from "react";
 import {
   TrendingUp,

@@ -176,13 +176,9 @@ export async function fetchSmartMoneyHolders(
   }
 
   // Count how many of the top holders are known smart money wallets
-  const holderAddresses = new Set(
-    resp.data.value.map((h) => h.address),
-  );
+  const holderAddresses = new Set(resp.data.value.map((h) => h.address));
 
-  const smartCount = KNOWN_SMART_MONEY_WALLETS.filter((w) =>
-    holderAddresses.has(w),
-  ).length;
+  const smartCount = KNOWN_SMART_MONEY_WALLETS.filter((w) => holderAddresses.has(w)).length;
 
   return {
     success: true,
@@ -216,8 +212,9 @@ export async function batchFetchSmartMoneyHolders(
     );
 
     for (let j = 0; j < batch.length; j++) {
-      if (results[j].success && results[j].data !== undefined) {
-        result.set(batch[j], results[j].data);
+      const r = results[j];
+      if (r.success && r.data !== undefined) {
+        result.set(batch[j], r.data);
       }
     }
   }

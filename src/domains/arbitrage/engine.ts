@@ -6,7 +6,7 @@ import type {
   ScanResult,
   StrategyContext,
 } from "./types";
-import type { ExchangeClient } from "../exchanges/types";
+import type { ExchangeClient } from "./exchanges/types";
 import type { ArbitrageStrategy } from "./strategies/base";
 import { PriceFeed } from "./price-feed";
 import { resolveTokens } from "./token-registry";

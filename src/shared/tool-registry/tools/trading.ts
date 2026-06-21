@@ -17,15 +17,37 @@ import { VixorEvents } from "@/shared/events";
 
 ToolRegistry.register({
   name: "createAlert",
-  description: "Create a price alert for a trading pair. The alert will notify the user when the price reaches the target.",
+  description:
+    "Create a price alert for a trading pair. The alert will notify the user when the price reaches the target.",
   category: "trading",
   permissions: ["authenticated"],
   mutative: true,
   parameters: [
-    { name: "pair", type: "string", description: "Trading pair (e.g., BTC/USDT, XAU/USD, EUR/USD)", required: true },
-    { name: "condition", type: "string", description: "Alert condition", required: true, enum: ["above", "below", "crosses_up", "crosses_down"] },
-    { name: "targetPrice", type: "number", description: "Target price for the alert", required: true },
-    { name: "timeframe", type: "string", description: "Timeframe context (e.g., 1H, 4H, 1D)", required: false },
+    {
+      name: "pair",
+      type: "string",
+      description: "Trading pair (e.g., BTC/USDT, XAU/USD, EUR/USD)",
+      required: true,
+    },
+    {
+      name: "condition",
+      type: "string",
+      description: "Alert condition",
+      required: true,
+      enum: ["above", "below", "crosses_up", "crosses_down"],
+    },
+    {
+      name: "targetPrice",
+      type: "number",
+      description: "Target price for the alert",
+      required: true,
+    },
+    {
+      name: "timeframe",
+      type: "string",
+      description: "Timeframe context (e.g., 1H, 4H, 1D)",
+      required: false,
+    },
     { name: "note", type: "string", description: "Optional note for the alert", required: false },
   ],
   execute: async (input, context: ToolContext): Promise<ToolResult> => {
@@ -38,7 +60,7 @@ ToolRegistry.register({
           user_id: context.userId,
           symbol: input.pair as string,
           pair: input.pair as string,
-          condition: input.condition as string,
+          condition: input.condition as "above" | "below" | "crosses_up" | "crosses_down",
           target_price: input.targetPrice as number,
           current_price: null,
           note: (input.note as string) || null,
@@ -72,14 +94,31 @@ ToolRegistry.register({
 
 ToolRegistry.register({
   name: "fetchSignals",
-  description: "Fetch today's daily trading signals. Returns BUY/SELL/WAIT recommendations with confidence scores, entry/exit levels.",
+  description:
+    "Fetch today's daily trading signals. Returns BUY/SELL/WAIT recommendations with confidence scores, entry/exit levels.",
   category: "trading",
   permissions: ["authenticated"],
   mutative: false,
   parameters: [
-    { name: "pair", type: "string", description: "Filter by trading pair (optional)", required: false },
-    { name: "timeframe", type: "string", description: "Filter by timeframe (optional)", required: false },
-    { name: "recommendation", type: "string", description: "Filter by recommendation type", required: false, enum: ["BUY", "SELL", "WAIT"] },
+    {
+      name: "pair",
+      type: "string",
+      description: "Filter by trading pair (optional)",
+      required: false,
+    },
+    {
+      name: "timeframe",
+      type: "string",
+      description: "Filter by timeframe (optional)",
+      required: false,
+    },
+    {
+      name: "recommendation",
+      type: "string",
+      description: "Filter by recommendation type",
+      required: false,
+      enum: ["BUY", "SELL", "WAIT"],
+    },
   ],
   execute: async (input, context: ToolContext): Promise<ToolResult> => {
     try {
@@ -95,7 +134,8 @@ ToolRegistry.register({
 
       if (input.pair) query = query.eq("pair", input.pair as string);
       if (input.timeframe) query = query.eq("timeframe", input.timeframe as string);
-      if (input.recommendation) query = query.eq("recommendation", input.recommendation as string);
+      if (input.recommendation)
+        query = query.eq("recommendation", input.recommendation as "BUY" | "SELL" | "WAIT");
 
       const { data: signals, error } = await query;
       if (error) return { success: false, error: error.message };
@@ -111,12 +151,18 @@ ToolRegistry.register({
 
 ToolRegistry.register({
   name: "getAssetState",
-  description: "Get current price and 24h change for a trading pair. Also returns asset metadata from the Asset Registry.",
+  description:
+    "Get current price and 24h change for a trading pair. Also returns asset metadata from the Asset Registry.",
   category: "market",
   permissions: ["authenticated"],
   mutative: false,
   parameters: [
-    { name: "pair", type: "string", description: "Trading pair (e.g., BTC/USDT, XAU/USD)", required: true },
+    {
+      name: "pair",
+      type: "string",
+      description: "Trading pair (e.g., BTC/USDT, XAU/USD)",
+      required: true,
+    },
   ],
   execute: async (input, context: ToolContext): Promise<ToolResult> => {
     try {
@@ -156,7 +202,13 @@ ToolRegistry.register({
   mutative: false,
   parameters: [
     { name: "pair", type: "string", description: "Filter by pair (optional)", required: false },
-    { name: "status", type: "string", description: "Filter by status", required: false, enum: ["active", "triggered", "cancelled"] },
+    {
+      name: "status",
+      type: "string",
+      description: "Filter by status",
+      required: false,
+      enum: ["active", "triggered", "cancelled"],
+    },
   ],
   execute: async (input, context: ToolContext): Promise<ToolResult> => {
     try {
@@ -170,7 +222,8 @@ ToolRegistry.register({
         .limit(50);
 
       if (input.pair) query = query.eq("pair", input.pair as string);
-      if (input.status) query = query.eq("status", input.status as string);
+      if (input.status)
+        query = query.eq("status", input.status as "active" | "triggered" | "cancelled");
       else query = query.in("status", ["active", "triggered"]);
 
       const { data: alerts, error } = await query;
@@ -192,7 +245,12 @@ ToolRegistry.register({
   permissions: ["authenticated"],
   mutative: true,
   parameters: [
-    { name: "alertId", type: "string", description: "The ID of the alert to cancel", required: true },
+    {
+      name: "alertId",
+      type: "string",
+      description: "The ID of the alert to cancel",
+      required: true,
+    },
   ],
   execute: async (input, context: ToolContext): Promise<ToolResult> => {
     try {

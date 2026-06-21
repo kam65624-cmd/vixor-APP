@@ -224,10 +224,7 @@ function TradingViewChartInner({
   );
 }
 
-function widgetRefCleanup(
-  container: HTMLDivElement,
-  widgetContainer: HTMLElement,
-) {
+function widgetRefCleanup(container: HTMLDivElement, widgetContainer: HTMLElement) {
   if (container && container.contains(widgetContainer)) {
     container.innerHTML = "";
   }

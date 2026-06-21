@@ -233,9 +233,7 @@ function Analyze() {
           <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
             {t("analyze.subtitle")}
           </div>
-          <h1 className="text-xl font-bold tracking-tight leading-none">
-            {t("analyze.title")}
-          </h1>
+          <h1 className="text-xl font-bold tracking-tight leading-none">{t("analyze.title")}</h1>
         </div>
       </div>
 
@@ -351,7 +349,9 @@ function Analyze() {
                         <span className="text-base">{p.icon}</span>
                         <span className="font-bold">{p.label}</span>
                         {p.value === "auto" && (
-                          <span className="text-[10px] text-muted-foreground ml-1">(VLM detect)</span>
+                          <span className="text-[10px] text-muted-foreground ml-1">
+                            (VLM detect)
+                          </span>
                         )}
                       </span>
                     </SelectItem>
@@ -388,7 +388,10 @@ function Analyze() {
             <div className="flex items-start gap-2 p-3 rounded-xl bg-info/5 border border-info/20">
               <Info className="size-4 text-info shrink-0 mt-0.5" />
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Analysis powered by the <span className="font-bold text-foreground">local SMC/ICT engine</span> — Smart Money Concepts &amp; Inner Circle Trader methodology for order blocks, FVGs, liquidity zones, and more.
+                Analysis powered by the{" "}
+                <span className="font-bold text-foreground">local SMC/ICT engine</span> — Smart
+                Money Concepts &amp; Inner Circle Trader methodology for order blocks, FVGs,
+                liquidity zones, and more.
               </p>
             </div>
 

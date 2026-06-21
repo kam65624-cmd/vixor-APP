@@ -435,7 +435,8 @@ function Charts() {
 
         <button
           onClick={() => {
-            const tf = Object.entries(INTERVAL_MAP).find(([, tv]) => tv === currentInterval)?.[0] || "1H";
+            const tf =
+              Object.entries(INTERVAL_MAP).find(([, tv]) => tv === currentInterval)?.[0] || "1H";
             navigate({
               to: "/copilot",
               search: {

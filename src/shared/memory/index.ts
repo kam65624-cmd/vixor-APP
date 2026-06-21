@@ -4,7 +4,4 @@
 
 export { MemoryStore } from "./store";
 
-export type {
-  MemoryCategory,
-  MemoryEntry,
-} from "./store";
+export type { MemoryCategory, MemoryEntry } from "./store";

@@ -377,7 +377,19 @@ export async function checkMigrations(): Promise<MigrationStatus> {
   const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
   // Check each table by attempting a select
-  const [alertsRes, signalsRes, strategiesRes, notesRes, tradesRes, copilotConvRes, copilotMsgRes, loopsRes, streaksRes, domainEventsRes, userMemoriesRes] = await Promise.all([
+  const [
+    alertsRes,
+    signalsRes,
+    strategiesRes,
+    notesRes,
+    tradesRes,
+    copilotConvRes,
+    copilotMsgRes,
+    loopsRes,
+    streaksRes,
+    domainEventsRes,
+    userMemoriesRes,
+  ] = await Promise.all([
     supabaseAdmin.from("price_alerts").select("id").limit(1),
     supabaseAdmin.from("daily_signals").select("id").limit(1),
     supabaseAdmin.from("user_strategies").select("id").limit(1),
@@ -403,7 +415,18 @@ export async function checkMigrations(): Promise<MigrationStatus> {
   const domainEvents = !domainEventsRes.error || domainEventsRes.error.code !== "42P01";
   const userMemories = !userMemoriesRes.error || userMemoriesRes.error.code !== "42P01";
 
-  const allComplete = priceAlerts && dailySignals && userStrategies && tradingNotes && tradesTable && copilotConversations && copilotMessages && dailyLoops && userStreaks && domainEvents && userMemories;
+  const allComplete =
+    priceAlerts &&
+    dailySignals &&
+    userStrategies &&
+    tradingNotes &&
+    tradesTable &&
+    copilotConversations &&
+    copilotMessages &&
+    dailyLoops &&
+    userStreaks &&
+    domainEvents &&
+    userMemories;
 
   return {
     price_alerts: priceAlerts,

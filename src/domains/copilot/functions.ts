@@ -37,12 +37,14 @@ export const askCopilot = createServerFn({ method: "POST" })
         agent: z
           .enum(["market_analyst", "risk_manager", "news_analyst", "strategy_builder", "auto"])
           .default("auto"),
-        chartSession: z.object({
-          pair: z.string(),
-          timeframe: z.string(),
-          currentPrice: z.number(),
-          tradingViewSymbol: z.string(),
-        }).optional(),
+        chartSession: z
+          .object({
+            pair: z.string(),
+            timeframe: z.string(),
+            currentPrice: z.number(),
+            tradingViewSymbol: z.string(),
+          })
+          .optional(),
       })
       .parse(d),
   )
@@ -101,7 +103,8 @@ export const askCopilot = createServerFn({ method: "POST" })
       })(),
       (async () => {
         try {
-          const { fetchPrices, POPULAR_PAIRS } = await import("@/domains/market/server/price-fetcher");
+          const { fetchPrices, POPULAR_PAIRS } =
+            await import("@/domains/market/server/price-fetcher");
           const pairs = POPULAR_PAIRS.map((p) => p.pair);
           return await fetchPrices(pairs);
         } catch {
@@ -110,7 +113,8 @@ export const askCopilot = createServerFn({ method: "POST" })
       })(),
       (async () => {
         try {
-          const { fetchEconomicCalendar } = await import("@/domains/market/server/economic-calendar");
+          const { fetchEconomicCalendar } =
+            await import("@/domains/market/server/economic-calendar");
           return await fetchEconomicCalendar(7);
         } catch {
           return [];
@@ -181,7 +185,10 @@ export const askCopilot = createServerFn({ method: "POST" })
       console.log(`[Copilot] No tool intent, falling back to AI`);
     } catch (err) {
       // P1 layer error — don't break the copilot, fall back to AI
-      console.warn("[Copilot] P1 Agent error, falling back to AI:", err instanceof Error ? err.message : String(err));
+      console.warn(
+        "[Copilot] P1 Agent error, falling back to AI:",
+        err instanceof Error ? err.message : String(err),
+      );
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -203,7 +210,8 @@ export const askCopilot = createServerFn({ method: "POST" })
     // Build chart session context string for the AI prompt
     let chartSessionPrompt: string | undefined;
     if (chartSession) {
-      const { buildChartSessionPrompt, createSessionContext } = await import("@/domains/chart-intelligence");
+      const { buildChartSessionPrompt, createSessionContext } =
+        await import("@/domains/chart-intelligence");
       const chartCtx = createSessionContext({
         symbol: chartSession.pair,
         timeframe: chartSession.timeframe,
@@ -285,7 +293,8 @@ export const getConsensus = createServerFn({ method: "POST" })
       })(),
       (async () => {
         try {
-          const { fetchPrices, POPULAR_PAIRS } = await import("@/domains/market/server/price-fetcher");
+          const { fetchPrices, POPULAR_PAIRS } =
+            await import("@/domains/market/server/price-fetcher");
           const pairs = POPULAR_PAIRS.map((p) => p.pair);
           return await fetchPrices(pairs);
         } catch {
@@ -294,7 +303,8 @@ export const getConsensus = createServerFn({ method: "POST" })
       })(),
       (async () => {
         try {
-          const { fetchEconomicCalendar } = await import("@/domains/market/server/economic-calendar");
+          const { fetchEconomicCalendar } =
+            await import("@/domains/market/server/economic-calendar");
           return await fetchEconomicCalendar(7);
         } catch {
           return [];

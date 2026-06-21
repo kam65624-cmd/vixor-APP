@@ -21,7 +21,7 @@ const loggingMiddleware = createMiddleware().server(async ({ next, request }) =>
   try {
     const res = await next();
     const durationMs = Date.now() - startedAt;
-    const status = res.status ?? 200;
+    const status = res.response.status ?? 200;
     metrics.recordHttpRequest(method, route, status);
     metrics.recordDurationMs(durationMs);
     structuredLogger("http", {
@@ -38,7 +38,14 @@ const loggingMiddleware = createMiddleware().server(async ({ next, request }) =>
       structuredLogger("alert", { kind: "404", method, route, ip, ua: userAgent.slice(0, 80) });
     }
     if (status >= 500) {
-      structuredLogger("alert", { kind: "5xx", status, method, route, ip, ua: userAgent.slice(0, 80) });
+      structuredLogger("alert", {
+        kind: "5xx",
+        status,
+        method,
+        route,
+        ip,
+        ua: userAgent.slice(0, 80),
+      });
       metrics.recordError(`http_${status}`);
     }
     return res;
@@ -56,7 +63,13 @@ const loggingMiddleware = createMiddleware().server(async ({ next, request }) =>
       ip,
       error: String(err?.message || err).slice(0, 500),
     });
-    structuredLogger("alert", { kind: "500", method, route, ip, error: String(err?.message || err).slice(0, 200) });
+    structuredLogger("alert", {
+      kind: "500",
+      method,
+      route,
+      ip,
+      error: String(err?.message || err).slice(0, 200),
+    });
     throw err;
   }
 });

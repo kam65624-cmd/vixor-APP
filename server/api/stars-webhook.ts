@@ -45,17 +45,14 @@ async function answerPreCheckout(queryId: string): Promise<void> {
     throw new Error("TELEGRAM_BOT_TOKEN not configured");
   }
 
-  const res = await fetch(
-    `https://api.telegram.org/bot${botToken}/answerPreCheckoutQuery`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        pre_checkout_query_id: queryId,
-        ok: true,
-      }),
-    },
-  );
+  const res = await fetch(`https://api.telegram.org/bot${botToken}/answerPreCheckoutQuery`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      pre_checkout_query_id: queryId,
+      ok: true,
+    }),
+  });
 
   if (!res.ok) {
     const text = await res.text();
@@ -68,11 +65,7 @@ async function answerPreCheckout(queryId: string): Promise<void> {
  * Credit a point pack purchase to the user.
  * Payload format: "pack:{userId}:{packId}"
  */
-async function creditPackPurchase(
-  userId: string,
-  packId: string,
-  chargeId: string,
-): Promise<void> {
+async function creditPackPurchase(userId: string, packId: string, chargeId: string): Promise<void> {
   // Fetch pack details
   const { data: pack, error } = await supabaseAdmin
     .from("point_packs")
@@ -135,17 +128,15 @@ async function creditPremiumSubscription(
     : new Date(Date.now() + (plan.interval === "year" ? 365 : 30) * 86400 * 1000).toISOString();
 
   // Upsert subscription (set active)
-  const { error: insertError } = await supabaseAdmin
-    .from("premium_subscriptions")
-    .upsert(
-      {
-        user_id: userId,
-        plan_id: planId,
-        status: "active",
-        current_period_end: periodEnd,
-      },
-      { onConflict: "user_id" },
-    );
+  const { error: insertError } = await supabaseAdmin.from("premium_subscriptions").upsert(
+    {
+      user_id: userId,
+      plan_id: planId,
+      status: "active",
+      current_period_end: periodEnd,
+    },
+    { onConflict: "user_id" },
+  );
 
   if (insertError) {
     console.error(`[Stars Webhook] Failed to activate premium for ${userId}:`, insertError);

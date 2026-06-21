@@ -44,7 +44,13 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { listTrades, createTrade, updateTrade, getTradeStats, getEquityCurve } from "@/domains/trades/functions";
+import {
+  listTrades,
+  createTrade,
+  updateTrade,
+  getTradeStats,
+  getEquityCurve,
+} from "@/domains/trades/functions";
 import type { Trade, TradeStats, TradeDirection, EquityCurvePoint } from "@/domains/trades/types";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
@@ -61,9 +67,20 @@ export const Route = createFileRoute("/_authenticated/portfolio")({
 // PAIRS (for the trade form)
 // ═══════════════════════════════════════════════
 const PAIRS = [
-  "XAUUSD", "EURUSD", "GBPUSD", "USDJPY", "GBPJPY",
-  "BTCUSD", "ETHUSD", "SOLUSD", "AUDUSD", "NZDUSD",
-  "USDCAD", "USDCHF", "EURGBP", "EURJPY",
+  "XAUUSD",
+  "EURUSD",
+  "GBPUSD",
+  "USDJPY",
+  "GBPJPY",
+  "BTCUSD",
+  "ETHUSD",
+  "SOLUSD",
+  "AUDUSD",
+  "NZDUSD",
+  "USDCAD",
+  "USDCHF",
+  "EURGBP",
+  "EURJPY",
 ];
 
 // ═══════════════════════════════════════════════
@@ -103,8 +120,7 @@ function Portfolio() {
 
   const openTradesQuery = useQuery({
     queryKey: ["open-trades"],
-    queryFn: () =>
-      fetchOpenTrades({ data: { status: "open", limit: 50, offset: 0 } }),
+    queryFn: () => fetchOpenTrades({ data: { status: "open", limit: 50, offset: 0 } }),
     staleTime: 15_000,
   });
 
@@ -138,7 +154,18 @@ function Portfolio() {
 
   // Mutations
   const createMutation = useMutation({
-    mutationFn: (data: { pair: string; direction: TradeDirection; entry_price: number; quantity?: number | null; stop_loss?: number | null; take_profit?: number | null; notes?: string | null; tags?: string[]; strategy?: string | null; analysis_id?: string | null }) => createTradeFn({ data }),
+    mutationFn: (data: {
+      pair: string;
+      direction: TradeDirection;
+      entry_price: number;
+      quantity?: number | null;
+      stop_loss?: number | null;
+      take_profit?: number | null;
+      notes?: string | null;
+      tags?: string[];
+      strategy?: string | null;
+      analysis_id?: string | null;
+    }) => createTradeFn({ data }),
     onSuccess: () => {
       setShowNewTradeDialog(false);
       queryClient.invalidateQueries({ queryKey: ["trade-stats"] });
@@ -149,7 +176,12 @@ function Portfolio() {
   });
 
   const closeMutation = useMutation({
-    mutationFn: (data: { tradeId: string; exit_price: number; status: "closed"; exit_date: string }) => updateTradeFn({ data }),
+    mutationFn: (data: {
+      tradeId: string;
+      exit_price: number;
+      status: "closed";
+      exit_date: string;
+    }) => updateTradeFn({ data }),
     onSuccess: () => {
       setCloseTradeDialog(null);
       queryClient.invalidateQueries({ queryKey: ["trade-stats"] });
@@ -175,7 +207,9 @@ function Portfolio() {
             <BarChart3 className="size-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight leading-none">{t("portfolio.title")}</h1>
+            <h1 className="text-xl font-bold tracking-tight leading-none">
+              {t("portfolio.title")}
+            </h1>
             <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
               {t("portfolio.subtitle")}
             </div>
@@ -215,7 +249,8 @@ function Portfolio() {
             </div>
             <h2 className="text-lg font-bold mb-2">{t("portfolio.noData")}</h2>
             <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed mb-6">
-              Start logging your trades to see real performance metrics, equity curves, and trade breakdowns here.
+              Start logging your trades to see real performance metrics, equity curves, and trade
+              breakdowns here.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-sm mx-auto text-left">
@@ -294,13 +329,25 @@ function Portfolio() {
             <MiniWidget
               title={t("portfolio.profitFactor")}
               value={stats.profitFactor !== null ? stats.profitFactor.toFixed(2) : "—"}
-              variant={(stats.profitFactor ?? 0) >= 1.5 ? "bullish" : (stats.profitFactor ?? 0) >= 1 ? "neutral" : "bearish"}
+              variant={
+                (stats.profitFactor ?? 0) >= 1.5
+                  ? "bullish"
+                  : (stats.profitFactor ?? 0) >= 1
+                    ? "neutral"
+                    : "bearish"
+              }
               icon={BarChart3}
             />
             <MiniWidget
               title="Avg R"
               value={stats.avgRMultiple !== null ? `${stats.avgRMultiple}R` : "—"}
-              variant={(stats.avgRMultiple ?? 0) >= 1 ? "bullish" : (stats.avgRMultiple ?? 0) >= 0 ? "neutral" : "bearish"}
+              variant={
+                (stats.avgRMultiple ?? 0) >= 1
+                  ? "bullish"
+                  : (stats.avgRMultiple ?? 0) >= 0
+                    ? "neutral"
+                    : "bearish"
+              }
               icon={Target}
             />
           </div>
@@ -348,10 +395,14 @@ function Portfolio() {
                     <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                       {t("portfolio.equityCurve")}
                     </span>
-                    <span className={cn(
-                      "text-xs font-mono font-bold",
-                      curve[curve.length - 1]?.cumulative_pnl >= 0 ? "text-bullish" : "text-bearish"
-                    )}>
+                    <span
+                      className={cn(
+                        "text-xs font-mono font-bold",
+                        curve[curve.length - 1]?.cumulative_pnl >= 0
+                          ? "text-bullish"
+                          : "text-bearish",
+                      )}
+                    >
                       {formatPnl(curve[curve.length - 1]?.cumulative_pnl ?? 0)}
                     </span>
                   </div>
@@ -368,7 +419,11 @@ function Portfolio() {
                             <stop offset="95%" stopColor="var(--color-bearish)" stopOpacity={0} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="var(--color-border)"
+                          opacity={0.3}
+                        />
                         <XAxis
                           dataKey="date"
                           tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
@@ -387,12 +442,24 @@ function Portfolio() {
                           }}
                           formatter={(value: number) => [formatPnl(value), "Cumulative P&L"]}
                         />
-                        <ReferenceLine y={0} stroke="var(--color-muted-foreground)" strokeDasharray="3 3" />
+                        <ReferenceLine
+                          y={0}
+                          stroke="var(--color-muted-foreground)"
+                          strokeDasharray="3 3"
+                        />
                         <Area
                           type="monotone"
                           dataKey="cumulative_pnl"
-                          stroke={curve[curve.length - 1]?.cumulative_pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"}
-                          fill={curve[curve.length - 1]?.cumulative_pnl >= 0 ? "url(#pnlGradientPos)" : "url(#pnlGradientNeg)"}
+                          stroke={
+                            curve[curve.length - 1]?.cumulative_pnl >= 0
+                              ? "var(--color-bullish)"
+                              : "var(--color-bearish)"
+                          }
+                          fill={
+                            curve[curve.length - 1]?.cumulative_pnl >= 0
+                              ? "url(#pnlGradientPos)"
+                              : "url(#pnlGradientNeg)"
+                          }
                           strokeWidth={2}
                           dot={false}
                           activeDot={{ r: 4, strokeWidth: 0 }}
@@ -419,10 +486,10 @@ function Portfolio() {
                   <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                     {t("portfolio.winRate")}
                   </span>
-                  <span className="text-mono text-sm font-bold text-bullish">
-                    {stats.winRate}%
+                  <span className="text-mono text-sm font-bold text-bullish">{stats.winRate}%</span>
+                  <span className="text-[9px] text-muted-foreground">
+                    {stats.winCount}W / {stats.lossCount}L
                   </span>
-                  <span className="text-[9px] text-muted-foreground">{stats.winCount}W / {stats.lossCount}L</span>
                 </div>
                 <div className="flex flex-col gap-0.5 p-3">
                   <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -440,7 +507,9 @@ function Portfolio() {
                   >
                     {stats.profitFactor !== null ? stats.profitFactor.toFixed(2) : "—"}
                   </span>
-                  <span className="text-[9px] text-muted-foreground">Gross profit / |Gross loss|</span>
+                  <span className="text-[9px] text-muted-foreground">
+                    Gross profit / |Gross loss|
+                  </span>
                 </div>
                 <div className="flex flex-col gap-0.5 p-3">
                   <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -464,10 +533,12 @@ function Portfolio() {
                   <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                     Avg P&L / Trade
                   </span>
-                  <span className={cn(
-                    "text-mono text-sm font-bold",
-                    stats.avgPnl >= 0 ? "text-bullish" : "text-bearish",
-                  )}>
+                  <span
+                    className={cn(
+                      "text-mono text-sm font-bold",
+                      stats.avgPnl >= 0 ? "text-bullish" : "text-bearish",
+                    )}
+                  >
                     {formatPnl(stats.avgPnl)}
                   </span>
                   <span className="text-[9px] text-muted-foreground">Per closed trade</span>
@@ -477,7 +548,9 @@ function Portfolio() {
                     Avg Hold Time
                   </span>
                   <span className="text-mono text-sm font-bold text-foreground">
-                    {stats.avgHoldingTimeHours !== null ? formatDuration(stats.avgHoldingTimeHours) : "—"}
+                    {stats.avgHoldingTimeHours !== null
+                      ? formatDuration(stats.avgHoldingTimeHours)
+                      : "—"}
                   </span>
                   <span className="text-[9px] text-muted-foreground">From entry to exit</span>
                 </div>
@@ -490,7 +563,9 @@ function Portfolio() {
                     <div className="flex items-center gap-2 p-2.5 rounded-lg bg-bullish/5 border border-bullish/20">
                       <ArrowUpRight className="size-3.5 text-bullish shrink-0" />
                       <div className="min-w-0">
-                        <div className="text-[9px] font-bold uppercase tracking-widest text-bullish">Best Trade</div>
+                        <div className="text-[9px] font-bold uppercase tracking-widest text-bullish">
+                          Best Trade
+                        </div>
                         <div className="text-xs font-bold font-mono text-bullish truncate">
                           {formatPnl(stats.bestTrade.pnl)} · {stats.bestTrade.pair}
                         </div>
@@ -501,7 +576,9 @@ function Portfolio() {
                     <div className="flex items-center gap-2 p-2.5 rounded-lg bg-bearish/5 border border-bearish/20">
                       <ArrowDownRight className="size-3.5 text-bearish shrink-0" />
                       <div className="min-w-0">
-                        <div className="text-[9px] font-bold uppercase tracking-widest text-bearish">Worst Trade</div>
+                        <div className="text-[9px] font-bold uppercase tracking-widest text-bearish">
+                          Worst Trade
+                        </div>
                         <div className="text-xs font-bold font-mono text-bearish truncate">
                           {formatPnl(stats.worstTrade.pnl)} · {stats.worstTrade.pair}
                         </div>
@@ -535,10 +612,12 @@ function Portfolio() {
                     key={trade.id}
                     className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border"
                   >
-                    <div className={cn(
-                      "size-8 rounded-lg flex items-center justify-center shrink-0",
-                      trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
-                    )}>
+                    <div
+                      className={cn(
+                        "size-8 rounded-lg flex items-center justify-center shrink-0",
+                        trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+                      )}
+                    >
                       {trade.direction === "long" ? (
                         <ArrowUpRight className="size-4 text-bullish" />
                       ) : (
@@ -548,12 +627,14 @@ function Portfolio() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold font-mono">{trade.pair}</span>
-                        <span className={cn(
-                          "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded",
-                          trade.direction === "long"
-                            ? "bg-bullish/15 text-bullish"
-                            : "bg-bearish/15 text-bearish",
-                        )}>
+                        <span
+                          className={cn(
+                            "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded",
+                            trade.direction === "long"
+                              ? "bg-bullish/15 text-bullish"
+                              : "bg-bearish/15 text-bearish",
+                          )}
+                        >
                           {trade.direction.toUpperCase()}
                         </span>
                       </div>
@@ -608,27 +689,34 @@ function Portfolio() {
                       <div className="flex-1 min-w-0">
                         <div className="h-2 rounded-full bg-muted overflow-hidden">
                           <div
-                            className={cn("h-full rounded-full transition-all duration-700", confColor)}
+                            className={cn(
+                              "h-full rounded-full transition-all duration-700",
+                              confColor,
+                            )}
                             style={{ width: `${barWidth}%` }}
                           />
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
                         <div className="text-[11px] font-bold font-mono">{item.count}</div>
-                        <div className={cn(
-                          "text-[9px] font-mono",
-                          item.winRate >= 55
-                            ? "text-bullish"
-                            : item.winRate >= 40
-                              ? "text-neutral-wait"
-                              : "text-bearish",
-                        )}>
+                        <div
+                          className={cn(
+                            "text-[9px] font-mono",
+                            item.winRate >= 55
+                              ? "text-bullish"
+                              : item.winRate >= 40
+                                ? "text-neutral-wait"
+                                : "text-bearish",
+                          )}
+                        >
                           {item.winRate}% WR
                         </div>
-                        <div className={cn(
-                          "text-[9px] font-mono",
-                          item.totalPnl >= 0 ? "text-bullish" : "text-bearish",
-                        )}>
+                        <div
+                          className={cn(
+                            "text-[9px] font-mono",
+                            item.totalPnl >= 0 ? "text-bullish" : "text-bearish",
+                          )}
+                        >
                           {formatPnl(item.totalPnl)}
                         </div>
                       </div>
@@ -654,10 +742,12 @@ function Portfolio() {
                     key={item.direction}
                     className="flex items-center gap-3 p-3 rounded-lg border bg-card border-border"
                   >
-                    <div className={cn(
-                      "size-8 rounded-lg flex items-center justify-center shrink-0",
-                      item.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
-                    )}>
+                    <div
+                      className={cn(
+                        "size-8 rounded-lg flex items-center justify-center shrink-0",
+                        item.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+                      )}
+                    >
                       {item.direction === "long" ? (
                         <ArrowUpRight className="size-4 text-bullish" />
                       ) : (
@@ -669,16 +759,24 @@ function Portfolio() {
                       <div className="text-[10px] text-muted-foreground">{item.count} trades</div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className={cn(
-                        "text-sm font-bold font-mono",
-                        item.winRate >= 55 ? "text-bullish" : item.winRate >= 40 ? "text-neutral-wait" : "text-bearish",
-                      )}>
+                      <div
+                        className={cn(
+                          "text-sm font-bold font-mono",
+                          item.winRate >= 55
+                            ? "text-bullish"
+                            : item.winRate >= 40
+                              ? "text-neutral-wait"
+                              : "text-bearish",
+                        )}
+                      >
                         {item.winRate}%
                       </div>
-                      <div className={cn(
-                        "text-[10px] font-mono",
-                        item.totalPnl >= 0 ? "text-bullish" : "text-bearish",
-                      )}>
+                      <div
+                        className={cn(
+                          "text-[10px] font-mono",
+                          item.totalPnl >= 0 ? "text-bullish" : "text-bearish",
+                        )}
+                      >
                         {formatPnl(item.totalPnl)}
                       </div>
                     </div>
@@ -712,7 +810,12 @@ function Portfolio() {
                       className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
                     >
                       <div className="w-10 shrink-0">
-                        <span className={cn("text-xs font-bold", isBest ? "text-primary" : "text-foreground")}>
+                        <span
+                          className={cn(
+                            "text-xs font-bold",
+                            isBest ? "text-primary" : "text-foreground",
+                          )}
+                        >
                           {item.day}
                         </span>
                       </div>
@@ -728,11 +831,19 @@ function Portfolio() {
                         </div>
                       </div>
                       <div className="shrink-0 text-right flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground font-mono">{item.count}</span>
-                        <span className={cn(
-                          "text-[11px] font-bold font-mono min-w-[36px]",
-                          item.winRate >= 55 ? "text-bullish" : item.winRate >= 40 ? "text-neutral-wait" : "text-bearish",
-                        )}>
+                        <span className="text-[10px] text-muted-foreground font-mono">
+                          {item.count}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-[11px] font-bold font-mono min-w-[36px]",
+                            item.winRate >= 55
+                              ? "text-bullish"
+                              : item.winRate >= 40
+                                ? "text-neutral-wait"
+                                : "text-bearish",
+                          )}
+                        >
                           {item.winRate}%
                         </span>
                       </div>
@@ -758,10 +869,12 @@ function Portfolio() {
                     key={trade.id}
                     className="flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border"
                   >
-                    <div className={cn(
-                      "size-7 rounded-lg flex items-center justify-center shrink-0",
-                      trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
-                    )}>
+                    <div
+                      className={cn(
+                        "size-7 rounded-lg flex items-center justify-center shrink-0",
+                        trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+                      )}
+                    >
                       {trade.direction === "long" ? (
                         <ArrowUpRight className="size-3.5 text-bullish" />
                       ) : (
@@ -771,12 +884,14 @@ function Portfolio() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold font-mono">{trade.pair}</span>
-                        <span className={cn(
-                          "text-[8px] font-bold uppercase px-1 py-0.5 rounded",
-                          trade.direction === "long"
-                            ? "bg-bullish/15 text-bullish"
-                            : "bg-bearish/15 text-bearish",
-                        )}>
+                        <span
+                          className={cn(
+                            "text-[8px] font-bold uppercase px-1 py-0.5 rounded",
+                            trade.direction === "long"
+                              ? "bg-bullish/15 text-bullish"
+                              : "bg-bearish/15 text-bearish",
+                          )}
+                        >
                           {trade.direction.toUpperCase()}
                         </span>
                       </div>
@@ -785,18 +900,27 @@ function Portfolio() {
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
-                      <div className={cn(
-                        "text-xs font-bold font-mono",
-                        (trade.pnl ?? 0) >= 0 ? "text-bullish" : "text-bearish",
-                      )}>
+                      <div
+                        className={cn(
+                          "text-xs font-bold font-mono",
+                          (trade.pnl ?? 0) >= 0 ? "text-bullish" : "text-bearish",
+                        )}
+                      >
                         {formatPnl(trade.pnl ?? 0)}
                       </div>
                       {trade.r_multiple !== null && (
-                        <div className={cn(
-                          "text-[9px] font-mono",
-                          trade.r_multiple >= 1 ? "text-bullish" : trade.r_multiple >= 0 ? "text-neutral-wait" : "text-bearish",
-                        )}>
-                          {trade.r_multiple >= 0 ? "+" : ""}{trade.r_multiple.toFixed(2)}R
+                        <div
+                          className={cn(
+                            "text-[9px] font-mono",
+                            trade.r_multiple >= 1
+                              ? "text-bullish"
+                              : trade.r_multiple >= 0
+                                ? "text-neutral-wait"
+                                : "text-bearish",
+                          )}
+                        >
+                          {trade.r_multiple >= 0 ? "+" : ""}
+                          {trade.r_multiple.toFixed(2)}R
                         </div>
                       )}
                       <div className="text-[9px] text-muted-foreground font-mono">
@@ -829,16 +953,24 @@ function Portfolio() {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="text-center">
-                <div className="text-lg font-bold font-mono text-foreground">{stats.totalTrades}</div>
-                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Total</div>
+                <div className="text-lg font-bold font-mono text-foreground">
+                  {stats.totalTrades}
+                </div>
+                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
+                  Total
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold font-mono text-bullish">{stats.closedTrades}</div>
-                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Closed</div>
+                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
+                  Closed
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold font-mono text-info">{openTrades.length}</div>
-                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Open</div>
+                <div className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
+                  Open
+                </div>
               </div>
             </div>
           </div>
@@ -858,13 +990,17 @@ function Portfolio() {
         <CloseTradeDialog
           trade={closeTradeDialog}
           open={!!closeTradeDialog}
-          onOpenChange={(open) => { if (!open) setCloseTradeDialog(null); }}
-          onSubmit={(exitPrice) => closeMutation.mutate({
-            tradeId: closeTradeDialog.id,
-            exit_price: exitPrice,
-            status: "closed",
-            exit_date: new Date().toISOString(),
-          })}
+          onOpenChange={(open) => {
+            if (!open) setCloseTradeDialog(null);
+          }}
+          onSubmit={(exitPrice) =>
+            closeMutation.mutate({
+              tradeId: closeTradeDialog.id,
+              exit_price: exitPrice,
+              status: "closed",
+              exit_date: new Date().toISOString(),
+            })
+          }
           isLoading={closeMutation.isPending}
         />
       )}
@@ -920,19 +1056,22 @@ function NewTradeDialog({
   }, [pair, direction, entryPrice, quantity, stopLoss, takeProfit, notes, strategy, onSubmit]);
 
   // Reset form when dialog opens
-  const handleOpenChange = useCallback((nextOpen: boolean) => {
-    if (nextOpen) {
-      setPair("XAUUSD");
-      setDirection("long");
-      setEntryPrice("");
-      setQuantity("");
-      setStopLoss("");
-      setTakeProfit("");
-      setNotes("");
-      setStrategy("");
-    }
-    onOpenChange(nextOpen);
-  }, [onOpenChange]);
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (nextOpen) {
+        setPair("XAUUSD");
+        setDirection("long");
+        setEntryPrice("");
+        setQuantity("");
+        setStopLoss("");
+        setTakeProfit("");
+        setNotes("");
+        setStrategy("");
+      }
+      onOpenChange(nextOpen);
+    },
+    [onOpenChange],
+  );
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -957,14 +1096,18 @@ function NewTradeDialog({
               className="w-full h-10 px-3 bg-card-hover border border-border rounded-lg text-sm font-mono outline-none focus:border-primary transition-colors cursor-pointer"
             >
               {PAIRS.map((p) => (
-                <option key={p} value={p}>{p}</option>
+                <option key={p} value={p}>
+                  {p}
+                </option>
               ))}
             </select>
           </div>
 
           {/* Direction */}
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-bold text-muted-foreground">Direction</label>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground">
+              Direction
+            </label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setDirection("long")}
@@ -996,7 +1139,9 @@ function NewTradeDialog({
           {/* Entry Price & Quantity */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground">Entry Price *</label>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground">
+                Entry Price *
+              </label>
               <input
                 type="number"
                 step="any"
@@ -1007,7 +1152,9 @@ function NewTradeDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground">Quantity</label>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground">
+                Quantity
+              </label>
               <input
                 type="number"
                 step="any"
@@ -1022,7 +1169,9 @@ function NewTradeDialog({
           {/* SL & TP */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground">Stop Loss</label>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground">
+                Stop Loss
+              </label>
               <input
                 type="number"
                 step="any"
@@ -1033,7 +1182,9 @@ function NewTradeDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground">Take Profit</label>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground">
+                Take Profit
+              </label>
               <input
                 type="number"
                 step="any"
@@ -1047,7 +1198,9 @@ function NewTradeDialog({
 
           {/* Strategy */}
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-bold text-muted-foreground">Strategy</label>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground">
+              Strategy
+            </label>
             <input
               type="text"
               value={strategy}
@@ -1136,10 +1289,12 @@ function CloseTradeDialog({
         <div className="space-y-3">
           {/* Trade summary */}
           <div className="vixor-card p-3 flex items-center gap-3">
-            <div className={cn(
-              "size-8 rounded-lg flex items-center justify-center shrink-0",
-              trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
-            )}>
+            <div
+              className={cn(
+                "size-8 rounded-lg flex items-center justify-center shrink-0",
+                trade.direction === "long" ? "bg-bullish/10" : "bg-bearish/10",
+              )}
+            >
               {trade.direction === "long" ? (
                 <ArrowUpRight className="size-4 text-bullish" />
               ) : (
@@ -1147,7 +1302,9 @@ function CloseTradeDialog({
               )}
             </div>
             <div>
-              <div className="text-xs font-bold font-mono">{trade.pair} · {trade.direction.toUpperCase()}</div>
+              <div className="text-xs font-bold font-mono">
+                {trade.pair} · {trade.direction.toUpperCase()}
+              </div>
               <div className="text-[10px] text-muted-foreground font-mono">
                 Entry: {trade.entry_price}
                 {trade.stop_loss && ` · SL: ${trade.stop_loss}`}
@@ -1158,7 +1315,9 @@ function CloseTradeDialog({
 
           {/* Exit price */}
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-bold text-muted-foreground">Exit Price *</label>
+            <label className="text-[10px] uppercase font-bold text-muted-foreground">
+              Exit Price *
+            </label>
             <input
               type="number"
               step="any"
@@ -1181,11 +1340,7 @@ function CloseTradeDialog({
                 : "bg-muted text-muted-foreground cursor-not-allowed",
             )}
           >
-            {isLoading ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <X className="size-3.5" />
-            )}
+            {isLoading ? <Loader2 className="size-3.5 animate-spin" /> : <X className="size-3.5" />}
             Close Trade
           </button>
         </DialogFooter>

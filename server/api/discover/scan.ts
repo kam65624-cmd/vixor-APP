@@ -15,20 +15,9 @@ import { getDiscoveryConfig } from "@/domains/discovery/config";
 
 /** Request body schema for POST /api/discover/scan. */
 const scanBodySchema = z.object({
-  chains: z
-    .array(z.string())
-    .optional(),
-  forceRefresh: z
-    .boolean()
-    .optional()
-    .default(false),
-  limit: z
-    .number()
-    .int()
-    .min(1)
-    .max(200)
-    .optional()
-    .default(50),
+  chains: z.array(z.string()).optional(),
+  forceRefresh: z.boolean().optional().default(false),
+  limit: z.number().int().min(1).max(200).optional().default(50),
 });
 
 export default defineEventHandler(async (event) => {

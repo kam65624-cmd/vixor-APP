@@ -248,12 +248,13 @@ export const getTradeStats = createServerFn({ method: "GET" })
     // Best / worst trade
     const sortedByPnl = [...closed].sort((a, b) => (b.pnl ?? 0) - (a.pnl ?? 0));
     const bestTrade =
-      sortedByPnl.length > 0
-        ? { pnl: sortedByPnl[0].pnl ?? 0, pair: sortedByPnl[0].pair }
-        : null;
+      sortedByPnl.length > 0 ? { pnl: sortedByPnl[0].pnl ?? 0, pair: sortedByPnl[0].pair } : null;
     const worstTrade =
       sortedByPnl.length > 0
-        ? { pnl: sortedByPnl[sortedByPnl.length - 1].pnl ?? 0, pair: sortedByPnl[sortedByPnl.length - 1].pair }
+        ? {
+            pnl: sortedByPnl[sortedByPnl.length - 1].pnl ?? 0,
+            pair: sortedByPnl[sortedByPnl.length - 1].pair,
+          }
         : null;
 
     // Average holding time (hours)

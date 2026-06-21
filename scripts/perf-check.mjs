@@ -26,12 +26,12 @@ const runnerTs = resolve(__dirname, "perf-runner.ts");
 if (existsSync(runnerTs) && commandAvailable("bun")) {
   const r = spawnSync("bun", ["run", runnerTs, projectRoot], { stdio: "inherit" });
   if (r.status === 0) process.exit(0);
-  // eslint-disable-next-line no-console
+
   console.error("bun runner exited non-zero, falling back to inline benchmark");
 } else if (commandAvailable("npx")) {
   const r = spawnSync("npx", ["--yes", "tsx", runnerTs, projectRoot], { stdio: "inherit" });
   if (r.status === 0) process.exit(0);
-  // eslint-disable-next-line no-console
+
   console.error("tsx runner exited non-zero, falling back to inline benchmark");
 }
 
@@ -117,7 +117,6 @@ const t0 = performance.now();
 const result = runSim(candles);
 const elapsed = performance.now() - t0;
 
-// eslint-disable-next-line no-console
 console.log("VIXOR backtest perf check (200 candles) [inline fallback]");
 console.log("========================================================");
 console.log(`Final equity:    ${result.finalEquity.toFixed(2)}`);

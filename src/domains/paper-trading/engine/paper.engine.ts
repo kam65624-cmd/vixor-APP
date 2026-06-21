@@ -114,7 +114,7 @@ export class PaperEngine {
 
       console.log(
         `[PaperEngine] Opened paper trade: ${signal.recommendation} ${signal.pair} @ ${signal.entry} ` +
-        `(SL: ${signal.stop_loss}, TP: ${takeProfit}, size: ${decision.suggestedSizePct})`,
+          `(SL: ${signal.stop_loss}, TP: ${takeProfit}, size: ${decision.suggestedSizePct})`,
       );
 
       return {
@@ -205,7 +205,8 @@ export class PaperEngine {
             // Break-even: price hasn't moved meaningfully from entry
             else if (Math.abs(currentPrice - entry) < 0.001 * entry) {
               // Only close as BE if the trade has been open for a while (> 24h)
-              const hoursOpen = (Date.now() - new Date(trade.opened_at).getTime()) / (1000 * 60 * 60);
+              const hoursOpen =
+                (Date.now() - new Date(trade.opened_at).getTime()) / (1000 * 60 * 60);
               if (hoursOpen > 24) {
                 status = "CLOSED_BE";
                 exitPrice = currentPrice;
@@ -222,7 +223,8 @@ export class PaperEngine {
             }
             // Break-even check
             else if (Math.abs(currentPrice - entry) < 0.001 * entry) {
-              const hoursOpen = (Date.now() - new Date(trade.opened_at).getTime()) / (1000 * 60 * 60);
+              const hoursOpen =
+                (Date.now() - new Date(trade.opened_at).getTime()) / (1000 * 60 * 60);
               if (hoursOpen > 24) {
                 status = "CLOSED_BE";
                 exitPrice = currentPrice;
@@ -251,7 +253,10 @@ export class PaperEngine {
               .eq("id", trade.id);
 
             if (updateError) {
-              console.error(`[PaperEngine] Failed to settle trade ${trade.id}:`, updateError.message);
+              console.error(
+                `[PaperEngine] Failed to settle trade ${trade.id}:`,
+                updateError.message,
+              );
               continue;
             }
 
@@ -275,7 +280,7 @@ export class PaperEngine {
 
             console.log(
               `[PaperEngine] Settled trade ${trade.id}: ${status} ` +
-              `${trade.direction} ${trade.pair} (PnL: ${pnlPct.toFixed(2)}%)`,
+                `${trade.direction} ${trade.pair} (PnL: ${pnlPct.toFixed(2)}%)`,
             );
           }
         } catch (tradeErr) {

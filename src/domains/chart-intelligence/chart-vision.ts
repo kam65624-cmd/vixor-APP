@@ -118,7 +118,7 @@ Be especially careful with price values — a wrong price is worse than no price
     if (!parsed.isChart) {
       return failedExtraction(
         "The uploaded image does not appear to be a trading chart. Please upload a screenshot of a chart from TradingView, MT5, Binance, or similar platforms.",
-        { source, platform: parsed.platform as ChartPlatform ?? null },
+        { source, platform: (parsed.platform as ChartPlatform) ?? null },
       );
     }
 
@@ -142,7 +142,10 @@ Be especially careful with price values — a wrong price is worse than no price
 
     return successfulExtraction(context, content);
   } catch (err) {
-    console.error("[ChartVision] Vision extraction failed:", err instanceof Error ? err.message : String(err));
+    console.error(
+      "[ChartVision] Vision extraction failed:",
+      err instanceof Error ? err.message : String(err),
+    );
     return failedExtraction(
       `Vision extraction failed: ${err instanceof Error ? err.message : "Unknown error"}`,
       { source },
@@ -168,32 +171,32 @@ function normalizeSymbol(symbol: string | null): string | null {
 
   // Known patterns
   const symbolMap: Record<string, string> = {
-    "XAUUSD": "XAU/USD",
-    "XAUUSDT": "XAU/USD",
-    "GOLD": "XAU/USD",
-    "BTCUSDT": "BTC/USDT",
-    "BTCUSD": "BTC/USD",
-    "BITCOIN": "BTC/USD",
-    "ETHUSDT": "ETH/USDT",
-    "ETHUSD": "ETH/USD",
-    "ETHEREUM": "ETH/USDT",
-    "EURUSD": "EUR/USD",
-    "GBPUSD": "GBP/USD",
-    "GBPJPY": "GBP/JPY",
-    "USDJPY": "USD/JPY",
-    "AUDUSD": "AUD/USD",
-    "NZDUSD": "NZD/USD",
-    "USDCAD": "USD/CAD",
-    "USDCHF": "USD/CHF",
-    "SOLUSDT": "SOL/USDT",
-    "SOLUSD": "SOL/USDT",
-    "SOLANA": "SOL/USDT",
-    "AAPL": "AAPL",
-    "TSLA": "TSLA",
-    "SPX500": "SPX500",
-    "US100": "NASDAQ",
-    "NDX": "NASDAQ",
-    "NASDAQ": "NASDAQ",
+    XAUUSD: "XAU/USD",
+    XAUUSDT: "XAU/USD",
+    GOLD: "XAU/USD",
+    BTCUSDT: "BTC/USDT",
+    BTCUSD: "BTC/USD",
+    BITCOIN: "BTC/USD",
+    ETHUSDT: "ETH/USDT",
+    ETHUSD: "ETH/USD",
+    ETHEREUM: "ETH/USDT",
+    EURUSD: "EUR/USD",
+    GBPUSD: "GBP/USD",
+    GBPJPY: "GBP/JPY",
+    USDJPY: "USD/JPY",
+    AUDUSD: "AUD/USD",
+    NZDUSD: "NZD/USD",
+    USDCAD: "USD/CAD",
+    USDCHF: "USD/CHF",
+    SOLUSDT: "SOL/USDT",
+    SOLUSD: "SOL/USDT",
+    SOLANA: "SOL/USDT",
+    AAPL: "AAPL",
+    TSLA: "TSLA",
+    SPX500: "SPX500",
+    US100: "NASDAQ",
+    NDX: "NASDAQ",
+    NASDAQ: "NASDAQ",
   };
 
   return symbolMap[s] ?? null;
@@ -207,31 +210,31 @@ function normalizeTimeframe(tf: string | null): string | null {
   const tfMap: Record<string, string> = {
     "1M": "1M",
     "1MIN": "1M",
-    "MIN1": "1M",
+    MIN1: "1M",
     "5M": "5M",
     "5MIN": "5M",
-    "MIN5": "5M",
+    MIN5: "5M",
     "15M": "15M",
     "15MIN": "15M",
-    "MIN15": "15M",
+    MIN15: "15M",
     "30M": "30M",
     "30MIN": "30M",
-    "MIN30": "30M",
+    MIN30: "30M",
     "1H": "1H",
-    "H1": "1H",
-    "HR1": "1H",
+    H1: "1H",
+    HR1: "1H",
     "60M": "1H",
     "4H": "4H",
-    "H4": "4H",
-    "HR4": "4H",
+    H4: "4H",
+    HR4: "4H",
     "240M": "4H",
     "1D": "1D",
-    "D1": "1D",
-    "DAY": "1D",
-    "DAILY": "1D",
+    D1: "1D",
+    DAY: "1D",
+    DAILY: "1D",
     "1W": "1W",
-    "W1": "1W",
-    "WEEKLY": "1W",
+    W1: "1W",
+    WEEKLY: "1W",
   };
 
   return tfMap[t] ?? t;

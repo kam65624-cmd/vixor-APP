@@ -173,9 +173,7 @@ function MissionControl() {
           {isLoadingMe ? (
             <div className="h-7 w-28 rounded-lg bg-muted shimmer" />
           ) : (
-            <h1 className="text-2xl font-bold tracking-tight text-foreground truncate">
-              {name}
-            </h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground truncate">{name}</h1>
           )}
           {!isLoadingMe && aiSuggestion && (
             <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">
@@ -292,13 +290,25 @@ function MissionControl() {
                 <Eye className="size-3" /> {t("dashboard.viewCharts")}
               </a>
               <button
-                onClick={() => navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })}
+                onClick={() =>
+                  navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })
+                }
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-card border border-border hover:bg-card-hover transition-colors"
               >
                 <Camera className="size-3" /> {t("dashboard.analyzeNow")}
               </button>
               <button
-                onClick={() => navigate({ to: "/copilot", search: { chartPair: undefined, chartTimeframe: undefined, chartPrice: undefined, chartSymbol: undefined } })}
+                onClick={() =>
+                  navigate({
+                    to: "/copilot",
+                    search: {
+                      chartPair: undefined,
+                      chartTimeframe: undefined,
+                      chartPrice: undefined,
+                      chartSymbol: undefined,
+                    },
+                  })
+                }
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-card border border-border hover:bg-card-hover transition-colors"
               >
                 <MessageSquare className="size-3" /> {t("dashboard.askCopilot")}
@@ -344,8 +354,12 @@ function MissionControl() {
         ) : !(prices.data ?? []).length ? (
           <div className="py-6 text-center">
             <Activity className="size-6 text-muted-foreground/30 mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground">{t("dashboard.noMarketData") || "Market data temporarily unavailable"}</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1">Prices will appear when the feed reconnects</p>
+            <p className="text-xs text-muted-foreground">
+              {t("dashboard.noMarketData") || "Market data temporarily unavailable"}
+            </p>
+            <p className="text-[10px] text-muted-foreground/60 mt-1">
+              Prices will appear when the feed reconnects
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
@@ -359,12 +373,16 @@ function MissionControl() {
                   href={`/charts?symbol=${p.symbol || p.pair}`}
                   className="block p-3 rounded-xl bg-card border border-border hover:border-primary/30 hover:bg-card-hover transition-all duration-200"
                   style={{
-                    borderInlineStartColor: isPositive ? "var(--color-bullish)" : "var(--color-bearish)",
+                    borderInlineStartColor: isPositive
+                      ? "var(--color-bullish)"
+                      : "var(--color-bearish)",
                     borderInlineStartWidth: "2px",
                   }}
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[11px] font-bold font-mono text-foreground truncate">{p.pair}</span>
+                    <span className="text-[11px] font-bold font-mono text-foreground truncate">
+                      {p.pair}
+                    </span>
                     {isPositive ? (
                       <TrendingUp className="size-3 text-bullish shrink-0" />
                     ) : (
@@ -372,7 +390,8 @@ function MissionControl() {
                     )}
                   </div>
                   <div className="text-sm font-mono font-bold text-foreground tabular-nums truncate">
-                    ${Number(p.price).toLocaleString(undefined, {
+                    $
+                    {Number(p.price).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: p.pair?.includes("JPY") ? 2 : 4,
                     })}
@@ -382,7 +401,8 @@ function MissionControl() {
                       isPositive ? "text-bullish" : "text-bearish"
                     }`}
                   >
-                    {isPositive ? "+" : ""}{change.toFixed(2)}%
+                    {isPositive ? "+" : ""}
+                    {change.toFixed(2)}%
                   </div>
                 </a>
               );
@@ -453,7 +473,8 @@ function MissionControl() {
                     </div>
                     {priceData && (
                       <div className="text-[10px] text-muted-foreground font-mono mt-0.5">
-                        ${Number(priceData.price).toLocaleString(undefined, {
+                        $
+                        {Number(priceData.price).toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: item.pair?.includes("JPY") ? 2 : 4,
                         })}
@@ -465,7 +486,8 @@ function MissionControl() {
                       <div
                         className={`text-xs font-bold font-mono ${isPositive ? "text-bullish" : "text-bearish"}`}
                       >
-                        {isPositive ? "+" : ""}{change.toFixed(2)}%
+                        {isPositive ? "+" : ""}
+                        {change.toFixed(2)}%
                       </div>
                     </div>
                   )}
@@ -579,7 +601,9 @@ function MissionControl() {
                   <Sparkles className="size-3" /> {t("dashboard.viewAll")}
                 </button>
                 <button
-                  onClick={() => navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })}
+                  onClick={() =>
+                    navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })
+                  }
                   className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-bold bg-card border border-border hover:bg-card-hover transition-colors"
                 >
                   <Camera className="size-3" /> {t("dashboard.analyzeNow")}
@@ -696,7 +720,17 @@ function MissionControl() {
                 : t("dashboard.noSignalsYet")}
             </p>
             <button
-              onClick={() => navigate({ to: "/copilot", search: { chartPair: undefined, chartTimeframe: undefined, chartPrice: undefined, chartSymbol: undefined } })}
+              onClick={() =>
+                navigate({
+                  to: "/copilot",
+                  search: {
+                    chartPair: undefined,
+                    chartTimeframe: undefined,
+                    chartPrice: undefined,
+                    chartSymbol: undefined,
+                  },
+                })
+              }
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-colors"
             >
               <MessageSquare className="size-3" /> {t("dashboard.askCopilot")}
@@ -747,16 +781,43 @@ function MissionControl() {
                   const eventDate = new Date(evt.date);
                   const isToday = (() => {
                     const now = new Date();
-                    return eventDate.getDate() === now.getDate() && eventDate.getMonth() === now.getMonth();
+                    return (
+                      eventDate.getDate() === now.getDate() &&
+                      eventDate.getMonth() === now.getMonth()
+                    );
                   })();
-                  const timeStr = eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                  const flagMap: Record<string, string> = { US: "🇺🇸", EU: "🇪🇺", UK: "🇬🇧", JP: "🇯🇵", AU: "🇦🇺", CA: "🇨🇦", CH: "🇨🇭", NZ: "🇳🇿" };
-                  const impactColor = evt.impact === "high" ? "bg-bearish/15 text-bearish border-bearish/40" : evt.impact === "medium" ? "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40" : "bg-muted text-muted-foreground border-border";
+                  const timeStr = eventDate.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  const flagMap: Record<string, string> = {
+                    US: "🇺🇸",
+                    EU: "🇪🇺",
+                    UK: "🇬🇧",
+                    JP: "🇯🇵",
+                    AU: "🇦🇺",
+                    CA: "🇨🇦",
+                    CH: "🇨🇭",
+                    NZ: "🇳🇿",
+                  };
+                  const impactColor =
+                    evt.impact === "high"
+                      ? "bg-bearish/15 text-bearish border-bearish/40"
+                      : evt.impact === "medium"
+                        ? "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40"
+                        : "bg-muted text-muted-foreground border-border";
                   return (
                     <div
                       key={evt.id}
                       className="flex items-center gap-2.5 p-2.5 rounded-lg bg-card border border-border"
-                      style={evt.impact === "high" ? { borderInlineStartColor: "var(--color-bearish)", borderInlineStartWidth: "3px" } : undefined}
+                      style={
+                        evt.impact === "high"
+                          ? {
+                              borderInlineStartColor: "var(--color-bearish)",
+                              borderInlineStartWidth: "3px",
+                            }
+                          : undefined
+                      }
                     >
                       <span className="text-base shrink-0">{flagMap[evt.country] || "🌍"}</span>
                       <div className="flex-1 min-w-0">
@@ -764,23 +825,41 @@ function MissionControl() {
                           <span className="text-xs font-bold truncate">{evt.title}</span>
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[10px] text-muted-foreground font-mono">{evt.currency}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {evt.currency}
+                          </span>
                           <span className="text-[10px] text-muted-foreground">·</span>
-                          <span className="text-[10px] text-muted-foreground font-mono">{timeStr}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {timeStr}
+                          </span>
                           {!isToday && (
                             <>
                               <span className="text-[10px] text-muted-foreground">·</span>
-                              <span className="text-[10px] text-muted-foreground">{eventDate.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}</span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {eventDate.toLocaleDateString([], {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </span>
                             </>
                           )}
                         </div>
                       </div>
-                      <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase shrink-0 ${impactColor}`}>
-                        {evt.impact === "high" ? t("discover.high") : evt.impact === "medium" ? t("discover.medium") : t("discover.low")}
+                      <span
+                        className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase shrink-0 ${impactColor}`}
+                      >
+                        {evt.impact === "high"
+                          ? t("discover.high")
+                          : evt.impact === "medium"
+                            ? t("discover.medium")
+                            : t("discover.low")}
                       </span>
                       <div className="flex flex-col items-end shrink-0 text-[9px] font-mono">
                         {evt.actual && <span className="text-foreground">{evt.actual}</span>}
-                        {evt.forecast && <span className="text-muted-foreground">F: {evt.forecast}</span>}
+                        {evt.forecast && (
+                          <span className="text-muted-foreground">F: {evt.forecast}</span>
+                        )}
                       </div>
                     </div>
                   );
@@ -879,7 +958,9 @@ function MissionControl() {
           QUICK ANALYZE CTA (bottom) — always visible
           ═══════════════════════════════════════════ */}
       <div
-        onClick={() => navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })}
+        onClick={() =>
+          navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } })
+        }
         className="relative overflow-hidden rounded-2xl p-5 cursor-pointer group active:scale-[0.98] transition-all"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-[#059669]/90 to-[#064e3b]/90" />

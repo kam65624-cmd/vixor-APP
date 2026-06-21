@@ -54,10 +54,10 @@ export function evaluateRR(rrString: string): number {
 
   if (isNaN(rr) || rr <= 0) return 0.3;
 
-  if (rr < 1.0) return 0;        // Reject — bad RR
-  if (rr < 1.5) return 0.5;      // Marginal
-  if (rr <= 3.0) return 1.0;     // Good
-  return 1.2;                      // Excellent — slight bonus
+  if (rr < 1.0) return 0; // Reject — bad RR
+  if (rr < 1.5) return 0.5; // Marginal
+  if (rr <= 3.0) return 1.0; // Good
+  return 1.2; // Excellent — slight bonus
 }
 
 /**
@@ -81,11 +81,7 @@ export function evaluateConfidence(confidence: number): number {
  * A composite of 1.0 means: low risk + good RR + high confidence = proceed at full size
  * A composite of 0.0 means: any dimension rejected (e.g. RR < 1.0) = block
  */
-export function compositeScore(
-  riskMult: number,
-  rrMult: number,
-  confMult: number,
-): number {
+export function compositeScore(riskMult: number, rrMult: number, confMult: number): number {
   const score = riskMult * rrMult * confMult;
   return Math.max(0, Math.min(1, score));
 }

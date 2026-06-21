@@ -50,12 +50,16 @@ export const getDefaultWatchlist = createServerFn({ method: "GET" })
 
 export const addToWatchlist = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({
-    watchlistId: z.string().uuid().optional(),
-    pair: z.string().min(1).max(20),
-    category: z.enum(["forex", "crypto", "commodity", "stocks"]).default("forex"),
-    notes: z.string().max(200).optional(),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        watchlistId: z.string().uuid().optional(),
+        pair: z.string().min(1).max(20),
+        category: z.enum(["forex", "crypto", "commodity", "stocks"]).default("forex"),
+        notes: z.string().max(200).optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
     let watchlistId = data.watchlistId;
@@ -112,26 +116,27 @@ export const removeFromWatchlist = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => z.object({ itemId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("watchlist_items")
-      .delete()
-      .eq("id", data.itemId);
+    const { error } = await context.supabase.from("watchlist_items").delete().eq("id", data.itemId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const updateWatchlistItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({
-    itemId: z.string().uuid(),
-    notes: z.string().max(200).optional(),
-    sortOrder: z.number().optional(),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        itemId: z.string().uuid(),
+        notes: z.string().max(200).optional(),
+        sortOrder: z.number().optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const update: { notes?: string; sort_order?: number } = {};
     if (data.notes !== undefined) update.notes = data.notes;
     if (data.sortOrder !== undefined) update.sort_order = data.sortOrder;
-    
+
     const { error } = await context.supabase
       .from("watchlist_items")
       .update(update)
@@ -142,9 +147,13 @@ export const updateWatchlistItem = createServerFn({ method: "POST" })
 
 export const reorderWatchlist = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({
-    items: z.array(z.object({ id: z.string().uuid(), sortOrder: z.number() })),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        items: z.array(z.object({ id: z.string().uuid(), sortOrder: z.number() })),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/shared/supabase/client.server");
     for (const item of data.items) {
@@ -158,10 +167,14 @@ export const reorderWatchlist = createServerFn({ method: "POST" })
 
 export const createWatchlist = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({
-    name: z.string().min(1).max(50),
-    isDefault: z.boolean().optional().default(false),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        name: z.string().min(1).max(50),
+        isDefault: z.boolean().optional().default(false),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
 
@@ -190,9 +203,13 @@ export const createWatchlist = createServerFn({ method: "POST" })
 
 export const deleteWatchlist = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({
-    watchlistId: z.string().uuid(),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        watchlistId: z.string().uuid(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
 
@@ -208,10 +225,7 @@ export const deleteWatchlist = createServerFn({ method: "POST" })
     if (watchlist.is_default) throw new Error("CANNOT_DELETE_DEFAULT");
 
     // Delete all items first (cascade should handle this, but be safe)
-    await supabase
-      .from("watchlist_items")
-      .delete()
-      .eq("watchlist_id", data.watchlistId);
+    await supabase.from("watchlist_items").delete().eq("watchlist_id", data.watchlistId);
 
     // Delete the watchlist
     const { error } = await supabase
@@ -225,10 +239,14 @@ export const deleteWatchlist = createServerFn({ method: "POST" })
 
 export const renameWatchlist = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({
-    watchlistId: z.string().uuid(),
-    name: z.string().min(1).max(50),
-  }).parse(d))
+  .validator((d: unknown) =>
+    z
+      .object({
+        watchlistId: z.string().uuid(),
+        name: z.string().min(1).max(50),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
 

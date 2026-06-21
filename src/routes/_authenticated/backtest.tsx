@@ -22,9 +22,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import type {
-  BacktestResult,
-} from "@/domains/backtest/engine/types";
+import type { BacktestResult } from "@/domains/backtest/engine/types";
 
 export const Route = createFileRoute("/_authenticated/backtest")({
   head: () => ({ meta: [{ title: "Backtest — Vixor" }] }),
@@ -151,7 +149,9 @@ function BacktestPage() {
             <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
               {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">{t("backtest.title") || "Backtest"}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {t("backtest.title") || "Backtest"}
+            </h1>
           </div>
         </div>
         <div className="vixor-card p-6 text-center">
@@ -172,7 +172,9 @@ function BacktestPage() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight">{t("backtest.title") || "Backtest"}</h1>
         </div>
-        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${hasEnoughPoints ? "bg-primary/10 text-primary" : "bg-bearish/10 text-bearish"}`}>
+        <div
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${hasEnoughPoints ? "bg-primary/10 text-primary" : "bg-bearish/10 text-bearish"}`}
+        >
           <Coins className="size-3.5" />
           <span>{pointsBalance}</span>
           <span className="text-muted-foreground font-normal">{t("common.points") || "pts"}</span>
@@ -183,7 +185,9 @@ function BacktestPage() {
       <div className="vixor-card p-4 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <FlaskConical className="size-4 text-primary" />
-          <span className="text-sm font-bold">{t("backtest.configuration") || "Configuration"}</span>
+          <span className="text-sm font-bold">
+            {t("backtest.configuration") || "Configuration"}
+          </span>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -329,9 +333,13 @@ function BacktestPage() {
           <div className="flex items-center gap-2 p-3 rounded-lg bg-bearish/5 border border-bearish/20">
             <AlertTriangle className="size-4 text-bearish shrink-0" />
             <span className="text-xs text-bearish">
-              {t("backtest.needMorePoints") || `You need ${BACKTEST_COST} points. You have ${pointsBalance}.`}
+              {t("backtest.needMorePoints") ||
+                `You need ${BACKTEST_COST} points. You have ${pointsBalance}.`}
             </span>
-            <a href="/premium" className="ml-auto text-[10px] font-bold text-primary whitespace-nowrap">
+            <a
+              href="/premium"
+              className="ml-auto text-[10px] font-bold text-primary whitespace-nowrap"
+            >
               {t("premium.getPoints") || "Get Points"}
             </a>
           </div>
@@ -372,10 +380,13 @@ function BacktestPage() {
           <div className="vixor-card p-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Coins className="size-3.5 text-primary" />
-              <span>-{BACKTEST_COST} {t("common.points") || "pts"}</span>
+              <span>
+                -{BACKTEST_COST} {t("common.points") || "pts"}
+              </span>
             </div>
             <div className="text-xs font-bold text-primary">
-              {(result as any).remainingBalance ?? pointsBalance - BACKTEST_COST} {t("common.points") || "pts"} {t("common.remaining") || "remaining"}
+              {(result as any).remainingBalance ?? pointsBalance - BACKTEST_COST}{" "}
+              {t("common.points") || "pts"} {t("common.remaining") || "remaining"}
             </div>
           </div>
 
@@ -470,7 +481,9 @@ function BacktestPage() {
           <div className="vixor-card p-4 space-y-3">
             <div className="flex items-center gap-2">
               <TrendingUp className="size-4 text-primary" />
-              <span className="text-sm font-bold">{t("backtest.equityCurve") || "Equity Curve"}</span>
+              <span className="text-sm font-bold">
+                {t("backtest.equityCurve") || "Equity Curve"}
+              </span>
             </div>
             <div className="w-full h-48 rounded-xl bg-background overflow-hidden relative">
               <svg
@@ -509,25 +522,44 @@ function BacktestPage() {
                     <>
                       <defs>
                         <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="currentColor" className="text-primary" stopOpacity={0.3} />
-                          <stop offset="100%" stopColor="currentColor" className="text-primary" stopOpacity={0} />
+                          <stop
+                            offset="0%"
+                            stopColor="currentColor"
+                            className="text-primary"
+                            stopOpacity={0.3}
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="currentColor"
+                            className="text-primary"
+                            stopOpacity={0}
+                          />
                         </linearGradient>
                       </defs>
+                      <path d={`${pathD} L${w},192 L0,192 Z`} fill="url(#eqGrad)" />
                       <path
-                        d={`${pathD} L${w},192 L0,192 Z`}
-                        fill="url(#eqGrad)"
+                        d={pathD}
+                        fill="none"
+                        stroke="currentColor"
+                        className="text-primary"
+                        strokeWidth={2}
                       />
-                      <path d={pathD} fill="none" stroke="currentColor" className="text-primary" strokeWidth={2} />
                     </>
                   );
                 })()}
               </svg>
               {/* Y-axis labels */}
               <div className="absolute top-2 left-2 text-[9px] font-mono text-muted-foreground">
-                ${Math.max(...result.equityCurve.map((p) => p.equity)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                $
+                {Math.max(...result.equityCurve.map((p) => p.equity)).toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
               </div>
               <div className="absolute bottom-2 left-2 text-[9px] font-mono text-muted-foreground">
-                ${Math.min(...result.equityCurve.map((p) => p.equity)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                $
+                {Math.min(...result.equityCurve.map((p) => p.equity)).toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
               </div>
             </div>
           </div>
@@ -548,7 +580,9 @@ function BacktestPage() {
                     key={i}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background text-xs"
                   >
-                    <span className={`font-bold w-5 text-center ${trade.netPnl >= 0 ? "text-bullish" : "text-bearish"}`}>
+                    <span
+                      className={`font-bold w-5 text-center ${trade.netPnl >= 0 ? "text-bullish" : "text-bearish"}`}
+                    >
                       {trade.netPnl >= 0 ? "+" : ""}
                     </span>
                     <span className="font-bold font-mono w-14 text-right">
@@ -560,7 +594,9 @@ function BacktestPage() {
                     <span className="text-[10px] font-mono text-muted-foreground">
                       {trade.durationBars}bars
                     </span>
-                    <span className={`text-[10px] font-bold ${trade.netPnl >= 0 ? "text-bullish" : "text-bearish"}`}>
+                    <span
+                      className={`text-[10px] font-bold ${trade.netPnl >= 0 ? "text-bullish" : "text-bearish"}`}
+                    >
                       {trade.rMultiple?.toFixed(1) || "—"}R
                     </span>
                   </div>

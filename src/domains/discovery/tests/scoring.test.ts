@@ -106,18 +106,13 @@ describe("stage2_liquidityFilter", () => {
   });
 
   it("respects custom thresholds", () => {
-    const tokens = [
-      makeRawToken({ liquidity: 1_000 }),
-      makeRawToken({ liquidity: 50_000 }),
-    ];
+    const tokens = [makeRawToken({ liquidity: 1_000 }), makeRawToken({ liquidity: 50_000 })];
     const result = stage2_liquidityFilter(tokens, { minLiquidity: 500 });
     expect(result).toHaveLength(2);
   });
 
   it("returns empty for all-below-threshold", () => {
-    const tokens = [
-      makeRawToken({ liquidity: 100, volume24h: 50 }),
-    ];
+    const tokens = [makeRawToken({ liquidity: 100, volume24h: 50 })];
     const result = stage2_liquidityFilter(tokens);
     expect(result).toHaveLength(0);
   });
@@ -383,12 +378,8 @@ describe("runDiscoveryPipeline", () => {
       makeRawToken({ liquidity: 100_000, volume24h: 50_000 }),
     ];
     const result = runDiscoveryPipeline(tokens);
-    expect(result[0].discoveryScore).toBeGreaterThanOrEqual(
-      result[1].discoveryScore,
-    );
-    expect(result[1].discoveryScore).toBeGreaterThanOrEqual(
-      result[2].discoveryScore,
-    );
+    expect(result[0].discoveryScore).toBeGreaterThanOrEqual(result[1].discoveryScore);
+    expect(result[1].discoveryScore).toBeGreaterThanOrEqual(result[2].discoveryScore);
   });
 
   it("filters out tokens below liquidity threshold", () => {
@@ -425,12 +416,7 @@ describe("runDiscoveryPipeline", () => {
     honeypotSet.add("So11111111111111111111111111111111111111112");
 
     const tokens = [makeRawToken({ liquidity: 500_000 })]; // high score normally
-    const result = runDiscoveryPipeline(
-      tokens,
-      new Map(),
-      new Map(),
-      { honeypotSet },
-    );
+    const result = runDiscoveryPipeline(tokens, new Map(), new Map(), { honeypotSet });
     expect(result[0].isHoneypot).toBe(true);
     expect(result[0].riskLevel).toBe("high");
   });

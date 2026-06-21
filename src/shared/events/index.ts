@@ -5,7 +5,4 @@
 export { VixorEvents } from "./orchestrator";
 export { configureEventPersistence } from "./persist";
 
-export type {
-  VixorEventMap,
-  EventLogEntry,
-} from "./orchestrator";
+export type { VixorEventMap, EventLogEntry } from "./orchestrator";

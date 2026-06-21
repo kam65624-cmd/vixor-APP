@@ -8,13 +8,7 @@ import { ChevronDown } from "lucide-react";
 // VARIANT CONFIGURATION
 // ═══════════════════════════════════════════════
 
-export type WidgetVariant =
-  | "bullish"
-  | "bearish"
-  | "neutral"
-  | "info"
-  | "warning"
-  | "aggressive";
+export type WidgetVariant = "bullish" | "bearish" | "neutral" | "info" | "warning" | "aggressive";
 
 interface VariantConfig {
   /** Color value for the inline-start border (uses CSS logical property for RTL) */
@@ -160,13 +154,7 @@ export function ExpandableWidget({
         {/* Left: Icon + Title + Subtitle */}
         <div className="flex items-center gap-2.5 min-w-0">
           {Icon && (
-            <Icon
-              className={cn(
-                "shrink-0",
-                cfg.textColor,
-                compact ? "size-4" : "size-4.5",
-              )}
-            />
+            <Icon className={cn("shrink-0", cfg.textColor, compact ? "size-4" : "size-4.5")} />
           )}
           <div className="min-w-0">
             <span
@@ -231,9 +219,7 @@ export function ExpandableWidget({
       <div
         className={cn(
           "transition-[max-height,opacity] duration-300 ease-in-out",
-          isExpanded
-            ? "max-h-[1000px] opacity-100"
-            : "max-h-0 opacity-0 overflow-hidden",
+          isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0 overflow-hidden",
         )}
         aria-hidden={!isExpanded}
       >
@@ -289,15 +275,8 @@ export function MiniWidget({
       }}
     >
       {Icon && <Icon className={cn("size-3.5 shrink-0", cfg.textColor)} />}
-      <span className="text-[11px] text-muted-foreground truncate flex-1">
-        {title}
-      </span>
-      <span
-        className={cn(
-          "text-xs font-mono font-bold text-mono shrink-0",
-          cfg.textColor,
-        )}
-      >
+      <span className="text-[11px] text-muted-foreground truncate flex-1">{title}</span>
+      <span className={cn("text-xs font-mono font-bold text-mono shrink-0", cfg.textColor)}>
         {value}
       </span>
     </button>
@@ -317,13 +296,7 @@ export interface WidgetGroupProps {
   className?: string;
 }
 
-export function WidgetGroup({
-  title,
-  icon: Icon,
-  children,
-  action,
-  className,
-}: WidgetGroupProps) {
+export function WidgetGroup({ title, icon: Icon, children, action, className }: WidgetGroupProps) {
   return (
     <div className={cn("space-y-3", className)}>
       {/* Group header */}

@@ -46,7 +46,9 @@ function AuthPage() {
   const navigateRef = useRef(navigate);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [tgStatus, setTgStatus] = useState<"detecting" | "webapp" | "widget" | "manual">("detecting");
+  const [tgStatus, setTgStatus] = useState<"detecting" | "webapp" | "widget" | "manual">(
+    "detecting",
+  );
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -332,10 +334,7 @@ function AuthPage() {
               </div>
 
               {/* Telegram Login Widget container */}
-              <div
-                ref={widgetContainerRef}
-                className="flex justify-center min-h-[44px]"
-              >
+              <div ref={widgetContainerRef} className="flex justify-center min-h-[44px]">
                 {/* Loading state while widget script loads */}
                 {!widgetLoaded && !widgetTimedOut && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
@@ -363,10 +362,10 @@ function AuthPage() {
               {/* Helpful hint when widget fails to load (usually because BotFather domain isn't set) */}
               {widgetTimedOut && (
                 <p className="text-[10px] text-muted-foreground text-center leading-relaxed px-2">
-                  If the Telegram button above doesn't appear, open Vixor directly
-                  inside the Telegram app — tap the link above, then tap{" "}
-                  <strong className="text-foreground">START</strong> to launch Vixor
-                  and sign in instantly.
+                  If the Telegram button above doesn't appear, open Vixor directly inside the
+                  Telegram app — tap the link above, then tap{" "}
+                  <strong className="text-foreground">START</strong> to launch Vixor and sign in
+                  instantly.
                 </p>
               )}
             </div>
@@ -417,7 +416,7 @@ function AuthPage() {
                       }`}
                     >
                       {m === "signin" ? "Sign in" : "Create account"}
-                      </button>
+                    </button>
                   ))}
                 </div>
 
@@ -472,7 +471,8 @@ function AuthPage() {
                     </>
                   ) : (
                     <>
-                      <Mail className="size-4" /> {emailMode === "signin" ? "Sign in" : "Create account"}
+                      <Mail className="size-4" />{" "}
+                      {emailMode === "signin" ? "Sign in" : "Create account"}
                     </>
                   )}
                 </button>

@@ -16,18 +16,10 @@ import type {
 } from "./types";
 import { getDiscoveryConfig } from "./config";
 import { fetchLatestPairs, searchTokenPairs } from "./clients/dexscreener.client";
-import {
-  fetchTrendingTokens,
-} from "./clients/birdeye.client";
-import {
-  batchFetchSmartMoneyHolders,
-} from "./clients/helius.client";
-import {
-  fetchTwitterMentions,
-} from "./clients/twitter.client";
-import {
-  batchFetchSocialData,
-} from "./clients/lunarcrush.client";
+import { fetchTrendingTokens } from "./clients/birdeye.client";
+import { batchFetchSmartMoneyHolders } from "./clients/helius.client";
+import { fetchTwitterMentions } from "./clients/twitter.client";
+import { batchFetchSocialData } from "./clients/lunarcrush.client";
 import { runDiscoveryPipeline } from "./scoring";
 
 // ── Scan Deduplication ───────────────────────────────────────────────────────
@@ -62,9 +54,7 @@ function checkScanCooldown(): { allowed: boolean; waitMs: number } {
  * @param params - Optional filter parameters.
  * @returns Discovery scan result with scored tokens.
  */
-export async function scanDiscovery(
-  params?: DiscoveryFilterParams,
-): Promise<DiscoveryScanResult> {
+export async function scanDiscovery(params?: DiscoveryFilterParams): Promise<DiscoveryScanResult> {
   const config = getDiscoveryConfig();
   const startMs = Date.now();
 
@@ -245,9 +235,7 @@ export async function scanDiscovery(
  * @param query - Search query (symbol or name).
  * @returns Array of scored tokens matching the query.
  */
-export async function searchTokens(
-  query: string,
-): Promise<ScoredToken[]> {
+export async function searchTokens(query: string): Promise<ScoredToken[]> {
   const config = getDiscoveryConfig();
   if (!config.DISCOVERY_ENABLED || !query.trim()) return [];
 

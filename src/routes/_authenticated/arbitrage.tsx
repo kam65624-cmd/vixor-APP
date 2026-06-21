@@ -113,8 +113,8 @@ function ArbDashboard() {
       <Alert className="border-yellow-500/30 bg-yellow-500/5">
         <Shield className="h-4 w-4 text-yellow-500" />
         <AlertDescription className="text-yellow-200">
-          <strong>Safety:</strong> Bot runs in <strong>DRY_RUN=true</strong> mode by default. No real
-          funds are moved. To enable live execution, set{" "}
+          <strong>Safety:</strong> Bot runs in <strong>DRY_RUN=true</strong> mode by default. No
+          real funds are moved. To enable live execution, set{" "}
           <code className="rounded bg-muted px-1">ARBITRAGE_EXECUTION_ENABLED=true</code> and{" "}
           <code className="rounded bg-muted px-1">ARBITRAGE_DRY_RUN=false</code> in env vars.
         </AlertDescription>
@@ -240,7 +240,8 @@ function ArbDashboard() {
 
       {/* Bot Mode Indicator */}
       <div className="text-center text-xs text-muted-foreground">
-        Bot Mode: <Badge variant="outline">{botMode}</Badge> · Ported from axiom-arbitrage-trading-bot
+        Bot Mode: <Badge variant="outline">{botMode}</Badge> · Ported from
+        axiom-arbitrage-trading-bot
       </div>
     </div>
   );

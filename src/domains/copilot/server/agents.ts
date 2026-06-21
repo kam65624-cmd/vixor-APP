@@ -33,7 +33,10 @@ function formatMarketPrices(prices: any[]): string {
   if (!prices || prices.length === 0) return "No live market prices available.";
   return prices
     .slice(0, 12)
-    .map((p) => `${p.pair}: $${p.price?.toFixed(p.pair.includes("JPY") ? 3 : 2)} (${p.change24h >= 0 ? "+" : ""}${p.change24h?.toFixed(2)}% 24h)`)
+    .map(
+      (p) =>
+        `${p.pair}: $${p.price?.toFixed(p.pair.includes("JPY") ? 3 : 2)} (${p.change24h >= 0 ? "+" : ""}${p.change24h?.toFixed(2)}% 24h)`,
+    )
     .join(" | ");
 }
 
@@ -41,7 +44,10 @@ function formatMarketPrices(prices: any[]): string {
 function formatAnalyses(analyses: any[]): string {
   if (!analyses || analyses.length === 0) return "No recent analyses.";
   return analyses
-    .map((a) => `${a.pair} ${a.timeframe} → ${a.recommendation} (${a.confidence}% conf) ${a.pattern || ""}`)
+    .map(
+      (a) =>
+        `${a.pair} ${a.timeframe} → ${a.recommendation} (${a.confidence}% conf) ${a.pattern || ""}`,
+    )
     .join("\n  ");
 }
 
@@ -56,17 +62,13 @@ function formatSignals(signals: any[]): string {
 // ─── Helper: Format alerts ───
 function formatAlerts(alerts: any[]): string {
   if (!alerts || alerts.length === 0) return "No active alerts.";
-  return alerts
-    .map((a) => `${a.pair} ${a.condition} @ $${a.target_price}`)
-    .join(" | ");
+  return alerts.map((a) => `${a.pair} ${a.condition} @ $${a.target_price}`).join(" | ");
 }
 
 // ─── Helper: Format watchlist ───
 function formatWatchlist(watchlist: any[]): string {
   if (!watchlist || watchlist.length === 0) return "No watchlist items.";
-  return watchlist
-    .map((w) => `${w.pair}${w.notes ? ` (${w.notes})` : ""}`)
-    .join(", ");
+  return watchlist.map((w) => `${w.pair}${w.notes ? ` (${w.notes})` : ""}`).join(", ");
 }
 
 // ─── Helper: Format economic events ───
@@ -74,7 +76,10 @@ function formatEconomicEvents(events: any[]): string {
   if (!events || events.length === 0) return "No upcoming high-impact economic events.";
   return events
     .slice(0, 8)
-    .map((e) => `${e.title} (${e.currency}, ${e.impact} impact) ${e.date ? new Date(e.date).toLocaleDateString() : ""} — Forecast: ${e.forecast || "N/A"}, Previous: ${e.previous || "N/A"}`)
+    .map(
+      (e) =>
+        `${e.title} (${e.currency}, ${e.impact} impact) ${e.date ? new Date(e.date).toLocaleDateString() : ""} — Forecast: ${e.forecast || "N/A"}, Previous: ${e.previous || "N/A"}`,
+    )
     .join("\n  ");
 }
 
@@ -176,8 +181,10 @@ export const riskManagerAgent: AgentDefinition = {
     const analysesCount = context.recentAnalyses?.length || 0;
 
     // Analyze exposure from analyses
-    const buyCount = context.recentAnalyses?.filter((a: any) => a.recommendation === "BUY").length || 0;
-    const sellCount = context.recentAnalyses?.filter((a: any) => a.recommendation === "SELL").length || 0;
+    const buyCount =
+      context.recentAnalyses?.filter((a: any) => a.recommendation === "BUY").length || 0;
+    const sellCount =
+      context.recentAnalyses?.filter((a: any) => a.recommendation === "SELL").length || 0;
     const pairsTraded = [...new Set(context.recentAnalyses?.map((a: any) => a.pair) || [])];
 
     return `You are Vixor's **Risk Manager** agent — a conservative risk analyst focused on capital preservation.
@@ -246,12 +253,14 @@ export const newsAnalystAgent: AgentDefinition = {
   systemPrompt: (context: UserContext): string => {
     const profileName = context.profile?.display_name || "Trader";
     const watchlistPairs = context.watchlist?.map((w: any) => w.pair) || [];
-    const currencies = [...new Set(
-      watchlistPairs.flatMap((p: string) => {
-        const parts = p.split("/");
-        return parts.length === 2 ? parts : [p.replace("/USDT", "").replace("/USD", "")];
-      })
-    )];
+    const currencies = [
+      ...new Set(
+        watchlistPairs.flatMap((p: string) => {
+          const parts = p.split("/");
+          return parts.length === 2 ? parts : [p.replace("/USDT", "").replace("/USD", "")];
+        }),
+      ),
+    ];
 
     return `You are Vixor's **News Analyst** agent — a fundamental analysis expert who connects macro events to trading decisions.
 
@@ -382,30 +391,84 @@ export function autoSelectAgent(message: string): AgentId {
 
   // Risk Manager keywords
   const riskKeywords = [
-    "risk", "position size", "lot size", "stop loss", "sl", "exposure",
-    "risk-reward", "r:r", "rr ratio", "drawdown", "margin", "leverage",
-    "how much should i", "can i afford", "overexposed", "correlation",
-    "portfolio risk", "capital", "account size", "risk management",
-    "حجم الصفقة", "مخاطرة", "وقف خسارة",
+    "risk",
+    "position size",
+    "lot size",
+    "stop loss",
+    "sl",
+    "exposure",
+    "risk-reward",
+    "r:r",
+    "rr ratio",
+    "drawdown",
+    "margin",
+    "leverage",
+    "how much should i",
+    "can i afford",
+    "overexposed",
+    "correlation",
+    "portfolio risk",
+    "capital",
+    "account size",
+    "risk management",
+    "حجم الصفقة",
+    "مخاطرة",
+    "وقف خسارة",
   ];
   if (riskKeywords.some((kw) => lower.includes(kw))) return "risk_manager";
 
   // News Analyst keywords
   const newsKeywords = [
-    "news", "fundamental", "economic", "cpi", "nfp", "fomc", "fed",
-    "ecb", "boe", "boj", "interest rate", "central bank", "geopolitical",
-    "sentiment", "risk-on", "risk-off", "calendar", "event", "gdp",
-    "inflation", "employment", "policy", "election",
-    "أخبار", "اقتصادي", "بنك مركزي",
+    "news",
+    "fundamental",
+    "economic",
+    "cpi",
+    "nfp",
+    "fomc",
+    "fed",
+    "ecb",
+    "boe",
+    "boj",
+    "interest rate",
+    "central bank",
+    "geopolitical",
+    "sentiment",
+    "risk-on",
+    "risk-off",
+    "calendar",
+    "event",
+    "gdp",
+    "inflation",
+    "employment",
+    "policy",
+    "election",
+    "أخبار",
+    "اقتصادي",
+    "بنك مركزي",
   ];
   if (newsKeywords.some((kw) => lower.includes(kw))) return "news_analyst";
 
   // Strategy Builder keywords
   const strategyKeywords = [
-    "routine", "plan", "strategy", "checklist", "daily routine", "schedule",
-    "discipline", "psychology", "backtest", "rules", "trading plan",
-    "improve", "habit", "journal", "review", "performance",
-    "روتين", "خطة", "استراتيجية",
+    "routine",
+    "plan",
+    "strategy",
+    "checklist",
+    "daily routine",
+    "schedule",
+    "discipline",
+    "psychology",
+    "backtest",
+    "rules",
+    "trading plan",
+    "improve",
+    "habit",
+    "journal",
+    "review",
+    "performance",
+    "روتين",
+    "خطة",
+    "استراتيجية",
   ];
   if (strategyKeywords.some((kw) => lower.includes(kw))) return "strategy_builder";
 

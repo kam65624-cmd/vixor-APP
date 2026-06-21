@@ -218,9 +218,7 @@ export async function getWalletSessions(userId: string): Promise<WalletSession[]
 
 /**
  * Verify a wallet signature against a message.
- * Uses @solana/web3.js for Solana and a simple hex verification stub for EVM.
- *
- * For EVM, production implementation should use viem's verifyMessage().
+ * Uses @solana/web3.js for Solana and viem's recoverMessageAddress for EVM.
  *
  * @param address - The signer's wallet address
  * @param message - The message that was signed
@@ -269,22 +267,29 @@ async function verifySolanaSignature(
 }
 
 /**
- * Verify an EVM wallet signature.
- * In production, this should use viem's recoverMessageAddress().
- * For now, we use a simplified implementation.
+ * Verify an EVM wallet signature using viem's recoverMessageAddress.
+ * Uses a dynamic import to keep viem lazily loaded (same pattern as Solana verification).
  */
 async function verifyEvmSignature(
-  _address: string,
-  _message: string,
-  _signature: string,
+  address: string,
+  message: string,
+  signature: string,
 ): Promise<boolean> {
-  // TODO: Production — use viem recoverMessageAddress
-  // const recovered = await recoverMessageAddress({ message, signature });
-  // return recovered.toLowerCase() === address.toLowerCase();
+  try {
+    const { recoverMessageAddress } = await import("viem");
 
-  // Stub for initial implementation — will be replaced when viem is fully integrated
-  console.warn("[Wallet] EVM signature verification not yet fully implemented — using stub");
-  return true;
+    // Ensure signature has 0x prefix — viem requires hex-prefixed values
+    const normalizedSignature = signature.startsWith("0x") ? signature : `0x${signature}`;
+
+    const recovered = await recoverMessageAddress({
+      message,
+      signature: normalizedSignature as `0x${string}`,
+    });
+
+    return recovered.toLowerCase() === address.toLowerCase();
+  } catch {
+    return false;
+  }
 }
 
 /**

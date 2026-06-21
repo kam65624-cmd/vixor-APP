@@ -13,10 +13,7 @@ import { supabaseAdmin } from "@/shared/supabase/client.server";
 import { AssetRegistry } from "@/shared/asset-registry";
 import { runBacktest } from "./engine";
 import type { Candle, CompiledStrategy } from "./engine/types";
-import {
-  fetchBinanceKlines,
-  fetchTwelveDataKlines,
-} from "@/domains/market/server/price-fetcher";
+import { fetchBinanceKlines, fetchTwelveDataKlines } from "@/domains/market/server/price-fetcher";
 
 // ============================================================================
 // Indicator Helpers
@@ -25,11 +22,7 @@ import {
 
 /** Simple Moving Average over the last `period` closes in `bars`.
  *  `offset` = 0 → current bar, 1 → one bar back, etc. */
-function sma(
-  bars: readonly Candle[],
-  period: number,
-  offset: number = 0,
-): number {
+function sma(bars: readonly Candle[], period: number, offset: number = 0): number {
   const endIdx = bars.length - 1 - offset;
   const startIdx = endIdx - period + 1;
   if (startIdx < 0 || bars.length === 0) return 0;
@@ -39,11 +32,7 @@ function sma(
 }
 
 /** Relative Strength Index (Wilder's smoothing). */
-function rsi(
-  bars: readonly Candle[],
-  period: number = 14,
-  offset: number = 0,
-): number {
+function rsi(bars: readonly Candle[], period: number = 14, offset: number = 0): number {
   const effectiveLen = bars.length - offset;
   if (effectiveLen < period + 1) return 50;
   let avgGain = 0;
@@ -332,11 +321,7 @@ function klinesToCandles(
 }
 
 /** Filter candles to a date range (inclusive). Times are in ms. */
-function filterByDateRange(
-  candles: Candle[],
-  startDate?: string,
-  endDate?: string,
-): Candle[] {
+function filterByDateRange(candles: Candle[], startDate?: string, endDate?: string): Candle[] {
   if (!startDate && !endDate) return candles;
   const startMs = startDate ? new Date(startDate).getTime() : 0;
   const endMs = endDate
@@ -369,15 +354,25 @@ async function fetchOHLCV(
     try {
       klines = await fetchBinanceKlines(pair, timeframe, Math.min(limit, 1000));
     } catch (err) {
-      console.error(`[Backtest] Binance fetch error for ${pair}:`, err instanceof Error ? err.message : String(err));
-      throw new Error(`Failed to fetch market data for ${pair}. The exchange API may be temporarily unavailable. Please try again in a moment.`);
+      console.error(
+        `[Backtest] Binance fetch error for ${pair}:`,
+        err instanceof Error ? err.message : String(err),
+      );
+      throw new Error(
+        `Failed to fetch market data for ${pair}. The exchange API may be temporarily unavailable. Please try again in a moment.`,
+      );
     }
   } else {
     try {
       klines = await fetchTwelveDataKlines(pair, timeframe, Math.min(limit, 1000));
     } catch (err) {
-      console.error(`[Backtest] TwelveData fetch error for ${pair}:`, err instanceof Error ? err.message : String(err));
-      throw new Error(`Failed to fetch market data for ${pair}. The data provider may be temporarily unavailable. Please try again.`);
+      console.error(
+        `[Backtest] TwelveData fetch error for ${pair}:`,
+        err instanceof Error ? err.message : String(err),
+      );
+      throw new Error(
+        `Failed to fetch market data for ${pair}. The data provider may be temporarily unavailable. Please try again.`,
+      );
     }
   }
 
@@ -437,15 +432,18 @@ export const runBacktestServer = createServerFn({ method: "POST" })
       .maybeSingle();
     const currentBalance = (balBefore as { balance: number } | null)?.balance ?? 0;
     if (currentBalance < BACKTEST_POINT_COST) {
-      throw new Error(
-        `INSUFFICIENT_POINTS:${BACKTEST_POINT_COST}:${currentBalance}`,
-      );
+      throw new Error(`INSUFFICIENT_POINTS:${BACKTEST_POINT_COST}:${currentBalance}`);
     }
     const { error: spendErr } = await supabaseAdmin.rpc("spend_points", {
       _user: userId,
       _amount: BACKTEST_POINT_COST,
       _reason: "analysis_cost",
-      _meta: { action: "backtest", pair: data.pair, timeframe: data.timeframe, strategy: data.strategyPreset },
+      _meta: {
+        action: "backtest",
+        pair: data.pair,
+        timeframe: data.timeframe,
+        strategy: data.strategyPreset,
+      },
     });
     if (spendErr) {
       console.error(`[Backtest] Failed to spend points for ${userId}:`, spendErr.message);
@@ -523,9 +521,7 @@ export const runBacktestServer = createServerFn({ method: "POST" })
 export const getBacktestHistory = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
-    z
-      .object({ limit: z.number().min(1).max(100).default(20) })
-      .parse(d ?? {}),
+    z.object({ limit: z.number().min(1).max(100).default(20) }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     // TODO: Persist results to `backtest_results` table, then query:

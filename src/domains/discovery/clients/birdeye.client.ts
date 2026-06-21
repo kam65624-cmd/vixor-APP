@@ -73,7 +73,7 @@ async function birdeyeRequest<T>(
     const response = await fetch(url.toString(), {
       headers: {
         "X-API-KEY": apiKey,
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       signal: AbortSignal.timeout(10_000),
     });

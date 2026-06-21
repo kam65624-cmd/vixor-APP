@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import {
   type Language,
   translate,
@@ -98,8 +91,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const config = getLanguageConfig(lang);
 
   const t = useCallback(
-    (key: string, params?: Record<string, string | number>) =>
-      translate(lang, key, params),
+    (key: string, params?: Record<string, string | number>) => translate(lang, key, params),
     [lang],
   );
 
