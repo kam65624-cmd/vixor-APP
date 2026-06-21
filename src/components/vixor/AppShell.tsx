@@ -17,13 +17,6 @@ const OnboardingModal = lazy(() =>
   import("./OnboardingModal").then((m) => ({ default: m.OnboardingModal })),
 );
 
-// Lazy-load WorkspaceSwitcher — Web3 terminal deps are only needed when user interacts
-const WorkspaceSwitcher = lazy(() =>
-  import("@/experience/components/WorkspaceSwitcher").then((m) => ({
-    default: m.WorkspaceSwitcher,
-  })),
-);
-
 const tabs = [
   { to: "/", label: "Home", icon: Home, match: (p: string) => p === "/" },
   {
@@ -124,11 +117,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Layout: full-width header, content max-w-7xl (1280px) centered.
           Mobile: bottom nav, no sidebar. Desktop (lg+): left sidebar rail
           + content + bottom nav hidden. Tablet uses content max-w-5xl. */}
-      <div className="flex-1 flex w-full pt-14">
+      <div className="flex-1 flex w-full" style={{ paddingTop: "calc(3.5rem + env(safe-area-inset-top, 0px))" }}>
         <DesktopSidebar path={path} tabs={tabs} />
         <main
-          className="flex-1 mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-28 lg:pb-12"
-          style={{ paddingBottom: "max(7rem, calc(7rem + env(safe-area-inset-bottom, 0px)))" }}
+          className="flex-1 mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-7xl px-4 sm:px-6 lg:px-8 lg:pl-20 pt-6 pb-28 lg:pb-12"
+          style={{ paddingBottom: "max(5rem, calc(5rem + env(safe-area-inset-bottom, 0px)))" }}
         >
           {children}
         </main>
@@ -247,8 +240,8 @@ const Header = memo(function Header() {
         // always sits at the visible top of the viewport.
       }}
     >
-      {/* Full-width header — content max-w-7xl + sidebar offset on desktop */}
-      <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-7xl px-4 sm:px-6 lg:px-8 lg:pl-24">
+      {/* Full-width header — no max-w constraint */}
+      <div className="w-full px-4 sm:px-6 lg:px-8 lg:pl-20">
         <div className="h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="size-8 rounded-xl gradient-primary flex items-center justify-center glow-primary group-hover:scale-105 transition-transform">
@@ -268,9 +261,6 @@ const Header = memo(function Header() {
             </div>
             <span className="font-bold tracking-tight text-lg">Vixor</span>
           </Link>
-          <Suspense fallback={null}>
-            <WorkspaceSwitcher />
-          </Suspense>
           <div className="flex items-center gap-2">
             <Suspense fallback={null}>
               <WalletConnectButton />

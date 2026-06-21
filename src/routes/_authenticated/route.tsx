@@ -1,5 +1,50 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useLocation } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { getSupabaseOrNull } from "@/shared/supabase/client";
+import { getStyleTokens } from "@/experience/styles";
+import type { WorkspaceStyle } from "@/experience/styles";
+
+/** Routes that should auto-apply the terminal (bullx) style */
+const WEB3_TERMINAL_ROUTES = [
+  "/discover",
+  "/token/",
+  "/communities",
+  "/wallet-web3",
+  "/activity-web3",
+] as const;
+
+function isWeb3TerminalRoute(pathname: string): boolean {
+  return WEB3_TERMINAL_ROUTES.some((route) => pathname.startsWith(route));
+}
+
+/**
+ * Auto-detects workspace style based on the current route.
+ * Web3 terminal routes get "bullx" style; everything else gets "os" style.
+ * Applies CSS vars and class to <html> root, matching the logic from WorkspaceSwitcher.
+ */
+function WorkspaceAutoDetector() {
+  const location = useLocation();
+  const prevStyle = useRef<WorkspaceStyle | null>(null);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const style: WorkspaceStyle = isWeb3TerminalRoute(location.pathname) ? "bullx" : "os";
+    if (style === prevStyle.current) return;
+    prevStyle.current = style;
+
+    const root = document.documentElement;
+    const tokens = getStyleTokens(style);
+
+    Object.entries(tokens.cssVars).forEach(([key, value]) => {
+      root.style.setProperty(key, value as string);
+    });
+
+    root.classList.remove("ws-bullx", "ws-axiom", "ws-opensea", "ws-os");
+    root.classList.add(`ws-${style}`);
+  }, [location.pathname]);
+
+  return null;
+}
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -54,5 +99,10 @@ export const Route = createFileRoute("/_authenticated")({
       throw err;
     }
   },
-  component: () => <Outlet />,
+  component: () => (
+    <>
+      <WorkspaceAutoDetector />
+      <Outlet />
+    </>
+  ),
 });
