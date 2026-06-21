@@ -54,6 +54,8 @@ export default defineConfig({
         { route: "/api/copilot-stream", handler: "./server/api/copilot-stream.ts" },
         { route: "/api/discover", handler: "./server/api/discover.ts" },
         { route: "/api/discover/scan", handler: "./server/api/discover/scan.ts" },
+        { route: "/api/sol-price", handler: "./server/api/sol-price.ts" },
+        { route: "/api/dexscreener", handler: "./server/api/dexscreener.ts" },
       ],
     }),
     viteReact(),

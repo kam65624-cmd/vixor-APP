@@ -141,6 +141,7 @@ const TIME_FRAMES = ["1m", "5m", "30m", "1h"] as const;
 
 function DiscoverPage() {
   const [search, setSearch] = useState("");
+  const [chain, setChain] = useState("Solana");
   const [activeTab, setActiveTab] = useState<string>("Trending");
   const [timeFrame, setTimeFrame] = useState<string>("5m");
   const [sortBy, setSortBy] = useState("volume");
@@ -149,19 +150,28 @@ function DiscoverPage() {
   const [showLobby, setShowLobby] = useState(true);
 
   const { data: tokens, isLoading } = useQuery<DiscoverToken[]>({
-    queryKey: ["discover-tokens"],
+    queryKey: ["discover-tokens", chain, sortBy, search],
     queryFn: async () => {
       try {
-        const res = await fetch("/api/discover");
+        // Primary: DexScreener (free, real-time Solana data)
+        const params = new URLSearchParams({ chain: chain.toLowerCase(), sortBy, limit: "100" });
+        if (search.trim()) params.set("search", search.trim());
+        const res = await fetch(`/api/dexscreener?${params}`);
         const json = await res.json();
-        if (json && Array.isArray(json.data)) return json.data as DiscoverToken[];
-        if (Array.isArray(json)) return json as DiscoverToken[];
+        if (json?.success && Array.isArray(json.data) && json.data.length > 0) {
+          return json.data as DiscoverToken[];
+        }
+        // Fallback: Discovery pipeline
+        const res2 = await fetch("/api/discover");
+        const json2 = await res2.json();
+        if (json2 && Array.isArray(json2.data)) return json2.data as DiscoverToken[];
+        if (Array.isArray(json2)) return json2 as DiscoverToken[];
         return MOCK_TOKENS;
       } catch {
         return MOCK_TOKENS;
       }
     },
-    refetchInterval: 30000,
+    refetchInterval: 60000,
   });
 
   const filteredTokens = (() => {

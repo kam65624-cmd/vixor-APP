@@ -1,21 +1,21 @@
 ---
-Task ID: 2
+Task ID: 3
 Agent: Super Z (Main)
-Task: Complete Axiom.trade transformation — ALL pages, fix errors, deploy
+Task: Phase 7 — Real data integration (SOL price + DexScreener)
 
 Work Log:
-- Transformed Portfolio page to Axiom style with correct Trade/TradeStats/EquityCurvePoint types
-- Copilot page kept original (1693 lines) — send works via streaming + non-streaming fallback
-- Transformed 18 remaining pages via subagent: charts, signals, analyze, backtest, experiments, settings, journal, trade-desk, daily-loop, notifications, premium, referral, profile, communities, activity-web3, wallet-web3, arbitrage, token.$symbol
-- Updated WorkspaceAutoDetector with all 17 new terminal routes
-- Fixed activity-web3.tsx: 4 unquoted hex colors (#22C55E → "#22C55E")
-- Fixed wallet-web3.tsx: 2 unquoted hex colors
-- Fixed portfolio.tsx: type mismatches (snake_case property names, paginated response extraction)
-- 0 TypeScript errors, clean build, deployed to Vercel
+- Created `/server/api/sol-price.ts` — fetches SOL/USDT from Binance (free, no API key), 30s cache
+- Added `useSolPrice()` hook to AppShell — real-time SOL price + 24h change
+- Updated TopNav: real SOL price with dynamic color (green/red)
+- Updated BottomBar: real SOL price with GLOBAL label
+- Created `/server/api/dexscreener.ts` — fetches real Solana tokens from DexScreener (free)
+- Updated Discover page: primary source is DexScreener, fallback to /api/discover, ultimate fallback to mock data
+- Added chain state to Discover page for proper DexScreener chain filtering
+- Registered both API handlers in vite.config.ts
+- 0 TypeScript errors, clean build, deployed
 
 Stage Summary:
-- ALL 30+ pages now match Axiom.trade dark terminal aesthetic
+- SOL price is now REAL — fetched from Binance every 30 seconds
+- Discover tokens come from DexScreener (real Solana new pairs/trending)
+- Both endpoints degrade gracefully — fallback to mock data if APIs fail
 - Deployed to: https://my-project-ten-sepia-79.vercel.app
-- Complete navigation: Top bar (9 links) + Bottom bar (10 icons)
-- New pages: Pulse, Alpha, Whale, PnL, Bags, Trackers, Perpetuals, Predictions, Yield, Vision, Rewards, Curves
-- Full-width layout, no sidebar on desktop — matches Axiom SPA experience

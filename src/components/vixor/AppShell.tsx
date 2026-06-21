@@ -1,7 +1,41 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { lazy, Suspense, useEffect, useRef, useState, useCallback, memo } from "react";
+
 import { getTelegramInitData } from "@/shared/telegram";
+
+// ── SOL Price Hook — fetches from Binance via /api/sol-price ──
+function useSolPrice() {
+  const [price, setPrice] = useState<number | null>(null);
+  const [change, setChange] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let cancelled = false;
+
+    const fetchPrice = async () => {
+      try {
+        const res = await fetch("/api/sol-price");
+        const data = await res.json();
+        if (!cancelled) {
+          setPrice(data.price);
+          setChange(data.change24h);
+        }
+      } catch {
+        // Silently fail — keep last known price
+      }
+    };
+
+    fetchPrice();
+    const interval = setInterval(fetchPrice, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  return { price, change };
+}
 import { useRenderGuard } from "@/shared/hooks/use-render-guard";
 
 // Lazy-load wallet connect button (Web3 deps are large — load only when needed)
@@ -51,6 +85,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const path = location.pathname;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedChain, setSelectedChain] = useState("Solana");
+  const sol = useSolPrice();
 
   const signedIn = path !== "/auth";
 
@@ -99,7 +134,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#0A0E1A", color: "#F0F4FC" }}>
       {/* ── Axiom-Style Top Navigation Bar ── */}
-      <TopNav selectedChain={selectedChain} onChainChange={setSelectedChain} />
+      <TopNav selectedChain={selectedChain} onChainChange={setSelectedChain} solPrice={sol.price} solChange={sol.change} />
 
       {/* ── Main Content ── */}
       <main className="flex-1 overflow-auto" style={{ paddingTop: "40px", paddingBottom: "52px" }}>
@@ -107,7 +142,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </main>
 
       {/* ── Axiom-Style Bottom Navigation Bar ── */}
-      <BottomBar />
+      <BottomBar solPrice={sol.price} solChange={sol.change} />
 
       {showOnboarding && (
         <Suspense fallback={null}>
@@ -125,9 +160,11 @@ export function AppShell({ children }: { children: ReactNode }) {
 interface TopNavProps {
   selectedChain: string;
   onChainChange: (chain: string) => void;
+  solPrice?: number | null;
+  solChange?: number | null;
 }
 
-const TopNav = memo(function TopNav({ selectedChain, onChainChange }: TopNavProps) {
+const TopNav = memo(function TopNav({ selectedChain, onChainChange, solPrice, solChange }: TopNavProps) {
   const location = useLocation();
   const path = location.pathname;
 
@@ -210,9 +247,9 @@ const TopNav = memo(function TopNav({ selectedChain, onChainChange }: TopNavProp
           {/* SOL Global Price */}
           <div
             className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold"
-            style={{ color: "#22C55E" }}
+            style={{ color: (solChange ?? 0) >= 0 ? "#22C55E" : "#EF4444" }}
           >
-            SOL 73.6
+            SOL {solPrice ? `$${solPrice.toFixed(2)}` : "..."}{solChange != null ? ` ${(solChange >= 0 ? "+" : "")}${solChange.toFixed(1)}%` : ""}
           </div>
 
           {/* Deposit Button */}
@@ -282,7 +319,12 @@ const TopNav = memo(function TopNav({ selectedChain, onChainChange }: TopNavProp
 // BOTTOM BAR — Axiom-style with crypto icons + SOL global price + social links
 // ───────────────────────────────────────────────────────────────────────────
 
-const BottomBar = memo(function BottomBar() {
+interface BottomBarProps {
+  solPrice?: number | null;
+  solChange?: number | null;
+}
+
+const BottomBar = memo(function BottomBar({ solPrice, solChange }: BottomBarProps) {
   const location = useLocation();
   const path = location.pathname;
 
@@ -342,8 +384,8 @@ const BottomBar = memo(function BottomBar() {
         className="hidden md:flex items-center gap-2 pl-2"
         style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", marginLeft: "4px", paddingLeft: "8px" }}
       >
-        <span className="text-[10px] font-mono font-bold" style={{ color: "#22C55E" }}>
-          SOL 73.6 GLOBAL
+        <span className="text-[10px] font-mono font-bold" style={{ color: (solChange ?? 0) >= 0 ? "#22C55E" : "#EF4444" }}>
+          SOL {solPrice ? `$${solPrice.toFixed(2)}` : "..."} GLOBAL
         </span>
         <a href="#" className="text-[10px]" style={{ color: "#7B8BA8", textDecoration: "none" }}>
           Discord
