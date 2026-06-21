@@ -1,49 +1,23 @@
 ---
 Task ID: 1
-Agent: Main Agent
-Task: Phase C.1 Complete — Wire AI Agents to Server Functions + UI Integration
+Agent: Super Z (Main)
+Task: Transform Vixor into Axiom.trade-style Solana meme coin trading terminal
 
 Work Log:
-- Audited existing Phase C.1 agent implementations (Coach, Analyst, Governor, Hunter)
-- Identified all 4 agents were orphaned (no server functions or UI wiring)
-- Created 6 server functions: coachTrade, assessRisk, scoreOpportunity, generateWeeklyReport, submitDecisionFeedback, getRecentDecisions
-- Created 4 UI components: CoachOverlay, GovernorRiskPanel, HunterScoreCard, AnalystReportPanel
-- Integrated Coach + Governor into Trade Desk page (AI Coach + Risk Check buttons)
-- Integrated Hunter Score Card into Discover page (Hunter button on each token card)
-- Integrated Analyst Report into Daily Loop page
-- Added 44 new tests (Governor: 22, Hunter: 12, Analyst: 10)
-- Fixed duplicate type imports in functions.ts
-- Fixed Analyst agent trade count query (daily_signals table structure)
-- All 248 tests passing, 0 TypeScript errors
-- Pushed to GitHub: commit 91877cc
-- Deployed to Vercel: https://my-project-ten-sepia-79.vercel.app
+- Analyzed Axiom.trade UI/UX from user's detailed breakdown
+- Read entire Vixor project structure (25 routes, 20 domains, 47 shadcn components)
+- Transformed AppShell.tsx: New top navbar with chain selector, SOL price, Deposit, wallet connect, user avatar, notifications; New bottom bar with 10 crypto icons (Wallet, Social, Discover, Pulse, PnL, Alpha, Whale, Pump, VCurve, Bags)
+- Transformed Discover page: Multi-pane terminal layout with TradingView chart area, token tabs (Top/Trending/Surge/DEX Screener/Pump Live), time frames (1m/5m/30m/1h), dense token table with all Axiom columns, social lobby with chat/friends
+- Created 11 new route pages: pulse.tsx, alpha.tsx, whale.tsx, pnl.tsx, bags.tsx, trackers.tsx, perpetuals.tsx, predictions.tsx, yield.tsx, vision.tsx, rewards.tsx, curves.tsx
+- Transformed Home page into Axiom-style 3-column dashboard with market stats ticker, top movers, trending news, live signals, quick actions, portfolio summary
+- All new pages match Axiom's dark terminal aesthetic (#0A0E1A bg, #111827 cards, #3B82F6 accent)
+- Fixed TypeScript errors: Type narrowing for new routes, alpha page typo
+- Built successfully (0 TS errors), deployed to Vercel
 
 Stage Summary:
-- Phase C.1 is now fully wired and functional
-- All 4 AI agents have server functions, UI components, and are integrated into the app
-- Users can now get real-time coaching, risk assessment, smart money scoring, and behavioral reports
-- Production deployed and live
-
----
-Task ID: 2
-Agent: Main Agent
-Task: Phase 1 — Fix Critical Page Crashes and UX Issues
-
-Work Log:
-- Reviewed entire codebase: 26 routes, 14 Vixor components, 142 domain files
-- Fixed Discover Page TypeError "v is not iterable" — API returns {data:[]} not [], now correctly extracts array
-- Fixed Copilot streaming auth — improved token retrieval from Supabase cookies (multiple patterns)
-- Added missing i18n key: settings.selectLanguage in both en.ts and ar.ts
-- Created public/favicon.ico for proper browser tab icon
-- Verified Auth Email errors are already handled gracefully (shows "Email sign-in is not available")
-- Verified OnboardingModal already uses localStorage correctly (one-time show via vixor-onboarded key)
-- Verified all profile sub-pages exist and work (journal, trade-desk, referral, premium, settings, notifications)
-- Verified Experiments "New Experiment" button works (toggles form, validates points)
-- All 248 tests passing, 0 TypeScript errors, Vite build successful (13.93s)
-- Committed 8175533, pushed to GitHub, Vercel auto-deploys
-
-Stage Summary:
-- Critical Discover page crash fixed (root cause: API response shape mismatch)
-- Copilot streaming auth improved for reliability
-- i18n gap filled, favicon added
-- All user-reported issues verified: auth email gracefully handled, onboarding one-time, profile links work
+- Deployed to: https://my-project-ten-sepia-79.vercel.app
+- 11 new pages created, 3 pages transformed (AppShell, Discover, Home)
+- Full Axiom.trade-style navigation: top bar + bottom bar
+- Multi-pane Discover with social lobby
+- Dense token table with on-chain metrics, Buy/Quick buttons
+- All pages follow dark terminal design system

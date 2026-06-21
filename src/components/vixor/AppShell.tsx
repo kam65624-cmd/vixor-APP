@@ -1,5 +1,4 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Compass, Plus, Brain, Briefcase, Bell, User, FlaskConical, Dna } from "lucide-react";
 import type { ReactNode } from "react";
 import { lazy, Suspense, useEffect, useRef, useState, useCallback, memo } from "react";
 import { getTelegramInitData } from "@/shared/telegram";
@@ -17,49 +16,33 @@ const OnboardingModal = lazy(() =>
   import("./OnboardingModal").then((m) => ({ default: m.OnboardingModal })),
 );
 
-const tabs = [
-  { to: "/", label: "Home", icon: Home, match: (p: string) => p === "/" },
-  {
-    to: "/discover",
-    label: "Discover",
-    icon: Compass,
-    match: (p: string) => p.startsWith("/discover") || p.startsWith("/charts"),
-  },
-  {
-    to: "/analyze",
-    label: "Analyze",
-    icon: Plus,
-    match: (p: string) => p.startsWith("/analyze") || p.startsWith("/analysis"),
-  },
-  {
-    to: "/backtest",
-    label: "Backtest",
-    icon: FlaskConical,
-    match: (p: string) => p.startsWith("/backtest"),
-  },
-  {
-    to: "/experiments",
-    label: "Experiments",
-    icon: Dna,
-    match: (p: string) => p.startsWith("/experiments"),
-  },
-  { to: "/copilot", label: "Copilot", icon: Brain, match: (p: string) => p.startsWith("/copilot") },
-  {
-    to: "/portfolio",
-    label: "Portfolio",
-    icon: Briefcase,
-    match: (p: string) =>
-      p.startsWith("/portfolio") ||
-      p.startsWith("/journal") ||
-      p.startsWith("/trade-desk") ||
-      p.startsWith("/signals") ||
-      p.startsWith("/daily-loop") ||
-      p.startsWith("/notifications") ||
-      p.startsWith("/settings") ||
-      p.startsWith("/profile") ||
-      p.startsWith("/premium") ||
-      p.startsWith("/referral"),
-  },
+// ── Axiom-style Navigation — Top Bar + Bottom Bar ──
+// Top bar: Discover, Pulse, Trackers, Perpetuals, Predictions, Yield, Vision, Portfolio, Rewards
+// Bottom bar: Wallet, Social, Discover, Pulse, PnL, Alpha, Whale, Pump, Virtual Curve, Bags
+
+const topNavItems = [
+  { to: "/discover", label: "Discover", icon: "🔍" },
+  { to: "/pulse", label: "Pulse", icon: "💓" },
+  { to: "/trackers", label: "Trackers", icon: "📊" },
+  { to: "/perpetuals", label: "Perpetuals", icon: "♾️" },
+  { to: "/predictions", label: "Predictions", icon: "🎯" },
+  { to: "/yield", label: "Yield", icon: "🌾" },
+  { to: "/vision", label: "Vision", icon: "👁️" },
+  { to: "/portfolio", label: "Portfolio", icon: "💼" },
+  { to: "/rewards", label: "Rewards", icon: "🏆" },
+] as const;
+
+const bottomNavItems = [
+  { to: "/wallet-web3", label: "Wallet", icon: "👛" },
+  { to: "/communities", label: "Social", icon: "👥" },
+  { to: "/discover", label: "Discover", icon: "🔍" },
+  { to: "/pulse", label: "Pulse", icon: "💓" },
+  { to: "/pnl", label: "PnL", icon: "📈" },
+  { to: "/alpha", label: "Alpha", icon: "⚡" },
+  { to: "/whale", label: "Whale", icon: "🐋" },
+  { to: "/discover", label: "Pump", icon: "🚀" },
+  { to: "/curves", label: "VCurve", icon: "📈" },
+  { to: "/bags", label: "Bags", icon: "🎒" },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -67,20 +50,19 @@ export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const path = location.pathname;
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedChain, setSelectedChain] = useState("Solana");
 
   const signedIn = path !== "/auth";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (signedIn && !localStorage.getItem("vixor-onboarded")) {
-      // Delay onboarding so it doesn't clash with first paint / auth bootstrap
       const t = setTimeout(() => setShowOnboarding(true), 1200);
       return () => clearTimeout(t);
     }
   }, [signedIn]);
 
   const telegramLinkedRef = useRef(false);
-  // P0: Dynamic imports for Telegram linking — avoids pulling supabase + barrel into root chunk
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!signedIn || telegramLinkedRef.current) return;
@@ -91,7 +73,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     const initData = getTelegramInitData();
     if (initData) {
       telegramLinkedRef.current = true;
-      // Dynamic import: pulls linkTelegramAccount only when needed, not at page load
       import("@/domains/user/functions").then(({ linkTelegramAccount }) =>
         linkTelegramAccount({ data: { initData } })
           .then(() => {
@@ -116,21 +97,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Header />
-      {/* Layout: full-width header, content max-w-7xl (1280px) centered.
-          Mobile: bottom nav, no sidebar. Desktop (lg+): left sidebar rail
-          + content + bottom nav hidden. Tablet uses content max-w-5xl. */}
-      <div className="flex-1 flex w-full" style={{ paddingTop: "calc(3.5rem + env(safe-area-inset-top, 0px))" }}>
-        <DesktopSidebar path={path} tabs={tabs} />
-        <main
-          className="flex-1 mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-7xl px-4 sm:px-6 lg:px-8 lg:pl-20 pt-6 pb-28 lg:pb-12"
-          style={{ paddingBottom: "max(5rem, calc(5rem + env(safe-area-inset-bottom, 0px)))" }}
-        >
-          {children}
-        </main>
-      </div>
-      <BottomNav path={path} tabs={tabs} />
+    <div className="min-h-screen flex flex-col" style={{ background: "#0A0E1A", color: "#F0F4FC" }}>
+      {/* ── Axiom-Style Top Navigation Bar ── */}
+      <TopNav selectedChain={selectedChain} onChainChange={setSelectedChain} />
+
+      {/* ── Main Content ── */}
+      <main className="flex-1 overflow-auto" style={{ paddingTop: "40px", paddingBottom: "52px" }}>
+        {children}
+      </main>
+
+      {/* ── Axiom-Style Bottom Navigation Bar ── */}
+      <BottomBar />
 
       {showOnboarding && (
         <Suspense fallback={null}>
@@ -142,163 +119,159 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 // ───────────────────────────────────────────────────────────────────────────
-// DESKTOP SIDEBAR RAIL — fixed left rail with icons (lg+ only)
+// TOP NAV BAR — Axiom-style with chain selector, nav links, wallet, deposit
 // ───────────────────────────────────────────────────────────────────────────
-// Solves the "pages not smoothly connected" complaint on desktop — replaces
-// the floating bottom nav (which was awkward on desktop) with a proper
-// desktop sidebar like Bloomberg Terminal / TradingView.
-interface SidebarProps {
-  path: string;
-  tabs: readonly {
-    to: string;
-    label: string;
-    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-    match: (p: string) => boolean;
-  }[];
+
+interface TopNavProps {
+  selectedChain: string;
+  onChainChange: (chain: string) => void;
 }
 
-const DesktopSidebar = memo(function DesktopSidebar({ path, tabs }: SidebarProps) {
-  return (
-    <aside className="hidden lg:flex flex-col fixed left-0 top-14 bottom-0 w-16 border-r border-border bg-card/50 backdrop-blur-sm z-30">
-      <nav className="flex-1 flex flex-col items-center gap-2 py-6">
-        {tabs.map((t) => {
-          const active = t.match(path);
-          const Icon = t.icon;
-          const isAnalyze = t.label === "Analyze";
-          return (
-            <Link
-              key={t.to}
-              to={t.to}
-              className={`group relative flex flex-col items-center justify-center size-12 rounded-2xl transition-all duration-200 ${
-                active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-card-hover hover:text-foreground"
-              }`}
-              aria-label={t.label}
-              aria-current={active ? "page" : undefined}
-              title={t.label}
-            >
-              {isAnalyze ? (
-                <div
-                  className={`size-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
-                    active
-                      ? "gradient-primary glow-primary scale-105"
-                      : "bg-card-hover border border-border group-hover:scale-105"
-                  }`}
-                >
-                  <Icon
-                    className={`size-5 ${active ? "text-primary-foreground" : "text-foreground"}`}
-                    strokeWidth={2.5}
-                  />
-                </div>
-              ) : (
-                <Icon className="size-5" strokeWidth={active ? 2.5 : 2} />
-              )}
-              <span
-                className={`text-[9px] font-bold uppercase tracking-wider mt-1 ${
-                  active ? "text-primary" : ""
-                }`}
-              >
-                {t.label}
-              </span>
-              {active && !isAnalyze && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-primary" />
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-      <div className="flex flex-col items-center gap-2 py-4 border-t border-border">
-        <Link
-          to="/notifications"
-          aria-label="Notifications"
-          className="size-10 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-card-hover hover:text-foreground transition-colors relative"
-          title="Notifications"
-        >
-          <Bell className="size-5" />
-          <span className="absolute top-1 right-1 size-2 rounded-full bg-primary border border-card" />
-        </Link>
-        <Link
-          to="/profile"
-          aria-label="Profile"
-          className="size-10 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-card-hover hover:text-foreground transition-colors"
-          title="Profile"
-        >
-          <User className="size-5" />
-        </Link>
-      </div>
-    </aside>
-  );
-});
+const TopNav = memo(function TopNav({ selectedChain, onChainChange }: TopNavProps) {
+  const location = useLocation();
+  const path = location.pathname;
 
-// ───────────────────────────────────────────────────────────────────────────
-// HEADER — fixed to top, compact, professional
-// ───────────────────────────────────────────────────────────────────────────
-const Header = memo(function Header() {
   return (
     <header
-      className="fixed top-0 inset-x-0 z-40 glass-header"
+      className="fixed top-0 inset-x-0 z-50"
       style={{
-        paddingTop: "max(env(safe-area-inset-top), 0px)",
-        // Telegram WebApp may add header chrome; this ensures our header
-        // always sits at the visible top of the viewport.
+        background: "#0D1117",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        height: "40px",
+        display: "flex",
+        alignItems: "center",
+        padding: "0 12px",
       }}
     >
-      {/* Full-width header — no max-w constraint */}
-      <div className="w-full px-4 sm:px-6 lg:px-8 lg:pl-20">
-        <div className="h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="size-8 rounded-xl gradient-primary flex items-center justify-center glow-primary group-hover:scale-105 transition-transform">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4 text-primary-foreground"
-              >
+      <div className="flex items-center justify-between w-full" style={{ maxWidth: "100%" }}>
+        {/* Left: Logo + Nav Links */}
+        <div className="flex items-center gap-1">
+          {/* Vixor Logo */}
+          <Link to="/" className="flex items-center gap-1.5 mr-3" style={{ textDecoration: "none" }}>
+            <div
+              style={{
+                width: "22px",
+                height: "22px",
+                borderRadius: "6px",
+                background: "linear-gradient(135deg, #3B82F6, #60A5FA)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 3v18h18" />
                 <path d="M7 14l4-4 4 4 5-5" />
               </svg>
             </div>
-            <span className="font-bold tracking-tight text-lg">Vixor</span>
+            <span style={{ fontSize: "13px", fontWeight: 700, color: "#F0F4FC", letterSpacing: "-0.02em" }}>
+              VIXOR
+            </span>
           </Link>
-          <div className="flex items-center gap-2">
-            <Suspense fallback={null}>
-              <WalletConnectButton />
-            </Suspense>
-            <Link
-              to="/notifications"
-              aria-label="Notifications"
-              className="size-9 rounded-full bg-card border border-border flex items-center justify-center relative hover:bg-card-hover transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4 text-muted-foreground"
+
+          {/* Nav Links */}
+          {topNavItems.map((item) => {
+            const isActive = path === item.to || path.startsWith(item.to + "/");
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all"
+                style={{
+                  color: isActive ? "#60A5FA" : "#7B8BA8",
+                  background: isActive ? "rgba(59,130,246,0.1)" : "transparent",
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                }}
               >
-                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-              </svg>
-              <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-primary border-2 border-background" />
-            </Link>
-            <Link
-              to="/profile"
-              aria-label="Profile"
-              className="size-9 rounded-full bg-card border border-border flex items-center justify-center relative hover:bg-card-hover transition-colors overflow-hidden"
-            >
-              <div className="size-full rounded-full bg-gradient-to-tr from-primary/20 to-info/20 flex items-center justify-center">
-                <span className="text-[10px] font-bold text-foreground">ME</span>
-              </div>
-            </Link>
+                <span style={{ fontSize: "11px" }}>{item.icon}</span>
+                <span className="hidden md:inline">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Right: Chain Selector + SOL Price + Deposit + Wallet + User */}
+        <div className="flex items-center gap-2">
+          {/* Chain Selector */}
+          <button
+            onClick={() => onChainChange(selectedChain === "Solana" ? "Ethereum" : "Solana")}
+            className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold"
+            style={{
+              background: "rgba(59,130,246,0.12)",
+              color: "#60A5FA",
+              border: "1px solid rgba(59,130,246,0.2)",
+            }}
+          >
+            <span>◎</span>
+            <span>{selectedChain}</span>
+          </button>
+
+          {/* SOL Global Price */}
+          <div
+            className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold"
+            style={{ color: "#22C55E" }}
+          >
+            SOL 73.6
           </div>
+
+          {/* Deposit Button */}
+          <Link
+            to="/wallet-web3"
+            className="hidden sm:flex items-center gap-1 px-3 py-1 rounded text-[11px] font-bold"
+            style={{
+              background: "linear-gradient(135deg, #3B82F6, #60A5FA)",
+              color: "white",
+              textDecoration: "none",
+            }}
+          >
+            Deposit
+          </Link>
+
+          {/* Wallet Connect */}
+          <Suspense fallback={null}>
+            <WalletConnectButton />
+          </Suspense>
+
+          {/* User Avatar */}
+          <Link
+            to="/profile"
+            className="flex items-center justify-center rounded-full"
+            style={{
+              width: "26px",
+              height: "26px",
+              background: "linear-gradient(135deg, rgba(59,130,246,0.3), rgba(96,165,250,0.2))",
+              border: "1px solid rgba(255,255,255,0.1)",
+              textDecoration: "none",
+            }}
+          >
+            <span style={{ fontSize: "9px", fontWeight: 800, color: "#F0F4FC" }}>ME</span>
+          </Link>
+
+          {/* Notifications */}
+          <Link
+            to="/notifications"
+            className="relative flex items-center justify-center rounded-full"
+            style={{
+              width: "26px",
+              height: "26px",
+              background: "rgba(255,255,255,0.05)",
+              textDecoration: "none",
+            }}
+          >
+            <span style={{ fontSize: "12px" }}>🔔</span>
+            <span
+              className="absolute"
+              style={{
+                top: "2px",
+                right: "2px",
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                background: "#3B82F6",
+              }}
+            />
+          </Link>
         </div>
       </div>
     </header>
@@ -306,81 +279,81 @@ const Header = memo(function Header() {
 });
 
 // ───────────────────────────────────────────────────────────────────────────
-// BOTTOM NAV — fixed to bottom, larger touch targets, clearer active state
+// BOTTOM BAR — Axiom-style with crypto icons + SOL global price + social links
 // ───────────────────────────────────────────────────────────────────────────
-interface BottomNavProps {
-  path: string;
-  tabs: readonly {
-    to: string;
-    label: string;
-    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-    match: (p: string) => boolean;
-  }[];
-}
 
-const BottomNav = memo(function BottomNav({ path, tabs }: BottomNavProps) {
+const BottomBar = memo(function BottomBar() {
+  const location = useLocation();
+  const path = location.pathname;
+
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 pointer-events-none lg:hidden"
-      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0px)" }}
+      className="fixed bottom-0 inset-x-0 z-50"
+      style={{
+        background: "#0D1117",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+        height: "52px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 4px",
+      }}
     >
-      <div className="mx-auto w-full max-w-md sm:max-w-2xl px-3 pb-3 pointer-events-auto">
-        <div className="glass-card rounded-2xl flex items-stretch justify-around h-16 px-1.5 shadow-[var(--shadow-elevated)] relative overflow-hidden">
-          {tabs.map((t) => {
-            const active = t.match(path);
-            const Icon = t.icon;
-            const isAnalyze = t.label === "Analyze";
-            return (
-              <Link
-                key={t.to}
-                to={t.to}
-                className="flex flex-col items-center justify-center gap-1 flex-1 h-full relative z-10 rounded-xl transition-colors"
-                aria-label={t.label}
-                aria-current={active ? "page" : undefined}
+      {/* Bottom Nav Icons */}
+      <div className="flex items-center justify-center flex-1 gap-0.5">
+        {bottomNavItems.map((item) => {
+          const isActive = path === item.to || (item.to === "/discover" && path === "/discover");
+          return (
+            <Link
+              key={item.to + item.label}
+              to={item.to}
+              className="flex flex-col items-center justify-center px-1.5 py-1 rounded-lg transition-all"
+              style={{
+                minWidth: "0",
+                textDecoration: "none",
+              }}
+            >
+              <div
+                className="flex flex-col items-center justify-center"
+                style={{
+                  opacity: isActive ? 1 : 0.5,
+                }}
               >
-                {isAnalyze ? (
-                  <div
-                    className={`size-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
-                      active
-                        ? "gradient-primary glow-primary scale-110 -translate-y-1"
-                        : "bg-card-hover border border-border hover:scale-105"
-                    }`}
-                  >
-                    <Icon
-                      className={`size-6 ${active ? "text-primary-foreground" : "text-foreground"}`}
-                      strokeWidth={2.5}
-                    />
-                  </div>
-                ) : (
-                  <>
-                    <div
-                      className={`flex items-center justify-center transition-all duration-200 ${
-                        active ? "-translate-y-0.5" : ""
-                      }`}
-                    >
-                      <Icon
-                        className={`size-5.5 transition-colors duration-300 ${
-                          active ? "text-primary" : "text-muted-foreground"
-                        }`}
-                        strokeWidth={active ? 2.5 : 2}
-                      />
-                    </div>
-                    <span
-                      className={`text-[9px] font-bold uppercase tracking-wider transition-colors duration-300 ${
-                        active ? "text-primary" : "text-muted-foreground"
-                      }`}
-                    >
-                      {t.label}
-                    </span>
-                    {active && (
-                      <span className="absolute -bottom-0.5 size-1 rounded-full bg-primary" />
-                    )}
-                  </>
-                )}
-              </Link>
-            );
-          })}
-        </div>
+                <span style={{ fontSize: "14px", lineHeight: 1 }}>{item.icon}</span>
+                <span
+                  style={{
+                    fontSize: "8px",
+                    fontWeight: 600,
+                    color: isActive ? "#60A5FA" : "#7B8BA8",
+                    marginTop: "1px",
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {item.label}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Right side: SOL Price + Social Links */}
+      <div
+        className="hidden md:flex items-center gap-2 pl-2"
+        style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", marginLeft: "4px", paddingLeft: "8px" }}
+      >
+        <span className="text-[10px] font-mono font-bold" style={{ color: "#22C55E" }}>
+          SOL 73.6 GLOBAL
+        </span>
+        <a href="#" className="text-[10px]" style={{ color: "#7B8BA8", textDecoration: "none" }}>
+          Discord
+        </a>
+        <a href="#" className="text-[10px]" style={{ color: "#7B8BA8", textDecoration: "none" }}>
+          X
+        </a>
+        <a href="#" className="text-[10px]" style={{ color: "#7B8BA8", textDecoration: "none" }}>
+          Docs
+        </a>
       </div>
     </nav>
   );

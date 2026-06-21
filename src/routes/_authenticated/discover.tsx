@@ -3,21 +3,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Search,
-  TrendingUp,
-  TrendingDown,
-  Droplets,
-  BarChart3,
-  ShieldAlert,
-  ShieldCheck,
-  ShieldX,
   Filter,
-  Flame,
+  ExternalLink,
   ArrowUpDown,
-  Crosshair,
+  RefreshCw,
 } from "lucide-react";
 import { useState, useEffect, useCallback, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { HunterScoreCard } from "@/components/vixor/HunterScoreCard";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -26,142 +18,95 @@ interface DiscoverToken {
   name: string;
   price: number;
   change24h: number;
+  change5m: number;
+  change1h: number;
   volume24h: number;
   liquidity: number;
   smartMoneyPct: number;
+  devWalletPct: number;
+  whaleHoldingsPct: number;
+  txCount24h: number;
   risk: "low" | "medium" | "high";
   chain: string;
   marketCap: number;
+  paid: boolean;
+  pumpfunLink?: string;
+  raydiumLink?: string;
+  twitterLink?: string;
+  communityLink?: string;
+  youtubeLink?: string;
+  counter?: number;
 }
 
-// ── Mock Data ──────────────────────────────────────────────────────────────
+// ── Mock Data — Solana Memecoins ────────────────────────────────────────────
 
 const MOCK_TOKENS: DiscoverToken[] = [
   {
-    symbol: "PEPE",
-    name: "Pepe",
-    price: 0.00001234,
-    change24h: 15.3,
-    volume24h: 89_400_000,
-    liquidity: 120_000_000,
-    smartMoneyPct: 42,
-    risk: "medium",
-    chain: "Ethereum",
-    marketCap: 5_200_000_000,
+    symbol: "WIF", name: "dogwifhat", price: 2.45, change24h: 22.1, change5m: 1.2, change1h: 8.5,
+    volume24h: 340_000_000, liquidity: 180_000_000, smartMoneyPct: 55, devWalletPct: 3, whaleHoldingsPct: 42,
+    txCount24h: 28500, risk: "high", chain: "Solana", marketCap: 2_400_000_000, paid: false, counter: 45,
+    pumpfunLink: "https://pump.fun", raydiumLink: "https://raydium.io", twitterLink: "https://x.com",
   },
   {
-    symbol: "DOGE",
-    name: "Dogecoin",
-    price: 0.1245,
-    change24h: -3.2,
-    volume24h: 1_200_000_000,
-    liquidity: 8_500_000_000,
-    smartMoneyPct: 28,
-    risk: "low",
-    chain: "Ethereum",
-    marketCap: 18_000_000_000,
+    symbol: "BONK", name: "Bonk", price: 0.0000289, change24h: -1.5, change5m: -0.3, change1h: 2.1,
+    volume24h: 210_000_000, liquidity: 95_000_000, smartMoneyPct: 18, devWalletPct: 1, whaleHoldingsPct: 28,
+    txCount24h: 18200, risk: "medium", chain: "Solana", marketCap: 1_900_000_000, paid: false, counter: 26,
+    pumpfunLink: "https://pump.fun", raydiumLink: "https://raydium.io", twitterLink: "https://x.com",
   },
   {
-    symbol: "SHIB",
-    name: "Shiba Inu",
-    price: 0.00002456,
-    change24h: 8.7,
-    volume24h: 560_000_000,
-    liquidity: 3_200_000_000,
-    smartMoneyPct: 35,
-    risk: "low",
-    chain: "Ethereum",
-    marketCap: 14_500_000_000,
+    symbol: "POPCAT", name: "Popcat", price: 1.23, change24h: 33.7, change5m: 4.5, change1h: 15.2,
+    volume24h: 95_000_000, liquidity: 28_000_000, smartMoneyPct: 71, devWalletPct: 8, whaleHoldingsPct: 55,
+    txCount24h: 12400, risk: "high", chain: "Solana", marketCap: 1_200_000_000, paid: true, counter: 12,
+    pumpfunLink: "https://pump.fun", raydiumLink: "https://raydium.io", twitterLink: "https://x.com",
   },
   {
-    symbol: "WIF",
-    name: "dogwifhat",
-    price: 2.45,
-    change24h: 22.1,
-    volume24h: 340_000_000,
-    liquidity: 180_000_000,
-    smartMoneyPct: 55,
-    risk: "high",
-    chain: "Solana",
-    marketCap: 2_400_000_000,
+    symbol: "MEW", name: "cat in a dogs world", price: 0.0089, change24h: 45.6, change5m: 2.8, change1h: 18.3,
+    volume24h: 78_000_000, liquidity: 42_000_000, smartMoneyPct: 62, devWalletPct: 5, whaleHoldingsPct: 48,
+    txCount24h: 9800, risk: "high", chain: "Solana", marketCap: 580_000_000, paid: false, counter: 8,
+    pumpfunLink: "https://pump.fun", raydiumLink: "https://raydium.io", twitterLink: "https://x.com",
   },
   {
-    symbol: "BONK",
-    name: "Bonk",
-    price: 0.0000289,
-    change24h: -1.5,
-    volume24h: 210_000_000,
-    liquidity: 95_000_000,
-    smartMoneyPct: 18,
-    risk: "medium",
-    chain: "Solana",
-    marketCap: 1_900_000_000,
+    symbol: "BRETT", name: "Brett", price: 0.156, change24h: -7.8, change5m: -1.2, change1h: -3.5,
+    volume24h: 120_000_000, liquidity: 65_000_000, smartMoneyPct: 48, devWalletPct: 2, whaleHoldingsPct: 38,
+    txCount24h: 15600, risk: "high", chain: "Solana", marketCap: 1_500_000_000, paid: true, counter: 33,
+    pumpfunLink: "https://pump.fun", raydiumLink: "https://raydium.io", twitterLink: "https://x.com",
   },
   {
-    symbol: "TURBO",
-    name: "Turbo",
-    price: 0.0089,
-    change24h: 45.6,
-    volume24h: 78_000_000,
-    liquidity: 42_000_000,
-    smartMoneyPct: 62,
-    risk: "high",
-    chain: "Ethereum",
-    marketCap: 580_000_000,
+    symbol: "MOG", name: "Mog Coin", price: 0.0000023, change24h: 5.2, change5m: 0.4, change1h: 2.8,
+    volume24h: 45_000_000, liquidity: 38_000_000, smartMoneyPct: 31, devWalletPct: 1, whaleHoldingsPct: 22,
+    txCount24h: 5200, risk: "medium", chain: "Solana", marketCap: 890_000_000, paid: false, counter: 15,
+    pumpfunLink: "https://pump.fun", raydiumLink: "https://raydium.io", twitterLink: "https://x.com",
   },
   {
-    symbol: "MOG",
-    name: "Mog Coin",
-    price: 0.0000023,
-    change24h: 5.2,
-    volume24h: 45_000_000,
-    liquidity: 38_000_000,
-    smartMoneyPct: 31,
-    risk: "medium",
-    chain: "Ethereum",
-    marketCap: 890_000_000,
+    symbol: "TURBO", name: "Turbo", price: 0.0089, change24h: 45.6, change5m: 3.1, change1h: 12.7,
+    volume24h: 78_000_000, liquidity: 42_000_000, smartMoneyPct: 62, devWalletPct: 4, whaleHoldingsPct: 51,
+    txCount24h: 8900, risk: "high", chain: "Solana", marketCap: 580_000_000, paid: false, counter: 7,
+    pumpfunLink: "https://pump.fun", raydiumLink: "https://raydium.io", twitterLink: "https://x.com",
   },
   {
-    symbol: "BRETT",
-    name: "Brett",
-    price: 0.156,
-    change24h: -7.8,
-    volume24h: 120_000_000,
-    liquidity: 65_000_000,
-    smartMoneyPct: 48,
-    risk: "high",
-    chain: "Base",
-    marketCap: 1_500_000_000,
+    symbol: "FLOKI", name: "Floki Inu", price: 0.000178, change24h: 12.4, change5m: 0.8, change1h: 5.3,
+    volume24h: 290_000_000, liquidity: 150_000_000, smartMoneyPct: 22, devWalletPct: 2, whaleHoldingsPct: 30,
+    txCount24h: 22100, risk: "low", chain: "Solana", marketCap: 1_700_000_000, paid: true, counter: 41,
+    pumpfunLink: "https://pump.fun", raydiumLink: "https://raydium.io", twitterLink: "https://x.com",
   },
   {
-    symbol: "FLOKI",
-    name: "Floki Inu",
-    price: 0.000178,
-    change24h: 12.4,
-    volume24h: 290_000_000,
-    liquidity: 150_000_000,
-    smartMoneyPct: 22,
-    risk: "low",
-    chain: "Ethereum",
-    marketCap: 1_700_000_000,
+    symbol: "SPX", name: "SPX6900", price: 0.89, change24h: 18.9, change5m: 1.5, change1h: 7.2,
+    volume24h: 56_000_000, liquidity: 35_000_000, smartMoneyPct: 45, devWalletPct: 1, whaleHoldingsPct: 36,
+    txCount24h: 7300, risk: "medium", chain: "Solana", marketCap: 780_000_000, paid: false, counter: 19,
+    pumpfunLink: "https://pump.fun", raydiumLink: "https://raydium.io", twitterLink: "https://x.com",
   },
   {
-    symbol: "POPCAT",
-    name: "Popcat",
-    price: 1.23,
-    change24h: 33.7,
-    volume24h: 95_000_000,
-    liquidity: 28_000_000,
-    smartMoneyPct: 71,
-    risk: "high",
-    chain: "Solana",
-    marketCap: 1_200_000_000,
+    symbol: "GOAT", name: "GOAT", price: 0.45, change24h: -12.3, change5m: -2.1, change1h: -5.8,
+    volume24h: 185_000_000, liquidity: 72_000_000, smartMoneyPct: 38, devWalletPct: 6, whaleHoldingsPct: 44,
+    txCount24h: 14200, risk: "high", chain: "Solana", marketCap: 450_000_000, paid: false, counter: 22,
+    pumpfunLink: "https://pump.fun", raydiumLink: "https://raydium.io", twitterLink: "https://x.com",
   },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function formatPrice(price: number): string {
+  if (price < 0.0001) return `$${price.toFixed(10)}`;
   if (price < 0.001) return `$${price.toFixed(8)}`;
   if (price < 1) return `$${price.toFixed(6)}`;
   if (price < 100) return `$${price.toFixed(4)}`;
@@ -175,400 +120,33 @@ function formatLargeNum(n: number): string {
   return `$${n.toFixed(2)}`;
 }
 
+function formatTxCount(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return `${n}`;
+}
+
 // ── Route ──────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/_authenticated/discover")({
-  head: () => ({ meta: [{ title: "Discover — Vixor Web3 Terminal" }] }),
+  head: () => ({ meta: [{ title: "Discover — Vixor Terminal" }] }),
   component: DiscoverPage,
 });
 
-// ── Skeleton Card ──────────────────────────────────────────────────────────
+// ── Tabs Configuration ─────────────────────────────────────────────────────
 
-const SkeletonCard = memo(function SkeletonCard() {
-  return (
-    <div
-      className="rounded-xl p-4 space-y-3 animate-pulse"
-      style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
-      }}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div
-            className="size-9 rounded-full"
-            style={{ backgroundColor: "var(--ws-surface-hover)" }}
-          />
-          <div className="space-y-1">
-            <div
-              className="h-3.5 w-16 rounded"
-              style={{ backgroundColor: "var(--ws-surface-hover)" }}
-            />
-            <div
-              className="h-2.5 w-10 rounded"
-              style={{ backgroundColor: "var(--ws-surface-hover)" }}
-            />
-          </div>
-        </div>
-        <div className="h-5 w-14 rounded" style={{ backgroundColor: "var(--ws-surface-hover)" }} />
-      </div>
-      <div className="space-y-2">
-        <div className="h-4 w-24 rounded" style={{ backgroundColor: "var(--ws-surface-hover)" }} />
-        <div className="h-3 w-20 rounded" style={{ backgroundColor: "var(--ws-surface-hover)" }} />
-        <div className="h-3 w-16 rounded" style={{ backgroundColor: "var(--ws-surface-hover)" }} />
-      </div>
-    </div>
-  );
-});
-
-// ── Token Card ─────────────────────────────────────────────────────────────
-
-interface TokenCardProps {
-  token: DiscoverToken;
-  onHunterScore?: (token: DiscoverToken) => void;
-}
-
-const TokenCard = memo(function TokenCard({ token, onHunterScore }: TokenCardProps) {
-  const isPositive = token.change24h >= 0;
-  const changeColor = isPositive ? "var(--ws-bullish)" : "var(--ws-bearish)";
-  const ChangeIcon = isPositive ? TrendingUp : TrendingDown;
-
-  const riskConfig = {
-    low: {
-      label: "Low Risk",
-      color: "var(--ws-bullish)",
-      Icon: ShieldCheck,
-      bg: "rgba(34,197,94,0.1)",
-    },
-    medium: {
-      label: "Medium",
-      color: "var(--ws-warning)",
-      Icon: ShieldAlert,
-      bg: "rgba(245,158,11,0.1)",
-    },
-    high: {
-      label: "High Risk",
-      color: "var(--ws-bearish)",
-      Icon: ShieldX,
-      bg: "rgba(239,68,68,0.1)",
-    },
-  } as const;
-
-  const risk = riskConfig[token.risk];
-  const RiskIcon = risk.Icon;
-
-  return (
-    <div
-      className="group cursor-pointer transition-all duration-200 hover:scale-[1.01]"
-      style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
-      }}
-    >
-      <div className="p-4 space-y-3">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div
-              className="size-9 rounded-full flex items-center justify-center text-xs font-bold"
-              style={{
-                backgroundColor: "var(--ws-accent-dim, rgba(59,130,246,0.12))",
-                color: "var(--ws-accent)",
-              }}
-            >
-              {token.symbol.slice(0, 2)}
-            </div>
-            <div>
-              <div className="text-sm font-bold" style={{ color: "var(--ws-text-primary)" }}>
-                {token.symbol}
-              </div>
-              <div className="text-[11px]" style={{ color: "var(--ws-text-secondary)" }}>
-                {token.name}
-              </div>
-            </div>
-          </div>
-          <div
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold"
-            style={{
-              backgroundColor: risk.bg,
-              color: risk.color,
-              border: `1px solid ${risk.color}22`,
-            }}
-          >
-            <RiskIcon className="size-3" />
-            {risk.label}
-          </div>
-        </div>
-
-        {/* Price & Change */}
-        <div>
-          <div
-            className="text-lg font-bold"
-            style={{
-              color: "var(--ws-text-primary)",
-              fontFamily: "var(--ws-mono-font-family, monospace)",
-            }}
-          >
-            {formatPrice(token.price)}
-          </div>
-          <div
-            className="flex items-center gap-1 text-xs font-semibold mt-0.5"
-            style={{ color: changeColor }}
-          >
-            <ChangeIcon className="size-3" />
-            {isPositive ? "+" : ""}
-            {token.change24h.toFixed(1)}%
-          </div>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-1.5 text-[11px]">
-            <BarChart3
-              className="size-3"
-              style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-            />
-            <span style={{ color: "var(--ws-text-secondary)" }}>Vol</span>
-            <span
-              className="font-semibold ml-auto"
-              style={{
-                color: "var(--ws-text-primary)",
-                fontFamily: "var(--ws-mono-font-family, monospace)",
-              }}
-            >
-              {formatLargeNum(token.volume24h)}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-[11px]">
-            <Droplets
-              className="size-3"
-              style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-            />
-            <span style={{ color: "var(--ws-text-secondary)" }}>Liq</span>
-            <span
-              className="font-semibold ml-auto"
-              style={{
-                color: "var(--ws-text-primary)",
-                fontFamily: "var(--ws-mono-font-family, monospace)",
-              }}
-            >
-              {formatLargeNum(token.liquidity)}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-[11px]">
-            <Flame
-              className="size-3"
-              style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-            />
-            <span style={{ color: "var(--ws-text-secondary)" }}>Smart $</span>
-            <span
-              className="font-semibold ml-auto"
-              style={{
-                color: "var(--ws-accent)",
-                fontFamily: "var(--ws-mono-font-family, monospace)",
-              }}
-            >
-              {token.smartMoneyPct}%
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-[11px]">
-            <span style={{ color: "var(--ws-text-secondary)" }}>MCap</span>
-            <span
-              className="font-semibold ml-auto"
-              style={{
-                color: "var(--ws-text-primary)",
-                fontFamily: "var(--ws-mono-font-family, monospace)",
-              }}
-            >
-              {formatLargeNum(token.marketCap)}
-            </span>
-          </div>
-        </div>
-
-        {/* Chain Badge + Hunter Score Button */}
-        <div className="pt-1 border-t flex items-center justify-between" style={{ borderColor: "var(--ws-border)" }}>
-          <span
-            className="inline-block text-[10px] font-medium px-2 py-0.5 rounded"
-            style={{
-              backgroundColor: "var(--ws-surface-hover)",
-              color: "var(--ws-text-secondary)",
-            }}
-          >
-            {token.chain}
-          </span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onHunterScore?.(token);
-            }}
-            className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded transition-colors hover:opacity-80"
-            style={{
-              backgroundColor: "var(--ws-accent-dim, rgba(59,130,246,0.12))",
-              color: "var(--ws-accent)",
-            }}
-            title="Analyze with Smart Money Hunter"
-          >
-            <Crosshair className="size-2.5" />
-            Hunter
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-// ── Filter Sidebar ─────────────────────────────────────────────────────────
-
-interface FilterSidebarProps {
-  chain: string;
-  onChainChange: (chain: string) => void;
-  sortBy: string;
-  onSortChange: (sort: string) => void;
-}
-
-const FilterSidebar = memo(function FilterSidebar({
-  chain,
-  onChainChange,
-  sortBy,
-  onSortChange,
-}: FilterSidebarProps) {
-  const chains = ["All Chains", "Ethereum", "Solana", "Base", "Arbitrum"];
-  const sortOptions = [
-    { value: "trending", label: "Trending" },
-    { value: "volume", label: "Volume" },
-    { value: "change", label: "24h Change" },
-    { value: "liquidity", label: "Liquidity" },
-    { value: "smart", label: "Smart Money" },
-  ];
-
-  return (
-    <div
-      className="w-full lg:w-56 flex-shrink-0 space-y-4"
-      style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
-      }}
-    >
-      <div className="p-4 border-b" style={{ borderColor: "var(--ws-border)" }}>
-        <div className="flex items-center gap-2">
-          <Filter className="size-4" style={{ color: "var(--ws-accent)" }} />
-          <span
-            className="text-xs font-bold uppercase tracking-wider"
-            style={{ color: "var(--ws-text-primary)" }}
-          >
-            Filters
-          </span>
-        </div>
-      </div>
-
-      {/* Chain Filter */}
-      <div className="px-4 pb-3">
-        <div
-          className="text-[10px] font-bold uppercase tracking-widest mb-2"
-          style={{ color: "var(--ws-text-secondary)" }}
-        >
-          Chain
-        </div>
-        <div className="space-y-1">
-          {chains.map((c) => (
-            <button
-              key={c}
-              onClick={() => onChainChange(c)}
-              className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
-              style={{
-                backgroundColor:
-                  chain === c ? "var(--ws-accent-dim, rgba(59,130,246,0.12))" : "transparent",
-                color: chain === c ? "var(--ws-accent)" : "var(--ws-text-secondary)",
-              }}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Sort By */}
-      <div className="px-4 pb-4">
-        <div
-          className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest mb-2"
-          style={{ color: "var(--ws-text-secondary)" }}
-        >
-          <ArrowUpDown className="size-3" />
-          Sort By
-        </div>
-        <div className="space-y-1">
-          {sortOptions.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => onSortChange(opt.value)}
-              className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
-              style={{
-                backgroundColor:
-                  sortBy === opt.value
-                    ? "var(--ws-accent-dim, rgba(59,130,246,0.12))"
-                    : "transparent",
-                color: sortBy === opt.value ? "var(--ws-accent)" : "var(--ws-text-secondary)",
-              }}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-});
-
-// ── Search Bar ─────────────────────────────────────────────────────────────
-
-interface SearchBarProps {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-const SearchBar = memo(function SearchBar({ value, onChange }: SearchBarProps) {
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
-    [onChange],
-  );
-
-  return (
-    <div className="relative">
-      <Search
-        className="absolute left-3 top-1/2 -translate-y-1/2 size-4"
-        style={{ color: "var(--ws-text-secondary)" }}
-      />
-      <input
-        type="text"
-        value={value}
-        onChange={handleChange}
-        placeholder="Search tokens..."
-        className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-colors placeholder:opacity-40"
-        style={{
-          backgroundColor: "var(--ws-surface)",
-          border: "1px solid var(--ws-border)",
-          color: "var(--ws-text-primary)",
-          borderRadius: "var(--ws-radius)",
-        }}
-      />
-    </div>
-  );
-});
+const TOKEN_TABS = ["Top", "Trending", "Surge", "DEX Screener", "Pump Live"] as const;
+const TIME_FRAMES = ["1m", "5m", "30m", "1h"] as const;
 
 // ── Main Page ──────────────────────────────────────────────────────────────
 
 function DiscoverPage() {
   const [search, setSearch] = useState("");
-  const [chain, setChain] = useState("All Chains");
-  const [sortBy, setSortBy] = useState("trending");
-  const [hunterToken, setHunterToken] = useState<DiscoverToken | null>(null);
-
-  const handleSearchChange = useCallback((value: string) => setSearch(value), []);
-  const handleChainChange = useCallback((c: string) => setChain(c), []);
-  const handleSortChange = useCallback((s: string) => setSortBy(s), []);
+  const [activeTab, setActiveTab] = useState<string>("Trending");
+  const [timeFrame, setTimeFrame] = useState<string>("5m");
+  const [sortBy, setSortBy] = useState("volume");
+  const [showFilter, setShowFilter] = useState(false);
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [showLobby, setShowLobby] = useState(true);
 
   const { data: tokens, isLoading } = useQuery<DiscoverToken[]>({
     queryKey: ["discover-tokens"],
@@ -576,14 +154,8 @@ function DiscoverPage() {
       try {
         const res = await fetch("/api/discover");
         const json = await res.json();
-        // API returns { success, data: [...] } — extract the array
-        if (json && Array.isArray(json.data)) {
-          return json.data as DiscoverToken[];
-        }
-        // Fallback: if the response itself is an array
-        if (Array.isArray(json)) {
-          return json as DiscoverToken[];
-        }
+        if (json && Array.isArray(json.data)) return json.data as DiscoverToken[];
+        if (Array.isArray(json)) return json as DiscoverToken[];
         return MOCK_TOKENS;
       } catch {
         return MOCK_TOKENS;
@@ -592,140 +164,545 @@ function DiscoverPage() {
     refetchInterval: 30000,
   });
 
-  // Filter & sort
   const filteredTokens = (() => {
     if (!tokens) return [];
     let result = [...tokens];
-
-    // Search filter
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
         (t) => t.symbol.toLowerCase().includes(q) || t.name.toLowerCase().includes(q),
       );
     }
-
-    // Chain filter
-    if (chain !== "All Chains") {
-      result = result.filter((t) => t.chain === chain);
-    }
-
-    // Sort
     switch (sortBy) {
-      case "volume":
-        result.sort((a, b) => b.volume24h - a.volume24h);
-        break;
-      case "change":
-        result.sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h));
-        break;
-      case "liquidity":
-        result.sort((a, b) => b.liquidity - a.liquidity);
-        break;
-      case "smart":
-        result.sort((a, b) => b.smartMoneyPct - a.smartMoneyPct);
-        break;
-      default:
-        // trending — default order
-        break;
+      case "volume": result.sort((a, b) => b.volume24h - a.volume24h); break;
+      case "change": result.sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)); break;
+      case "liquidity": result.sort((a, b) => b.liquidity - a.liquidity); break;
+      case "smart": result.sort((a, b) => b.smartMoneyPct - a.smartMoneyPct); break;
+      case "mcap": result.sort((a, b) => b.marketCap - a.marketCap); break;
     }
-
     return result;
   })();
 
   return (
     <div
-      className="space-y-4"
-      style={{ backgroundColor: "var(--ws-bg)", color: "var(--ws-text-primary)" }}
+      className="w-full h-full flex flex-col"
+      style={{ background: "#0A0E1A", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif" }}
     >
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1
-            className="text-xl font-bold tracking-tight"
-            style={{ color: "var(--ws-text-primary)" }}
+      {/* ── Multi-Pane Layout ── */}
+      <div className="flex-1 flex" style={{ minHeight: "calc(100vh - 92px)" }}>
+        {/* ── LEFT: Chart + Token Table ── */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* TradingView Chart Area */}
+          <div
+            className="flex-shrink-0"
+            style={{
+              height: "280px",
+              background: "#111827",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              position: "relative",
+            }}
           >
-            Discover
-          </h1>
-          <p className="text-xs mt-0.5" style={{ color: "var(--ws-text-secondary)" }}>
-            Real-time memecoin discovery &middot; Updates every 30s
-          </p>
-        </div>
-        <SearchBar value={search} onChange={handleSearchChange} />
-      </div>
+            {/* Chart placeholder — TradingView would render here */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              {selectedSymbol ? (
+                <div className="text-center">
+                  <div className="text-sm font-bold" style={{ color: "#F0F4FC" }}>{selectedSymbol}/SOL</div>
+                  <div className="text-xs" style={{ color: "#7B8BA8" }}>TradingView Chart</div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className="text-lg mb-1">📊</div>
+                  <div className="text-xs" style={{ color: "#4A5568" }}>Select a token to view chart</div>
+                  <div className="text-[10px] mt-1" style={{ color: "#4A5568" }}>Or click any token below</div>
+                </div>
+              )}
+            </div>
 
-      {/* Main Layout: Sidebar + Grid */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        <FilterSidebar
-          chain={chain}
-          onChainChange={handleChainChange}
-          sortBy={sortBy}
-          onSortChange={handleSortChange}
-        />
-
-        {/* Token Grid */}
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-medium" style={{ color: "var(--ws-text-secondary)" }}>
-              {filteredTokens.length} tokens found
-            </span>
-            <span
-              className="text-[10px]"
-              style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-            >
-              Auto-refresh: 30s
-            </span>
+            {/* Chart controls overlay */}
+            <div className="absolute top-2 right-2 flex items-center gap-1">
+              <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "rgba(59,130,246,0.12)", color: "#60A5FA" }}>
+                1D
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ color: "#4A5568" }}>
+                5D
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ color: "#4A5568" }}>
+                1M
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ color: "#4A5568" }}>
+                ALL
+              </span>
+            </div>
           </div>
 
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <SkeletonCard key={i} />
+          {/* ── Tab Bar + Time Frames + Filter ── */}
+          <div
+            className="flex-shrink-0 flex items-center justify-between px-3 py-2"
+            style={{
+              background: "#0D1117",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            {/* Tabs */}
+            <div className="flex items-center gap-1">
+              {TOKEN_TABS.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className="px-2.5 py-1 rounded text-[11px] font-semibold transition-colors"
+                  style={{
+                    background: activeTab === tab ? "rgba(59,130,246,0.15)" : "transparent",
+                    color: activeTab === tab ? "#60A5FA" : "#7B8BA8",
+                    border: activeTab === tab ? "1px solid rgba(59,130,246,0.3)" : "1px solid transparent",
+                  }}
+                >
+                  {tab}
+                </button>
               ))}
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {filteredTokens.map((token) => (
-                <TokenCard key={token.symbol} token={token} onHunterScore={setHunterToken} />
-              ))}
-            </div>
-          )}
 
-          {filteredTokens.length === 0 && !isLoading && (
-            <div
-              className="flex flex-col items-center justify-center py-16 text-center"
-              style={{
-                backgroundColor: "var(--ws-surface)",
-                borderRadius: "var(--ws-radius)",
-                border: "1px solid var(--ws-border)",
-              }}
-            >
-              <Search
-                className="size-8 mb-3"
-                style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-              />
-              <p className="text-sm font-medium" style={{ color: "var(--ws-text-secondary)" }}>
-                No tokens match your filters
-              </p>
-              <p
-                className="text-xs mt-1"
-                style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
+            {/* Time Frames */}
+            <div className="flex items-center gap-1">
+              {TIME_FRAMES.map((tf) => (
+                <button
+                  key={tf}
+                  onClick={() => setTimeFrame(tf)}
+                  className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold transition-colors"
+                  style={{
+                    color: timeFrame === tf ? "#60A5FA" : "#4A5568",
+                    background: timeFrame === tf ? "rgba(59,130,246,0.1)" : "transparent",
+                  }}
+                >
+                  {tf}
+                </button>
+              ))}
+              <button
+                onClick={() => setShowFilter(!showFilter)}
+                className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold transition-colors"
+                style={{ color: "#7B8BA8", background: "rgba(255,255,255,0.05)" }}
               >
-                Try adjusting your search or filters
-              </p>
+                <Filter className="size-3" />
+                Filter
+              </button>
             </div>
-          )}
+          </div>
+
+          {/* ── Search Bar ── */}
+          <div className="px-3 py-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5" style={{ color: "#4A5568" }} />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search tokens..."
+                  className="w-full pl-8 pr-3 py-1.5 rounded-lg text-[11px] outline-none"
+                  style={{
+                    background: "#111827",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    color: "#F0F4FC",
+                  }}
+                />
+              </div>
+              <button
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-semibold"
+                style={{ background: "rgba(255,255,255,0.05)", color: "#7B8BA8" }}
+                onClick={() => {
+                  const order = sortBy === "volume" ? "change" : "volume";
+                  setSortBy(order);
+                }}
+              >
+                <ArrowUpDown className="size-3" />
+                Sort
+              </button>
+              <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px]" style={{ color: "#22C55E" }}>
+                <RefreshCw className="size-3" />
+                30s
+              </div>
+            </div>
+          </div>
+
+          {/* ── Token Table Header ── */}
+          <div
+            className="flex items-center px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider"
+            style={{
+              color: "#4A5568",
+              background: "#0D1117",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <div style={{ width: "180px" }}>Token</div>
+            <div style={{ width: "80px", textAlign: "right" }}>Price</div>
+            <div style={{ width: "70px", textAlign: "right" }}>MCap</div>
+            <div style={{ width: "60px", textAlign: "right" }}>Change</div>
+            <div style={{ width: "70px", textAlign: "right" }}>Liquidity</div>
+            <div style={{ width: "70px", textAlign: "right" }}>Volume</div>
+            <div style={{ width: "55px", textAlign: "right" }}>TXs</div>
+            <div style={{ width: "40px", textAlign: "center" }}>Status</div>
+            <div style={{ width: "35px", textAlign: "center" }}>🔗</div>
+            <div style={{ width: "65px", textAlign: "center" }}>Action</div>
+          </div>
+
+          {/* ── Token Table Body ── */}
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="size-4 animate-spin" style={{ color: "#3B82F6" }} />
+                  <span className="text-xs" style={{ color: "#7B8BA8" }}>Loading tokens...</span>
+                </div>
+              </div>
+            ) : (
+              filteredTokens.map((token, idx) => (
+                <TokenRow
+                  key={token.symbol}
+                  token={token}
+                  index={idx}
+                  selected={selectedSymbol === token.symbol}
+                  onSelect={() => setSelectedSymbol(selectedSymbol === token.symbol ? null : token.symbol)}
+                />
+              ))
+            )}
+
+            {filteredTokens.length === 0 && !isLoading && (
+              <div className="flex flex-col items-center justify-center py-12">
+                <span className="text-2xl mb-2">🔍</span>
+                <span className="text-xs" style={{ color: "#7B8BA8" }}>No tokens match your search</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Hunter Score Card — shown when user clicks "Hunter" on a token */}
-        {hunterToken && (
-          <HunterScoreCard
-            token={hunterToken.symbol}
-            chain={hunterToken.chain}
-            smartMoneyActivity={`Smart money activity for ${hunterToken.symbol}: ${hunterToken.smartMoneyPct}% smart money concentration. Volume 24h: $${(hunterToken.volume24h / 1e6).toFixed(1)}M. Liquidity: $${(hunterToken.liquidity / 1e6).toFixed(1)}M.`}
-            priceData={`Current price: $${hunterToken.price}. 24h change: ${hunterToken.change24h >= 0 ? "+" : ""}${hunterToken.change24h.toFixed(1)}%. Market cap: $${(hunterToken.marketCap / 1e9).toFixed(2)}B.`}
-            volumeData={`Volume 24h: $${(hunterToken.volume24h / 1e6).toFixed(1)}M. Smart money: ${hunterToken.smartMoneyPct}%.`}
-          />
+        {/* ── RIGHT: Social Lobby Panel ── */}
+        {showLobby && (
+          <div
+            className="hidden lg:flex flex-col flex-shrink-0"
+            style={{
+              width: "280px",
+              borderLeft: "1px solid rgba(255,255,255,0.06)",
+              background: "#0D1117",
+            }}
+          >
+            {/* Lobby Header */}
+            <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">💬</span>
+                <div>
+                  <div className="text-[11px] font-bold" style={{ color: "#F0F4FC" }}>Trading Lobby</div>
+                  <div className="text-[9px]" style={{ color: "#22C55E" }}>● 24 online</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowLobby(false)}
+                className="text-[10px] px-1.5 py-0.5 rounded"
+                style={{ color: "#4A5568", background: "rgba(255,255,255,0.05)" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
+              <ChatMessage user="trader_sam" msg="Just took a bag of WIF at $2.40 🚀" time="2m" />
+              <ChatMessage user="sol_whale" msg="POPCAT volume surging — looks like smart money accumulation" time="5m" />
+              <ChatMessage user="memeking" msg="Anyone else seeing the BONK chart setup? Looks bullish to me" time="8m" />
+              <ChatMessage user="defi_nina" msg="SPX breaking out on the 5m timeframe 🔥" time="12m" />
+              <ChatMessage user="alpha_hunter" msg="New token on pump.fun looking interesting. Dev burned 80% of supply" time="15m" />
+              <ChatMessage user="crypto_max" msg="GOAT getting wrecked right now. Cut losses early folks" time="18m" />
+              <ChatMessage user="sol_degen" msg="TURBO just hit new ATH on low timeframes. watching closely" time="22m" />
+            </div>
+
+            {/* Chat Input */}
+            <div className="px-3 py-2" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  className="flex-1 px-3 py-1.5 rounded-lg text-[11px] outline-none"
+                  style={{
+                    background: "#111827",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    color: "#F0F4FC",
+                  }}
+                />
+                <button
+                  className="px-2 py-1.5 rounded-lg text-[11px] font-bold"
+                  style={{ background: "#3B82F6", color: "white" }}
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+
+            {/* Friends List */}
+            <div className="px-3 py-2" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#4A5568" }}>Friends</span>
+                <button className="text-[10px] px-1.5 py-0.5 rounded" style={{ color: "#3B82F6", background: "rgba(59,130,246,0.1)" }}>
+                  + Add Friend
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                {["👤", "👤", "👤"].map((avatar, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg"
+                    style={{ background: "rgba(255,255,255,0.03)" }}
+                  >
+                    <span className="text-xs">{avatar}</span>
+                    <div className="flex items-center gap-1">
+                      <div className="size-1.5 rounded-full" style={{ background: "#22C55E" }} />
+                      <span className="text-[9px]" style={{ color: "#7B8BA8" }}>
+                        {["alex_sol", "jess_trade", "mark_d"][i]}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
+
+        {/* Toggle Lobby Button (when closed) */}
+        {!showLobby && (
+          <button
+            onClick={() => setShowLobby(true)}
+            className="hidden lg:flex fixed items-center justify-center"
+            style={{
+              right: "8px",
+              bottom: "60px",
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              background: "#3B82F6",
+              color: "white",
+              fontSize: "16px",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(59,130,246,0.4)",
+            }}
+          >
+            💬
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// TOKEN ROW — Dense data row like Axiom's token table
+// ───────────────────────────────────────────────────────────────────────────
+
+interface TokenRowProps {
+  token: DiscoverToken;
+  index: number;
+  selected: boolean;
+  onSelect: () => void;
+}
+
+const TokenRow = memo(function TokenRow({ token, index, selected, onSelect }: TokenRowProps) {
+  const isPositive = token.change24h >= 0;
+  const changeColor = isPositive ? "#22C55E" : "#EF4444";
+
+  return (
+    <div
+      onClick={onSelect}
+      className="flex items-center px-3 py-2 text-[11px] cursor-pointer transition-colors"
+      style={{
+        background: selected ? "rgba(59,130,246,0.08)" : index % 2 === 0 ? "#0A0E1A" : "transparent",
+        borderBottom: "1px solid rgba(255,255,255,0.03)",
+        fontFamily: "'JetBrains Mono', 'Inter', monospace",
+      }}
+    >
+      {/* Token Name + Links */}
+      <div className="flex items-center gap-2" style={{ width: "180px" }}>
+        <div
+          className="flex items-center justify-center rounded-full flex-shrink-0"
+          style={{
+            width: "28px",
+            height: "28px",
+            background: "rgba(59,130,246,0.12)",
+            fontSize: "9px",
+            fontWeight: 800,
+            color: "#60A5FA",
+          }}
+        >
+          {token.symbol.slice(0, 2)}
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-[11px] truncate" style={{ color: "#F0F4FC" }}>{token.symbol}</span>
+            <span className="text-[9px] truncate" style={{ color: "#4A5568" }}>{token.name}</span>
+          </div>
+          <div className="flex items-center gap-0.5">
+            {token.twitterLink && <SocialIcon type="x" />}
+            {token.pumpfunLink && <SocialIcon type="pump" />}
+            {token.communityLink && <SocialIcon type="community" />}
+            {token.youtubeLink && <SocialIcon type="youtube" />}
+          </div>
+        </div>
+      </div>
+
+      {/* Price */}
+      <div className="text-right font-bold" style={{ width: "80px", color: "#F0F4FC", fontSize: "11px" }}>
+        {formatPrice(token.price)}
+      </div>
+
+      {/* Market Cap */}
+      <div className="text-right" style={{ width: "70px", color: "#7B8BA8", fontSize: "10px" }}>
+        {formatLargeNum(token.marketCap)}
+      </div>
+
+      {/* Change */}
+      <div className="text-right font-bold" style={{ width: "60px", color: changeColor, fontSize: "10px" }}>
+        {isPositive ? "+" : ""}{token.change24h.toFixed(1)}%
+      </div>
+
+      {/* Liquidity */}
+      <div className="text-right" style={{ width: "70px", color: "#7B8BA8", fontSize: "10px" }}>
+        {formatLargeNum(token.liquidity)}
+      </div>
+
+      {/* Volume */}
+      <div className="text-right" style={{ width: "70px", color: "#7B8BA8", fontSize: "10px" }}>
+        {formatLargeNum(token.volume24h)}
+      </div>
+
+      {/* TXs */}
+      <div className="text-right" style={{ width: "55px", color: "#7B8BA8", fontSize: "10px" }}>
+        {formatTxCount(token.txCount24h)}
+      </div>
+
+      {/* On-chain metrics */}
+      <div className="flex items-center justify-center" style={{ width: "40px" }}>
+        <div className="flex items-center gap-0.5">
+          <OnChainMetric value={token.whaleHoldingsPct} type="whale" />
+          <OnChainMetric value={token.smartMoneyPct} type="smart" />
+          <OnChainMetric value={token.devWalletPct} type="dev" />
+        </div>
+      </div>
+
+      {/* Paid/Unpaid + Counter */}
+      <div className="flex flex-col items-center" style={{ width: "35px" }}>
+        <span
+          className="text-[8px] font-bold px-1 rounded"
+          style={{
+            background: token.paid ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+            color: token.paid ? "#22C55E" : "#EF4444",
+          }}
+        >
+          {token.paid ? "Paid" : "Unpaid"}
+        </span>
+        {token.counter && (
+          <span className="text-[8px] font-mono" style={{ color: "#4A5568" }}>{token.counter}</span>
+        )}
+      </div>
+
+      {/* Action: Buy Button */}
+      <div className="flex items-center justify-center gap-1" style={{ width: "65px" }}>
+        <button
+          className="px-2 py-0.5 rounded text-[9px] font-bold transition-colors"
+          style={{
+            background: "linear-gradient(135deg, #22C55E, #16A34A)",
+            color: "white",
+            border: "none",
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            window.open(token.raydiumLink || "https://raydium.io", "_blank");
+          }}
+        >
+          Buy
+        </button>
+        <button
+          className="px-2 py-0.5 rounded text-[9px] font-bold transition-colors"
+          style={{
+            background: "rgba(59,130,246,0.15)",
+            color: "#60A5FA",
+            border: "1px solid rgba(59,130,246,0.3)",
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            window.open(token.pumpfunLink || "https://pump.fun", "_blank");
+          }}
+        >
+          Quick
+        </button>
+      </div>
+    </div>
+  );
+});
+
+// ───────────────────────────────────────────────────────────────────────────
+// SOCIAL ICON — X / Pump.fun / Community / YouTube
+// ───────────────────────────────────────────────────────────────────────────
+
+function SocialIcon({ type }: { type: "x" | "pump" | "community" | "youtube" }) {
+  const config = {
+    x: { label: "𝕏", color: "#F0F4FC" },
+    pump: { label: "🅿️", color: "#7B8BA8" },
+    community: { label: "👥", color: "#7B8BA8" },
+    youtube: { label: "▶", color: "#EF4444" },
+  }[type];
+  return <span style={{ fontSize: "9px" }}>{config.label}</span>;
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// ON-CHAIN METRIC — Small colored indicator
+// ───────────────────────────────────────────────────────────────────────────
+
+function OnChainMetric({ value, type }: { value: number; type: "whale" | "smart" | "dev" }) {
+  const config = {
+    whale: { color: value > 40 ? "#3B82F6" : value > 20 ? "#F59E0B" : "#4A5568", label: "🐋" },
+    smart: { color: value > 50 ? "#22C55E" : value > 25 ? "#F59E0B" : "#4A5568", label: "🧠" },
+    dev: { color: value < 3 ? "#22C55E" : value < 6 ? "#F59E0B" : "#EF4444", label: "👨‍💻" },
+  }[type];
+  return (
+    <span
+      title={`${config.label} ${value}%`}
+      className="rounded-sm"
+      style={{
+        fontSize: "8px",
+        lineHeight: 1,
+        width: "14px",
+        height: "14px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: `${config.color}15`,
+        color: config.color,
+      }}
+    >
+      {config.label}
+    </span>
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// CHAT MESSAGE — Social lobby message bubble
+// ───────────────────────────────────────────────────────────────────────────
+
+function ChatMessage({ user, msg, time }: { user: string; msg: string; time: string }) {
+  return (
+    <div className="group">
+      <div className="flex items-start gap-2">
+        <div
+          className="flex-shrink-0 flex items-center justify-center rounded-full"
+          style={{ width: "22px", height: "22px", background: "rgba(59,130,246,0.12)", fontSize: "10px" }}
+        >
+          👤
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold" style={{ color: "#60A5FA" }}>{user}</span>
+            <span className="text-[8px]" style={{ color: "#4A5568" }}>{time} ago</span>
+          </div>
+          <p className="text-[10px] leading-relaxed" style={{ color: "#C8D1E0" }}>
+            {msg}
+          </p>
+        </div>
       </div>
     </div>
   );
