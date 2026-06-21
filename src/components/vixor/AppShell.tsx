@@ -71,11 +71,11 @@ const bottomNavItems = [
   { to: "/communities", label: "Social", icon: "👥" },
   { to: "/discover", label: "Discover", icon: "🔍" },
   { to: "/pulse", label: "Pulse", icon: "💓" },
-  { to: "/pnl", label: "PnL", icon: "📈" },
+  { to: "/pnl", label: "PnL", icon: "💰" },
   { to: "/alpha", label: "Alpha", icon: "⚡" },
   { to: "/whale", label: "Whale", icon: "🐋" },
-  { to: "/discover", label: "Pump", icon: "🚀" },
-  { to: "/curves", label: "VCurve", icon: "📈" },
+  { to: "/trackers", label: "Pump", icon: "🚀" },
+  { to: "/curves", label: "VCurve", icon: "📉" },
   { to: "/bags", label: "Bags", icon: "🎒" },
 ] as const;
 
@@ -344,7 +344,7 @@ const BottomBar = memo(function BottomBar({ solPrice, solChange }: BottomBarProp
       {/* Bottom Nav Icons */}
       <div className="flex items-center justify-center flex-1 gap-0.5">
         {bottomNavItems.map((item) => {
-          const isActive = path === item.to || (item.to === "/discover" && path === "/discover");
+          const isActive = path === item.to || path.startsWith(item.to + "/");
           return (
             <Link
               key={item.to + item.label}

@@ -81,7 +81,7 @@ function highlightSMC(text: string): React.ReactNode[] {
   return parts.map((part, i) => {
     if (smcTerms.some((t) => t.toLowerCase() === part.toLowerCase())) {
       return (
-        <span key={i} className="text-primary font-bold bg-primary/10 px-0.5 rounded">
+        <span key={i} className="text-[#3B82F6] font-bold bg-[#3B82F6]/10 px-0.5 rounded">
           {part}
         </span>
       );
@@ -126,18 +126,18 @@ function AnalysisResult() {
     return (
       <div className="space-y-4">
         <BackHeader />
-        <div className="vixor-card p-8 text-center border-bearish/30">
-          <div className="size-16 rounded-full bg-bearish/10 flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="size-8 text-bearish" />
+        <div className="vixor-card p-8 text-center border-red-500/30">
+          <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="size-8 text-red-400" />
           </div>
           <div className="text-lg font-bold">Analysis Failed</div>
-          <div className="text-sm text-muted-foreground mt-2">
+          <div className="text-sm text-gray-400 mt-2">
             {a.error_message ?? "The AI encountered an issue reading this chart."}
           </div>
           <Link
             to="/analyze"
             search={{ screenshot: undefined, pair: undefined }}
-            className="inline-flex mt-6 px-6 h-12 rounded-xl bg-primary text-primary-foreground font-bold items-center transition-transform active:scale-95"
+            className="inline-flex mt-6 px-6 h-12 rounded-xl bg-[#3B82F6] text-white font-bold items-center transition-transform active:scale-95"
           >
             Try another chart
           </Link>
@@ -169,9 +169,9 @@ function AnalysisResult() {
   const isWait = a.recommendation === "WAIT";
 
   const heroColor = isBullish
-    ? "border-bullish/50 shadow-[0_0_40px_rgba(16,185,129,0.2)]"
+    ? "border-emerald-500/50 shadow-[0_0_40px_rgba(16,185,129,0.2)]"
     : isBearish
-      ? "border-bearish/50 shadow-[0_0_40px_rgba(239,68,68,0.2)]"
+      ? "border-red-500/50 shadow-[0_0_40px_rgba(239,68,68,0.2)]"
       : "border-neutral-wait/40 shadow-[0_0_30px_rgba(245,158,11,0.15)]";
 
   const heroBg = isBullish
@@ -180,11 +180,11 @@ function AnalysisResult() {
       ? "bg-gradient-to-br from-bearish/8 via-card to-card"
       : "bg-gradient-to-br from-neutral-wait/8 via-card to-card";
 
-  const recColor = isBullish ? "text-bullish" : isBearish ? "text-bearish" : "text-neutral-wait";
+  const recColor = isBullish ? "text-emerald-400" : isBearish ? "text-red-400" : "text-neutral-wait";
   const recBg = isBullish
-    ? "bg-bullish/10 border-bullish/30 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+    ? "bg-emerald-500/15/10 border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
     : isBearish
-      ? "bg-bearish/10 border-bearish/30 shadow-[0_0_20px_rgba(239,68,68,0.3)]"
+      ? "bg-red-500/10 border-red-500/30 shadow-[0_0_20px_rgba(239,68,68,0.3)]"
       : "bg-neutral-wait/10 border-neutral-wait/30";
 
   return (
@@ -197,24 +197,24 @@ function AnalysisResult() {
       <div className={`vixor-card p-5 border-2 relative overflow-hidden ${heroColor} ${heroBg}`}>
         {/* Animated top bar */}
         <div
-          className={`absolute top-0 inset-x-0 h-0.5 ${isBullish ? "bg-bullish" : isBearish ? "bg-bearish" : "bg-neutral-wait"} animate-pulse`}
+          className={`absolute top-0 inset-x-0 h-0.5 ${isBullish ? "bg-emerald-500/15" : isBearish ? "bg-bearish" : "bg-neutral-wait"} animate-pulse`}
         />
 
         {/* Header row */}
         <div className="flex items-start justify-between mb-5">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-card/80 backdrop-blur px-2 py-0.5 rounded border border-border">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-[#111827]/80 backdrop-blur px-2 py-0.5 rounded border border-[#1E293B]">
                 {a.timeframe ?? "AUTO"}
               </span>
-              <span className="text-[10px] font-bold text-muted-foreground">
+              <span className="text-[10px] font-bold text-gray-400">
                 {relTime(a.created_at)}
               </span>
             </div>
             <h1 className="text-4xl font-extrabold font-mono tracking-tight leading-none">
               {a.pair ?? "?"}
             </h1>
-            <div className="text-xs font-bold text-muted-foreground mt-1">
+            <div className="text-xs font-bold text-gray-400 mt-1">
               {a.pattern ?? "Pattern Analysis"}
             </div>
           </div>
@@ -229,27 +229,27 @@ function AnalysisResult() {
         {/* Signal Prices — the core data */}
         {signalBadge && (
           <div className="grid grid-cols-3 gap-2 mb-4">
-            <div className="bg-card/70 backdrop-blur p-3 rounded-xl border border-border text-center">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">
+            <div className="bg-[#111827]/70 backdrop-blur p-3 rounded-xl border border-[#1E293B] text-center">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">
                 Entry
               </div>
-              <div className="font-mono font-bold text-base text-foreground">
+              <div className="font-mono font-bold text-base text-white">
                 {signalBadge.entry}
               </div>
             </div>
-            <div className="bg-bearish/5 p-3 rounded-xl border border-bearish/30 text-center">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-bearish mb-1.5">
+            <div className="bg-bearish/5 p-3 rounded-xl border border-red-500/30 text-center">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-red-400 mb-1.5">
                 Stop Loss
               </div>
-              <div className="font-mono font-bold text-base text-bearish">
+              <div className="font-mono font-bold text-base text-red-400">
                 {signalBadge.stop_loss}
               </div>
             </div>
-            <div className="bg-bullish/5 p-3 rounded-xl border border-bullish/30 text-center">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-bullish mb-1.5">
+            <div className="bg-emerald-500/15/5 p-3 rounded-xl border border-emerald-500/30 text-center">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-emerald-400 mb-1.5">
                 Target
               </div>
-              <div className="font-mono font-bold text-base text-bullish">
+              <div className="font-mono font-bold text-base text-emerald-400">
                 {signalBadge.take_profit}
               </div>
             </div>
@@ -267,7 +267,7 @@ function AnalysisResult() {
           )}
           <div className="flex-1">
             <div className="flex justify-between items-center mb-1">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">
                 Confidence
               </span>
               <span className={`text-xs font-bold font-mono ${recColor}`}>
@@ -276,7 +276,7 @@ function AnalysisResult() {
             </div>
             <div className="h-1.5 bg-muted rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-700 ${isBullish ? "bg-bullish" : isBearish ? "bg-bearish" : "bg-neutral-wait"}`}
+                className={`h-full rounded-full transition-all duration-700 ${isBullish ? "bg-emerald-500/15" : isBearish ? "bg-bearish" : "bg-neutral-wait"}`}
                 style={{ width: `${a.confidence ?? 0}%` }}
               />
             </div>
@@ -293,13 +293,13 @@ function AnalysisResult() {
         >
           <div className="flex items-center gap-2 mb-2">
             <BrainCircuit
-              className={`size-5 shrink-0 ${isBullish ? "text-bullish" : isBearish ? "text-bearish" : "text-neutral-wait"}`}
+              className={`size-5 shrink-0 ${isBullish ? "text-emerald-400" : isBearish ? "text-red-400" : "text-neutral-wait"}`}
             />
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">
               Vixor Verdict
             </span>
           </div>
-          <p className="text-sm font-medium leading-relaxed text-foreground/90">
+          <p className="text-sm font-medium leading-relaxed text-white/90">
             {highlightSMC(vixorMsg)}
           </p>
         </div>
@@ -339,26 +339,26 @@ function AnalysisResult() {
       <div className="grid grid-cols-3 gap-3">
         <Link
           to="/trade-desk"
-          className="h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 glow-primary active:scale-95 transition-transform"
+          className="h-12 rounded-xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-bold text-sm flex items-center justify-center gap-2  active:scale-95 transition-transform"
         >
           <Zap className="size-4" /> Use in Calculator
         </Link>
         <Link
           to="/journal"
-          className="h-12 rounded-xl bg-card border border-border font-bold text-sm flex items-center justify-center gap-2 hover:bg-card-hover active:scale-95 transition-all"
+          className="h-12 rounded-xl bg-[#111827] border border-[#1E293B] font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1a2234] active:scale-95 transition-all"
         >
-          <BookOpen className="size-4 text-muted-foreground" /> Journal
+          <BookOpen className="size-4 text-gray-400" /> Journal
         </Link>
         <AnalysisNotesSection analysisId={id} pair={a.pair} />
       </div>
 
       {/* ═══ TABS ═══ */}
-      <div className="flex gap-1 p-1 bg-card border border-border rounded-xl overflow-x-auto no-scrollbar">
+      <div className="flex gap-1 p-1 bg-[#111827] border border-[#1E293B] rounded-xl overflow-x-auto no-scrollbar">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 h-9 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all px-2 ${tab === t ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            className={`flex-1 h-9 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all px-2 ${tab === t ? "bg-[#3B82F6] text-white shadow-sm" : "text-gray-400 hover:text-white"}`}
           >
             {t}
           </button>
@@ -369,13 +369,13 @@ function AnalysisResult() {
       {tab === "Trade Setup" && (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="vixor-card p-5">
-            <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <Target className="size-4 text-primary" /> Why This Trade
+            <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-gray-400 flex items-center gap-2">
+              <Target className="size-4 text-[#3B82F6]" /> Why This Trade
             </h3>
             <ul className="space-y-3">
               {(a.reasons ?? []).map((r: string, i: number) => (
                 <li key={i} className="flex gap-3 text-sm">
-                  <CheckCircle className="size-4 text-primary shrink-0 mt-0.5" />
+                  <CheckCircle className="size-4 text-[#3B82F6] shrink-0 mt-0.5" />
                   <span className="font-medium">{highlightSMC(r)}</span>
                 </li>
               ))}
@@ -384,7 +384,7 @@ function AnalysisResult() {
 
           {scenarios && (
             <div className="space-y-3">
-              <h3 className="font-bold text-xs ml-1 uppercase tracking-wider text-muted-foreground">
+              <h3 className="font-bold text-xs ml-1 uppercase tracking-wider text-gray-400">
                 Execution Scenarios
               </h3>
               {[
@@ -398,9 +398,9 @@ function AnalysisResult() {
                 {
                   label: "Balanced ✦",
                   s: scenarios.balanced,
-                  color: "text-primary",
+                  color: "text-[#3B82F6]",
                   border: "border-l-primary/80",
-                  bg: "bg-primary/5",
+                  bg: "bg-[#3B82F6]/5",
                   glow: true,
                 },
                 {
@@ -420,30 +420,30 @@ function AnalysisResult() {
                       <span className={`text-xs font-bold uppercase tracking-wider ${color}`}>
                         {label}
                       </span>
-                      <span className="text-[10px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] font-bold text-gray-400 bg-muted px-1.5 py-0.5 rounded">
                         PROB: {s.probability}%
                       </span>
                     </div>
-                    <span className="font-mono text-sm font-extrabold bg-card px-2 py-0.5 rounded border border-border">
+                    <span className="font-mono text-sm font-extrabold bg-[#111827] px-2 py-0.5 rounded border border-[#1E293B]">
                       R:R {s.rr}
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="bg-card p-2.5 rounded-xl border border-border">
-                      <div className="text-[9px] text-muted-foreground font-bold uppercase mb-1">
+                    <div className="bg-[#111827] p-2.5 rounded-xl border border-[#1E293B]">
+                      <div className="text-[9px] text-gray-400 font-bold uppercase mb-1">
                         Entry
                       </div>
                       <div className="font-mono text-sm font-bold">{s.entry}</div>
                     </div>
-                    <div className="bg-bearish/5 p-2.5 rounded-xl border border-bearish/20">
-                      <div className="text-[9px] text-bearish font-bold uppercase mb-1">SL</div>
-                      <div className="font-mono text-sm font-bold text-bearish">
+                    <div className="bg-bearish/5 p-2.5 rounded-xl border border-red-500/20">
+                      <div className="text-[9px] text-red-400 font-bold uppercase mb-1">SL</div>
+                      <div className="font-mono text-sm font-bold text-red-400">
                         {s.sl?.toLocaleString()}
                       </div>
                     </div>
-                    <div className="bg-bullish/5 p-2.5 rounded-xl border border-bullish/20">
-                      <div className="text-[9px] text-bullish font-bold uppercase mb-1">TP</div>
-                      <div className="font-mono text-sm font-bold text-bullish">
+                    <div className="bg-emerald-500/15/5 p-2.5 rounded-xl border border-emerald-500/20">
+                      <div className="text-[9px] text-emerald-400 font-bold uppercase mb-1">TP</div>
+                      <div className="font-mono text-sm font-bold text-emerald-400">
                         {s.tp2?.toLocaleString()}
                       </div>
                     </div>
@@ -460,31 +460,31 @@ function AnalysisResult() {
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           {a.key_levels && (
             <div className="vixor-card p-5">
-              <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <BarChart2 className="size-4 text-primary" /> Key SMC Levels
+              <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                <BarChart2 className="size-4 text-[#3B82F6]" /> Key SMC Levels
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <span className="text-xs font-bold text-bearish uppercase tracking-wider">
+                  <span className="text-xs font-bold text-red-400 uppercase tracking-wider">
                     Resistance / BSL
                   </span>
                   {((a.key_levels as any).resistance || []).map((l: number, i: number) => (
                     <div
                       key={i}
-                      className="bg-bearish/5 border border-bearish/20 px-3 py-2 rounded-lg font-mono text-sm font-bold text-bearish/90"
+                      className="bg-bearish/5 border border-red-500/20 px-3 py-2 rounded-lg font-mono text-sm font-bold text-red-400/90"
                     >
                       {l.toLocaleString()}
                     </div>
                   ))}
                 </div>
                 <div className="space-y-2">
-                  <span className="text-xs font-bold text-bullish uppercase tracking-wider">
+                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
                     Support / SSL
                   </span>
                   {((a.key_levels as any).support || []).map((l: number, i: number) => (
                     <div
                       key={i}
-                      className="bg-bullish/5 border border-bullish/20 px-3 py-2 rounded-lg font-mono text-sm font-bold text-bullish/90"
+                      className="bg-emerald-500/15/5 border border-emerald-500/20 px-3 py-2 rounded-lg font-mono text-sm font-bold text-emerald-400/90"
                     >
                       {l.toLocaleString()}
                     </div>
@@ -496,30 +496,30 @@ function AnalysisResult() {
 
           {a.liquidity_zones && (
             <div className="vixor-card p-5">
-              <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Activity className="size-4 text-primary" /> Liquidity Pools
+              <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                <Activity className="size-4 text-[#3B82F6]" /> Liquidity Pools
               </h3>
               <div className="space-y-2">
                 {((a.liquidity_zones as any).buySide || []).map((l: number, i: number) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-3 rounded-xl bg-bullish/5 border border-bullish/20"
+                    className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/15/5 border border-emerald-500/20"
                   >
-                    <span className="text-xs font-bold text-bullish uppercase">
+                    <span className="text-xs font-bold text-emerald-400 uppercase">
                       Buy-Side Liquidity (BSL)
                     </span>
-                    <span className="font-mono font-bold text-bullish">{l.toLocaleString()}</span>
+                    <span className="font-mono font-bold text-emerald-400">{l.toLocaleString()}</span>
                   </div>
                 ))}
                 {((a.liquidity_zones as any).sellSide || []).map((l: number, i: number) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-3 rounded-xl bg-bearish/5 border border-bearish/20"
+                    className="flex items-center justify-between p-3 rounded-xl bg-bearish/5 border border-red-500/20"
                   >
-                    <span className="text-xs font-bold text-bearish uppercase">
+                    <span className="text-xs font-bold text-red-400 uppercase">
                       Sell-Side Liquidity (SSL)
                     </span>
-                    <span className="font-mono font-bold text-bearish">{l.toLocaleString()}</span>
+                    <span className="font-mono font-bold text-red-400">{l.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -528,8 +528,8 @@ function AnalysisResult() {
 
           {a.market_structure && (
             <div className="vixor-card p-5">
-              <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <TrendingUp className="size-4 text-primary" /> Market Structure (SMC)
+              <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                <TrendingUp className="size-4 text-[#3B82F6]" /> Market Structure (SMC)
               </h3>
               <div className="space-y-2">
                 {[
@@ -555,14 +555,14 @@ function AnalysisResult() {
                 ].map(({ label, value, danger }) => (
                   <div
                     key={label}
-                    className={`flex justify-between items-center p-3 rounded-xl border ${danger ? "bg-bearish/10 border-bearish/30" : "bg-card border-border"}`}
+                    className={`flex justify-between items-center p-3 rounded-xl border ${danger ? "bg-red-500/10 border-red-500/30" : "bg-[#111827] border-[#1E293B]"}`}
                   >
                     <span
-                      className={`text-xs font-bold uppercase ${danger ? "text-bearish" : "text-muted-foreground"}`}
+                      className={`text-xs font-bold uppercase ${danger ? "text-red-400" : "text-gray-400"}`}
                     >
                       {label}
                     </span>
-                    <span className={`font-mono font-bold ${danger ? "text-bearish" : ""}`}>
+                    <span className={`font-mono font-bold ${danger ? "text-red-400" : ""}`}>
                       {String(value)}
                     </span>
                   </div>
@@ -584,14 +584,14 @@ function AnalysisResult() {
       {tab === "Management" && (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="vixor-card p-5">
-            <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <Layers className="size-4 text-primary" /> Step-by-Step Management
+            <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-gray-400 flex items-center gap-2">
+              <Layers className="size-4 text-[#3B82F6]" /> Step-by-Step Management
             </h3>
             <div className="space-y-3">
               {management.map((m, i) => (
-                <div key={i} className="flex gap-3 bg-card border border-border p-3.5 rounded-xl">
+                <div key={i} className="flex gap-3 bg-[#111827] border border-[#1E293B] p-3.5 rounded-xl">
                   <div
-                    className={`size-7 rounded-full flex items-center justify-center shrink-0 font-mono text-xs font-bold ${i === 0 ? "gradient-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                    className={`size-7 rounded-full flex items-center justify-center shrink-0 font-mono text-xs font-bold ${i === 0 ? "bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white" : "bg-muted text-gray-400"}`}
                   >
                     {i + 1}
                   </div>
@@ -602,15 +602,15 @@ function AnalysisResult() {
           </div>
 
           {a.risk_reasons && a.risk_reasons.length > 0 && (
-            <div className="vixor-card p-5 border-bearish/20">
-              <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-bearish flex items-center gap-2">
-                <ShieldCheck className="size-4 text-bearish" /> Risk Factors
+            <div className="vixor-card p-5 border-red-500/20">
+              <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-red-400 flex items-center gap-2">
+                <ShieldCheck className="size-4 text-red-400" /> Risk Factors
               </h3>
               <ul className="space-y-2">
                 {a.risk_reasons.map((r: string, i: number) => (
                   <li key={i} className="flex gap-2 text-sm">
-                    <span className="text-bearish mt-0.5 shrink-0">•</span>
-                    <span className="font-medium text-muted-foreground">{r}</span>
+                    <span className="text-red-400 mt-0.5 shrink-0">•</span>
+                    <span className="font-medium text-gray-400">{r}</span>
                   </li>
                 ))}
               </ul>
@@ -619,8 +619,8 @@ function AnalysisResult() {
 
           <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-wait/10 border border-neutral-wait/20">
             <AlertTriangle className="size-5 text-neutral-wait shrink-0 mt-0.5" />
-            <div className="text-xs font-medium text-muted-foreground leading-relaxed">
-              <strong className="text-foreground block mb-1">Risk Disclaimer</strong>
+            <div className="text-xs font-medium text-gray-400 leading-relaxed">
+              <strong className="text-white block mb-1">Risk Disclaimer</strong>
               This analysis is generated by Vixor AI based on technical patterns and fundamental
               data. It is <strong>not financial advice</strong>. Always apply your own risk
               management and judgment before executing any trade.
@@ -648,8 +648,8 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
   if (!newsImpact) {
     return (
       <div className="vixor-card p-8 text-center space-y-2 animate-in fade-in duration-300">
-        <Newspaper className="size-10 text-muted-foreground mx-auto" />
-        <p className="text-sm text-muted-foreground">
+        <Newspaper className="size-10 text-gray-400 mx-auto" />
+        <p className="text-sm text-gray-400">
           No fundamental news analysis for this session.
         </p>
       </div>
@@ -665,15 +665,15 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
       {/* Sentiment Overview */}
       <div className="vixor-card p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-            <Activity className="size-4 text-primary" /> Fundamental Sentiment
+          <h3 className="font-bold text-xs uppercase tracking-wider text-gray-400 flex items-center gap-2">
+            <Activity className="size-4 text-[#3B82F6]" /> Fundamental Sentiment
           </h3>
           <span
             className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border ${
               isBullish
-                ? "bg-bullish/10 text-bullish border-bullish/30"
+                ? "bg-emerald-500/15/10 text-emerald-400 border-emerald-500/30"
                 : isBearish
-                  ? "bg-bearish/10 text-bearish border-bearish/30"
+                  ? "bg-red-500/10 text-red-400 border-red-500/30"
                   : "bg-neutral-wait/10 text-neutral-wait border-neutral-wait/30"
             }`}
           >
@@ -682,9 +682,9 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
         </div>
 
         <div
-          className={`p-4 rounded-xl border-l-4 ${isBullish ? "border-l-bullish bg-bullish/5" : isBearish ? "border-l-bearish bg-bearish/5" : "border-l-neutral-wait bg-neutral-wait/5"}`}
+          className={`p-4 rounded-xl border-l-4 ${isBullish ? "border-l-bullish bg-emerald-500/15/5" : isBearish ? "border-l-bearish bg-bearish/5" : "border-l-neutral-wait bg-neutral-wait/5"}`}
         >
-          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 block mb-1">
             AI Confluence Verdict
           </span>
           <p className="text-sm font-medium leading-relaxed">{highlightSMC(verdict)}</p>
@@ -693,31 +693,31 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
 
       {/* News Articles */}
       <div className="space-y-3">
-        <h3 className="font-bold text-xs ml-1 uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-          <Newspaper className="size-4 text-primary" /> Key News Drivers
+        <h3 className="font-bold text-xs ml-1 uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+          <Newspaper className="size-4 text-[#3B82F6]" /> Key News Drivers
         </h3>
         {relevant_news.map((n, i) => (
           <div key={i} className="vixor-card p-4 relative overflow-hidden space-y-3">
             <div
-              className={`absolute left-0 top-0 bottom-0 w-1 ${n.impact === "POSITIVE" ? "bg-bullish" : n.impact === "NEGATIVE" ? "bg-bearish" : "bg-neutral-wait"}`}
+              className={`absolute left-0 top-0 bottom-0 w-1 ${n.impact === "POSITIVE" ? "bg-emerald-500/15" : n.impact === "NEGATIVE" ? "bg-bearish" : "bg-neutral-wait"}`}
             />
             <div className="flex items-start justify-between gap-3 pl-1">
               <div className="min-w-0">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase bg-muted px-1.5 py-0.5 rounded">
+                <span className="text-[9px] font-bold text-gray-400 uppercase bg-muted px-1.5 py-0.5 rounded">
                   {n.source}
                 </span>
-                <h4 className="font-bold text-sm text-foreground mt-1.5 leading-snug">
+                <h4 className="font-bold text-sm text-white mt-1.5 leading-snug">
                   {n.headline}
                 </h4>
               </div>
               <span
-                className={`text-[9px] font-bold px-2 py-0.5 rounded shrink-0 uppercase ${n.impact === "POSITIVE" ? "bg-bullish/10 text-bullish" : n.impact === "NEGATIVE" ? "bg-bearish/10 text-bearish" : "bg-neutral-wait/10 text-neutral-wait"}`}
+                className={`text-[9px] font-bold px-2 py-0.5 rounded shrink-0 uppercase ${n.impact === "POSITIVE" ? "bg-emerald-500/15/10 text-emerald-400" : n.impact === "NEGATIVE" ? "bg-red-500/10 text-red-400" : "bg-neutral-wait/10 text-neutral-wait"}`}
               >
                 {n.impact}
               </span>
             </div>
-            <div className="p-3 rounded-lg bg-card/60 border border-border text-xs text-muted-foreground leading-relaxed ml-1">
-              <strong className="text-[9px] uppercase tracking-wider text-foreground block mb-1">
+            <div className="p-3 rounded-lg bg-[#111827]/60 border border-[#1E293B] text-xs text-gray-400 leading-relaxed ml-1">
+              <strong className="text-[9px] uppercase tracking-wider text-white block mb-1">
                 Technical Impact
               </strong>
               {highlightSMC(n.explanation)}
@@ -774,16 +774,16 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
             queryClient.invalidateQueries({ queryKey: ["analysis-notes", analysisId] });
           }
         }}
-        className="h-12 rounded-xl bg-card border border-border font-bold text-sm flex items-center justify-center gap-2 hover:bg-card-hover active:scale-95 transition-all"
+        className="h-12 rounded-xl bg-[#111827] border border-[#1E293B] font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1a2234] active:scale-95 transition-all"
       >
-        <StickyNote className="size-4 text-primary" /> Notes
+        <StickyNote className="size-4 text-[#3B82F6]" /> Notes
       </button>
 
       {/* Notes panel below the action buttons */}
       {showNotes && (
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300 col-span-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">
               Notes for this analysis
             </h3>
             <button
@@ -791,7 +791,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                 setEditingNote(null);
                 setNoteEditorOpen(true);
               }}
-              className="h-7 px-3 rounded-lg gradient-primary text-primary-foreground text-[11px] font-bold flex items-center gap-1 hover:scale-[1.02] active:scale-95 transition-transform"
+              className="h-7 px-3 rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-[11px] font-bold flex items-center gap-1 hover:scale-[1.02] active:scale-95 transition-transform"
             >
               <Plus className="size-3" /> Add Note
             </button>
@@ -799,14 +799,14 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
 
           {notesQuery.isLoading ? (
             <div className="vixor-card p-4 text-center">
-              <Loader2 className="size-4 text-primary animate-spin mx-auto" />
+              <Loader2 className="size-4 text-[#3B82F6] animate-spin mx-auto" />
             </div>
           ) : notes.length > 0 ? (
             <div className="space-y-2">
               {notes.map((note) => (
                 <div
                   key={note.id}
-                  className="vixor-card p-3 transition-colors hover:bg-card-hover cursor-pointer"
+                  className="vixor-card p-3 transition-colors hover:bg-[#1a2234] cursor-pointer"
                   onClick={() => {
                     setEditingNote(note);
                     setNoteEditorOpen(true);
@@ -815,14 +815,14 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        {note.is_pinned && <Pin className="size-3 text-primary shrink-0" />}
-                        <span className="font-bold text-sm text-foreground truncate">
+                        {note.is_pinned && <Pin className="size-3 text-[#3B82F6] shrink-0" />}
+                        <span className="font-bold text-sm text-white truncate">
                           {note.title || "Untitled"}
                         </span>
                         <span className="text-sm shrink-0">{MOOD_EMOJI[note.mood]}</span>
                       </div>
                       {note.content && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 mb-1.5 leading-relaxed">
+                        <p className="text-xs text-gray-400 line-clamp-2 mb-1.5 leading-relaxed">
                           {note.content}
                         </p>
                       )}
@@ -830,12 +830,12 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                         {note.tags?.map((tag) => (
                           <span
                             key={tag}
-                            className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-muted text-muted-foreground"
+                            className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-muted text-gray-400"
                           >
                             #{tag}
                           </span>
                         ))}
-                        <span className="text-[10px] font-mono text-muted-foreground ml-auto">
+                        <span className="text-[10px] font-mono text-gray-400 ml-auto">
                           {relTime(note.created_at)}
                         </span>
                       </div>
@@ -845,7 +845,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                         e.stopPropagation();
                         setDeleteTarget(note.id);
                       }}
-                      className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-bearish hover:bg-bearish/10 transition-all shrink-0"
+                      className="size-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
                     >
                       <Trash2 className="size-3" />
                     </button>
@@ -855,19 +855,19 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
             </div>
           ) : (
             <div className="vixor-card p-6 text-center">
-              <StickyNote className="size-6 text-muted-foreground/30 mx-auto mb-2" />
-              <div className="text-xs text-muted-foreground">No notes for this analysis yet</div>
+              <StickyNote className="size-6 text-gray-400/30 mx-auto mb-2" />
+              <div className="text-xs text-gray-400">No notes for this analysis yet</div>
             </div>
           )}
 
           {/* Delete confirmation */}
           {deleteTarget && (
-            <div className="vixor-card p-3 flex items-center justify-between border-bearish/30 bg-bearish/5">
-              <span className="text-xs text-muted-foreground">Delete this note?</span>
+            <div className="vixor-card p-3 flex items-center justify-between border-red-500/30 bg-bearish/5">
+              <span className="text-xs text-gray-400">Delete this note?</span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setDeleteTarget(null)}
-                  className="h-7 px-3 rounded-lg bg-card border border-border text-xs font-bold"
+                  className="h-7 px-3 rounded-lg bg-[#111827] border border-[#1E293B] text-xs font-bold"
                 >
                   Cancel
                 </button>
@@ -903,16 +903,16 @@ function BackHeader() {
     <div className="flex items-center justify-between pt-2 pb-1">
       <Link
         to="/"
-        className="size-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors"
+        className="size-10 rounded-xl bg-[#111827] border border-[#1E293B] flex items-center justify-center hover:bg-[#1a2234] transition-colors"
       >
         <ArrowLeft className="size-5" />
       </Link>
       <div className="flex gap-2">
-        <button className="size-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors">
-          <Bookmark className="size-4 text-muted-foreground" />
+        <button className="size-10 rounded-xl bg-[#111827] border border-[#1E293B] flex items-center justify-center hover:bg-[#1a2234] transition-colors">
+          <Bookmark className="size-4 text-gray-400" />
         </button>
-        <button className="size-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors">
-          <Share2 className="size-4 text-muted-foreground" />
+        <button className="size-10 rounded-xl bg-[#111827] border border-[#1E293B] flex items-center justify-center hover:bg-[#1a2234] transition-colors">
+          <Share2 className="size-4 text-gray-400" />
         </button>
       </div>
     </div>
@@ -926,12 +926,12 @@ function Loading({ label }: { label: string }) {
       <div className="vixor-card p-10 flex-1 flex flex-col items-center justify-center text-center">
         <div className="relative mb-6">
           <div className="absolute inset-0 rounded-2xl bg-primary/20 animate-ping" />
-          <div className="relative size-16 rounded-2xl gradient-primary glow-primary flex items-center justify-center">
-            <Loader2 className="size-8 text-primary-foreground animate-spin" strokeWidth={2.5} />
+          <div className="relative size-16 rounded-2xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB]  flex items-center justify-center">
+            <Loader2 className="size-8 text-white animate-spin" strokeWidth={2.5} />
           </div>
         </div>
         <div className="text-lg font-bold tracking-tight">{label}</div>
-        <div className="text-sm font-medium text-muted-foreground mt-2">
+        <div className="text-sm font-medium text-gray-400 mt-2">
           Connecting to Vixor Intelligence…
         </div>
       </div>
