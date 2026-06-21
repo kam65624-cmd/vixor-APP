@@ -1,26 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RefreshCw, Zap, Shield, Activity, TrendingUp, AlertTriangle } from "lucide-react";
 
 // ============================================================================
 // VIXOR Arbitrage Dashboard
-// ============================================================================
-//
-// Displays:
-//   - Bot status (mode, dry-run, execution enabled)
-//   - Latest scan results (opportunities found)
-//   - Bot stats (total scans, trades, profit)
-//   - Manual scan trigger button
-//   - Safety warnings (dry-run mode, etc.)
-//
-// Security:
-//   - Page is under _authenticated/ so only logged-in users can access
-//   - Manual scan calls server function with user context
-//   - Live execution requires admin role (future)
 // ============================================================================
 
 interface ArbitrageOpportunity {
@@ -48,6 +31,20 @@ interface BotStats {
   circuitBreakerOpen: boolean;
   lastScanAt?: number;
 }
+
+const card = {
+  background: "#111827",
+  border: "1px solid rgba(255,255,255,0.06)",
+  borderRadius: "12px",
+};
+const mono = { fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace" };
+const labelStyle = {
+  fontSize: "10px",
+  fontWeight: 700,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.05em",
+  color: "#7B8BA8",
+};
 
 function ArbDashboard() {
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([]);
@@ -85,163 +82,220 @@ function ArbDashboard() {
   }, [runScan]);
 
   return (
-    <div className="space-y-6 p-6">
+    <div
+      className="w-full"
+      style={{
+        background: "#0A0E1A",
+        color: "#F0F4FC",
+        fontFamily: "'Inter', system-ui, sans-serif",
+      }}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" style={{ padding: "24px 0" }}>
         <div>
-          <h1 className="text-2xl font-bold text-yellow-400">Arbitrage Terminal</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-2xl font-bold" style={{ color: "#F59E0B" }}>
+            Arbitrage Terminal
+          </h1>
+          <p className="text-sm" style={{ color: "#7B8BA8" }}>
             Cross-DEX + Triangular + CEX-DEX opportunities (ported from axiom-arbitrage)
           </p>
         </div>
-        <Button onClick={runScan} disabled={scanning} variant="default">
+        <button
+          onClick={runScan}
+          disabled={scanning}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold"
+          style={{
+            background: scanning
+              ? "rgba(255,255,255,0.05)"
+              : "linear-gradient(135deg, #3B82F6, #2563EB)",
+            color: scanning ? "#7B8BA8" : "#fff",
+            border: scanning ? "1px solid rgba(255,255,255,0.06)" : "none",
+            opacity: scanning ? 0.7 : 1,
+          }}
+        >
           {scanning ? (
             <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              <RefreshCw className="size-4 animate-spin" />
               Scanning...
             </>
           ) : (
             <>
-              <Zap className="mr-2 h-4 w-4" />
+              <Zap className="size-4" />
               Scan Now
             </>
           )}
-        </Button>
+        </button>
       </div>
 
       {/* Safety Warning */}
-      <Alert className="border-yellow-500/30 bg-yellow-500/5">
-        <Shield className="h-4 w-4 text-yellow-500" />
-        <AlertDescription className="text-yellow-200">
+      <div
+        className="flex items-start gap-3 p-4"
+        style={{
+          ...card,
+          border: "1px solid rgba(245,158,11,0.3)",
+          background: "rgba(245,158,11,0.05)",
+        }}
+      >
+        <Shield className="size-4 shrink-0 mt-0.5" style={{ color: "#F59E0B" }} />
+        <div className="text-sm" style={{ color: "#FDE68A" }}>
           <strong>Safety:</strong> Bot runs in <strong>DRY_RUN=true</strong> mode by default. No
           real funds are moved. To enable live execution, set{" "}
-          <code className="rounded bg-muted px-1">ARBITRAGE_EXECUTION_ENABLED=true</code> and{" "}
-          <code className="rounded bg-muted px-1">ARBITRAGE_DRY_RUN=false</code> in env vars.
-        </AlertDescription>
-      </Alert>
+          <code className="px-1 rounded" style={{ background: "rgba(255,255,255,0.08)" }}>
+            ARBITRAGE_EXECUTION_ENABLED=true
+          </code>{" "}
+          and{" "}
+          <code className="px-1 rounded" style={{ background: "rgba(255,255,255,0.08)" }}>
+            ARBITRAGE_DRY_RUN=false
+          </code>{" "}
+          in env vars.
+        </div>
+      </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Activity className="h-3 w-3" /> Total Scans
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalScans}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-xs text-muted-foreground">
-                <TrendingUp className="h-3 w-3" /> Opportunities
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-400">{stats.opportunitiesFound}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Zap className="h-3 w-3" /> Trades
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.tradesExecuted}
-                <span className="ml-1 text-xs text-muted-foreground">
-                  ({stats.tradesSucceeded} ✓)
-                </span>
+        <div className="grid grid-cols-2 gap-4" style={{ marginTop: "20px" }}>
+          {[
+            {
+              icon: Activity,
+              label: "Total Scans",
+              value: String(stats.totalScans),
+              color: "#F0F4FC",
+            },
+            {
+              icon: TrendingUp,
+              label: "Opportunities",
+              value: String(stats.opportunitiesFound),
+              color: "#22C55E",
+            },
+            {
+              icon: Zap,
+              label: "Trades",
+              value: `${stats.tradesExecuted} (${stats.tradesSucceeded} ✓)`,
+              color: "#F0F4FC",
+            },
+            {
+              icon: AlertTriangle,
+              label: "Circuit Breaker",
+              value: stats.circuitBreakerOpen ? "OPEN" : "CLOSED",
+              color: stats.circuitBreakerOpen ? "#EF4444" : "#22C55E",
+              sub: `${stats.consecutiveFailures} failures`,
+            },
+          ].map((s) => (
+            <div key={s.label} className="p-4" style={card}>
+              <div className="flex items-center gap-2 mb-2">
+                <s.icon className="size-3" style={{ color: "#7B8BA8" }} />
+                <span style={labelStyle}>{s.label}</span>
               </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-xs text-muted-foreground">
-                <AlertTriangle className="h-3 w-3" /> Circuit Breaker
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.circuitBreakerOpen ? (
-                  <span className="text-red-400">OPEN</span>
-                ) : (
-                  <span className="text-green-400">CLOSED</span>
-                )}
+              <div className="text-2xl font-bold" style={{ color: s.color }}>
+                {s.value}
               </div>
-              <div className="text-xs text-muted-foreground">
-                {stats.consecutiveFailures} failures
-              </div>
-            </CardContent>
-          </Card>
+              {s.sub && (
+                <div className="text-xs mt-1" style={{ color: "#7B8BA8" }}>
+                  {s.sub}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
       {/* Error */}
       {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div
+          className="p-4"
+          style={{
+            ...card,
+            marginTop: "20px",
+            border: "1px solid rgba(239,68,68,0.3)",
+            background: "rgba(239,68,68,0.05)",
+          }}
+        >
+          <span style={{ color: "#EF4444" }}>{error}</span>
+        </div>
       )}
 
       {/* Opportunities */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Latest Opportunities ({opportunities.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="mt-6" style={card}>
+        <div className="p-4 pb-0">
+          <h3 className="text-sm font-bold">Latest Opportunities ({opportunities.length})</h3>
+        </div>
+        <div className="p-4">
           {opportunities.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
+            <p className="py-8 text-center text-sm" style={{ color: "#7B8BA8" }}>
               No opportunities detected. Click "Scan Now" to run a manual scan.
             </p>
           ) : (
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               {opportunities.map((opp) => (
                 <div
                   key={opp.id}
-                  className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-3"
+                  className="flex items-center justify-between p-3"
+                  style={{
+                    background: "rgba(17,24,39,0.5)",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    borderRadius: "12px",
+                  }}
                 >
                   <div className="flex items-center gap-3">
-                    <Badge
-                      variant={
-                        opp.strategy === "cross-dex"
-                          ? "default"
-                          : opp.strategy === "triangular"
-                            ? "secondary"
-                            : "outline"
-                      }
+                    <span
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                      style={{
+                        background:
+                          opp.strategy === "cross-dex"
+                            ? "rgba(59,130,246,0.15)"
+                            : opp.strategy === "triangular"
+                              ? "rgba(245,158,11,0.15)"
+                              : "transparent",
+                        border:
+                          opp.strategy === "cross-dex"
+                            ? "1px solid rgba(59,130,246,0.3)"
+                            : opp.strategy === "triangular"
+                              ? "1px solid rgba(245,158,11,0.3)"
+                              : "1px solid rgba(255,255,255,0.1)",
+                        color:
+                          opp.strategy === "cross-dex"
+                            ? "#60A5FA"
+                            : opp.strategy === "triangular"
+                              ? "#F59E0B"
+                              : "#7B8BA8",
+                      }}
                     >
                       {opp.strategy}
-                    </Badge>
+                    </span>
                     <div>
-                      <div className="font-mono text-sm">
+                      <div className="text-sm" style={mono}>
                         {opp.startToken.symbol} → {opp.endToken.symbol}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs" style={{ color: "#7B8BA8" }}>
                         {opp.legs.length} legs · confidence {opp.confidence}%
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-mono text-sm font-bold text-green-400">
+                    <div className="text-sm font-bold" style={{ ...mono, color: "#22C55E" }}>
                       +{opp.netProfitBps} bps
                     </div>
-                    <div className="text-xs text-muted-foreground">net profit</div>
+                    <div className="text-xs" style={{ color: "#7B8BA8" }}>
+                      net profit
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Bot Mode Indicator */}
-      <div className="text-center text-xs text-muted-foreground">
-        Bot Mode: <Badge variant="outline">{botMode}</Badge> · Ported from
-        axiom-arbitrage-trading-bot
+      <div className="text-center text-xs py-4" style={{ color: "#4A5568" }}>
+        Bot Mode:{" "}
+        <span
+          className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+          style={{ border: "1px solid rgba(255,255,255,0.1)", color: "#7B8BA8" }}
+        >
+          {botMode}
+        </span>{" "}
+        · Ported from axiom-arbitrage-trading-bot
       </div>
     </div>
   );

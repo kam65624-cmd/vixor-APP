@@ -29,6 +29,56 @@ export const Route = createFileRoute("/_authenticated/backtest")({
   component: BacktestPage,
 });
 
+// ── Axiom Design System ──
+const S = {
+  bg: "#0A0E1A",
+  card: "#111827",
+  cardBorder: "1px solid rgba(255,255,255,0.06)",
+  divider: "1px solid rgba(255,255,255,0.06)",
+  text1: "#F0F4FC",
+  text2: "#7B8BA8",
+  text3: "#4A5568",
+  accent: "#3B82F6",
+  accentLight: "#60A5FA",
+  bullish: "#22C55E",
+  bearish: "#EF4444",
+  warning: "#F59E0B",
+  font: "'Inter', system-ui, sans-serif",
+  mono: "'JetBrains Mono', monospace",
+  radius: 8,
+  badgeRadius: 6,
+} as const;
+
+const cardStyle: React.CSSProperties = {
+  background: S.card,
+  border: S.cardBorder,
+  borderRadius: S.radius,
+};
+
+const labelStyle: React.CSSProperties = {
+  fontSize: 10,
+  textTransform: "uppercase",
+  fontWeight: 700,
+  color: S.text2,
+  marginBottom: 6,
+  display: "block",
+};
+
+const inputStyle: React.CSSProperties = {
+  background: S.card,
+  border: S.cardBorder,
+  color: S.text1,
+  borderRadius: S.badgeRadius,
+  height: 36,
+  paddingLeft: 12,
+  paddingRight: 12,
+  fontSize: 14,
+  fontFamily: S.mono,
+  width: "100%",
+  outline: "none",
+  boxSizing: "border-box",
+};
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -123,7 +173,7 @@ function BacktestPage() {
           riskPercent: form.riskPercent,
           startDate: form.startDate || undefined,
           endDate: form.endDate || undefined,
-          commission: form.commission / 100, // UI uses percentage, backend uses fraction
+          commission: form.commission / 100,
           slippage: form.slippage / 100,
         },
       });
@@ -143,84 +193,87 @@ function BacktestPage() {
   // Show loading
   if (me.isLoading) {
     return (
-      <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-        <div className="flex items-end justify-between">
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 24, fontFamily: S.font }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: S.accent, marginBottom: 2 }}>
               {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: S.text1, margin: 0, letterSpacing: "-0.02em" }}>
               {t("backtest.title") || "Backtest"}
             </h1>
           </div>
         </div>
-        <div className="vixor-card p-6 text-center">
-          <Loader2 className="size-6 animate-spin mx-auto text-primary mb-2" />
-          <div className="text-sm text-muted-foreground">{t("common.loading") || "Loading..."}</div>
+        <div style={{ ...cardStyle, border: S.cardBorder, padding: 24, textAlign: "center" }}>
+          <Loader2 style={{ width: 24, height: 24, color: S.accent, animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
+          <div style={{ fontSize: 14, color: S.text2 }}>{t("common.loading") || "Loading..."}</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 24, fontFamily: S.font }}>
       {/* Header + Points Balance */}
-      <div className="flex items-end justify-between">
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: S.accent, marginBottom: 2 }}>
             {t("signals.vixorIntelligence") || "VIXOR ENGINE"}
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("backtest.title") || "Backtest"}</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: S.text1, margin: 0, letterSpacing: "-0.02em" }}>{t("backtest.title") || "Backtest"}</h1>
         </div>
-        <div
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${hasEnoughPoints ? "bg-primary/10 text-primary" : "bg-bearish/10 text-bearish"}`}
-        >
-          <Coins className="size-3.5" />
+        <div style={{
+          display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: S.badgeRadius,
+          fontSize: 12, fontWeight: 700,
+          background: hasEnoughPoints ? "rgba(59,130,246,0.15)" : "rgba(239,68,68,0.1)",
+          color: hasEnoughPoints ? S.accentLight : S.bearish,
+        }}>
+          <Coins style={{ width: 14, height: 14 }} />
           <span>{pointsBalance}</span>
-          <span className="text-muted-foreground font-normal">{t("common.points") || "pts"}</span>
+          <span style={{ color: S.text2, fontWeight: 400 }}>{t("common.points") || "pts"}</span>
         </div>
       </div>
 
       {/* Configuration Card */}
-      <div className="vixor-card p-4 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <FlaskConical className="size-4 text-primary" />
-          <span className="text-sm font-bold">
+      <div style={{ ...cardStyle, border: S.cardBorder, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <FlaskConical style={{ width: 16, height: 16, color: S.accent }} />
+          <span style={{ fontSize: 14, fontWeight: 700, color: S.text1 }}>
             {t("backtest.configuration") || "Configuration"}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
           {/* Pair */}
           <div>
-            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-              {t("backtest.tradingPair") || "Trading Pair"}
-            </label>
-            <div className="flex flex-wrap gap-1.5">
+            <label style={labelStyle}>{t("backtest.tradingPair") || "Trading Pair"}</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {PAIRS.slice(0, 5).map((pair) => (
                 <button
                   key={pair}
                   onClick={() => setForm((f) => ({ ...f, pair }))}
-                  className={`px-2.5 h-7 rounded-lg text-[11px] font-bold transition-all ${
-                    form.pair === pair
-                      ? "bg-primary/10 text-primary border border-primary/30"
-                      : "bg-muted text-muted-foreground border border-border"
-                  }`}
+                  style={{
+                    padding: "0 10px", height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                    background: form.pair === pair ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.04)",
+                    color: form.pair === pair ? S.accentLight : S.text2,
+                    border: form.pair === pair ? "1px solid rgba(59,130,246,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                  }}
                 >
                   {pair}
                 </button>
               ))}
             </div>
-            <div className="flex flex-wrap gap-1.5 mt-1.5">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
               {PAIRS.slice(5).map((pair) => (
                 <button
                   key={pair}
                   onClick={() => setForm((f) => ({ ...f, pair }))}
-                  className={`px-2.5 h-7 rounded-lg text-[11px] font-bold transition-all ${
-                    form.pair === pair
-                      ? "bg-primary/10 text-primary border border-primary/30"
-                      : "bg-muted text-muted-foreground border border-border"
-                  }`}
+                  style={{
+                    padding: "0 10px", height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                    background: form.pair === pair ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.04)",
+                    color: form.pair === pair ? S.accentLight : S.text2,
+                    border: form.pair === pair ? "1px solid rgba(59,130,246,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                  }}
                 >
                   {pair}
                 </button>
@@ -230,19 +283,19 @@ function BacktestPage() {
 
           {/* Timeframe */}
           <div>
-            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-              {t("backtest.timeframe") || "Timeframe"}
-            </label>
-            <div className="flex gap-1.5">
+            <label style={labelStyle}>{t("backtest.timeframe") || "Timeframe"}</label>
+            <div style={{ display: "flex", gap: 6 }}>
               {TIMEFRAMES.map((tf) => (
                 <button
                   key={tf}
                   onClick={() => setForm((f) => ({ ...f, timeframe: tf }))}
-                  className={`flex-1 h-7 rounded-lg text-[11px] font-bold transition-all border flex items-center justify-center ${
-                    form.timeframe === tf
-                      ? "bg-primary text-primary-foreground border-primary glow-primary"
-                      : "bg-card border-border text-muted-foreground hover:bg-card-hover"
-                  }`}
+                  style={{
+                    flex: 1, height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700,
+                    border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                    background: form.timeframe === tf ? "rgba(59,130,246,0.15)" : S.card,
+                    borderColor: form.timeframe === tf ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)",
+                    color: form.timeframe === tf ? S.accentLight : S.text2,
+                  }}
                 >
                   {tf}
                 </button>
@@ -252,19 +305,19 @@ function BacktestPage() {
 
           {/* Strategy */}
           <div>
-            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-              {t("backtest.strategy") || "Strategy"}
-            </label>
-            <div className="flex flex-wrap gap-1.5">
+            <label style={labelStyle}>{t("backtest.strategy") || "Strategy"}</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {STRATEGY_PRESETS.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setForm((f) => ({ ...f, strategy: s.id }))}
-                  className={`px-2.5 h-7 rounded-lg text-[11px] font-bold transition-all border ${
-                    form.strategy === s.id
-                      ? "bg-primary text-primary-foreground border-primary glow-primary"
-                      : "bg-card border-border text-muted-foreground hover:bg-card-hover"
-                  }`}
+                  style={{
+                    padding: "0 10px", height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700,
+                    border: "1px solid", cursor: "pointer",
+                    background: form.strategy === s.id ? "rgba(59,130,246,0.15)" : S.card,
+                    borderColor: form.strategy === s.id ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)",
+                    color: form.strategy === s.id ? S.accentLight : S.text2,
+                  }}
                 >
                   {s.label}
                 </button>
@@ -273,22 +326,18 @@ function BacktestPage() {
           </div>
 
           {/* Capital + Risk */}
-          <div className="grid grid-cols-2 gap-2">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                {t("backtest.initialCapital") || "Initial Capital ($)"}
-              </label>
+              <label style={labelStyle}>{t("backtest.initialCapital") || "Initial Capital ($)"}</label>
               <input
                 type="number"
                 value={form.initialCapital}
                 onChange={(e) => setForm((f) => ({ ...f, initialCapital: Number(e.target.value) }))}
-                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                style={inputStyle}
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                {t("backtest.risk") || "Risk (%)"}
-              </label>
+              <label style={labelStyle}>{t("backtest.risk") || "Risk (%)"}</label>
               <input
                 type="number"
                 step="0.5"
@@ -296,33 +345,29 @@ function BacktestPage() {
                 max="10"
                 value={form.riskPercent}
                 onChange={(e) => setForm((f) => ({ ...f, riskPercent: Number(e.target.value) }))}
-                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                style={inputStyle}
               />
             </div>
           </div>
 
           {/* Date range */}
-          <div className="col-span-2 grid grid-cols-2 gap-2">
+          <div style={{ gridColumn: "span 2", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                {t("backtest.startDate") || "Start Date"}
-              </label>
+              <label style={labelStyle}>{t("backtest.startDate") || "Start Date"}</label>
               <input
                 type="date"
                 value={form.startDate}
                 onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
-                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                style={inputStyle}
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                {t("backtest.endDate") || "End Date"}
-              </label>
+              <label style={labelStyle}>{t("backtest.endDate") || "End Date"}</label>
               <input
                 type="date"
                 value={form.endDate}
                 onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
-                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                style={inputStyle}
               />
             </div>
           </div>
@@ -330,15 +375,15 @@ function BacktestPage() {
 
         {/* Cost warning if low balance */}
         {!hasEnoughPoints && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-bearish/5 border border-bearish/20">
-            <AlertTriangle className="size-4 text-bearish shrink-0" />
-            <span className="text-xs text-bearish">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, borderRadius: S.badgeRadius, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}>
+            <AlertTriangle style={{ width: 16, height: 16, color: S.bearish, flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: S.bearish }}>
               {t("backtest.needMorePoints") ||
                 `You need ${BACKTEST_COST} points. You have ${pointsBalance}.`}
             </span>
             <a
               href="/premium"
-              className="ml-auto text-[10px] font-bold text-primary whitespace-nowrap"
+              style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: S.accent, whiteSpace: "nowrap", textDecoration: "none" }}
             >
               {t("premium.getPoints") || "Get Points"}
             </a>
@@ -349,18 +394,25 @@ function BacktestPage() {
         <button
           onClick={handleRun}
           disabled={running || !hasEnoughPoints}
-          className={`w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform disabled:opacity-50 ${hasEnoughPoints ? "gradient-primary text-primary-foreground glow-primary hover:scale-[1.02] active:scale-95" : "bg-muted text-muted-foreground"}`}
+          style={{
+            width: "100%", height: 44, borderRadius: S.radius, fontWeight: 700,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            border: "none", cursor: "pointer", opacity: (running || !hasEnoughPoints) ? 0.5 : 1,
+            background: hasEnoughPoints ? S.accent : S.text3,
+            color: hasEnoughPoints ? "#fff" : S.text2,
+            fontFamily: S.font, fontSize: 14,
+          }}
         >
           {running ? (
             <>
-              <Loader2 className="size-4 animate-spin" />
+              <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} />
               {t("backtest.running") || "Running Backtest..."}
             </>
           ) : (
             <>
-              <Play className="size-4" />
+              <Play style={{ width: 16, height: 16 }} />
               <span>{t("backtest.runBacktest") || "Run Backtest"}</span>
-              <span className="text-xs opacity-75">(-{BACKTEST_COST} pts)</span>
+              <span style={{ fontSize: 12, opacity: 0.75 }}>(-{BACKTEST_COST} pts)</span>
             </>
           )}
         </button>
@@ -368,8 +420,8 @@ function BacktestPage() {
 
       {/* Error */}
       {error && (
-        <div className="vixor-card p-3 border-l-4 border-l-bearish">
-          <div className="text-xs text-bearish">{error}</div>
+        <div style={{ ...cardStyle, borderLeft: "4px solid " + S.bearish, padding: 12 }}>
+          <div style={{ fontSize: 12, color: S.bearish }}>{error}</div>
         </div>
       )}
 
@@ -377,54 +429,54 @@ function BacktestPage() {
       {result && (
         <>
           {/* Points spent feedback */}
-          <div className="vixor-card p-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Coins className="size-3.5 text-primary" />
+          <div style={{ ...cardStyle, border: S.cardBorder, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: S.text2 }}>
+              <Coins style={{ width: 14, height: 14, color: S.accent }} />
               <span>
                 -{BACKTEST_COST} {t("common.points") || "pts"}
               </span>
             </div>
-            <div className="text-xs font-bold text-primary">
+            <div style={{ fontSize: 12, fontWeight: 700, color: S.accent }}>
               {(result as any).remainingBalance ?? pointsBalance - BACKTEST_COST}{" "}
               {t("common.points") || "pts"} {t("common.remaining") || "remaining"}
             </div>
           </div>
 
           {/* Metrics Grid */}
-          <div className="vixor-card p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="size-4 text-primary" />
-              <span className="text-sm font-bold">{t("backtest.results") || "Results"}</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-auto">
+          <div style={{ ...cardStyle, border: S.cardBorder, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <BarChart3 style={{ width: 16, height: 16, color: S.accent }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: S.text1 }}>{t("backtest.results") || "Results"}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: S.text3, marginLeft: "auto", fontFamily: S.mono }}>
                 {form.pair} · {form.timeframe}
               </span>
             </div>
 
             {/* Key metrics */}
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
               <MetricCard
-                icon={<TrendingUp className="size-4 text-bullish" />}
+                icon={<TrendingUp style={{ width: 16, height: 16, color: S.bullish }} />}
                 label={t("backtest.totalPnl") || "Total P&L"}
                 value={`$${result.finalEquity.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
                 sub={`${result.metrics.totalReturn > 0 ? "+" : ""}${result.metrics.totalReturn}%`}
                 positive={result.metrics.totalReturn > 0}
               />
               <MetricCard
-                icon={<Target className="size-4 text-primary" />}
+                icon={<Target style={{ width: 16, height: 16, color: S.accent }} />}
                 label={t("backtest.winRate") || "Win Rate"}
                 value={`${result.metrics.winRate}%`}
                 sub={`${result.metrics.winningTrades}W / ${result.metrics.losingTrades}L`}
                 positive={result.metrics.winRate > 50}
               />
               <MetricCard
-                icon={<Shield className="size-4 text-bearish" />}
+                icon={<Shield style={{ width: 16, height: 16, color: S.bearish }} />}
                 label={t("backtest.maxDrawdown") || "Max Drawdown"}
                 value={`${result.metrics.maxDrawdown}%`}
                 sub={`$${result.metrics.maxDrawdownAbs.toLocaleString()}`}
                 positive={false}
               />
               <MetricCard
-                icon={<Activity className="size-4 text-primary" />}
+                icon={<Activity style={{ width: 16, height: 16, color: S.accent }} />}
                 label={t("backtest.sharpeRatio") || "Sharpe Ratio"}
                 value={result.metrics.sharpe.toFixed(2)}
                 sub={`Sortino: ${result.metrics.sortino.toFixed(2)}`}
@@ -433,62 +485,37 @@ function BacktestPage() {
             </div>
 
             {/* Additional stats */}
-            <div className="grid grid-cols-3 gap-3 mt-2">
-              <div className="p-2 rounded-lg bg-background">
-                <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-                  {t("backtest.profitFactor") || "Profit Factor"}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginTop: 8 }}>
+              {[
+                { label: t("backtest.profitFactor") || "Profit Factor", value: String(result.metrics.profitFactor), color: S.text1 },
+                { label: t("backtest.totalTrades") || "Total Trades", value: String(result.metrics.totalTrades), color: S.text1 },
+                { label: t("backtest.expectancy") || "Expectancy", value: `$${result.metrics.expectancy}`, color: S.text1 },
+                { label: t("backtest.avgWin") || "Avg Win", value: `$${result.metrics.avgWin}`, color: S.bullish },
+                { label: t("backtest.avgLoss") || "Avg Loss", value: `$${result.metrics.avgLoss}`, color: S.bearish },
+                { label: t("backtest.cagr") || "CAGR", value: `${result.metrics.cagr}%`, color: S.text1 },
+              ].map((stat) => (
+                <div key={stat.label} style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+                    {stat.label}
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 700, fontFamily: S.mono, color: stat.color }}>{stat.value}</div>
                 </div>
-                <div className="text-sm font-bold font-mono">{result.metrics.profitFactor}</div>
-              </div>
-              <div className="p-2 rounded-lg bg-background">
-                <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-                  {t("backtest.totalTrades") || "Total Trades"}
-                </div>
-                <div className="text-sm font-bold font-mono">{result.metrics.totalTrades}</div>
-              </div>
-              <div className="p-2 rounded-lg bg-background">
-                <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-                  {t("backtest.expectancy") || "Expectancy"}
-                </div>
-                <div className="text-sm font-bold font-mono">${result.metrics.expectancy}</div>
-              </div>
-              <div className="p-2 rounded-lg bg-background">
-                <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-                  {t("backtest.avgWin") || "Avg Win"}
-                </div>
-                <div className="text-sm font-bold font-mono text-bullish">
-                  ${result.metrics.avgWin}
-                </div>
-              </div>
-              <div className="p-2 rounded-lg bg-background">
-                <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-                  {t("backtest.avgLoss") || "Avg Loss"}
-                </div>
-                <div className="text-sm font-bold font-mono text-bearish">
-                  ${result.metrics.avgLoss}
-                </div>
-              </div>
-              <div className="p-2 rounded-lg bg-background">
-                <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-                  {t("backtest.cagr") || "CAGR"}
-                </div>
-                <div className="text-sm font-bold font-mono">{result.metrics.cagr}%</div>
-              </div>
+              ))}
             </div>
           </div>
 
           {/* Equity Curve (simplified SVG) */}
-          <div className="vixor-card p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="size-4 text-primary" />
-              <span className="text-sm font-bold">
+          <div style={{ ...cardStyle, border: S.cardBorder, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <TrendingUp style={{ width: 16, height: 16, color: S.accent }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: S.text1 }}>
                 {t("backtest.equityCurve") || "Equity Curve"}
               </span>
             </div>
-            <div className="w-full h-48 rounded-xl bg-background overflow-hidden relative">
+            <div style={{ width: "100%", height: 192, borderRadius: S.radius, background: S.bg, overflow: "hidden", position: "relative" }}>
               <svg
                 viewBox={`0 0 ${result.equityCurve.length * 4} 192`}
-                className="w-full h-full"
+                style={{ width: "100%", height: "100%" }}
                 preserveAspectRatio="none"
               >
                 {/* Grid lines */}
@@ -499,8 +526,8 @@ function BacktestPage() {
                     y1={i * 48}
                     x2={result.equityCurve.length * 4}
                     y2={i * 48}
-                    stroke="currentColor"
-                    className="text-muted-foreground/10"
+                    stroke={S.text3}
+                    strokeOpacity={0.2}
                     strokeWidth={1}
                   />
                 ))}
@@ -522,40 +549,24 @@ function BacktestPage() {
                     <>
                       <defs>
                         <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop
-                            offset="0%"
-                            stopColor="currentColor"
-                            className="text-primary"
-                            stopOpacity={0.3}
-                          />
-                          <stop
-                            offset="100%"
-                            stopColor="currentColor"
-                            className="text-primary"
-                            stopOpacity={0}
-                          />
+                          <stop offset="0%" stopColor={S.accent} stopOpacity={0.3} />
+                          <stop offset="100%" stopColor={S.accent} stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <path d={`${pathD} L${w},192 L0,192 Z`} fill="url(#eqGrad)" />
-                      <path
-                        d={pathD}
-                        fill="none"
-                        stroke="currentColor"
-                        className="text-primary"
-                        strokeWidth={2}
-                      />
+                      <path d={pathD} fill="none" stroke={S.accent} strokeWidth={2} />
                     </>
                   );
                 })()}
               </svg>
               {/* Y-axis labels */}
-              <div className="absolute top-2 left-2 text-[9px] font-mono text-muted-foreground">
+              <div style={{ position: "absolute", top: 8, left: 8, fontSize: 9, fontFamily: S.mono, color: S.text3 }}>
                 $
                 {Math.max(...result.equityCurve.map((p) => p.equity)).toLocaleString(undefined, {
                   maximumFractionDigits: 0,
                 })}
               </div>
-              <div className="absolute bottom-2 left-2 text-[9px] font-mono text-muted-foreground">
+              <div style={{ position: "absolute", bottom: 8, left: 8, fontSize: 9, fontFamily: S.mono, color: S.text3 }}>
                 $
                 {Math.min(...result.equityCurve.map((p) => p.equity)).toLocaleString(undefined, {
                   maximumFractionDigits: 0,
@@ -566,37 +577,40 @@ function BacktestPage() {
 
           {/* Trade List */}
           {result.trades.length > 0 && (
-            <div className="vixor-card p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="size-4 text-primary" />
-                <span className="text-sm font-bold">{t("backtest.tradeList") || "Trade List"}</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-auto">
+            <div style={{ ...cardStyle, border: S.cardBorder, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <ShoppingBag style={{ width: 16, height: 16, color: S.accent }} />
+                <span style={{ fontSize: 14, fontWeight: 700, color: S.text1 }}>{t("backtest.tradeList") || "Trade List"}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: S.text3, marginLeft: "auto", fontFamily: S.mono }}>
                   {result.trades.length} trades
                 </span>
               </div>
-              <div className="space-y-1.5 max-h-72 overflow-y-auto scrollbar-hide">
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 288, overflowY: "auto" }}>
                 {result.trades.map((trade, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background text-xs"
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8, padding: "8px 12px",
+                      borderRadius: S.badgeRadius, background: S.bg, fontSize: 12,
+                    }}
                   >
-                    <span
-                      className={`font-bold w-5 text-center ${trade.netPnl >= 0 ? "text-bullish" : "text-bearish"}`}
-                    >
+                    <span style={{ fontWeight: 700, width: 20, textAlign: "center", color: trade.netPnl >= 0 ? S.bullish : S.bearish, fontFamily: S.mono }}>
                       {trade.netPnl >= 0 ? "+" : ""}
                     </span>
-                    <span className="font-bold font-mono w-14 text-right">
+                    <span style={{ fontWeight: 700, fontFamily: S.mono, width: 56, textAlign: "right", color: S.text1 }}>
                       ${Math.abs(trade.netPnl).toFixed(0)}
                     </span>
-                    <span className="text-muted-foreground flex-1 truncate">
+                    <span style={{ color: S.text2, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {trade.tag || trade.exitReason || `#${i + 1}`}
                     </span>
-                    <span className="text-[10px] font-mono text-muted-foreground">
+                    <span style={{ fontSize: 10, fontFamily: S.mono, color: S.text3 }}>
                       {trade.durationBars}bars
                     </span>
-                    <span
-                      className={`text-[10px] font-bold ${trade.netPnl >= 0 ? "text-bullish" : "text-bearish"}`}
-                    >
+                    <span style={{
+                      fontSize: 10, fontWeight: 700,
+                      color: trade.netPnl >= 0 ? S.bullish : S.bearish,
+                      fontFamily: S.mono,
+                    }}>
                       {trade.rMultiple?.toFixed(1) || "—"}R
                     </span>
                   </div>
@@ -628,17 +642,17 @@ function MetricCard({
   positive: boolean;
 }) {
   return (
-    <div className="p-3 rounded-xl bg-background border border-border">
-      <div className="flex items-center gap-1.5 mb-1">
+    <div style={{ padding: 12, borderRadius: S.radius, background: S.bg, border: S.cardBorder }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
         {icon}
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+        <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
           {label}
         </span>
       </div>
-      <div className={`text-lg font-bold font-mono ${positive ? "text-bullish" : "text-bearish"}`}>
+      <div style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: positive ? S.bullish : S.bearish }}>
         {value}
       </div>
-      <div className="text-[11px] text-muted-foreground">{sub}</div>
+      <div style={{ fontSize: 11, color: S.text2 }}>{sub}</div>
     </div>
   );
 }

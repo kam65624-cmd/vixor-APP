@@ -23,6 +23,56 @@ export const Route = createFileRoute("/_authenticated/experiments")({
   component: ExperimentsPage,
 });
 
+// ── Axiom Design System ──
+const S = {
+  bg: "#0A0E1A",
+  card: "#111827",
+  cardBorder: "1px solid rgba(255,255,255,0.06)",
+  divider: "1px solid rgba(255,255,255,0.06)",
+  text1: "#F0F4FC",
+  text2: "#7B8BA8",
+  text3: "#4A5568",
+  accent: "#3B82F6",
+  accentLight: "#60A5FA",
+  bullish: "#22C55E",
+  bearish: "#EF4444",
+  warning: "#F59E0B",
+  font: "'Inter', system-ui, sans-serif",
+  mono: "'JetBrains Mono', monospace",
+  radius: 8,
+  badgeRadius: 6,
+} as const;
+
+const cardStyle: React.CSSProperties = {
+  background: S.card,
+  border: S.cardBorder,
+  borderRadius: S.radius,
+};
+
+const labelStyle: React.CSSProperties = {
+  fontSize: 10,
+  textTransform: "uppercase",
+  fontWeight: 700,
+  color: S.text2,
+  marginBottom: 6,
+  display: "block",
+};
+
+const inputStyle: React.CSSProperties = {
+  background: S.card,
+  border: S.cardBorder,
+  color: S.text1,
+  borderRadius: S.badgeRadius,
+  height: 36,
+  paddingLeft: 12,
+  paddingRight: 12,
+  fontSize: 14,
+  fontFamily: S.mono,
+  width: "100%",
+  outline: "none",
+  boxSizing: "border-box",
+};
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -84,12 +134,10 @@ function extractElapsed(
   createdAt?: string,
   completedAt?: string,
 ): number | null {
-  // First try elapsedMs from result
   if (result) {
     const ms = result.elapsedMs as number | undefined;
     if (typeof ms === "number") return ms;
   }
-  // Fallback: calculate from timestamps
   if (createdAt && completedAt) {
     const diff = new Date(completedAt).getTime() - new Date(createdAt).getTime();
     return diff > 0 ? diff : null;
@@ -109,35 +157,25 @@ function extractRankedCount(result: Record<string, unknown> | null): number {
 // ---------------------------------------------------------------------------
 
 function StatusBadge({ status }: { status: ExperimentStatus }) {
-  switch (status) {
-    case "running":
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-          <Loader2 className="size-3 animate-spin" />
-          {status}
-        </span>
-      );
-    case "completed":
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-bullish/10 text-bullish border border-bullish/20">
-          <CheckCircle2 className="size-3" />
-          {status}
-        </span>
-      );
-    case "failed":
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-bearish/10 text-bearish border border-bearish/20">
-          <XCircle className="size-3" />
-          {status}
-        </span>
-      );
-    default:
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground border border-border">
-          {status}
-        </span>
-      );
-  }
+  const config: Record<string, { bg: string; color: string; border: string }> = {
+    running: { bg: "rgba(59,130,246,0.1)", color: S.accent, border: "rgba(59,130,246,0.2)" },
+    completed: { bg: "rgba(34,197,94,0.1)", color: S.bullish, border: "rgba(34,197,94,0.2)" },
+    failed: { bg: "rgba(239,68,68,0.1)", color: S.bearish, border: "rgba(239,68,68,0.2)" },
+    cancelled: { bg: "rgba(255,255,255,0.04)", color: S.text2, border: "rgba(255,255,255,0.06)" },
+  };
+  const c = config[status] || config.cancelled;
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: S.badgeRadius,
+      fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
+      background: c.bg, color: c.color, border: `1px solid ${c.border}`, fontFamily: S.font,
+    }}>
+      {status === "running" && <Loader2 style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }} />}
+      {status === "completed" && <CheckCircle2 style={{ width: 12, height: 12 }} />}
+      {status === "failed" && <XCircle style={{ width: 12, height: 12 }} />}
+      {status}
+    </span>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -171,83 +209,79 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
   const rankedCount = extractRankedCount(experiment.result);
 
   const gradeColor: Record<string, string> = {
-    A: "text-bullish",
-    B: "text-primary",
-    C: "text-yellow-500",
-    D: "text-bearish",
-    F: "text-bearish",
+    A: S.bullish,
+    B: S.accent,
+    C: S.warning,
+    D: S.bearish,
+    F: S.bearish,
   };
 
+  const iconBg = experiment.status === "running"
+    ? "rgba(59,130,246,0.1)"
+    : experiment.status === "completed"
+      ? "rgba(34,197,94,0.1)"
+      : "rgba(239,68,68,0.1)";
+
+  const iconColor = experiment.status === "running"
+    ? S.accent
+    : experiment.status === "completed"
+      ? S.bullish
+      : S.bearish;
+
   return (
-    <div className="vixor-card overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div style={{ ...cardStyle, border: S.cardBorder, overflow: "hidden" }}>
       {/* Main row */}
       <div
-        className="p-4 cursor-pointer hover:bg-card-hover/50 transition-colors"
+        style={{ padding: 16, cursor: "pointer" }}
         onClick={() => setExpanded(!expanded)}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
       >
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex items-center gap-2.5">
-            <div
-              className={`size-10 rounded-xl flex items-center justify-center ${
-                experiment.status === "running"
-                  ? "bg-primary/10"
-                  : experiment.status === "completed"
-                    ? "bg-bullish/10"
-                    : "bg-bearish/10"
-              }`}
-            >
-              <FlaskConical
-                className={`size-5 ${
-                  experiment.status === "running"
-                    ? "text-primary"
-                    : experiment.status === "completed"
-                      ? "text-bullish"
-                      : "text-bearish"
-                }`}
-              />
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 40, height: 40, borderRadius: S.radius, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <FlaskConical style={{ width: 20, height: 20, color: iconColor }} />
             </div>
             <div>
-              <div className="font-bold text-sm">{experiment.config.name}</div>
-              <div className="text-xs text-muted-foreground font-mono">
+              <div style={{ fontWeight: 700, fontSize: 14, color: S.text1 }}>{experiment.config.name}</div>
+              <div style={{ fontSize: 12, color: S.text2, fontFamily: S.mono }}>
                 {experiment.config.assetSymbol} · {experiment.config.timeframe}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <StatusBadge status={experiment.status} />
             <ChevronDown
-              className={`size-4 text-muted-foreground transition-transform ${
-                expanded ? "rotate-180" : ""
-              }`}
+              style={{ width: 16, height: 16, color: S.text3, transition: "transform 200ms", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
             />
           </div>
         </div>
 
         {/* Quick stats row */}
-        <div className="grid grid-cols-4 gap-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           <div>
-            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
               Created
             </div>
-            <div className="text-[11px] font-mono">{formatDate(experiment.created_at)}</div>
+            <div style={{ fontSize: 11, fontFamily: S.mono, color: S.text1 }}>{formatDate(experiment.created_at)}</div>
           </div>
           <div>
-            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
               Generations
             </div>
-            <div className="text-[11px] font-mono font-bold">{experiment.config.generations}</div>
+            <div style={{ fontSize: 11, fontFamily: S.mono, fontWeight: 700, color: S.text1 }}>{experiment.config.generations}</div>
           </div>
           <div>
-            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
               Population
             </div>
-            <div className="text-[11px] font-mono">{experiment.config.populationSize}</div>
+            <div style={{ fontSize: 11, fontFamily: S.mono, color: S.text1 }}>{experiment.config.populationSize}</div>
           </div>
           <div>
-            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
               Duration
             </div>
-            <div className="text-[11px] font-mono">
+            <div style={{ fontSize: 11, fontFamily: S.mono, color: S.text1 }}>
               {elapsedMs ? `${(elapsedMs / 1000).toFixed(1)}s` : "---"}
             </div>
           </div>
@@ -256,96 +290,86 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
 
       {/* Expanded details */}
       {expanded && (
-        <div className="border-t border-border p-4 space-y-3 bg-background/50 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div style={{ borderTop: S.divider, padding: 16, display: "flex", flexDirection: "column", gap: 12, background: "rgba(10,14,26,0.5)" }}>
           {experiment.status === "completed" && bestScore ? (
             <>
               {/* Score summary */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-2 rounded-lg bg-background border border-border">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg, border: S.cardBorder }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
                     Overall Score
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold font-mono text-primary">
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: S.accent }}>
                       {bestScore.overall}
                     </span>
-                    <span
-                      className={`text-lg font-bold ${
-                        gradeColor[bestScore.grade] || "text-muted-foreground"
-                      }`}
-                    >
+                    <span style={{ fontSize: 18, fontWeight: 700, color: gradeColor[bestScore.grade] || S.text2 }}>
                       {bestScore.grade}
                     </span>
                   </div>
                 </div>
-                <div className="p-2 rounded-lg bg-background border border-border">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg, border: S.cardBorder }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
                     Total Return
                   </div>
-                  <div
-                    className={`text-lg font-bold font-mono ${
-                      bestScore.totalReturn > 0 ? "text-bullish" : "text-bearish"
-                    }`}
-                  >
+                  <div style={{
+                    fontSize: 18, fontWeight: 700, fontFamily: S.mono,
+                    color: bestScore.totalReturn > 0 ? S.bullish : S.bearish,
+                  }}>
                     {bestScore.totalReturn > 0 ? "+" : ""}
                     {bestScore.totalReturn}%
                   </div>
                 </div>
-                <div className="p-2 rounded-lg bg-background border border-border">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg, border: S.cardBorder }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
                     Max Drawdown
                   </div>
-                  <div className="text-lg font-bold font-mono text-bearish">
+                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: S.bearish }}>
                     -{bestScore.maxDrawdown}%
                   </div>
                 </div>
-                <div className="p-2 rounded-lg bg-background border border-border">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg, border: S.cardBorder }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
                     Sharpe Ratio
                   </div>
-                  <div
-                    className={`text-lg font-bold font-mono ${
-                      bestScore.sharpe > 1.5
-                        ? "text-bullish"
-                        : bestScore.sharpe > 1
-                          ? "text-primary"
-                          : "text-bearish"
-                    }`}
-                  >
+                  <div style={{
+                    fontSize: 18, fontWeight: 700, fontFamily: S.mono,
+                    color: bestScore.sharpe > 1.5 ? S.bullish : bestScore.sharpe > 1 ? S.accent : S.bearish,
+                  }}>
                     {bestScore.sharpe}
                   </div>
                 </div>
               </div>
 
               {/* Strategy info */}
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div className="p-2 rounded-lg bg-background">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginTop: 8 }}>
+                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
                     Template
                   </div>
-                  <div className="text-xs font-bold font-mono">
+                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: S.mono, color: S.text1 }}>
                     {experiment.config.strategyTemplate}
                   </div>
                 </div>
-                <div className="p-2 rounded-lg bg-background">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
                     Ranked Strategies
                   </div>
-                  <div className="text-xs font-bold font-mono">{rankedCount}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: S.mono, color: S.text1 }}>{rankedCount}</div>
                 </div>
               </div>
             </>
           ) : experiment.status === "running" ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin text-primary" />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: S.text2 }}>
+              <Loader2 style={{ width: 16, height: 16, color: S.accent, animation: "spin 1s linear infinite" }} />
               <span>
                 {translate("experiments.runningMsg") ||
                   "Experiment is running... Results will appear here once complete."}
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-sm text-bearish">
-              <XCircle className="size-4" />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: S.bearish }}>
+              <XCircle style={{ width: 16, height: 16 }} />
               <span>
                 {translate("experiments.failedMsg") ||
                   "This experiment failed. No results available."}
@@ -479,20 +503,20 @@ function ExperimentsPage() {
   // Show loading
   if (me.isLoading) {
     return (
-      <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-        <div className="flex items-end justify-between">
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 24, fontFamily: S.font }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: S.accent, marginBottom: 2 }}>
               {useT("signals.vixorIntelligence") || "VIXOR ENGINE"}
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: S.text1, margin: 0, letterSpacing: "-0.02em" }}>
               {useT("experiments.title") || "Experiments"}
             </h1>
           </div>
         </div>
-        <div className="vixor-card p-6 text-center">
-          <Loader2 className="size-6 animate-spin mx-auto text-primary mb-2" />
-          <div className="text-sm text-muted-foreground">
+        <div style={{ ...cardStyle, border: S.cardBorder, padding: 24, textAlign: "center" }}>
+          <Loader2 style={{ width: 24, height: 24, color: S.accent, animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
+          <div style={{ fontSize: 14, color: S.text2 }}>
             {useT("common.loading") || "Loading..."}
           </div>
         </div>
@@ -501,32 +525,37 @@ function ExperimentsPage() {
   }
 
   return (
-    <div className="space-y-5 pb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 24, fontFamily: S.font }}>
       {/* Header + Points Balance */}
-      <div className="flex items-end justify-between">
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: S.accent, marginBottom: 2 }}>
             {useT("signals.vixorIntelligence") || "VIXOR ENGINE"}
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: S.text1, margin: 0, letterSpacing: "-0.02em" }}>
             {useT("experiments.title") || "Experiments"}
           </h1>
         </div>
-        <div className="flex items-center gap-2">
-          <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${hasEnoughPoints ? "bg-primary/10 text-primary" : "bg-bearish/10 text-bearish"}`}
-          >
-            <Coins className="size-3.5" />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: S.badgeRadius,
+            fontSize: 12, fontWeight: 700,
+            background: hasEnoughPoints ? "rgba(59,130,246,0.15)" : "rgba(239,68,68,0.1)",
+            color: hasEnoughPoints ? S.accentLight : S.bearish,
+          }}>
+            <Coins style={{ width: 14, height: 14 }} />
             <span>{pointsBalance}</span>
-            <span className="text-muted-foreground font-normal">
-              {useT("common.points") || "pts"}
-            </span>
+            <span style={{ color: S.text2, fontWeight: 400 }}>{useT("common.points") || "pts"}</span>
           </div>
           <button
             onClick={() => setShowNewForm((prev) => !prev)}
-            className="h-9 px-3 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary flex items-center gap-1.5 hover:scale-[1.02] active:scale-95 transition-transform cursor-pointer"
+            style={{
+              height: 36, padding: "0 12px", borderRadius: S.radius, background: S.accent, color: "#fff",
+              fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
+              border: "none", cursor: "pointer", fontFamily: S.font,
+            }}
           >
-            <Plus className="size-3.5" />
+            <Plus style={{ width: 14, height: 14 }} />
             {useT("experiments.newExperiment") || "New Experiment"}
           </button>
         </div>
@@ -534,28 +563,28 @@ function ExperimentsPage() {
 
       {/* New experiment form */}
       {showNewForm && (
-        <div className="vixor-card p-4 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="flex items-center gap-2">
-            <FlaskConical className="size-4 text-primary" />
-            <span className="text-sm font-bold">
+        <div style={{ ...cardStyle, border: S.cardBorder, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <FlaskConical style={{ width: 16, height: 16, color: S.accent }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: S.text1 }}>
               {useT("experiments.newExperiment") || "New Experiment"}
             </span>
-            <span className="ml-auto text-[10px] font-bold text-primary">
+            <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: S.accent }}>
               -{EXPERIMENT_COST} pts
             </span>
           </div>
 
           {/* Insufficient points warning */}
           {!hasEnoughPoints && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-bearish/5 border border-bearish/20">
-              <AlertTriangle className="size-4 text-bearish shrink-0" />
-              <span className="text-xs text-bearish">
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, borderRadius: S.badgeRadius, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}>
+              <AlertTriangle style={{ width: 16, height: 16, color: S.bearish, flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: S.bearish }}>
                 {useT("experiments.needMorePoints") ||
                   `You need ${EXPERIMENT_COST} points. You have ${pointsBalance}.`}
               </span>
               <a
                 href="/premium"
-                className="ml-auto text-[10px] font-bold text-primary whitespace-nowrap"
+                style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: S.accent, whiteSpace: "nowrap", textDecoration: "none" }}
               >
                 {useT("premium.getPoints") || "Get Points"}
               </a>
@@ -564,34 +593,31 @@ function ExperimentsPage() {
 
           {/* Name */}
           <div>
-            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-              {useT("experiments.experimentName") || "Experiment Name"}
-            </label>
+            <label style={labelStyle}>{useT("experiments.experimentName") || "Experiment Name"}</label>
             <input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g. SMA Crossover - BTC/USDT"
-              className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              style={{ ...inputStyle, fontFamily: S.font }}
             />
           </div>
 
           {/* Asset + Timeframe */}
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                {useT("experiments.assetSymbol") || "Asset Symbol"}
-              </label>
-              <div className="flex flex-wrap gap-1.5">
+              <label style={labelStyle}>{useT("experiments.assetSymbol") || "Asset Symbol"}</label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {ASSET_SYMBOLS.map((s) => (
                   <button
                     key={s}
                     onClick={() => setNewAsset(s)}
-                    className={`px-2.5 h-7 rounded-lg text-[11px] font-bold transition-all ${
-                      newAsset === s
-                        ? "bg-primary/10 text-primary border border-primary/30"
-                        : "bg-muted text-muted-foreground border border-border"
-                    }`}
+                    style={{
+                      padding: "0 10px", height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                      background: newAsset === s ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.04)",
+                      color: newAsset === s ? S.accentLight : S.text2,
+                      border: newAsset === s ? "1px solid rgba(59,130,246,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                    }}
                   >
                     {s}
                   </button>
@@ -599,19 +625,19 @@ function ExperimentsPage() {
               </div>
             </div>
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                {useT("experiments.timeframe") || "Timeframe"}
-              </label>
-              <div className="flex gap-1.5">
+              <label style={labelStyle}>{useT("experiments.timeframe") || "Timeframe"}</label>
+              <div style={{ display: "flex", gap: 6 }}>
                 {TIMEFRAMES.map((tf) => (
                   <button
                     key={tf}
                     onClick={() => setNewTimeframe(tf)}
-                    className={`flex-1 h-7 rounded-lg text-[11px] font-bold transition-all border flex items-center justify-center ${
-                      newTimeframe === tf
-                        ? "bg-primary text-primary-foreground border-primary glow-primary"
-                        : "bg-card border-border text-muted-foreground hover:bg-card-hover"
-                    }`}
+                    style={{
+                      flex: 1, height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700,
+                      border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                      background: newTimeframe === tf ? "rgba(59,130,246,0.15)" : S.card,
+                      borderColor: newTimeframe === tf ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)",
+                      color: newTimeframe === tf ? S.accentLight : S.text2,
+                    }}
                   >
                     {tf}
                   </button>
@@ -622,19 +648,19 @@ function ExperimentsPage() {
 
           {/* Strategy */}
           <div>
-            <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-              {useT("experiments.strategyTemplate") || "Strategy Template"}
-            </label>
-            <div className="flex flex-wrap gap-1.5">
+            <label style={labelStyle}>{useT("experiments.strategyTemplate") || "Strategy Template"}</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {STRATEGY_TEMPLATES.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setNewStrategy(s.id)}
-                  className={`px-2.5 h-7 rounded-lg text-[11px] font-bold transition-all border ${
-                    newStrategy === s.id
-                      ? "bg-primary text-primary-foreground border-primary glow-primary"
-                      : "bg-card border-border text-muted-foreground hover:bg-card-hover"
-                  }`}
+                  style={{
+                    padding: "0 10px", height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700,
+                    border: "1px solid", cursor: "pointer",
+                    background: newStrategy === s.id ? "rgba(59,130,246,0.15)" : S.card,
+                    borderColor: newStrategy === s.id ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)",
+                    color: newStrategy === s.id ? S.accentLight : S.text2,
+                  }}
                 >
                   {s.label}
                 </button>
@@ -643,31 +669,27 @@ function ExperimentsPage() {
           </div>
 
           {/* Generations + Population */}
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                {useT("experiments.generations") || "Generations"}
-              </label>
+              <label style={labelStyle}>{useT("experiments.generations") || "Generations"}</label>
               <input
                 type="number"
                 min={1}
                 max={20}
                 value={newGenerations}
                 onChange={(e) => setNewGenerations(Number(e.target.value))}
-                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                style={inputStyle}
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
-                {useT("experiments.populationSize") || "Population Size"}
-              </label>
+              <label style={labelStyle}>{useT("experiments.populationSize") || "Population Size"}</label>
               <input
                 type="number"
                 min={4}
                 max={50}
                 value={newPopulation}
                 onChange={(e) => setNewPopulation(Number(e.target.value))}
-                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                style={inputStyle}
               />
             </div>
           </div>
@@ -675,18 +697,25 @@ function ExperimentsPage() {
           <button
             onClick={handleCreate}
             disabled={creating || !newName.trim() || !hasEnoughPoints}
-            className={`w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform disabled:opacity-50 ${hasEnoughPoints ? "gradient-primary text-primary-foreground glow-primary hover:scale-[1.02] active:scale-95" : "bg-muted text-muted-foreground"}`}
+            style={{
+              width: "100%", height: 44, borderRadius: S.radius, fontWeight: 700,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              border: "none", cursor: "pointer", opacity: (creating || !newName.trim() || !hasEnoughPoints) ? 0.5 : 1,
+              background: hasEnoughPoints ? S.accent : S.text3,
+              color: hasEnoughPoints ? "#fff" : S.text2,
+              fontFamily: S.font, fontSize: 14,
+            }}
           >
             {creating ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} />
                 {useT("experiments.starting") || "Starting experiment..."}
               </>
             ) : (
               <>
-                <FlaskConical className="size-4" />
+                <FlaskConical style={{ width: 16, height: 16 }} />
                 <span>{useT("experiments.startExperiment") || "Start Experiment"}</span>
-                <span className="text-xs opacity-75">(-{EXPERIMENT_COST} pts)</span>
+                <span style={{ fontSize: 12, opacity: 0.75 }}>(-{EXPERIMENT_COST} pts)</span>
               </>
             )}
           </button>
@@ -695,38 +724,38 @@ function ExperimentsPage() {
 
       {/* Create error */}
       {createError && (
-        <div className="vixor-card p-3 border-l-4 border-l-bearish">
-          <div className="text-xs text-bearish">{createError}</div>
+        <div style={{ ...cardStyle, borderLeft: "4px solid " + S.bearish, padding: 12 }}>
+          <div style={{ fontSize: 12, color: S.bearish }}>{createError}</div>
         </div>
       )}
 
       {/* Summary stats */}
-      <div className="vixor-card p-4">
-        <div className="grid grid-cols-3 gap-3">
-          <div className="p-2 rounded-lg bg-background">
-            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+      <div style={{ ...cardStyle, border: S.cardBorder, padding: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+          <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
               {useT("experiments.totalExperiments") || "Total"}
             </div>
-            <div className="text-lg font-bold font-mono">{experiments.length}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: S.text1 }}>{experiments.length}</div>
             {runningCount > 0 && (
-              <div className="text-[10px] text-primary font-bold">{runningCount} running</div>
+              <div style={{ fontSize: 10, color: S.accent, fontWeight: 700 }}>{runningCount} running</div>
             )}
           </div>
-          <div className="p-2 rounded-lg bg-background">
-            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+          <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
               {useT("experiments.completed") || "Completed"}
             </div>
-            <div className="text-lg font-bold font-mono text-bullish">{completedCount}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: S.bullish }}>{completedCount}</div>
           </div>
-          <div className="p-2 rounded-lg bg-background">
-            <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+          <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
               {useT("experiments.bestScore") || "Best Score"}
             </div>
-            <div className="text-lg font-bold font-mono text-primary">
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: S.accent }}>
               {bestOverall ? (
                 <>
                   {bestOverall.overall}
-                  <span className="text-xs text-muted-foreground ml-1">{bestOverall.grade}</span>
+                  <span style={{ fontSize: 12, color: S.text2, marginLeft: 4 }}>{bestOverall.grade}</span>
                 </>
               ) : (
                 "---"
@@ -737,19 +766,22 @@ function ExperimentsPage() {
       </div>
 
       {/* Experiment list */}
-      <div className="space-y-3">
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {experiments.length === 0 ? (
-          <div className="vixor-card p-6 text-center">
-            <FlaskConical className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-            <div className="text-sm text-muted-foreground mb-2">
+          <div style={{ ...cardStyle, border: S.cardBorder, padding: 24, textAlign: "center" }}>
+            <FlaskConical style={{ width: 32, height: 32, color: S.text3, margin: "0 auto 8px", opacity: 0.3 }} />
+            <div style={{ fontSize: 14, color: S.text2, marginBottom: 8 }}>
               {useT("experiments.noExperiments") ||
                 "No experiments yet. Create one to get started."}
             </div>
             <button
               onClick={() => setShowNewForm(true)}
-              className="px-4 h-9 rounded-xl gradient-primary text-primary-foreground text-xs font-bold glow-primary"
+              style={{
+                padding: "0 16px", height: 36, borderRadius: S.radius, background: S.accent, color: "#fff",
+                fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer",
+              }}
             >
-              <Plus className="size-3.5 inline mr-1" />
+              <Plus style={{ width: 14, height: 14, display: "inline", verticalAlign: "middle", marginRight: 4 }} />
               {useT("experiments.createFirst") || "Create Your First Experiment"}
             </button>
           </div>

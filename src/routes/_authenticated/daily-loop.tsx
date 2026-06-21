@@ -205,7 +205,29 @@ function DailyLoopPage() {
   });
 
   return (
-    <div className="space-y-5 pb-6 animate-in fade-in duration-500">
+    <div
+      className="space-y-5 pb-6 animate-in fade-in duration-500"
+      style={
+        {
+          background: "#0A0E1A",
+          color: "#F0F4FC",
+          fontFamily: "'Inter', system-ui, sans-serif",
+          "--color-primary": "#3B82F6",
+          "--color-primary-foreground": "#fff",
+          "--color-muted": "rgba(255,255,255,0.05)",
+          "--color-muted-foreground": "#7B8BA8",
+          "--color-card": "#111827",
+          "--color-card-hover": "rgba(255,255,255,0.08)",
+          "--color-border": "rgba(255,255,255,0.06)",
+          "--color-bullish": "#22C55E",
+          "--color-bearish": "#EF4444",
+          "--color-neutral-wait": "#F59E0B",
+          "--color-info": "#3B82F6",
+          "--gradient-primary": "linear-gradient(135deg, #3B82F6, #2563EB)",
+          "--shadow-glow": "0 0 20px rgba(59,130,246,0.3)",
+        } as React.CSSProperties
+      }
+    >
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -222,7 +244,10 @@ function DailyLoopPage() {
       </div>
 
       {/* ── TAB SWITCHER ── */}
-      <div className="flex gap-1 p-1 rounded-lg bg-card border border-border">
+      <div
+        className="flex gap-1 p-1 rounded-lg bg-card border border-border"
+        style={{ borderRadius: "12px" }}
+      >
         {(["today", "history"] as const).map((tab) => (
           <button
             key={tab}
@@ -230,9 +255,14 @@ function DailyLoopPage() {
             className={cn(
               "flex-1 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors",
               activeTab === tab
-                ? "bg-primary text-primary-foreground"
+                ? "text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
+            style={
+              activeTab === tab
+                ? { background: "rgba(59,130,246,0.15)", color: "#60A5FA" }
+                : undefined
+            }
           >
             {tab === "today" ? "Today" : "History"}
           </button>

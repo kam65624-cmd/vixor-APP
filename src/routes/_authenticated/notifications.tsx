@@ -13,6 +13,12 @@ export const Route = createFileRoute("/_authenticated/notifications")({
   component: NotificationsPage,
 });
 
+const card = {
+  background: "#111827",
+  border: "1px solid rgba(255,255,255,0.06)",
+  borderRadius: "12px",
+};
+
 function NotificationsPage() {
   const qc = useQueryClient();
   const { t } = useI18n();
@@ -29,18 +35,29 @@ function NotificationsPage() {
   });
 
   return (
-    <div className="space-y-4">
+    <div
+      className="w-full"
+      style={{
+        background: "#0A0E1A",
+        color: "#F0F4FC",
+        fontFamily: "'Inter', system-ui, sans-serif",
+      }}
+    >
       <div className="flex items-center justify-between">
         <Link
           to="/profile"
-          className="size-9 rounded-xl bg-card border border-border flex items-center justify-center"
+          className="size-9 rounded-xl flex items-center justify-center"
+          style={card}
         >
-          <ArrowLeft className="size-4" />
+          <ArrowLeft className="size-4" style={{ color: "#7B8BA8" }} />
         </Link>
-        <h1 className="font-semibold">{t("notifications.title")}</h1>
+        <h1 className="font-semibold" style={{ color: "#F0F4FC" }}>
+          {t("notifications.title")}
+        </h1>
         <button
           onClick={() => m.mutate()}
-          className="text-xs text-primary font-semibold flex items-center gap-1"
+          className="text-xs font-semibold flex items-center gap-1"
+          style={{ color: "#3B82F6" }}
         >
           <Check className="size-3" />
           {t("notifications.markAll")}
@@ -48,39 +65,64 @@ function NotificationsPage() {
       </div>
 
       {q.isLoading && (
-        <div className="vixor-card p-6 text-center text-xs text-muted-foreground">
+        <div
+          className="p-6 text-center text-xs"
+          style={{ ...card, marginTop: "16px", color: "#7B8BA8" }}
+        >
           {t("notifications.loading")}
         </div>
       )}
       {!q.isLoading && (q.data?.length ?? 0) === 0 && (
-        <div className="vixor-card p-10 text-center text-sm">
-          <div className="font-semibold">{t("notifications.noNotifications")}</div>
-          <div className="text-xs text-muted-foreground mt-1">{t("notifications.allCaughtUp")}</div>
+        <div className="p-10 text-center text-sm" style={{ ...card, marginTop: "16px" }}>
+          <div className="font-semibold" style={{ color: "#F0F4FC" }}>
+            {t("notifications.noNotifications")}
+          </div>
+          <div className="text-xs mt-1" style={{ color: "#7B8BA8" }}>
+            {t("notifications.allCaughtUp")}
+          </div>
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2" style={{ marginTop: "16px" }}>
         {q.data?.map((n) => {
           const Icon = iconMap[n.type] ?? Sparkles;
           const unread = !n.read_at;
           return (
             <div
               key={n.id}
-              className={`vixor-card p-3 flex items-start gap-3 ${unread ? "border-l-2 border-l-primary" : ""}`}
+              className="p-3 flex items-start gap-3"
+              style={{
+                ...card,
+                borderLeft: unread ? "2px solid #3B82F6" : "1px solid rgba(255,255,255,0.06)",
+              }}
             >
-              <div className="size-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-                <Icon className="size-4 text-primary" />
+              <div
+                className="size-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "rgba(59,130,246,0.15)" }}
+              >
+                <Icon className="size-4" style={{ color: "#3B82F6" }} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="font-semibold text-sm">{n.title}</div>
-                  <span className="text-[10px] text-muted-foreground shrink-0">
+                  <div className="font-semibold text-sm" style={{ color: "#F0F4FC" }}>
+                    {n.title}
+                  </div>
+                  <span className="text-[10px] shrink-0" style={{ color: "#7B8BA8" }}>
                     {relTime(n.created_at)}
                   </span>
                 </div>
-                {n.body && <div className="text-xs text-muted-foreground mt-0.5">{n.body}</div>}
+                {n.body && (
+                  <div className="text-xs mt-0.5" style={{ color: "#7B8BA8" }}>
+                    {n.body}
+                  </div>
+                )}
               </div>
-              {unread && <div className="size-2 rounded-full bg-primary mt-1.5 shrink-0" />}
+              {unread && (
+                <div
+                  className="size-2 rounded-full mt-1.5 shrink-0"
+                  style={{ background: "#3B82F6" }}
+                />
+              )}
             </div>
           );
         })}

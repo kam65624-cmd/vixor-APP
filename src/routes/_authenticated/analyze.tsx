@@ -34,6 +34,46 @@ export const Route = createFileRoute("/_authenticated/analyze")({
   }),
 });
 
+// ── Axiom Design System ──
+const S = {
+  bg: "#0A0E1A",
+  card: "#111827",
+  cardBorder: "1px solid rgba(255,255,255,0.06)",
+  text1: "#F0F4FC",
+  text2: "#7B8BA8",
+  text3: "#4A5568",
+  accent: "#3B82F6",
+  accentLight: "#60A5FA",
+  bullish: "#22C55E",
+  bearish: "#EF4444",
+  warning: "#F59E0B",
+  font: "'Inter', system-ui, sans-serif",
+  mono: "'JetBrains Mono', monospace",
+  radius: 8,
+  badgeRadius: 6,
+} as const;
+
+const cardStyle: React.CSSProperties = {
+  background: S.card,
+  border: S.cardBorder,
+  borderRadius: S.radius,
+};
+
+const inputStyle: React.CSSProperties = {
+  background: S.card,
+  border: S.cardBorder,
+  color: S.text1,
+  borderRadius: S.badgeRadius,
+  height: 44,
+  paddingLeft: 12,
+  paddingRight: 12,
+  fontSize: 14,
+  width: "100%",
+  outline: "none",
+  fontFamily: S.font,
+  boxSizing: "border-box",
+};
+
 const TRADING_STYLES = [
   { id: "Scalping", icon: "⚡", label: "Scalping" },
   { id: "Day Trading", icon: "☀️", label: "Day Trading" },
@@ -221,64 +261,71 @@ function Analyze() {
   }
 
   return (
-    <div className="space-y-5 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="flex items-center gap-3 mb-2">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 32, fontFamily: S.font }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
         <button
           onClick={() => navigate({ to: "/" })}
-          className="size-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors"
+          style={{
+            width: 40, height: 40, borderRadius: S.radius, ...cardStyle, border: S.cardBorder,
+            display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+            color: S.text2,
+          }}
         >
-          <ArrowLeft className="size-5" />
+          <ArrowLeft style={{ width: 20, height: 20 }} />
         </button>
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: S.accent, marginBottom: 2 }}>
             {t("analyze.subtitle")}
           </div>
-          <h1 className="text-xl font-bold tracking-tight leading-none">{t("analyze.title")}</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: S.text1, margin: 0, lineHeight: 1.2, letterSpacing: "-0.02em" }}>{t("analyze.title")}</h1>
         </div>
       </div>
 
       {err && (
-        <div className="p-3 bg-bearish/10 border border-bearish/30 text-bearish text-xs font-bold rounded-xl animate-in shake">
+        <div style={{
+          padding: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+          color: S.bearish, fontSize: 12, fontWeight: 700, borderRadius: S.radius,
+        }}>
           {err}
         </div>
       )}
 
       {stage === "upload" && (
         <>
-          <label className="block w-full aspect-[4/3] rounded-2xl border-2 border-dashed border-border bg-card/50 hover:bg-card/80 transition-colors cursor-pointer relative overflow-hidden group">
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-              <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Upload className="size-8 text-primary" />
+          <label style={{ display: "block", width: "100%", aspectRatio: "4/3", borderRadius: S.radius, border: "2px dashed rgba(255,255,255,0.1)", background: "rgba(17,24,39,0.5)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24 }}>
+              <div style={{ width: 64, height: 64, borderRadius: S.radius, background: "rgba(59,130,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                <Upload style={{ width: 32, height: 32, color: S.accent }} />
               </div>
-              <div className="font-bold text-lg mb-1">{t("analyze.tapToUpload")}</div>
-              <div className="text-xs text-muted-foreground">PNG, JPG, WebP (Max 8MB)</div>
+              <div style={{ fontWeight: 700, fontSize: 18, color: S.text1, marginBottom: 4 }}>{t("analyze.tapToUpload")}</div>
+              <div style={{ fontSize: 12, color: S.text2 }}>PNG, JPG, WebP (Max 8MB)</div>
             </div>
             <input
               type="file"
               ref={fileRef}
-              className="hidden"
+              style={{ display: "none" }}
               accept="image/png, image/jpeg, image/webp"
               onChange={(e) => pickFile(e.target.files?.[0] || null)}
             />
           </label>
 
           {/* Pair Selection Dropdown */}
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide flex items-center gap-1.5">
-              <Crosshair className="size-3" /> Pair / Instrument
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <label style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, color: S.text2, letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 6 }}>
+              <Crosshair style={{ width: 12, height: 12 }} /> Pair / Instrument
             </label>
             <Select value={selectedPair} onValueChange={setSelectedPair}>
-              <SelectTrigger className="h-11 rounded-xl bg-card border border-border text-sm font-mono">
+              <SelectTrigger style={{ ...inputStyle, fontFamily: S.mono }}>
                 <SelectValue placeholder="Select pair" />
               </SelectTrigger>
               <SelectContent>
                 {POPULAR_PAIRS.map((p) => (
                   <SelectItem key={p.value} value={p.value}>
-                    <span className="flex items-center gap-2 font-mono">
-                      <span className="text-base">{p.icon}</span>
-                      <span className="font-bold">{p.label}</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: S.mono }}>
+                      <span style={{ fontSize: 16 }}>{p.icon}</span>
+                      <span style={{ fontWeight: 700, color: S.text1 }}>{p.label}</span>
                       {p.value === "auto" && (
-                        <span className="text-[10px] text-muted-foreground ml-1">(VLM detect)</span>
+                        <span style={{ fontSize: 10, color: S.text2, marginLeft: 4 }}>(VLM detect)</span>
                       )}
                     </span>
                   </SelectItem>
@@ -286,29 +333,35 @@ function Analyze() {
               </SelectContent>
             </Select>
             {selectedPair !== "auto" && (
-              <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
-                <Crosshair className="size-3.5 text-primary" />
-                <span className="text-xs font-bold text-primary">Analyzing: {selectedPair}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: S.badgeRadius, background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}>
+                <Crosshair style={{ width: 14, height: 14, color: S.accent }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: S.accent }}>Analyzing: {selectedPair}</span>
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
             <button
               onClick={() => fileRef.current?.click()}
-              className="h-14 rounded-xl bg-card border border-border flex flex-col items-center justify-center gap-1 hover:bg-card-hover transition-colors"
+              style={{
+                height: 56, borderRadius: S.radius, ...cardStyle, border: S.cardBorder,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, cursor: "pointer",
+              }}
             >
-              <ImageIcon className="size-5 text-muted-foreground" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">
+              <ImageIcon style={{ width: 20, height: 20, color: S.text2 }} />
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2 }}>
                 {t("analyze.gallery")}
               </span>
             </button>
             <button
               onClick={handlePaste}
-              className="h-14 rounded-xl bg-card border border-border flex flex-col items-center justify-center gap-1 hover:bg-card-hover transition-colors"
+              style={{
+                height: 56, borderRadius: S.radius, ...cardStyle, border: S.cardBorder,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, cursor: "pointer",
+              }}
             >
-              <Clipboard className="size-5 text-muted-foreground" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">
+              <Clipboard style={{ width: 20, height: 20, color: S.text2 }} />
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2 }}>
                 {t("analyze.paste")}
               </span>
             </button>
@@ -317,41 +370,44 @@ function Analyze() {
       )}
 
       {stage === "preview" && preview && (
-        <div className="space-y-4">
-          <div className="relative rounded-2xl overflow-hidden border border-border aspect-[4/3] bg-black group">
-            <img src={preview} alt="Preview" className="w-full h-full object-contain" />
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ position: "relative", borderRadius: S.radius, overflow: "hidden", border: S.cardBorder, aspectRatio: "4/3", background: "#000" }}>
+            <img src={preview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             <button
               onClick={() => {
                 setFile(null);
                 setPreview(null);
                 setStage("upload");
               }}
-              className="absolute top-3 right-3 size-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center border border-white/20 hover:scale-110 transition-transform text-white"
+              style={{
+                position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: "50%",
+                background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", color: "#fff",
+              }}
             >
-              <X className="size-4" />
+              <X style={{ width: 16, height: 16 }} />
             </button>
           </div>
 
-          <div className="vixor-card p-4 space-y-4">
+          <div style={{ ...cardStyle, border: S.cardBorder, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Pair Selection (in preview too) */}
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block flex items-center gap-1.5">
-                <Crosshair className="size-3" /> Pair / Instrument
+              <label style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, color: S.text2, marginBottom: 6, display: "block", alignItems: "center", gap: 6 }}>
+                <Crosshair style={{ width: 12, height: 12 }} /> Pair / Instrument
               </label>
               <Select value={selectedPair} onValueChange={setSelectedPair}>
-                <SelectTrigger className="h-11 rounded-xl bg-card border border-border text-sm font-mono">
+                <SelectTrigger style={{ ...inputStyle, fontFamily: S.mono }}>
                   <SelectValue placeholder="Select pair" />
                 </SelectTrigger>
                 <SelectContent>
                   {POPULAR_PAIRS.map((p) => (
                     <SelectItem key={p.value} value={p.value}>
-                      <span className="flex items-center gap-2 font-mono">
-                        <span className="text-base">{p.icon}</span>
-                        <span className="font-bold">{p.label}</span>
+                      <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: S.mono }}>
+                        <span style={{ fontSize: 16 }}>{p.icon}</span>
+                        <span style={{ fontWeight: 700, color: S.text1 }}>{p.label}</span>
                         {p.value === "auto" && (
-                          <span className="text-[10px] text-muted-foreground ml-1">
-                            (VLM detect)
-                          </span>
+                          <span style={{ fontSize: 10, color: S.text2, marginLeft: 4 }}>(VLM detect)</span>
                         )}
                       </span>
                     </SelectItem>
@@ -359,25 +415,31 @@ function Analyze() {
                 </SelectContent>
               </Select>
               {selectedPair !== "auto" && (
-                <div className="mt-2 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
-                  <Crosshair className="size-3.5 text-primary" />
-                  <span className="text-xs font-bold text-primary">Analyzing: {selectedPair}</span>
+                <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: S.badgeRadius, background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}>
+                  <Crosshair style={{ width: 14, height: 14, color: S.accent }} />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: S.accent }}>Analyzing: {selectedPair}</span>
                 </div>
               )}
             </div>
 
             <div>
-              <label className="text-[10px] uppercase font-bold text-muted-foreground mb-1.5 block">
+              <label style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, color: S.text2, marginBottom: 6, display: "block" }}>
                 Trading Style
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
                 {TRADING_STYLES.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => setTradingStyle(s.id)}
-                    className={`h-12 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${tradingStyle === s.id ? "bg-primary text-primary-foreground border-primary glow-primary" : "bg-card border-border text-muted-foreground hover:bg-card-hover"}`}
+                    style={{
+                      height: 48, borderRadius: S.radius, fontSize: 12, fontWeight: 700, border: "1px solid",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer",
+                      background: tradingStyle === s.id ? "rgba(59,130,246,0.15)" : S.card,
+                      borderColor: tradingStyle === s.id ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)",
+                      color: tradingStyle === s.id ? S.accentLight : S.text2,
+                    }}
                   >
-                    <span className="text-base">{s.icon}</span>{" "}
+                    <span style={{ fontSize: 16 }}>{s.icon}</span>{" "}
                     <span className="hidden sm:inline">{s.label}</span>
                   </button>
                 ))}
@@ -385,11 +447,11 @@ function Analyze() {
             </div>
 
             {/* SMC/ICT Engine Note */}
-            <div className="flex items-start gap-2 p-3 rounded-xl bg-info/5 border border-info/20">
-              <Info className="size-4 text-info shrink-0 mt-0.5" />
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: 12, borderRadius: S.radius, background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.15)" }}>
+              <Info style={{ width: 16, height: 16, color: S.accent, flexShrink: 0, marginTop: 2 }} />
+              <p style={{ fontSize: 11, color: S.text2, lineHeight: 1.5, margin: 0 }}>
                 Analysis powered by the{" "}
-                <span className="font-bold text-foreground">local SMC/ICT engine</span> — Smart
+                <span style={{ fontWeight: 700, color: S.text1 }}>local SMC/ICT engine</span> — Smart
                 Money Concepts &amp; Inner Circle Trader methodology for order blocks, FVGs,
                 liquidity zones, and more.
               </p>
@@ -398,11 +460,16 @@ function Analyze() {
             <button
               onClick={startAnalysis}
               disabled={!isPremium && points < 10}
-              className="w-full h-16 rounded-2xl gradient-primary text-primary-foreground font-bold text-lg flex items-center justify-center gap-2 glow-primary hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50 shadow-lg shadow-primary/25"
+              style={{
+                width: "100%", height: 64, borderRadius: S.radius, background: S.accent, color: "#fff",
+                fontWeight: 700, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                border: "none", cursor: "pointer", opacity: (!isPremium && points < 10) ? 0.5 : 1,
+                fontFamily: S.font,
+              }}
             >
-              <Sparkles className="size-6" /> {t("analyze.startAnalysis")}
+              <Sparkles style={{ width: 24, height: 24 }} /> {t("analyze.startAnalysis")}
               {!isPremium && (
-                <span className="ml-2 text-xs bg-black/20 px-2 py-0.5 rounded-full">-10 pts</span>
+                <span style={{ marginLeft: 8, fontSize: 12, background: "rgba(0,0,0,0.2)", padding: "2px 8px", borderRadius: "50px" }}>-10 pts</span>
               )}
             </button>
           </div>
@@ -410,21 +477,23 @@ function Analyze() {
       )}
 
       {stage === "analyzing" && (
-        <div className="h-[60vh] flex flex-col items-center justify-center text-center">
-          <div className="relative mb-8">
-            <div className="absolute inset-0 rounded-3xl bg-primary/20 animate-ping" />
-            <div className="relative size-24 rounded-3xl gradient-primary glow-primary flex items-center justify-center">
-              <Loader2 className="size-10 text-white animate-spin" strokeWidth={2.5} />
+        <div style={{ height: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+          <div style={{ position: "relative", marginBottom: 32 }}>
+            <div style={{ position: "absolute", inset: 0, borderRadius: 12, background: "rgba(59,130,246,0.2)", animation: "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite" }} />
+            <div style={{ position: "relative", width: 96, height: 96, borderRadius: 12, background: S.accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Loader2 style={{ width: 40, height: 40, color: "#fff", animation: "spin 1s linear infinite" }} strokeWidth={2.5} />
             </div>
           </div>
 
-          <h2 className="text-xl font-bold tracking-tight mb-2">{t("analyze.analyzing")}</h2>
-          <div className="text-sm font-mono text-primary font-bold">{t(STEPS_KEYS[progress])}</div>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: S.text1, marginBottom: 8, letterSpacing: "-0.02em" }}>{t("analyze.analyzing")}</h2>
+          <div style={{ fontSize: 14, fontFamily: S.mono, color: S.accent, fontWeight: 700 }}>{t(STEPS_KEYS[progress])}</div>
 
-          <div className="w-48 h-1.5 bg-muted rounded-full mt-6 overflow-hidden">
+          <div style={{ width: 192, height: 6, background: S.text3, borderRadius: 50, marginTop: 24, overflow: "hidden" }}>
             <div
-              className="h-full gradient-primary transition-all duration-500 ease-out"
-              style={{ width: `${((progress + 1) / STEPS_KEYS.length) * 100}%` }}
+              style={{
+                height: "100%", background: S.accent, transition: "width 500ms ease-out",
+                width: `${((progress + 1) / STEPS_KEYS.length) * 100}%`,
+              }}
             />
           </div>
         </div>

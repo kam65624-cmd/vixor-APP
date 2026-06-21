@@ -19,6 +19,13 @@ const tiers = [
   { name: "Diamond", min: 30 },
 ];
 
+const card = {
+  background: "#111827",
+  border: "1px solid rgba(255,255,255,0.06)",
+  borderRadius: "12px",
+};
+const mono = { fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace" };
+
 function Referral() {
   const qc = useQueryClient();
   const { t } = useI18n();
@@ -53,83 +60,128 @@ function Referral() {
   }
 
   return (
-    <div className="space-y-5">
+    <div
+      className="w-full"
+      style={{
+        background: "#0A0E1A",
+        color: "#F0F4FC",
+        fontFamily: "'Inter', system-ui, sans-serif",
+      }}
+    >
       <div className="flex items-center justify-between">
         <Link
           to="/profile"
-          className="size-9 rounded-xl bg-card border border-border flex items-center justify-center"
+          className="size-9 rounded-xl flex items-center justify-center"
+          style={card}
         >
-          <ArrowLeft className="size-4" />
+          <ArrowLeft className="size-4" style={{ color: "#7B8BA8" }} />
         </Link>
         <h1 className="font-semibold">{t("referral.title")}</h1>
         <div className="size-9" />
       </div>
 
-      <div className="vixor-card p-5 relative overflow-hidden text-center">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-info/10" />
+      <div
+        className="p-5 relative overflow-hidden text-center"
+        style={{ ...card, marginTop: "20px" }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(59,130,246,0.12) 0%, rgba(59,130,246,0.03) 100%)",
+          }}
+        />
         <div className="relative">
-          <div className="size-16 rounded-2xl gradient-primary glow-primary mx-auto flex items-center justify-center mb-3">
-            <Users className="size-7 text-primary-foreground" />
+          <div
+            className="size-16 rounded-2xl mx-auto flex items-center justify-center mb-3"
+            style={{ background: "linear-gradient(135deg, #3B82F6, #2563EB)" }}
+          >
+            <Users className="size-7" style={{ color: "#fff" }} />
           </div>
           <h2 className="text-xl font-bold">{t("referral.inviteFriends")}</h2>
-          <p className="text-sm text-muted-foreground mt-1">+25 pts for you · +15 pts for them</p>
+          <p className="text-sm mt-1" style={{ color: "#7B8BA8" }}>
+            +25 pts for you · +15 pts for them
+          </p>
         </div>
       </div>
 
-      <div className="vixor-card p-4 space-y-3">
-        <div className="text-xs uppercase text-muted-foreground tracking-wide">
+      <div className="p-4 flex flex-col gap-3" style={{ ...card, marginTop: "20px" }}>
+        <div className="text-xs uppercase tracking-wide" style={{ color: "#7B8BA8" }}>
           {t("referral.yourReferralCode")}
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex-1 px-4 h-12 rounded-xl bg-muted flex items-center font-bold text-mono tracking-wider">
+          <div
+            className="flex-1 px-4 h-12 rounded-xl flex items-center font-bold tracking-wider"
+            style={{ ...mono, background: "rgba(255,255,255,0.05)" }}
+          >
             {myCode || "—"}
           </div>
           <button
             onClick={copy}
-            className="size-12 rounded-xl bg-card border border-border flex items-center justify-center"
+            className="size-12 rounded-xl flex items-center justify-center"
+            style={card}
           >
-            <Copy className="size-4" />
+            <Copy className="size-4" style={{ color: "#7B8BA8" }} />
           </button>
         </div>
-        {copied && <div className="text-[10px] text-primary">{t("referral.copied")}</div>}
-        <button className="w-full h-11 rounded-xl gradient-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 glow-primary">
+        {copied && (
+          <div className="text-[10px]" style={{ color: "#3B82F6" }}>
+            {t("referral.copied")}
+          </div>
+        )}
+        <button
+          className="w-full h-11 rounded-xl font-semibold flex items-center justify-center gap-2"
+          style={{ background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "#fff" }}
+        >
           <Share2 className="size-4" /> {t("referral.shareViaTelegram")}
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3" style={{ marginTop: "20px" }}>
         {[
           { label: t("profile.referrals"), value: count, sub: current.name },
           { label: t("profile.earned"), value: `${count * 25}`, sub: t("referral.points") },
           { label: t("referral.tier"), value: current.name, sub: t("referral.current") },
         ].map((s) => (
-          <div key={s.label} className="vixor-card p-3 text-center">
-            <div className="text-xl font-bold text-mono">{s.value}</div>
-            <div className="text-[10px] uppercase text-muted-foreground">{s.label}</div>
-            <div className="text-[10px] text-primary mt-0.5">{s.sub}</div>
+          <div key={s.label} className="p-3 text-center" style={card}>
+            <div className="text-xl font-bold" style={{ ...mono }}>
+              {s.value}
+            </div>
+            <div className="text-[10px] uppercase mt-0.5" style={{ color: "#7B8BA8" }}>
+              {s.label}
+            </div>
+            <div className="text-[10px] mt-0.5" style={{ color: "#3B82F6" }}>
+              {s.sub}
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="vixor-card p-4">
+      <div className="p-4" style={{ ...card, marginTop: "20px" }}>
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-semibold flex items-center gap-1.5">
-            <Crown className="size-4 text-primary" /> Next: {next.name}
+            <Crown className="size-4" style={{ color: "#3B82F6" }} /> Next: {next.name}
           </span>
-          <span className="text-xs text-muted-foreground text-mono">
+          <span className="text-xs" style={{ ...mono, color: "#7B8BA8" }}>
             {count} / {next.min}
           </span>
         </div>
-        <div className="h-2 rounded-full bg-muted overflow-hidden">
+        <div
+          className="h-2 rounded-full overflow-hidden"
+          style={{ background: "rgba(255,255,255,0.05)" }}
+        >
           <div
-            className="h-full gradient-primary rounded-full transition-all"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${progress}%`,
+              background: "linear-gradient(135deg, #3B82F6, #2563EB)",
+            }}
           />
         </div>
       </div>
 
       {!me.data?.profile?.referred_by && (
-        <div className="vixor-card p-4 space-y-3">
+        <div className="p-4 flex flex-col gap-3" style={{ ...card, marginTop: "20px" }}>
           <div className="text-sm font-semibold">{t("referral.haveCode")}</div>
           <div className="flex gap-2">
             <input
@@ -137,26 +189,44 @@ function Referral() {
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="VIXOR123"
               maxLength={16}
-              className="flex-1 h-11 px-4 rounded-xl bg-muted outline-none text-sm font-mono tracking-wider uppercase"
+              className="flex-1 h-11 px-4 rounded-xl outline-none text-sm tracking-wider uppercase"
+              style={{
+                ...mono,
+                background: "rgba(255,255,255,0.05)",
+                color: "#F0F4FC",
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
             />
             <button
               onClick={() => code.length >= 4 && m.mutate(code)}
               disabled={m.isPending || code.length < 4}
-              className="px-4 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50"
+              className="px-4 h-11 rounded-xl text-sm font-semibold"
+              style={{
+                background: "#3B82F6",
+                color: "#fff",
+                opacity: m.isPending || code.length < 4 ? 0.5 : 1,
+              }}
             >
               {t("referral.apply")}
             </button>
           </div>
-          {m.error && <div className="text-xs text-bearish">{(m.error as Error).message}</div>}
+          {m.error && (
+            <div className="text-xs" style={{ color: "#EF4444" }}>
+              {(m.error as Error).message}
+            </div>
+          )}
         </div>
       )}
 
-      <div>
+      <div style={{ marginTop: "20px" }}>
         <SectionTitle title={t("referral.howItWorks")} />
-        <div className="vixor-card p-4 space-y-3">
+        <div className="p-4 flex flex-col gap-3" style={card}>
           {[t("referral.step1"), t("referral.step2"), t("referral.step3")].map((s, i) => (
             <div key={i} className="flex gap-3">
-              <div className="size-7 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-xs">
+              <div
+                className="size-7 rounded-full flex items-center justify-center font-bold text-xs"
+                style={{ background: "rgba(59,130,246,0.15)", color: "#3B82F6" }}
+              >
                 {i + 1}
               </div>
               <div className="text-sm pt-1">{s}</div>

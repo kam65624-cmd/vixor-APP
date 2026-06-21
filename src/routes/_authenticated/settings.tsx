@@ -29,6 +29,26 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
 });
 
+// ── Axiom Design System ──
+const S = {
+  bg: "#0A0E1A",
+  card: "#111827",
+  cardBorder: "1px solid rgba(255,255,255,0.06)",
+  divider: "1px solid rgba(255,255,255,0.06)",
+  text1: "#F0F4FC",
+  text2: "#7B8BA8",
+  text3: "#4A5568",
+  accent: "#3B82F6",
+  accentLight: "#60A5FA",
+  bullish: "#22C55E",
+  bearish: "#EF4444",
+  warning: "#F59E0B",
+  font: "'Inter', system-ui, sans-serif",
+  mono: "'JetBrains Mono', monospace",
+  radius: 8,
+  badgeRadius: 6,
+} as const;
+
 // ───────────────────────────────────────────────────────────────────────────
 // Phase 0 fix (audit §15 issue #7): settings toggles are now persisted to
 // localStorage and READ by the relevant components at runtime. Previously
@@ -138,75 +158,95 @@ function SettingsPage() {
   ];
 
   return (
-    <div className="space-y-5 pb-8">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 32, fontFamily: S.font }}>
       {/* Header */}
-      <div className="flex items-center justify-between pt-2">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 8 }}>
         <Link
           to="/profile"
-          className="size-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors"
+          style={{
+            width: 40, height: 40, borderRadius: S.radius, background: S.card, border: S.cardBorder,
+            display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+            color: S.text2, textDecoration: "none",
+          }}
         >
-          <ArrowLeft className="size-4" />
+          <ArrowLeft style={{ width: 16, height: 16 }} />
         </Link>
-        <h1 className="font-bold text-lg tracking-tight">{t("settings.title")}</h1>
-        <div className="size-10" />
+        <h1 style={{ fontWeight: 700, fontSize: 18, color: S.text1, margin: 0, letterSpacing: "-0.02em" }}>{t("settings.title")}</h1>
+        <div style={{ width: 40 }} />
       </div>
 
       {/* Language Picker Modal */}
       {showLangPicker && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
+          style={{
+            position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "flex-end", justifyContent: "center",
+            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
+          }}
           onClick={() => setShowLangPicker(false)}
         >
           <div
-            className="w-full max-w-md bg-card border border-border rounded-t-3xl p-6 animate-in slide-in-from-bottom-4 duration-300"
+            style={{
+              width: "100%", maxWidth: 448, background: S.card, border: S.cardBorder,
+              borderRadius: "24px 24px 0 0", padding: 24,
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-bold text-lg">{t("settings.selectLanguage")}</h2>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <h2 style={{ fontWeight: 700, fontSize: 18, color: S.text1, margin: 0 }}>{t("settings.selectLanguage")}</h2>
               <button
                 onClick={() => setShowLangPicker(false)}
-                className="size-8 rounded-full bg-muted flex items-center justify-center hover:bg-card-hover transition-colors"
+                style={{
+                  width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.04)",
+                  display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                  border: "none", color: S.text2, fontSize: 14,
+                }}
               >
-                <span className="text-sm">✕</span>
+                ✕
               </button>
             </div>
-            <div className="space-y-2">
-              {languages.map((l) => (
-                <button
-                  key={l.code}
-                  onClick={() => {
-                    setLang(l.code);
-                    setShowLangPicker(false);
-                  }}
-                  className={`w-full p-4 rounded-xl flex items-center justify-between transition-all ${
-                    lang === l.code
-                      ? "bg-primary/10 border-2 border-primary"
-                      : "bg-card-hover border-2 border-transparent hover:border-border"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Globe
-                      className={`size-5 ${lang === l.code ? "text-primary" : "text-muted-foreground"}`}
-                    />
-                    <div className="text-left">
-                      <div
-                        className={`font-bold text-sm ${lang === l.code ? "text-primary" : "text-foreground"}`}
-                      >
-                        {l.nativeLabel}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {languages.map((l) => {
+                const isActive = lang === l.code;
+                return (
+                  <button
+                    key={l.code}
+                    onClick={() => {
+                      setLang(l.code);
+                      setShowLangPicker(false);
+                    }}
+                    style={{
+                      width: "100%", padding: 16, borderRadius: S.radius, display: "flex", alignItems: "center",
+                      justifyContent: "space-between", cursor: "pointer",
+                      background: isActive ? "rgba(59,130,246,0.1)" : "rgba(255,255,255,0.02)",
+                      border: isActive ? "2px solid rgba(59,130,246,0.5)" : "2px solid transparent",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <Globe
+                        style={{ width: 20, height: 20, color: isActive ? S.accentLight : S.text2 }}
+                      />
+                      <div style={{ textAlign: "left" }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: isActive ? S.accentLight : S.text1 }}>
+                          {l.nativeLabel}
+                        </div>
+                        <div style={{ fontSize: 11, color: S.text2 }}>{l.label}</div>
                       </div>
-                      <div className="text-[11px] text-muted-foreground">{l.label}</div>
                     </div>
-                  </div>
-                  {lang === l.code && (
-                    <div className="size-6 rounded-full bg-primary flex items-center justify-center">
-                      <Check className="size-3.5 text-primary-foreground" strokeWidth={3} />
-                    </div>
-                  )}
-                </button>
-              ))}
+                    {isActive && (
+                      <div style={{ width: 24, height: 24, borderRadius: "50%", background: S.accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Check style={{ width: 14, height: 14, color: "#fff", strokeWidth: 3 }} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
             {lang === "ar" && (
-              <div className="mt-4 p-3 rounded-xl bg-primary/5 border border-primary/15 text-xs text-muted-foreground text-center">
+              <div style={{
+                marginTop: 16, padding: 12, borderRadius: S.radius,
+                background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.15)",
+                fontSize: 12, color: S.text2, textAlign: "center",
+              }}>
                 {isRTL
                   ? "سيتم عكس اتجاه التطبيق بالكامل"
                   : "The app direction will fully reverse to RTL"}
@@ -218,7 +258,7 @@ function SettingsPage() {
 
       {/* Appearance */}
       <Section title={t("settings.appearance")} icon={Palette}>
-        <Row icon={dark ? Moon : Sun} label={t("settings.darkMode")} iconColor="text-info">
+        <Row icon={dark ? Moon : Sun} label={t("settings.darkMode")} iconColor={S.accent}>
           <Toggle
             on={dark}
             onChange={(v) => {
@@ -233,7 +273,7 @@ function SettingsPage() {
           icon={Globe}
           label={t("settings.language")}
           value={lang === "ar" ? t("settings.arabic") : t("settings.english")}
-          iconColor="text-primary"
+          iconColor={S.accent}
           onClick={() => setShowLangPicker(true)}
         />
       </Section>
@@ -244,34 +284,34 @@ function SettingsPage() {
           icon={TrendingUp}
           label={t("settings.riskTolerance")}
           value={t("settings.moderate")}
-          iconColor="text-neutral-wait"
+          iconColor={S.warning}
         />
         <Row
           icon={Star}
           label={t("settings.preferredPairs")}
           value="BTC, ETH, EUR/USD"
-          iconColor="text-primary"
+          iconColor={S.accent}
         />
         <Row
           icon={Zap}
           label={t("settings.tradingStyle")}
           value={t("settings.swing")}
-          iconColor="text-bullish"
+          iconColor={S.bullish}
         />
       </Section>
 
       {/* Notifications */}
       <Section title={t("settings.notifications")} icon={Bell}>
-        <Row icon={Volume2} label={t("settings.soundEffects")} iconColor="text-primary">
+        <Row icon={Volume2} label={t("settings.soundEffects")} iconColor={S.accent}>
           <Toggle on={prefs.sound} onChange={(v) => updatePref("sound", v)} />
         </Row>
-        <Row icon={Smartphone} label={t("settings.hapticFeedback")} iconColor="text-info">
+        <Row icon={Smartphone} label={t("settings.hapticFeedback")} iconColor={S.accent}>
           <Toggle on={prefs.haptics} onChange={(v) => updatePref("haptics", v)} />
         </Row>
-        <Row icon={Bell} label={t("settings.priceAlerts")} iconColor="text-neutral-wait">
+        <Row icon={Bell} label={t("settings.priceAlerts")} iconColor={S.warning}>
           <Toggle on={prefs.priceAlerts} onChange={(v) => updatePref("priceAlerts", v)} />
         </Row>
-        <Row icon={Globe} label={t("settings.newsAlerts")} iconColor="text-bullish">
+        <Row icon={Globe} label={t("settings.newsAlerts")} iconColor={S.bullish}>
           <Toggle on={prefs.newsAlerts} onChange={(v) => updatePref("newsAlerts", v)} />
         </Row>
       </Section>
@@ -282,13 +322,13 @@ function SettingsPage() {
           icon={Shield}
           label={t("settings.twoFactorAuth")}
           value={t("settings.off")}
-          iconColor="text-bearish"
+          iconColor={S.bearish}
         />
         <Row
           icon={Key}
           label={t("settings.activeSessions")}
           value={t("settings.oneDevice")}
-          iconColor="text-neutral-wait"
+          iconColor={S.warning}
         />
       </Section>
 
@@ -297,15 +337,15 @@ function SettingsPage() {
         <Row
           icon={FileText}
           label={t("settings.termsOfService")}
-          iconColor="text-muted-foreground"
+          iconColor={S.text2}
         />
-        <Row icon={Shield} label={t("settings.privacyPolicy")} iconColor="text-muted-foreground" />
-        <Row icon={HelpCircle} label={t("settings.helpSupport")} iconColor="text-info" />
+        <Row icon={Shield} label={t("settings.privacyPolicy")} iconColor={S.text2} />
+        <Row icon={HelpCircle} label={t("settings.helpSupport")} iconColor={S.accent} />
         <Row
           icon={Info}
           label={t("settings.version")}
           value="2.0.0 · build 42"
-          iconColor="text-muted-foreground"
+          iconColor={S.text2}
           noArrow
         />
       </Section>
@@ -314,9 +354,15 @@ function SettingsPage() {
       <button
         onClick={handleSignOut}
         disabled={signing}
-        className="w-full h-13 rounded-2xl bg-bearish/10 border border-bearish/20 text-bearish font-bold flex items-center justify-center gap-2 hover:bg-bearish hover:text-white transition-all duration-200 disabled:opacity-50"
+        style={{
+          width: "100%", height: 52, borderRadius: S.radius,
+          background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)",
+          color: S.bearish, fontWeight: 700, display: "flex", alignItems: "center",
+          justifyContent: "center", gap: 8, cursor: "pointer",
+          opacity: signing ? 0.5 : 1, fontFamily: S.font, fontSize: 14,
+        }}
       >
-        <LogOut className="size-4" />
+        <LogOut style={{ width: 16, height: 16 }} />
         {signing ? t("settings.signingOut") : t("settings.signOut")}
       </button>
     </div>
@@ -334,13 +380,15 @@ function Section({
 }) {
   return (
     <div>
-      <div className="flex items-center gap-1.5 mb-2 px-1">
-        {Icon && <Icon className="size-3 text-muted-foreground" />}
-        <div className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground">
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, paddingLeft: 4 }}>
+        {Icon && <Icon style={{ width: 12, height: 12, color: S.text3 }} />}
+        <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700, color: S.text3 }}>
           {title}
         </div>
       </div>
-      <div className="vixor-card divide-y divide-border overflow-hidden">{children}</div>
+      <div style={{ ...{ background: S.card, border: S.cardBorder, borderRadius: S.radius, overflow: "hidden" } }}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -350,7 +398,7 @@ function Row({
   label,
   value,
   children,
-  iconColor = "text-muted-foreground",
+  iconColor = S.text2,
   noArrow,
   onClick,
 }: {
@@ -362,24 +410,37 @@ function Row({
   noArrow?: boolean;
   onClick?: () => void;
 }) {
+  const [hover, setHover] = useState(false);
   return (
     <div
-      className={`p-3.5 flex items-center gap-3 hover:bg-card-hover transition-colors ${onClick ? "cursor-pointer" : "group"}`}
+      style={{
+        padding: "14px 14px",
+        display: "flex", alignItems: "center", gap: 12,
+        borderBottom: S.divider, cursor: onClick ? "pointer" : "default",
+        background: hover ? "rgba(255,255,255,0.02)" : "transparent",
+        transition: "background 150ms",
+      }}
       onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
     >
       {Icon && (
-        <div className="size-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
-          <Icon className={`size-4 ${iconColor}`} />
+        <div style={{
+          width: 36, height: 36, borderRadius: S.radius,
+          background: "rgba(255,255,255,0.04)",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <Icon style={{ width: 16, height: 16, color: iconColor }} />
         </div>
       )}
-      <div className="text-sm font-medium flex-1">{label}</div>
-      {value && <span className="text-xs text-muted-foreground font-medium">{value}</span>}
+      <div style={{ fontSize: 14, fontWeight: 500, flex: 1, color: S.text1 }}>{label}</div>
+      {value && <span style={{ fontSize: 12, color: S.text2, fontWeight: 500 }}>{value}</span>}
       {children}
       {!children && value === undefined && !noArrow && (
-        <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors rtl:rotate-180" />
+        <ChevronRight style={{ width: 16, height: 16, color: hover ? S.text1 : S.text3, transition: "color 150ms" }} />
       )}
       {!children && !value && !noArrow && onClick && (
-        <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors rtl:rotate-180" />
+        <ChevronRight style={{ width: 16, height: 16, color: hover ? S.text1 : S.text3, transition: "color 150ms" }} />
       )}
     </div>
   );
@@ -389,10 +450,18 @@ function Toggle({ on, onChange }: { on: boolean; onChange?: (v: boolean) => void
   return (
     <button
       onClick={() => onChange?.(!on)}
-      className={`w-11 h-6 rounded-full transition-all duration-300 shrink-0 relative ${on ? "bg-primary" : "bg-muted"}`}
+      style={{
+        width: 44, height: 24, borderRadius: 12, transition: "background 300ms", flexShrink: 0,
+        position: "relative", border: "none", cursor: "pointer",
+        background: on ? S.accent : S.text3,
+      }}
     >
       <div
-        className={`absolute top-0.5 size-5 rounded-full bg-white shadow-sm transition-all duration-300 ${on ? (document.documentElement.dir === "rtl" ? "right-[22px]" : "left-[22px]") : document.documentElement.dir === "rtl" ? "right-0.5" : "left-0.5"}`}
+        style={{
+          position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%",
+          background: "#fff", transition: "left 300ms",
+          left: on ? 22 : 2,
+        }}
       />
     </button>
   );

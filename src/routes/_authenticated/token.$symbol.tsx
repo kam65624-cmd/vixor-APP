@@ -124,9 +124,8 @@ const TimeframeBar = memo(function TimeframeBar({ active, onChange }: TimeframeB
           onClick={() => onChange(tf)}
           className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded transition-colors"
           style={{
-            backgroundColor:
-              active === tf ? "var(--ws-accent-dim, rgba(0,212,170,0.12))" : "transparent",
-            color: active === tf ? "var(--ws-accent)" : "var(--ws-text-secondary)",
+            backgroundColor: active === tf ? "rgba(59,130,246,0.15)" : "transparent",
+            color: active === tf ? "#60A5FA" : "#7B8BA8",
           }}
         >
           {tf}
@@ -143,22 +142,16 @@ const ChartPlaceholder = memo(function ChartPlaceholder() {
     <div
       className="w-full flex-1 flex flex-col items-center justify-center min-h-[320px] lg:min-h-0"
       style={{
-        backgroundColor: "var(--ws-bg-secondary, var(--ws-surface))",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
-      <CandlestickChart
-        className="size-10 mb-3"
-        style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-      />
-      <p className="text-sm font-semibold" style={{ color: "var(--ws-text-secondary)" }}>
+      <CandlestickChart className="size-10 mb-3" style={{ color: "#4A5568" }} />
+      <p className="text-sm font-semibold" style={{ color: "#7B8BA8" }}>
         Chart — lightweight-charts
       </p>
-      <p
-        className="text-[11px] mt-1"
-        style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-      >
+      <p className="text-[11px] mt-1" style={{ color: "#4A5568" }}>
         Candlestick chart rendering will be connected in Phase B
       </p>
       {/* Fake candlestick bars for visual flavor */}
@@ -170,7 +163,7 @@ const ChartPlaceholder = memo(function ChartPlaceholder() {
               className="w-2 rounded-sm"
               style={{
                 height: `${h}%`,
-                backgroundColor: i % 3 === 0 ? "var(--ws-bearish)" : "var(--ws-bullish)",
+                backgroundColor: i % 3 === 0 ? "#EF4444" : "#22C55E",
                 opacity: 0.5,
               }}
             />
@@ -202,22 +195,22 @@ const OrderBookPlaceholder = memo(function OrderBookPlaceholder() {
   return (
     <div
       style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
-      <div className="px-3 py-2 border-b" style={{ borderColor: "var(--ws-border)" }}>
+      <div className="px-3 py-2 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
         <span
           className="text-[10px] font-bold uppercase tracking-widest"
-          style={{ color: "var(--ws-text-secondary)" }}
+          style={{ color: "#7B8BA8" }}
         >
           Order Book
         </span>
       </div>
       <div
         className="px-3 py-1.5 grid grid-cols-3 text-[9px] font-bold uppercase tracking-wider"
-        style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
+        style={{ color: "#4A5568" }}
       >
         <span>Price</span>
         <span className="text-right">Amount</span>
@@ -229,32 +222,35 @@ const OrderBookPlaceholder = memo(function OrderBookPlaceholder() {
           <div
             key={`a-${i}`}
             className="grid grid-cols-3 py-1 text-[11px] relative"
-            style={{ fontFamily: "var(--ws-mono-font-family, monospace)" }}
+            style={{ fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace" }}
           >
             <div
               className="absolute inset-0 opacity-10 rounded"
-              style={{ backgroundColor: "var(--ws-bearish)", width: row.total }}
+              style={{ backgroundColor: "#EF4444", width: row.total }}
             />
-            <span className="relative" style={{ color: "var(--ws-bearish)" }}>
+            <span className="relative" style={{ color: "#EF4444" }}>
               {row.price}
             </span>
-            <span className="relative text-right" style={{ color: "var(--ws-text-secondary)" }}>
+            <span className="relative text-right" style={{ color: "#7B8BA8" }}>
               {row.amount}
             </span>
-            <span
-              className="relative text-right"
-              style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-            >
+            <span className="relative text-right" style={{ color: "#4A5568" }}>
               {row.total}
             </span>
           </div>
         ))}
       </div>
       {/* Spread */}
-      <div className="px-3 py-1.5 text-center border-y" style={{ borderColor: "var(--ws-border)" }}>
+      <div
+        className="px-3 py-1.5 text-center border-y"
+        style={{ borderColor: "rgba(255,255,255,0.06)" }}
+      >
         <span
           className="text-sm font-bold"
-          style={{ color: "var(--ws-accent)", fontFamily: "var(--ws-mono-font-family, monospace)" }}
+          style={{
+            color: "#3B82F6",
+            fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
+          }}
         >
           0.00001234
         </span>
@@ -265,22 +261,19 @@ const OrderBookPlaceholder = memo(function OrderBookPlaceholder() {
           <div
             key={`b-${i}`}
             className="grid grid-cols-3 py-1 text-[11px] relative"
-            style={{ fontFamily: "var(--ws-mono-font-family, monospace)" }}
+            style={{ fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace" }}
           >
             <div
               className="absolute inset-0 opacity-10 rounded"
-              style={{ backgroundColor: "var(--ws-bullish)", width: row.total }}
+              style={{ backgroundColor: "#22C55E", width: row.total }}
             />
-            <span className="relative" style={{ color: "var(--ws-bullish)" }}>
+            <span className="relative" style={{ color: "#22C55E" }}>
               {row.price}
             </span>
-            <span className="relative text-right" style={{ color: "var(--ws-text-secondary)" }}>
+            <span className="relative text-right" style={{ color: "#7B8BA8" }}>
               {row.amount}
             </span>
-            <span
-              className="relative text-right"
-              style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-            >
+            <span className="relative text-right" style={{ color: "#4A5568" }}>
               {row.total}
             </span>
           </div>
@@ -308,15 +301,15 @@ const OrderEntry = memo(function OrderEntry({ side, onSideChange, symbol }: Orde
   return (
     <div
       style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
-      <div className="px-3 py-2 border-b" style={{ borderColor: "var(--ws-border)" }}>
+      <div className="px-3 py-2 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
         <span
           className="text-[10px] font-bold uppercase tracking-widest"
-          style={{ color: "var(--ws-text-secondary)" }}
+          style={{ color: "#7B8BA8" }}
         >
           Place Order
         </span>
@@ -326,16 +319,16 @@ const OrderEntry = memo(function OrderEntry({ side, onSideChange, symbol }: Orde
         <div
           className="grid grid-cols-2 gap-1 p-1"
           style={{
-            backgroundColor: "var(--ws-bg-secondary, var(--ws-surface))",
-            borderRadius: "var(--ws-radius)",
+            backgroundColor: "#111827",
+            borderRadius: "12px",
           }}
         >
           <button
             onClick={() => onSideChange("buy")}
             className="py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
             style={{
-              backgroundColor: side === "buy" ? "var(--ws-bullish)" : "transparent",
-              color: side === "buy" ? "#fff" : "var(--ws-text-secondary)",
+              backgroundColor: side === "buy" ? "#22C55E" : "transparent",
+              color: side === "buy" ? "#fff" : "#7B8BA8",
             }}
           >
             Buy
@@ -344,8 +337,8 @@ const OrderEntry = memo(function OrderEntry({ side, onSideChange, symbol }: Orde
             onClick={() => onSideChange("sell")}
             className="py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
             style={{
-              backgroundColor: side === "sell" ? "var(--ws-bearish)" : "transparent",
-              color: side === "sell" ? "#fff" : "var(--ws-text-secondary)",
+              backgroundColor: side === "sell" ? "#EF4444" : "transparent",
+              color: side === "sell" ? "#fff" : "#7B8BA8",
             }}
           >
             Sell
@@ -356,7 +349,7 @@ const OrderEntry = memo(function OrderEntry({ side, onSideChange, symbol }: Orde
         <div>
           <label
             className="text-[10px] font-bold uppercase tracking-widest block mb-1.5"
-            style={{ color: "var(--ws-text-secondary)" }}
+            style={{ color: "#7B8BA8" }}
           >
             Amount
           </label>
@@ -367,10 +360,10 @@ const OrderEntry = memo(function OrderEntry({ side, onSideChange, symbol }: Orde
             placeholder="0.00"
             className="w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-colors placeholder:opacity-30"
             style={{
-              backgroundColor: "var(--ws-bg-secondary, var(--ws-surface))",
-              border: "1px solid var(--ws-border)",
-              color: "var(--ws-text-primary)",
-              fontFamily: "var(--ws-mono-font-family, monospace)",
+              backgroundColor: "#111827",
+              border: "1px solid rgba(255,255,255,0.06)",
+              color: "#F0F4FC",
+              fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
             }}
           />
         </div>
@@ -383,9 +376,9 @@ const OrderEntry = memo(function OrderEntry({ side, onSideChange, symbol }: Orde
               onClick={() => setAmount(pct === "MAX" ? "10000000" : pct)}
               className="py-1.5 rounded text-[10px] font-bold transition-colors"
               style={{
-                backgroundColor: "var(--ws-surface-hover)",
-                color: "var(--ws-text-secondary)",
-                border: "1px solid var(--ws-border)",
+                backgroundColor: "rgba(255,255,255,0.05)",
+                color: "#7B8BA8",
+                border: "1px solid rgba(255,255,255,0.06)",
               }}
             >
               {pct}
@@ -397,9 +390,9 @@ const OrderEntry = memo(function OrderEntry({ side, onSideChange, symbol }: Orde
         <button
           className="w-full py-3 rounded-lg text-sm font-bold uppercase tracking-wider transition-opacity hover:opacity-90"
           style={{
-            backgroundColor: side === "buy" ? "var(--ws-bullish)" : "var(--ws-bearish)",
+            backgroundColor: side === "buy" ? "#22C55E" : "#EF4444",
             color: "#fff",
-            borderRadius: "var(--ws-radius)",
+            borderRadius: "12px",
           }}
         >
           {side === "buy" ? (
@@ -434,19 +427,19 @@ const SidePanel = memo(function SidePanel() {
       {/* Hotkeys */}
       <div
         style={{
-          backgroundColor: "var(--ws-surface)",
-          border: "1px solid var(--ws-border)",
-          borderRadius: "var(--ws-radius)",
+          backgroundColor: "#111827",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "12px",
         }}
       >
         <div
           className="px-3 py-2 border-b flex items-center gap-1.5"
-          style={{ borderColor: "var(--ws-border)" }}
+          style={{ borderColor: "rgba(255,255,255,0.06)" }}
         >
-          <Keyboard className="size-3" style={{ color: "var(--ws-accent)" }} />
+          <Keyboard className="size-3" style={{ color: "#3B82F6" }} />
           <span
             className="text-[10px] font-bold uppercase tracking-widest"
-            style={{ color: "var(--ws-text-secondary)" }}
+            style={{ color: "#7B8BA8" }}
           >
             Hotkeys
           </span>
@@ -454,14 +447,14 @@ const SidePanel = memo(function SidePanel() {
         <div className="p-3 space-y-1.5">
           {hotkeys.map((h) => (
             <div key={h.key} className="flex items-center justify-between text-[11px]">
-              <span style={{ color: "var(--ws-text-secondary)" }}>{h.action}</span>
+              <span style={{ color: "#7B8BA8" }}>{h.action}</span>
               <kbd
                 className="px-1.5 py-0.5 rounded text-[10px] font-bold"
                 style={{
-                  backgroundColor: "var(--ws-surface-hover)",
-                  color: "var(--ws-accent)",
-                  border: "1px solid var(--ws-border)",
-                  fontFamily: "var(--ws-mono-font-family, monospace)",
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  color: "#3B82F6",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
                 }}
               >
                 {h.key}
@@ -474,41 +467,41 @@ const SidePanel = memo(function SidePanel() {
       {/* Token Info */}
       <div
         style={{
-          backgroundColor: "var(--ws-surface)",
-          border: "1px solid var(--ws-border)",
-          borderRadius: "var(--ws-radius)",
+          backgroundColor: "#111827",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "12px",
         }}
       >
         <div
           className="px-3 py-2 border-b flex items-center gap-1.5"
-          style={{ borderColor: "var(--ws-border)" }}
+          style={{ borderColor: "rgba(255,255,255,0.06)" }}
         >
-          <Info className="size-3" style={{ color: "var(--ws-accent)" }} />
+          <Info className="size-3" style={{ color: "#3B82F6" }} />
           <span
             className="text-[10px] font-bold uppercase tracking-widest"
-            style={{ color: "var(--ws-text-secondary)" }}
+            style={{ color: "#7B8BA8" }}
           >
             Token Info
           </span>
         </div>
         <div className="p-3 space-y-2.5 text-[11px]">
           <div className="flex justify-between">
-            <span style={{ color: "var(--ws-text-secondary)" }}>Network</span>
-            <span className="font-semibold" style={{ color: "var(--ws-text-primary)" }}>
+            <span style={{ color: "#7B8BA8" }}>Network</span>
+            <span className="font-semibold" style={{ color: "#F0F4FC" }}>
               Ethereum
             </span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: "var(--ws-text-secondary)" }}>Created</span>
-            <span style={{ color: "var(--ws-text-primary)" }}>Apr 2023</span>
+            <span style={{ color: "#7B8BA8" }}>Created</span>
+            <span style={{ color: "#F0F4FC" }}>Apr 2023</span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: "var(--ws-text-secondary)" }}>Holders</span>
-            <span style={{ color: "var(--ws-text-primary)" }}>245K+</span>
+            <span style={{ color: "#7B8BA8" }}>Holders</span>
+            <span style={{ color: "#F0F4FC" }}>245K+</span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: "var(--ws-text-secondary)" }}>Txns 24h</span>
-            <span style={{ color: "var(--ws-text-primary)" }}>18.2K</span>
+            <span style={{ color: "#7B8BA8" }}>Txns 24h</span>
+            <span style={{ color: "#F0F4FC" }}>18.2K</span>
           </div>
         </div>
       </div>
@@ -535,8 +528,8 @@ const TradesTab = memo(function TradesTab({ trades }: TradesTabProps) {
       <div
         className="px-3 py-1.5 grid grid-cols-4 text-[9px] font-bold uppercase tracking-wider sticky top-0"
         style={{
-          color: "var(--ws-text-tertiary, var(--ws-text-secondary))",
-          backgroundColor: "var(--ws-surface)",
+          color: "#4A5568",
+          backgroundColor: "#111827",
         }}
       >
         <span>Side</span>
@@ -549,24 +542,21 @@ const TradesTab = memo(function TradesTab({ trades }: TradesTabProps) {
           key={trade.id}
           className="px-3 grid grid-cols-4 py-1.5 text-[11px] border-b"
           style={{
-            borderColor: "var(--ws-border)",
-            fontFamily: "var(--ws-mono-font-family, monospace)",
+            borderColor: "rgba(255,255,255,0.06)",
+            fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
           }}
         >
           <span
             className="font-bold uppercase"
-            style={{ color: trade.side === "buy" ? "var(--ws-bullish)" : "var(--ws-bearish)" }}
+            style={{ color: trade.side === "buy" ? "#22C55E" : "#EF4444" }}
           >
             {trade.side}
           </span>
-          <span style={{ color: "var(--ws-text-primary)" }}>{trade.price}</span>
-          <span className="text-right" style={{ color: "var(--ws-text-secondary)" }}>
+          <span style={{ color: "#F0F4FC" }}>{trade.price}</span>
+          <span className="text-right" style={{ color: "#7B8BA8" }}>
             {trade.amount}
           </span>
-          <span
-            className="text-right"
-            style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-          >
+          <span className="text-right" style={{ color: "#4A5568" }}>
             {trade.time}
           </span>
         </div>
@@ -578,7 +568,7 @@ const TradesTab = memo(function TradesTab({ trades }: TradesTabProps) {
 const PlaceholderTab = memo(function PlaceholderTab({ label }: { label: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-8">
-      <p className="text-xs" style={{ color: "var(--ws-text-secondary)" }}>
+      <p className="text-xs" style={{ color: "#7B8BA8" }}>
         {label} data will appear here
       </p>
     </div>
@@ -611,23 +601,27 @@ function TokenPage() {
   return (
     <div
       className="space-y-3"
-      style={{ backgroundColor: "var(--ws-bg)", color: "var(--ws-text-primary)" }}
+      style={{
+        backgroundColor: "#0A0E1A",
+        color: "#F0F4FC",
+        fontFamily: "'Inter', system-ui, sans-serif",
+      }}
     >
       {/* Top Bar */}
       <div
         className="flex flex-col sm:flex-row sm:items-center gap-3 p-3"
         style={{
-          backgroundColor: "var(--ws-surface)",
-          border: "1px solid var(--ws-border)",
-          borderRadius: "var(--ws-radius)",
+          backgroundColor: "#111827",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "12px",
         }}
       >
         <div className="flex items-center gap-3">
           <div
             className="size-10 rounded-xl flex items-center justify-center text-sm font-bold"
             style={{
-              backgroundColor: "var(--ws-accent-dim, rgba(0,212,170,0.12))",
-              color: "var(--ws-accent)",
+              backgroundColor: "rgba(59,130,246,0.15)",
+              color: "#3B82F6",
             }}
           >
             {symbol.slice(0, 2)}
@@ -637,20 +631,17 @@ function TokenPage() {
               <Link
                 to="/discover"
                 className="text-[10px] font-medium hover:underline"
-                style={{ color: "var(--ws-text-secondary)" }}
+                style={{ color: "#7B8BA8" }}
               >
                 Discover
               </Link>
-              <span
-                className="text-[10px]"
-                style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-              >
+              <span className="text-[10px]" style={{ color: "#4A5568" }}>
                 /
               </span>
-              <span className="text-sm font-bold" style={{ color: "var(--ws-text-primary)" }}>
+              <span className="text-sm font-bold" style={{ color: "#F0F4FC" }}>
                 {symbol}
               </span>
-              <span className="text-xs" style={{ color: "var(--ws-text-secondary)" }}>
+              <span className="text-xs" style={{ color: "#7B8BA8" }}>
                 {token.name}
               </span>
             </div>
@@ -658,15 +649,15 @@ function TokenPage() {
               <span
                 className="text-lg font-bold"
                 style={{
-                  color: "var(--ws-text-primary)",
-                  fontFamily: "var(--ws-mono-font-family, monospace)",
+                  color: "#F0F4FC",
+                  fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
                 }}
               >
                 {token.price}
               </span>
               <span
                 className="flex items-center gap-0.5 text-xs font-semibold"
-                style={{ color: isPositive ? "var(--ws-bullish)" : "var(--ws-bearish)" }}
+                style={{ color: isPositive ? "#22C55E" : "#EF4444" }}
               >
                 <ChangeIcon className="size-3" />
                 {isPositive ? "+" : ""}
@@ -677,26 +668,26 @@ function TokenPage() {
         </div>
         <div className="flex items-center gap-4 sm:ml-auto">
           <div className="flex items-center gap-1.5 text-[11px]">
-            <BarChart3 className="size-3" style={{ color: "var(--ws-text-secondary)" }} />
-            <span style={{ color: "var(--ws-text-secondary)" }}>Vol</span>
+            <BarChart3 className="size-3" style={{ color: "#7B8BA8" }} />
+            <span style={{ color: "#7B8BA8" }}>Vol</span>
             <span
               className="font-semibold"
               style={{
-                color: "var(--ws-text-primary)",
-                fontFamily: "var(--ws-mono-font-family, monospace)",
+                color: "#F0F4FC",
+                fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
               }}
             >
               {token.volume}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-[11px]">
-            <Droplets className="size-3" style={{ color: "var(--ws-text-secondary)" }} />
-            <span style={{ color: "var(--ws-text-secondary)" }}>Liq</span>
+            <Droplets className="size-3" style={{ color: "#7B8BA8" }} />
+            <span style={{ color: "#7B8BA8" }}>Liq</span>
             <span
               className="font-semibold"
               style={{
-                color: "var(--ws-text-primary)",
-                fontFamily: "var(--ws-mono-font-family, monospace)",
+                color: "#F0F4FC",
+                fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
               }}
             >
               {token.liquidity}
@@ -734,26 +725,26 @@ function TokenPage() {
       {/* Bottom Tabs */}
       <div
         style={{
-          backgroundColor: "var(--ws-surface)",
-          border: "1px solid var(--ws-border)",
-          borderRadius: "var(--ws-radius)",
+          backgroundColor: "#111827",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "12px",
         }}
       >
-        <div className="flex border-b" style={{ borderColor: "var(--ws-border)" }}>
+        <div className="flex border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
           {BOTTOM_TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors relative"
               style={{
-                color: activeTab === tab.id ? "var(--ws-accent)" : "var(--ws-text-secondary)",
+                color: activeTab === tab.id ? "#3B82F6" : "#7B8BA8",
               }}
             >
               {tab.label}
               {activeTab === tab.id && (
                 <span
                   className="absolute bottom-0 left-2 right-2 h-0.5"
-                  style={{ backgroundColor: "var(--ws-accent)" }}
+                  style={{ backgroundColor: "#3B82F6" }}
                 />
               )}
             </button>

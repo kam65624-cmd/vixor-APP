@@ -50,7 +50,7 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     id: "1",
     type: "trade",
     icon: ArrowUpRight,
-    iconColor: "var(--ws-bullish)",
+    iconColor: "#22C55E",
     iconBg: "rgba(34,197,94,0.1)",
     title: "Bought PEPE",
     description: "Swapped 0.5 ETH for 45,200,000 PEPE on Uniswap V3",
@@ -62,8 +62,8 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     id: "2",
     type: "ai-decision",
     icon: Brain,
-    iconColor: "var(--ws-accent)",
-    iconBg: "var(--ws-accent-dim, rgba(59,130,246,0.12))",
+    iconColor: "#3B82F6",
+    iconBg: "rgba(59,130,246,0.15)",
     title: "AI Signal: PEPE Buy",
     description:
       "Smart money accumulation detected. Confidence: 78%. Recommended entry zone: $0.00001180-$0.00001220",
@@ -74,7 +74,7 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     id: "3",
     type: "trade",
     icon: ArrowDownRight,
-    iconColor: "var(--ws-bearish)",
+    iconColor: "#EF4444",
     iconBg: "rgba(239,68,68,0.1)",
     title: "Sold DOGE",
     description: "Sold 10,000 DOGE at $0.1245",
@@ -86,8 +86,8 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     id: "4",
     type: "transfer",
     icon: ArrowUpRight,
-    iconColor: "var(--ws-accent)",
-    iconBg: "var(--ws-accent-dim, rgba(59,130,246,0.12))",
+    iconColor: "#3B82F6",
+    iconBg: "rgba(59,130,246,0.15)",
     title: "Received ETH",
     description: "Received 1.0 ETH from 0x4pQn...8vRe",
     timestamp: "1 hour ago",
@@ -97,7 +97,7 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     id: "5",
     type: "learning",
     icon: BookOpen,
-    iconColor: "var(--ws-warning)",
+    iconColor: "#F59E0B",
     iconBg: "rgba(245,158,11,0.1)",
     title: "Completed: Smart Money Tracking",
     description:
@@ -109,8 +109,8 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     id: "6",
     type: "ai-decision",
     icon: Brain,
-    iconColor: "var(--ws-accent)",
-    iconBg: "var(--ws-accent-dim, rgba(59,130,246,0.12))",
+    iconColor: "#3B82F6",
+    iconBg: "rgba(59,130,246,0.15)",
     title: "AI Alert: WIF Risk",
     description:
       "Volatility spike detected on WIF. Suggesting tighter stop-loss or partial take-profit at $2.80",
@@ -121,8 +121,8 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     id: "7",
     type: "trade",
     icon: ArrowLeftRight,
-    iconColor: "var(--ws-accent)",
-    iconBg: "var(--ws-accent-dim, rgba(59,130,246,0.12))",
+    iconColor: "#3B82F6",
+    iconBg: "rgba(59,130,246,0.15)",
     title: "Swapped USDC → WIF",
     description: "Swapped 1,000 USDC for 408.16 WIF on Jupiter DEX",
     timestamp: "5 hours ago",
@@ -132,7 +132,7 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     id: "8",
     type: "transfer",
     icon: ArrowDownRight,
-    iconColor: "var(--ws-bearish)",
+    iconColor: "#EF4444",
     iconBg: "rgba(239,68,68,0.1)",
     title: "Sent USDC",
     description: "Sent 500 USDC to 0x9mLt...2jXc",
@@ -143,7 +143,7 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     id: "9",
     type: "learning",
     icon: Sparkles,
-    iconColor: "var(--ws-bullish)",
+    iconColor: "#22C55E",
     iconBg: "rgba(34,197,94,0.1)",
     title: "Achievement Unlocked: Early Bird",
     description: "You bought TURBO within the first hour of launch! Rarity: Rare",
@@ -154,8 +154,8 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     id: "10",
     type: "ai-decision",
     icon: Brain,
-    iconColor: "var(--ws-accent)",
-    iconBg: "var(--ws-accent-dim, rgba(59,130,246,0.12))",
+    iconColor: "#3B82F6",
+    iconBg: "rgba(59,130,246,0.15)",
     title: "AI Portfolio Rebalance",
     description:
       "Suggested reducing DOGE exposure by 20% and increasing PEPE allocation. Based on momentum and smart money flow analysis.",
@@ -220,9 +220,9 @@ const FilterBar = memo(function FilterBar({ active, onChange, onExport }: Filter
       <div
         className="flex items-center gap-0.5 p-1"
         style={{
-          backgroundColor: "var(--ws-surface)",
-          border: "1px solid var(--ws-border)",
-          borderRadius: "var(--ws-radius)",
+          backgroundColor: "#111827",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "12px",
         }}
       >
         {FILTERS.map((f) => (
@@ -232,8 +232,8 @@ const FilterBar = memo(function FilterBar({ active, onChange, onExport }: Filter
             className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-colors"
             style={{
               backgroundColor:
-                active === f.id ? "var(--ws-accent-dim, rgba(32,129,226,0.12))" : "transparent",
-              color: active === f.id ? "var(--ws-accent)" : "var(--ws-text-secondary)",
+                active === f.id ? "rgba(59,130,246,0.15)" : "transparent",
+              color: active === f.id ? "#3B82F6" : "#7B8BA8",
             }}
           >
             {f.label}
@@ -244,10 +244,10 @@ const FilterBar = memo(function FilterBar({ active, onChange, onExport }: Filter
         onClick={onExport}
         className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
         style={{
-          backgroundColor: "var(--ws-surface)",
-          border: "1px solid var(--ws-border)",
-          color: "var(--ws-text-secondary)",
-          borderRadius: "var(--ws-radius)",
+          backgroundColor: "#111827",
+          border: "1px solid rgba(255,255,255,0.06)",
+          color: "#7B8BA8",
+          borderRadius: "12px",
         }}
       >
         <Download className="size-3.5" />
@@ -270,9 +270,9 @@ const ActivityFeedItem = memo(function ActivityFeedItem({ item }: ActivityFeedIt
     <div
       className="flex gap-3 p-3 transition-colors cursor-pointer"
       style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
       {/* Icon */}
@@ -287,7 +287,7 @@ const ActivityFeedItem = memo(function ActivityFeedItem({ item }: ActivityFeedIt
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <span className="text-sm font-semibold" style={{ color: "var(--ws-text-primary)" }}>
+            <span className="text-sm font-semibold" style={{ color: "#F0F4FC" }}>
               {item.title}
             </span>
             {item.value && (
@@ -295,11 +295,11 @@ const ActivityFeedItem = memo(function ActivityFeedItem({ item }: ActivityFeedIt
                 className="ml-2 text-xs font-bold"
                 style={{
                   color: item.value.startsWith("+")
-                    ? "var(--ws-bullish)"
+                    ? "#22C55E"
                     : item.value.startsWith("-")
-                      ? "var(--ws-bearish)"
-                      : "var(--ws-accent)",
-                  fontFamily: "var(--ws-mono-font-family, monospace)",
+                      ? "#EF4444"
+                      : "#3B82F6",
+                  fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
                 }}
               >
                 {item.value}
@@ -308,22 +308,22 @@ const ActivityFeedItem = memo(function ActivityFeedItem({ item }: ActivityFeedIt
           </div>
           <span
             className="flex items-center gap-1 text-[10px] flex-shrink-0"
-            style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
+            style={{ color: "#4A5568" }}
           >
             <Clock className="size-2.5" />
             {item.timestamp}
           </span>
         </div>
-        <p className="text-xs leading-relaxed mt-0.5" style={{ color: "var(--ws-text-secondary)" }}>
+        <p className="text-xs leading-relaxed mt-0.5" style={{ color: "#7B8BA8" }}>
           {item.description}
         </p>
         {item.detail && (
           <span
             className="inline-block text-[10px] mt-1 px-1.5 py-0.5 rounded"
             style={{
-              backgroundColor: "var(--ws-surface-hover)",
-              color: "var(--ws-text-secondary)",
-              fontFamily: "var(--ws-mono-font-family, monospace)",
+              backgroundColor: "rgba(255,255,255,0.05)",
+              color: "#7B8BA8",
+              fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
             }}
           >
             {item.detail}
@@ -341,19 +341,19 @@ const AIInsightsPanel = memo(function AIInsightsPanel() {
     <div
       className="hidden lg:block"
       style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
       <div
         className="px-4 py-3 border-b flex items-center gap-2"
-        style={{ borderColor: "var(--ws-border)" }}
+        style={{ borderColor: "rgba(255,255,255,0.06)" }}
       >
-        <Brain className="size-4" style={{ color: "var(--ws-accent)" }} />
+        <Brain className="size-4" style={{ color: "#3B82F6" }} />
         <span
           className="text-xs font-bold uppercase tracking-wider"
-          style={{ color: "var(--ws-text-primary)" }}
+          style={{ color: "#F0F4FC" }}
         >
           VIXOR AI Insights
         </span>
@@ -362,23 +362,23 @@ const AIInsightsPanel = memo(function AIInsightsPanel() {
         {MOCK_INSIGHTS.map((insight) => {
           const confidenceColor =
             insight.confidence >= 75
-              ? "var(--ws-bullish)"
+              ? "#22C55E"
               : insight.confidence >= 50
-                ? "var(--ws-warning)"
-                : "var(--ws-bearish)";
+                ? "#F59E0B"
+                : "#EF4444";
 
           return (
             <div
               key={insight.id}
               className="p-3 space-y-2"
               style={{
-                backgroundColor: "var(--ws-surface-hover)",
-                borderRadius: "var(--ws-radius)",
-                border: "1px solid var(--ws-border)",
+                backgroundColor: "rgba(255,255,255,0.05)",
+                borderRadius: "12px",
+                border: "1px solid rgba(255,255,255,0.06)",
               }}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold" style={{ color: "var(--ws-text-primary)" }}>
+                <span className="text-xs font-bold" style={{ color: "#F0F4FC" }}>
                   {insight.title}
                 </span>
                 <span
@@ -390,7 +390,7 @@ const AIInsightsPanel = memo(function AIInsightsPanel() {
               </div>
               <p
                 className="text-[11px] leading-relaxed"
-                style={{ color: "var(--ws-text-secondary)" }}
+                style={{ color: "#7B8BA8" }}
               >
                 {insight.description}
               </p>
@@ -399,7 +399,7 @@ const AIInsightsPanel = memo(function AIInsightsPanel() {
                 <div className="flex items-center justify-between mb-1">
                   <span
                     className="text-[9px] font-bold uppercase tracking-wider"
-                    style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
+                    style={{ color: "#4A5568" }}
                   >
                     Confidence
                   </span>
@@ -407,7 +407,7 @@ const AIInsightsPanel = memo(function AIInsightsPanel() {
                     className="text-[10px] font-bold"
                     style={{
                       color: confidenceColor,
-                      fontFamily: "var(--ws-mono-font-family, monospace)",
+                      fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
                     }}
                   >
                     {insight.confidence}%
@@ -415,7 +415,7 @@ const AIInsightsPanel = memo(function AIInsightsPanel() {
                 </div>
                 <div
                   className="h-1.5 rounded-full overflow-hidden"
-                  style={{ backgroundColor: "var(--ws-bg-secondary, var(--ws-surface))" }}
+                  style={{ backgroundColor: "#111827" }}
                 >
                   <div
                     className="h-full rounded-full transition-all duration-500"
@@ -430,9 +430,9 @@ const AIInsightsPanel = memo(function AIInsightsPanel() {
         <button
           className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold transition-colors"
           style={{
-            backgroundColor: "var(--ws-accent-dim, rgba(32,129,226,0.08))",
-            color: "var(--ws-accent)",
-            border: "1px solid var(--ws-border-accent, var(--ws-border))",
+            backgroundColor: "rgba(59,130,246,0.12)",
+            color: "#3B82F6",
+            border: "1px solid rgba(59,130,246,0.2)",
           }}
         >
           View Full AI Dashboard <ArrowRight className="size-3" />
@@ -460,18 +460,18 @@ function ActivityWeb3Page() {
   return (
     <div
       className="space-y-4"
-      style={{ backgroundColor: "var(--ws-bg)", color: "var(--ws-text-primary)" }}
+      style={{ backgroundColor: "#0A0E1A", color: "#F0F4FC" }}
     >
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1
             className="text-xl font-bold tracking-tight"
-            style={{ color: "var(--ws-text-primary)" }}
+            style={{ color: "#F0F4FC" }}
           >
             Activity
           </h1>
-          <p className="text-xs mt-0.5" style={{ color: "var(--ws-text-secondary)" }}>
+          <p className="text-xs mt-0.5" style={{ color: "#7B8BA8" }}>
             Your trading activity, AI decisions & learning progress
           </p>
         </div>
@@ -491,16 +491,16 @@ function ActivityWeb3Page() {
             <div
               className="flex flex-col items-center justify-center py-16 text-center"
               style={{
-                backgroundColor: "var(--ws-surface)",
-                border: "1px solid var(--ws-border)",
-                borderRadius: "var(--ws-radius)",
+                backgroundColor: "#111827",
+                border: "1px solid rgba(255,255,255,0.06)",
+                borderRadius: "12px",
               }}
             >
               <BarChart3
                 className="size-8 mb-3"
-                style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
+                style={{ color: "#4A5568" }}
               />
-              <p className="text-sm font-medium" style={{ color: "var(--ws-text-secondary)" }}>
+              <p className="text-sm font-medium" style={{ color: "#7B8BA8" }}>
                 No activities in this category
               </p>
             </div>

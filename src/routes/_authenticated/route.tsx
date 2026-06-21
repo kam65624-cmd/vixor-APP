@@ -11,6 +11,18 @@ const WEB3_TERMINAL_ROUTES = [
   "/communities",
   "/wallet-web3",
   "/activity-web3",
+  "/pulse",
+  "/alpha",
+  "/whale",
+  "/pnl",
+  "/bags",
+  "/trackers",
+  "/perpetuals",
+  "/predictions",
+  "/yield",
+  "/vision",
+  "/rewards",
+  "/curves",
 ] as const;
 
 function isWeb3TerminalRoute(pathname: string): boolean {

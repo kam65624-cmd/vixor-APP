@@ -240,18 +240,18 @@ const WalletHeader = memo(function WalletHeader() {
     <div
       className="p-4 sm:p-6"
       style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         {/* Wallet Icon */}
         <div
           className="size-12 sm:size-14 rounded-2xl flex items-center justify-center"
-          style={{ backgroundColor: "var(--ws-accent-dim, rgba(32,129,226,0.12))" }}
+          style={{ backgroundColor: "rgba(59,130,246,0.15)" }}
         >
-          <Wallet className="size-6 sm:size-7" style={{ color: "var(--ws-accent)" }} />
+          <Wallet className="size-6 sm:size-7" style={{ color: "#3B82F6" }} />
         </div>
 
         <div className="flex-1">
@@ -260,8 +260,8 @@ const WalletHeader = memo(function WalletHeader() {
             <span
               className="text-sm font-bold"
               style={{
-                color: "var(--ws-text-primary)",
-                fontFamily: "var(--ws-mono-font-family, monospace)",
+                color: "#F0F4FC",
+                fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
               }}
             >
               {truncatedAddress}
@@ -269,14 +269,14 @@ const WalletHeader = memo(function WalletHeader() {
             <button
               onClick={handleCopy}
               className="p-1 rounded transition-colors"
-              style={{ color: "var(--ws-text-secondary)" }}
+              style={{ color: "#7B8BA8" }}
               aria-label="Copy address"
             >
               <Copy className="size-3" />
             </button>
             <button
               className="p-1 rounded transition-colors"
-              style={{ color: "var(--ws-text-secondary)" }}
+              style={{ color: "#7B8BA8" }}
               aria-label="View on explorer"
             >
               <ExternalLink className="size-3" />
@@ -286,8 +286,8 @@ const WalletHeader = memo(function WalletHeader() {
           <span
             className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded mt-1"
             style={{
-              backgroundColor: "var(--ws-accent-dim, rgba(32,129,226,0.12))",
-              color: "var(--ws-accent)",
+              backgroundColor: "rgba(59,130,246,0.15)",
+              color: "#3B82F6",
             }}
           >
             {CHAIN}
@@ -299,8 +299,8 @@ const WalletHeader = memo(function WalletHeader() {
           <div
             className="text-2xl sm:text-3xl font-bold"
             style={{
-              color: "var(--ws-text-primary)",
-              fontFamily: "var(--ws-mono-font-family, monospace)",
+              color: "#F0F4FC",
+              fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
             }}
           >
             {TOTAL_BALANCE}
@@ -309,7 +309,7 @@ const WalletHeader = memo(function WalletHeader() {
             <button
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-colors"
               style={{
-                backgroundColor: "var(--ws-accent)",
+                backgroundColor: "#3B82F6",
                 color: "#fff",
               }}
             >
@@ -318,9 +318,9 @@ const WalletHeader = memo(function WalletHeader() {
             <button
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-colors"
               style={{
-                backgroundColor: "var(--ws-surface-hover)",
-                color: "var(--ws-text-primary)",
-                border: "1px solid var(--ws-border)",
+                backgroundColor: "rgba(255,255,255,0.05)",
+                color: "#F0F4FC",
+                border: "1px solid rgba(255,255,255,0.06)",
               }}
             >
               <ArrowDownLeft className="size-3.5" /> Receive
@@ -328,9 +328,9 @@ const WalletHeader = memo(function WalletHeader() {
             <button
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-colors"
               style={{
-                backgroundColor: "var(--ws-surface-hover)",
-                color: "var(--ws-text-primary)",
-                border: "1px solid var(--ws-border)",
+                backgroundColor: "rgba(255,255,255,0.05)",
+                color: "#F0F4FC",
+                border: "1px solid rgba(255,255,255,0.06)",
               }}
             >
               <ArrowLeftRight className="size-3.5" /> Swap
@@ -355,41 +355,41 @@ const HoldingsGrid = memo(function HoldingsGrid() {
             key={holding.symbol}
             className="p-4 cursor-pointer transition-colors"
             style={{
-              backgroundColor: "var(--ws-surface)",
-              border: "1px solid var(--ws-border)",
-              borderRadius: "var(--ws-radius)",
+              backgroundColor: "#111827",
+              border: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: "12px",
             }}
           >
             <div className="flex items-center gap-3">
               <div
                 className="size-10 rounded-xl flex items-center justify-center text-lg"
-                style={{ backgroundColor: "var(--ws-surface-hover)" }}
+                style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
               >
                 {holding.icon}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold" style={{ color: "var(--ws-text-primary)" }}>
+                  <span className="text-sm font-bold" style={{ color: "#F0F4FC" }}>
                     {holding.symbol}
                   </span>
                   <span
                     className="flex items-center gap-0.5 text-[11px] font-semibold"
-                    style={{ color: isPositive ? "var(--ws-bullish)" : "var(--ws-bearish)" }}
+                    style={{ color: isPositive ? "#22C55E" : "#EF4444" }}
                   >
                     <ChangeIcon className="size-3" />
                     {isPositive ? "+" : ""}
                     {holding.change24h}%
                   </span>
                 </div>
-                <span className="text-[11px]" style={{ color: "var(--ws-text-secondary)" }}>
+                <span className="text-[11px]" style={{ color: "#7B8BA8" }}>
                   {holding.name}
                 </span>
                 <div className="flex items-center justify-between mt-2">
                   <span
                     className="text-[11px]"
                     style={{
-                      color: "var(--ws-text-secondary)",
-                      fontFamily: "var(--ws-mono-font-family, monospace)",
+                      color: "#7B8BA8",
+                      fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
                     }}
                   >
                     {holding.balance}
@@ -397,8 +397,8 @@ const HoldingsGrid = memo(function HoldingsGrid() {
                   <span
                     className="text-sm font-bold"
                     style={{
-                      color: "var(--ws-text-primary)",
-                      fontFamily: "var(--ws-mono-font-family, monospace)",
+                      color: "#F0F4FC",
+                      fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
                     }}
                   >
                     {holding.value}
@@ -427,7 +427,7 @@ const ActivityTimeline = memo(function ActivityTimeline() {
       {/* Timeline Line */}
       <div
         className="absolute left-5 top-4 bottom-4 w-px"
-        style={{ backgroundColor: "var(--ws-border)" }}
+        style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
       />
 
       {MOCK_TXNS.map((txn) => {
@@ -440,17 +440,17 @@ const ActivityTimeline = memo(function ActivityTimeline() {
             {/* Icon */}
             <div
               className="relative z-10 size-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: "var(--ws-surface-hover)" }}
+              style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
             >
               <Icon
                 className="size-4"
                 style={{
                   color:
                     txn.type === "send"
-                      ? "var(--ws-bearish)"
+                      ? "#EF4444"
                       : txn.type === "receive"
-                        ? "var(--ws-bullish)"
-                        : "var(--ws-accent)",
+                        ? "#22C55E"
+                        : "#3B82F6",
                 }}
               />
             </div>
@@ -458,18 +458,15 @@ const ActivityTimeline = memo(function ActivityTimeline() {
             {/* Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <span
-                  className="text-sm font-semibold capitalize"
-                  style={{ color: "var(--ws-text-primary)" }}
-                >
+                <span className="text-sm font-semibold capitalize" style={{ color: "#F0F4FC" }}>
                   {txn.type}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <StatusIcon
                     className="size-3"
-                    style={{ color: isConfirmed ? "var(--ws-bullish)" : "var(--ws-warning)" }}
+                    style={{ color: isConfirmed ? "#22C55E" : "#F59E0B" }}
                   />
-                  <span className="text-[10px]" style={{ color: "var(--ws-text-secondary)" }}>
+                  <span className="text-[10px]" style={{ color: "#7B8BA8" }}>
                     {txn.time}
                   </span>
                 </div>
@@ -478,20 +475,20 @@ const ActivityTimeline = memo(function ActivityTimeline() {
                 <span
                   className="text-xs font-semibold"
                   style={{
-                    color: "var(--ws-text-primary)",
-                    fontFamily: "var(--ws-mono-font-family, monospace)",
+                    color: "#F0F4FC",
+                    fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
                   }}
                 >
                   {txn.amount}
                 </span>
-                <span className="text-[10px]" style={{ color: "var(--ws-text-secondary)" }}>
+                <span className="text-[10px]" style={{ color: "#7B8BA8" }}>
                   &middot;
                 </span>
                 <span
                   className="text-[11px]"
                   style={{
-                    color: "var(--ws-text-secondary)",
-                    fontFamily: "var(--ws-mono-font-family, monospace)",
+                    color: "#7B8BA8",
+                    fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
                   }}
                 >
                   {txn.value}
@@ -500,8 +497,8 @@ const ActivityTimeline = memo(function ActivityTimeline() {
               <span
                 className="text-[10px] mt-0.5 block"
                 style={{
-                  color: "var(--ws-text-tertiary, var(--ws-text-secondary))",
-                  fontFamily: "var(--ws-mono-font-family, monospace)",
+                  color: "#4A5568",
+                  fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
                 }}
               >
                 {txn.address}
@@ -520,20 +517,20 @@ const AchievementsGrid = memo(function AchievementsGrid() {
   const rarityColors = {
     common: {
       bg: "rgba(255,255,255,0.05)",
-      border: "var(--ws-border)",
-      text: "var(--ws-text-secondary)",
+      border: "rgba(255,255,255,0.06)",
+      text: "#7B8BA8",
       label: "Common",
     },
     rare: {
       bg: "rgba(32,129,226,0.1)",
       border: "rgba(32,129,226,0.25)",
-      text: "var(--ws-accent)",
+      text: "#3B82F6",
       label: "Rare",
     },
     legendary: {
       bg: "rgba(245,158,11,0.1)",
       border: "rgba(245,158,11,0.25)",
-      text: "var(--ws-warning)",
+      text: "#F59E0B",
       label: "Legendary",
     },
   } as const;
@@ -549,29 +546,27 @@ const AchievementsGrid = memo(function AchievementsGrid() {
             key={ach.id}
             className="p-4 text-center transition-colors"
             style={{
-              backgroundColor: ach.unlocked ? rarity.bg : "var(--ws-surface)",
-              border: `1px solid ${ach.unlocked ? rarity.border : "var(--ws-border)"}`,
-              borderRadius: "var(--ws-radius)",
+              backgroundColor: ach.unlocked ? rarity.bg : "#111827",
+              border: `1px solid ${ach.unlocked ? rarity.border : "rgba(255,255,255,0.06)"}`,
+              borderRadius: "12px",
               opacity: ach.unlocked ? 1 : 0.4,
             }}
           >
             <div
               className="size-10 rounded-xl flex items-center justify-center mx-auto mb-2"
-              style={{ backgroundColor: ach.unlocked ? rarity.bg : "var(--ws-surface-hover)" }}
+              style={{ backgroundColor: ach.unlocked ? rarity.bg : "rgba(255,255,255,0.05)" }}
             >
               <Icon
                 className="size-5"
                 style={{
-                  color: ach.unlocked
-                    ? rarity.text
-                    : "var(--ws-text-tertiary, var(--ws-text-secondary))",
+                  color: ach.unlocked ? rarity.text : "#4A5568",
                 }}
               />
             </div>
-            <div className="text-xs font-bold mb-0.5" style={{ color: "var(--ws-text-primary)" }}>
+            <div className="text-xs font-bold mb-0.5" style={{ color: "#F0F4FC" }}>
               {ach.title}
             </div>
-            <div className="text-[10px]" style={{ color: "var(--ws-text-secondary)" }}>
+            <div className="text-[10px]" style={{ color: "#7B8BA8" }}>
               {ach.description}
             </div>
             <div className="mt-1.5">
@@ -607,10 +602,7 @@ function WalletWeb3Page() {
   ];
 
   return (
-    <div
-      className="space-y-4"
-      style={{ backgroundColor: "var(--ws-bg)", color: "var(--ws-text-primary)" }}
-    >
+    <div className="space-y-4" style={{ backgroundColor: "#0A0E1A", color: "#F0F4FC" }}>
       {/* Wallet Header */}
       <WalletHeader />
 
@@ -618,9 +610,9 @@ function WalletWeb3Page() {
       <div
         className="flex items-center gap-0.5 p-1"
         style={{
-          backgroundColor: "var(--ws-surface)",
-          border: "1px solid var(--ws-border)",
-          borderRadius: "var(--ws-radius)",
+          backgroundColor: "#111827",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "12px",
         }}
       >
         {TABS.map((tab) => (
@@ -629,11 +621,8 @@ function WalletWeb3Page() {
             onClick={() => handleTabChange(tab.id)}
             className="flex-1 py-2 rounded-lg text-xs font-semibold transition-colors"
             style={{
-              backgroundColor:
-                activeTab === tab.id
-                  ? "var(--ws-accent-dim, rgba(32,129,226,0.12))"
-                  : "transparent",
-              color: activeTab === tab.id ? "var(--ws-accent)" : "var(--ws-text-secondary)",
+              backgroundColor: activeTab === tab.id ? "rgba(59,130,246,0.15)" : "transparent",
+              color: activeTab === tab.id ? "#60A5FA" : "#7B8BA8",
             }}
           >
             {tab.label}

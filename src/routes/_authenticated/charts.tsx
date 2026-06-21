@@ -38,6 +38,31 @@ export const Route = createFileRoute("/_authenticated/charts")({
   }),
 });
 
+// ── Axiom Design System ──
+const S = {
+  bg: "#0A0E1A",
+  card: "#111827",
+  cardBorder: "1px solid rgba(255,255,255,0.06)",
+  text1: "#F0F4FC",
+  text2: "#7B8BA8",
+  text3: "#4A5568",
+  accent: "#3B82F6",
+  accentLight: "#60A5FA",
+  bullish: "#22C55E",
+  bearish: "#EF4444",
+  warning: "#F59E0B",
+  font: "'Inter', system-ui, sans-serif",
+  mono: "'JetBrains Mono', monospace",
+  radius: 8,
+  badgeRadius: 6,
+} as const;
+
+const cardStyle: React.CSSProperties = {
+  background: S.card,
+  border: S.cardBorder,
+  borderRadius: S.radius,
+};
+
 const POPULAR = [
   { pair: "BTC/USDT", icon: "₿" },
   { pair: "ETH/USDT", icon: "Ξ" },
@@ -234,70 +259,114 @@ function Charts() {
   // Get active timeframe label
   const activeTfLabel = TIMEFRAMES.find((tf) => tf.tv === currentInterval)?.label || "4h";
 
+  const change24h = pricesQuery.data?.find((p: any) => p.pair === currentPair)?.change24h ?? 0;
+
   return (
-    <div className="flex flex-col gap-3 animate-in fade-in duration-500">
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, fontFamily: S.font }}>
       {/* ── Search bar ── */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 flex items-center gap-2 px-3 h-10 rounded-xl bg-card border border-border">
-          <Search className="size-4 text-muted-foreground shrink-0" />
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ ...cardStyle, flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "0 12px", height: 40, borderRadius: S.radius }}>
+          <Search style={{ width: 16, height: 16, color: S.text3, flexShrink: 0 }} />
           <input
             placeholder={t("charts.searchPair")}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            className="bg-transparent flex-1 text-sm outline-none text-foreground placeholder:text-muted-foreground"
+            style={{
+              background: "transparent",
+              flex: 1,
+              fontSize: 13,
+              border: "none",
+              outline: "none",
+              color: S.text1,
+              fontFamily: S.font,
+            }}
           />
         </div>
         <button
           onClick={handleSearch}
-          className="size-10 rounded-xl gradient-primary text-primary-foreground flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: S.radius,
+            background: S.accent,
+            color: "#fff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "none",
+            cursor: "pointer",
+          }}
         >
-          <Plus className="size-4" />
+          <Plus style={{ width: 16, height: 16 }} />
         </button>
       </div>
 
       {/* ── Timeframe selector ── */}
-      <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-0.5">
-        {TIMEFRAMES.map((tf) => (
-          <button
-            key={tf.label}
-            onClick={() => setCurrentInterval(tf.tv)}
-            className={`px-3 h-8 rounded-lg text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
-              currentInterval === tf.tv
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border border-border text-muted-foreground hover:bg-card-hover hover:text-foreground"
-            }`}
-          >
-            {tf.label}
-          </button>
-        ))}
+      <div style={{ display: "flex", alignItems: "center", gap: 4, overflowX: "auto", paddingBottom: 2 }}>
+        {TIMEFRAMES.map((tf) => {
+          const isActive = currentInterval === tf.tv;
+          return (
+            <button
+              key={tf.label}
+              onClick={() => setCurrentInterval(tf.tv)}
+              style={{
+                padding: "0 12px",
+                height: 32,
+                borderRadius: S.badgeRadius,
+                fontSize: 11,
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+                border: isActive ? "1px solid rgba(59,130,246,0.3)" : "1px solid transparent",
+                background: isActive ? "rgba(59,130,246,0.15)" : "transparent",
+                color: isActive ? S.accentLight : S.text2,
+                cursor: "pointer",
+                fontFamily: S.font,
+              }}
+            >
+              {tf.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Chart tools ── */}
-      <div className="flex items-center gap-1.5">
-        <button className="size-8 rounded-lg bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors text-muted-foreground hover:text-foreground">
-          <Maximize2 className="size-3.5" />
-        </button>
-        <button className="size-8 rounded-lg bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors text-muted-foreground hover:text-foreground">
-          <CandlestickChart className="size-3.5" />
-        </button>
-        <button className="size-8 rounded-lg bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors text-muted-foreground hover:text-foreground">
-          <Pencil className="size-3.5" />
-        </button>
-        <button className="size-8 rounded-lg bg-card border border-border flex items-center justify-center hover:bg-card-hover transition-colors text-muted-foreground hover:text-foreground">
-          <BarChart3 className="size-3.5" />
-        </button>
-        <div className="flex-1" />
-        <div className="text-[10px] font-mono text-muted-foreground">{activeTfLabel}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        {[
+          { Icon: Maximize2 },
+          { Icon: CandlestickChart },
+          { Icon: Pencil },
+          { Icon: BarChart3 },
+        ].map(({ Icon }, i) => (
+          <button
+            key={i}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: S.badgeRadius,
+              ...cardStyle,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: S.cardBorder,
+              cursor: "pointer",
+              color: S.text3,
+            }}
+          >
+            <Icon style={{ width: 14, height: 14 }} />
+          </button>
+        ))}
+        <div style={{ flex: 1 }} />
+        <div style={{ fontSize: 10, fontFamily: S.mono, color: S.text3 }}>{activeTfLabel}</div>
       </div>
 
       {/* ── Price info bar ── */}
-      <div className="vixor-card p-3">
-        <div className="flex items-start justify-between mb-1.5">
+      <div style={{ ...cardStyle, border: S.cardBorder, padding: 12 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
           <div>
-            <div className="text-xs text-muted-foreground font-semibold">{displayName}</div>
+            <div style={{ fontSize: 11, color: S.text2, fontWeight: 600, fontFamily: S.font }}>{displayName}</div>
             {currentPrice > 0 && (
-              <div className="text-2xl font-bold font-mono leading-tight">
+              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: S.mono, lineHeight: 1.2, color: S.text1 }}>
                 $
                 {currentPrice.toLocaleString(undefined, {
                   minimumFractionDigits: decimals,
@@ -306,42 +375,39 @@ function Charts() {
               </div>
             )}
           </div>
-          {pricesQuery.data?.find((p: any) => p.pair === currentPair)?.change24h !== undefined && (
-            <div
-              className={`text-sm font-semibold font-mono px-2 py-0.5 rounded-lg ${
-                (pricesQuery.data.find((p: any) => p.pair === currentPair)?.change24h ?? 0) >= 0
-                  ? "text-bullish bg-bullish/10"
-                  : "text-bearish bg-bearish/10"
-              }`}
-            >
-              {(pricesQuery.data.find((p: any) => p.pair === currentPair)?.change24h ?? 0) >= 0
-                ? "+"
-                : ""}
-              {(pricesQuery.data.find((p: any) => p.pair === currentPair)?.change24h ?? 0).toFixed(
-                2,
-              )}
-              %
+          {change24h !== undefined && (
+            <div style={{
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: S.mono,
+              padding: "2px 8px",
+              borderRadius: S.badgeRadius,
+              background: change24h >= 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
+              color: change24h >= 0 ? S.bullish : S.bearish,
+            }}>
+              {change24h >= 0 ? "+" : ""}
+              {change24h.toFixed(2)}%
             </div>
           )}
         </div>
         {/* OHLCV row */}
         {ohlcvQuery.data && (
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-mono">
-            <span className="text-muted-foreground">
-              O: <span className="text-foreground">{ohlcvQuery.data.open?.toFixed(decimals)}</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 12px", fontSize: 11, fontFamily: S.mono }}>
+            <span style={{ color: S.text2 }}>
+              O: <span style={{ color: S.text1 }}>{ohlcvQuery.data.open?.toFixed(decimals)}</span>
             </span>
-            <span className="text-muted-foreground">
-              H: <span className="text-bullish">{ohlcvQuery.data.high?.toFixed(decimals)}</span>
+            <span style={{ color: S.text2 }}>
+              H: <span style={{ color: S.bullish }}>{ohlcvQuery.data.high?.toFixed(decimals)}</span>
             </span>
-            <span className="text-muted-foreground">
-              L: <span className="text-bearish">{ohlcvQuery.data.low?.toFixed(decimals)}</span>
+            <span style={{ color: S.text2 }}>
+              L: <span style={{ color: S.bearish }}>{ohlcvQuery.data.low?.toFixed(decimals)}</span>
             </span>
-            <span className="text-muted-foreground">
-              C: <span className="text-foreground">{ohlcvQuery.data.close?.toFixed(decimals)}</span>
+            <span style={{ color: S.text2 }}>
+              C: <span style={{ color: S.text1 }}>{ohlcvQuery.data.close?.toFixed(decimals)}</span>
             </span>
             {ohlcvQuery.data.volume > 0 && (
-              <span className="text-muted-foreground">
-                Vol: <span className="text-foreground">{formatVolume(ohlcvQuery.data.volume)}</span>
+              <span style={{ color: S.text2 }}>
+                Vol: <span style={{ color: S.text1 }}>{formatVolume(ohlcvQuery.data.volume)}</span>
               </span>
             )}
           </div>
@@ -358,7 +424,7 @@ function Charts() {
       />
 
       {/* ── Popular pairs quick-select ── */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
         {POPULAR.map((p) => {
           const priceData = pricesQuery.data?.find((d: any) => d.pair === p.pair);
           const isActive = currentPair === p.pair;
@@ -366,16 +432,27 @@ function Charts() {
             <button
               key={p.pair}
               onClick={() => changePair(p.pair)}
-              className={`flex items-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
-                isActive
-                  ? "gradient-primary text-primary-foreground glow-primary"
-                  : "bg-card border border-border text-muted-foreground hover:bg-card-hover hover:text-foreground"
-              }`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "0 12px",
+                height: 36,
+                borderRadius: S.radius,
+                fontSize: 12,
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+                border: isActive ? "1px solid rgba(59,130,246,0.3)" : S.cardBorder,
+                background: isActive ? "rgba(59,130,246,0.15)" : S.card,
+                color: isActive ? S.accentLight : S.text2,
+                cursor: "pointer",
+                fontFamily: S.font,
+              }}
             >
-              <span className="text-sm">{p.icon}</span>
+              <span style={{ fontSize: 14 }}>{p.icon}</span>
               {p.pair}
               {priceData && (
-                <span className="font-mono text-[10px] opacity-70">
+                <span style={{ fontFamily: S.mono, fontSize: 10, opacity: 0.7 }}>
                   $
                   {Number(priceData.price).toLocaleString(undefined, {
                     maximumFractionDigits: priceData.pair?.includes("JPY") ? 2 : 2,
@@ -389,21 +466,53 @@ function Charts() {
 
       {/* ── Analysis Error ── */}
       {analyzeError && (
-        <div className="p-3 bg-bearish/10 border border-bearish/30 text-bearish text-xs font-bold rounded-xl animate-in shake">
+        <div style={{
+          padding: 12,
+          background: "rgba(239,68,68,0.1)",
+          border: "1px solid rgba(239,68,68,0.3)",
+          color: S.bearish,
+          fontSize: 12,
+          fontWeight: 700,
+          borderRadius: S.radius,
+        }}>
           {analyzeError}
         </div>
       )}
 
       {/* ── Action buttons ── */}
-      <div className="grid grid-cols-4 gap-2">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
         <button
           onClick={() => setShowAlertDialog(true)}
-          className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover"
+          style={{
+            ...cardStyle,
+            border: S.cardBorder,
+            padding: 12,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
+            cursor: "pointer",
+            background: S.card,
+          }}
         >
-          <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Bell className="size-4 text-primary" />
+          <div style={{
+            width: 36,
+            height: 36,
+            borderRadius: S.radius,
+            background: "rgba(59,130,246,0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <Bell style={{ width: 16, height: 16, color: S.accentLight }} />
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span style={{
+            fontSize: 9,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: S.text2,
+          }}>
             {t("charts.setAlert")}
           </span>
         </button>
@@ -411,20 +520,44 @@ function Charts() {
         <button
           onClick={handleAnalyze}
           disabled={isAnalyzing || cooldownSeconds > 0}
-          className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover relative"
+          style={{
+            ...cardStyle,
+            border: S.cardBorder,
+            padding: 12,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
+            cursor: (isAnalyzing || cooldownSeconds > 0) ? "not-allowed" : "pointer",
+            background: S.card,
+            opacity: (isAnalyzing || cooldownSeconds > 0) ? 0.5 : 1,
+            position: "relative",
+          }}
         >
-          <div
-            className={`size-9 rounded-xl flex items-center justify-center ${cooldownSeconds > 0 ? "bg-muted" : "gradient-primary glow-primary"}`}
-          >
+          <div style={{
+            width: 36,
+            height: 36,
+            borderRadius: S.radius,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: cooldownSeconds > 0 ? S.text3 : "rgba(59,130,246,0.15)",
+          }}>
             {isAnalyzing ? (
-              <Loader2 className="size-4 text-primary-foreground animate-spin" />
+              <Loader2 style={{ width: 16, height: 16, color: S.text1, animation: "spin 1s linear infinite" }} />
             ) : cooldownSeconds > 0 ? (
-              <span className="text-xs font-bold text-muted-foreground">{cooldownSeconds}s</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: S.text2 }}>{cooldownSeconds}s</span>
             ) : (
-              <Sparkles className="size-4 text-primary-foreground" />
+              <Sparkles style={{ width: 16, height: 16, color: S.accentLight }} />
             )}
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span style={{
+            fontSize: 9,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: S.text2,
+          }}>
             {isAnalyzing
               ? t("charts.analyzing")
               : cooldownSeconds > 0
@@ -447,12 +580,36 @@ function Charts() {
               },
             } as any);
           }}
-          className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover"
+          style={{
+            ...cardStyle,
+            border: S.cardBorder,
+            padding: 12,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
+            cursor: "pointer",
+            background: S.card,
+          }}
         >
-          <div className="size-9 rounded-xl bg-violet-500/10 flex items-center justify-center">
-            <MessageSquare className="size-4 text-violet-400" />
+          <div style={{
+            width: 36,
+            height: 36,
+            borderRadius: S.radius,
+            background: "rgba(139,92,246,0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <MessageSquare style={{ width: 16, height: 16, color: "#A78BFA" }} />
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span style={{
+            fontSize: 9,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: S.text2,
+          }}>
             {t("charts.askCopilot") || "Ask AI"}
           </span>
         </button>
@@ -461,12 +618,36 @@ function Charts() {
           onClick={() => {
             queryClient.invalidateQueries({ queryKey: ["alerts"] });
           }}
-          className="vixor-card p-3 flex flex-col items-center gap-1.5 vixor-card-hover"
+          style={{
+            ...cardStyle,
+            border: S.cardBorder,
+            padding: 12,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
+            cursor: "pointer",
+            background: S.card,
+          }}
         >
-          <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Star className="size-4 text-primary" />
+          <div style={{
+            width: 36,
+            height: 36,
+            borderRadius: S.radius,
+            background: "rgba(59,130,246,0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <Star style={{ width: 16, height: 16, color: S.accentLight }} />
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span style={{
+            fontSize: 9,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: S.text2,
+          }}>
             {t("charts.watchlist")}
           </span>
         </button>

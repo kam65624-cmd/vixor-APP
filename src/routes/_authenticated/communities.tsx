@@ -130,9 +130,9 @@ const CollectionHeader = memo(function CollectionHeader() {
     <div
       className="relative overflow-hidden"
       style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
       {/* Cover Gradient */}
@@ -140,7 +140,7 @@ const CollectionHeader = memo(function CollectionHeader() {
         className="h-28 sm:h-36"
         style={{
           background:
-            "linear-gradient(135deg, var(--ws-accent-dim, rgba(32,129,226,0.2)) 0%, var(--ws-surface) 60%, var(--ws-bullish, rgba(34,197,94,0.1)) 100%)",
+            "linear-gradient(135deg, rgba(59,130,246,0.15) 0%, #111827 60%, rgba(34,197,94,0.1) 100%)",
         }}
       />
       {/* Content */}
@@ -149,9 +149,9 @@ const CollectionHeader = memo(function CollectionHeader() {
           <div
             className="size-16 sm:size-20 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-bold shadow-lg"
             style={{
-              backgroundColor: "var(--ws-accent)",
+              backgroundColor: "#3B82F6",
               color: "#fff",
-              border: "3px solid var(--ws-surface)",
+              border: "3px solid #111827",
             }}
           >
             V
@@ -159,11 +159,11 @@ const CollectionHeader = memo(function CollectionHeader() {
           <div className="flex-1">
             <h1
               className="text-xl sm:text-2xl font-bold tracking-tight"
-              style={{ color: "var(--ws-text-primary)" }}
+              style={{ color: "#F0F4FC" }}
             >
               Memecoin Community Hub
             </h1>
-            <p className="text-xs mt-0.5" style={{ color: "var(--ws-text-secondary)" }}>
+            <p className="text-xs mt-0.5" style={{ color: "#7B8BA8" }}>
               Real-time social sentiment across platforms
             </p>
           </div>
@@ -191,12 +191,12 @@ const StatItem = memo(function StatItem({ icon: Icon, label, value }: StatItemPr
   return (
     <div className="flex flex-col items-center sm:items-end">
       <div className="flex items-center gap-1.5">
-        <Icon className="size-3.5" style={{ color: "var(--ws-accent)" }} />
-        <span className="text-sm font-bold" style={{ color: "var(--ws-text-primary)" }}>
+        <Icon className="size-3.5" style={{ color: "#3B82F6" }} />
+        <span className="text-sm font-bold" style={{ color: "#F0F4FC" }}>
           {value}
         </span>
       </div>
-      <span className="text-[10px]" style={{ color: "var(--ws-text-secondary)" }}>
+      <span className="text-[10px]" style={{ color: "#7B8BA8" }}>
         {label}
       </span>
     </div>
@@ -223,25 +223,19 @@ const SentimentHeatmap = memo(function SentimentHeatmap() {
     <div
       className="p-4"
       style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Flame className="size-4" style={{ color: "var(--ws-accent)" }} />
-          <span
-            className="text-xs font-bold uppercase tracking-wider"
-            style={{ color: "var(--ws-text-primary)" }}
-          >
+          <Flame className="size-4" style={{ color: "#3B82F6" }} />
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#F0F4FC" }}>
             Sentiment Heatmap — 24h
           </span>
         </div>
-        <div
-          className="flex items-center gap-2 text-[9px]"
-          style={{ color: "var(--ws-text-secondary)" }}
-        >
+        <div className="flex items-center gap-2 text-[9px]" style={{ color: "#7B8BA8" }}>
           <span className="flex items-center gap-1">
             <span
               className="inline-block size-2 rounded-sm"
@@ -273,8 +267,8 @@ const SentimentHeatmap = memo(function SentimentHeatmap() {
               key={label}
               className="text-[8px]"
               style={{
-                color: "var(--ws-text-tertiary, var(--ws-text-secondary))",
-                fontFamily: "var(--ws-mono-font-family, monospace)",
+                color: "#4A5568",
+                fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
               }}
             >
               {label}
@@ -307,8 +301,8 @@ const SentimentHeatmap = memo(function SentimentHeatmap() {
               key={h}
               className="text-[8px] flex-1 text-left"
               style={{
-                color: "var(--ws-text-tertiary, var(--ws-text-secondary))",
-                fontFamily: "var(--ws-mono-font-family, monospace)",
+                color: "#4A5568",
+                fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
               }}
             >
               {String(h).padStart(2, "0")}:00
@@ -326,17 +320,14 @@ const TrendingTickers = memo(function TrendingTickers() {
     <div
       className="p-4"
       style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
       <div className="flex items-center gap-2 mb-3">
-        <TrendingUp className="size-4" style={{ color: "var(--ws-accent)" }} />
-        <span
-          className="text-xs font-bold uppercase tracking-wider"
-          style={{ color: "var(--ws-text-primary)" }}
-        >
+        <TrendingUp className="size-4" style={{ color: "#3B82F6" }} />
+        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#F0F4FC" }}>
           Trending Tickers
         </span>
       </div>
@@ -346,25 +337,25 @@ const TrendingTickers = memo(function TrendingTickers() {
             key={ticker.symbol}
             className="flex-shrink-0 px-3 py-2 rounded-lg flex flex-col gap-1 cursor-pointer transition-colors"
             style={{
-              backgroundColor: "var(--ws-surface-hover)",
-              border: "1px solid var(--ws-border)",
+              backgroundColor: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.06)",
               minWidth: "100px",
             }}
           >
-            <span className="text-xs font-bold" style={{ color: "var(--ws-text-primary)" }}>
+            <span className="text-xs font-bold" style={{ color: "#F0F4FC" }}>
               {ticker.symbol}
             </span>
             <span
               className="text-[10px] font-semibold"
               style={{
-                color: ticker.change >= 0 ? "var(--ws-bullish)" : "var(--ws-bearish)",
-                fontFamily: "var(--ws-mono-font-family, monospace)",
+                color: ticker.change >= 0 ? "#22C55E" : "#EF4444",
+                fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
               }}
             >
               {ticker.change >= 0 ? "+" : ""}
               {ticker.change}%
             </span>
-            <span className="text-[9px]" style={{ color: "var(--ws-text-secondary)" }}>
+            <span className="text-[9px]" style={{ color: "#7B8BA8" }}>
               {ticker.mentions.toLocaleString()} mentions
             </span>
           </div>
@@ -382,9 +373,9 @@ interface MentionItemProps {
 
 const MentionItem = memo(function MentionItem({ mention }: MentionItemProps) {
   const sentimentConfig = {
-    positive: { color: "var(--ws-bullish)", Icon: SmilePlus, bg: "rgba(34,197,94,0.1)" },
-    neutral: { color: "var(--ws-text-secondary)", Icon: Meh, bg: "rgba(255,255,255,0.05)" },
-    negative: { color: "var(--ws-bearish)", Icon: Frown, bg: "rgba(239,68,68,0.1)" },
+    positive: { color: "#22C55E", Icon: SmilePlus, bg: "rgba(34,197,94,0.1)" },
+    neutral: { color: "#7B8BA8", Icon: Meh, bg: "rgba(255,255,255,0.05)" },
+    negative: { color: "#EF4444", Icon: Frown, bg: "rgba(239,68,68,0.1)" },
   } as const;
 
   const sentiment = sentimentConfig[mention.sentiment];
@@ -394,9 +385,9 @@ const MentionItem = memo(function MentionItem({ mention }: MentionItemProps) {
     <div
       className="p-3 flex gap-3 transition-colors cursor-pointer"
       style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
       <div
@@ -409,21 +400,18 @@ const MentionItem = memo(function MentionItem({ mention }: MentionItemProps) {
         <div className="flex items-center gap-2 mb-0.5">
           <span
             className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-            style={{ backgroundColor: "var(--ws-surface-hover)", color: "var(--ws-accent)" }}
+            style={{ backgroundColor: "rgba(255,255,255,0.05)", color: "#3B82F6" }}
           >
             {mention.source}
           </span>
-          <span className="text-[10px] font-semibold" style={{ color: "var(--ws-text-secondary)" }}>
+          <span className="text-[10px] font-semibold" style={{ color: "#7B8BA8" }}>
             {mention.author}
           </span>
-          <span
-            className="text-[10px] ml-auto flex-shrink-0"
-            style={{ color: "var(--ws-text-tertiary, var(--ws-text-secondary))" }}
-          >
+          <span className="text-[10px] ml-auto flex-shrink-0" style={{ color: "#4A5568" }}>
             {mention.time}
           </span>
         </div>
-        <p className="text-xs leading-relaxed" style={{ color: "var(--ws-text-primary)" }}>
+        <p className="text-xs leading-relaxed" style={{ color: "#F0F4FC" }}>
           {mention.text}
         </p>
       </div>
@@ -438,21 +426,21 @@ const ComingSoonTab = memo(function ComingSoonTab({ platform }: { platform: stri
     <div
       className="flex flex-col items-center justify-center py-20 text-center"
       style={{
-        backgroundColor: "var(--ws-surface)",
-        border: "1px solid var(--ws-border)",
-        borderRadius: "var(--ws-radius)",
+        backgroundColor: "#111827",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: "12px",
       }}
     >
       <div
         className="size-14 rounded-2xl flex items-center justify-center mb-4"
-        style={{ backgroundColor: "var(--ws-accent-dim, rgba(32,129,226,0.12))" }}
+        style={{ backgroundColor: "rgba(59,130,246,0.15)" }}
       >
-        <Globe className="size-6" style={{ color: "var(--ws-accent)" }} />
+        <Globe className="size-6" style={{ color: "#3B82F6" }} />
       </div>
-      <h3 className="text-base font-bold mb-1" style={{ color: "var(--ws-text-primary)" }}>
+      <h3 className="text-base font-bold mb-1" style={{ color: "#F0F4FC" }}>
         {platform} Integration
       </h3>
-      <p className="text-xs max-w-xs" style={{ color: "var(--ws-text-secondary)" }}>
+      <p className="text-xs max-w-xs" style={{ color: "#7B8BA8" }}>
         Coming soon in Phase C. Full {platform.toLowerCase()} feed with sentiment analysis, trending
         topics, and community insights.
       </p>
@@ -468,10 +456,7 @@ function CommunitiesPage() {
   const handleTabChange = useCallback((tab: CommunityTab) => setActiveTab(tab), []);
 
   return (
-    <div
-      className="space-y-4"
-      style={{ backgroundColor: "var(--ws-bg)", color: "var(--ws-text-primary)" }}
-    >
+    <div className="space-y-4" style={{ backgroundColor: "#0A0E1A", color: "#F0F4FC" }}>
       {/* Collection Header */}
       <CollectionHeader />
 
@@ -479,9 +464,9 @@ function CommunitiesPage() {
       <div
         className="flex items-center gap-0.5 p-1"
         style={{
-          backgroundColor: "var(--ws-surface)",
-          border: "1px solid var(--ws-border)",
-          borderRadius: "var(--ws-radius)",
+          backgroundColor: "#111827",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "12px",
         }}
       >
         {TABS.map((tab) => {
@@ -493,10 +478,8 @@ function CommunitiesPage() {
               onClick={() => handleTabChange(tab.id)}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors"
               style={{
-                backgroundColor: isActive
-                  ? "var(--ws-accent-dim, rgba(32,129,226,0.12))"
-                  : "transparent",
-                color: isActive ? "var(--ws-accent)" : "var(--ws-text-secondary)",
+                backgroundColor: isActive ? "rgba(59,130,246,0.15)" : "transparent",
+                color: isActive ? "#3B82F6" : "#7B8BA8",
               }}
             >
               <Icon className="size-3.5" />
@@ -516,17 +499,17 @@ function CommunitiesPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <MessageCircle className="size-4" style={{ color: "var(--ws-accent)" }} />
+                <MessageCircle className="size-4" style={{ color: "#3B82F6" }} />
                 <span
                   className="text-xs font-bold uppercase tracking-wider"
-                  style={{ color: "var(--ws-text-primary)" }}
+                  style={{ color: "#F0F4FC" }}
                 >
                   Top Mentions
                 </span>
               </div>
               <button
                 className="flex items-center gap-1 text-[10px] font-semibold"
-                style={{ color: "var(--ws-accent)" }}
+                style={{ color: "#3B82F6" }}
               >
                 View All <ArrowRight className="size-3" />
               </button>
