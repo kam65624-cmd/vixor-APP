@@ -39,6 +39,7 @@ import type {
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { ExpandableWidget, MiniWidget, WidgetGroup } from "@/components/vixor/ExpandableWidget";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
+import { AnalystReportPanel } from "@/components/vixor/AnalystReportPanel";
 import { cn } from "@/shared/utils";
 
 export const Route = createFileRoute("/_authenticated/daily-loop")({
@@ -259,6 +260,17 @@ function DailyLoopPage() {
           onPageChange={setHistoryPage}
         />
       )}
+
+      {/* ── WEEKLY BEHAVIORAL REPORT (Analyst Agent) ── */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 px-1">
+          <Brain className="size-4 text-primary" />
+          <h2 className="font-bold text-[11px] uppercase tracking-widest text-muted-foreground">
+            AI Behavioral Report
+          </h2>
+        </div>
+        <AnalystReportPanel />
+      </div>
     </div>
   );
 }

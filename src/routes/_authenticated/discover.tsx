@@ -13,9 +13,11 @@ import {
   Filter,
   Flame,
   ArrowUpDown,
+  Crosshair,
 } from "lucide-react";
 import { useState, useEffect, useCallback, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { HunterScoreCard } from "@/components/vixor/HunterScoreCard";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -224,9 +226,10 @@ const SkeletonCard = memo(function SkeletonCard() {
 
 interface TokenCardProps {
   token: DiscoverToken;
+  onHunterScore?: (token: DiscoverToken) => void;
 }
 
-const TokenCard = memo(function TokenCard({ token }: TokenCardProps) {
+const TokenCard = memo(function TokenCard({ token, onHunterScore }: TokenCardProps) {
   const isPositive = token.change24h >= 0;
   const changeColor = isPositive ? "var(--ws-bullish)" : "var(--ws-bearish)";
   const ChangeIcon = isPositive ? TrendingUp : TrendingDown;
@@ -384,8 +387,8 @@ const TokenCard = memo(function TokenCard({ token }: TokenCardProps) {
           </div>
         </div>
 
-        {/* Chain Badge */}
-        <div className="pt-1 border-t" style={{ borderColor: "var(--ws-border)" }}>
+        {/* Chain Badge + Hunter Score Button */}
+        <div className="pt-1 border-t flex items-center justify-between" style={{ borderColor: "var(--ws-border)" }}>
           <span
             className="inline-block text-[10px] font-medium px-2 py-0.5 rounded"
             style={{
@@ -395,6 +398,21 @@ const TokenCard = memo(function TokenCard({ token }: TokenCardProps) {
           >
             {token.chain}
           </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onHunterScore?.(token);
+            }}
+            className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded transition-colors hover:opacity-80"
+            style={{
+              backgroundColor: "var(--ws-accent-dim, rgba(59,130,246,0.12))",
+              color: "var(--ws-accent)",
+            }}
+            title="Analyze with Smart Money Hunter"
+          >
+            <Crosshair className="size-2.5" />
+            Hunter
+          </button>
         </div>
       </div>
     </div>
@@ -546,6 +564,7 @@ function DiscoverPage() {
   const [search, setSearch] = useState("");
   const [chain, setChain] = useState("All Chains");
   const [sortBy, setSortBy] = useState("trending");
+  const [hunterToken, setHunterToken] = useState<DiscoverToken | null>(null);
 
   const handleSearchChange = useCallback((value: string) => setSearch(value), []);
   const handleChainChange = useCallback((c: string) => setChain(c), []);
@@ -658,7 +677,7 @@ function DiscoverPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {filteredTokens.map((token) => (
-                <TokenCard key={token.symbol} token={token} />
+                <TokenCard key={token.symbol} token={token} onHunterScore={setHunterToken} />
               ))}
             </div>
           )}
@@ -688,6 +707,17 @@ function DiscoverPage() {
             </div>
           )}
         </div>
+
+        {/* Hunter Score Card — shown when user clicks "Hunter" on a token */}
+        {hunterToken && (
+          <HunterScoreCard
+            token={hunterToken.symbol}
+            chain={hunterToken.chain}
+            smartMoneyActivity={`Smart money activity for ${hunterToken.symbol}: ${hunterToken.smartMoneyPct}% smart money concentration. Volume 24h: $${(hunterToken.volume24h / 1e6).toFixed(1)}M. Liquidity: $${(hunterToken.liquidity / 1e6).toFixed(1)}M.`}
+            priceData={`Current price: $${hunterToken.price}. 24h change: ${hunterToken.change24h >= 0 ? "+" : ""}${hunterToken.change24h.toFixed(1)}%. Market cap: $${(hunterToken.marketCap / 1e9).toFixed(2)}B.`}
+            volumeData={`Volume 24h: $${(hunterToken.volume24h / 1e6).toFixed(1)}M. Smart money: ${hunterToken.smartMoneyPct}%.`}
+          />
+        )}
       </div>
     </div>
   );

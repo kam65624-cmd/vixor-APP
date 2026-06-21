@@ -12,6 +12,7 @@ import {
   TrendingUp,
   Save,
   Loader2,
+  MessageSquare,
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -21,6 +22,8 @@ import type { Trade, TradeDirection } from "@/domains/trades/types";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { cn } from "@/shared/utils";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
+import { CoachOverlay } from "@/components/vixor/CoachOverlay";
+import { GovernorRiskPanel } from "@/components/vixor/GovernorRiskPanel";
 
 export const Route = createFileRoute("/_authenticated/trade-desk")({
   head: () => ({ meta: [{ title: "Trade Desk — Vixor" }] }),
@@ -53,6 +56,8 @@ function TradeDesk() {
   const [direction, setDirection] = useState<TradeDirection>("long");
   const [entryPrice, setEntryPrice] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showCoach, setShowCoach] = useState(false);
+  const [showGovernor, setShowGovernor] = useState(false);
 
   const createTradeFn = useStableServerFn(createTrade);
   const fetchOpenTrades = useStableServerFn(listTrades);
@@ -144,6 +149,29 @@ function TradeDesk() {
 
   return (
     <div className="space-y-6 pb-6 animate-in fade-in duration-500">
+      {/* AI Coach Overlay */}
+      {showCoach && entryPrice && (
+        <CoachOverlay
+          token={pair}
+          action={direction === "long" ? "buy" : "sell"}
+          amount={parseFloat(balance) * (parseFloat(riskPct) / 100)}
+          chain={"forex"}
+          currentPrice={parseFloat(entryPrice)}
+          onClose={() => setShowCoach(false)}
+        />
+      )}
+
+      {/* Governor Risk Panel */}
+      {showGovernor && entryPrice && (
+        <GovernorRiskPanel
+          action={direction === "long" ? "buy" : "sell"}
+          token={pair}
+          amount={parseFloat(balance) * (parseFloat(riskPct) / 100)}
+          currentPrice={parseFloat(entryPrice)}
+          portfolioValue={parseFloat(balance) || 10000}
+          onClose={() => setShowGovernor(false)}
+        />
+      )}
       <div className="flex items-center gap-3">
         <div className="size-10 rounded-xl gradient-primary flex items-center justify-center glow-primary">
           <LayoutDashboard className="size-5 text-primary-foreground" />
@@ -304,31 +332,63 @@ function TradeDesk() {
             </div>
           </div>
 
-          <button
-            onClick={handleSaveAsTrade}
-            disabled={!entryPrice || saveMutation.isPending}
-            className={cn(
-              "w-full flex items-center justify-center gap-1.5 h-10 rounded-lg text-xs font-bold transition-all",
-              entryPrice && !saveMutation.isPending
-                ? "gradient-primary text-primary-foreground glow-primary active:scale-[0.98]"
-                : "bg-muted text-muted-foreground cursor-not-allowed",
-              saveSuccess && "bg-bullish/20 text-bullish border border-bullish/40",
-            )}
-          >
-            {saveMutation.isPending ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : saveSuccess ? (
-              <>
-                <Target className="size-3.5" />
-                Trade Saved!
-              </>
-            ) : (
-              <>
-                <Save className="size-3.5" />
-                Save as Trade
-              </>
-            )}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSaveAsTrade}
+              disabled={!entryPrice || saveMutation.isPending}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-1.5 h-10 rounded-lg text-xs font-bold transition-all",
+                entryPrice && !saveMutation.isPending
+                  ? "gradient-primary text-primary-foreground glow-primary active:scale-[0.98]"
+                  : "bg-muted text-muted-foreground cursor-not-allowed",
+                saveSuccess && "bg-bullish/20 text-bullish border border-bullish/40",
+              )}
+            >
+              {saveMutation.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : saveSuccess ? (
+                <>
+                  <Target className="size-3.5" />
+                  Saved!
+                </>
+              ) : (
+                <>
+                  <Save className="size-3.5" />
+                  Save Trade
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => { setShowCoach(!showCoach); setShowGovernor(false); }}
+              disabled={!entryPrice}
+              className={cn(
+                "flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold border transition-all",
+                showCoach
+                  ? "bg-sky-500/15 border-sky-500/40 text-sky-400"
+                  : "bg-card-hover border-border text-muted-foreground hover:border-sky-500/30 hover:text-sky-400",
+                !entryPrice && "opacity-50 cursor-not-allowed",
+              )}
+              title="AI Coach — Get coaching feedback"
+            >
+              <MessageSquare className="size-3.5" />
+              Coach
+            </button>
+            <button
+              onClick={() => { setShowGovernor(!showGovernor); setShowCoach(false); }}
+              disabled={!entryPrice}
+              className={cn(
+                "flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold border transition-all",
+                showGovernor
+                  ? "bg-amber-500/15 border-amber-500/40 text-amber-400"
+                  : "bg-card-hover border-border text-muted-foreground hover:border-amber-500/30 hover:text-amber-400",
+                !entryPrice && "opacity-50 cursor-not-allowed",
+              )}
+              title="Risk Governor — Assess trade risk"
+            >
+              <Shield className="size-3.5" />
+              Risk
+            </button>
+          </div>
         </div>
       </div>
 
