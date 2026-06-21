@@ -387,12 +387,23 @@ function CopilotPage() {
       try {
         const token =
           typeof window !== "undefined"
-            ? document.cookie
-                .split("; ")
-                .find((row) => row.startsWith("sb-access-token="))
-                ?.split("=")[1] ||
-              localStorage.getItem("sb-token") ||
-              ""
+            ? (() => {
+                // Try Supabase access token from multiple sources
+                // 1. sb-access-token cookie (Supabase default)
+                const cookieToken = document.cookie
+                  .split("; ")
+                  .find((row) => row.startsWith("sb-access-token="))
+                  ?.split("=")[1];
+                if (cookieToken) return cookieToken;
+                // 2. sb-<ref>-auth-token cookie (Supabase project-specific)
+                const projCookie = document.cookie
+                  .split("; ")
+                  .find((row) => row.startsWith("sb-") && row.includes("-auth-token="))
+                  ?.split("=")[1];
+                if (projCookie) return projCookie;
+                // 3. localStorage fallback
+                return localStorage.getItem("sb-token") || "";
+              })()
             : "";
 
         if (!token) throw new Error("No auth token found");

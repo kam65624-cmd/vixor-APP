@@ -511,6 +511,7 @@ const en = {
     appearance: "Appearance",
     darkMode: "Dark Mode",
     language: "Language",
+    selectLanguage: "Select Language",
     tradingProfile: "Trading Profile",
     riskTolerance: "Risk Tolerance",
     preferredPairs: "Preferred Pairs",

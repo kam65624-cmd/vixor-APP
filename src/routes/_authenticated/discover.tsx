@@ -575,8 +575,16 @@ function DiscoverPage() {
     queryFn: async () => {
       try {
         const res = await fetch("/api/discover");
-        const data = await res.json();
-        return data as DiscoverToken[];
+        const json = await res.json();
+        // API returns { success, data: [...] } — extract the array
+        if (json && Array.isArray(json.data)) {
+          return json.data as DiscoverToken[];
+        }
+        // Fallback: if the response itself is an array
+        if (Array.isArray(json)) {
+          return json as DiscoverToken[];
+        }
+        return MOCK_TOKENS;
       } catch {
         return MOCK_TOKENS;
       }

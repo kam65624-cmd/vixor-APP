@@ -511,6 +511,7 @@ const ar: Translations = {
     appearance: "المظهر",
     darkMode: "الوضع الداكن",
     language: "اللغة",
+    selectLanguage: "اختر اللغة",
     tradingProfile: "ملف التداول",
     riskTolerance: "تحمل المخاطرة",
     preferredPairs: "الأزواج المفضلة",
