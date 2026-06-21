@@ -1270,6 +1270,69 @@ export type Database = {
         };
         Relationships: [];
       };
+      // ── VIXOR AI Decisions table (20260624000000) ──
+      vixor_decisions: {
+        Row: {
+          id: string;
+          user_id: string;
+          agent_id: string;
+          decision_type: string;
+          title: string;
+          description: string;
+          data: Json | null;
+          confidence: number | null;
+          feedback: string | null;
+          created_at: string;
+          expires_at: string | null;
+          workspace: string | null;
+          token_symbol: string | null;
+          chain: string | null;
+          severity: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          agent_id: string;
+          decision_type: string;
+          title: string;
+          description?: string;
+          data?: Json | null;
+          confidence?: number | null;
+          feedback?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+          workspace?: string | null;
+          token_symbol?: string | null;
+          chain?: string | null;
+          severity?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          agent_id?: string;
+          decision_type?: string;
+          title?: string;
+          description?: string;
+          data?: Json | null;
+          confidence?: number | null;
+          feedback?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+          workspace?: string | null;
+          token_symbol?: string | null;
+          chain?: string | null;
+          severity?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "vixor_decisions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       // ── User memories table (20260612010000) ──
       user_memories: {
         Row: {

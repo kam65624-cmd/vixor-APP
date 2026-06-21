@@ -15,6 +15,25 @@ export type {
   AgentResponse,
   ConsensusResponse,
   TelegramUser,
+  // Phase C.1 — VIXOR AI 4 Agents
+  VixorAgentId,
+  DecisionType,
+  DecisionFeedback,
+  DecisionSeverity,
+  CoachSentiment,
+  RiskLevel,
+  TradeAction,
+  HunterSignal,
+  CoachInput,
+  CoachResponse,
+  AnalystInput,
+  AnalystReport,
+  GovernorInput,
+  RiskProfile,
+  RiskDecisionType,
+  RiskDecision,
+  HunterInput,
+  HunterScore,
 } from "./types";
 
 // Server modules
