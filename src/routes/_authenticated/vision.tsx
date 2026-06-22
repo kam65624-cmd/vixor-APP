@@ -1,150 +1,121 @@
-import { memo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { memo } from "react";
+import { getRecentAnalyses } from "@/shared/data";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/vision")({
   head: () => ({ meta: [{ title: "Vision — Vixor" }] }),
   component: VisionPage,
 });
 
-const S = {
-  page: { background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100vh", padding: "20px" },
-  header: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" },
-  title: { fontSize: "22px", fontWeight: 700, color: "#F0F4FC", margin: 0 },
-  badge: { fontSize: "10px", fontWeight: 700, padding: "3px 10px", borderRadius: "6px", background: "rgba(59,130,246,0.15)", color: "#60A5FA", letterSpacing: "0.05em", textTransform: "uppercase" as const },
-  subtitle: { fontSize: "12px", color: "#7B8BA8", marginTop: "4px" },
-  grid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "20px" },
-  card: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "16px" },
-  cardLabel: { fontSize: "10px", fontWeight: 600, color: "#7B8BA8", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "8px" },
-  cardValue: { fontSize: "28px", fontWeight: 700, fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace" },
-  cardSub: { fontSize: "11px", color: "#7B8BA8", marginTop: "4px" },
-  sectionTitle: { fontSize: "13px", fontWeight: 700, color: "#F0F4FC", marginBottom: "12px", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  summaryCard: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", marginBottom: "20px" },
-  summaryText: { fontSize: "13px", lineHeight: 1.7, color: "#7B8BA8" },
-  tableWrap: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden", marginBottom: "20px" },
-  tableHeader: { display: "flex", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: "10px", fontWeight: 700, color: "#4A5568", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  tableRow: { display: "flex", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.04)", fontSize: "12px", transition: "background 0.15s" },
-  colSector: { width: "130px", fontWeight: 600 },
-  colChange: { width: "100px", textAlign: "right" as const, fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", fontWeight: 600 },
-  colVolume: { width: "100px", textAlign: "right" as const, fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", color: "#7B8BA8" },
-  colTrend: { width: "80px", textAlign: "right" as const },
-  eventsCard: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "16px" },
-  eventItem: { display: "flex", alignItems: "flex-start", gap: "12px", padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" },
-  eventDot: { width: "8px", height: "8px", borderRadius: "50%", marginTop: "4px", flexShrink: 0 },
-  eventTitle: { fontSize: "12px", fontWeight: 600, color: "#F0F4FC" },
-  eventMeta: { fontSize: "10px", color: "#7B8BA8", marginTop: "2px" },
-  gaugeContainer: { display: "flex", alignItems: "center", gap: "12px" },
-  gaugeBar: { width: "100%", height: "8px", borderRadius: "4px", background: "rgba(255,255,255,0.06)" },
-  gaugeFill: { height: "100%", borderRadius: "4px" },
-};
-
-const overviewCards = [
-  { label: "Fear & Greed Index", value: "72", sub: "Greed", color: "#22C55E", bgColor: "rgba(34,197,94,0.15)", pct: 72 },
-  { label: "Market Momentum", value: "Bullish", sub: "+12.4% weekly", color: "#22C55E", bgColor: "rgba(34,197,94,0.15)", pct: 78 },
-  { label: "Solana TVL", value: "$4.8B", sub: "+$340M this week", color: "#3B82F6", bgColor: "rgba(59,130,246,0.15)", pct: 65 },
-  { label: "Active Wallets", value: "1.2M", sub: "+18% from last week", color: "#F59E0B", bgColor: "rgba(245,158,11,0.15)", pct: 82 },
-];
-
-const sectors = [
-  { sector: "Meme Coins", change: "+24.7%", volume: "$2.1B", trend: "🔥 Hot", trendColor: "#EF4444", changeColor: "#22C55E" },
-  { sector: "AI Tokens", change: "+18.3%", volume: "$890M", trend: "↑ Rising", trendColor: "#22C55E", changeColor: "#22C55E" },
-  { sector: "DeFi", change: "+5.2%", volume: "$3.4B", trend: "→ Stable", trendColor: "#F59E0B", changeColor: "#22C55E" },
-  { sector: "Gaming", change: "-3.1%", volume: "$420M", trend: "↓ Cooling", trendColor: "#EF4444", changeColor: "#EF4444" },
-  { sector: "NFTs", change: "-8.5%", volume: "$180M", trend: "❄️ Cold", trendColor: "#60A5FA", changeColor: "#EF4444" },
-];
-
-const events = [
-  { title: "WIF Staking Launch", meta: "Tomorrow, 14:00 UTC · Expected TVL: $50M+", color: "#3B82F6" },
-  { title: "BONK Season 3 Airdrop", meta: "Jan 28 · 2.5B tokens to eligible holders", color: "#22C55E" },
-  { title: "JUP Governance Vote #12", meta: "Jan 27 · Fee structure proposal", color: "#F59E0B" },
-  { title: "POPCAT x Raydium LP Incentives", meta: "Jan 29 · 500K RAY rewards pool", color: "#3B82F6" },
-  { title: "TENSOR NFT Marketplace v3", meta: "Feb 1 · New listing mechanics", color: "#60A5FA" },
-  { title: "SOL ETF Decision Window", meta: "Feb 5–15 · Expected positive catalyst", color: "#22C55E" },
-];
-
-const OverviewCard = memo(function OverviewCard({ item }: { item: typeof overviewCards[0] }) {
-  return (
-    <div style={S.card}>
-      <div style={S.cardLabel}>{item.label}</div>
-      <div style={{ ...S.cardValue, color: item.color }}>{item.value}</div>
-      <div style={S.cardSub}>{item.sub}</div>
-      <div style={{ ...S.gaugeContainer, marginTop: "10px" }}>
-        <div style={S.gaugeBar}>
-          <div style={{ ...S.gaugeFill, width: `${item.pct}%`, background: item.color }} />
-        </div>
-      </div>
-    </div>
-  );
-});
-
-const SectorRow = memo(function SectorRow({ item }: { item: typeof sectors[0] }) {
-  return (
-    <div style={S.tableRow}>
-      <div style={S.colSector}>{item.sector}</div>
-      <div style={{ ...S.colChange, color: item.changeColor }}>{item.change}</div>
-      <div style={S.colVolume}>{item.volume}</div>
-      <div style={{ ...S.colTrend, color: item.trendColor, fontSize: "11px", fontWeight: 600 }}>{item.trend}</div>
-    </div>
-  );
-});
-
-const EventItem = memo(function EventItem({ item }: { item: typeof events[0] }) {
-  return (
-    <div style={S.eventItem}>
-      <div style={{ ...S.eventDot, background: item.color }} />
-      <div style={{ flex: 1 }}>
-        <div style={S.eventTitle}>{item.title}</div>
-        <div style={S.eventMeta}>{item.meta}</div>
-      </div>
-    </div>
-  );
-});
-
 function VisionPage() {
+  const fetchAnalyses = useStableServerFn(getRecentAnalyses);
+
+  const query = useQuery({
+    queryKey: ["recent-analyses"],
+    queryFn: () => fetchAnalyses({}),
+    staleTime: 60_000,
+  });
+
+  const analyses = query.data?.analyses ?? [];
+  const isLoading = query.isLoading;
+
+  const completed = analyses.filter((a) => a.status === "complete");
+  const buySignals = completed.filter((a) => a.recommendation === "BUY");
+  const sellSignals = completed.filter((a) => a.recommendation === "SELL");
+  const avgConfidence = completed.length > 0
+    ? Math.round(completed.reduce((s, a) => s + (a.confidence || 0), 0) / completed.length)
+    : 0;
+
+  const overviewCards = [
+    { label: "Total Analyses", value: String(analyses.length), color: "#3B82F6" },
+    { label: "BUY Signals", value: String(buySignals.length), color: "#22C55E" },
+    { label: "SELL Signals", value: String(sellSignals.length), color: "#EF4444" },
+    { label: "Avg Confidence", value: `${avgConfidence}%`, color: "#F59E0B" },
+  ];
+
   return (
-    <div style={S.page}>
-      <div style={S.header}>
-        <h1 style={S.title}>Vision</h1>
-        <span style={S.badge}>AI Analysis</span>
+    <div style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%", padding: "20px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+        <h1 style={{ fontSize: "22px", fontWeight: 700, margin: 0 }}>AI Vision</h1>
+        <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ background: "rgba(139,92,246,0.15)", color: "#8B5CF6" }}>AI Analysis</span>
       </div>
-      <p style={S.subtitle}>AI-powered market analysis &amp; sentiment overview for Solana ecosystem</p>
+      <p style={{ fontSize: "12px", color: "#7B8BA8", marginTop: "4px", marginBottom: "20px" }}>
+        Overview of your AI-powered analyses, patterns detected, and market insights
+      </p>
 
-      <div style={S.grid}>
-        {overviewCards.map((c) => (
-          <OverviewCard key={c.label} item={c} />
-        ))}
-      </div>
-
-      <div style={S.summaryCard}>
-        <div style={{ ...S.sectionTitle, marginBottom: "12px" }}>AI Market Summary</div>
-        <p style={S.summaryText}>
-          The Solana ecosystem is experiencing strong bullish momentum driven by meme coin mania and increasing institutional interest. 
-          WIF and BONK continue to lead volume on DEXs, while AI-related tokens are seeing renewed attention following the launch of 
-          several on-chain AI agents. Network activity is at a 6-month high with 1.2M active wallets. The Fear &amp; Greed index at 72 
-          indicates greed territory, suggesting potential short-term consolidation before the next leg up. Key catalysts include the 
-          upcoming WIF staking launch and SOL ETF decision window in early February. DeFi TVL continues to recover with Raydium and 
-          Meteora capturing significant liquidity. Gaming and NFT sectors remain under pressure but show early signs of bottoming.
-        </p>
-      </div>
-
-      <div style={{ ...S.sectionTitle }}>Sector Rotation</div>
-      <div style={S.tableWrap}>
-        <div style={S.tableHeader}>
-          <div style={S.colSector}>Sector</div>
-          <div style={{ ...S.colChange, color: "#4A5568" }}>24h Change</div>
-          <div style={{ ...S.colVolume, color: "#4A5568" }}>Volume</div>
-          <div style={{ ...S.colTrend, color: "#4A5568" }}>Trend</div>
+      {isLoading ? (
+        <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
+          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         </div>
-        {sectors.map((s) => (
-          <SectorRow key={s.sector} item={s} />
-        ))}
-      </div>
+      ) : (
+        <>
+          {/* Overview Cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" }}>
+            {overviewCards.map((c) => (
+              <div key={c.label} style={{ background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px" }}>
+                <div style={{ fontSize: "10px", fontWeight: 600, color: "#4A5568", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>{c.label}</div>
+                <div style={{ fontSize: "22px", fontWeight: 800, fontFamily: "monospace", color: c.color }}>{c.value}</div>
+              </div>
+            ))}
+          </div>
 
-      <div style={{ ...S.sectionTitle }}>Upcoming Events</div>
-      <div style={S.eventsCard}>
-        {events.map((e) => (
-          <EventItem key={e.title} item={e} />
-        ))}
-      </div>
+          {/* Recent Analyses */}
+          <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Recent Analyses</div>
+          <div style={{ background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+            <div className="flex items-center px-4 py-2 text-[9px] font-bold uppercase tracking-wider" style={{ color: "#4A5568", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ width: "15%" }}>Pair</div>
+              <div style={{ width: "12%" }}>Status</div>
+              <div style={{ width: "12%" }}>Signal</div>
+              <div style={{ width: "10%" }} className="text-right">Confidence</div>
+              <div style={{ width: "12%" }}>Pattern</div>
+              <div style={{ width: "12%" }}>Trend</div>
+              <div style={{ flex: 1, paddingLeft: 16 }}>Reasons</div>
+              <div style={{ width: "12%" }} className="text-right">Date</div>
+            </div>
+            {completed.length > 0 ? completed.slice(0, 20).map((a) => (
+              <AnalysisRow key={a.id} analysis={a} />
+            )) : (
+              <div style={{ padding: "40px", textAlign: "center", color: "#7B8BA8", fontSize: 13 }}>
+                {analyses.length === 0
+                  ? "No analyses yet. Go to Analyze to run your first AI analysis."
+                  : `${analyses.filter((a) => a.status === "processing" || a.status === "queued").length} analyses in progress...`}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
+
+const AnalysisRow = memo(function AnalysisRow({ analysis }: { analysis: any }) {
+  const recColor = analysis.recommendation === "BUY" ? "#22C55E" : analysis.recommendation === "SELL" ? "#EF4444" : "#F59E0B";
+  const riskColor = analysis.risk_level === "low" ? "#22C55E" : analysis.risk_level === "medium" ? "#F59E0B" : "#EF4444";
+
+  return (
+    <div className="flex items-center px-4 py-3 text-[11px]" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s", cursor: "pointer" }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+    >
+      <div style={{ width: "15%", fontWeight: 700 }}>{analysis.pair || "—"}</div>
+      <div style={{ width: "12%" }}>
+        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.12)", color: "#22C55E" }}>{analysis.status}</span>
+      </div>
+      <div style={{ width: "12%" }}>
+        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${recColor}15`, color: recColor }}>{analysis.recommendation || "—"}</span>
+      </div>
+      <div style={{ width: "10%", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: "#F59E0B" }}>{analysis.confidence ?? 0}%</div>
+      <div style={{ width: "12%", color: "#7B8BA8" }}>{analysis.pattern || "—"}</div>
+      <div style={{ width: "12%", color: "#7B8BA8" }}>{analysis.trend || "—"}</div>
+      <div style={{ flex: 1, paddingLeft: 16, color: "#7B8BA8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {analysis.reasons?.slice(0, 2).join(" · ") || "—"}
+      </div>
+      <div style={{ width: "12%", textAlign: "right", color: "#4A5568", fontSize: "10px" }}>
+        {new Date(analysis.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+      </div>
+    </div>
+  );
+});

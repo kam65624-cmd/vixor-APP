@@ -1,153 +1,142 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { memo, useState } from "react";
+import { getPremiumData } from "@/shared/data";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 
 export const Route = createFileRoute("/_authenticated/premium")({
-  head: () => ({ meta: [{ title: "Vixor Pro — Vixor" }] }),
+  head: () => ({ meta: [{ title: "Premium — Vixor" }] }),
   component: PremiumPage,
 });
 
-const PLANS = [
-  {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    description: "Get started with basic trading tools",
-    features: [
-      { label: "Basic token discovery", included: true },
-      { label: "5 price alerts", included: true },
-      { label: "Community access", included: true },
-      { label: "Basic portfolio tracking", included: true },
-      { label: "AI trading signals", included: false },
-      { label: "Whale alerts", included: false },
-      { label: "Unlimited alerts", included: false },
-      { label: "API access", included: false },
-      { label: "Priority support", included: false },
-      { label: "Custom strategies", included: false },
-    ],
-    cta: "Current Plan",
-    ctaColor: "#4A5568",
-    ctaBg: "rgba(255,255,255,0.04)",
-    current: true,
-  },
-  {
-    name: "Pro",
-    price: "$29",
-    period: "/month",
-    description: "For serious meme coin traders",
-    badge: "POPULAR",
-    features: [
-      { label: "Advanced token discovery", included: true },
-      { label: "Unlimited price alerts", included: true },
-      { label: "Community access", included: true },
-      { label: "Full portfolio analytics", included: true },
-      { label: "AI trading signals", included: true },
-      { label: "Whale alerts", included: true },
-      { label: "Unlimited alerts", included: true },
-      { label: "API access", included: true },
-      { label: "Priority support", included: true },
-      { label: "Custom strategies", included: false },
-    ],
-    cta: "Upgrade to Pro",
-    ctaColor: "#fff",
-    ctaBg: "#3B82F6",
-    current: false,
-  },
-  {
-    name: "Enterprise",
-    price: "$99",
-    period: "/month",
-    description: "For teams and professional traders",
-    features: [
-      { label: "Everything in Pro", included: true },
-      { label: "Custom dashboards", included: true },
-      { label: "Team collaboration", included: true },
-      { label: "Advanced analytics", included: true },
-      { label: "Unlimited AI signals", included: true },
-      { label: "Whale tracking API", included: true },
-      { label: "Unlimited everything", included: true },
-      { label: "Full API access", included: true },
-      { label: "24/7 dedicated support", included: true },
-      { label: "Custom strategies", included: true },
-    ],
-    cta: "Contact Sales",
-    ctaColor: "#F0F4FC",
-    ctaBg: "rgba(255,255,255,0.1)",
-    current: false,
-  },
-];
+// Server function to subscribe to a plan
+export const subscribeToPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) => z.object({ planId: z.string() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    // Upsert subscription
+    const { error } = await supabase
+      .from("premium_subscriptions")
+      .upsert({
+        user_id: userId,
+        plan_id: data.planId,
+        status: "active",
+        current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+      }, { onConflict: "user_id" });
+
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
 
 function PremiumPage() {
+  const fetchPremium = useStableServerFn(getPremiumData);
+  const [subscribing, setSubscribing] = useState<string | null>(null);
+
+  const query = useQuery({
+    queryKey: ["premium-data"],
+    queryFn: () => fetchPremium({}),
+    staleTime: 60_000,
+  });
+
+  const plans = query.data?.plans ?? [];
+  const subscription = query.data?.subscription ?? null;
+  const isLoading = query.isLoading;
+
+  const currentPlanId = subscription?.plan_id;
+
   return (
-    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#F0F4FC" }}>
+    <div style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%", padding: "20px" }}>
       {/* Header */}
-      <div style={{ padding: "16px 12px", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ fontSize: "22px", fontWeight: 800, background: "linear-gradient(135deg, #3B82F6, #60A5FA, #A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-          Vixor Pro
+      <div style={{ textAlign: "center", marginBottom: "32px" }}>
+        <h1 style={{
+          fontSize: "28px", fontWeight: 800, margin: 0,
+          background: "linear-gradient(135deg, #3B82F6, #8B5CF6, #EC4899)",
+          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+        }}>Vixor Pro</h1>
+        <p style={{ fontSize: "13px", color: "#7B8BA8", marginTop: "8px" }}>
+          {subscription
+            ? `You are on the ${plans.find((p) => p.id === currentPlanId)?.name || "Pro"} plan`
+            : "Upgrade to unlock advanced features"}
+        </p>
+        {subscription && (
+          <span className="text-[10px] font-bold px-2 py-1 rounded mt-2 inline-block" style={{
+            background: "rgba(34,197,94,0.12)", color: "#22C55E", border: "1px solid rgba(34,197,94,0.2)",
+          }}>ACTIVE · Renews {new Date(subscription.current_period_end).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+        )}
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
+          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         </div>
-        <p style={{ fontSize: "11px", color: "#7B8BA8", marginTop: "4px" }}>Supercharge your trading with AI-powered tools and real-time intelligence</p>
-      </div>
-
-      {/* Plans */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", padding: "12px" }}>
-        {PLANS.map((plan) => (
-          <div key={plan.name} style={{
-            borderRadius: "10px", border: plan.name === "Pro" ? "1px solid rgba(59,130,246,0.4)" : "1px solid rgba(255,255,255,0.06)",
-            background: plan.name === "Pro" ? "rgba(59,130,246,0.05)" : "#161b2e",
-            overflow: "hidden", position: "relative",
-          }}>
-            {plan.badge && (
-              <div style={{
-                position: "absolute", top: "8px", right: "-20px", transform: "rotate(45deg)",
-                background: "#3B82F6", color: "#fff", fontSize: "7px", fontWeight: 800,
-                padding: "2px 24px",
-              }}>{plan.badge}</div>
-            )}
-            <div style={{ padding: "16px 12px 12px" }}>
-              <div style={{ fontSize: "14px", fontWeight: 800 }}>{plan.name}</div>
-              <div style={{ fontSize: "9px", color: "#7B8BA8", marginTop: "2px" }}>{plan.description}</div>
-              <div style={{ marginTop: "10px" }}>
-                <span style={{ fontSize: "28px", fontWeight: 800, fontFamily: "monospace" }}>{plan.price}</span>
-                <span style={{ fontSize: "11px", color: "#7B8BA8" }}>{plan.period}</span>
-              </div>
-            </div>
-            <div style={{ padding: "0 12px 12px" }}>
-              {plan.features.map((f) => (
-                <div key={f.label} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "3px 0" }}>
-                  <span style={{ fontSize: "10px", color: f.included ? "#22C55E" : "#4A5568" }}>
-                    {f.included ? "&#10003;" : "&#10007;"}
-                  </span>
-                  <span style={{ fontSize: "10px", color: f.included ? "#F0F4FC" : "#4A5568" }}>{f.label}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ padding: "0 12px 12px" }}>
-              <button style={{
-                width: "100%", padding: "8px", borderRadius: "6px", border: "none",
-                background: plan.ctaBg, color: plan.ctaColor,
-                fontSize: "11px", fontWeight: 700, cursor: "pointer",
-                opacity: plan.current ? 0.6 : 1,
+      ) : plans.length > 0 ? (
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(plans.length, 3)}, 1fr)`, gap: "16px", maxWidth: "900px", margin: "0 auto" }}>
+          {plans.map((plan) => {
+            const isCurrent = plan.id === currentPlanId;
+            const features = Array.isArray((plan as any).features) ? (plan as any).features as string[] : [];
+            return (
+              <div key={plan.id} style={{
+                background: isCurrent ? "#1a2035" : "#161b2e",
+                borderRadius: "16px", border: `1px solid ${isCurrent ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)"}`,
+                padding: "24px", position: "relative", overflow: "hidden",
               }}>
-                {plan.cta}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* FAQ */}
-      <div style={{ padding: "0 12px 20px" }}>
-        <div style={{ fontSize: "12px", fontWeight: 700, marginBottom: "8px" }}>Frequently Asked Questions</div>
-        {[
-          { q: "Can I cancel anytime?", a: "Yes, you can cancel your subscription at any time. You'll keep access until the end of your billing period." },
-          { q: "Is there a free trial?", a: "Yes! Pro comes with a 7-day free trial. No credit card required to start." },
-          { q: "What payment methods?", a: "We accept SOL, USDC, credit cards, and crypto via Coinbase Commerce." },
-        ].map((faq) => (
-          <div key={faq.q} style={{ background: "#161b2e", borderRadius: "6px", padding: "10px 12px", marginBottom: "6px", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, marginBottom: "4px" }}>{faq.q}</div>
-            <div style={{ fontSize: "10px", color: "#7B8BA8", lineHeight: 1.5 }}>{faq.a}</div>
-          </div>
-        ))}
-      </div>
+                {isCurrent && (
+                  <div style={{ position: "absolute", top: "12px", right: "12px" }}>
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ background: "rgba(59,130,246,0.15)", color: "#60A5FA" }}>CURRENT</span>
+                  </div>
+                )}
+                <div style={{ fontSize: "16px", fontWeight: 800, marginBottom: "4px" }}>{plan.name}</div>
+                <div style={{ fontSize: "28px", fontWeight: 800, fontFamily: "monospace", marginBottom: "4px" }}>
+                  ${(plan.price_cents / 100).toFixed(0)}
+                  <span style={{ fontSize: "13px", fontWeight: 500, color: "#7B8BA8" }}>/mo</span>
+                </div>
+                {(plan as any).badge && (
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded mb-4 inline-block" style={{
+                    background: "rgba(245,158,11,0.12)", color: "#F59E0B",
+                  }}>{plan.badge}</span>
+                )}
+                <div style={{ marginTop: "16px", marginBottom: "20px" }}>
+                  {features.length > 0 ? features.map((f, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", fontSize: "12px" }}>
+                      <span style={{ color: "#22C55E", fontSize: "12px" }}>\u2713</span>
+                      <span style={{ color: "#7B8BA8" }}>{f}</span>
+                    </div>
+                  )) : (
+                    <div style={{ fontSize: "12px", color: "#4A5568" }}>
+                      {plan.price_cents > 0 ? `Included with ${plan.name}` : "Basic features included"}
+                    </div>
+                  )}
+                </div>
+                {isCurrent ? (
+                  <button disabled style={{
+                    width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid rgba(59,130,246,0.2)",
+                    background: "rgba(59,130,246,0.08)", color: "#60A5FA", fontSize: "12px", fontWeight: 700,
+                    cursor: "default", fontFamily: "'Inter', system-ui, sans-serif",
+                  }}>Current Plan</button>
+                ) : (
+                  <button disabled={subscribing === plan.id} style={{
+                    width: "100%", padding: "10px", borderRadius: "8px", border: "none",
+                    background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "#fff", fontSize: "12px", fontWeight: 700,
+                    cursor: subscribing === plan.id ? "wait" : "pointer", opacity: subscribing ? 0.7 : 1,
+                    fontFamily: "'Inter', system-ui, sans-serif",
+                  }}>
+                    {subscribing === plan.id ? "Processing..." : "Upgrade"}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div style={{ textAlign: "center", padding: "40px 0" }}>
+          <p style={{ fontSize: "13px", color: "#7B8BA8" }}>No premium plans available yet. Check back soon.</p>
+        </div>
+      )}
     </div>
   );
 }
