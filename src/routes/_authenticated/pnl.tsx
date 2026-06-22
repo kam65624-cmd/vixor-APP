@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { memo } from "react";
+import { getPortfolioData, getTradeHistory, getJournalEntries } from "@/shared/data";
+import { cn } from "@/shared/utils";
 
 export const Route = createFileRoute("/_authenticated/pnl")({
   head: () => ({ meta: [{ title: "PnL — Vixor Terminal" }] }),
@@ -20,56 +23,71 @@ interface TradeEntry {
   timestamp: string;
 }
 
-const TRADE_HISTORY: TradeEntry[] = [
-  { id: "1", token: "WIF", chain: "Solana", type: "long", entryPrice: 2.10, exitPrice: 2.65, size: "$5K", pnl: "+$1,310", pnlPct: 26.2, duration: "4h 22m", timestamp: "2h ago" },
-  { id: "2", token: "GOAT", chain: "Solana", type: "long", entryPrice: 0.52, exitPrice: 0.45, size: "$3K", pnl: "-$404", pnlPct: -13.5, duration: "1h 45m", timestamp: "5h ago" },
-  { id: "3", token: "POPCAT", chain: "Solana", type: "long", entryPrice: 0.95, exitPrice: 1.35, size: "$2K", pnl: "+$842", pnlPct: 42.1, duration: "6h 10m", timestamp: "8h ago" },
-  { id: "4", token: "BONK", chain: "Solana", type: "short", entryPrice: 0.0000305, exitPrice: 0.0000282, size: "$4K", pnl: "+$301", pnlPct: 7.5, duration: "2h 30m", timestamp: "12h ago" },
-  { id: "5", token: "SPX", chain: "Solana", type: "long", entryPrice: 0.78, exitPrice: 0.92, size: "$1.5K", pnl: "+$269", pnlPct: 17.9, duration: "3h 55m", timestamp: "1d ago" },
-  { id: "6", token: "MEW", chain: "Solana", type: "long", entryPrice: 0.0072, exitPrice: 0.0061, size: "$2.5K", pnl: "-$382", pnlPct: -15.3, duration: "8h 20m", timestamp: "1d ago" },
-  { id: "7", token: "TURBO", chain: "Solana", type: "long", entryPrice: 0.0065, exitPrice: 0.0098, size: "$1K", pnl: "+$508", pnlPct: 50.8, duration: "12h 45m", timestamp: "2d ago" },
-  { id: "8", token: "FLOKI", chain: "Solana", type: "long", entryPrice: 0.000165, exitPrice: 0.000192, size: "$3K", pnl: "+$491", pnlPct: 16.4, duration: "5h 30m", timestamp: "2d ago" },
-];
-
-const PNL_STATS = {
-  totalPnl: "+$2,935",
-  totalPnlPct: "+14.7%",
-  winRate: "62.5%",
-  totalTrades: "47",
-  avgWin: "+$610",
-  avgLoss: "-$393",
-  profitFactor: "1.85",
-  bestTrade: "+$1,310 (+26.2%)",
-  worstTrade: "-$404 (-13.5%)",
-};
-
 function PnLPage() {
+  const navigate = useNavigate();
+  const { holdings, totalValue, totalPnl, totalPnlPct, isLoading } = useQuery({
+    queryKey: ["portfolio-data", userId: "me"],
+    queryFn: getPortfolioData,
+  });
+  const trades = useQuery({
+    queryKey: ["trade-history", userId: "me"],
+    queryFn: getTradeHistory,
+  });
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px", minHeight: "60vh" }}>
+        <div style={{ textAlign: "center", padding: "40px 0" }}>
+          <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "2px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" strokeLinecap="round" />
+          </div>
+          <p style={{ fontSize: "14px", color: "#7B8BA8", marginBottom: "8px" }}>Loading trade data...</p>
+        </div>
+    );
+  }
+
+  const hasData = holdings && holdings.length > 0 || trades.length > 0;
+  const winRate = trades.length > 0 ? Math.round((trades.filter(t => parseFloat(t.pnl) > 0).length / trades.length) * 100) : 0;
+  const totalPnl = trades.reduce((s, t) => s + (t.pnl || 0), 0);
+  const avgWin = totalPnl > 0 ? totalPnl / trades.filter(t => parseFloat(t.pnl) > 0).length : 0;
+  const profitFactor = totalPnl > 0 && totalPnl < 0 ? Math.abs(totalPnl) / Math.abs(trades.reduce((s, t) => s + (t.pnl || 0), 0)) : 0;
+
   return (
-    <div className="w-full h-full" style={{ background: "#0A0E1A", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%" }}>
       {/* Header */}
       <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center gap-2">
           <span className="text-lg">📈</span>
           <h1 className="text-lg font-bold">PnL Tracker</h1>
         </div>
-        <p className="text-[11px] mt-0.5" style={{ color: "#7B8BA8" }}>Track your trading performance and analyze your edge</p>
+        <p className="text-[11px] mt-0.5" style={{ color: "#7B8BA8" }}>
+          {hasData ? `Trading data from ${trades.length} real trades` : "Connect your wallet to see real data"}
+        </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="px-4 py-3 grid grid-cols-2 md:grid-cols-4 gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        {[
-          { label: "Total PnL", value: PNL_STATS.totalPnl, sub: PNL_STATS.totalPnlPct, color: "#22C55E" },
-          { label: "Win Rate", value: PNL_STATS.winRate, sub: `${PNL_STATS.totalTrades} trades`, color: "#3B82F6" },
-          { label: "Profit Factor", value: PNL_STATS.profitFactor, sub: `Avg Win: ${PNL_STATS.avgWin}`, color: "#F59E0B" },
-          { label: "Best Trade", value: PNL_STATS.bestTrade.split(" ")[0], sub: PNL_STATS.bestTrade.split(" ").slice(1).join(" "), color: "#22C55E" },
-        ].map((s) => (
-          <div key={s.label} className="px-3 py-2 rounded-lg" style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="text-[9px]" style={{ color: "#4A5568" }}>{s.label}</div>
-            <div className="text-lg font-bold font-mono" style={{ color: s.color }}>{s.value}</div>
-            <div className="text-[9px]" style={{ color: "#7B8BA8" }}>{s.sub}</div>
+      {!isLoading && hasData && (
+        <>
+          <div className="px-4 py-3 grid grid-cols-2 md:grid-cols-4 gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
+              <div className="text-[9px]" style={{ color: "#4A5568" }}>Total PnL</div>
+              <div className="text-lg font-bold font-mono">{`$${totalPnl}`}</div>
+            </div>
+            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
+              <div className="text-[9px]" style={{ color: "#4A5568" }}>Win Rate</div>
+              <div className="text-lg font-bold font-mono" style={{ color: "#3B82F6" }}>{winRate}%</div>
+            </div>
+            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
+              <div className="text-[9px]" style={{ color: "#4A5568" }}>Profit Factor</div>
+              <div className="text-lg font-bold font-mono">{profitFactor}</div>
+            </div>
+            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
+              <div className="text-[9px]" style={{ color: "#22C55E" }}>Best Trade</div>
+              <div className="text-[9px]" style={{ color: "#7B8BA8" }}>{PNL_STATS.bestTrade}</div>
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
       {/* Trade History */}
       <div className="px-4 py-2 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -82,10 +100,9 @@ function PnLPage() {
         <div style={{ width: "80px" }}>Token</div>
         <div style={{ width: "50px" }}>Type</div>
         <div style={{ width: "70px" }} className="text-right">Entry</div>
-        <div style={{ width: "70px" }} className="text-right">Exit</div>
-        <div style={{ width: "50px" }} className="text-right">Size</div>
-        <div style={{ width: "80px" }} className="text-right">PnL</div>
-        <div style={{ width: "60px" }} className="text-right">PnL %</div>
+        <div style={{ width: "50px" }} className="text-right">Exit</div>
+        <div style={{ width: "70px" }} className="text-right">Size</div>
+        <div style={{ width: "60px" }} className="text-right">PnL</div>
         <div style={{ width: "70px" }} className="text-right">Duration</div>
       </div>
 
@@ -95,13 +112,13 @@ function PnLPage() {
         ))}
       </div>
     </div>
+    </div>
   );
 }
 
 const TradeRow = memo(function TradeRow({ trade }: { trade: TradeEntry }) {
   const isPositive = trade.pnlPct >= 0;
   const color = isPositive ? "#22C55E" : "#EF4444";
-
   return (
     <div
       className="flex items-center px-0 py-2 text-[11px] font-mono"
@@ -109,22 +126,16 @@ const TradeRow = memo(function TradeRow({ trade }: { trade: TradeEntry }) {
     >
       <div style={{ width: "80px" }}>
         <span className="font-bold">{trade.token}</span>
-        <span className="text-[9px] ml-1" style={{ color: "#4A5568" }}>{trade.chain}</span>
+        <span className="text-[9px]" style={{ color: "#4A5568" }}>{trade.chain}</span>
       </div>
       <div style={{ width: "50px" }}>
-        <span
-          className="text-[9px] font-bold px-1 rounded"
-          style={{ background: trade.type === "long" ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", color }}
-        >
-          {trade.type.toUpperCase()}
-        </span>
+        <span className="text-[9px] px-1 rounded" style={{ background: trade.type === "long" ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", color }}>{trade.type.toUpperCase()}</span>
       </div>
-      <div className="text-right" style={{ width: "70px", color: "#7B8BA8" }}>${trade.entryPrice.toFixed(trade.entryPrice < 0.001 ? 10 : 4)}</div>
-      <div className="text-right" style={{ width: "70px", color: "#7B8BA8" }}>${trade.exitPrice.toFixed(trade.exitPrice < 0.001 ? 10 : 4)}</div>
-      <div className="text-right" style={{ width: "50px", color: "#7B8BA8" }}>{trade.size}</div>
-      <div className="text-right font-bold" style={{ width: "80px", color }}>{trade.pnl}</div>
-      <div className="text-right font-bold" style={{ width: "60px", color }}>{isPositive ? "+" : ""}{trade.pnlPct}%</div>
-      <div className="text-right" style={{ width: "70px", color: "#4A5568" }}>{trade.duration}</div>
+      <div style={{ width: "70px" }} className="text-right">{trade.entryPrice.toFixed(trade.entryPrice < 0.001 ? 10 : 4)}</div>
+      <div style={{ width: "70px" }} className="text-right">{trade.exitPrice.toFixed(trade.exitPrice < 0.001 ? 10 : 4)}</div>
+      <div style={{ width: "60px" }} className="text-right font-bold" style={{ color }}>{trade.pnl}</div>
+      <div style={{ width: "70px" }} className="text-right font-bold" style={{ color }}>{isPositive ? "+" : ""}{trade.pnlPct}%</div>
+      <div style={{ width: "70px" }} className="text-right" style={{ color: "#4A5568" }}>{trade.duration}</div>
     </div>
   );
 });

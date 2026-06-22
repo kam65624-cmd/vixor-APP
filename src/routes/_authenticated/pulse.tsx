@@ -59,7 +59,7 @@ function PulsePage() {
     : PULSE_SIGNALS.filter((s) => s.type === filter || (filter === "high" && s.severity === "high"));
 
   return (
-    <div className="w-full h-full" style={{ background: "#0A0E1A", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div  style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Header */}
       <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center justify-between">
@@ -84,7 +84,7 @@ function PulsePage() {
               <div
                 key={stat.label}
                 className="px-3 py-2 rounded-lg"
-                style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.06)" }}
+                style={{ background: "#161b2e", border: "1px solid rgba(255,255,255,0.06)" }}
               >
                 <div className="flex items-center gap-1 mb-1">
                   <span className="text-[10px]">{stat.icon}</span>

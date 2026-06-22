@@ -29,16 +29,16 @@ import { I18nProvider } from "@/shared/i18n";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+    <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", background: "#0f1424", padding: "16px" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: "72px", fontWeight: 800, color: "#3B82F6" }}>404</div>
+        <h2 style={{ marginTop: "16px", fontSize: "20px", fontWeight: 600, color: "#F0F4FC" }}>Page not found</h2>
+        <p style={{ marginTop: "8px", fontSize: "14px", color: "#7B8BA8" }}>
           The page you're looking for doesn't exist.
         </p>
         <Link
           to="/"
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          style={{ marginTop: "24px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", background: "#3B82F6", padding: "10px 24px", fontSize: "14px", fontWeight: 600, color: "#fff", textDecoration: "none" }}
         >
           Back to dashboard
         </Link>
@@ -85,39 +85,31 @@ class GlobalErrorBoundary extends Component<
 
 function ErrorView({ error, onReset }: { error: Error | null; onReset: () => void }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <div className="size-16 rounded-2xl bg-bearish/10 flex items-center justify-center mx-auto mb-4">
-          <svg
-            className="size-8 text-bearish"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+    <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", background: "#0f1424", padding: "16px" }}>
+      <div style={{ textAlign: "center", maxWidth: "400px" }}>
+        <div style={{ width: "64px", height: "64px", borderRadius: "16px", background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
         </div>
-        <h1 className="text-xl font-semibold text-foreground">Something went wrong</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h1 style={{ fontSize: "20px", fontWeight: 600, color: "#F0F4FC" }}>Something went wrong</h1>
+        <p style={{ marginTop: "8px", fontSize: "14px", color: "#7B8BA8" }}>
           {error?.message?.includes("#310") || wasRenderLoopDetected()
             ? `A rendering loop was detected${wasRenderLoopDetected() ? ` in ${getRenderLoopComponent()}` : ""}. This has been automatically resolved.`
             : (error?.message ?? "An unexpected error occurred.")}
         </p>
-        <div className="flex gap-3 justify-center mt-6">
+        <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "24px" }}>
           <button
             onClick={onReset}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground active:scale-95 transition-transform"
+            style={{ padding: "10px 24px", borderRadius: "8px", border: "none", background: "#3B82F6", color: "#fff", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
           >
             Try again
           </button>
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-card border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover transition-colors"
+            style={{ padding: "10px 24px", borderRadius: "8px", background: "#1a2035", border: "1px solid rgba(255,255,255,0.06)", color: "#F0F4FC", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}
           >
             Go Home
           </Link>
@@ -132,18 +124,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#08090C" },
-      { title: "Vixor — AI Chart Analysis" },
+      { name: "theme-color", content: "#0f1424" },
+      { title: "Vixor — Solana Meme Coin Trading Terminal" },
       {
         name: "description",
         content:
-          "AI-powered chart analysis for traders. Get entry, stop loss, and take profit levels in seconds.",
+          "AI-powered Solana meme coin trading terminal. Discover tokens, track whales, and trade with confidence.",
       },
-      { property: "og:title", content: "Vixor — AI Chart Analysis" },
+      { property: "og:title", content: "Vixor — Solana Meme Coin Trading Terminal" },
       {
         property: "og:description",
         content:
-          "Drop any chart, get an AI trade plan with confidence score, risk, and management in seconds.",
+          "AI-powered Solana meme coin trading terminal. Discover tokens, track whales, and trade with confidence.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

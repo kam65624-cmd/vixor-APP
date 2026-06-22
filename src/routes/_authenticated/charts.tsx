@@ -1,678 +1,149 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
-import {
-  Search,
-  Bell,
-  Sparkles,
-  Plus,
-  Maximize2,
-  CandlestickChart,
-  Pencil,
-  BarChart3,
-  Star,
-  Loader2,
-  MessageSquare,
-} from "lucide-react";
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getMarketPrices, getOHLCV } from "@/domains/market/functions";
-import { quickAnalyze } from "@/domains/analysis/functions";
-import {
-  TradingViewChart,
-  toTradingViewSymbol,
-  SYMBOL_MAP,
-  getDisplayPair,
-  PAIR_DISPLAY_NAMES,
-  INTERVAL_MAP,
-} from "@/components/vixor/TradingViewChart";
-import { CreateAlertDialog } from "@/components/vixor/CreateAlertDialog";
-import { AlertsList } from "@/components/vixor/AlertsList";
-import { SectionTitle } from "@/components/vixor/atoms";
-import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { useI18n } from "@/shared/i18n";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState, memo } from "react";
 
 export const Route = createFileRoute("/_authenticated/charts")({
   head: () => ({ meta: [{ title: "Charts — Vixor" }] }),
-  component: Charts,
-  validateSearch: (search: Record<string, unknown>) => ({
-    symbol: (search.symbol as string) || "BINANCE:BTCUSDT",
-  }),
+  component: ChartsPage,
 });
 
-// ── Axiom Design System ──
-const S = {
-  bg: "#0A0E1A",
-  card: "#111827",
-  cardBorder: "1px solid rgba(255,255,255,0.06)",
-  text1: "#F0F4FC",
-  text2: "#7B8BA8",
-  text3: "#4A5568",
-  accent: "#3B82F6",
-  accentLight: "#60A5FA",
-  bullish: "#22C55E",
-  bearish: "#EF4444",
-  warning: "#F59E0B",
-  font: "'Inter', system-ui, sans-serif",
-  mono: "'JetBrains Mono', monospace",
-  radius: 8,
-  badgeRadius: 6,
-} as const;
-
-const cardStyle: React.CSSProperties = {
-  background: S.card,
-  border: S.cardBorder,
-  borderRadius: S.radius,
-};
-
-const POPULAR = [
-  { pair: "BTC/USDT", icon: "₿" },
-  { pair: "ETH/USDT", icon: "Ξ" },
-  { pair: "XAU/USD", icon: "Au" },
-  { pair: "EUR/USD", icon: "€" },
-  { pair: "GBP/JPY", icon: "£" },
-  { pair: "SOL/USDT", icon: "◎" },
+const PAIRS = [
+  { pair: "WIF/SOL", price: "0.00612", change: "+22.1%", up: true },
+  { pair: "POPCAT/SOL", price: "0.00308", change: "+33.7%", up: true },
+  { pair: "BONK/SOL", price: "0.00000072", change: "-1.5%", up: false },
 ];
 
-const TIMEFRAMES = [
-  { label: "1m", tv: "1" },
-  { label: "5m", tv: "5" },
-  { label: "15m", tv: "15" },
-  { label: "30m", tv: "30" },
-  { label: "1h", tv: "60" },
-  { label: "4h", tv: "240" },
-  { label: "1D", tv: "D" },
+const TIMEFRAMES = ["1m", "5m", "15m", "1H", "4H", "1D"] as const;
+
+const INDICATORS = [
+  { name: "RSI (14)", value: "62.4", signal: "Neutral", color: "#F59E0B" },
+  { name: "MACD", value: "0.0023", signal: "Bullish", color: "#22C55E" },
+  { name: "Volume", value: "340M", signal: "Above Avg", color: "#22C55E" },
+  { name: "MA 20", value: "$2.18", signal: "Above", color: "#22C55E" },
+  { name: "MA 50", value: "$1.95", signal: "Above", color: "#22C55E" },
+  { name: "BB Width", value: "12.4%", signal: "Expanding", color: "#3B82F6" },
 ];
 
-function Charts() {
-  const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as { symbol?: string };
-  const queryClient = useQueryClient();
-  const { t } = useI18n();
+function ChartsPage() {
+  const [activePair, setActivePair] = useState(0);
+  const [activeTf, setActiveTf] = useState<string>("4H");
 
-  // Current symbol state
-  const [currentPair, setCurrentPair] = useState(() => {
-    const sym = search.symbol || "BINANCE:BTCUSDT";
-    return getDisplayPair(sym);
-  });
-  const [searchInput, setSearchInput] = useState("");
-  const [showAlertDialog, setShowAlertDialog] = useState(false);
-  const [currentInterval, setCurrentInterval] = useState("240"); // Default 4h
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
-  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const p = PAIRS[activePair];
 
-  // Cooldown timer — prevents rapid re-analysis of the same pair
-  useEffect(() => {
-    if (cooldownSeconds <= 0) return;
-    const timer = setTimeout(() => setCooldownSeconds((prev) => prev - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [cooldownSeconds]);
-
-  const currentSymbol = useMemo(() => toTradingViewSymbol(currentPair), [currentPair]);
-
-  // Fetch market prices for the quick-select buttons
-  const fetchPrices = useStableServerFn(getMarketPrices);
-  const fetchOHLCVFn = useStableServerFn(getOHLCV);
-  const analyzeFn = useStableServerFn(quickAnalyze);
-
-  const pricesQuery = useQuery(
-    useMemo(
-      () => ({
-        queryKey: ["market-prices"] as const,
-        queryFn: () => fetchPrices({}),
-        staleTime: 30_000,
-        refetchInterval: 60_000,
-      }),
-      [fetchPrices],
-    ),
-  );
-
-  // Fetch OHLCV data for the price bar
-  const ohlcvQuery = useQuery(
-    useMemo(
-      () => ({
-        queryKey: ["ohlcv", currentPair, currentInterval] as const,
-        queryFn: () =>
-          fetchOHLCVFn({
-            data: {
-              pair: currentPair,
-              interval:
-                Object.entries(INTERVAL_MAP).find(([, tv]) => tv === currentInterval)?.[0] || "1H",
-            },
-          }),
-        staleTime: 15_000,
-        refetchInterval: 30_000,
-      }),
-      [fetchOHLCVFn, currentPair, currentInterval],
-    ),
-  );
-
-  // Get current price for the selected pair
-  const currentPrice = useMemo(() => {
-    const priceData = pricesQuery.data?.find((p: any) => p.pair === currentPair);
-    return priceData?.price ?? 0;
-  }, [pricesQuery.data, currentPair]);
-
-  // Get display name for current pair
-  const displayName = PAIR_DISPLAY_NAMES[currentPair] || currentPair;
-
-  // Determine decimal places based on pair
-  const decimals = useMemo(() => {
-    if (currentPair.includes("JPY")) return 2;
-    if (currentPair === "XAU/USD") return 2;
-    if (currentPair.includes("USDT") || currentPair.includes("USD")) return 2;
-    return 4;
-  }, [currentPair]);
-
-  // Handle symbol change
-  const changePair = useCallback(
-    (pair: string) => {
-      setCurrentPair(pair);
-      const symbol = toTradingViewSymbol(pair);
-      navigate({ to: "/charts", search: { symbol } } as any);
-    },
-    [navigate],
-  );
-
-  // Handle search
-  const handleSearch = useCallback(() => {
-    if (!searchInput.trim()) return;
-
-    const normalizedInput = searchInput.trim().toUpperCase();
-
-    if (SYMBOL_MAP[normalizedInput]) {
-      changePair(normalizedInput);
-      setSearchInput("");
-      return;
-    }
-
-    for (const [pair] of Object.entries(SYMBOL_MAP)) {
-      if (pair.replace("/", "").toUpperCase() === normalizedInput) {
-        changePair(pair);
-        setSearchInput("");
-        return;
-      }
-    }
-
-    for (const [pair] of Object.entries(SYMBOL_MAP)) {
-      if (pair.toUpperCase().includes(normalizedInput)) {
-        changePair(pair);
-        setSearchInput("");
-        return;
-      }
-    }
-
-    if (normalizedInput.includes(":")) {
-      setCurrentPair(getDisplayPair(normalizedInput));
-      navigate({ to: "/charts", search: { symbol: normalizedInput } } as any);
-      setSearchInput("");
-    }
-  }, [searchInput, changePair, navigate]);
-
-  // Handle timeframe change
-  const handleIntervalChange = useCallback((tvInterval: string) => {
-    setCurrentInterval(tvInterval);
-  }, []);
-
-  // Handle ANALYZE button — directly run analysis with real OHLCV data
-  const handleAnalyze = useCallback(async () => {
-    if (cooldownSeconds > 0) {
-      setAnalyzeError(
-        `Please wait ${cooldownSeconds}s before analyzing again. Market data needs time to refresh.`,
-      );
-      return;
-    }
-    setIsAnalyzing(true);
-    setAnalyzeError(null);
-
-    try {
-      // Map TradingView interval to our timeframe format
-      const tf = Object.entries(INTERVAL_MAP).find(([, tv]) => tv === currentInterval)?.[0] || "1H";
-
-      const { id } = await analyzeFn({
-        data: {
-          pair: currentPair,
-          timeframe: tf,
-          tradingStyle: "Day Trading",
-        },
-      });
-
-      // Set cooldown — 60 seconds to prevent rapid re-analysis
-      setCooldownSeconds(60);
-
-      // Navigate to the analysis result page
-      navigate({ to: "/analysis/$id", params: { id } });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Analysis failed";
-      setAnalyzeError(msg);
-      setIsAnalyzing(false);
-    }
-  }, [analyzeFn, currentPair, currentInterval, navigate, cooldownSeconds]);
-
-  // Format volume
-  const formatVolume = (vol: number) => {
-    if (vol >= 1_000_000_000) return `${(vol / 1_000_000_000).toFixed(2)} B`;
-    if (vol >= 1_000_000) return `${(vol / 1_000_000).toFixed(2)} M`;
-    if (vol >= 1_000) return `${(vol / 1_000).toFixed(2)} K`;
-    return vol.toFixed(2);
-  };
-
-  // Get active timeframe label
-  const activeTfLabel = TIMEFRAMES.find((tf) => tf.tv === currentInterval)?.label || "4h";
-
-  const change24h = pricesQuery.data?.find((p: any) => p.pair === currentPair)?.change24h ?? 0;
+  // Generate fake chart grid
+  const gridLines = Array.from({ length: 8 }, (_, i) => i * 12.5);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12, fontFamily: S.font }}>
-      {/* ── Search bar ── */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ ...cardStyle, flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "0 12px", height: 40, borderRadius: S.radius }}>
-          <Search style={{ width: 16, height: 16, color: S.text3, flexShrink: 0 }} />
-          <input
-            placeholder={t("charts.searchPair")}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            style={{
-              background: "transparent",
-              flex: 1,
-              fontSize: 13,
-              border: "none",
-              outline: "none",
-              color: S.text1,
-              fontFamily: S.font,
-            }}
-          />
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#F0F4FC", display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Header + Pair Selector */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "16px" }}>&#128200;</span>
+          <span style={{ fontSize: "16px", fontWeight: 800 }}>Charts</span>
         </div>
-        <button
-          onClick={handleSearch}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: S.radius,
-            background: S.accent,
-            color: "#fff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          <Plus style={{ width: 16, height: 16 }} />
-        </button>
+        <div style={{ display: "flex", gap: "2px" }}>
+          {PAIRS.map((pair, i) => (
+            <button key={pair.pair} onClick={() => setActivePair(i)} style={{
+              fontSize: "10px", fontWeight: 700, padding: "4px 10px", borderRadius: "4px", border: "none", cursor: "pointer",
+              color: activePair === i ? "#fff" : "#7B8BA8",
+              background: activePair === i ? "rgba(59,130,246,0.15)" : "transparent",
+              borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
+            }}>{pair.pair}</button>
+          ))}
+        </div>
       </div>
 
-      {/* ── Timeframe selector ── */}
-      <div style={{ display: "flex", alignItems: "center", gap: 4, overflowX: "auto", paddingBottom: 2 }}>
-        {TIMEFRAMES.map((tf) => {
-          const isActive = currentInterval === tf.tv;
-          return (
-            <button
-              key={tf.label}
-              onClick={() => setCurrentInterval(tf.tv)}
-              style={{
-                padding: "0 12px",
-                height: 32,
-                borderRadius: S.badgeRadius,
-                fontSize: 11,
-                fontWeight: 700,
-                whiteSpace: "nowrap",
-                border: isActive ? "1px solid rgba(59,130,246,0.3)" : "1px solid transparent",
-                background: isActive ? "rgba(59,130,246,0.15)" : "transparent",
-                color: isActive ? S.accentLight : S.text2,
-                cursor: "pointer",
-                fontFamily: S.font,
-              }}
-            >
-              {tf.label}
-            </button>
-          );
-        })}
+      {/* Price + Timeframes */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "20px", fontWeight: 800, fontFamily: "monospace" }}>${p.price}</span>
+          <span style={{ fontSize: "12px", fontWeight: 700, fontFamily: "monospace", color: p.up ? "#22C55E" : "#EF4444" }}>{p.change}</span>
+        </div>
+        <div style={{ display: "flex", gap: "2px" }}>
+          {TIMEFRAMES.map((tf) => (
+            <button key={tf} onClick={() => setActiveTf(tf)} style={{
+              fontSize: "10px", fontWeight: 600, padding: "3px 8px", borderRadius: "3px", border: "none", cursor: "pointer",
+              color: activeTf === tf ? "#60A5FA" : "#7B8BA8",
+              background: activeTf === tf ? "rgba(59,130,246,0.12)" : "transparent",
+            }}>{tf}</button>
+          ))}
+        </div>
       </div>
 
-      {/* ── Chart tools ── */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        {[
-          { Icon: Maximize2 },
-          { Icon: CandlestickChart },
-          { Icon: Pencil },
-          { Icon: BarChart3 },
-        ].map(({ Icon }, i) => (
-          <button
-            key={i}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: S.badgeRadius,
-              ...cardStyle,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: S.cardBorder,
-              cursor: "pointer",
-              color: S.text3,
-            }}
-          >
-            <Icon style={{ width: 14, height: 14 }} />
-          </button>
+      {/* Chart Area */}
+      <div style={{ flex: 1, position: "relative", minHeight: "280px", background: "#0c101e", margin: "0" }}>
+        {/* Grid Lines */}
+        {gridLines.map((pct) => (
+          <div key={pct} style={{
+            position: "absolute", top: `${pct}%`, left: 0, right: 0,
+            height: "1px", background: "rgba(255,255,255,0.03)",
+          }} />
         ))}
-        <div style={{ flex: 1 }} />
-        <div style={{ fontSize: 10, fontFamily: S.mono, color: S.text3 }}>{activeTfLabel}</div>
+        {/* Vertical Grid */}
+        {Array.from({ length: 10 }, (_, i) => (
+          <div key={i} style={{
+            position: "absolute", left: `${(i + 1) * 9}%`, top: 0, bottom: 0,
+            width: "1px", background: "rgba(255,255,255,0.03)",
+          }} />
+        ))}
+        {/* Fake price line */}
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+          <defs>
+            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#22C55E" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="#22C55E" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M 0 70 Q 50 60, 100 55 T 200 40 T 300 50 T 400 35 T 500 25 T 600 30 T 700 20 T 800 25 T 900 15 T 1000 10" fill="none" stroke="#22C55E" strokeWidth="1.5" />
+          <path d="M 0 70 Q 50 60, 100 55 T 200 40 T 300 50 T 400 35 T 500 25 T 600 30 T 700 20 T 800 25 T 900 15 T 1000 10 V 400 H 0 Z" fill="url(#chartGrad)" />
+          {/* Volume bars */}
+          {[35, 50, 30, 65, 45, 80, 55, 40, 70, 60, 45, 75, 50, 85, 55, 40, 65, 70, 50, 60].map((h, i) => (
+            <rect key={i} x={i * 50} y={400 - h * 3} width={i % 2 === 0 ? 45 : 45} height={h * 3} fill={i % 2 === 0 ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.1)"} />
+          ))}
+        </svg>
+        {/* Current price line */}
+        <div style={{ position: "absolute", top: "15px", left: 0, right: 0, height: "1px", background: "rgba(59,130,246,0.4)" }}>
+          <span style={{ position: "absolute", right: "8px", top: "-16px", fontSize: "9px", fontFamily: "monospace", fontWeight: 700, color: "#3B82F6", background: "rgba(59,130,246,0.2)", padding: "2px 6px", borderRadius: "3px" }}>
+            ${p.price}
+          </span>
+        </div>
+        {/* Y-axis prices */}
+        <div style={{ position: "absolute", right: "4px", top: 0, bottom: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "10px 0" }}>
+          {["$2.60", "$2.45", "$2.30", "$2.15", "$2.00", "$1.85", "$1.70", "$1.55"].map((p) => (
+            <span key={p} style={{ fontSize: "8px", fontFamily: "monospace", color: "#4A5568" }}>{p}</span>
+          ))}
+        </div>
       </div>
 
-      {/* ── Price info bar ── */}
-      <div style={{ ...cardStyle, border: S.cardBorder, padding: 12 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
-          <div>
-            <div style={{ fontSize: 11, color: S.text2, fontWeight: 600, fontFamily: S.font }}>{displayName}</div>
-            {currentPrice > 0 && (
-              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: S.mono, lineHeight: 1.2, color: S.text1 }}>
-                $
-                {currentPrice.toLocaleString(undefined, {
-                  minimumFractionDigits: decimals,
-                  maximumFractionDigits: decimals,
-                })}
+      {/* Key Levels */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px", padding: "8px 12px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        {[
+          { label: "Resistance 2", value: "$2.65", color: "#EF4444" },
+          { label: "Resistance 1", value: "$2.50", color: "#F59E0B" },
+          { label: "Support 1", value: "$2.15", color: "#22C55E" },
+          { label: "Support 2", value: "$1.95", color: "#22C55E" },
+        ].map((l) => (
+          <div key={l.label} style={{ background: "#161b2e", borderRadius: "6px", padding: "6px 10px", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <div style={{ fontSize: "8px", color: "#4A5568" }}>{l.label}</div>
+            <div style={{ fontSize: "12px", fontWeight: 700, fontFamily: "monospace", color: l.color }}>{l.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Indicators */}
+      <div style={{ padding: "8px 12px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, marginBottom: "6px" }}>Technical Indicators</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "4px" }}>
+          {INDICATORS.map((ind) => (
+            <div key={ind.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 8px", background: "#161b2e", borderRadius: "4px", border: "1px solid rgba(255,255,255,0.04)" }}>
+              <div>
+                <div style={{ fontSize: "9px", color: "#7B8BA8" }}>{ind.name}</div>
+                <div style={{ fontSize: "11px", fontWeight: 700, fontFamily: "monospace" }}>{ind.value}</div>
               </div>
-            )}
-          </div>
-          {change24h !== undefined && (
-            <div style={{
-              fontSize: 13,
-              fontWeight: 600,
-              fontFamily: S.mono,
-              padding: "2px 8px",
-              borderRadius: S.badgeRadius,
-              background: change24h >= 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
-              color: change24h >= 0 ? S.bullish : S.bearish,
-            }}>
-              {change24h >= 0 ? "+" : ""}
-              {change24h.toFixed(2)}%
+              <span style={{ fontSize: "8px", fontWeight: 700, padding: "2px 6px", borderRadius: "3px", background: `${ind.color}15`, color: ind.color }}>{ind.signal}</span>
             </div>
-          )}
+          ))}
         </div>
-        {/* OHLCV row */}
-        {ohlcvQuery.data && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 12px", fontSize: 11, fontFamily: S.mono }}>
-            <span style={{ color: S.text2 }}>
-              O: <span style={{ color: S.text1 }}>{ohlcvQuery.data.open?.toFixed(decimals)}</span>
-            </span>
-            <span style={{ color: S.text2 }}>
-              H: <span style={{ color: S.bullish }}>{ohlcvQuery.data.high?.toFixed(decimals)}</span>
-            </span>
-            <span style={{ color: S.text2 }}>
-              L: <span style={{ color: S.bearish }}>{ohlcvQuery.data.low?.toFixed(decimals)}</span>
-            </span>
-            <span style={{ color: S.text2 }}>
-              C: <span style={{ color: S.text1 }}>{ohlcvQuery.data.close?.toFixed(decimals)}</span>
-            </span>
-            {ohlcvQuery.data.volume > 0 && (
-              <span style={{ color: S.text2 }}>
-                Vol: <span style={{ color: S.text1 }}>{formatVolume(ohlcvQuery.data.volume)}</span>
-              </span>
-            )}
-          </div>
-        )}
       </div>
-
-      {/* ── TradingView Chart ── */}
-      <TradingViewChart
-        symbol={currentSymbol}
-        interval={currentInterval}
-        theme="dark"
-        height="55vh"
-        onIntervalChange={handleIntervalChange}
-      />
-
-      {/* ── Popular pairs quick-select ── */}
-      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
-        {POPULAR.map((p) => {
-          const priceData = pricesQuery.data?.find((d: any) => d.pair === p.pair);
-          const isActive = currentPair === p.pair;
-          return (
-            <button
-              key={p.pair}
-              onClick={() => changePair(p.pair)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "0 12px",
-                height: 36,
-                borderRadius: S.radius,
-                fontSize: 12,
-                fontWeight: 700,
-                whiteSpace: "nowrap",
-                border: isActive ? "1px solid rgba(59,130,246,0.3)" : S.cardBorder,
-                background: isActive ? "rgba(59,130,246,0.15)" : S.card,
-                color: isActive ? S.accentLight : S.text2,
-                cursor: "pointer",
-                fontFamily: S.font,
-              }}
-            >
-              <span style={{ fontSize: 14 }}>{p.icon}</span>
-              {p.pair}
-              {priceData && (
-                <span style={{ fontFamily: S.mono, fontSize: 10, opacity: 0.7 }}>
-                  $
-                  {Number(priceData.price).toLocaleString(undefined, {
-                    maximumFractionDigits: priceData.pair?.includes("JPY") ? 2 : 2,
-                  })}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── Analysis Error ── */}
-      {analyzeError && (
-        <div style={{
-          padding: 12,
-          background: "rgba(239,68,68,0.1)",
-          border: "1px solid rgba(239,68,68,0.3)",
-          color: S.bearish,
-          fontSize: 12,
-          fontWeight: 700,
-          borderRadius: S.radius,
-        }}>
-          {analyzeError}
-        </div>
-      )}
-
-      {/* ── Action buttons ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-        <button
-          onClick={() => setShowAlertDialog(true)}
-          style={{
-            ...cardStyle,
-            border: S.cardBorder,
-            padding: 12,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 6,
-            cursor: "pointer",
-            background: S.card,
-          }}
-        >
-          <div style={{
-            width: 36,
-            height: 36,
-            borderRadius: S.radius,
-            background: "rgba(59,130,246,0.15)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <Bell style={{ width: 16, height: 16, color: S.accentLight }} />
-          </div>
-          <span style={{
-            fontSize: 9,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            color: S.text2,
-          }}>
-            {t("charts.setAlert")}
-          </span>
-        </button>
-
-        <button
-          onClick={handleAnalyze}
-          disabled={isAnalyzing || cooldownSeconds > 0}
-          style={{
-            ...cardStyle,
-            border: S.cardBorder,
-            padding: 12,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 6,
-            cursor: (isAnalyzing || cooldownSeconds > 0) ? "not-allowed" : "pointer",
-            background: S.card,
-            opacity: (isAnalyzing || cooldownSeconds > 0) ? 0.5 : 1,
-            position: "relative",
-          }}
-        >
-          <div style={{
-            width: 36,
-            height: 36,
-            borderRadius: S.radius,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: cooldownSeconds > 0 ? S.text3 : "rgba(59,130,246,0.15)",
-          }}>
-            {isAnalyzing ? (
-              <Loader2 style={{ width: 16, height: 16, color: S.text1, animation: "spin 1s linear infinite" }} />
-            ) : cooldownSeconds > 0 ? (
-              <span style={{ fontSize: 12, fontWeight: 700, color: S.text2 }}>{cooldownSeconds}s</span>
-            ) : (
-              <Sparkles style={{ width: 16, height: 16, color: S.accentLight }} />
-            )}
-          </div>
-          <span style={{
-            fontSize: 9,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            color: S.text2,
-          }}>
-            {isAnalyzing
-              ? t("charts.analyzing")
-              : cooldownSeconds > 0
-                ? t("charts.wait", { seconds: cooldownSeconds })
-                : t("charts.analyze")}
-          </span>
-        </button>
-
-        <button
-          onClick={() => {
-            const tf =
-              Object.entries(INTERVAL_MAP).find(([, tv]) => tv === currentInterval)?.[0] || "1H";
-            navigate({
-              to: "/copilot",
-              search: {
-                chartPair: currentPair,
-                chartTimeframe: tf,
-                chartPrice: currentPrice || 0,
-                chartSymbol: currentSymbol,
-              },
-            } as any);
-          }}
-          style={{
-            ...cardStyle,
-            border: S.cardBorder,
-            padding: 12,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 6,
-            cursor: "pointer",
-            background: S.card,
-          }}
-        >
-          <div style={{
-            width: 36,
-            height: 36,
-            borderRadius: S.radius,
-            background: "rgba(139,92,246,0.15)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <MessageSquare style={{ width: 16, height: 16, color: "#A78BFA" }} />
-          </div>
-          <span style={{
-            fontSize: 9,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            color: S.text2,
-          }}>
-            {t("charts.askCopilot") || "Ask AI"}
-          </span>
-        </button>
-
-        <button
-          onClick={() => {
-            queryClient.invalidateQueries({ queryKey: ["alerts"] });
-          }}
-          style={{
-            ...cardStyle,
-            border: S.cardBorder,
-            padding: 12,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 6,
-            cursor: "pointer",
-            background: S.card,
-          }}
-        >
-          <div style={{
-            width: 36,
-            height: 36,
-            borderRadius: S.radius,
-            background: "rgba(59,130,246,0.15)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <Star style={{ width: 16, height: 16, color: S.accentLight }} />
-          </div>
-          <span style={{
-            fontSize: 9,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            color: S.text2,
-          }}>
-            {t("charts.watchlist")}
-          </span>
-        </button>
-      </div>
-
-      {/* ── My Alerts for this pair ── */}
-      <div>
-        <SectionTitle title={t("charts.myAlerts")} />
-        <AlertsList pair={currentPair} />
-      </div>
-
-      {/* ── All Alerts ── */}
-      <div>
-        <SectionTitle title={t("charts.allAlerts")} />
-        <AlertsList />
-      </div>
-
-      {/* ── Create Alert Dialog ── */}
-      <CreateAlertDialog
-        open={showAlertDialog}
-        onOpenChange={setShowAlertDialog}
-        pair={currentPair}
-        currentPrice={currentPrice || 0}
-        onSuccess={() => queryClient.invalidateQueries({ queryKey: ["alerts"] })}
-      />
     </div>
   );
 }

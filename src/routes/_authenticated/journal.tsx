@@ -1,778 +1,152 @@
+import { memo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  BookOpen,
-  AlertTriangle,
-  BarChart3,
-  Plus,
-  StickyNote,
-  Pin,
-  Trash2,
-  Loader2,
-} from "lucide-react";
-import { useState, useMemo } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { listAnalyses } from "@/domains/analysis/functions";
-import { listNotes, deleteNote } from "@/domains/notes/functions";
-import type { TradingNote, Mood } from "@/domains/notes/types";
-import { NoteEditorDialog } from "@/components/vixor/NoteEditorDialog";
-import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { useI18n } from "@/shared/i18n";
-import { PaginationBar } from "@/components/vixor/PaginationBar";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/journal")({
-  head: () => ({ meta: [{ title: "Journal — Vixor" }] }),
-  component: Journal,
+  head: () => ({ meta: [{ title: "Trading Journal — Vixor" }] }),
+  component: JournalPage,
 });
 
-const TABS = ["journal.overview", "journal.history", "journal.notes", "journal.reports"] as const;
-
-const MOOD_EMOJI: Record<Mood, string> = {
-  confident: "💪",
-  cautious: "⚠️",
-  anxious: "😰",
-  neutral: "😐",
+const S = {
+  page: { background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100vh", padding: "20px" },
+  header: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" },
+ headerLeft: { display: "flex", alignItems: "center", gap: "10px" },
+  title: { fontSize: "22px", fontWeight: 700, color: "#F0F4FC", margin: 0 },
+  subtitle: { fontSize: "12px", color: "#7B8BA8", marginTop: "4px", marginBottom: "20px" },
+  addBtn: { padding: "10px 18px", borderRadius: "10px", border: "none", cursor: "pointer", background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "#fff", fontSize: "12px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", display: "flex", alignItems: "center", gap: "6px" },
+  tabs: { display: "flex", gap: "4px", marginBottom: "20px", background: "#161b2e", borderRadius: "10px", padding: "4px", border: "1px solid rgba(255,255,255,0.06)", width: "fit-content" },
+  tab: { fontSize: "12px", fontWeight: 600, padding: "8px 16px", borderRadius: "8px", border: "none", cursor: "pointer", color: "#7B8BA8", background: "transparent", fontFamily: "'Inter', system-ui, sans-serif" },
+  tabActive: { background: "#1e2438", color: "#F0F4FC" },
+  summaryGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" },
+  summaryCard: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px" },
+  summaryLabel: { fontSize: "10px", fontWeight: 600, color: "#4A5568", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "6px" },
+  summaryValue: { fontSize: "22px", fontWeight: 800, fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace" },
+  summarySub: { fontSize: "10px", color: "#7B8BA8", marginTop: "4px" },
+  sectionTitle: { fontSize: "13px", fontWeight: 700, color: "#F0F4FC", marginBottom: "14px", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
+  tableWrap: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" },
+  tableHeader: { display: "flex", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: "10px", fontWeight: 700, color: "#4A5568", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
+  tableRow: { display: "flex", alignItems: "center", padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s", cursor: "pointer" },
+  colDate: { width: "85px", fontSize: "11px", color: "#7B8BA8" },
+  colToken: { width: "80px", fontSize: "12px", fontWeight: 700, fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace" },
+  colType: { width: "60px" },
+  colEntry: { width: "85px", textAlign: "right" as const, fontSize: "11px", fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", color: "#7B8BA8" },
+  colExit: { width: "85px", textAlign: "right" as const, fontSize: "11px", fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", color: "#7B8BA8" },
+  colPnl: { width: "100px", textAlign: "right" as const, fontSize: "12px", fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", fontWeight: 700 },
+  colNotes: { flex: 1, fontSize: "11px", color: "#7B8BA8", paddingLeft: "16px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const },
+  colAction: { width: "30px", textAlign: "center" as const },
+  typeBadge: { fontSize: "10px", fontWeight: 700, padding: "2px 8px", borderRadius: "4px", display: "inline-block" },
+  monthlyLabel: { fontSize: "11px", fontWeight: 600, color: "#7B8BA8", padding: "8px 16px", background: "#1a2035", borderBottom: "1px solid rgba(255,255,255,0.06)" },
 };
 
-const AVAILABLE_PAIRS = [
-  "BTC/USDT",
-  "ETH/USDT",
-  "SOL/USDT",
-  "BNB/USDT",
-  "XRP/USDT",
-  "EUR/USD",
-  "GBP/USD",
-  "USD/JPY",
-  "GBP/JPY",
-  "AUD/USD",
-  "XAU/USD",
-  "USD/CHF",
+const monthlySummary = [
+  { label: "Total Trades", value: "34", sub: "This month", color: "#3B82F6" },
+  { label: "Win Rate", value: "67.6%", sub: "23W / 11L", color: "#22C55E" },
+  { label: "Total PnL", value: "+$1,847", sub: "+12.4% ROI", color: "#22C55E" },
+  { label: "Avg. Trade", value: "+$54.32", sub: "Best: +$420", color: "#F59E0B" },
 ];
 
-const card = {
-  background: "#111827",
-  border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: "12px",
-};
-const mono = { fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace" };
-const labelStyle = {
-  fontSize: "10px",
-  fontWeight: 700,
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.05em",
-  color: "#7B8BA8",
-};
+const journalEntries = [
+  { date: "Jan 24", token: "WIF", type: "Long", entry: "$2.28", exit: "$2.52", pnl: "+$120.00", pnlColor: "#22C55E", notes: "Bought on the dip after whale accumulation spotted on-chain. Strong support at $2.20 held." },
+  { date: "Jan 24", token: "BONK", type: "Short", entry: "$0.0000301", exit: "$0.0000289", pnl: "+$48.00", pnlColor: "#22C55E", notes: "Overextended on 1h RSI. Volume declining. Targeted previous support level." },
+  { date: "Jan 23", token: "POPCAT", type: "Long", entry: "$1.18", exit: "$1.05", pnl: "-$78.00", pnlColor: "#EF4444", notes: "Entry too early. Should have waited for confirmation above $1.20 resistance. Cut loss at mental stop." },
+  { date: "Jan 23", token: "SOL", type: "Long", entry: "$89.50", exit: "$93.20", pnl: "+$420.00", pnlColor: "#22C55E", notes: "SOL ETF narrative building. Accumulated on pullback with tight stop. Let winner run to target." },
+  { date: "Jan 22", token: "JUP", type: "Long", entry: "$0.82", exit: "$0.91", pnl: "+$180.00", pnlColor: "#22C55E", notes: "Governance vote catalyst. Strong community sentiment. 3x leverage on perps for higher returns." },
+  { date: "Jan 22", token: "WIF", type: "Short", entry: "$2.65", exit: "$2.58", pnl: "+$35.00", pnlColor: "#22C55E", notes: "Quick scalp on rejection at resistance. 15-minute chart showed bearish divergence on RSI." },
+  { date: "Jan 21", token: "TENSOR", type: "Long", entry: "$0.45", exit: "$0.38", pnl: "-$140.00", pnlColor: "#EF4444", notes: "NFT sector weakness. Should have respected sector-level analysis. Overexposed to single narrative play." },
+  { date: "Jan 20", token: "BONK", type: "Long", entry: "$0.0000275", exit: "$0.0000298", pnl: "+$230.00", pnlColor: "#22C55E", notes: "BONK season 3 airdrop hype. Large wallet activity detected. Perfect entry on 4h support bounce." },
+  { date: "Jan 19", token: "RAY", type: "Long", entry: "$2.08", exit: "$2.15", pnl: "+$70.00", pnlColor: "#22C55E", notes: "Raydium TVL growth narrative. Steady DEX volume increase. Low risk, steady gain trade." },
+  { date: "Jan 18", token: "POPCAT", type: "Short", entry: "$1.30", exit: "$1.35", pnl: "-$50.00", pnlColor: "#EF4444", notes: "Failed short. Cat meta stronger than expected. Wrong read on social sentiment reversal." },
+];
 
-function getMostAnalyzedPair(analyses: any[]): string {
-  const counts: Record<string, number> = {};
-  for (const a of analyses) {
-    if (a.pair) counts[a.pair] = (counts[a.pair] || 0) + 1;
-  }
-  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  return sorted.length > 0 ? sorted[0][0] : "—";
-}
+const tabs = ["All", "Winners", "Losers", "With Notes"];
 
-function Journal() {
-  const { t } = useI18n();
-  const [tab, setTab] = useState<(typeof TABS)[number]>("journal.overview");
+const SummaryCard = memo(function SummaryCard({ item }: { item: typeof monthlySummary[0] }) {
+  return (
+    <div style={S.summaryCard}>
+      <div style={S.summaryLabel}>{item.label}</div>
+      <div style={{ ...S.summaryValue, color: item.color }}>{item.value}</div>
+      <div style={S.summarySub}>{item.sub}</div>
+    </div>
+  );
+});
 
-  // Pagination state for history tab
-  const [historyPage, setHistoryPage] = useState(1);
-  const HISTORY_PAGE_SIZE = 10;
+const JournalRow = memo(function JournalRow({ item }: { item: typeof journalEntries[0] }) {
+  const isLong = item.type === "Long";
+  return (
+    <div style={S.tableRow}>
+      <div style={S.colDate}>{item.date}</div>
+      <div style={S.colToken}>{item.token}</div>
+      <div style={S.colType}>
+        <span style={{
+          ...S.typeBadge,
+          background: isLong ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+          color: isLong ? "#22C55E" : "#EF4444",
+        }}>{item.type}</span>
+      </div>
+      <div style={S.colEntry}>{item.entry}</div>
+      <div style={S.colExit}>{item.exit}</div>
+      <div style={{ ...S.colPnl, color: item.pnlColor }}>{item.pnl}</div>
+      <div style={S.colNotes} title={item.notes}>{item.notes}</div>
+      <div style={S.colAction}>
+        <span style={{ fontSize: "14px", color: "#4A5568", cursor: "pointer" }}>›</span>
+      </div>
+    </div>
+  );
+});
 
-  const fetchAnalyses = useStableServerFn(listAnalyses);
-  const analysesQuery = useQuery({
-    queryKey: ["analyses-journal", historyPage],
-    queryFn: () =>
-      fetchAnalyses({
-        data: {
-          limit: HISTORY_PAGE_SIZE,
-          offset: (historyPage - 1) * HISTORY_PAGE_SIZE,
-        },
-      }),
+function JournalPage() {
+  const [activeTab, setActiveTab] = useState("All");
+
+  const filteredEntries = journalEntries.filter((e) => {
+    if (activeTab === "All") return true;
+    if (activeTab === "Winners") return e.pnl.startsWith("+");
+    if (activeTab === "Losers") return e.pnl.startsWith("-");
+    if (activeTab === "With Notes") return e.notes.length > 0;
+    return true;
   });
 
-  const analysesRaw = analysesQuery.data as
-    | { items: any[]; total: number; hasMore: boolean }
-    | undefined;
-  const analyses = analysesRaw?.items ?? [];
-  const analysesTotal = analysesRaw?.total ?? 0;
-  const activeSignals = analyses.filter(
-    (a: any) => a.recommendation === "BUY" || a.recommendation === "SELL",
-  );
-  const avgConfidence =
-    analyses.length > 0
-      ? Math.round(
-          analyses.reduce((sum: number, a: any) => sum + (a.confidence ?? 0), 0) / analyses.length,
-        )
-      : 0;
-
   return (
-    <div
-      className="w-full"
-      style={{
-        background: "#0A0E1A",
-        color: "#F0F4FC",
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}
-    >
-      <div className="flex items-center gap-3">
-        <div className="size-10 rounded-xl flex items-center justify-center" style={card}>
-          <BookOpen className="size-5" style={{ color: "#3B82F6" }} />
+    <div style={S.page}>
+      <div style={S.header}>
+        <div style={S.headerLeft}>
+          <h1 style={S.title}>Trading Journal</h1>
         </div>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight leading-none">{t("journal.title")}</h1>
-          <div className="mt-1" style={{ ...labelStyle, fontSize: "10px" }}>
-            {t("journal.subtitle")}
-          </div>
-        </div>
+        <button style={S.addBtn}>+ New Entry</button>
       </div>
+      <p style={S.subtitle}>Track your trades, review performance, and improve your strategy</p>
 
-      {/* TABS */}
-      <div
-        className="flex gap-1 p-1 overflow-x-auto no-scrollbar"
-        style={{ ...card, marginTop: "24px" }}
-      >
-        {TABS.map((tabKey) => (
-          <button
-            key={tabKey}
-            onClick={() => setTab(tabKey)}
-            className="flex-1 h-9 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap px-2"
-            style={{
-              background: tab === tabKey ? "rgba(59,130,246,0.15)" : "transparent",
-              color: tab === tabKey ? "#60A5FA" : "#7B8BA8",
-            }}
-          >
-            {t(tabKey)}
-          </button>
+      <div style={{ ...S.sectionTitle }}>Monthly Performance — January 2025</div>
+      <div style={S.summaryGrid}>
+        {monthlySummary.map((s) => (
+          <SummaryCard key={s.label} item={s} />
         ))}
       </div>
 
-      {tab === "journal.overview" && (
-        <div className="flex flex-col gap-4" style={{ marginTop: "16px" }}>
-          {/* Top Stats */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="p-4" style={card}>
-              <div className="mb-1" style={labelStyle}>
-                {t("journal.trades")}
-              </div>
-              <div className="text-xl font-bold" style={mono}>
-                {analyses.length}
-              </div>
-            </div>
-            <div className="p-4" style={card}>
-              <div className="mb-1" style={labelStyle}>
-                {t("journal.winRate")}
-              </div>
-              <div className="text-xl font-bold" style={{ ...mono, color: "#22C55E" }}>
-                {activeSignals.length > 0
-                  ? Math.round(
-                      (activeSignals.filter((a: any) => a.confidence && a.confidence >= 60).length /
-                        activeSignals.length) *
-                        100,
-                    )
-                  : 0}
-                %
-              </div>
-            </div>
-            <div className="p-4" style={card}>
-              <div className="mb-1" style={labelStyle}>
-                Avg Conf
-              </div>
-              <div className="text-xl font-bold" style={{ ...mono, color: "#3B82F6" }}>
-                {avgConfidence}%
-              </div>
-            </div>
-          </div>
-
-          {/* AI Insight */}
-          <div
-            className="p-4 relative overflow-hidden"
-            style={{
-              ...card,
-              borderLeft: "4px solid #3B82F6",
-              background: "rgba(59,130,246,0.05)",
-              borderColor: "rgba(59,130,246,0.3)",
-            }}
-          >
-            <div className="absolute left-0 top-0 bottom-0 w-1" style={{ background: "#3B82F6" }} />
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="size-4" style={{ color: "#3B82F6" }} />
-              <h3 style={{ ...labelStyle, color: "#3B82F6" }}>AI Insight</h3>
-            </div>
-            <div className="text-sm font-medium leading-relaxed">
-              {analyses.length > 0 ? (
-                <>
-                  <strong style={{ color: "#F0F4FC" }}>
-                    {analyses.length} analyses completed.
-                  </strong>{" "}
-                  Your most analyzed pair is {getMostAnalyzedPair(analyses)}. Keep documenting your
-                  trades for deeper AI insights and mistake detection.
-                </>
-              ) : (
-                <>
-                  <strong style={{ color: "#F0F4FC" }}>{t("journal.noTrades")}</strong>{" "}
-                  {t("journal.noTradesDesc")}
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Recent Analyses */}
-          <div className="flex flex-col gap-2" style={{ marginTop: "8px" }}>
-            <h3 className="mb-3 px-1" style={labelStyle}>
-              {t("journal.recentExecutions")}
-            </h3>
-            {analyses.length > 0 ? (
-              analyses.slice(0, 5).map((a: any) => (
-                <a
-                  key={a.id}
-                  href={`/analysis/${a.id}`}
-                  className="p-3.5 flex items-center justify-between transition-colors cursor-pointer block"
-                  style={{
-                    ...card,
-                    borderLeft: `4px solid ${
-                      a.recommendation === "BUY"
-                        ? "#22C55E"
-                        : a.recommendation === "SELL"
-                          ? "#EF4444"
-                          : "#F59E0B"
-                    }`,
-                  }}
-                >
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span
-                        className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase"
-                        style={{
-                          background:
-                            a.recommendation === "BUY"
-                              ? "rgba(34,197,94,0.15)"
-                              : a.recommendation === "SELL"
-                                ? "rgba(239,68,68,0.15)"
-                                : "rgba(245,158,11,0.15)",
-                          color:
-                            a.recommendation === "BUY"
-                              ? "#22C55E"
-                              : a.recommendation === "SELL"
-                                ? "#EF4444"
-                                : "#F59E0B",
-                        }}
-                      >
-                        {a.recommendation ?? "WAIT"}
-                      </span>
-                      <span className="font-bold text-sm" style={mono}>
-                        {a.pair ?? "?"}
-                      </span>
-                    </div>
-                    <div
-                      className="flex items-center gap-2 text-[10px]"
-                      style={{ ...mono, color: "#7B8BA8" }}
-                    >
-                      <span>{a.timeframe ?? "—"}</span>
-                      <span>{a.pattern ?? ""}</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-base" style={mono}>
-                      {a.confidence ?? 0}%
-                    </div>
-                    <div className="text-[10px] font-bold" style={{ ...mono, color: "#7B8BA8" }}>
-                      {relTime(a.created_at)}
-                    </div>
-                  </div>
-                </a>
-              ))
-            ) : (
-              <div className="p-6 text-center" style={card}>
-                <BookOpen
-                  className="size-6 mx-auto mb-2"
-                  style={{ color: "rgba(123,139,168,0.3)" }}
-                />
-                <div className="text-xs" style={{ color: "#7B8BA8" }}>
-                  {t("journal.noTrades")}
-                </div>
-                <a
-                  href="/analyze"
-                  className="text-xs font-bold mt-1 inline-block"
-                  style={{ color: "#3B82F6" }}
-                >
-                  Analyze your first chart
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {tab === "journal.history" && (
-        <div className="flex flex-col gap-2" style={{ marginTop: "16px" }}>
-          {analyses.length > 0 ? (
-            analyses.map((a: any) => (
-              <a
-                key={a.id}
-                href={`/analysis/${a.id}`}
-                className="p-3.5 flex items-center justify-between transition-colors cursor-pointer block"
-                style={{
-                  ...card,
-                  borderLeft: `4px solid ${
-                    a.recommendation === "BUY"
-                      ? "#22C55E"
-                      : a.recommendation === "SELL"
-                        ? "#EF4444"
-                        : "#F59E0B"
-                  }`,
-                }}
-              >
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase"
-                      style={{
-                        background:
-                          a.recommendation === "BUY"
-                            ? "rgba(34,197,94,0.15)"
-                            : a.recommendation === "SELL"
-                              ? "rgba(239,68,68,0.15)"
-                              : "rgba(245,158,11,0.15)",
-                        color:
-                          a.recommendation === "BUY"
-                            ? "#22C55E"
-                            : a.recommendation === "SELL"
-                              ? "#EF4444"
-                              : "#F59E0B",
-                      }}
-                    >
-                      {a.recommendation ?? "WAIT"}
-                    </span>
-                    <span className="font-bold text-sm" style={mono}>
-                      {a.pair ?? "?"}
-                    </span>
-                  </div>
-                  <div className="text-[10px]" style={{ ...mono, color: "#7B8BA8" }}>
-                    {a.timeframe ?? "—"} · {relTime(a.created_at)}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div
-                    className="font-bold text-base"
-                    style={{
-                      ...mono,
-                      color:
-                        a.recommendation === "BUY"
-                          ? "#22C55E"
-                          : a.recommendation === "SELL"
-                            ? "#EF4444"
-                            : "#F59E0B",
-                    }}
-                  >
-                    {a.confidence ?? 0}%
-                  </div>
-                  <div className="text-[10px] font-bold" style={{ ...mono, color: "#7B8BA8" }}>
-                    {a.pattern ?? ""}
-                  </div>
-                </div>
-              </a>
-            ))
-          ) : (
-            <div className="p-6 text-center" style={card}>
-              <BookOpen
-                className="size-6 mx-auto mb-2"
-                style={{ color: "rgba(123,139,168,0.3)" }}
-              />
-              <div className="text-xs" style={{ color: "#7B8BA8" }}>
-                No trade history yet
-              </div>
-            </div>
-          )}
-
-          {/* Pagination */}
-          {analysesTotal > HISTORY_PAGE_SIZE && (
-            <PaginationBar
-              page={historyPage}
-              pageSize={HISTORY_PAGE_SIZE}
-              total={analysesTotal}
-              onPageChange={setHistoryPage}
-            />
-          )}
-        </div>
-      )}
-
-      {tab === "journal.notes" && <NotesTab />}
-
-      {tab === "journal.reports" && (
-        <div
-          className="p-8 text-center"
-          style={{ ...card, marginTop: "16px", borderStyle: "dashed" }}
-        >
-          <BarChart3 className="size-10 mx-auto mb-3" style={{ color: "rgba(123,139,168,0.5)" }} />
-          <h3 className="text-lg font-bold mb-1">{t("journal.advancedAnalytics")}</h3>
-          <p className="text-sm" style={{ color: "#7B8BA8" }}>
-            {t("journal.unlockReports")}
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════
-// NOTES TAB
-// ═══════════════════════════════════════════════════════════
-function NotesTab() {
-  const { t } = useI18n();
-  const queryClient = useQueryClient();
-
-  // Filters
-  const [filterPair, setFilterPair] = useState<string>("");
-  const [filterMood, setFilterMood] = useState<string>("");
-  const [filterPinnedOnly, setFilterPinnedOnly] = useState(false);
-
-  // Dialog state
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editingNote, setEditingNote] = useState<TradingNote | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
-  // Fetch notes
-  const fetchNotes = useStableServerFn(listNotes);
-  const notesQuery = useQuery({
-    queryKey: ["trading-notes", filterPair, filterMood, filterPinnedOnly],
-    queryFn: () =>
-      fetchNotes({
-        data: {
-          pair: filterPair || undefined,
-          mood: (filterMood || undefined) as Mood | undefined,
-          pinnedOnly: filterPinnedOnly || undefined,
-        },
-      }),
-  });
-
-  const notes = (notesQuery.data ?? []) as TradingNote[];
-
-  // Delete note
-  const deleteNoteFn = useStableServerFn(deleteNote);
-
-  const handleDelete = async (noteId: string) => {
-    setDeleting(true);
-    try {
-      await deleteNoteFn({ data: { noteId } });
-      setDeleteConfirm(null);
-      queryClient.invalidateQueries({ queryKey: ["trading-notes"] });
-    } catch (err) {
-      console.error("Failed to delete note:", err);
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const handleEdit = (note: TradingNote) => {
-    setEditingNote(note);
-    setEditorOpen(true);
-  };
-
-  const handleCreateNew = () => {
-    setEditingNote(null);
-    setEditorOpen(true);
-  };
-
-  const handleSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["trading-notes"] });
-  };
-
-  // Collect unique pairs and tags from notes for filter options
-  const uniquePairs = useMemo(() => {
-    const pairs = new Set<string>();
-    notes.forEach((n) => {
-      if (n.pair) pairs.add(n.pair);
-    });
-    return Array.from(pairs).sort();
-  }, [notes]);
-
-  const uniqueTags = useMemo(() => {
-    const tagSet = new Set<string>();
-    notes.forEach((n) => {
-      n.tags?.forEach((tag) => tagSet.add(tag));
-    });
-    return Array.from(tagSet).sort();
-  }, [notes]);
-
-  return (
-    <div className="flex flex-col gap-4" style={{ marginTop: "16px" }}>
-      {/* Filters */}
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
-          {/* Pair filter */}
-          <select
-            value={filterPair}
-            onChange={(e) => setFilterPair(e.target.value)}
-            className="flex-1 h-8 px-2 rounded-lg text-xs font-medium outline-none"
-            style={{ ...card, background: "#111827", color: "#F0F4FC" }}
-          >
-            <option value="">{t("journal.allPairs")}</option>
-            {AVAILABLE_PAIRS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-
-          {/* Mood filter */}
-          <select
-            value={filterMood}
-            onChange={(e) => setFilterMood(e.target.value)}
-            className="flex-1 h-8 px-2 rounded-lg text-xs font-medium outline-none"
-            style={{ ...card, background: "#111827", color: "#F0F4FC" }}
-          >
-            <option value="">{t("journal.allMoods")}</option>
-            <option value="confident">💪 Confident</option>
-            <option value="cautious">⚠️ Cautious</option>
-            <option value="anxious">😰 Anxious</option>
-            <option value="neutral">😐 Neutral</option>
-          </select>
-
-          {/* Pinned only toggle */}
+      <div style={{ ...S.sectionTitle }}>Journal Entries</div>
+      <div style={S.tabs}>
+        {tabs.map((t) => (
           <button
-            onClick={() => setFilterPinnedOnly(!filterPinnedOnly)}
-            className="h-8 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
-            style={{
-              background: filterPinnedOnly ? "#3B82F6" : "#111827",
-              border: filterPinnedOnly ? "1px solid #3B82F6" : "1px solid rgba(255,255,255,0.06)",
-              color: filterPinnedOnly ? "#fff" : "#7B8BA8",
-            }}
-          >
-            <Pin className="size-3" />
-          </button>
-        </div>
-
-        {/* Clear filters */}
-        {(filterPair || filterMood || filterPinnedOnly) && (
-          <button
-            onClick={() => {
-              setFilterPair("");
-              setFilterMood("");
-              setFilterPinnedOnly(false);
-            }}
-            className="text-[10px] font-bold"
-            style={{ color: "#3B82F6" }}
-          >
-            Clear filters
-          </button>
-        )}
+            key={t}
+            style={{ ...S.tab, ...(activeTab === t ? S.tabActive : {}) }}
+            onClick={() => setActiveTab(t)}
+          >{t}</button>
+        ))}
       </div>
 
-      {/* Notes list */}
-      {notesQuery.isLoading ? (
-        <div className="p-8 text-center" style={card}>
-          <Loader2 className="size-6 animate-spin mx-auto mb-2" style={{ color: "#3B82F6" }} />
-          <div className="text-xs" style={{ color: "#7B8BA8" }}>
-            Loading notes...
-          </div>
+      <div style={S.tableWrap}>
+        <div style={S.tableHeader}>
+          <div style={{ ...S.colDate, color: "#4A5568" }}>Date</div>
+          <div style={{ ...S.colToken, color: "#4A5568" }}>Token</div>
+          <div style={{ ...S.colType, color: "#4A5568" }}>Type</div>
+          <div style={{ ...S.colEntry, color: "#4A5568" }}>Entry</div>
+          <div style={{ ...S.colExit, color: "#4A5568" }}>Exit</div>
+          <div style={{ ...S.colPnl, color: "#4A5568" }}>PnL</div>
+          <div style={{ ...S.colNotes, color: "#4A5568" }}>Notes</div>
+          <div style={{ ...S.colAction, color: "#4A5568" }}></div>
         </div>
-      ) : notes.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          {notes.map((note) => (
-            <div
-              key={note.id}
-              className="p-3.5 transition-colors cursor-pointer"
-              style={card}
-              onClick={() => handleEdit(note)}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  {/* Title row */}
-                  <div className="flex items-center gap-2 mb-1">
-                    {note.is_pinned && (
-                      <Pin className="size-3 shrink-0" style={{ color: "#3B82F6" }} />
-                    )}
-                    <span className="font-bold text-sm truncate" style={{ color: "#F0F4FC" }}>
-                      {note.title || "Untitled"}
-                    </span>
-                    <span className="text-sm shrink-0">{MOOD_EMOJI[note.mood]}</span>
-                  </div>
-
-                  {/* Content preview */}
-                  {note.content && (
-                    <p
-                      className="text-xs line-clamp-2 mb-2 leading-relaxed"
-                      style={{ color: "#7B8BA8" }}
-                    >
-                      {note.content}
-                    </p>
-                  )}
-
-                  {/* Meta row */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {note.pair && (
-                      <span
-                        className="px-1.5 py-0.5 rounded text-[9px] font-bold"
-                        style={{
-                          background: "rgba(59,130,246,0.1)",
-                          color: "#3B82F6",
-                          border: "1px solid rgba(59,130,246,0.2)",
-                        }}
-                      >
-                        {note.pair}
-                      </span>
-                    )}
-                    {note.analysis_id && (
-                      <a
-                        href={`/analysis/${note.analysis_id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="px-1.5 py-0.5 rounded text-[9px] font-bold transition-colors"
-                        style={{ background: "rgba(255,255,255,0.05)", color: "#7B8BA8" }}
-                      >
-                        📎 Analysis
-                      </a>
-                    )}
-                    {note.tags?.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-1.5 py-0.5 rounded text-[9px] font-bold"
-                        style={{ background: "rgba(255,255,255,0.05)", color: "#7B8BA8" }}
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                    <span className="text-[10px] ml-auto" style={{ ...mono, color: "#7B8BA8" }}>
-                      {relTime(note.created_at)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Delete button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteConfirm(note.id);
-                  }}
-                  className="size-8 rounded-lg flex items-center justify-center transition-all shrink-0"
-                  style={{ color: "#7B8BA8", background: "transparent" }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "#EF4444";
-                    (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "#7B8BA8";
-                    (e.currentTarget as HTMLElement).style.background = "transparent";
-                  }}
-                >
-                  <Trash2 className="size-3.5" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="p-8 text-center" style={card}>
-          <StickyNote className="size-8 mx-auto mb-3" style={{ color: "rgba(123,139,168,0.3)" }} />
-          <h3 className="text-sm font-bold mb-1">{t("journal.noNotes")}</h3>
-          <p className="text-xs" style={{ color: "#7B8BA8" }}>
-            {t("journal.noNotesDesc")}
-          </p>
-        </div>
-      )}
-
-      {/* FAB — New Note */}
-      <button
-        onClick={handleCreateNew}
-        className="fixed bottom-24 right-6 z-30 size-14 rounded-2xl flex items-center justify-center sm:right-8 transition-transform"
-        style={{
-          background: "linear-gradient(135deg, #3B82F6, #2563EB)",
-          color: "#fff",
-          boxShadow: "0 0 20px rgba(59,130,246,0.3)",
-        }}
-      >
-        <Plus className="size-6" />
-      </button>
-
-      {/* Note Editor Dialog */}
-      <NoteEditorDialog
-        open={editorOpen}
-        onOpenChange={setEditorOpen}
-        existingNote={editingNote}
-        onSuccess={handleSuccess}
-      />
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDeleteDialog
-        open={!!deleteConfirm}
-        onOpenChange={(open) => !open && setDeleteConfirm(null)}
-        onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
-        loading={deleting}
-        message={t("journal.confirmDelete")}
-      />
+        {filteredEntries.map((e, i) => (
+          <JournalRow key={e.date + e.token + i} item={e} />
+        ))}
+      </div>
     </div>
   );
-}
-
-// ═══════════════════════════════════════════════════════════
-// CONFIRM DELETE DIALOG
-// ═══════════════════════════════════════════════════════════
-function ConfirmDeleteDialog({
-  open,
-  onOpenChange,
-  onConfirm,
-  loading,
-  message,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-  loading: boolean;
-  message: string;
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-w-sm rounded-2xl"
-        style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.06)" }}
-      >
-        <DialogHeader>
-          <DialogTitle style={{ color: "#F0F4FC" }}>Delete Note</DialogTitle>
-          <DialogDescription style={{ color: "#7B8BA8" }}>{message}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="flex-row gap-3">
-          <button
-            onClick={() => onOpenChange(false)}
-            className="flex-1 h-11 rounded-xl font-bold text-sm transition-colors"
-            style={{
-              background: "#111827",
-              border: "1px solid rgba(255,255,255,0.06)",
-              color: "#F0F4FC",
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            className="flex-1 h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
-            style={{ background: "#EF4444", color: "#fff", opacity: loading ? 0.5 : 1 }}
-          >
-            {loading ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
-            Delete
-          </button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════
-function relTime(iso: string): string {
-  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (diff < 60) return "now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  return `${Math.floor(diff / 86400)}d`;
 }

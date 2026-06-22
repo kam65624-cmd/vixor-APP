@@ -32,7 +32,7 @@ const WHALE_ALERTS: WhaleAlert[] = [
 
 function WhalePage() {
   return (
-    <div className="w-full h-full" style={{ background: "#0A0E1A", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div  style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Header */}
       <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center gap-2">
@@ -53,7 +53,7 @@ function WhalePage() {
           { label: "Buys", value: "1,203", color: "#22C55E" },
           { label: "Sells", value: "644", color: "#EF4444" },
         ].map((s) => (
-          <div key={s.label} className="text-center px-2 py-1.5 rounded-lg" style={{ background: "#111827" }}>
+          <div key={s.label} className="text-center px-2 py-1.5 rounded-lg" style={{ background: "#161b2e" }}>
             <div className="text-[9px]" style={{ color: "#4A5568" }}>{s.label}</div>
             <div className="text-sm font-bold font-mono" style={{ color: s.color }}>{s.value}</div>
           </div>
@@ -88,7 +88,7 @@ const WhaleAlertCard = memo(function WhaleAlertCard({ alert }: { alert: WhaleAle
   return (
     <div
       className="flex items-center gap-3 px-3 py-2 rounded-lg"
-      style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.06)" }}
+      style={{ background: "#161b2e", border: "1px solid rgba(255,255,255,0.06)" }}
     >
       <div className="flex-shrink-0 text-center" style={{ width: "50px" }}>
         <div className="text-lg">{typeConfig.emoji}</div>
