@@ -1,0 +1,23 @@
+{
+  "code": 200,
+  "data": {
+    "description": "",
+    "external": {},
+    "html": "<html><head><meta charset=\"utf-8\"><title>Vixor</title><style>body{font-family:system-ui,sans-serif;background:#0a0a0f;color:#e0e0e0;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}.c{text-align:center;padding:2rem}h1{color:#ff6b6b;font-size:1.2rem;margin-bottom:.5rem}p{color:#8b92a5;font-size:.9rem}a{color:#FFB800;text-decoration:none}</style></head><body><div class=\"c\"><h1>Something went wrong</h1><p>An unexpected error occurred. Please try again.</p><a href=\"/\">Go to Dashboard</a></div></body></html>",
+    "httpStatus": 401,
+    "httpStatusText": "",
+    "metadata": {},
+    "title": "Vixor",
+    "url": "https://my-project-ten-sepia-79.vercel.app/api/health",
+    "usage": {
+      "tokens": 170
+    },
+    "warning": "Target URL returned error 401: Unauthorized"
+  },
+  "meta": {
+    "usage": {
+      "tokens": 170
+    }
+  },
+  "status": 20000
+}
