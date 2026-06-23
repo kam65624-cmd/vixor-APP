@@ -42,78 +42,31 @@ const OpenPositionCard = memo(function OpenPositionCard({
   const pnlColor = pnl >= 0 ? THEME.green : THEME.red;
 
   return (
-    <DataRowTwoLine>
-      {/* Top line */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          width: "100%",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <Badge label={position.direction} color={dirColor} small />
-          <span
-            style={{
-              fontSize: "12px",
-              fontWeight: 700,
-              color: THEME.text,
-            }}
-          >
-            {position.pair}
+    <DataRowTwoLine
+      topContent={
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <Badge label={position.direction} color={dirColor} small />
+            <span style={{ fontSize: "12px", fontWeight: 700, color: THEME.text }}>
+              {position.pair}
+            </span>
+            <Badge label="OPEN" color={THEME.accent} small />
+          </div>
+          <span style={{ fontSize: "12px", fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: pnlColor }}>
+            {pnl >= 0 ? "+" : ""}{pnl.toFixed(2)}
           </span>
-          <Badge label="OPEN" color={THEME.blue} small />
         </div>
-        <span
-          style={{
-            fontSize: "12px",
-            fontWeight: 700,
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-            color: pnlColor,
-          }}
-        >
-          {pnl >= 0 ? "+" : ""}
-          {pnl.toFixed(2)}
-        </span>
-      </div>
-
-      {/* Bottom line */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          width: "100%",
-          marginTop: "4px",
-        }}
-      >
-        <LabelValue
-          label="Entry"
-          value={formatPrice(position.entryPrice)}
-        />
-        <LabelValue
-          label="Qty"
-          value={formatQuantity(position.quantity)}
-        />
-        <LabelValue
-          label="R"
-          value={formatRMultiple(position.rMultiple || 0)}
-        />
-        {position.stopLoss != null && (
-          <LabelValue
-            label="SL"
-            value={formatPrice(position.stopLoss)}
-          />
-        )}
-        {position.takeProfit != null && (
-          <LabelValue
-            label="TP"
-            value={formatPrice(position.takeProfit)}
-          />
-        )}
-      </div>
-    </DataRowTwoLine>
+      }
+      bottomContent={
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <LabelValue label="Entry" value={formatPrice(position.entryPrice)} />
+          <LabelValue label="Qty" value={formatQuantity(position.quantity)} />
+          <LabelValue label="R" value={formatRMultiple(position.rMultiple || 0)} />
+          {position.stopLoss != null && <LabelValue label="SL" value={formatPrice(position.stopLoss)} />}
+          {position.takeProfit != null && <LabelValue label="TP" value={formatPrice(position.takeProfit)} />}
+        </div>
+      }
+    />
   );
 });
 
@@ -240,25 +193,21 @@ function PerpetualsPage() {
         stats={[
           {
             label: "Open",
-            value: stats?.openCount ?? 0,
-            mono: true,
+            value: String(stats?.openCount ?? 0),
           },
           {
             label: "Unrealized PnL",
             value: `${totalUnrealized >= 0 ? "+" : ""}${totalUnrealized.toFixed(2)}`,
-            mono: true,
             color: totalUnrealized >= 0 ? THEME.green : THEME.red,
           },
           {
             label: "Realized PnL",
             value: `${totalRealized >= 0 ? "+" : ""}${totalRealized.toFixed(2)}`,
-            mono: true,
             color: totalRealized >= 0 ? THEME.green : THEME.red,
           },
           {
             label: "Win Rate",
             value: stats?.winRate != null ? `${stats.winRate}%` : "—",
-            mono: true,
           },
         ]}
       />
@@ -266,10 +215,12 @@ function PerpetualsPage() {
       <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
         {items.length === 0 ? (
           <EmptyState
+            icon={isOpen ? "📊" : "📋"}
+            title={isOpen ? "No Open Positions" : "No Closed Trades"}
             message={
               isOpen
-                ? "No open positions"
-                : "No closed trades"
+                ? "No open perpetual positions at the moment."
+                : "No closed trades to display yet."
             }
           />
         ) : isOpen ? (

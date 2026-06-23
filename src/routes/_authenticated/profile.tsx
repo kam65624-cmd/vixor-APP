@@ -31,7 +31,7 @@ const S = {
   sectionTitle: { fontSize: "13px", fontWeight: 700, color: "#FFFFFF", marginBottom: "14px", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
   card: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", marginBottom: "24px" },
   badgeGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" },
-  badgeItem: { textAlign: "center" as const, padding: "14px 8px", borderRadius: "12px", background: "#1a2035", border: "1px solid rgba(255,255,255,0.04)" },
+  badgeItem: { textAlign: "center" as const, padding: "14px 8px", borderRadius: "12px", background: "#1A1A1A", border: "1px solid rgba(255,255,255,0.04)" },
   badgeItemLocked: { opacity: 0.35 },
   badgeIcon: { fontSize: "28px", marginBottom: "6px" },
   badgeName: { fontSize: "10px", fontWeight: 700, color: "#FFFFFF" },

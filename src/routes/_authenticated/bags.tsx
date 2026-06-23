@@ -129,7 +129,7 @@ const BagCard = memo(function BagCard({ bag }: { bag: BagData }) {
         background: "#1E1E1E", border: "1px solid rgba(255,255,255,0.06)",
         transition: "background 0.1s", cursor: "pointer",
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2438"; }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "#1E1E1E"; }}
       onMouseLeave={(e) => { e.currentTarget.style.background = "#1E1E1E"; }}
     >
       <div className="flex items-center gap-3 min-w-0">

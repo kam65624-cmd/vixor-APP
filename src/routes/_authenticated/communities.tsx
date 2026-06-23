@@ -10,27 +10,13 @@ import {
   EmptyState,
   Badge,
   DataRow,
-  DataRowTwoLine,
   LabelValue,
   SectionTitle,
   THEME,
 } from "@/components/vixor/PageLayout";
 import {
-  formatCurrency,
-  formatPnL,
-  formatCompact,
-  formatPercent,
-  formatPercentRaw,
   formatNumber,
-  formatQuantity,
-  formatRMultiple,
-  formatTimeAgo,
-  formatDateShort,
-  formatDateFull,
   formatRelative,
-  formatPrice,
-  safeDiv,
-  calcPnlPercent,
 } from "@/shared/utils/formatters";
 
 export const Route = createFileRoute("/_authenticated/communities")({
@@ -112,7 +98,7 @@ const StrategyCard = memo(function StrategyCard({
       {/* Middle: pair badges */}
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
         {displayedPairs.map((pair) => (
-          <Badge key={pair} label={pair} color={THEME.blue} />
+          <Badge key={pair} label={pair} color={THEME.accent} />
         ))}
         {morePairs > 0 && (
           <Badge label={`+${morePairs} more`} color={THEME.textMuted} />
@@ -202,7 +188,7 @@ const PostCard = memo(function PostCard({
       {/* Middle: pair badge */}
       {post.pair && (
         <div style={{ marginBottom: 6 }}>
-          <Badge label={post.pair} color={THEME.blue} />
+          <Badge label={post.pair} color={THEME.accent} />
         </div>
       )}
 
@@ -256,7 +242,7 @@ function CommunitiesPage() {
     staleTime: 30_000,
   });
 
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState("Strategies");
 
   const strategyCount = data?.strategyCount ?? 0;
   const postCount = data?.postCount ?? 0;
@@ -269,22 +255,22 @@ function CommunitiesPage() {
     {
       label: "Shared Strategies",
       value: formatNumber(strategyCount),
-      valueColor: THEME.green,
+      color: THEME.green,
     },
     {
       label: "Community Posts",
       value: formatNumber(postCount),
-      valueColor: THEME.blue,
+      color: THEME.accent,
     },
     {
       label: "Active Traders",
       value: formatNumber(activeTraders),
-      valueColor: THEME.amber,
+      color: THEME.amber,
     },
     {
       label: "Total Activity",
       value: formatNumber(totalActivity),
-      valueColor: THEME.purple,
+      color: THEME.purple,
     },
   ];
 
@@ -301,12 +287,12 @@ function CommunitiesPage() {
     >
       <StatsRow stats={stats} />
 
-      {activeTab === 0 && (
+      {activeTab === "Strategies" && (
         <>
-          <SectionTitle label="Strategies" count={strategies.length} />
+          <SectionTitle title="Strategies" count={strategies.length} />
           <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
             {strategies.length === 0 ? (
-              <EmptyState message="No strategies shared yet" />
+              <EmptyState icon="🎯" title="No Strategies" message="No strategies have been shared yet. Be the first to share your trading approach." />
             ) : (
               strategies.map((s) => <StrategyCard key={s.id} strategy={s} />)
             )}
@@ -314,14 +300,14 @@ function CommunitiesPage() {
         </>
       )}
 
-      {activeTab === 1 && (
+      {activeTab === "Activity" && (
         <>
-          <SectionTitle label="Activity" count={posts.length} />
+          <SectionTitle title="Activity" count={posts.length} />
           <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
             {posts.length === 0 ? (
-              <EmptyState message="No community posts yet" />
+              <EmptyState icon="💬" title="No Activity" message="No community posts yet. Share your thoughts and trading ideas." />
             ) : (
-              posts.map((p) => <PostCard key={p.id} post={p} />)
+              posts.map((p: any) => <PostCard key={p.id} post={p} />)
             )}
           </ScrollArea>
         </>

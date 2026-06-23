@@ -46,7 +46,7 @@ function TrackersPage() {
             fontSize: "11px", fontWeight: 700, padding: "6px 14px", borderRadius: "6px",
             border: "none", cursor: "pointer",
             color: activeTab === i ? "#fff" : "#9CA3AF",
-            background: activeTab === i ? "#1e2438" : "transparent",
+            background: activeTab === i ? "#1E1E1E" : "transparent",
           }}>{t} ({activeTab === 0 ? items.length : alerts.length})</button>
         ))}
       </div>

@@ -48,7 +48,7 @@ const S = {
   addBtn: { padding: "10px 18px", borderRadius: "10px", border: "none", cursor: "pointer", background: "linear-gradient(135deg, #10B981, #059669)", color: "#fff", fontSize: "12px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", display: "flex", alignItems: "center", gap: "6px" },
   tabs: { display: "flex", gap: "4px", marginBottom: "20px", background: "#1E1E1E", borderRadius: "10px", padding: "4px", border: "1px solid rgba(255,255,255,0.06)", width: "fit-content" },
   tab: { fontSize: "12px", fontWeight: 600, padding: "8px 16px", borderRadius: "8px", border: "none", cursor: "pointer", color: "#9CA3AF", background: "transparent", fontFamily: "'Inter', system-ui, sans-serif" },
-  tabActive: { background: "#1e2438", color: "#FFFFFF" },
+  tabActive: { background: "#1E1E1E", color: "#FFFFFF" },
   summaryGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" },
   summaryCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px" },
   summaryLabel: { fontSize: "10px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "6px" },
@@ -199,7 +199,7 @@ function JournalPage() {
               disabled={createMutation.isPending}
               style={{
                 padding: "8px 20px", borderRadius: 8, border: "none", cursor: createMutation.isPending ? "wait" : "pointer",
-                background: createMutation.isPending ? "#1e2438" : "linear-gradient(135deg, #10B981, #059669)",
+                background: createMutation.isPending ? "#1E1E1E" : "linear-gradient(135deg, #10B981, #059669)",
                 color: "#fff", fontSize: 12, fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif",
               }}
             >

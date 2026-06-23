@@ -10,28 +10,15 @@ import {
   EmptyState,
   Badge,
   DataRow,
-  DataRowTwoLine,
   LabelValue,
   SectionTitle,
   ProgressBar,
   THEME,
 } from "@/components/vixor/PageLayout";
 import {
-  formatCurrency,
-  formatPnL,
-  formatCompact,
-  formatPercent,
-  formatPercentRaw,
   formatNumber,
-  formatQuantity,
-  formatRMultiple,
-  formatTimeAgo,
-  formatDateShort,
-  formatDateFull,
+  formatPercentRaw,
   formatRelative,
-  formatPrice,
-  safeDiv,
-  calcPnlPercent,
 } from "@/shared/utils/formatters";
 
 export const Route = createFileRoute("/_authenticated/predictions")({
@@ -106,7 +93,7 @@ const PredictionCard = memo(function PredictionCard({
           />
           <Badge
             label={formatPercentRaw(prediction.confidence)}
-            color={THEME.blue}
+            color={THEME.accent}
           />
           {prediction.pattern && (
             <Badge label={prediction.pattern} color={THEME.purple} />
@@ -178,22 +165,22 @@ function PredictionsPage() {
     {
       label: "Total Predictions",
       value: formatNumber(totalPredictions),
-      valueColor: THEME.text,
+      color: THEME.text,
     },
     {
       label: "BUY Predictions",
       value: formatNumber(buyPredictions),
-      valueColor: THEME.green,
+      color: THEME.green,
     },
     {
       label: "SELL Predictions",
       value: formatNumber(sellPredictions),
-      valueColor: THEME.red,
+      color: THEME.red,
     },
     {
       label: "Avg Confidence",
       value: formatPercentRaw(avgConfidence),
-      valueColor: THEME.blue,
+      color: THEME.accent,
     },
   ];
 
@@ -213,13 +200,13 @@ function PredictionsPage() {
         labelRight={formatPercentRaw(accuracy)}
       />
 
-      <SectionTitle label="All Predictions" count={predictions.length} />
+      <SectionTitle title="All Predictions" count={predictions.length} />
 
       <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
         {predictions.length === 0 ? (
-          <EmptyState message="No predictions yet" />
+          <EmptyState icon="🔮" title="No Predictions" message="AI predictions will appear as market patterns are detected." />
         ) : (
-          predictions.map((p) => <PredictionCard key={p.id} prediction={p} />)
+          predictions.map((p: any) => <PredictionCard key={p.id} prediction={p} />)
         )}
       </ScrollArea>
     </PageLayout>

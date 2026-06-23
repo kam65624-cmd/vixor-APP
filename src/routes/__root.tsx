@@ -109,7 +109,7 @@ function ErrorView({ error, onReset }: { error: Error | null; onReset: () => voi
           </button>
           <Link
             to="/"
-            style={{ padding: "10px 24px", borderRadius: "8px", background: "#1a2035", border: "1px solid rgba(255,255,255,0.06)", color: "#FFFFFF", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}
+            style={{ padding: "10px 24px", borderRadius: "8px", background: "#1A1A1A", border: "1px solid rgba(255,255,255,0.06)", color: "#FFFFFF", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}
           >
             Go Home
           </Link>
@@ -145,7 +145,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "icon",
         type: "image/svg+xml",
-        href: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Crect width='32' height='32' rx='8' fill='%2308090C'/%3E%3Cpath d='M6 6v20h20' stroke='%236366f1' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M11 18l4-4 4 4 5-5' stroke='%236366f1' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
+        href: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Crect width='32' height='32' rx='8' fill='%23121212'/%3E%3Cpath d='M6 6v20h20' stroke='%2310B981' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M11 18l4-4 4 4 5-5' stroke='%2310B981' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
       },
       { rel: "alternate icon", type: "image/x-icon", href: "/favicon.ico" },
     ],

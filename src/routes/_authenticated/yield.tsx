@@ -10,7 +10,6 @@ import {
   EmptyState,
   Badge,
   DataRow,
-  DataRowTwoLine,
   LabelValue,
   SectionTitle,
   THEME,
@@ -18,19 +17,11 @@ import {
 import {
   formatCurrency,
   formatPnL,
-  formatCompact,
-  formatPercent,
   formatPercentRaw,
-  formatNumber,
-  formatQuantity,
-  formatRMultiple,
-  formatTimeAgo,
-  formatDateShort,
-  formatDateFull,
-  formatRelative,
   formatPrice,
-  safeDiv,
-  calcPnlPercent,
+  formatRMultiple,
+  formatDateFull,
+  formatQuantity,
 } from "@/shared/utils/formatters";
 
 export const Route = createFileRoute("/_authenticated/yield")({
@@ -166,23 +157,23 @@ function YieldPage() {
     {
       label: "Total Yield",
       value: formatCurrency(totalYield),
-      valueColor: totalYield >= 0 ? THEME.green : THEME.red,
+      color: totalYield >= 0 ? THEME.green : THEME.red,
     },
     {
       label: "Avg Yield/Trade",
       value: formatCurrency(avgYield),
-      valueColor: avgYield >= 0 ? THEME.green : THEME.red,
+      color: avgYield >= 0 ? THEME.green : THEME.red,
     },
     {
       label: "Best Yield",
       value: bestTrade ? formatCurrency(bestTrade.yield) : "$0.00",
-      valueColor: THEME.green,
+      color: THEME.green,
       sub: bestTrade?.pair ?? undefined,
     },
     {
       label: "Yield Trades",
       value: `${yieldCount}/${totalClosed}`,
-      valueColor: THEME.blue,
+      color: THEME.accent,
     },
   ];
 
@@ -196,13 +187,13 @@ function YieldPage() {
     >
       <StatsRow stats={stats} />
 
-      <SectionTitle label="Yield Positions" count={positions.length} />
+      <SectionTitle title="Yield Positions" count={positions.length} />
 
       <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
         {positions.length === 0 ? (
-          <EmptyState message="No yield positions yet" />
+          <EmptyState icon="📊" title="No Yield Data" message="No yield positions yet. Start trading to see your yield performance." />
         ) : (
-          positions.map((p) => <YieldCard key={p.id} position={p} />)
+          positions.map((p: any) => <YieldCard key={p.id} position={p} />)
         )}
       </ScrollArea>
     </PageLayout>

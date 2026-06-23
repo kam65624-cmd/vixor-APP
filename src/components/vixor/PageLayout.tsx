@@ -51,8 +51,8 @@ export const THEME = {
   // Semantic colors
   green: "#10B981",
   red: "#EF4444",
-  blue: "#34D399",
-  blueDeep: "#10B981",
+  accent: "#34D399",
+  accentDeep: "#10B981",
   amber: "#F59E0B",
   purple: "#8B5CF6",
   pink: "#EC4899",
@@ -91,14 +91,14 @@ interface PageLayoutProps {
 export function PageLayout({
   title,
   badge,
-  badgeColor = THEME.blue,
+  badgeColor = THEME.accent,
   description,
   tabs,
   activeTab,
   onTabChange,
   tabCounts,
   loading = false,
-  loadingColor = THEME.blue,
+  loadingColor = THEME.accent,
   children,
   banner,
 }: PageLayoutProps) {
@@ -200,7 +200,7 @@ export function PageLayout({
                   whiteSpace: "nowrap",
                   transition: "all 0.15s ease",
                   borderBottom: isActive
-                    ? `2px solid ${THEME.blue}`
+                    ? `2px solid ${THEME.accent}`
                     : "2px solid transparent",
                   marginBottom: "-1px",
                 }}
@@ -382,7 +382,7 @@ export function SectionTitle({
           style={{
             fontSize: "10px",
             fontWeight: 600,
-            color: THEME.blue,
+            color: THEME.accent,
             background: "none",
             border: "none",
             cursor: "pointer",
@@ -821,13 +821,13 @@ export function ProfileCard({
           width: "38px",
           height: "38px",
           borderRadius: "50%",
-          background: `${THEME.blue}15`,
+          background: `${THEME.accent}15`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontSize: "16px",
           fontWeight: 800,
-          color: THEME.blue,
+          color: THEME.accent,
           flexShrink: 0,
         }}
       >
@@ -858,7 +858,7 @@ export function ProfileCard({
       <div style={{ display: "flex", gap: "16px" }}>
         <MiniStat label="XP" value={String(xp ?? 0)} color={THEME.amber} />
         <MiniStat label="Streak" value={`${streak ?? 0}d`} color={THEME.pink} />
-        <MiniStat label="Trades" value={String(tradeCount ?? 0)} color={THEME.blue} />
+        <MiniStat label="Trades" value={String(tradeCount ?? 0)} color={THEME.accent} />
       </div>
     </div>
   );

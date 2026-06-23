@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 const C = {
-  bg: "#121212", surface: "#1E1E1E", surfaceLight: "#1a2035", surfaceHover: "#1e2438",
+  bg: "#121212", surface: "#1E1E1E", surfaceLight: "#1A1A1A", surfaceHover: "#1E1E1E",
   border: "rgba(255,255,255,0.06)", borderLight: "rgba(255,255,255,0.04)",
   text: "#FFFFFF", textSecondary: "#9CA3AF", textTertiary: "#6B7280",
   blue: "#10B981", blueLight: "#34D399", green: "#22C55E", red: "#EF4444",

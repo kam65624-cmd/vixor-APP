@@ -20,7 +20,7 @@ const S = {
   codeCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", marginBottom: "24px" },
   codeLabel: { fontSize: "11px", fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "10px" },
   codeRow: { display: "flex", alignItems: "center", gap: "10px" },
-  codeBox: { flex: 1, background: "#1a2035", borderRadius: "10px", padding: "14px 18px", fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", fontSize: "16px", fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.1em", border: "1px solid rgba(255,255,255,0.06)" },
+  codeBox: { flex: 1, background: "#1A1A1A", borderRadius: "10px", padding: "14px 18px", fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", fontSize: "16px", fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.1em", border: "1px solid rgba(255,255,255,0.06)" },
   copyBtn: { padding: "14px 20px", borderRadius: "10px", border: "none", cursor: "pointer", background: "rgba(16,185,129,0.15)", color: "#34D399", fontSize: "12px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", whiteSpace: "nowrap" as const },
   shareBtn: { width: "100%", padding: "14px", borderRadius: "10px", border: "none", cursor: "pointer", background: "linear-gradient(135deg, #10B981, #059669)", color: "#fff", fontSize: "13px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", marginTop: "12px" },
   statsGrid: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "24px" },

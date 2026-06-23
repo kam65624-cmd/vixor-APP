@@ -84,13 +84,13 @@ function AlphaPage() {
           {
             label: "Avg Confidence",
             value: formatPercentRaw(stats.avgConfidence),
-            color: THEME.blue,
+            color: THEME.accent,
           },
           {
             label: "Top Confidence",
             value: formatPercentRaw(stats.highestConfidence),
             color: THEME.pink,
-            sub: stats.highestConfidencePair,
+            sub: stats.highestConfidencePair ?? undefined,
           },
         ]}
       />
@@ -131,7 +131,7 @@ function formatTP(tp: number | number[] | undefined): string {
 
 const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
   const isSignal = item.source === "signal";
-  const badgeColor = isSignal ? THEME.blue : THEME.purple;
+  const badgeColor = isSignal ? THEME.accent : THEME.purple;
   const confidencePct = item.confidence || 0;
   const confidenceColor =
     confidencePct >= 80
@@ -206,7 +206,6 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
       <ProgressBar
         value={confidencePct}
         color={confidenceColor}
-        style={{ marginBottom: "6px" }}
       />
 
       {/* Bottom row: entry, SL, TP */}

@@ -10,31 +10,17 @@ import {
   EmptyState,
   Badge,
   DataRow,
-  DataRowTwoLine,
   LabelValue,
-  MiniBar,
   SectionTitle,
-  ProgressBar,
-  TableHeader,
   ProfileCard,
   THEME,
 } from "@/components/vixor/PageLayout";
 import {
   formatCurrency,
   formatPnL,
-  formatCompact,
-  formatPercent,
-  formatPercentRaw,
   formatNumber,
   formatQuantity,
-  formatRMultiple,
-  formatTimeAgo,
-  formatDateShort,
-  formatDateFull,
-  formatRelative,
   formatPrice,
-  safeDiv,
-  calcPnlPercent,
 } from "@/shared/utils/formatters";
 
 export const Route = createFileRoute("/_authenticated/wallet-web3")({
@@ -43,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/wallet-web3")({
 
 const TOKEN_COLORS = [
   THEME.green,
-  THEME.blue,
+  THEME.accent,
   THEME.purple,
   THEME.amber,
   THEME.pink,
@@ -244,7 +230,7 @@ function WalletWeb3Page() {
     staleTime: 30_000,
   });
 
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState("Holdings");
 
   const profile = data?.profile ?? null;
   const totalPortfolioValue = data?.totalPortfolioValue ?? 0;
@@ -258,22 +244,22 @@ function WalletWeb3Page() {
     {
       label: "Portfolio Value",
       value: formatCurrency(totalPortfolioValue),
-      valueColor: THEME.text,
+      color: THEME.text,
     },
     {
       label: "Total PnL",
       value: formatPnL(totalPnl),
-      valueColor: totalPnl >= 0 ? THEME.green : THEME.red,
+      color: totalPnl >= 0 ? THEME.green : THEME.red,
     },
     {
       label: "Tokens Traded",
       value: formatNumber(tokens.length),
-      valueColor: THEME.blue,
+      color: THEME.accent,
     },
     {
       label: "Active Trades",
       value: `${activeTrades}/${totalTrades}`,
-      valueColor: THEME.amber,
+      color: THEME.amber,
     },
   ];
 
@@ -281,7 +267,7 @@ function WalletWeb3Page() {
     <PageLayout
       title="Wallet"
       badge="WEB3"
-      badgeColor={THEME.blue}
+      badgeColor={THEME.accent}
       description="Web3 portfolio holdings and transaction history"
       tabs={["Holdings", "Transactions"]}
       activeTab={activeTab}
@@ -290,24 +276,22 @@ function WalletWeb3Page() {
     >
       {profile && (
         <ProfileCard
-          displayName={profile.display_name}
-          username={profile.username}
-          xp={profile.xp}
-          streak={profile.streak_days}
-          extraStats={[
-            { label: "Trades", value: formatNumber(totalTrades) },
-          ]}
+          displayName={profile.display_name ?? undefined}
+          username={profile.username ?? undefined}
+          xp={profile.xp ?? undefined}
+          streak={profile.streak_days ?? undefined}
+
         />
       )}
 
       <StatsRow stats={stats} />
 
-      {activeTab === 0 && (
+      {activeTab === "Holdings" && (
         <>
-          <SectionTitle label="Token Holdings" count={tokens.length} />
+          <SectionTitle title="Token Holdings" count={tokens.length} />
           <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
             {tokens.length === 0 ? (
-              <EmptyState message="No token holdings" />
+              <EmptyState icon="💰" title="No Holdings" message="No token holdings found. Connect a wallet to see your portfolio." />
             ) : (
               tokens.map((t) => <TokenCard key={t.symbol} token={t} />)
             )}
@@ -315,14 +299,14 @@ function WalletWeb3Page() {
         </>
       )}
 
-      {activeTab === 1 && (
+      {activeTab === "Transactions" && (
         <>
-          <SectionTitle label="Recent Transactions" count={recentTransactions.length} />
+          <SectionTitle title="Recent Transactions" count={recentTransactions.length} />
           <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
             {recentTransactions.length === 0 ? (
-              <EmptyState message="No transactions yet" />
+              <EmptyState icon="📋" title="No Transactions" message="No transaction history found. Start trading to see your activity." />
             ) : (
-              recentTransactions.map((tx) => <TxnCard key={tx.id} txn={tx} />)
+              recentTransactions.map((tx: any) => <TxnCard key={tx.id} txn={tx} />)
             )}
           </ScrollArea>
         </>

@@ -306,7 +306,7 @@ function AdminApiKeysPage() {
                           textAlign: "right",
                           fontFamily: "monospace",
                           fontSize: "10px",
-                          color: key.configured ? "#9CA3AF" : "#2D3748",
+                          color: key.configured ? "#9CA3AF" : "#6B7280",
                         }}
                       >
                         {key.maskedValue || "\u2014"}

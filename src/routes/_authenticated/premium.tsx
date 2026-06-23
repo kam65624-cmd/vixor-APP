@@ -81,7 +81,7 @@ function PremiumPage() {
             const features = Array.isArray((plan as any).features) ? (plan as any).features as string[] : [];
             return (
               <div key={plan.id} style={{
-                background: isCurrent ? "#1a2035" : "#1E1E1E",
+                background: isCurrent ? "#1A1A1A" : "#1E1E1E",
                 borderRadius: "16px", border: `1px solid ${isCurrent ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)"}`,
                 padding: "24px", position: "relative", overflow: "hidden",
               }}>

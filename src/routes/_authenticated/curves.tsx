@@ -74,7 +74,7 @@ function CurvesPage() {
           {
             label: "Unique Pairs",
             value: String(stats.uniquePairs),
-            color: THEME.blue,
+            color: THEME.accent,
           },
           {
             label: "Most Traded",

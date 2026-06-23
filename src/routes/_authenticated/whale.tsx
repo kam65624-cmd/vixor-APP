@@ -58,7 +58,7 @@ function WhalePage() {
           {
             label: "24h Volume",
             value: formatCompact(stats.volume24h),
-            color: THEME.blue,
+            color: THEME.accent,
           },
           {
             label: "Large Trades",

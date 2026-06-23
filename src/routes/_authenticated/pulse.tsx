@@ -28,7 +28,7 @@ type Tab = (typeof TABS)[number];
 
 const PulseRow = memo(function PulseRow({ item }: { item: any }) {
   const isTrade = item.type === "trade";
-  const typeColor = isTrade ? THEME.blue : THEME.purple;
+  const typeColor = isTrade ? THEME.accent : THEME.purple;
   const actionColor =
     item.action === "BOUGHT" || item.action === "BUY"
       ? THEME.green
@@ -182,13 +182,11 @@ function PulsePage() {
         stats={[
           {
             label: "Trades Today",
-            value: stats?.tradesToday ?? 0,
-            mono: true,
+            value: String(stats?.tradesToday ?? 0),
           },
           {
             label: "Signals Today",
-            value: stats?.signalsToday ?? 0,
-            mono: true,
+            value: String(stats?.signalsToday ?? 0),
           },
           {
             label: "Most Active",
@@ -196,15 +194,14 @@ function PulsePage() {
           },
           {
             label: "Total Trades",
-            value: stats?.totalTrades ?? 0,
-            mono: true,
+            value: String(stats?.totalTrades ?? 0),
           },
         ]}
       />
 
       <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
         {filtered.length === 0 ? (
-          <EmptyState message="No activity yet" />
+          <EmptyState icon="📡" title="No Activity" message="No trades or signals detected yet. Activity will appear here in real-time." />
         ) : (
           filtered.map((item: any) => (
             <PulseRow key={item.id} item={item} />

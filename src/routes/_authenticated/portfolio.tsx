@@ -80,7 +80,7 @@ function PortfolioPage() {
               <button key={t} onClick={() => setActiveTab(t)} style={{
                 fontSize: "12px", fontWeight: 600, padding: "8px 16px", borderRadius: "8px", border: "none",
                 cursor: "pointer", color: activeTab === t ? "#FFFFFF" : "#9CA3AF",
-                background: activeTab === t ? "#1e2438" : "transparent",
+                background: activeTab === t ? "#1E1E1E" : "transparent",
                 fontFamily: "'Inter', system-ui, sans-serif",
               }}>{t === "holdings" ? "Holdings" : "History"}</button>
             ))}
