@@ -1,222 +1,331 @@
+import { memo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { memo } from "react";
-import { getCommunitiesData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getCommunitiesData } from "@/shared/data";
+import {
+  PageLayout,
+  StatsRow,
+  ScrollArea,
+  EmptyState,
+  Badge,
+  DataRow,
+  DataRowTwoLine,
+  LabelValue,
+  SectionTitle,
+  THEME,
+} from "@/components/vixor/PageLayout";
+import {
+  formatCurrency,
+  formatPnL,
+  formatCompact,
+  formatPercent,
+  formatPercentRaw,
+  formatNumber,
+  formatQuantity,
+  formatRMultiple,
+  formatTimeAgo,
+  formatDateShort,
+  formatDateFull,
+  formatRelative,
+  formatPrice,
+  safeDiv,
+  calcPnlPercent,
+} from "@/shared/utils/formatters";
 
 export const Route = createFileRoute("/_authenticated/communities")({
-  head: () => ({ meta: [{ title: "Communities — Vixor" }] }),
   component: CommunitiesPage,
 });
 
-function CommunitiesPage() {
-  const fetchData = useStableServerFn(getCommunitiesData);
-
-  const query = useQuery({
-    queryKey: ["communities-data"],
-    queryFn: () => fetchData({}),
-    staleTime: 30_000,
-  });
-
-  const d = query.data;
-  const isLoading = query.isLoading;
-
-  const stats = [
-    { label: "Shared Strategies", value: String(d?.strategyCount ?? 0), color: "#8B5CF6" },
-    { label: "Community Posts", value: String(d?.postCount ?? 0), color: "#3B82F6" },
-    { label: "Active Traders", value: String(d?.activeTraders ?? 0), color: "#22C55E" },
-    { label: "Total Activity", value: String((d?.strategyCount ?? 0) + (d?.postCount ?? 0)), color: "#EC4899" },
-  ];
-
-  return (
-    <div style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%", padding: "20px" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-        <h1 style={{ fontSize: "22px", fontWeight: 700, margin: 0 }}>Communities</h1>
-        <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ background: "rgba(59,130,246,0.15)", color: "#3B82F6" }}>COMMUNITY HUB</span>
-      </div>
-      <p style={{ fontSize: "12px", color: "#7B8BA8", marginTop: "4px", marginBottom: "20px" }}>
-        Community strategies and trading discussions. Share insights and learn from collective trading activity.
-      </p>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        </div>
-      ) : (
-        <>
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            {stats.map((s) => (
-              <div key={s.label} style={{ background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px" }}>
-                <div style={{ fontSize: "10px", fontWeight: 600, color: "#4A5568", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>{s.label}</div>
-                <div style={{ fontSize: "22px", fontWeight: 800, fontFamily: "monospace", color: s.color }}>{s.value}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Two-column layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Strategies */}
-            <div>
-              <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Community Strategies
-                <span style={{ fontSize: "11px", fontWeight: 500, color: "#4A5568", marginLeft: "8px" }}>
-                  ({d?.strategyCount ?? 0})
-                </span>
-              </div>
-              {(d?.strategies ?? []).length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "480px", overflowY: "auto" }}>
-                  {d!.strategies.map((s: any) => (
-                    <StrategyCard key={s.id} strategy={s} />
-                  ))}
-                </div>
-              ) : (
-                <div style={{ background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "36px", textAlign: "center" }}>
-                  <div style={{ fontSize: "28px", marginBottom: "10px", opacity: 0.5 }}>📋</div>
-                  <div style={{ fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>No strategies yet</div>
-                  <div style={{ fontSize: "11px", color: "#7B8BA8" }}>Create trading strategies to share with the community.</div>
-                </div>
-              )}
-            </div>
-
-            {/* Community Posts / Discussions */}
-            <div>
-              <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Community Activity
-                <span style={{ fontSize: "11px", fontWeight: 500, color: "#4A5568", marginLeft: "8px" }}>
-                  ({d?.postCount ?? 0})
-                </span>
-              </div>
-              {(d?.posts ?? []).length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "480px", overflowY: "auto" }}>
-                  {d!.posts.map((p: any) => (
-                    <PostCard key={p.id} post={p} />
-                  ))}
-                </div>
-              ) : (
-                <div style={{ background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "36px", textAlign: "center" }}>
-                  <div style={{ fontSize: "28px", marginBottom: "10px", opacity: 0.5 }}>💬</div>
-                  <div style={{ fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>No community activity yet</div>
-                  <div style={{ fontSize: "11px", color: "#7B8BA8" }}>Write journal entries to contribute to the community feed.</div>
-                </div>
-              )}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
 const moodConfig: Record<string, { emoji: string; color: string; label: string }> = {
-  confident: { emoji: "💪", color: "#22C55E", label: "Confident" },
-  cautious: { emoji: "⚠️", color: "#F59E0B", label: "Cautious" },
-  anxious: { emoji: "😰", color: "#EF4444", label: "Anxious" },
-  neutral: { emoji: "😐", color: "#7B8BA8", label: "Neutral" },
+  confident: { emoji: "\uD83D\uDCAA", color: THEME.green, label: "Confident" },
+  cautious: { emoji: "\u26A0\uFE0F", color: THEME.amber, label: "Cautious" },
+  anxious: { emoji: "\uD83D\uDE30", color: THEME.red, label: "Anxious" },
+  neutral: { emoji: "\uD83D\uDE10", color: THEME.textSecondary, label: "Neutral" },
 };
 
 const riskConfig: Record<string, { color: string }> = {
-  low: { color: "#22C55E" },
-  medium: { color: "#F59E0B" },
-  high: { color: "#EF4444" },
+  low: { color: THEME.green },
+  medium: { color: THEME.amber },
+  high: { color: THEME.red },
 };
 
-const StrategyCard = memo(function StrategyCard({ strategy }: { strategy: any }) {
-  const risk = riskConfig[strategy.riskTolerance] || { color: "#7B8BA8" };
+const StrategyCard = memo(function StrategyCard({
+  strategy,
+}: {
+  strategy: {
+    id: string;
+    name: string;
+    tradingStyle: string;
+    pairs: string[];
+    timeframes: string[];
+    riskTolerance: string;
+    isActive: boolean;
+    createdAt: string;
+  };
+}) {
+  const displayedPairs = strategy.pairs.slice(0, 5);
+  const morePairs = strategy.pairs.length - 5;
+  const riskColor = riskConfig[strategy.riskTolerance]?.color ?? THEME.textSecondary;
 
   return (
-    <div style={{ background: "#1a2035", borderRadius: "12px", border: "1px solid rgba(139,92,246,0.1)", padding: "16px", transition: "border-color 0.15s", cursor: "pointer" }}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(139,92,246,0.25)")}
-      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(139,92,246,0.1)")}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-        <div>
-          <div style={{ fontSize: "14px", fontWeight: 700, marginBottom: "2px" }}>{strategy.name || "Untitled Strategy"}</div>
-          <div style={{ fontSize: "10px", color: "#7B8BA8" }}>{strategy.tradingStyle || "—"} style</div>
-        </div>
-        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+    <DataRow>
+      {/* Top: name + tradingStyle + badges */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 8,
+          flexWrap: "wrap",
+          gap: 6,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: THEME.text,
+            }}
+          >
+            {strategy.name}
+          </span>
+          <span
+            style={{
+              fontSize: 12,
+              color: THEME.textSecondary,
+            }}
+          >
+            {strategy.tradingStyle}
+          </span>
           {strategy.isActive && (
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.12)", color: "#22C55E" }}>ACTIVE</span>
+            <Badge label="ACTIVE" color={THEME.green} />
           )}
-          {strategy.riskTolerance && (
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${risk.color}15`, color: risk.color }}>{strategy.riskTolerance.toUpperCase()}</span>
-          )}
+          <Badge
+            label={strategy.riskTolerance.toUpperCase()}
+            color={riskColor}
+          />
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "10px" }}>
-        {strategy.pairs.slice(0, 5).map((pair: string) => (
-          <span key={pair} className="text-[9px] font-semibold px-1.5 py-0.5 rounded" style={{ background: "rgba(59,130,246,0.1)", color: "#3B82F6" }}>
-            {pair}
-          </span>
+      {/* Middle: pair badges */}
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
+        {displayedPairs.map((pair) => (
+          <Badge key={pair} label={pair} color={THEME.blue} />
         ))}
-        {strategy.pairs.length > 5 && (
-          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded" style={{ background: "rgba(255,255,255,0.06)", color: "#7B8BA8" }}>
-            +{strategy.pairs.length - 5} more
-          </span>
+        {morePairs > 0 && (
+          <Badge label={`+${morePairs} more`} color={THEME.textMuted} />
         )}
       </div>
 
-      <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-        {strategy.timeframes.map((tf: string) => (
-          <span key={tf} className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: "rgba(245,158,11,0.08)", color: "#F59E0B" }}>
-            {tf}
-          </span>
-        ))}
-      </div>
-
-      <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid rgba(255,255,255,0.04)", fontSize: "10px", color: "#4A5568" }}>
-        {new Date(strategy.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-      </div>
-    </div>
-  );
-});
-
-const PostCard = memo(function PostCard({ post }: { post: any }) {
-  const mood = moodConfig[post.mood] || moodConfig.neutral;
-  const truncated = post.content.length > 140 ? post.content.slice(0, 140) + "..." : post.content;
-
-  return (
-    <div style={{ background: "#1e2438", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "16px", transition: "border-color 0.15s", cursor: "pointer" }}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
-      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)")}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-        <div style={{ fontSize: "13px", fontWeight: 700, lineHeight: 1.3, flex: 1, marginRight: "8px" }}>
-          {post.title || "Untitled Note"}
-          {post.isPinned && (
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded ml-2" style={{ background: "rgba(245,158,11,0.12)", color: "#F59E0B" }}>PINNED</span>
-          )}
-        </div>
-        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ background: `${mood.color}15`, color: mood.color }}>
-          {mood.emoji} {mood.label}
-        </span>
-      </div>
-
-      {post.pair && (
-        <div style={{ marginBottom: "6px" }}>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(139,92,246,0.12)", color: "#8B5CF6" }}>{post.pair}</span>
-        </div>
-      )}
-
-      <div style={{ fontSize: "11px", color: "#7B8BA8", lineHeight: 1.5, marginBottom: "10px" }}>
-        {truncated}
-      </div>
-
-      {post.tags.length > 0 && (
-        <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginBottom: "8px" }}>
-          {post.tags.slice(0, 4).map((tag: string) => (
-            <span key={tag} className="text-[8px] font-semibold px-1.5 py-0.5 rounded" style={{ background: "rgba(255,255,255,0.06)", color: "#7B8BA8" }}>
-              #{tag}
-            </span>
+      {/* Bottom: timeframe badges + date */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {strategy.timeframes.map((tf) => (
+            <Badge key={tf} label={tf} color={THEME.purple} />
           ))}
         </div>
-      )}
-
-      <div style={{ fontSize: "10px", color: "#4A5568" }}>
-        {new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+        <span
+          style={{
+            fontSize: 11,
+            color: THEME.textMuted,
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            flexShrink: 0,
+          }}
+        >
+          {formatRelative(strategy.createdAt)}
+        </span>
       </div>
-    </div>
+    </DataRow>
   );
 });
+
+const PostCard = memo(function PostCard({
+  post,
+}: {
+  post: {
+    id: string;
+    title: string;
+    content: string;
+    mood: "confident" | "cautious" | "anxious" | "neutral";
+    pair: string;
+    tags: string[];
+    isPinned: boolean;
+    createdAt: string;
+  };
+}) {
+  const mood = moodConfig[post.mood] ?? moodConfig.neutral;
+  const truncatedContent =
+    post.content.length > 140
+      ? post.content.slice(0, 140) + "…"
+      : post.content;
+
+  return (
+    <DataRow>
+      {/* Top: title + mood badge + pinned badge */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 6,
+          gap: 8,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: THEME.text,
+            }}
+          >
+            {post.title}
+          </span>
+          <Badge
+            label={`${mood.emoji} ${mood.label}`}
+            color={mood.color}
+          />
+          {post.isPinned && (
+            <Badge label="PINNED" color={THEME.amber} />
+          )}
+        </div>
+      </div>
+
+      {/* Middle: pair badge */}
+      {post.pair && (
+        <div style={{ marginBottom: 6 }}>
+          <Badge label={post.pair} color={THEME.blue} />
+        </div>
+      )}
+
+      {/* Content: truncated text */}
+      <div
+        style={{
+          fontSize: 13,
+          color: THEME.textSecondary,
+          lineHeight: 1.5,
+          marginBottom: 8,
+        }}
+      >
+        {truncatedContent}
+      </div>
+
+      {/* Bottom: tag badges + date */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 6,
+        }}
+      >
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {post.tags.map((tag) => (
+            <Badge key={tag} label={tag} color={THEME.purple} />
+          ))}
+        </div>
+        <span
+          style={{
+            fontSize: 11,
+            color: THEME.textMuted,
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            flexShrink: 0,
+          }}
+        >
+          {formatRelative(post.createdAt)}
+        </span>
+      </div>
+    </DataRow>
+  );
+});
+
+function CommunitiesPage() {
+  const getFn = useStableServerFn(getCommunitiesData);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["communitiesData"],
+    queryFn: getFn,
+    staleTime: 30_000,
+  });
+
+  const [activeTab, setActiveTab] = useState(0);
+
+  const strategyCount = data?.strategyCount ?? 0;
+  const postCount = data?.postCount ?? 0;
+  const activeTraders = data?.activeTraders ?? 0;
+  const strategies = data?.strategies ?? [];
+  const posts = data?.posts ?? [];
+  const totalActivity = strategyCount + postCount;
+
+  const stats = [
+    {
+      label: "Shared Strategies",
+      value: formatNumber(strategyCount),
+      valueColor: THEME.green,
+    },
+    {
+      label: "Community Posts",
+      value: formatNumber(postCount),
+      valueColor: THEME.blue,
+    },
+    {
+      label: "Active Traders",
+      value: formatNumber(activeTraders),
+      valueColor: THEME.amber,
+    },
+    {
+      label: "Total Activity",
+      value: formatNumber(totalActivity),
+      valueColor: THEME.purple,
+    },
+  ];
+
+  return (
+    <PageLayout
+      title="Communities"
+      badge="COMMUNITY"
+      badgeColor={THEME.purple}
+      description="Shared trading strategies and community activity"
+      tabs={["Strategies", "Activity"]}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      loading={isLoading}
+    >
+      <StatsRow stats={stats} />
+
+      {activeTab === 0 && (
+        <>
+          <SectionTitle label="Strategies" count={strategies.length} />
+          <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
+            {strategies.length === 0 ? (
+              <EmptyState message="No strategies shared yet" />
+            ) : (
+              strategies.map((s) => <StrategyCard key={s.id} strategy={s} />)
+            )}
+          </ScrollArea>
+        </>
+      )}
+
+      {activeTab === 1 && (
+        <>
+          <SectionTitle label="Activity" count={posts.length} />
+          <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
+            {posts.length === 0 ? (
+              <EmptyState message="No community posts yet" />
+            ) : (
+              posts.map((p) => <PostCard key={p.id} post={p} />)
+            )}
+          </ScrollArea>
+        </>
+      )}
+    </PageLayout>
+  );
+}

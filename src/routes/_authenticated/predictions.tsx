@@ -1,159 +1,227 @@
+import { memo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { memo } from "react";
-import { getPredictionsData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getPredictionsData } from "@/shared/data";
+import {
+  PageLayout,
+  StatsRow,
+  ScrollArea,
+  EmptyState,
+  Badge,
+  DataRow,
+  DataRowTwoLine,
+  LabelValue,
+  SectionTitle,
+  ProgressBar,
+  THEME,
+} from "@/components/vixor/PageLayout";
+import {
+  formatCurrency,
+  formatPnL,
+  formatCompact,
+  formatPercent,
+  formatPercentRaw,
+  formatNumber,
+  formatQuantity,
+  formatRMultiple,
+  formatTimeAgo,
+  formatDateShort,
+  formatDateFull,
+  formatRelative,
+  formatPrice,
+  safeDiv,
+  calcPnlPercent,
+} from "@/shared/utils/formatters";
 
 export const Route = createFileRoute("/_authenticated/predictions")({
-  head: () => ({ meta: [{ title: "Predictions — Vixor" }] }),
   component: PredictionsPage,
 });
 
-function PredictionsPage() {
-  const fetchData = useStableServerFn(getPredictionsData);
+const riskConfig: Record<string, { color: string }> = {
+  low: { color: THEME.green },
+  medium: { color: THEME.amber },
+  high: { color: THEME.red },
+};
 
-  const query = useQuery({
-    queryKey: ["predictions-data"],
-    queryFn: () => fetchData({}),
+const PredictionCard = memo(function PredictionCard({
+  prediction,
+}: {
+  prediction: {
+    id: string;
+    pair: string;
+    predictedDirection: "BUY" | "SELL";
+    confidence: number;
+    pattern: string;
+    trend: string;
+    timeframe: string;
+    riskLevel: "low" | "medium" | "high";
+    source: "analysis" | "signal";
+    reasons: string[];
+    correct: boolean | null;
+    createdAt: string;
+  };
+}) {
+  const isBuy = prediction.predictedDirection === "BUY";
+
+  let statusLabel: string;
+  let statusColor: string;
+  if (prediction.correct === true) {
+    statusLabel = "CORRECT";
+    statusColor = THEME.green;
+  } else if (prediction.correct === false) {
+    statusLabel = "WRONG";
+    statusColor = THEME.red;
+  } else {
+    statusLabel = "PENDING";
+    statusColor = THEME.amber;
+  }
+
+  return (
+    <DataRow>
+      {/* Main row using flex — NOT table columns */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 8,
+          flexWrap: "wrap",
+        }}
+      >
+        {/* Left group: pair + badges */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: THEME.text,
+            }}
+          >
+            {prediction.pair}
+          </span>
+          <Badge
+            label={prediction.predictedDirection}
+            color={isBuy ? THEME.green : THEME.red}
+          />
+          <Badge
+            label={formatPercentRaw(prediction.confidence)}
+            color={THEME.blue}
+          />
+          {prediction.pattern && (
+            <Badge label={prediction.pattern} color={THEME.purple} />
+          )}
+          {prediction.riskLevel && (
+            <Badge
+              label={prediction.riskLevel.toUpperCase()}
+              color={riskConfig[prediction.riskLevel]?.color ?? THEME.textSecondary}
+            />
+          )}
+          <Badge
+            label={prediction.source === "analysis" ? "AI" : "SIGNAL"}
+            color={prediction.source === "analysis" ? THEME.purple : THEME.amber}
+          />
+        </div>
+
+        {/* Right group: status badge + date */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <Badge label={statusLabel} color={statusColor} />
+          <span
+            style={{
+              fontSize: 11,
+              color: THEME.textMuted,
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {formatRelative(prediction.createdAt)}
+          </span>
+        </div>
+      </div>
+
+      {/* Optional reasons truncated */}
+      {prediction.reasons && prediction.reasons.length > 0 && (
+        <div
+          style={{
+            fontSize: 10,
+            color: THEME.textMuted,
+            marginTop: 4,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {prediction.reasons.join(" • ")}
+        </div>
+      )}
+    </DataRow>
+  );
+});
+
+function PredictionsPage() {
+  const getFn = useStableServerFn(getPredictionsData);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["predictionsData"],
+    queryFn: getFn,
     staleTime: 30_000,
   });
 
-  const d = query.data;
-  const isLoading = query.isLoading;
+  const predictions = data?.predictions ?? [];
+  const totalPredictions = data?.totalPredictions ?? 0;
+  const buyPredictions = data?.buyPredictions ?? 0;
+  const sellPredictions = data?.sellPredictions ?? 0;
+  const avgConfidence = data?.avgConfidence ?? 0;
+  const accuracy = data?.accuracy ?? 0;
 
   const stats = [
-    { label: "Total Predictions", value: String(d?.totalPredictions ?? 0), color: "#3B82F6" },
-    { label: "BUY Predictions", value: String(d?.buyPredictions ?? 0), color: "#22C55E" },
-    { label: "SELL Predictions", value: String(d?.sellPredictions ?? 0), color: "#EF4444" },
-    { label: "Avg Confidence", value: `${d?.avgConfidence ?? 0}%`, color: "#F59E0B" },
+    {
+      label: "Total Predictions",
+      value: formatNumber(totalPredictions),
+      valueColor: THEME.text,
+    },
+    {
+      label: "BUY Predictions",
+      value: formatNumber(buyPredictions),
+      valueColor: THEME.green,
+    },
+    {
+      label: "SELL Predictions",
+      value: formatNumber(sellPredictions),
+      valueColor: THEME.red,
+    },
+    {
+      label: "Avg Confidence",
+      value: formatPercentRaw(avgConfidence),
+      valueColor: THEME.blue,
+    },
   ];
 
   return (
-    <div style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%", padding: "20px" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-        <h1 style={{ fontSize: "22px", fontWeight: 700, margin: 0 }}>Predictions</h1>
-        <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ background: "rgba(139,92,246,0.15)", color: "#8B5CF6" }}>PREDICTION ENGINE</span>
-      </div>
-      <p style={{ fontSize: "12px", color: "#7B8BA8", marginTop: "4px", marginBottom: "20px" }}>
-        AI predictions and market calls from your analyses and daily signals. Track confidence levels and outcomes.
-      </p>
+    <PageLayout
+      title="Predictions"
+      badge="AI"
+      badgeColor={THEME.purple}
+      description="AI-powered market predictions and signal analysis"
+      loading={isLoading}
+    >
+      <StatsRow stats={stats} />
 
-      {isLoading ? (
-        <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#8B5CF6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        </div>
-      ) : (
-        <>
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            {stats.map((s) => (
-              <div key={s.label} style={{ background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px" }}>
-                <div style={{ fontSize: "10px", fontWeight: 600, color: "#4A5568", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>{s.label}</div>
-                <div style={{ fontSize: "22px", fontWeight: 800, fontFamily: "monospace", color: s.color }}>{s.value}</div>
-              </div>
-            ))}
-          </div>
+      <ProgressBar
+        value={accuracy}
+        label="Accuracy"
+        labelRight={formatPercentRaw(accuracy)}
+      />
 
-          {/* Accuracy Banner (if we have outcomes) */}
-          {d && d.accuracy > 0 && (
-            <div style={{ background: "#1a2035", borderRadius: "12px", border: "1px solid rgba(139,92,246,0.15)", padding: "14px 18px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ fontSize: "10px", fontWeight: 600, color: "#7B8BA8", textTransform: "uppercase" }}>Prediction Accuracy</div>
-              <div style={{ flex: 1, height: "6px", background: "rgba(255,255,255,0.06)", borderRadius: "3px", overflow: "hidden" }}>
-                <div style={{ width: `${d.accuracy}%`, height: "100%", background: d.accuracy >= 50 ? "#22C55E" : "#EF4444", borderRadius: "3px", transition: "width 0.5s" }} />
-              </div>
-              <div style={{ fontSize: "16px", fontWeight: 800, fontFamily: "monospace", color: d.accuracy >= 50 ? "#22C55E" : "#EF4444" }}>{d.accuracy}%</div>
-            </div>
-          )}
+      <SectionTitle label="All Predictions" count={predictions.length} />
 
-          {/* Prediction Cards */}
-          <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            All Predictions
-            <span style={{ fontSize: "11px", fontWeight: 500, color: "#4A5568", marginLeft: "8px" }}>
-              ({d?.predictions?.length ?? 0})
-            </span>
-          </div>
-
-          {(d?.predictions ?? []).length > 0 ? (
-            <div style={{ background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-              {/* Table Header */}
-              <div className="flex items-center px-4 py-2 text-[9px] font-bold uppercase tracking-wider" style={{ color: "#4A5568", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <div style={{ width: "14%" }}>Pair</div>
-                <div style={{ width: "10%" }}>Direction</div>
-                <div style={{ width: "10%" }} className="text-right">Confidence</div>
-                <div style={{ width: "10%" }}>Pattern</div>
-                <div style={{ width: "10%" }}>Trend</div>
-                <div style={{ width: "10%" }}>Timeframe</div>
-                <div style={{ width: "8%" }}>Risk</div>
-                <div style={{ width: "8%" }}>Source</div>
-                <div style={{ flex: 1, paddingLeft: 16 }}>Reasons</div>
-                <div style={{ width: "10%" }}>Outcome</div>
-                <div style={{ width: "10%" }} className="text-right">Date</div>
-              </div>
-              <div style={{ maxHeight: "420px", overflowY: "auto" }}>
-                {d!.predictions.map((p: any) => (
-                  <PredictionRow key={`${p.source}-${p.id}`} prediction={p} />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div style={{ background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "48px", textAlign: "center" }}>
-              <div style={{ fontSize: "32px", marginBottom: "12px", opacity: 0.5 }}>🎯</div>
-              <div style={{ fontSize: "14px", fontWeight: 600, marginBottom: "6px" }}>No predictions yet</div>
-              <div style={{ fontSize: "12px", color: "#7B8BA8" }}>
-                Run AI analyses or check daily signals to generate predictions. Each analysis with a recommendation becomes a prediction.
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+      <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
+        {predictions.length === 0 ? (
+          <EmptyState message="No predictions yet" />
+        ) : (
+          predictions.map((p) => <PredictionCard key={p.id} prediction={p} />)
+        )}
+      </ScrollArea>
+    </PageLayout>
   );
 }
-
-const PredictionRow = memo(function PredictionRow({ prediction: p }: { prediction: any }) {
-  const recColor = p.predictedDirection === "BUY" ? "#22C55E" : p.predictedDirection === "SELL" ? "#EF4444" : "#F59E0B";
-  const riskColor = p.riskLevel === "low" ? "#22C55E" : p.riskLevel === "medium" ? "#F59E0B" : p.riskLevel ? "#EF4444" : "#4A5568";
-  const sourceColor = p.source === "analysis" ? "#8B5CF6" : "#3B82F6";
-
-  return (
-    <div className="flex items-center px-4 py-3 text-[11px]" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s", cursor: "pointer" }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-    >
-      <div style={{ width: "14%", fontWeight: 700 }}>{p.pair}</div>
-      <div style={{ width: "10%" }}>
-        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${recColor}15`, color: recColor }}>{p.predictedDirection}</span>
-      </div>
-      <div style={{ width: "10%", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: "#F59E0B" }}>{p.confidence}%</div>
-      <div style={{ width: "10%", color: "#7B8BA8" }}>{p.pattern || "—"}</div>
-      <div style={{ width: "10%", color: "#7B8BA8" }}>{p.trend || "—"}</div>
-      <div style={{ width: "10%", color: "#7B8BA8" }}>{p.timeframe || "—"}</div>
-      <div style={{ width: "8%" }}>
-        {p.riskLevel ? (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${riskColor}15`, color: riskColor }}>{p.riskLevel}</span>
-        ) : (
-          <span style={{ color: "#4A5568" }}>—</span>
-        )}
-      </div>
-      <div style={{ width: "8%" }}>
-        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${sourceColor}15`, color: sourceColor }}>{p.source === "analysis" ? "AI" : "SIGNAL"}</span>
-      </div>
-      <div style={{ flex: 1, paddingLeft: 16, color: "#7B8BA8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {p.reasons?.slice(0, 2).join(" · ") || "—"}
-      </div>
-      <div style={{ width: "10%" }}>
-        {p.correct === true ? (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.12)", color: "#22C55E" }}>CORRECT</span>
-        ) : p.correct === false ? (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444" }}>WRONG</span>
-        ) : (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(245,158,11,0.12)", color: "#F59E0B" }}>PENDING</span>
-        )}
-      </div>
-      <div style={{ width: "10%", textAlign: "right", color: "#4A5568", fontSize: "10px" }}>
-        {new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-      </div>
-    </div>
-  );
-});

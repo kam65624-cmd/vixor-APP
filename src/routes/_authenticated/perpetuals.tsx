@@ -1,244 +1,287 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { memo, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { memo, useState } from "react";
-import { getPerpetualsData } from "@/shared/data";
-import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 
 export const Route = createFileRoute("/_authenticated/perpetuals")({
-  head: () => ({ meta: [{ title: "Perpetuals — Vixor" }] }),
+  head: () => ({ meta: [{ title: "Perpetuals \u2014 Vixor" }] }),
   component: PerpetualsPage,
 });
+import {
+  PageLayout,
+  StatsRow,
+  ScrollArea,
+  EmptyState,
+  Badge,
+  DataRow,
+  DataRowTwoLine,
+  LabelValue,
+  THEME,
+} from "@/components/vixor/PageLayout";
+import {
+  formatCurrency,
+  formatPnL,
+  formatRMultiple,
+  formatPercent,
+  formatPrice,
+  formatQuantity,
+} from "@/shared/utils/formatters";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getPerpetualsData } from "@/shared/data";
 
 const TABS = ["Open Positions", "Recent Closed"] as const;
+type Tab = (typeof TABS)[number];
 
-function formatValue(val: number): string {
-  const abs = Math.abs(val);
-  const prefix = val >= 0 ? "+" : "-";
-  if (abs >= 1_000_000) return `${prefix}$${(abs / 1_000_000).toFixed(2)}M`;
-  if (abs >= 1_000) return `${prefix}$${(abs / 1_000).toFixed(2)}K`;
-  return `${prefix}$${abs.toFixed(2)}`;
-}
-
-function PerpetualsPage() {
-  const fetchPerpsData = useStableServerFn(getPerpetualsData);
-  const [activeTab, setActiveTab] = useState<string>("Open Positions");
-
-  const query = useQuery({
-    queryKey: ["perpetuals-data"],
-    queryFn: () => fetchPerpsData({}),
-    staleTime: 30_000,
-  });
-
-  const isLoading = query.isLoading;
-  const openPositions = query.data?.openPositions ?? [];
-  const closedPerformance = query.data?.closedPerformance ?? [];
-  const stats = query.data?.stats ?? {
-    openCount: 0,
-    totalUnrealizedPnl: 0,
-    totalRealizedPnl: 0,
-    bestPair: "—",
-    bestPairPnl: 0,
-    winRate: 0,
-    totalClosed: 0,
-  };
-
-  return (
-    <div style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%" }}>
-      {/* Header */}
-      <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="flex items-center gap-2">
-          <span className="text-lg">💰</span>
-          <h1 className="text-lg font-bold">Perpetuals</h1>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(59,130,246,0.15)", color: "#60A5FA" }}>POSITIONS TRACKER</span>
-        </div>
-        <p className="text-[11px] mt-0.5" style={{ color: "#7B8BA8" }}>
-          Track open positions and closed trade performance
-        </p>
-      </div>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        </div>
-      ) : (
-        <>
-          {/* Stats Grid */}
-          <div className="px-4 py-3 grid grid-cols-4 gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-              <div className="text-[9px]" style={{ color: "#4A5568" }}>Open Positions</div>
-              <div className="text-lg font-bold font-mono" style={{ color: "#3B82F6" }}>{stats.openCount}</div>
-            </div>
-            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-              <div className="text-[9px]" style={{ color: "#4A5568" }}>Unrealized PnL</div>
-              <div className="text-lg font-bold font-mono" style={{ color: stats.totalUnrealizedPnl >= 0 ? "#22C55E" : "#EF4444" }}>
-                {formatValue(stats.totalUnrealizedPnl)}
-              </div>
-            </div>
-            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-              <div className="text-[9px]" style={{ color: "#4A5568" }}>Best Pair</div>
-              <div className="text-[11px] font-bold" style={{ color: "#22C55E" }}>{stats.bestPair}</div>
-              <div className="text-[9px] font-mono" style={{ color: stats.bestPairPnl >= 0 ? "#22C55E" : "#EF4444" }}>
-                {formatValue(stats.bestPairPnl)}
-              </div>
-            </div>
-            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-              <div className="text-[9px]" style={{ color: "#4A5568" }}>Win Rate</div>
-              <div className="text-lg font-bold font-mono" style={{ color: stats.winRate >= 50 ? "#22C55E" : "#F59E0B" }}>
-                {stats.winRate}%
-              </div>
-              <div className="text-[9px]" style={{ color: "#7B8BA8" }}>{stats.totalClosed} closed</div>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="px-4 py-2 flex gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            {TABS.map((t) => (
-              <button key={t} onClick={() => setActiveTab(t)} style={{
-                fontSize: "10px", fontWeight: 700, padding: "4px 12px", borderRadius: "4px",
-                border: "none", cursor: "pointer",
-                color: activeTab === t ? "#fff" : "#7B8BA8",
-                background: activeTab === t ? "rgba(59,130,246,0.15)" : "transparent",
-              }}>{t} ({activeTab === "Open Positions" ? openPositions.length : closedPerformance.length})</button>
-            ))}
-          </div>
-
-          {/* Positions List */}
-          <div className="px-4 py-2 overflow-y-auto" style={{ maxHeight: "calc(100vh - 280px)" }}>
-            {activeTab === "Open Positions" ? (
-              openPositions.length > 0 ? (
-                <div className="space-y-2">
-                  {openPositions.map((pos: any) => (
-                    <PositionCard key={pos.id} position={pos} isOpen />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-3" style={{ padding: "40px 0" }}>
-                  <span style={{ fontSize: "24px" }}>💰</span>
-                  <p style={{ fontSize: "12px", color: "#7B8BA8" }}>No open positions. Open a trade to start tracking.</p>
-                </div>
-              )
-            ) : (
-              closedPerformance.length > 0 ? (
-                <div className="space-y-1">
-                  {/* Table Header */}
-                  <div className="flex items-center px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider rounded-t-lg" style={{ color: "#4A5568", background: "#161b2e", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <div style={{ width: "18%" }}>Pair</div>
-                    <div style={{ width: "10%" }}>Dir</div>
-                    <div style={{ width: "16%" }} className="text-right">Entry</div>
-                    <div style={{ width: "16%" }} className="text-right">Exit</div>
-                    <div style={{ width: "20%" }} className="text-right">PnL</div>
-                    <div style={{ width: "10%" }} className="text-right">R-Mult</div>
-                    <div style={{ width: "10%" }} className="text-right">Status</div>
-                  </div>
-                  {closedPerformance.map((trade: any) => (
-                    <ClosedTradeRow key={trade.id} trade={trade} />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-3" style={{ padding: "40px 0" }}>
-                  <span style={{ fontSize: "24px" }}>📊</span>
-                  <p style={{ fontSize: "12px", color: "#7B8BA8" }}>No closed trades yet. Complete a trade to see performance here.</p>
-                </div>
-              )
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-const PositionCard = memo(function PositionCard({ position, isOpen }: { position: any; isOpen: boolean }) {
+const OpenPositionCard = memo(function OpenPositionCard({
+  position,
+}: {
+  position: any;
+}) {
   const isLong = position.direction === "LONG";
-  const dirColor = isLong ? "#22C55E" : "#EF4444";
+  const dirColor = isLong ? THEME.green : THEME.red;
   const pnl = position.pnl || 0;
-  const pnlColor = pnl >= 0 ? "#22C55E" : "#EF4444";
+  const pnlColor = pnl >= 0 ? THEME.green : THEME.red;
 
   return (
-    <div
-      className="rounded-lg p-3"
-      style={{
-        background: "#161b2e",
-        border: `1px solid ${pnlColor}18`,
-      }}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
+    <DataRowTwoLine>
+      {/* Top line */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <Badge label={position.direction} color={dirColor} small />
           <span
-            className="text-[9px] font-bold px-1.5 py-0.5 rounded"
-            style={{ background: `${dirColor}20`, color: dirColor }}
+            style={{
+              fontSize: "12px",
+              fontWeight: 700,
+              color: THEME.text,
+            }}
           >
-            {position.direction}
+            {position.pair}
           </span>
-          <span className="text-[13px] font-bold">{position.pair}</span>
-          {isOpen && (
-            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(59,130,246,0.15)", color: "#60A5FA" }}>
-              OPEN
-            </span>
-          )}
+          <Badge label="OPEN" color={THEME.blue} small />
         </div>
-        <span className="text-[12px] font-bold font-mono" style={{ color: pnlColor }}>
-          {formatValue(pnl)}
+        <span
+          style={{
+            fontSize: "12px",
+            fontWeight: 700,
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            color: pnlColor,
+          }}
+        >
+          {pnl >= 0 ? "+" : ""}
+          {pnl.toFixed(2)}
         </span>
       </div>
 
-      <div className="flex items-center justify-between text-[10px] font-mono" style={{ color: "#7B8BA8" }}>
-        <div className="flex items-center gap-4">
-          <span>Entry: <span style={{ color: "#F0F4FC" }}>${position.entryPrice.toFixed(2)}</span></span>
-          <span>Qty: <span style={{ color: "#F0F4FC" }}>{position.quantity}</span></span>
-        </div>
-        <div className="flex items-center gap-3">
-          {position.rMultiple !== 0 && (
-            <span>R: <span style={{ color: position.rMultiple >= 0 ? "#22C55E" : "#EF4444", fontWeight: 700 }}>
-              {position.rMultiple >= 0 ? "+" : ""}{position.rMultiple.toFixed(1)}
-            </span></span>
-          )}
-          {position.stopLoss != null && (
-            <span>SL: <span style={{ color: "#EF4444" }}>${position.stopLoss}</span></span>
-          )}
-          {position.takeProfit != null && (
-            <span>TP: <span style={{ color: "#22C55E" }}>${position.takeProfit}</span></span>
-          )}
-        </div>
+      {/* Bottom line */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "16px",
+          width: "100%",
+          marginTop: "4px",
+        }}
+      >
+        <LabelValue
+          label="Entry"
+          value={formatPrice(position.entryPrice)}
+        />
+        <LabelValue
+          label="Qty"
+          value={formatQuantity(position.quantity)}
+        />
+        <LabelValue
+          label="R"
+          value={formatRMultiple(position.rMultiple || 0)}
+        />
+        {position.stopLoss != null && (
+          <LabelValue
+            label="SL"
+            value={formatPrice(position.stopLoss)}
+          />
+        )}
+        {position.takeProfit != null && (
+          <LabelValue
+            label="TP"
+            value={formatPrice(position.takeProfit)}
+          />
+        )}
       </div>
-    </div>
+    </DataRowTwoLine>
   );
 });
 
-const ClosedTradeRow = memo(function ClosedTradeRow({ trade }: { trade: any }) {
+const ClosedTradeCard = memo(function ClosedTradeCard({
+  trade,
+}: {
+  trade: any;
+}) {
   const isLong = trade.direction === "LONG";
-  const dirColor = isLong ? "#22C55E" : "#EF4444";
+  const dirColor = isLong ? THEME.green : THEME.red;
   const pnl = trade.pnl || 0;
-  const pnlColor = pnl >= 0 ? "#22C55E" : "#EF4444";
+  const pnlColor = pnl >= 0 ? THEME.green : THEME.red;
   const rMult = trade.rMultiple || 0;
 
   const statusColors: Record<string, string> = {
-    closed: "#22C55E",
-    win: "#22C55E",
-    loss: "#EF4444",
-    breakeven: "#F59E0B",
+    closed: THEME.green,
+    win: THEME.green,
+    loss: THEME.red,
+    breakeven: THEME.amber,
   };
-  const statusColor = statusColors[trade.status] || "#4A5568";
+  const statusColor = statusColors[trade.status] || THEME.textMuted;
 
   return (
-    <div className="flex items-center px-3 py-2 text-[11px]" style={{ background: "#161b2e", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-      <div style={{ width: "18%", fontWeight: 700 }}>{trade.pair}</div>
-      <div style={{ width: "10%" }}>
-        <span className="text-[8px] font-bold" style={{ color: dirColor }}>{trade.direction}</span>
+    <DataRow>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "4px 12px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <span
+            style={{
+              fontSize: "12px",
+              fontWeight: 700,
+              color: THEME.text,
+            }}
+          >
+            {trade.pair}
+          </span>
+          <Badge label={trade.direction} color={dirColor} small />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "10px",
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            color: THEME.textSecondary,
+          }}
+        >
+          <span>
+            {formatPrice(trade.entryPrice)} → {formatPrice(trade.exitPrice)}
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <span
+            style={{
+              fontSize: "11px",
+              fontWeight: 700,
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              color: pnlColor,
+            }}
+          >
+            {pnl >= 0 ? "+" : ""}
+            {pnl.toFixed(2)}
+          </span>
+          <span
+            style={{
+              fontSize: "10px",
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              color: rMult >= 0 ? THEME.green : THEME.red,
+            }}
+          >
+            {formatRMultiple(rMult)}
+          </span>
+          <Badge
+            label={(trade.status || "closed").toUpperCase()}
+            color={statusColor}
+            small
+          />
+        </div>
       </div>
-      <div style={{ width: "16%", textAlign: "right", fontFamily: "monospace", color: "#7B8BA8" }}>${trade.entryPrice.toFixed(2)}</div>
-      <div style={{ width: "16%", textAlign: "right", fontFamily: "monospace", color: "#7B8BA8" }}>${trade.exitPrice.toFixed(2)}</div>
-      <div style={{ width: "20%", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: pnlColor }}>
-        {pnl >= 0 ? "+" : ""}{pnl.toFixed(2)}
-      </div>
-      <div style={{ width: "10%", textAlign: "right", fontFamily: "monospace", color: rMult >= 0 ? "#22C55E" : "#EF4444" }}>
-        {rMult >= 0 ? "+" : ""}{rMult.toFixed(1)}
-      </div>
-      <div style={{ width: "10%", textAlign: "right" }}>
-        <span className="text-[8px] font-bold px-1 py-0.5 rounded" style={{ background: `${statusColor}18`, color: statusColor }}>
-          {trade.status || "closed"}
-        </span>
-      </div>
-    </div>
+    </DataRow>
   );
 });
+
+function PerpetualsPage() {
+  const [tab, setTab] = useState<Tab>("Open Positions");
+  const getStableData = useStableServerFn(getPerpetualsData);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["perpetuals"],
+    queryFn: () => getStableData(),
+    staleTime: 30_000,
+  });
+
+  const openPositions = data?.openPositions ?? [];
+  const closedPerformance = data?.closedPerformance ?? [];
+  const stats = data?.stats;
+
+  const isOpen = tab === "Open Positions";
+  const items = isOpen ? openPositions : closedPerformance;
+
+  const totalUnrealized = stats?.totalUnrealizedPnl || 0;
+  const totalRealized = stats?.totalRealizedPnl || 0;
+
+  return (
+    <PageLayout
+      title="Perpetuals"
+      badge="FUTURES"
+      badgeColor={THEME.purple}
+      description="Open positions and closed trade performance"
+      tabs={TABS as unknown as string[]}
+      activeTab={tab}
+      onTabChange={(t: string) => setTab(t as Tab)}
+      loading={isLoading}
+    >
+      <StatsRow
+        stats={[
+          {
+            label: "Open",
+            value: stats?.openCount ?? 0,
+            mono: true,
+          },
+          {
+            label: "Unrealized PnL",
+            value: `${totalUnrealized >= 0 ? "+" : ""}${totalUnrealized.toFixed(2)}`,
+            mono: true,
+            color: totalUnrealized >= 0 ? THEME.green : THEME.red,
+          },
+          {
+            label: "Realized PnL",
+            value: `${totalRealized >= 0 ? "+" : ""}${totalRealized.toFixed(2)}`,
+            mono: true,
+            color: totalRealized >= 0 ? THEME.green : THEME.red,
+          },
+          {
+            label: "Win Rate",
+            value: stats?.winRate != null ? `${stats.winRate}%` : "—",
+            mono: true,
+          },
+        ]}
+      />
+
+      <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
+        {items.length === 0 ? (
+          <EmptyState
+            message={
+              isOpen
+                ? "No open positions"
+                : "No closed trades"
+            }
+          />
+        ) : isOpen ? (
+          items.map((pos: any) => (
+            <OpenPositionCard key={pos.id} position={pos} />
+          ))
+        ) : (
+          items.map((trade: any) => (
+            <ClosedTradeCard key={trade.id} trade={trade} />
+          ))
+        )}
+      </ScrollArea>
+    </PageLayout>
+  );
+}
