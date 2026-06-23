@@ -46,7 +46,7 @@ function YieldPage() {
       ) : (
         <>
           {/* Stats Cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" }}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             {stats.map((s) => (
               <div key={s.label} style={{ background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px" }}>
                 <div style={{ fontSize: "10px", fontWeight: 600, color: "#4A5568", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>{s.label}</div>
@@ -65,7 +65,7 @@ function YieldPage() {
           </div>
 
           {(d?.positions ?? []).length > 0 ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "12px", maxHeight: "480px", overflowY: "auto" }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ maxHeight: "480px", overflowY: "auto" }}>
               {d!.positions.map((pos) => (
                 <YieldCard key={pos.id} pos={pos} />
               ))}

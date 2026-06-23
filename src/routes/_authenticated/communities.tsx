@@ -46,7 +46,7 @@ function CommunitiesPage() {
       ) : (
         <>
           {/* Stats Cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" }}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             {stats.map((s) => (
               <div key={s.label} style={{ background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px" }}>
                 <div style={{ fontSize: "10px", fontWeight: 600, color: "#4A5568", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>{s.label}</div>
@@ -56,7 +56,7 @@ function CommunitiesPage() {
           </div>
 
           {/* Two-column layout */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Strategies */}
             <div>
               <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
