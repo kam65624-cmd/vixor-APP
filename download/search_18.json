@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/DefiLlama/defillama_yields_coverage",
+    "name": "DefiLlama/defillama_yields_coverage - GitHub",
+    "snippet": "A modern React application to discover DeFi protocols that need yield adapters for DeFi Llama. Features. Search - Filter protocols by name or description; Chain ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/term-finance/defi-llama-yield-server",
+    "name": "term-finance/defi-llama-yield-server - GitHub",
+    "snippet": "The data must be fetched from on-chain calls or from subgraphs. Centralised api calls are only accepted if there is no other way of obtaining that data (eg off- ...",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/DefiLlama/python-sdk",
+    "name": "DefiLlama/python-sdk - GitHub",
+    "snippet": "Official Python SDK for the DefiLlama API. Access DeFi protocol data including TVL, prices, yields, volumes, fees, bridges, and more. Installation.",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://api-docs.defillama.com",
+    "name": "DefiLlama API",
+    "snippet": "# DefiLlama API > DefiLlama provides free, open-source DeFi analytics data. There are two separate APIs with different base URLs and authentication. Do NOT ...",
+    "host_name": "api-docs.defillama.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=LEOrwRZzyWY",
+    "name": "How To Use DeFiLlama API For Beginners - YouTube",
+    "snippet": "Let's check out how to get DeFi (Decentralized Finance) data from the DeFiLlama API in this python tutorial for beginners.",
+    "host_name": "www.youtube.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/the-praxs/DeFiLlama-Curl",
+    "name": "dot-agi/DeFiLlama-Curl: Unofficial Python wrapper for  - GitHub",
+    "snippet": "Unofficial Python 3 wrapper for the DeFiLlama API using the fantastic PyCurl module. Built from the ground up to be fast, reliable and easy to use.",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@ErenSilvarQuade/how-developers-use-the-defillama-api-to-power-defi-applications-e4158f049bc9",
+    "name": "How Developers Use the DefiLlama API to Power DeFi Applications",
+    "snippet": "You'll find endpoints for pretty much every juicy data point you could dream of — TVL (Total Value Locked), token prices, protocol rankings, you ...",
+    "host_name": "medium.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/DefiLlama",
+    "name": "DefiLlama - GitHub",
+    "snippet": "DefiLlama has 46 repositories available. Follow their code on GitHub.",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://eco.com/support/en/articles/14800367-defillama-free-tvl-and-defi-analytics",
+    "name": "DeFiLlama: Free TVL and DeFi Analytics | Support - Eco",
+    "snippet": "DeFiLlama tracks TVL, stablecoins, and protocol revenue across 350+ chains for free. This guide covers the dashboards, the public API, ...",
+    "host_name": "eco.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/liquity/defi-llama-yield-server",
+    "name": "liquity/defi-llama-yield-server - GitHub",
+    "snippet": "The data must be fetched from on-chain calls or from subgraphs. Centralised api calls are only accepted if there is no other way of obtaining that data (eg off- ...",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

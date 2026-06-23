@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/Benjamin-cup/Solana-Pumpfun-Smart-Contract",
+    "name": "Benjam1nCup/Solana-Pumpfun-Smart-Contract: pump.fun clone",
+    "snippet": "Pumpfun Smart Contract and Raydium Launchlab are both designed as memecoin launchpads utilizing bonding curves. However, each platform has different functions ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/razedotbot/solana-ui",
+    "name": "razedotbot/solana-ui: Solana Multi Wallet Trading Platform - GitHub",
+    "snippet": "Raze.bot is a comprehensive, open-source multi-wallet trading platform designed for the Solana blockchain. It provides users with a seamless interface to ...\nIt provides users with a seamless interface to connect various Solana wallets and execute trades efficiently. 🛠️ This project was developed by the team at Raze.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/dexoryn/solana-pumpfun-raydium-cli-tools",
+    "name": "dexoryn/solana-pumpfun-raydium-cli-tools - GitHub",
+    "snippet": "Trading any token using Jupiter API & Raydium swap function. Create your own Solana SPL tokens on mainnet | Pump.fun. Create your own zk-compressed token in ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/pumpdotfun",
+    "name": "pumpdotfun · GitHub Topics",
+    "snippet": "Leveraging Solana's fast, low-cost network, it offers a fair, user-friendly, and scalable DEX experience with zero launch fees. frontend backend smart-contract ...",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://solana.stackexchange.com/questions/23104/pumpfun-and-raydium-constants-and-discriminators",
+    "name": "solana program - Pumpfun and Raydium constants and discriminators",
+    "snippet": "I actually write a Rust code to automate buy/sell actions on Solana blockchain and wondering if these constants and discriminators are the goods ...",
+    "host_name": "solana.stackexchange.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/chainstacklabs/pumpfun-bonkfun-bot",
+    "name": "chainstacklabs/pumpfun-bonkfun-bot: A fully functional pump.fun",
+    "snippet": "A fully functional pump.fun / letsbonk.fun trading and sniping bot not relying on any 3rd party APIs - chainstacklabs/pumpfun-bonkfun-bot.",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/pumpswap?l=rust&o=asc&s=forks",
+    "name": "pumpswap · GitHub Topics",
+    "snippet": "PumpFun Bonding Curve Protocol is a Solana protocol that builds upon the Meteora Dex protocol to implement advanced functionalities for token rewards, liquidity ...",
+    "host_name": "github.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.chainstack.com/docs/solana-listening-to-pumpfun-migrations-to-raydium",
+    "name": "Solana: Listening to pump.fun migrations to Raydium - Chainstack",
+    "snippet": "This guide shows you how to track the lifecycle of pump.fun tokens from their initial bonding curve state through migration to Raydium using Python scripts.",
+    "host_name": "docs.chainstack.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/solana/comments/1g1uzi3/executing_raydium_swaps_with_python",
+    "name": "Executing Raydium swaps with Python : r/solana - Reddit",
+    "snippet": "Hey everyone, Has anyone managed to figure out a way to systematically send orders to Raydium via python? I've done a bit of research and ...\nI have built one with Nodejs to trade Raydium and Pump.fun tokens via TG. Also, jupiter swap api is good to find routes for all tokens, but with ...",
+    "host_name": "www.reddit.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/0xdivi-code/solana-trading-cli-pumpfun",
+    "name": "0xdivi-code/solana-trading-cli-pumpfun - GitHub",
+    "snippet": "A simple, fast, powerful Library for building custom trading strategies on Solana. Built for speed, variety, and real-time data, using cutting-edge tech.",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

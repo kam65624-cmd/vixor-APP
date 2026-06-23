@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.npmjs.com/package/trading-signals",
+    "name": "trading-signals - NPM",
+    "snippet": "The \"trading-signals\" library provides a TypeScript implementation for common technical indicators. It is well-suited for algorithmic ...",
+    "host_name": "www.npmjs.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://npmjs.com/package/neural-trader",
+    "name": "neural-trader - NPM",
+    "snippet": "The first self-learning AI trading platform built natively for Claude Code, Cursor, GitHub Copilot, and OpenAI Codex.",
+    "host_name": "npmjs.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@kid.bytes/building-some-node-js-tools-to-setup-machine-learning-trading-pt-1-fdbb40439384",
+    "name": "Building some node js tools to setup machine learning trading pt 1",
+    "snippet": "Building some node js tools to setup machine learning trading pt 1 Setting up the project Hey folks, So I've wanted to do a blog for some ...",
+    "host_name": "medium.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/sentiment-analysis?l=javascript&o=desc&s=forks",
+    "name": "sentiment-analysis · GitHub Topics",
+    "snippet": "Smart Algorithms to predict buying and selling of stocks on the basis of Mutual Funds Analysis, Stock Trends Analysis and Prediction, Portfolio Risk Factor, ...",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S2199853124001926",
+    "name": "Technical indicator empowered intelligent strategies to predict stock",
+    "snippet": "This study developed intelligent stock trading signal prediction strategies using MACD, DMI, and KST indicators, and implemented these strategies with LSTM and ...",
+    "host_name": "www.sciencedirect.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.linkedin.com/pulse/build-sentiment-analysis-tool-nodejs-using-ai-robert-bergmann-x2h2f",
+    "name": "Build a Sentiment Analysis Tool in Node.js Using AI - LinkedIn",
+    "snippet": "In this tutorial, we'll step into the world of AI-powered natural language processing (NLP) using Node.js and build a sentiment analysis tool.",
+    "host_name": "www.linkedin.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=zNWpEW6cAeo",
+    "name": "Machine Learning and Sentiment Analysis [Algo Trading  - YouTube",
+    "snippet": "From Skill Gap to Quant Career | Free Live Webinar | 18 June Quant firms are hiring at prop desks, hedge funds, fintechs, and family offices ...",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/html/2508.04975v2",
+    "name": "Sentiment-Aware Stock Price Prediction with Transformer and LLM",
+    "snippet": "Financial markets are complex systems where prices are influenced by company fundamentals, technical patterns, sentiment, and external events.",
+    "host_name": "arxiv.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://neural-trader.ruv.io",
+    "name": "Neural Trader MCP v2.5.0 - AI Trading Platform with 58+ MCP Tools",
+    "snippet": "Real-time prediction market trading with GPU-accelerated analysis ... Multi-source news aggregation with AI sentiment analysis and market impact scoring. > ...",
+    "host_name": "neural-trader.ruv.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.frontiersin.org/journals/big-data/articles/10.3389/fdata.2024.1369895/full",
+    "name": "Forecasting cryptocurrency's buy signal with a bagged tree learning",
+    "snippet": "This research uses a bagged tree (BT) model to forecast the buy signal for the cryptocurrency market.",
+    "host_name": "www.frontiersin.org",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

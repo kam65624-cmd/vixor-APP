@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.youtube.com/watch?v=hjLc7yS0OO8",
+    "name": "Complete Bookmap Guide 2025 - Heatmap & Orderflow Platform",
+    "snippet": "Website: https://www.priceactionvolumetrader.com Trading Courses + Support Discord Group: https://courses.priceactionvolumetrader.com ...",
+    "host_name": "www.youtube.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.scichart.com/demo/javascript/order-book-heatmap",
+    "name": "JavaScript Orderbook Heatmap | Javascript Charts | SciChart.js",
+    "snippet": "Create a Javascript heatmap chart showing historical orderbook levels using the high performance SciChart.js chart library. Get free demo now.",
+    "host_name": "www.scichart.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/PhamNhinh/kline-orderbook-chart",
+    "name": "PhamNhinh/kline-orderbook-chart - GitHub",
+    "snippet": "Candlesticks with orderbook heatmap, footprint chart, liquidation heatmap, and 12+ indicators — all rendered at 60 fps by a native high-performance engine.\nOrderbook Heatmap + Candlestick — in one chart. No other charting library renders orderbook depth data as a heatmap layer behind candlesticks. This library ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://lightningchart.com/js-charts/trader",
+    "name": "LightningChart JS Trader: Finance & Trading Charting Library",
+    "snippet": "The most comprehensive JavaScript charting library for building industry-leading finance and trader applications powered by LightningChart.\nLightningChart® JS Trader features advanced technical chart types including CandleStick, Bar charts, Line charts, Mountain, Kagi, Renko, Point & Figure, ...",
+    "host_name": "lightningchart.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization",
+    "name": "Heatmap Trading | Liquidity Heatmap | Stock Market Heatmap Trading",
+    "snippet": "This short walkthrough shows how the Bookmap heatmap visualizes liquidity, order book behavior, and trade activity in real time.\nThis short walkthrough shows how the Bookmap heatmap visualizes liquidity, order book behavior, and trade activity in real time. ... Unlike candlestick charts, ...",
+    "host_name": "bookmap.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/reactjs/comments/1n25xx5/best_performant_charting_library_for_candlestick",
+    "name": "Best performant charting library for candlestick charts in React?",
+    "snippet": "TradingView Lightweight Charts and React-Stockcharts are popular. They handle real-time updates efficiently without slowing down the UI.",
+    "host_name": "www.reddit.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://strapi.io/blog/chart-libraries",
+    "name": "Top 5 Chart Libraries to use in Your Next Project - Strapi",
+    "snippet": "Chart.js is one of the most popular JavaScript chart libraries, Key Features 20+ chart types including line, area, bar, column, bubble, heatmap ...",
+    "host_name": "strapi.io",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.linkedin.com/posts/mrd-indicators_github-phamnhinhkline-orderbook-chart-activity-7445870486854676480-BDpF",
+    "name": "Kline Orderbook Chart: Real-time Heatmap & Candlestick  - LinkedIn",
+    "snippet": "The only chart library with built-in orderbook heatmap, footprint chart, and liquidation heatmap all in one <canvas>, powered by a native high- ...\nKline #Orderbook Chart The only chart library with built-in orderbook heatmap, footprint chart, and liquidation heatmap all in one , powered ...",
+    "host_name": "www.linkedin.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tradingview.com/free-charting-libraries",
+    "name": "Free Charting Library by TradingView",
+    "snippet": "Free Charting Library for your website or mobile app. TradingView Charting Library comes with API to show your own data. Customizable and easy to install.",
+    "host_name": "www.tradingview.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.fusioncharts.com/blog/best-javascript-charting-libraries",
+    "name": "10 Best JavaScript Charting Libraries in 2026 (Ultimate Guide)",
+    "snippet": "ApexCharts is a modern JavaScript charting library that focuses on simplicity, attractive visuals, and developer-friendly integrations. It ...\nGoogle Charts is a free JavaScript charting library that allows developers to create interactive charts using data from a variety of sources.",
+    "host_name": "www.fusioncharts.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

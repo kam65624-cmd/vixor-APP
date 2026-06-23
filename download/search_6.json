@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.youtube.com/watch?v=wYpCWwD1oz0",
+    "name": "Build a COMPLETE React Admin Dashboard App - YouTube",
+    "snippet": "React Admin Dashboard Tutorial from scratch. We will be using React, Material UI, Nivo Charts, Formik, Yup, FullCalendar, and Data Grid to ...",
+    "host_name": "www.youtube.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://mui.com/store/collections/free-react-dashboard",
+    "name": "20+ Stunning Free React Dashboard Templates 2026 - MUI",
+    "snippet": "We've collected these awesome, useful and advanced free React templates for your next React admin dashboard projects.",
+    "host_name": "mui.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://handsontable.com/docs/react-data-grid/themes",
+    "name": "Themes - Handsontable",
+    "snippet": "Apply themes using the Theme API or CSS files. Built-in themes include main, horizon, and classic with automatic light and dark modes.",
+    "host_name": "handsontable.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.untitledui.com/blog/react-dashboards",
+    "name": "19 Best React Dashboards in 2026 | Untitled UI",
+    "snippet": "Here's our hand-picked list of the top free and premium options in 2026. Website screenshots of some popular React UI dashboard templates.",
+    "host_name": "www.untitledui.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ag-grid.com/react-data-grid/themes",
+    "name": "React Grid: Built-in themes | AG Grid",
+    "snippet": "Built-in themes provide a starting point for theming your application. Download AG Grid v35.3.1 today: The best React Table & React Data Grid in the world.",
+    "host_name": "www.ag-grid.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=jx5hdo50a2M",
+    "name": "Build and Deploy a React Admin Dashboard App With  - YouTube",
+    "snippet": "Build and Deploy a React Admin Dashboard App With Theming, Tables, Charts, Calendar, Kanban and More · Comments.",
+    "host_name": "www.youtube.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://tailgrids.com/blog/best-react-dashboards",
+    "name": "21+ Best React Dashboard Templates in 2026 | Tailgrids UI",
+    "snippet": "React is the most popular choice for admin dashboards in 2026. The component model maps cleanly to dashboard UI patterns.",
+    "host_name": "tailgrids.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://cube.dev/blog/material-ui-dashboard-with-react",
+    "name": "Material UI Dashboard with React - Cube Blog",
+    "snippet": "In this tutorial, we'll learn how to build a full-stack dashboard with KPIs, charts, and a data table. We'll go from data in the database to the interactive, ...",
+    "host_name": "cube.dev",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.telerik.com/blogs/lets-build-a-financial-dashboard-with-react",
+    "name": "Let's Build a Financial Dashboard with React - Telerik.com",
+    "snippet": "In this tutorial we'll build a sample financial dashboard from scratch, and learn a bit about CSS grid, KendoReact, and theming in the process.",
+    "host_name": "www.telerik.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.htmlelements.com/react/grid",
+    "name": "AI-Enhanced React Data Grid (Data Table) | Smart UI for React",
+    "snippet": "70+ React components including DataGrid, Gantt Chart, Scheduler, Rich-Text Editor. Material UI & Bootstrap Themes included. Light & Dark modes. Theme Builder ...",
+    "host_name": "www.htmlelements.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

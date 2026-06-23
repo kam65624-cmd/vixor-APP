@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.npmjs.com/package/web-push",
+    "name": "web-push - NPM",
+    "snippet": "You can install web-push globally and use it for sending notifications and / or generating VAPID keys. Install like so: npm install web-push -g.",
+    "host_name": "www.npmjs.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://novu.co",
+    "name": "Novu - Open-source notifications infrastructure for devs and product",
+    "snippet": "Novu is an open-source notification platform that empowers developers to create robust, multi-channel notifications for web and mobile apps.",
+    "host_name": "novu.co",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/novuhq/novu",
+    "name": "novuhq/novu: The open-source communication infrastructure for",
+    "snippet": "Novu provides a unified API to send notifications through multiple channels — Inbox/In-App, Push, Email, SMS, and Chat. Create custom workflows, define per- ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=HlYFW2zaYQM",
+    "name": "Push Notifications Using Node.js & Service Worker - YouTube",
+    "snippet": "In this video we will create push notification capability using Node.js without any 3rd party services. We will achieve this using web-push, ...",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.npmjs.com/search?q=keywords:web%20push%20notifications",
+    "name": "keywords:web push notifications - npm search",
+    "snippet": "A unified notification library for React + Capacitor apps. One API for push notifications, in-app notifications, and local notifications across Web, iOS, ...",
+    "host_name": "www.npmjs.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.jsdelivr.com/package/npm/web-push-notification",
+    "name": "web-push-notification CDN by jsDelivr - A CDN for npm and GitHub",
+    "snippet": "A free, fast, and reliable CDN for web-push-notification. Simple web push notifications - client and server library.",
+    "host_name": "www.jsdelivr.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/draphy/pushforge-modern-web-push-notifications-made-simple-599p",
+    "name": "PushForge: Modern Web Push Notifications Made Simple",
+    "snippet": "PushForge is a zero-dependency toolkit designed to make Web Push Notifications implementation seamless across multiple platforms.",
+    "host_name": "dev.to",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@salipratham033/implementing-web-push-notifications-in-node-js-30f44d165d8b",
+    "name": "Implementing Web Push Notifications in Node.js | by Sali pratham",
+    "snippet": "In this article, we'll learn how to send and receive web push notifications using Node.js and the web-push library. By the end, you'll have ...",
+    "host_name": "medium.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.novu.co/platform/integrations/push",
+    "name": "Push Notification Channel Integrations - Novu Documentation",
+    "snippet": "Connect push providers like FCM, APNS, and OneSignal to Novu. Manage device tokens and deliver mobile and web push notifications.",
+    "host_name": "docs.novu.co",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://cloudsmith.com/navigator/npm/@novu/node",
+    "name": "@novu/node (2.6.6) - npm Package Quality | Cloudsmith Navigator",
+    "snippet": "Novu provides a unified API that makes it simple to send notifications through multiple channels, including Inbox/In-App, Push, Email, SMS, and Chat. With Novu, ...",
+    "host_name": "cloudsmith.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/pacocoursey/next-themes",
+    "name": "GitHub - pacocoursey/next-themes: Perfect Next.js dark mode in 2",
+    "snippet": "Your Next.js app fully supports dark mode, including System preference with prefers-color-scheme. The theme is also immediately synced between tabs.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=0oqYwZi4igc",
+    "name": "Next.js 14: Themed TypeScript App with Light & Dark Mode | Tutorial",
+    "snippet": "Learn how to rapidly develop a themed TypeScript application featuring both light and dark mode functionalities using Next.js 14, Shadcn UI, ...",
+    "host_name": "www.youtube.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/vercel/next.js/discussions/53063",
+    "name": "Implementing a light/dark mode toggle with app router + RSC #53063",
+    "snippet": "It is extremely difficult to implement a light/dark mode toggle with app router + RSC. People are stumbling over every piece of the puzzle ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.vercel.com/t/termcn-beautiful-terminal-ui-components-made-simple/37754",
+    "name": "termcn - Beautiful terminal UI components, made simple - Showcase",
+    "snippet": "Zero config, one command setup. shadcn/ui compatible (simply copy-paste); 100+ components; 10+ terminal themes; Ready-made templates. 100% free ...",
+    "host_name": "community.vercel.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1hg7f4p/what_are_the_best_opensource_codebases_showcasing",
+    "name": "What are the best *open-source* codebases showcasing modern",
+    "snippet": "I'm currently building an e-commerce boilerplate using Next.js and looking to explore other open-source codebases that showcase modern Next.js features.",
+    "host_name": "www.reddit.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=-vsh_GxC-vg",
+    "name": "Build a Real-Time Dashboard with WebSockets & Next.js - YouTube",
+    "snippet": "In this video, you'll build CryptoPulse, a real-time crypto analytics terminal with global market stats, trending tokens, a searchable ...",
+    "host_name": "www.youtube.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/react18-tools/nextjs-themes-ultra",
+    "name": "Nextjs-Themes-Ultra - GitHub",
+    "snippet": "Nextjs-Themes-Ultra is a comprehensive library designed to unlock the full potential of React 18 server components.",
+    "host_name": "github.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/unicodeveloper/awesome-nextjs",
+    "name": "GitHub - unicodeveloper/awesome-nextjs",
+    "snippet": "Kaiforge Lite - Free admin dashboard template with Next.js 14, Tailwind CSS, TypeScript, dark/light mode, and 5 ready-to-use pages. MIT licensed.",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://web3.career/learn-web3/top-typescript-open-source-projects",
+    "name": "TOP 57 Typescript Open Source Projects in 2026 - Web3 Jobs",
+    "snippet": "Here is a list of most popular 57 Typescript Open Source Projects like Microsoft/Vscode, Ant Design/Ant Design, and Material Ui.",
+    "host_name": "web3.career",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/vercel/next.js/discussions/38612",
+    "name": "Switching to dark mode · vercel next.js · Discussion #38612 - GitHub",
+    "snippet": "If you want to change the theme of only a part of the component, just add the .rs-theme-dark class or the .rs-theme-high-contrast class to any container ...",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.tandfonline.com/doi/full/10.1080/08839514.2026.2612793",
+    "name": "A Hybrid SVR-Based Framework for Cryptocurrency Price",
+    "snippet": "This study proposes a hybrid framework that integrates SVR-based cryptocurrency price forecasting with four rule-based technical trading ...",
+    "host_name": "www.tandfonline.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://bitsgap.com/blog/crypto-backtesting-guide-2025-tools-tips-and-how-bitsgap-helps",
+    "name": "Crypto Backtesting Guide 2025: Tools, Tips, and How Bitsgap Helps",
+    "snippet": "Learn how to backtest trading strategies, avoid costly mistakes, and use tools like Bitsgap to simulate, optimize, and launch smarter algo trading bots.",
+    "host_name": "bitsgap.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=ziRmuw3KTj8",
+    "name": "Backtesting trading strategies in JavaScript: a primer - YouTube",
+    "snippet": "This video is a primer on simulation and backtesting of quantitative and systematic trading strategies with JavaScript.",
+    "host_name": "www.youtube.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/backtestjs/framework",
+    "name": "backtestjs/framework: Backtesting trading strategies in  - GitHub",
+    "snippet": "A comprehensive and user-friendly framework to fetch candle data, backtest any trading strategy and compare results. Enhance your trading strategies with ...",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@DolphinDB_Inc/optimizing-crypto-trading-algorithms-high-performance-backtesting-insights-00ace4775f2c",
+    "name": "High-Performance Backtesting Insights | by DolphinDB - Medium",
+    "snippet": "This chapter introduces a high-performance backtesting solution tailored for medium- and high-frequency strategies.",
+    "host_name": "medium.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/algotrading/comments/abb8ys/crypto_backtesting_framework_should_i_build_my",
+    "name": "Crypto Backtesting Framework, should I build my own or do  - Reddit",
+    "snippet": "I'm familiar with Zipline, PyAlgoTrade, etc. Wanted to know if there were any backtesting frameworks out there that you recommend for crypto.",
+    "host_name": "www.reddit.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S0306457325004078",
+    "name": "Explainable zero-shot trading using multi-agent LLM architecture",
+    "snippet": "This study introduces a zero-shot, reasoning-based multi-agent trading framework utilizing large language models (LLMs) to integrate heterogeneous signals ...",
+    "host_name": "www.sciencedirect.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.fortraders.com/blog/the-importance-of-backtesting-your-trading-strategy",
+    "name": "The Importance of Backtesting Your Trading Strategy | For Traders",
+    "snippet": "Backtesting is the process of testing a trading strategy using historical market data to see how it would have performed.",
+    "host_name": "www.fortraders.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://kernc.github.io/backtesting.py",
+    "name": "Backtesting.py - Backtest trading strategies in Python",
+    "snippet": "Fast Python framework for backtesting trading and investment strategies on historical candlestick data.",
+    "host_name": "kernc.github.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://coinrule.com/free-backtesting",
+    "name": "Free Backtesting - Coinrule",
+    "snippet": "Free backtesting platform for crypto and stock strategies. Test automated rules across historical data from Binance, Coinbase, and more.",
+    "host_name": "coinrule.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

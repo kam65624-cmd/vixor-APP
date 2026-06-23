@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://arxiv.org/html/2501.09777v1",
+    "name": "Sentiment Analysis in Twitter Social Network Centered on  - arXiv",
+    "snippet": "The purpose of this paper is to investigate the opinions of Iranian users on the Twitter social network about cryptocurrencies and provide the best model for ...",
+    "host_name": "arxiv.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://bensonruan.medium.com/twitter-sentiment-analysis-with-node-js-ae1ed8dd8fa7",
+    "name": "Twitter Sentiment Analysis with Tensorflow.js - Benson Ruan - Medium",
+    "snippet": "In this article, we'll connect to Twitter API, gather tweets by hashtag, compute the sentiment of each tweet, and build a real-time dashboard to ...",
+    "host_name": "bensonruan.medium.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/378869051_Sentiment_analysis_model_for_cryptocurrency_tweets_using_different_deep_learning_techniques",
+    "name": "Sentiment analysis model for cryptocurrency tweets using different",
+    "snippet": "This article aims to classify the sentiments of an expression into positive, negative, or neutral emotions.",
+    "host_name": "www.researchgate.net",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/drisskhattabi6/Real-Time-Twitter-Sentiment-Analysis",
+    "name": "Big Data Project: Real-Time Twitter Sentiment Analysis Using Kafka",
+    "snippet": "This repository contains a Big Data project focused on real-time sentiment analysis of Twitter data (classification of tweets).",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://aipublications.com/uploads/issue_files/7NCASTEM-2025-7.pdf",
+    "name": "[PDF] Twitter Sentimental Analysis Using NLP",
+    "snippet": "The main objective of this study is to classify tweets into categories like positive, negative, and neutral by applying natural language processing (NLP) ...",
+    "host_name": "aipublications.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S0169207025000147",
+    "name": "Deep learning and NLP in cryptocurrency forecasting",
+    "snippet": "We introduce novel approaches to cryptocurrency price forecasting, leveraging Machine Learning (ML) and Natural Language Processing (NLP) techniques, ...",
+    "host_name": "www.sciencedirect.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=TNdEOEjeo8I",
+    "name": "NLP Projects | Twitter Sentiment Analysis using Python - YouTube",
+    "snippet": "This video on Twitter Sentiment Analysis using Python will help you fetch your tweets to Python and perform Sentiment Analysis on it.",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.semanticscholar.org/paper/Social-Media-Sentiment-Analysis-for-Cryptocurrency-Raheman-Kolonin/0a0a47ff85527ee9461eb5796703b65a95944fc4",
+    "name": "Social Media Sentiment Analysis for Cryptocurrency Market Prediction",
+    "snippet": "This paper explores the usability of different natural language processing models for the sentiment analysis of social media applied to financial market ...",
+    "host_name": "www.semanticscholar.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.mdpi.com/2227-7390/11/16/3441",
+    "name": "The Predictive Power of Social Media Sentiment: Evidence from",
+    "snippet": "In our paper, we address the problem of predictability of cryptocurrency and stock trends by using data from social online communities and platforms.",
+    "host_name": "www.mdpi.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/datasets/gautamchettiar/bitcoin-sentiment-analysis-twitter-data",
+    "name": "Bitcoin Sentiment Analysis | Twitter Data - Kaggle",
+    "snippet": "The file contains all tweet-related information for Bitcoin sentiment analysis. The main column that will come in handy is the one that contains the tweet data.",
+    "host_name": "www.kaggle.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

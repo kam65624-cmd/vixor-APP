@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://huggingface.co/docs/transformers.js/en/index",
+    "name": "Transformers.js - Hugging Face",
+    "snippet": "Transformers.js uses ONNX Runtime to run models in the browser. The best part about it, is that you can easily convert your pretrained PyTorch, TensorFlow, or ...",
+    "host_name": "huggingface.co",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.pkgpulse.com/guides/transformersjs-vs-onnx-runtime-web-2026",
+    "name": "Transformers.js vs ONNX Runtime Web: Browser ML 2026 - PkgPulse",
+    "snippet": "Choose ONNX Runtime Web when you are exporting a custom PyTorch/TensorFlow/scikit-learn model to ONNX, controlling input/output tensors yourself ...",
+    "host_name": "www.pkgpulse.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@kenzic/run-models-in-the-browser-with-transformers-js-2d0983ba3ce9",
+    "name": "Run Models in the Browser With Transformers.js | by Chris McKenzie",
+    "snippet": "ONNX Runtime is a cross-platform machine-learning model accelerator, with a flexible interface to integrate hardware-specific libraries. ONNX ...",
+    "host_name": "medium.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.principledtechnologies.com/benchmarkxprt/blog/category/transformers-js",
+    "name": "Transformers.js | BenchmarkXPRT Development Community Blog",
+    "snippet": "With available tools, users can convert models from several AI frameworks to ONNX, which can then be used by ONNX Runtime Web. ONNX Runtime Web ...",
+    "host_name": "www.principledtechnologies.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.promptfoo.dev/docs/providers/transformers",
+    "name": "Transformers.js - Promptfoo",
+    "snippet": "The Transformers.js provider enables fully local inference using Transformers.js v4, running ONNX-optimized models directly in Node.js without external APIs or ...",
+    "host_name": "www.promptfoo.dev",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tensorflow.org/js",
+    "name": "Machine Learning for JavaScript Developers - TensorFlow.js",
+    "snippet": "TensorFlow.js is a library for machine learning in JavaScript. Develop ML models in JavaScript, and use ML directly in the browser or in Node.js.",
+    "host_name": "www.tensorflow.org",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://onnxruntime.ai/docs/get-started/with-javascript/web.html",
+    "name": "Web | onnxruntime",
+    "snippet": "The following examples describe how to use ONNX Runtime Web in your web applications for model inferencing.",
+    "host_name": "onnxruntime.ai",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.sitepoint.com/optimizing-transformers-js-production",
+    "name": "Optimizing Transformers.js for Production Web Apps - SitePoint",
+    "snippet": "Best practices for bundling, caching, and serving ONNX models. Addressing the cold-start problem and memory management in React ...",
+    "host_name": "www.sitepoint.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.worldline.tech/2026/01/13/transformersjs-intro.html",
+    "name": "Running AI models in the browser with Transformers.js",
+    "snippet": "Learn how to leverage Transformers.js to run AI workloads directly in the browser, enabling powerful applications without the need for ...",
+    "host_name": "blog.worldline.tech",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://techcommunity.microsoft.com/blog/educatordeveloperblog/use-webgpu--onnx-runtime-web--transformer-js-to-build-rag-applications-by-phi-3-/4190968",
+    "name": "Use WebGPU + ONNX Runtime Web + Transformer.js to build RAG",
+    "snippet": "A quantized ONNX-enabled WebGPU model has been released, which can quickly build WebApp applications through NodeJS and ONNX Rutime Web.",
+    "host_name": "techcommunity.microsoft.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

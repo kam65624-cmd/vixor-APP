@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/topics/candlestick-chart?l=typescript",
+    "name": "candlestick-chart · GitHub Topics",
+    "snippet": "A programmable time-series data visualization and charting engine designed specifically for the financial industry. charts dsl financial financial-analysis ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/rrag/react-stockcharts",
+    "name": "GitHub - rrag/react-stockcharts: Highly customizable stock charts",
+    "snippet": "Create highly customizable stock charts. Built with React JS and d3. If you like this project checkout gocharting.com. Multiple quick start examples.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.scichart.com/demo/react/realtime-ticking-stock-charts",
+    "name": "React Realtime Ticking Stock Chart | SciChart.js Demo",
+    "snippet": "Create a React Realtime Ticking Candlestick / Stock Chart with live ticking and updating, using the high performance SciChart.js chart library.",
+    "host_name": "www.scichart.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=EozoDYp4DQY",
+    "name": "Create a CandleStick Stock Chart in React Using React StockCharts",
+    "snippet": "a simple candle stock chart using React StockCharts library. Also thanks y'all for 500 subscribers thats HUGE! Github repo:https://github ...",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/ABTSoftware/scichart-react",
+    "name": "scichart-react is an open source React Chart component for  - GitHub",
+    "snippet": "scichart-react is an open source React Chart component for use with scichart.js. This simplifies the development of React Charts by handling initialisation, ...",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.npmjs.com/package/react-stockcharts",
+    "name": "react-stockcharts - NPM",
+    "snippet": "Create highly customizable stock charts. Built with React JS and d3. If you like this project checkout gocharting.com. Multiple quick start examples.",
+    "host_name": "www.npmjs.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/react-financial/react-financial-charts",
+    "name": "React Financial Charts - GitHub",
+    "snippet": "Charts dedicated to finance. The aim with this project is create financial charts that work out of the box.",
+    "host_name": "github.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/reactjs/comments/1n25xx5/best_performant_charting_library_for_candlestick",
+    "name": "Best performant charting library for candlestick charts in React?",
+    "snippet": "For the best performance chart library for candlestick in React, there is no contest - SciChart.js. I'm using scichart for quantitative trading ...",
+    "host_name": "www.reddit.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://rrag.github.io/react-stockcharts/documentation.html",
+    "name": "React Stockcharts - Home",
+    "snippet": "React Stockcharts - Built with React JS and d3. React Stockcharts provides a flexible api to create charts that represent time series data. You can.",
+    "host_name": "rrag.github.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/stock-chart",
+    "name": "stock-chart · GitHub Topics",
+    "snippet": "High-performance multi-platform K-Line (Candlestick) chart component supporting Flutter, iOS, Android, and React Native. Built for 60fps rendering, with rich ...",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

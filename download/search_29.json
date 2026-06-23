@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.reddit.com/r/solana/comments/1ile5oi/best_api_for_getting_historical_token_price_data",
+    "name": "Best API for getting historical token price data : r/solana - Reddit",
+    "snippet": "SolanaFM is a solid option for on chain Solana data, including historical prices. Birdeye is another good choice, offering detailed tracking of Solana tokens.\nGeckoTerminal v2 API. Birdeye is another good choice, offering detailed tracking of Solana tokens with real time and historical data. 26 Best ...",
+    "host_name": "www.reddit.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.mobula.io/blog/coingecko-api-alternative",
+    "name": "Top 5 Alternatives to CoinGecko API for Real-Time Crypto Data in",
+    "snippet": "1. Mobula API — Best for On-Chain & Real-Time Data · 2. CoinMarketCap API · 3. Birdeye · 4. GeckoTerminal API · 5. DexScreener API · Which Should You Choose?",
+    "host_name": "docs.mobula.io",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.geckoterminal.com/dex-api",
+    "name": "GeckoTerminal DEX and DeFi API for Developers",
+    "snippet": "Access the free GeckoTerminal API to get live, on-chain market data like token prices, OHLC, trading volume, trading pairs, liquidity data, and more across ...",
+    "host_name": "www.geckoterminal.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://solana.stackexchange.com/questions/13812/fetching-trending-token-data-how-to-access-via-api-from-dexscreener-or-birdeye",
+    "name": "Fetching Trending Token Data: How to Access via API from",
+    "snippet": "Birdeye's API allows you to programmatically fetch details about the most popular tokens at any given time, providing a straightforward way to ...",
+    "host_name": "solana.stackexchange.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.bitquery.io/docs/blockchain/Solana/DEXScreener/solana_dexscreener",
+    "name": "DEXScreener API Documentation - Solana Trades, Pairs, Prices",
+    "snippet": "This guide shows how to retrieve the same Solana DEX data that DEXScreener displays—real-time trades, pair stats, volumes, buyers/sellers, and more—using ...",
+    "host_name": "docs.bitquery.io",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://apiguide.geckoterminal.com",
+    "name": "GeckoTerminal API Docs: Introduction | Introduction",
+    "snippet": "GeckoTerminal is a DeFi and DEX aggregator that tracks real-time cryptocurrency prices, trading volumes, transactions, and liquidity data ...\nDiscover GeckoTerminal's free Public API! Access real-time crypto prices, OHLC, trading volumes, and liquidity across 1,500+ DEXs and 200+ ...",
+    "host_name": "apiguide.geckoterminal.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.dexscreener.com/api/reference",
+    "name": "Reference - DEX Screener - Docs",
+    "snippet": "DEX Screener API reference. Get the latest token profiles (rate-limit 60 requests per minute). get https://api.dexscreener.com/token-profiles/latest/v1",
+    "host_name": "docs.dexscreener.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.coingecko.com",
+    "name": "Welcome to CoinGecko API - CoinGecko API",
+    "snippet": "CoinGecko is the world's largest independent crypto data aggregator. The CoinGecko API provides comprehensive crypto market data through REST endpoints, ...\nThe CoinGecko API provides comprehensive crypto market data through REST endpoints, WebSocket streams, Webhooks, and AI-native tools.",
+    "host_name": "docs.coingecko.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.birdeye.so/docs/market-data",
+    "name": "Market Data - Birdeye Data Documentation",
+    "snippet": "Our platform provides comprehensive multi-market data for cryptocurrency tokens, pulling information from both decentralized exchanges (DEX) and centralized ...",
+    "host_name": "docs.birdeye.so",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://changehero.io/blog/top-solana-apis",
+    "name": "Best Solana APIs — 2026 Overview and Rating - ChangeHero",
+    "snippet": "Master the Solana ecosystem with the best APIs reviewed by ChangeHero experts. From CoinStats Wallet API for live Solana data to Mobula ...",
+    "host_name": "changehero.io",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

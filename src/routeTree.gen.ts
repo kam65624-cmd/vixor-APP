@@ -46,6 +46,7 @@ import { Route as AuthenticatedAlphaRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedActivityWeb3RouteImport } from './routes/_authenticated/activity-web3'
 import { Route as AuthenticatedTokenSymbolRouteImport } from './routes/_authenticated/token.$symbol'
 import { Route as AuthenticatedAnalysisIdRouteImport } from './routes/_authenticated/analysis.$id'
+import { Route as AuthenticatedAdminApiKeysRouteImport } from './routes/_authenticated/admin/api-keys'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -237,6 +238,12 @@ const AuthenticatedAnalysisIdRoute = AuthenticatedAnalysisIdRouteImport.update({
   path: '/analysis/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminApiKeysRoute =
+  AuthenticatedAdminApiKeysRouteImport.update({
+    id: '/admin/api-keys',
+    path: '/admin/api-keys',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -273,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/whale': typeof AuthenticatedWhaleRoute
   '/yield': typeof AuthenticatedYieldRoute
+  '/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
   '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
 }
@@ -311,6 +319,7 @@ export interface FileRoutesByTo {
   '/whale': typeof AuthenticatedWhaleRoute
   '/yield': typeof AuthenticatedYieldRoute
   '/': typeof AuthenticatedIndexRoute
+  '/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
   '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
 }
@@ -351,6 +360,7 @@ export interface FileRoutesById {
   '/_authenticated/whale': typeof AuthenticatedWhaleRoute
   '/_authenticated/yield': typeof AuthenticatedYieldRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/_authenticated/analysis/$id': typeof AuthenticatedAnalysisIdRoute
   '/_authenticated/token/$symbol': typeof AuthenticatedTokenSymbolRoute
 }
@@ -391,6 +401,7 @@ export interface FileRouteTypes {
     | '/wallet-web3'
     | '/whale'
     | '/yield'
+    | '/admin/api-keys'
     | '/analysis/$id'
     | '/token/$symbol'
   fileRoutesByTo: FileRoutesByTo
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/whale'
     | '/yield'
     | '/'
+    | '/admin/api-keys'
     | '/analysis/$id'
     | '/token/$symbol'
   id:
@@ -468,6 +480,7 @@ export interface FileRouteTypes {
     | '/_authenticated/whale'
     | '/_authenticated/yield'
     | '/_authenticated/'
+    | '/_authenticated/admin/api-keys'
     | '/_authenticated/analysis/$id'
     | '/_authenticated/token/$symbol'
   fileRoutesById: FileRoutesById
@@ -738,6 +751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalysisIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/api-keys': {
+      id: '/_authenticated/admin/api-keys'
+      path: '/admin/api-keys'
+      fullPath: '/admin/api-keys'
+      preLoaderRoute: typeof AuthenticatedAdminApiKeysRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -775,6 +795,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedWhaleRoute: typeof AuthenticatedWhaleRoute
   AuthenticatedYieldRoute: typeof AuthenticatedYieldRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedAdminApiKeysRoute: typeof AuthenticatedAdminApiKeysRoute
   AuthenticatedAnalysisIdRoute: typeof AuthenticatedAnalysisIdRoute
   AuthenticatedTokenSymbolRoute: typeof AuthenticatedTokenSymbolRoute
 }
@@ -813,6 +834,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedWhaleRoute: AuthenticatedWhaleRoute,
   AuthenticatedYieldRoute: AuthenticatedYieldRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedAdminApiKeysRoute: AuthenticatedAdminApiKeysRoute,
   AuthenticatedAnalysisIdRoute: AuthenticatedAnalysisIdRoute,
   AuthenticatedTokenSymbolRoute: AuthenticatedTokenSymbolRoute,
 }
