@@ -340,7 +340,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: "#0A0E1A", color: "#F0F4FC" }}
+      style={{ background: "#121212", color: "#FFFFFF" }}
     >
       {/* ── Top Bar: Logo + SOL Price + Actions ── */}
       <TopNav solPrice={sol.price} solChange={sol.change} />
@@ -391,7 +391,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange }: TopNavProps) {
     <header
       className="fixed top-0 inset-x-0 z-50"
       style={{
-        background: "#0D1117",
+        background: "#121212",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
         height: "40px",
         display: "flex",
@@ -415,7 +415,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange }: TopNavProps) {
                 width: "22px",
                 height: "22px",
                 borderRadius: "6px",
-                background: "linear-gradient(135deg, #3B82F6, #60A5FA)",
+                background: "linear-gradient(135deg, #059669, #10B981)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -439,7 +439,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange }: TopNavProps) {
               style={{
                 fontSize: "13px",
                 fontWeight: 700,
-                color: "#F0F4FC",
+                color: "#FFFFFF",
                 letterSpacing: "-0.02em",
               }}
             >
@@ -469,7 +469,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange }: TopNavProps) {
             to="/wallet-web3"
             className="hidden sm:flex items-center gap-1 px-3 py-1 rounded text-[11px] font-bold"
             style={{
-              background: "linear-gradient(135deg, #3B82F6, #60A5FA)",
+              background: "linear-gradient(135deg, #059669, #10B981)",
               color: "white",
               textDecoration: "none",
             }}
@@ -490,13 +490,13 @@ const TopNav = memo(function TopNav({ solPrice, solChange }: TopNavProps) {
               width: "26px",
               height: "26px",
               background:
-                "linear-gradient(135deg, rgba(59,130,246,0.3), rgba(96,165,250,0.2))",
+                "linear-gradient(135deg, rgba(16,185,129,0.3), rgba(5,150,105,0.2))",
               border: "1px solid rgba(255,255,255,0.1)",
               textDecoration: "none",
             }}
           >
             <span
-              style={{ fontSize: "9px", fontWeight: 800, color: "#F0F4FC" }}
+              style={{ fontSize: "9px", fontWeight: 800, color: "#FFFFFF" }}
             >
               ME
             </span>
@@ -518,7 +518,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange }: TopNavProps) {
               height="13"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#7B8BA8"
+              stroke="#9CA3AF"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -534,7 +534,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange }: TopNavProps) {
                 width: "6px",
                 height: "6px",
                 borderRadius: "50%",
-                background: "#3B82F6",
+                background: "#10B981",
               }}
             />
           </Link>
@@ -566,7 +566,7 @@ const BottomBar = memo(function BottomBar({
     <nav
       className="fixed bottom-0 inset-x-0 z-50"
       style={{
-        background: "#0D1117",
+        background: "#121212",
         borderTop: "1px solid rgba(255,255,255,0.06)",
         height: "52px",
         display: "flex",
@@ -599,7 +599,7 @@ const BottomBar = memo(function BottomBar({
             >
               <span
                 style={{
-                  color: isActive ? "#60A5FA" : "#7B8BA8",
+                  color: isActive ? "#34D399" : "#9CA3AF",
                   transition: "color 0.2s ease",
                 }}
               >
@@ -609,7 +609,7 @@ const BottomBar = memo(function BottomBar({
                 style={{
                   fontSize: "9px",
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "#60A5FA" : "#7B8BA8",
+                  color: isActive ? "#34D399" : "#9CA3AF",
                   marginTop: "2px",
                   letterSpacing: "0.02em",
                   transition: "all 0.2s ease",
@@ -640,19 +640,19 @@ const BottomBar = memo(function BottomBar({
           height="20"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#7B8BA8"
+          stroke="#9CA3AF"
           strokeWidth="1.8"
           strokeLinecap="round"
         >
-          <circle cx="12" cy="5" r="1" fill="#7B8BA8" />
-          <circle cx="12" cy="12" r="1" fill="#7B8BA8" />
-          <circle cx="12" cy="19" r="1" fill="#7B8BA8" />
+          <circle cx="12" cy="5" r="1" fill="#9CA3AF" />
+          <circle cx="12" cy="12" r="1" fill="#9CA3AF" />
+          <circle cx="12" cy="19" r="1" fill="#9CA3AF" />
         </svg>
         <span
           style={{
             fontSize: "9px",
             fontWeight: 500,
-            color: "#7B8BA8",
+            color: "#9CA3AF",
             marginTop: "2px",
             letterSpacing: "0.02em",
           }}
@@ -705,7 +705,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
           bottom: 0,
           left: 0,
           right: 0,
-          background: "#111827",
+          background: "#1A1A1A",
           borderTopLeftRadius: "16px",
           borderTopRightRadius: "16px",
           borderTop: "1px solid rgba(255,255,255,0.08)",
@@ -749,7 +749,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
             style={{
               fontSize: "14px",
               fontWeight: 700,
-              color: "#F0F4FC",
+              color: "#FFFFFF",
             }}
           >
             Explore
@@ -761,7 +761,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
               border: "none",
               borderRadius: "6px",
               padding: "4px 10px",
-              color: "#7B8BA8",
+              color: "#9CA3AF",
               fontSize: "11px",
               fontWeight: 600,
               cursor: "pointer",
@@ -780,7 +780,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                 style={{
                   fontSize: "10px",
                   fontWeight: 700,
-                  color: "#4A5568",
+                  color: "#6B7280",
                   textTransform: "uppercase",
                   letterSpacing: "0.08em",
                   padding: "4px 8px 6px",
@@ -813,13 +813,13 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                         padding: "10px 10px",
                         borderRadius: "8px",
                         background: isActive
-                          ? "rgba(59,130,246,0.12)"
+                          ? "rgba(16,185,129,0.12)"
                           : "rgba(255,255,255,0.03)",
                         border: isActive
-                          ? "1px solid rgba(59,130,246,0.2)"
+                          ? "1px solid rgba(16,185,129,0.2)"
                           : "1px solid rgba(255,255,255,0.04)",
                         textDecoration: "none",
-                        color: isActive ? "#60A5FA" : "#C9D1E0",
+                        color: isActive ? "#34D399" : "#9CA3AF",
                         fontSize: "12px",
                         fontWeight: isActive ? 600 : 500,
                         transition: "all 0.15s ease",
@@ -827,7 +827,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                     >
                       <span
                         style={{
-                          color: isActive ? "#60A5FA" : "#7B8BA8",
+                          color: isActive ? "#34D399" : "#9CA3AF",
                           display: "flex",
                           flexShrink: 0,
                         }}

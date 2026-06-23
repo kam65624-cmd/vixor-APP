@@ -36,14 +36,14 @@ export const Route = createFileRoute("/_authenticated/analyze")({
 
 // ── Axiom Design System ──
 const S = {
-  bg: "#0A0E1A",
-  card: "#111827",
+  bg: "#121212",
+  card: "#1A1A1A",
   cardBorder: "1px solid rgba(255,255,255,0.06)",
-  text1: "#F0F4FC",
-  text2: "#7B8BA8",
-  text3: "#4A5568",
-  accent: "#3B82F6",
-  accentLight: "#60A5FA",
+  text1: "#FFFFFF",
+  text2: "#9CA3AF",
+  text3: "#6B7280",
+  accent: "#10B981",
+  accentLight: "#34D399",
   bullish: "#22C55E",
   bearish: "#EF4444",
   warning: "#F59E0B",
@@ -294,7 +294,7 @@ function Analyze() {
         <>
           <label style={{ display: "block", width: "100%", aspectRatio: "4/3", borderRadius: S.radius, border: "2px dashed rgba(255,255,255,0.1)", background: "rgba(17,24,39,0.5)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24 }}>
-              <div style={{ width: 64, height: 64, borderRadius: S.radius, background: "rgba(59,130,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <div style={{ width: 64, height: 64, borderRadius: S.radius, background: "rgba(16,185,129,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
                 <Upload style={{ width: 32, height: 32, color: S.accent }} />
               </div>
               <div style={{ fontWeight: 700, fontSize: 18, color: S.text1, marginBottom: 4 }}>{t("analyze.tapToUpload")}</div>
@@ -333,7 +333,7 @@ function Analyze() {
               </SelectContent>
             </Select>
             {selectedPair !== "auto" && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: S.badgeRadius, background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: S.badgeRadius, background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
                 <Crosshair style={{ width: 14, height: 14, color: S.accent }} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: S.accent }}>Analyzing: {selectedPair}</span>
               </div>
@@ -415,7 +415,7 @@ function Analyze() {
                 </SelectContent>
               </Select>
               {selectedPair !== "auto" && (
-                <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: S.badgeRadius, background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}>
+                <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: S.badgeRadius, background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
                   <Crosshair style={{ width: 14, height: 14, color: S.accent }} />
                   <span style={{ fontSize: 12, fontWeight: 700, color: S.accent }}>Analyzing: {selectedPair}</span>
                 </div>
@@ -434,8 +434,8 @@ function Analyze() {
                     style={{
                       height: 48, borderRadius: S.radius, fontSize: 12, fontWeight: 700, border: "1px solid",
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer",
-                      background: tradingStyle === s.id ? "rgba(59,130,246,0.15)" : S.card,
-                      borderColor: tradingStyle === s.id ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)",
+                      background: tradingStyle === s.id ? "rgba(16,185,129,0.15)" : S.card,
+                      borderColor: tradingStyle === s.id ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
                       color: tradingStyle === s.id ? S.accentLight : S.text2,
                     }}
                   >
@@ -447,7 +447,7 @@ function Analyze() {
             </div>
 
             {/* SMC/ICT Engine Note */}
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: 12, borderRadius: S.radius, background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.15)" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: 12, borderRadius: S.radius, background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.15)" }}>
               <Info style={{ width: 16, height: 16, color: S.accent, flexShrink: 0, marginTop: 2 }} />
               <p style={{ fontSize: 11, color: S.text2, lineHeight: 1.5, margin: 0 }}>
                 Analysis powered by the{" "}
@@ -479,7 +479,7 @@ function Analyze() {
       {stage === "analyzing" && (
         <div style={{ height: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
           <div style={{ position: "relative", marginBottom: 32 }}>
-            <div style={{ position: "absolute", inset: 0, borderRadius: 12, background: "rgba(59,130,246,0.2)", animation: "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite" }} />
+            <div style={{ position: "absolute", inset: 0, borderRadius: 12, background: "rgba(16,185,129,0.2)", animation: "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite" }} />
             <div style={{ position: "relative", width: 96, height: 96, borderRadius: 12, background: S.accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Loader2 style={{ width: 40, height: 40, color: "#fff", animation: "spin 1s linear infinite" }} strokeWidth={2.5} />
             </div>

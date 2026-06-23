@@ -8,8 +8,8 @@ interface BotStats {
   circuitBreakerOpen: boolean;
 }
 
-const card = { background: "#111827", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px" };
-const labelStyle = { fontSize: "10px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.05em", color: "#7B8BA8" };
+const card = { background: "#1A1A1A", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px" };
+const labelStyle = { fontSize: "10px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.05em", color: "#9CA3AF" };
 
 function ArbDashboard() {
   const [error, setError] = useState<string | null>(null);
@@ -22,12 +22,12 @@ function ArbDashboard() {
   }, []);
 
   return (
-    <div className="w-full" style={{ background: "#0A0E1A", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="w-full" style={{ background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Header */}
       <div className="flex items-center justify-between" style={{ padding: "24px 0" }}>
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "#F59E0B" }}>Arbitrage Terminal</h1>
-          <p className="text-sm" style={{ color: "#7B8BA8" }}>Cross-DEX + Triangular + CEX-DEX opportunities</p>
+          <p className="text-sm" style={{ color: "#9CA3AF" }}>Cross-DEX + Triangular + CEX-DEX opportunities</p>
         </div>
       </div>
 
@@ -45,12 +45,12 @@ function ArbDashboard() {
           <Zap style={{ width: 36, height: 36, color: "#F59E0B" }} />
         </div>
         <h3 className="text-xl font-bold mb-2">Arbitrage Scanner</h3>
-        <p className="text-sm mb-4" style={{ color: "#7B8BA8", maxWidth: "400px", margin: "0 auto 16px" }}>
+        <p className="text-sm mb-4" style={{ color: "#9CA3AF", maxWidth: "400px", margin: "0 auto 16px" }}>
           Automated arbitrage detection across Solana DEXs. Scans for cross-DEX, triangular, and CEX-DEX opportunities.
         </p>
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
           <span style={{ fontSize: "10px", fontWeight: 700, padding: "4px 10px", borderRadius: "4px", background: "rgba(245,158,11,0.12)", color: "#F59E0B", border: "1px solid rgba(245,158,11,0.2)" }}>COMING SOON</span>
-          <span style={{ fontSize: "10px", fontWeight: 600, padding: "4px 10px", borderRadius: "4px", background: "rgba(59,130,246,0.08)", color: "#60A5FA" }}>Requires: Scanner backend</span>
+          <span style={{ fontSize: "10px", fontWeight: 600, padding: "4px 10px", borderRadius: "4px", background: "rgba(16,185,129,0.08)", color: "#34D399" }}>Requires: Scanner backend</span>
         </div>
       </div>
     </div>

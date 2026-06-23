@@ -209,22 +209,22 @@ function DailyLoopPage() {
       className="space-y-5 pb-6 animate-in fade-in duration-500"
       style={
         {
-          background: "#0A0E1A",
-          color: "#F0F4FC",
+          background: "#121212",
+          color: "#FFFFFF",
           fontFamily: "'Inter', system-ui, sans-serif",
-          "--color-primary": "#3B82F6",
+          "--color-primary": "#10B981",
           "--color-primary-foreground": "#fff",
           "--color-muted": "rgba(255,255,255,0.05)",
-          "--color-muted-foreground": "#7B8BA8",
-          "--color-card": "#111827",
+          "--color-muted-foreground": "#9CA3AF",
+          "--color-card": "#1A1A1A",
           "--color-card-hover": "rgba(255,255,255,0.08)",
           "--color-border": "rgba(255,255,255,0.06)",
           "--color-bullish": "#22C55E",
           "--color-bearish": "#EF4444",
           "--color-neutral-wait": "#F59E0B",
-          "--color-info": "#3B82F6",
-          "--gradient-primary": "linear-gradient(135deg, #3B82F6, #2563EB)",
-          "--shadow-glow": "0 0 20px rgba(59,130,246,0.3)",
+          "--color-info": "#10B981",
+          "--gradient-primary": "linear-gradient(135deg, #10B981, #059669)",
+          "--shadow-glow": "0 0 20px rgba(16,185,129,0.3)",
         } as React.CSSProperties
       }
     >
@@ -260,7 +260,7 @@ function DailyLoopPage() {
             )}
             style={
               activeTab === tab
-                ? { background: "rgba(59,130,246,0.15)", color: "#60A5FA" }
+                ? { background: "rgba(16,185,129,0.15)", color: "#34D399" }
                 : undefined
             }
           >

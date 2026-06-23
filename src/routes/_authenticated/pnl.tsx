@@ -57,14 +57,14 @@ function PnLPage() {
     n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2);
 
   return (
-    <div style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%" }}>
+    <div style={{ background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%" }}>
       {/* Header */}
       <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center gap-2">
           <span className="text-lg">📈</span>
           <h1 className="text-lg font-bold">PnL Tracker</h1>
         </div>
-        <p className="text-[11px] mt-0.5" style={{ color: "#7B8BA8" }}>
+        <p className="text-[11px] mt-0.5" style={{ color: "#9CA3AF" }}>
           {closedTrades.length > 0
             ? `${closedTrades.length} closed trades · ${openTrades.length} open`
             : "No trades yet"}
@@ -73,35 +73,35 @@ function PnLPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         </div>
       ) : (
         <>
           {/* Stats Grid */}
           {closedTrades.length > 0 && (
             <div className="px-4 py-3 grid grid-cols-2 md:grid-cols-4 gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-              <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-                <div className="text-[9px]" style={{ color: "#4A5568" }}>Total PnL</div>
+              <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+                <div className="text-[9px]" style={{ color: "#6B7280" }}>Total PnL</div>
                 <div className="text-lg font-bold font-mono" style={{ color: totalPnl >= 0 ? "#22C55E" : "#EF4444" }}>{pnlFmt(totalPnl)}</div>
               </div>
-              <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-                <div className="text-[9px]" style={{ color: "#4A5568" }}>Win Rate</div>
-                <div className="text-lg font-bold font-mono" style={{ color: "#3B82F6" }}>{winRate}%</div>
-                <div className="text-[9px]" style={{ color: "#4A5568" }}>{wins}W / {losses}L</div>
+              <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+                <div className="text-[9px]" style={{ color: "#6B7280" }}>Win Rate</div>
+                <div className="text-lg font-bold font-mono" style={{ color: "#10B981" }}>{winRate}%</div>
+                <div className="text-[9px]" style={{ color: "#6B7280" }}>{wins}W / {losses}L</div>
               </div>
-              <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-                <div className="text-[9px]" style={{ color: "#4A5568" }}>Profit Factor</div>
+              <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+                <div className="text-[9px]" style={{ color: "#6B7280" }}>Profit Factor</div>
                 <div className="text-lg font-bold font-mono">{profitFactor === Infinity ? "∞" : profitFactor.toFixed(2)}</div>
               </div>
-              <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-                <div className="text-[9px]" style={{ color: "#4A5568" }}>Best Trade</div>
+              <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+                <div className="text-[9px]" style={{ color: "#6B7280" }}>Best Trade</div>
                 {bestTrade ? (
                   <>
                     <div className="text-[11px] font-bold" style={{ color: "#22C55E" }}>{bestTrade.pair}</div>
                     <div className="text-[9px] font-mono" style={{ color: "#22C55E" }}>{pnlFmt(bestTrade.pnl || 0)}</div>
                   </>
                 ) : (
-                  <div className="text-[11px]" style={{ color: "#4A5568" }}>—</div>
+                  <div className="text-[11px]" style={{ color: "#6B7280" }}>—</div>
                 )}
               </div>
             </div>
@@ -110,11 +110,11 @@ function PnLPage() {
           {/* Trade History Header */}
           <div className="px-4 py-2 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
             <span className="text-[11px] font-bold">Recent Trades</span>
-            <span className="text-[10px]" style={{ color: "#4A5568" }}>{trades.length} total</span>
+            <span className="text-[10px]" style={{ color: "#6B7280" }}>{trades.length} total</span>
           </div>
 
           {/* Table Header */}
-          <div className="px-4 py-1.5 flex items-center text-[9px] font-bold uppercase tracking-wider" style={{ color: "#4A5568", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+          <div className="px-4 py-1.5 flex items-center text-[9px] font-bold uppercase tracking-wider" style={{ color: "#6B7280", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
             <div style={{ width: "80px" }}>Pair</div>
             <div style={{ width: "50px" }}>Side</div>
             <div style={{ width: "75px" }} className="text-right">Entry</div>
@@ -140,12 +140,12 @@ function PnLPage() {
               ))
             ) : (
               <div className="flex flex-col items-center justify-center gap-3" style={{ padding: "40px 0" }}>
-                <p style={{ fontSize: "12px", color: "#7B8BA8" }}>No trades recorded yet</p>
+                <p style={{ fontSize: "12px", color: "#9CA3AF" }}>No trades recorded yet</p>
                 <button
                   onClick={() => navigate({ to: "/trade-desk" })}
                   style={{
                     padding: "8px 20px", borderRadius: "8px", border: "none", cursor: "pointer",
-                    background: "rgba(59,130,246,0.12)", color: "#60A5FA",
+                    background: "rgba(16,185,129,0.12)", color: "#34D399",
                     fontSize: "11px", fontWeight: 700,
                   }}>
                   Log a Trade
@@ -197,14 +197,14 @@ const TradeRow = memo(function TradeRow({
       </div>
       <div style={{ width: "75px", textAlign: "right" }}>{fmtPrice(trade.entry_price)}</div>
       <div style={{ width: "75px", textAlign: "right" }}>{trade.exit_price ? fmtPrice(trade.exit_price) : "—"}</div>
-      <div style={{ width: "55px", textAlign: "right", color: "#7B8BA8" }}>{trade.quantity ?? "—"}</div>
+      <div style={{ width: "55px", textAlign: "right", color: "#9CA3AF" }}>{trade.quantity ?? "—"}</div>
       <div style={{ width: "75px", textAlign: "right", fontWeight: 700, color }}>
         {trade.pnl !== null ? pnlFmt(trade.pnl) : "—"}
       </div>
-      <div style={{ width: "55px", textAlign: "right", color: trade.r_multiple && trade.r_multiple > 0 ? "#22C55E" : "#4A5568" }}>
+      <div style={{ width: "55px", textAlign: "right", color: trade.r_multiple && trade.r_multiple > 0 ? "#22C55E" : "#6B7280" }}>
         {trade.r_multiple ? `${trade.r_multiple.toFixed(1)}R` : "—"}
       </div>
-      <div style={{ width: "65px", textAlign: "right", color: "#4A5568" }}>
+      <div style={{ width: "65px", textAlign: "right", color: "#6B7280" }}>
         {fmtDuration(trade.entry_date, trade.exit_date)}
       </div>
     </div>

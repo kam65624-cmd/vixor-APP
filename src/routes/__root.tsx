@@ -29,16 +29,16 @@ import { I18nProvider } from "@/shared/i18n";
 
 function NotFoundComponent() {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", background: "#0f1424", padding: "16px" }}>
+    <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", background: "#121212", padding: "16px" }}>
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: "72px", fontWeight: 800, color: "#3B82F6" }}>404</div>
-        <h2 style={{ marginTop: "16px", fontSize: "20px", fontWeight: 600, color: "#F0F4FC" }}>Page not found</h2>
-        <p style={{ marginTop: "8px", fontSize: "14px", color: "#7B8BA8" }}>
+        <div style={{ fontSize: "72px", fontWeight: 800, color: "#10B981" }}>404</div>
+        <h2 style={{ marginTop: "16px", fontSize: "20px", fontWeight: 600, color: "#FFFFFF" }}>Page not found</h2>
+        <p style={{ marginTop: "8px", fontSize: "14px", color: "#9CA3AF" }}>
           The page you're looking for doesn't exist.
         </p>
         <Link
           to="/"
-          style={{ marginTop: "24px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", background: "#3B82F6", padding: "10px 24px", fontSize: "14px", fontWeight: 600, color: "#fff", textDecoration: "none" }}
+          style={{ marginTop: "24px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", background: "#10B981", padding: "10px 24px", fontSize: "14px", fontWeight: 600, color: "#fff", textDecoration: "none" }}
         >
           Back to dashboard
         </Link>
@@ -85,7 +85,7 @@ class GlobalErrorBoundary extends Component<
 
 function ErrorView({ error, onReset }: { error: Error | null; onReset: () => void }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", background: "#0f1424", padding: "16px" }}>
+    <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", background: "#121212", padding: "16px" }}>
       <div style={{ textAlign: "center", maxWidth: "400px" }}>
         <div style={{ width: "64px", height: "64px", borderRadius: "16px", background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -94,8 +94,8 @@ function ErrorView({ error, onReset }: { error: Error | null; onReset: () => voi
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
         </div>
-        <h1 style={{ fontSize: "20px", fontWeight: 600, color: "#F0F4FC" }}>Something went wrong</h1>
-        <p style={{ marginTop: "8px", fontSize: "14px", color: "#7B8BA8" }}>
+        <h1 style={{ fontSize: "20px", fontWeight: 600, color: "#FFFFFF" }}>Something went wrong</h1>
+        <p style={{ marginTop: "8px", fontSize: "14px", color: "#9CA3AF" }}>
           {error?.message?.includes("#310") || wasRenderLoopDetected()
             ? `A rendering loop was detected${wasRenderLoopDetected() ? ` in ${getRenderLoopComponent()}` : ""}. This has been automatically resolved.`
             : (error?.message ?? "An unexpected error occurred.")}
@@ -103,13 +103,13 @@ function ErrorView({ error, onReset }: { error: Error | null; onReset: () => voi
         <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "24px" }}>
           <button
             onClick={onReset}
-            style={{ padding: "10px 24px", borderRadius: "8px", border: "none", background: "#3B82F6", color: "#fff", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+            style={{ padding: "10px 24px", borderRadius: "8px", border: "none", background: "#10B981", color: "#fff", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
           >
             Try again
           </button>
           <Link
             to="/"
-            style={{ padding: "10px 24px", borderRadius: "8px", background: "#1a2035", border: "1px solid rgba(255,255,255,0.06)", color: "#F0F4FC", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}
+            style={{ padding: "10px 24px", borderRadius: "8px", background: "#1a2035", border: "1px solid rgba(255,255,255,0.06)", color: "#FFFFFF", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}
           >
             Go Home
           </Link>
@@ -124,7 +124,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#0f1424" },
+      { name: "theme-color", content: "#121212" },
       { title: "Vixor — Solana Meme Coin Trading Terminal" },
       {
         name: "description",
@@ -235,8 +235,8 @@ function RootComponent() {
       try {
         tg.ready();
         tg.expand();
-        tg.setHeaderColor?.("#08090C");
-        tg.setBackgroundColor?.("#08090C");
+        tg.setHeaderColor?.("#121212");
+        tg.setBackgroundColor?.("#121212");
         tg.disableVerticalSwipes?.();
         // Hide all Telegram chrome that competes with our own header / nav.
         // The screenshot showed a "Close" button and a menu icon — these are

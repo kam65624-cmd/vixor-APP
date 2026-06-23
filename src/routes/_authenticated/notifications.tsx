@@ -10,12 +10,12 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 });
 
 const typeConfig: Record<string, { icon: string; color: string }> = {
-  trade: { icon: "💰", color: "#3B82F6" },
+  trade: { icon: "💰", color: "#10B981" },
   alert: { icon: "🔔", color: "#F59E0B" },
   whale: { icon: "🐋", color: "#8B5CF6" },
   signal: { icon: "⚡", color: "#22C55E" },
-  system: { icon: "⚙️", color: "#7B8BA8" },
-  default: { icon: "📌", color: "#7B8BA8" },
+  system: { icon: "⚙️", color: "#9CA3AF" },
+  default: { icon: "📌", color: "#9CA3AF" },
 };
 
 function timeAgo(dateStr: string) {
@@ -44,14 +44,14 @@ const NotifItem = memo(function NotifItem({
     <div
       style={{
         display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 10px", borderRadius: 6,
-        borderLeft: isRead ? "none" : "3px solid #3B82F6",
-        background: isRead ? "transparent" : "rgba(59,130,246,0.03)",
+        borderLeft: isRead ? "none" : "3px solid #10B981",
+        background: isRead ? "transparent" : "rgba(16,185,129,0.03)",
         borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer",
         transition: "background 0.1s",
       }}
       onClick={() => !isRead && onRead(notif.id)}
       onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = isRead ? "transparent" : "rgba(59,130,246,0.03)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = isRead ? "transparent" : "rgba(16,185,129,0.03)"; }}
     >
       <div
         style={{
@@ -65,10 +65,10 @@ const NotifItem = memo(function NotifItem({
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 11, fontWeight: isRead ? 500 : 700, color: "#F0F4FC" }}>{notif.title}</span>
-          <span style={{ fontSize: 9, color: "#4A5568", flexShrink: 0 }}>{timeAgo(notif.created_at)}</span>
+          <span style={{ fontSize: 11, fontWeight: isRead ? 500 : 700, color: "#FFFFFF" }}>{notif.title}</span>
+          <span style={{ fontSize: 9, color: "#6B7280", flexShrink: 0 }}>{timeAgo(notif.created_at)}</span>
         </div>
-        <p style={{ fontSize: 10, color: "#7B8BA8", marginTop: 2, lineHeight: 1.4 }}>
+        <p style={{ fontSize: 10, color: "#9CA3AF", marginTop: 2, lineHeight: 1.4 }}>
           {notif.body || "No details"}
         </p>
       </div>
@@ -113,14 +113,14 @@ function NotificationsPage() {
   };
 
   return (
-    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#F0F4FC" }}>
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#FFFFFF" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 16 }}>🔔</span>
           <span style={{ fontSize: 16, fontWeight: 800 }}>Notifications</span>
           {unreadCount > 0 && (
-            <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 10, background: "rgba(59,130,246,0.15)", color: "#60A5FA", fontWeight: 700 }}>
+            <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 10, background: "rgba(16,185,129,0.15)", color: "#34D399", fontWeight: 700 }}>
               {unreadCount} new
             </span>
           )}
@@ -129,7 +129,7 @@ function NotificationsPage() {
           <button
             onClick={handleMarkAllRead}
             disabled={markReadMutation.isPending}
-            style={{ fontSize: 10, padding: "4px 10px", borderRadius: 4, border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "#7B8BA8", cursor: "pointer", fontWeight: 600 }}
+            style={{ fontSize: 10, padding: "4px 10px", borderRadius: 4, border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "#9CA3AF", cursor: "pointer", fontWeight: 600 }}
           >
             Mark all read
           </button>
@@ -144,9 +144,9 @@ function NotificationsPage() {
             onClick={() => setFilter(f)}
             style={{
               fontSize: 10, fontWeight: 600, padding: "4px 10px", borderRadius: 4, border: "none", cursor: "pointer", whiteSpace: "nowrap",
-              color: filter === f ? "#fff" : "#7B8BA8",
-              background: filter === f ? "rgba(59,130,246,0.15)" : "transparent",
-              borderBottom: filter === f ? "2px solid #3B82F6" : "2px solid transparent",
+              color: filter === f ? "#fff" : "#9CA3AF",
+              background: filter === f ? "rgba(16,185,129,0.15)" : "transparent",
+              borderBottom: filter === f ? "2px solid #10B981" : "2px solid transparent",
             }}
           >
             {f === "trade" ? "Trades" : f === "alert" ? "Alerts" : f === "whale" ? "Whale" : f === "signal" ? "Signals" : f}
@@ -157,7 +157,7 @@ function NotificationsPage() {
       {/* List */}
       {notifsQuery.isLoading ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         </div>
       ) : filtered.length > 0 ? (
         <div style={{ padding: "4px 8px" }}>
@@ -168,7 +168,7 @@ function NotificationsPage() {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px", gap: 12 }}>
           <span style={{ fontSize: 32, opacity: 0.5 }}>🔔</span>
-          <p style={{ fontSize: 13, color: "#7B8BA8" }}>
+          <p style={{ fontSize: 13, color: "#9CA3AF" }}>
             {notifications.length === 0 ? "No notifications yet" : "No notifications match this filter"}
           </p>
         </div>

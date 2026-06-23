@@ -56,7 +56,7 @@
 :root {
   --radius: 0.875rem;
 
-  --background: oklch(0.16 0.012 260); /* #08090C */
+  --background: oklch(0.16 0.012 260); /* #121212 */
   --foreground: oklch(0.97 0.005 250);
   --card: oklch(0.205 0.014 260); /* #0F1117 */
   --card-foreground: oklch(0.97 0.005 250);
@@ -83,7 +83,7 @@
   --bullish: oklch(0.72 0.17 162); /* #10B981 */
   --bearish: oklch(0.65 0.24 25); /* #EF4444 */
   --neutral-wait: oklch(0.78 0.17 75); /* #F59E0B */
-  --info: oklch(0.65 0.18 255); /* #3B82F6 */
+  --info: oklch(0.65 0.18 255); /* #10B981 */
   --tp1: oklch(0.72 0.17 162);
   --tp2: oklch(0.81 0.16 162);
   --tp3: oklch(0.88 0.13 162);

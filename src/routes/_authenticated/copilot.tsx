@@ -89,8 +89,8 @@ const AGENTS: AgentConfig[] = [
     id: "auto",
     label: "Auto",
     icon: Zap,
-    color: "text-[#3B82F6]",
-    bgColor: "bg-[#3B82F6]/10",
+    color: "text-[#10B981]",
+    bgColor: "bg-[#10B981]/10",
     desc: "AI Picks Best Agent",
     capabilities: ["Auto-detects question type", "Routes to the best agent"],
   },
@@ -717,7 +717,7 @@ function CopilotPage() {
 
   const getAgentColor = (agentId: string | null) => {
     const agent = AGENTS.find((a) => a.id === agentId);
-    if (!agent || agentId === "auto") return "text-[#3B82F6]";
+    if (!agent || agentId === "auto") return "text-[#10B981]";
     return agent.color;
   };
 
@@ -725,7 +725,7 @@ function CopilotPage() {
     <div className="flex h-[calc(100vh-8rem)] animate-in fade-in slide-in-from-bottom-2 duration-500">
       {/* ─── Desktop Sidebar ─── */}
       <div
-        className={`hidden lg:flex flex-col border-r border-[#1E293B] transition-all duration-300 shrink-0 ${
+        className={`hidden lg:flex flex-col border-r border-[#2A2A2A] transition-all duration-300 shrink-0 ${
           sidebarOpen ? "w-72" : "w-0 overflow-hidden"
         }`}
       >
@@ -759,7 +759,7 @@ function CopilotPage() {
             className="absolute inset-0 bg-black/50"
             onClick={() => setMobileDrawerOpen(false)}
           />
-          <div className="relative w-80 max-w-[85vw] h-full bg-[#0A0E1A] border-r border-[#1E293B] animate-in slide-in-from-left duration-200">
+          <div className="relative w-80 max-w-[85vw] h-full bg-[#121212] border-r border-[#2A2A2A] animate-in slide-in-from-left duration-200">
             <ConversationSidebar
               conversations={conversations}
               activeConversationId={activeConversationId}
@@ -800,7 +800,7 @@ function CopilotPage() {
                     setSidebarOpen(!sidebarOpen);
                   }
                 }}
-                className="size-9 rounded-xl bg-[#111827] border border-[#1E293B] flex items-center justify-center hover:bg-[#1a2234] transition-colors"
+                className="size-9 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center hover:bg-[#1E1E1E] transition-colors"
                 title="Chat history"
               >
                 {sidebarOpen ? (
@@ -810,7 +810,7 @@ function CopilotPage() {
                 )}
               </button>
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#3B82F6] mb-0.5">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#10B981] mb-0.5">
                   {t("copilot.vixorAi") || "Vixor AI"}
                 </div>
                 <h1 className="text-2xl font-bold tracking-tight">
@@ -822,7 +822,7 @@ function CopilotPage() {
               {messages.length > 0 && (
                 <button
                   onClick={startNewChat}
-                  className="size-9 rounded-xl bg-[#111827] border border-[#1E293B] flex items-center justify-center hover:bg-[#1a2234] transition-colors"
+                  className="size-9 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center hover:bg-[#1E1E1E] transition-colors"
                   title="New chat"
                 >
                   <Plus className="size-4 text-gray-400" />
@@ -835,7 +835,7 @@ function CopilotPage() {
                     setActiveConversationId(null);
                     setConsensusMode(false);
                   }}
-                  className="size-9 rounded-xl bg-[#111827] border border-[#1E293B] flex items-center justify-center hover:bg-[#1a2234] transition-colors"
+                  className="size-9 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center hover:bg-[#1E1E1E] transition-colors"
                   title="Clear chat"
                 >
                   <RotateCcw className="size-4 text-gray-400" />
@@ -849,7 +849,7 @@ function CopilotPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowAgents(!showAgents)}
-                className="flex items-center gap-2 px-3 h-9 rounded-xl bg-[#111827] border border-[#1E293B] hover:bg-[#1a2234] transition-colors flex-1 sm:flex-none"
+                className="flex items-center gap-2 px-3 h-9 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#1E1E1E] transition-colors flex-1 sm:flex-none"
               >
                 <currentAgentConfig.icon className={`size-4 ${currentAgentConfig.color}`} />
                 <span className="text-xs font-bold">{currentAgentConfig.label}</span>
@@ -862,8 +862,8 @@ function CopilotPage() {
                 onClick={() => setConsensusMode(!consensusMode)}
                 className={`flex items-center gap-2 px-3 h-9 rounded-xl border text-xs font-bold transition-all ${
                   consensusMode
-                    ? "bg-[#3B82F6]/15 border-[#3B82F6]/40 text-[#3B82F6]"
-                    : "bg-[#111827] border-[#1E293B] text-gray-400 hover:bg-[#1a2234]"
+                    ? "bg-[#10B981]/15 border-[#10B981]/40 text-[#10B981]"
+                    : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:bg-[#1E1E1E]"
                 }`}
               >
                 <Users className="size-4" />
@@ -875,8 +875,8 @@ function CopilotPage() {
             </div>
 
             {consensusMode && (
-              <div className="p-2.5 rounded-xl bg-[#3B82F6]/5 border border-[#3B82F6]/20 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div className="flex items-center gap-2 text-xs text-[#3B82F6] font-bold">
+              <div className="p-2.5 rounded-xl bg-[#10B981]/5 border border-[#10B981]/20 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="flex items-center gap-2 text-xs text-[#10B981] font-bold">
                   <Users className="size-3.5" />
                   {t("copilot.consensusMode") || "Multi-Agent Consensus"}
                 </div>
@@ -901,8 +901,8 @@ function CopilotPage() {
                       }}
                       className={`w-full p-3 rounded-xl border text-left transition-all ${
                         isActive
-                          ? "bg-[#3B82F6]/10 border-[#3B82F6]/30"
-                          : "bg-[#111827] border-[#1E293B] hover:bg-[#1a2234]"
+                          ? "bg-[#10B981]/10 border-[#10B981]/30"
+                          : "bg-[#1A1A1A] border-[#2A2A2A] hover:bg-[#1E1E1E]"
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1.5">
@@ -912,12 +912,12 @@ function CopilotPage() {
                           <Icon className={`size-3.5 ${agent.color}`} />
                         </div>
                         <span
-                          className={`text-xs font-bold ${isActive ? "text-[#3B82F6]" : "text-white"}`}
+                          className={`text-xs font-bold ${isActive ? "text-[#10B981]" : "text-white"}`}
                         >
                           {agent.label}
                         </span>
                         {agent.id === "auto" && (
-                          <span className="text-[9px] bg-[#3B82F6]/10 text-[#3B82F6] px-1.5 py-0.5 rounded-md font-bold">
+                          <span className="text-[9px] bg-[#10B981]/10 text-[#10B981] px-1.5 py-0.5 rounded-md font-bold">
                             {t("copilot.autoMode")?.split(" ")[0] || "AUTO"}
                           </span>
                         )}
@@ -927,7 +927,7 @@ function CopilotPage() {
                         {agent.capabilities.slice(0, 4).map((cap, i) => (
                           <span
                             key={i}
-                            className="text-[9px] bg-[#111827] border border-[#1E293B] px-1.5 py-0.5 rounded-md text-gray-400"
+                            className="text-[9px] bg-[#1A1A1A] border border-[#2A2A2A] px-1.5 py-0.5 rounded-md text-gray-400"
                           >
                             {cap}
                           </span>
@@ -961,12 +961,12 @@ function CopilotPage() {
 
           {copilotMutation.isPending && (
             <div className="flex items-start gap-3 animate-in fade-in duration-300">
-              <div className="size-8 rounded-xl bg-[#3B82F6]/10 border border-[#3B82F6]/20 flex items-center justify-center shrink-0">
-                <Bot className="size-4 text-[#3B82F6]" />
+              <div className="size-8 rounded-xl bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center shrink-0">
+                <Bot className="size-4 text-[#10B981]" />
               </div>
               <div className="vixor-card p-4 flex-1">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="size-4 animate-spin text-[#3B82F6]" />
+                  <Loader2 className="size-4 animate-spin text-[#10B981]" />
                   <span className="text-xs text-gray-400">
                     {consensusMode
                       ? "Getting consensus from all agents..."
@@ -979,12 +979,12 @@ function CopilotPage() {
 
           {consensusMutation.isPending && (
             <div className="flex items-start gap-3 animate-in fade-in duration-300">
-              <div className="size-8 rounded-xl bg-[#3B82F6]/10 border border-[#3B82F6]/20 flex items-center justify-center shrink-0">
-                <Users className="size-4 text-[#3B82F6]" />
+              <div className="size-8 rounded-xl bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center shrink-0">
+                <Users className="size-4 text-[#10B981]" />
               </div>
               <div className="vixor-card p-4 flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <Loader2 className="size-4 animate-spin text-[#3B82F6]" />
+                  <Loader2 className="size-4 animate-spin text-[#10B981]" />
                   <span className="text-xs text-gray-400">Consulting all 4 agents...</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -1007,7 +1007,7 @@ function CopilotPage() {
         </div>
 
         {/* ─── Input Area ─── */}
-        <div className="flex-shrink-0 pt-3 border-t border-[#1E293B]">
+        <div className="flex-shrink-0 pt-3 border-t border-[#2A2A2A]">
           <form onSubmit={handleSubmit} className="flex items-end gap-2">
             <div className="flex-1 relative">
               <textarea
@@ -1022,7 +1022,7 @@ function CopilotPage() {
                     : t("copilot.placeholder") || "Ask Vixor anything about trading..."
                 }
                 rows={1}
-                className="w-full resize-none rounded-xl bg-[#111827] border border-[#1E293B] px-4 py-3 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6]/50 transition-all max-h-32 min-h-[44px]"
+                className="w-full resize-none rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] px-4 py-3 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#10B981]/30 focus:border-[#10B981]/50 transition-all max-h-32 min-h-[44px]"
                 style={{ height: "auto" }}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
@@ -1038,7 +1038,7 @@ function CopilotPage() {
               className={`size-11 rounded-xl flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${
                 consensusMode
                   ? "bg-gradient-to-r from-emerald-500 via-amber-500 to-violet-500 text-white"
-                  : "bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white "
+                  : "bg-gradient-to-r from-[#10B981] to-[#059669] text-white "
               }`}
             >
               {isPending ? (
@@ -1116,10 +1116,10 @@ function ConversationSidebar({
   return (
     <div className="flex flex-col h-full">
       {/* New Chat Button */}
-      <div className="p-3 border-b border-[#1E293B]">
+      <div className="p-3 border-b border-[#2A2A2A]">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center gap-2 px-3 h-9 rounded-xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-xs font-bold hover:opacity-90 transition-opacity"
+          className="w-full flex items-center gap-2 px-3 h-9 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] text-white text-xs font-bold hover:opacity-90 transition-opacity"
         >
           <Plus className="size-4" />
           New Chat
@@ -1152,8 +1152,8 @@ function ConversationSidebar({
                 key={conv.id}
                 className={`group rounded-xl border transition-all ${
                   isActive
-                    ? "bg-[#3B82F6]/10 border-[#3B82F6]/20"
-                    : "border-transparent hover:bg-[#111827] hover:border-[#1E293B]"
+                    ? "bg-[#10B981]/10 border-[#10B981]/20"
+                    : "border-transparent hover:bg-[#1A1A1A] hover:border-[#2A2A2A]"
                 }`}
               >
                 {isEditing ? (
@@ -1169,17 +1169,17 @@ function ConversationSidebar({
                           setEditingTitleId(null);
                         }
                       }}
-                      className="flex-1 text-xs bg-[#111827] border border-[#1E293B] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#3B82F6]/30"
+                      className="flex-1 text-xs bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#10B981]/30"
                     />
                     <button
                       onClick={() => onRename(conv.id, editingTitleValue)}
-                      className="size-6 rounded-lg flex items-center justify-center hover:bg-[#1a2234]"
+                      className="size-6 rounded-lg flex items-center justify-center hover:bg-[#1E1E1E]"
                     >
                       <Check className="size-3 text-emerald-400" />
                     </button>
                     <button
                       onClick={() => setEditingTitleId(null)}
-                      className="size-6 rounded-lg flex items-center justify-center hover:bg-[#1a2234]"
+                      className="size-6 rounded-lg flex items-center justify-center hover:bg-[#1E1E1E]"
                     >
                       <X className="size-3 text-gray-400" />
                     </button>
@@ -1198,7 +1198,7 @@ function ConversationSidebar({
                       </button>
                       <button
                         onClick={() => setDeleteConfirmId(null)}
-                        className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg bg-[#111827] border border-[#1E293B] hover:bg-[#1a2234] transition-colors"
+                        className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#1E1E1E] transition-colors"
                       >
                         Cancel
                       </button>
@@ -1211,19 +1211,19 @@ function ConversationSidebar({
                       className="flex items-center gap-2 flex-1 min-w-0 text-left"
                     >
                       <div
-                        className={`size-6 rounded-lg ${isActive ? "bg-[#3B82F6]/15" : "bg-[#111827]"} border border-[#1E293B] flex items-center justify-center shrink-0`}
+                        className={`size-6 rounded-lg ${isActive ? "bg-[#10B981]/15" : "bg-[#1A1A1A]"} border border-[#2A2A2A] flex items-center justify-center shrink-0`}
                       >
                         {conv.is_consensus ? (
-                          <Users className={`size-3 ${isActive ? "text-[#3B82F6]" : agentColor}`} />
+                          <Users className={`size-3 ${isActive ? "text-[#10B981]" : agentColor}`} />
                         ) : (
                           <AgentIcon
-                            className={`size-3 ${isActive ? "text-[#3B82F6]" : agentColor}`}
+                            className={`size-3 ${isActive ? "text-[#10B981]" : agentColor}`}
                           />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div
-                          className={`text-xs font-medium truncate ${isActive ? "text-[#3B82F6]" : "text-white"}`}
+                          className={`text-xs font-medium truncate ${isActive ? "text-[#10B981]" : "text-white"}`}
                         >
                           {conv.title}
                         </div>
@@ -1239,7 +1239,7 @@ function ConversationSidebar({
                           setEditingTitleId(conv.id);
                           setEditingTitleValue(conv.title);
                         }}
-                        className="size-6 rounded-lg flex items-center justify-center hover:bg-[#1a2234]"
+                        className="size-6 rounded-lg flex items-center justify-center hover:bg-[#1E1E1E]"
                         title="Rename"
                       >
                         <Pencil className="size-3 text-gray-400" />
@@ -1265,7 +1265,7 @@ function ConversationSidebar({
 
       {/* Pagination */}
       {total > pageSize && (
-        <div className="border-t border-[#1E293B] p-2">
+        <div className="border-t border-[#2A2A2A] p-2">
           <PaginationBar
             page={page}
             pageSize={pageSize}
@@ -1314,10 +1314,10 @@ function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center h-full py-8 px-4">
       <div className="relative mb-6">
-        <div className="size-20 rounded-2xl bg-[#3B82F6]/10 border border-[#3B82F6]/20 flex items-center justify-center">
-          <Sparkles className="size-9 text-[#3B82F6]" />
+        <div className="size-20 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center">
+          <Sparkles className="size-9 text-[#10B981]" />
         </div>
-        <div className="absolute -right-1 -top-1 size-5 rounded-full bg-[#3B82F6] flex items-center justify-center">
+        <div className="absolute -right-1 -top-1 size-5 rounded-full bg-[#10B981] flex items-center justify-center">
           <Bot className="size-3 text-white" />
         </div>
       </div>
@@ -1333,11 +1333,11 @@ function EmptyState({
       {/* Consensus CTA */}
       <button
         onClick={() => onConsensus(true)}
-        className="w-full max-w-lg mb-4 p-3 rounded-xl bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-violet-500/10 border border-[#3B82F6]/20 hover:border-[#3B82F6]/40 transition-all group"
+        className="w-full max-w-lg mb-4 p-3 rounded-xl bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-violet-500/10 border border-[#10B981]/20 hover:border-[#10B981]/40 transition-all group"
       >
         <div className="flex items-center gap-2 justify-center">
-          <Users className="size-4 text-[#3B82F6]" />
-          <span className="text-xs font-bold text-[#3B82F6]">
+          <Users className="size-4 text-[#10B981]" />
+          <span className="text-xs font-bold text-[#10B981]">
             {t("copilot.getConsensus") || "Get Multi-Agent Consensus"}
           </span>
         </div>
@@ -1354,11 +1354,11 @@ function EmptyState({
             <button
               key={i}
               onClick={() => onQuickAction(action.prompt, action.agent)}
-              className="p-3 rounded-xl bg-[#111827] border border-[#1E293B] text-left hover:bg-[#1a2234] hover:border-[#3B82F6]/30 transition-all group"
+              className="p-3 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] text-left hover:bg-[#1E1E1E] hover:border-[#10B981]/30 transition-all group"
             >
               <div className="flex items-center gap-2 mb-1">
-                <Icon className={`size-3.5 ${agentConfig?.color || "text-[#3B82F6]"}`} />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 group-hover:text-[#3B82F6] transition-colors">
+                <Icon className={`size-3.5 ${agentConfig?.color || "text-[#10B981]"}`} />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 group-hover:text-[#10B981] transition-colors">
                   {agentConfig?.label}
                 </span>
               </div>
@@ -1401,7 +1401,7 @@ function MessageBubble({
     ? "text-red-400"
     : isUser
       ? "text-gray-400"
-      : agentConfig?.color || "text-[#3B82F6]";
+      : agentConfig?.color || "text-[#10B981]";
 
   // Detect agent handoff suggestions in the message
   const handoffAgents = detectHandoffAgents(message.content);
@@ -1413,10 +1413,10 @@ function MessageBubble({
       <div
         className={`size-8 rounded-xl flex items-center justify-center shrink-0 ${
           isUser
-            ? "bg-[#111827] border border-[#1E293B]"
+            ? "bg-[#1A1A1A] border border-[#2A2A2A]"
             : isError
               ? "bg-red-500/10 border border-red-500/20"
-              : `bg-[#3B82F6]/10 border border-[#3B82F6]/20`
+              : `bg-[#10B981]/10 border border-[#10B981]/20`
         }`}
       >
         <Icon className={`size-4 ${iconColor}`} />
@@ -1424,7 +1424,7 @@ function MessageBubble({
       <div
         className={`max-w-[85%] vixor-card p-4 ${
           isUser
-            ? "bg-[#3B82F6]/5 border-[#3B82F6]/15"
+            ? "bg-[#10B981]/5 border-[#10B981]/15"
             : isError
               ? "border-red-500/20 bg-bearish/5"
               : ""
@@ -1443,7 +1443,7 @@ function MessageBubble({
 
         {/* Agent handoff buttons */}
         {!isUser && handoffAgents.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-[#1E293B]/50">
+          <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-[#2A2A2A]/50">
             {handoffAgents.map((hAgent) => {
               const hConfig = AGENTS.find((a) => a.id === hAgent);
               if (!hConfig) return null;
@@ -1452,7 +1452,7 @@ function MessageBubble({
                 <button
                   key={hAgent}
                   onClick={() => onConsultAgent(hAgent)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#111827] border border-[#1E293B] text-[10px] font-bold hover:bg-[#1a2234] hover:border-[#3B82F6]/30 transition-all"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] text-[10px] font-bold hover:bg-[#1E1E1E] hover:border-[#10B981]/30 transition-all"
                 >
                   <HIcon className={`size-3 ${hConfig.color}`} />
                   <span className={hConfig.color}>
@@ -1494,13 +1494,13 @@ function ConsensusBubble({
     <div className="animate-in fade-in slide-in-from-bottom-1 duration-300">
       {/* Synthesis section */}
       <div className="flex items-start gap-3 mb-3">
-        <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500/20 via-amber-500/20 to-violet-500/20 border border-[#3B82F6]/20 flex items-center justify-center shrink-0">
-          <Users className="size-4 text-[#3B82F6]" />
+        <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500/20 via-amber-500/20 to-violet-500/20 border border-[#10B981]/20 flex items-center justify-center shrink-0">
+          <Users className="size-4 text-[#10B981]" />
         </div>
-        <div className="vixor-card p-4 flex-1 border-[#3B82F6]/15">
+        <div className="vixor-card p-4 flex-1 border-[#10B981]/15">
           <div className="flex items-center gap-1.5 mb-2">
-            <Sparkles className="size-3 text-[#3B82F6]" />
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[#3B82F6]">
+            <Sparkles className="size-3 text-[#10B981]" />
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[#10B981]">
               {t("copilot.synthesis") || "AI Synthesis"}
             </span>
           </div>
@@ -1522,7 +1522,7 @@ function ConsensusBubble({
             <div key={r.agent} className="vixor-card overflow-hidden">
               <button
                 onClick={() => setExpandedAgent(isExpanded ? null : r.agent)}
-                className="w-full flex items-center gap-2 p-3 hover:bg-[#1a2234] transition-colors"
+                className="w-full flex items-center gap-2 p-3 hover:bg-[#1E1E1E] transition-colors"
               >
                 <div
                   className={`size-6 rounded-lg ${agentConfig.bgColor} flex items-center justify-center`}
@@ -1545,7 +1545,7 @@ function ConsensusBubble({
                   </div>
                   <button
                     onClick={() => onConsultAgent(r.agent)}
-                    className="mt-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-[#111827] border border-[#1E293B] text-[10px] font-bold hover:bg-[#1a2234] transition-all"
+                    className="mt-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] text-[10px] font-bold hover:bg-[#1E1E1E] transition-all"
                   >
                     <AIcon className={`size-3 ${agentConfig.color}`} />
                     <span className={agentConfig.color}>
@@ -1609,7 +1609,7 @@ function FormattedContent({ content }: { content: string }) {
               );
             if (line.startsWith("# "))
               return (
-                <h3 key={lineIdx} className="text-sm font-bold text-[#3B82F6] mt-2 mb-1">
+                <h3 key={lineIdx} className="text-sm font-bold text-[#10B981] mt-2 mb-1">
                   {formatInline(line.slice(2))}
                 </h3>
               );
@@ -1617,7 +1617,7 @@ function FormattedContent({ content }: { content: string }) {
               return (
                 <div
                   key={lineIdx}
-                  className="pl-3 border-l-2 border-[#3B82F6]/40 my-1 text-gray-400"
+                  className="pl-3 border-l-2 border-[#10B981]/40 my-1 text-gray-400"
                 >
                   {formatInline(line.slice(2))}
                 </div>
@@ -1625,7 +1625,7 @@ function FormattedContent({ content }: { content: string }) {
             if (line.match(/^[-*•]\s/))
               return (
                 <div key={lineIdx} className="flex items-start gap-1.5 my-0.5">
-                  <span className="text-[#3B82F6] mt-0.5 shrink-0">•</span>
+                  <span className="text-[#10B981] mt-0.5 shrink-0">•</span>
                   <span>{formatInline(line.replace(/^[-*•]\s/, ""))}</span>
                 </div>
               );
@@ -1634,7 +1634,7 @@ function FormattedContent({ content }: { content: string }) {
               if (match)
                 return (
                   <div key={lineIdx} className="flex items-start gap-1.5 my-0.5">
-                    <span className="text-[#3B82F6] font-bold text-xs mt-0.5 shrink-0">
+                    <span className="text-[#10B981] font-bold text-xs mt-0.5 shrink-0">
                       {match[1]}
                     </span>
                     <span>{formatInline(match[2])}</span>
@@ -1679,7 +1679,7 @@ function formatInline(text: string): React.ReactNode[] {
       parts.push(
         <code
           key={key++}
-          className="px-1.5 py-0.5 rounded-md bg-[#3B82F6]/10 text-[#3B82F6] font-mono text-xs font-bold"
+          className="px-1.5 py-0.5 rounded-md bg-[#10B981]/10 text-[#10B981] font-mono text-xs font-bold"
         >
           {match[3]}
         </code>,

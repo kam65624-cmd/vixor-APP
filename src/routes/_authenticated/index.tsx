@@ -10,17 +10,17 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 const C = {
-  bg: "#0f1424", surface: "#161b2e", surfaceLight: "#1a2035", surfaceHover: "#1e2438",
+  bg: "#121212", surface: "#1E1E1E", surfaceLight: "#1a2035", surfaceHover: "#1e2438",
   border: "rgba(255,255,255,0.06)", borderLight: "rgba(255,255,255,0.04)",
-  text: "#F0F4FC", textSecondary: "#7B8BA8", textTertiary: "#4A5568",
-  blue: "#3B82F6", blueLight: "#60A5FA", green: "#22C55E", red: "#EF4444",
+  text: "#FFFFFF", textSecondary: "#9CA3AF", textTertiary: "#6B7280",
+  blue: "#10B981", blueLight: "#34D399", green: "#22C55E", red: "#EF4444",
   yellow: "#F59E0B", purple: "#8B5CF6",
 };
 
 const QUICK_ACTIONS = [
-  { label: "Discover", icon: "\uD83D\uDD0D", to: "/discover" as const, color: "#3B82F6" },
+  { label: "Discover", icon: "\uD83D\uDD0D", to: "/discover" as const, color: "#10B981" },
   { label: "AI Copilot", icon: "\uD83E\uDD16", to: "/copilot" as const, color: "#8B5CF6" },
-  { label: "Whale Alerts", icon: "\uD83D\uDC0B", to: "/whale" as const, color: "#3B82F6" },
+  { label: "Whale Alerts", icon: "\uD83D\uDC0B", to: "/whale" as const, color: "#10B981" },
   { label: "PnL Tracker", icon: "\uD83D\uDCC8", to: "/pnl" as const, color: "#22C55E" },
   { label: "Alpha Signals", icon: "\u26A1", to: "/alpha" as const, color: "#F59E0B" },
   { label: "My Bags", icon: "\uD83C\uDF92", to: "/bags" as const, color: "#EC4899" },
@@ -97,7 +97,7 @@ function HomePage() {
             </div>
             {isLoading ? (
               <div className="flex items-center justify-center" style={{ padding: "30px 0" }}>
-                <div style={{ width: 24, height: 24, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                <div style={{ width: 24, height: 24, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
               </div>
             ) : holdings.length > 0 ? holdings.map((h) => (
               <div key={h.symbol} style={{
@@ -178,7 +178,7 @@ function HomePage() {
             <div style={{ padding: "4px" }}>
               {isLoading ? (
                 <div className="flex items-center justify-center" style={{ padding: "30px 0" }}>
-                  <div style={{ width: 24, height: 24, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                  <div style={{ width: 24, height: 24, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
                 </div>
               ) : liveSignals.length > 0 ? liveSignals.map((s) => {
                 const isBuy = s.type === "BUY";
@@ -253,7 +253,7 @@ function HomePage() {
             </div>
             {isLoading ? (
               <div className="flex items-center justify-center" style={{ padding: "30px 0" }}>
-                <div style={{ width: 24, height: 24, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                <div style={{ width: 24, height: 24, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
               </div>
             ) : liveSignals.length > 0 ? liveSignals.map((s, i) => (
               <div key={i} style={{

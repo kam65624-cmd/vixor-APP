@@ -27,7 +27,7 @@ interface WorkspaceSwitcherProps {
 const WORKSPACES: { id: WorkspaceStyle; label: string; shortLabel: string; color: string }[] = [
   { id: "os", label: "Intelligence OS", shortLabel: "OS", color: "#FBBF24" },
   { id: "bullx", label: "BullX Terminal", shortLabel: "BX", color: "#00D4AA" },
-  { id: "axiom", label: "Axiom Grid", shortLabel: "AX", color: "#3B82F6" },
+  { id: "axiom", label: "Axiom Grid", shortLabel: "AX", color: "#10B981" },
   { id: "opensea", label: "OpenSea", shortLabel: "OS", color: "#2081E2" },
 ];
 

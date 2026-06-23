@@ -10,35 +10,35 @@ export const Route = createFileRoute("/_authenticated/referral")({
 });
 
 const S = {
-  page: { background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100vh", padding: "20px" },
+  page: { background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100vh", padding: "20px" },
   header: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" },
-  title: { fontSize: "22px", fontWeight: 700, color: "#F0F4FC", margin: 0 },
-  subtitle: { fontSize: "12px", color: "#7B8BA8", marginTop: "4px", marginBottom: "20px" },
-  heroCard: { background: "linear-gradient(135deg, rgba(59,130,246,0.12) 0%, rgba(59,130,246,0.03) 100%)", borderRadius: "16px", border: "1px solid rgba(59,130,246,0.15)", padding: "32px", marginBottom: "24px", textAlign: "center" as const, position: "relative" as const, overflow: "hidden" },
-  heroTitle: { fontSize: "20px", fontWeight: 700, color: "#F0F4FC", marginBottom: "6px" },
-  heroSub: { fontSize: "13px", color: "#7B8BA8" },
-  codeCard: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", marginBottom: "24px" },
-  codeLabel: { fontSize: "11px", fontWeight: 600, color: "#7B8BA8", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "10px" },
+  title: { fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0 },
+  subtitle: { fontSize: "12px", color: "#9CA3AF", marginTop: "4px", marginBottom: "20px" },
+  heroCard: { background: "linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.03) 100%)", borderRadius: "16px", border: "1px solid rgba(16,185,129,0.15)", padding: "32px", marginBottom: "24px", textAlign: "center" as const, position: "relative" as const, overflow: "hidden" },
+  heroTitle: { fontSize: "20px", fontWeight: 700, color: "#FFFFFF", marginBottom: "6px" },
+  heroSub: { fontSize: "13px", color: "#9CA3AF" },
+  codeCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", marginBottom: "24px" },
+  codeLabel: { fontSize: "11px", fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "10px" },
   codeRow: { display: "flex", alignItems: "center", gap: "10px" },
-  codeBox: { flex: 1, background: "#1a2035", borderRadius: "10px", padding: "14px 18px", fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", fontSize: "16px", fontWeight: 700, color: "#F0F4FC", letterSpacing: "0.1em", border: "1px solid rgba(255,255,255,0.06)" },
-  copyBtn: { padding: "14px 20px", borderRadius: "10px", border: "none", cursor: "pointer", background: "rgba(59,130,246,0.15)", color: "#60A5FA", fontSize: "12px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", whiteSpace: "nowrap" as const },
-  shareBtn: { width: "100%", padding: "14px", borderRadius: "10px", border: "none", cursor: "pointer", background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "#fff", fontSize: "13px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", marginTop: "12px" },
+  codeBox: { flex: 1, background: "#1a2035", borderRadius: "10px", padding: "14px 18px", fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", fontSize: "16px", fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.1em", border: "1px solid rgba(255,255,255,0.06)" },
+  copyBtn: { padding: "14px 20px", borderRadius: "10px", border: "none", cursor: "pointer", background: "rgba(16,185,129,0.15)", color: "#34D399", fontSize: "12px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", whiteSpace: "nowrap" as const },
+  shareBtn: { width: "100%", padding: "14px", borderRadius: "10px", border: "none", cursor: "pointer", background: "linear-gradient(135deg, #10B981, #059669)", color: "#fff", fontSize: "13px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", marginTop: "12px" },
   statsGrid: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "24px" },
-  statCard: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px", textAlign: "center" as const },
+  statCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px", textAlign: "center" as const },
   statValue: { fontSize: "24px", fontWeight: 800, fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", marginBottom: "4px" },
-  statLabel: { fontSize: "10px", fontWeight: 600, color: "#7B8BA8", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  sectionTitle: { fontSize: "13px", fontWeight: 700, color: "#F0F4FC", marginBottom: "14px", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  stepsCard: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "24px" },
+  statLabel: { fontSize: "10px", fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
+  sectionTitle: { fontSize: "13px", fontWeight: 700, color: "#FFFFFF", marginBottom: "14px", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
+  stepsCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "24px" },
   stepRow: { display: "flex", gap: "16px", alignItems: "flex-start", marginBottom: "20px" },
   stepRowLast: { display: "flex", gap: "16px", alignItems: "flex-start" },
-  stepNumber: { width: "32px", height: "32px", borderRadius: "10px", background: "rgba(59,130,246,0.15)", color: "#3B82F6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 800, flexShrink: 0 },
-  stepTitle: { fontSize: "13px", fontWeight: 700, color: "#F0F4FC", marginBottom: "4px" },
-  stepDesc: { fontSize: "12px", color: "#7B8BA8", lineHeight: 1.6 },
+  stepNumber: { width: "32px", height: "32px", borderRadius: "10px", background: "rgba(16,185,129,0.15)", color: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 800, flexShrink: 0 },
+  stepTitle: { fontSize: "13px", fontWeight: 700, color: "#FFFFFF", marginBottom: "4px" },
+  stepDesc: { fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6 },
   connector: { width: "2px", height: "16px", background: "rgba(255,255,255,0.06)", marginLeft: "15px" },
-  emptyCard: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "32px", textAlign: "center" as const, marginBottom: "24px" },
+  emptyCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "32px", textAlign: "center" as const, marginBottom: "24px" },
   emptyIcon: { fontSize: "32px", marginBottom: "12px" },
-  emptyTitle: { fontSize: "15px", fontWeight: 700, color: "#F0F4FC", marginBottom: "6px" },
-  emptyDesc: { fontSize: "12px", color: "#7B8BA8", lineHeight: 1.6, maxWidth: "360px", margin: "0 auto" },
+  emptyTitle: { fontSize: "15px", fontWeight: 700, color: "#FFFFFF", marginBottom: "6px" },
+  emptyDesc: { fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6, maxWidth: "360px", margin: "0 auto" },
   spinnerWrap: { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "200px" },
 };
 
@@ -55,8 +55,8 @@ function Spinner() {
   return (
     <div style={S.spinnerWrap}>
       <svg width="36" height="36" viewBox="0 0 36 36" style={{ animation: "spin 0.8s linear infinite" }}>
-        <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(59,130,246,0.2)" strokeWidth="3" />
-        <circle cx="18" cy="18" r="14" fill="none" stroke="#3B82F6" strokeWidth="3" strokeDasharray="60 40" strokeLinecap="round" />
+        <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(16,185,129,0.2)" strokeWidth="3" />
+        <circle cx="18" cy="18" r="14" fill="none" stroke="#10B981" strokeWidth="3" strokeDasharray="60 40" strokeLinecap="round" />
         <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
       </svg>
     </div>
@@ -142,7 +142,7 @@ function ReferralPage() {
 
       {/* Stats Grid */}
       <div style={S.statsGrid}>
-        <StatCard label="Total Referred" value={String(referredCount)} color="#3B82F6" />
+        <StatCard label="Total Referred" value={String(referredCount)} color="#10B981" />
         <StatCard label="Earned Points" value={earnedPoints.toLocaleString()} color="#22C55E" />
         <StatCard label="Streak" value={`${streakDays}d`} color="#F59E0B" />
       </div>

@@ -15,7 +15,7 @@ const tiers = [
   { name: "Bronze", min: 0, color: "#A0703C" },
   { name: "Silver", min: 2500, color: "#A0AEC0" },
   { name: "Gold", min: 5000, color: "#F59E0B" },
-  { name: "Platinum", min: 10000, color: "#60A5FA" },
+  { name: "Platinum", min: 10000, color: "#34D399" },
 ];
 
 const WEEK_POINTS = [50, 50, 75, 75, 100, 100, 150];
@@ -34,19 +34,19 @@ const rewards = [
 
 const S = {
   page: {
-    background: "#0f1424",
-    color: "#F0F4FC",
+    background: "#121212",
+    color: "#FFFFFF",
     fontFamily: "'Inter', system-ui, sans-serif",
     minHeight: "100vh",
     padding: "20px",
   },
   header: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" },
-  title: { fontSize: "22px", fontWeight: 700, color: "#F0F4FC", margin: 0 },
-  subtitle: { fontSize: "12px", color: "#7B8BA8", marginTop: "4px", marginBottom: "20px" },
+  title: { fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0 },
+  subtitle: { fontSize: "12px", color: "#9CA3AF", marginTop: "4px", marginBottom: "20px" },
   pointsHero: {
-    background: "linear-gradient(135deg, rgba(59,130,246,0.12) 0%, rgba(245,158,11,0.06) 100%)",
+    background: "linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(245,158,11,0.06) 100%)",
     borderRadius: "16px",
-    border: "1px solid rgba(59,130,246,0.15)",
+    border: "1px solid rgba(16,185,129,0.15)",
     padding: "28px",
     marginBottom: "24px",
     textAlign: "center" as const,
@@ -54,7 +54,7 @@ const S = {
   pointsLabel: {
     fontSize: "11px",
     fontWeight: 600,
-    color: "#7B8BA8",
+    color: "#9CA3AF",
     textTransform: "uppercase" as const,
     letterSpacing: "0.08em",
   },
@@ -65,17 +65,17 @@ const S = {
     color: "#F59E0B",
     margin: "6px 0",
   },
-  pointsSub: { fontSize: "12px", color: "#7B8BA8" },
+  pointsSub: { fontSize: "12px", color: "#9CA3AF" },
   sectionTitle: {
     fontSize: "13px",
     fontWeight: 700,
-    color: "#F0F4FC",
+    color: "#FFFFFF",
     marginBottom: "14px",
     textTransform: "uppercase" as const,
     letterSpacing: "0.05em",
   },
   card: {
-    background: "#161b2e",
+    background: "#1E1E1E",
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,0.06)",
     padding: "20px",
@@ -83,7 +83,7 @@ const S = {
   },
   streakGrid: { display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "8px" },
   streakDay: { textAlign: "center" as const, padding: "10px 0", borderRadius: "10px" },
-  streakDayLabel: { fontSize: "10px", fontWeight: 600, color: "#4A5568", marginBottom: "6px" },
+  streakDayLabel: { fontSize: "10px", fontWeight: 600, color: "#6B7280", marginBottom: "6px" },
   streakDayIcon: { fontSize: "20px", marginBottom: "4px" },
   streakDayStatus: { fontSize: "9px", fontWeight: 600 },
   streakDayChecked: {
@@ -91,8 +91,8 @@ const S = {
     border: "1px solid rgba(34,197,94,0.2)",
   },
   streakDayCurrent: {
-    background: "rgba(59,130,246,0.12)",
-    border: "1px solid rgba(59,130,246,0.3)",
+    background: "rgba(16,185,129,0.12)",
+    border: "1px solid rgba(16,185,129,0.3)",
   },
   streakDayFuture: {
     background: "#1a2035",
@@ -103,7 +103,7 @@ const S = {
     border: "1px solid rgba(239,68,68,0.12)",
   },
   referralCard: {
-    background: "#161b2e",
+    background: "#1E1E1E",
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,0.06)",
     padding: "20px",
@@ -123,7 +123,7 @@ const S = {
     flex: 1,
     fontSize: "12px",
     fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
-    color: "#7B8BA8",
+    color: "#9CA3AF",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap" as const,
@@ -135,8 +135,8 @@ const S = {
     borderRadius: "6px",
     border: "none",
     cursor: "pointer",
-    background: "rgba(59,130,246,0.15)",
-    color: "#60A5FA",
+    background: "rgba(16,185,129,0.15)",
+    color: "#34D399",
     fontFamily: "'Inter', system-ui, sans-serif",
   },
   referralStats: {
@@ -150,9 +150,9 @@ const S = {
     fontWeight: 700,
     fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
   },
-  refStatLabel: { fontSize: "10px", color: "#7B8BA8", marginTop: "4px" },
+  refStatLabel: { fontSize: "10px", color: "#9CA3AF", marginTop: "4px" },
   tierCard: {
-    background: "#161b2e",
+    background: "#1E1E1E",
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,0.06)",
     padding: "20px",
@@ -165,7 +165,7 @@ const S = {
   tierLabel: { fontSize: "10px", fontWeight: 600 },
   tierProgress: {
     fontSize: "11px",
-    color: "#7B8BA8",
+    color: "#9CA3AF",
     marginTop: "8px",
     textAlign: "center" as const,
   },
@@ -184,7 +184,7 @@ const S = {
     transition: "background 0.15s",
   },
   rewardIcon: { fontSize: "28px", marginBottom: "8px" },
-  rewardName: { fontSize: "12px", fontWeight: 600, color: "#F0F4FC", marginBottom: "4px" },
+  rewardName: { fontSize: "12px", fontWeight: 600, color: "#FFFFFF", marginBottom: "4px" },
   rewardCost: {
     fontSize: "11px",
     fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
@@ -199,8 +199,8 @@ const S = {
     borderRadius: "6px",
     border: "none",
     cursor: "pointer",
-    background: "rgba(59,130,246,0.15)",
-    color: "#60A5FA",
+    background: "rgba(16,185,129,0.15)",
+    color: "#34D399",
     fontFamily: "'Inter', system-ui, sans-serif",
   },
   txList: { display: "flex", flexDirection: "column" as const, gap: "8px" },
@@ -213,8 +213,8 @@ const S = {
     borderRadius: "8px",
     border: "1px solid rgba(255,255,255,0.04)",
   },
-  txReason: { fontSize: "12px", color: "#F0F4FC", fontWeight: 500 },
-  txDate: { fontSize: "10px", color: "#4A5568", marginTop: "2px" },
+  txReason: { fontSize: "12px", color: "#FFFFFF", fontWeight: 500 },
+  txDate: { fontSize: "10px", color: "#6B7280", marginTop: "2px" },
   txDelta: {
     fontSize: "13px",
     fontWeight: 700,
@@ -226,7 +226,7 @@ const S = {
     justifyContent: "center",
     minHeight: "40vh",
     fontSize: "14px",
-    color: "#4A5568",
+    color: "#6B7280",
   },
 };
 
@@ -294,8 +294,8 @@ const StreakDayItem = memo(function StreakDayItem({ item }: { item: StreakDayDat
             : item.missed
               ? "#EF4444"
               : item.current
-                ? "#60A5FA"
-                : "#4A5568",
+                ? "#34D399"
+                : "#6B7280",
         }}
       >
         {item.checked ? "Done" : item.missed ? "Missed" : item.current ? "Today" : `+${item.points}`}
@@ -488,7 +488,7 @@ function RewardsPage() {
         </div>
         <div style={S.referralStats}>
           <div style={S.refStat}>
-            <div style={{ ...S.refStatValue, color: "#3B82F6" }}>{referredCount}</div>
+            <div style={{ ...S.refStatValue, color: "#10B981" }}>{referredCount}</div>
             <div style={S.refStatLabel}>Total Referrals</div>
           </div>
           <div style={S.refStat}>
@@ -510,11 +510,11 @@ function RewardsPage() {
       <div style={S.sectionTitle}>Rewards Tier</div>
       <div style={S.tierCard}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-          <span style={{ fontSize: "12px", fontWeight: 600, color: "#F0F4FC" }}>
+          <span style={{ fontSize: "12px", fontWeight: 600, color: "#FFFFFF" }}>
             Current: <span style={{ color: currentTier.color }}>{currentTier.name}</span>
           </span>
           {nextTier && (
-            <span style={{ fontSize: "12px", fontWeight: 600, color: "#F0F4FC" }}>
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "#FFFFFF" }}>
               Next: <span style={{ color: nextTier.color }}>{nextTier.name}</span>
             </span>
           )}
@@ -533,7 +533,7 @@ function RewardsPage() {
                 key={t.name}
                 style={{
                   ...S.tierSegment,
-                  borderRight: i < tiers.length - 1 ? "2px solid #0f1424" : "none",
+                  borderRight: i < tiers.length - 1 ? "2px solid #121212" : "none",
                 }}
               >
                 <div

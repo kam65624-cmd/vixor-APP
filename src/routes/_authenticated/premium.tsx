@@ -50,15 +50,15 @@ function PremiumPage() {
   const currentPlanId = subscription?.plan_id;
 
   return (
-    <div style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%", padding: "20px" }}>
+    <div style={{ background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%", padding: "20px" }}>
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
         <h1 style={{
           fontSize: "28px", fontWeight: 800, margin: 0,
-          background: "linear-gradient(135deg, #3B82F6, #8B5CF6, #EC4899)",
+          background: "linear-gradient(135deg, #10B981, #8B5CF6, #EC4899)",
           WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
         }}>Vixor Pro</h1>
-        <p style={{ fontSize: "13px", color: "#7B8BA8", marginTop: "8px" }}>
+        <p style={{ fontSize: "13px", color: "#9CA3AF", marginTop: "8px" }}>
           {subscription
             ? `You are on the ${plans.find((p) => p.id === currentPlanId)?.name || "Pro"} plan`
             : "Upgrade to unlock advanced features"}
@@ -72,7 +72,7 @@ function PremiumPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         </div>
       ) : plans.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(plans.length, 3)}, 1fr)`, gap: "16px", maxWidth: "900px", margin: "0 auto" }}>
@@ -81,19 +81,19 @@ function PremiumPage() {
             const features = Array.isArray((plan as any).features) ? (plan as any).features as string[] : [];
             return (
               <div key={plan.id} style={{
-                background: isCurrent ? "#1a2035" : "#161b2e",
-                borderRadius: "16px", border: `1px solid ${isCurrent ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)"}`,
+                background: isCurrent ? "#1a2035" : "#1E1E1E",
+                borderRadius: "16px", border: `1px solid ${isCurrent ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)"}`,
                 padding: "24px", position: "relative", overflow: "hidden",
               }}>
                 {isCurrent && (
                   <div style={{ position: "absolute", top: "12px", right: "12px" }}>
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ background: "rgba(59,130,246,0.15)", color: "#60A5FA" }}>CURRENT</span>
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ background: "rgba(16,185,129,0.15)", color: "#34D399" }}>CURRENT</span>
                   </div>
                 )}
                 <div style={{ fontSize: "16px", fontWeight: 800, marginBottom: "4px" }}>{plan.name}</div>
                 <div style={{ fontSize: "28px", fontWeight: 800, fontFamily: "monospace", marginBottom: "4px" }}>
                   ${(plan.price_cents / 100).toFixed(0)}
-                  <span style={{ fontSize: "13px", fontWeight: 500, color: "#7B8BA8" }}>/mo</span>
+                  <span style={{ fontSize: "13px", fontWeight: 500, color: "#9CA3AF" }}>/mo</span>
                 </div>
                 {(plan as any).badge && (
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded mb-4 inline-block" style={{
@@ -104,24 +104,24 @@ function PremiumPage() {
                   {features.length > 0 ? features.map((f, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", fontSize: "12px" }}>
                       <span style={{ color: "#22C55E", fontSize: "12px" }}>\u2713</span>
-                      <span style={{ color: "#7B8BA8" }}>{f}</span>
+                      <span style={{ color: "#9CA3AF" }}>{f}</span>
                     </div>
                   )) : (
-                    <div style={{ fontSize: "12px", color: "#4A5568" }}>
+                    <div style={{ fontSize: "12px", color: "#6B7280" }}>
                       {plan.price_cents > 0 ? `Included with ${plan.name}` : "Basic features included"}
                     </div>
                   )}
                 </div>
                 {isCurrent ? (
                   <button disabled style={{
-                    width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid rgba(59,130,246,0.2)",
-                    background: "rgba(59,130,246,0.08)", color: "#60A5FA", fontSize: "12px", fontWeight: 700,
+                    width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid rgba(16,185,129,0.2)",
+                    background: "rgba(16,185,129,0.08)", color: "#34D399", fontSize: "12px", fontWeight: 700,
                     cursor: "default", fontFamily: "'Inter', system-ui, sans-serif",
                   }}>Current Plan</button>
                 ) : (
                   <button disabled={subscribing === plan.id} style={{
                     width: "100%", padding: "10px", borderRadius: "8px", border: "none",
-                    background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "#fff", fontSize: "12px", fontWeight: 700,
+                    background: "linear-gradient(135deg, #10B981, #059669)", color: "#fff", fontSize: "12px", fontWeight: 700,
                     cursor: subscribing === plan.id ? "wait" : "pointer", opacity: subscribing ? 0.7 : 1,
                     fontFamily: "'Inter', system-ui, sans-serif",
                   }}>
@@ -134,7 +134,7 @@ function PremiumPage() {
         </div>
       ) : (
         <div style={{ textAlign: "center", padding: "40px 0" }}>
-          <p style={{ fontSize: "13px", color: "#7B8BA8" }}>No premium plans available yet. Check back soon.</p>
+          <p style={{ fontSize: "13px", color: "#9CA3AF" }}>No premium plans available yet. Check back soon.</p>
         </div>
       )}
     </div>

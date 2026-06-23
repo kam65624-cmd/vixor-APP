@@ -46,7 +46,7 @@ export const bullxTokens: StyleTokens = {
     "--ws-bullish": "#00D4AA",
     "--ws-bearish": "#FF4D6A",
     "--ws-warning": "#FFB020",
-    "--ws-info": "#3B82F6",
+    "--ws-info": "#10B981",
 
     // Borders
     "--ws-border": "rgba(255, 255, 255, 0.08)",

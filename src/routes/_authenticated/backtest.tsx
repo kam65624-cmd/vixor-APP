@@ -31,15 +31,15 @@ export const Route = createFileRoute("/_authenticated/backtest")({
 
 // ── Axiom Design System ──
 const S = {
-  bg: "#0A0E1A",
-  card: "#111827",
+  bg: "#121212",
+  card: "#1A1A1A",
   cardBorder: "1px solid rgba(255,255,255,0.06)",
   divider: "1px solid rgba(255,255,255,0.06)",
-  text1: "#F0F4FC",
-  text2: "#7B8BA8",
-  text3: "#4A5568",
-  accent: "#3B82F6",
-  accentLight: "#60A5FA",
+  text1: "#FFFFFF",
+  text2: "#9CA3AF",
+  text3: "#6B7280",
+  accent: "#10B981",
+  accentLight: "#34D399",
   bullish: "#22C55E",
   bearish: "#EF4444",
   warning: "#F59E0B",
@@ -225,7 +225,7 @@ function BacktestPage() {
         <div style={{
           display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: S.badgeRadius,
           fontSize: 12, fontWeight: 700,
-          background: hasEnoughPoints ? "rgba(59,130,246,0.15)" : "rgba(239,68,68,0.1)",
+          background: hasEnoughPoints ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.1)",
           color: hasEnoughPoints ? S.accentLight : S.bearish,
         }}>
           <Coins style={{ width: 14, height: 14 }} />
@@ -254,9 +254,9 @@ function BacktestPage() {
                   onClick={() => setForm((f) => ({ ...f, pair }))}
                   style={{
                     padding: "0 10px", height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700, cursor: "pointer",
-                    background: form.pair === pair ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.04)",
+                    background: form.pair === pair ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
                     color: form.pair === pair ? S.accentLight : S.text2,
-                    border: form.pair === pair ? "1px solid rgba(59,130,246,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                    border: form.pair === pair ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(255,255,255,0.06)",
                   }}
                 >
                   {pair}
@@ -270,9 +270,9 @@ function BacktestPage() {
                   onClick={() => setForm((f) => ({ ...f, pair }))}
                   style={{
                     padding: "0 10px", height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700, cursor: "pointer",
-                    background: form.pair === pair ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.04)",
+                    background: form.pair === pair ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
                     color: form.pair === pair ? S.accentLight : S.text2,
-                    border: form.pair === pair ? "1px solid rgba(59,130,246,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                    border: form.pair === pair ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(255,255,255,0.06)",
                   }}
                 >
                   {pair}
@@ -292,8 +292,8 @@ function BacktestPage() {
                   style={{
                     flex: 1, height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700,
                     border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                    background: form.timeframe === tf ? "rgba(59,130,246,0.15)" : S.card,
-                    borderColor: form.timeframe === tf ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)",
+                    background: form.timeframe === tf ? "rgba(16,185,129,0.15)" : S.card,
+                    borderColor: form.timeframe === tf ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
                     color: form.timeframe === tf ? S.accentLight : S.text2,
                   }}
                 >
@@ -314,8 +314,8 @@ function BacktestPage() {
                   style={{
                     padding: "0 10px", height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700,
                     border: "1px solid", cursor: "pointer",
-                    background: form.strategy === s.id ? "rgba(59,130,246,0.15)" : S.card,
-                    borderColor: form.strategy === s.id ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)",
+                    background: form.strategy === s.id ? "rgba(16,185,129,0.15)" : S.card,
+                    borderColor: form.strategy === s.id ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
                     color: form.strategy === s.id ? S.accentLight : S.text2,
                   }}
                 >

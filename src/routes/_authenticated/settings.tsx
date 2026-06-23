@@ -33,7 +33,7 @@ function ToggleSwitch({ enabled, onClick }: { enabled: boolean; onClick: () => v
         height: "20px",
         borderRadius: "10px",
         cursor: "pointer",
-        background: enabled ? "#3B82F6" : "rgba(255,255,255,0.1)",
+        background: enabled ? "#10B981" : "rgba(255,255,255,0.1)",
         position: "relative",
         transition: "background 0.2s",
         flexShrink: 0,
@@ -68,7 +68,7 @@ function SettingRow({ item, children }: { item: SettingItem; children?: React.Re
     >
       <div>
         <div style={{ fontSize: "11px", fontWeight: 600 }}>{item.label}</div>
-        <div style={{ fontSize: "9px", color: "#7B8BA8", marginTop: "2px" }}>{item.desc}</div>
+        <div style={{ fontSize: "9px", color: "#9CA3AF", marginTop: "2px" }}>{item.desc}</div>
       </div>
       {children}
     </div>
@@ -188,7 +188,7 @@ function SettingsPage() {
       <div
         style={{
           fontFamily: "'Inter', system-ui, sans-serif",
-          color: "#F0F4FC",
+          color: "#FFFFFF",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -201,12 +201,12 @@ function SettingsPage() {
             width: "16px",
             height: "16px",
             border: "2px solid rgba(255,255,255,0.1)",
-            borderTopColor: "#3B82F6",
+            borderTopColor: "#10B981",
             borderRadius: "50%",
             animation: "spin 0.6s linear infinite",
           }}
         />
-        <span style={{ fontSize: "12px", color: "#7B8BA8" }}>Loading settings…</span>
+        <span style={{ fontSize: "12px", color: "#9CA3AF" }}>Loading settings…</span>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -257,7 +257,7 @@ function SettingsPage() {
       title: "Security & Account",
       items: [
         { type: "toggle-local", id: "twoFactor", label: "Two-Factor Auth", desc: "Add an extra layer of security to your account" },
-        { type: "button", label: "Change Password", desc: "Update your account password", btnText: "Change", btnColor: "#3B82F6" },
+        { type: "button", label: "Change Password", desc: "Update your account password", btnText: "Change", btnColor: "#10B981" },
         { type: "button", label: "Export Data", desc: "Download your trading history and portfolio data", btnText: "Export", btnColor: "#22C55E" },
         { type: "button", label: "Delete Account", desc: "Permanently delete your account and all data", btnText: "Delete", btnColor: "#EF4444" },
       ],
@@ -272,7 +272,7 @@ function SettingsPage() {
     borderRadius: "4px",
     border: "1px solid rgba(255,255,255,0.08)",
     background: "rgba(255,255,255,0.04)",
-    color: "#F0F4FC",
+    color: "#FFFFFF",
     width: "160px",
     outline: "none",
     font: "inherit",
@@ -299,8 +299,8 @@ function SettingsPage() {
                   borderRadius: "4px",
                   border: "none",
                   cursor: "pointer",
-                  color: oi === item.current ? "#fff" : "#7B8BA8",
-                  background: oi === item.current ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.04)",
+                  color: oi === item.current ? "#fff" : "#9CA3AF",
+                  background: oi === item.current ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
                 }}
               >
                 {opt}
@@ -339,7 +339,7 @@ function SettingsPage() {
   };
 
   return (
-    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#F0F4FC", position: "relative" }}>
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#FFFFFF", position: "relative" }}>
       {/* Header */}
       <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -356,7 +356,7 @@ function SettingsPage() {
             borderRadius: "6px",
             border: "none",
             cursor: updateMutation.isPending ? "wait" : "pointer",
-            background: updateMutation.isPending ? "rgba(59,130,246,0.4)" : "#3B82F6",
+            background: updateMutation.isPending ? "rgba(16,185,129,0.4)" : "#10B981",
             color: "#fff",
             transition: "background 0.2s, opacity 0.2s",
             opacity: updateMutation.isPending ? 0.7 : 1,
@@ -421,7 +421,7 @@ function SettingsPage() {
               style={{
                 fontSize: "11px",
                 fontWeight: 700,
-                color: "#7B8BA8",
+                color: "#9CA3AF",
                 padding: "6px 0",
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
@@ -431,7 +431,7 @@ function SettingsPage() {
             </div>
             <div
               style={{
-                background: "#161b2e",
+                background: "#1E1E1E",
                 borderRadius: "8px",
                 border: "1px solid rgba(255,255,255,0.06)",
                 overflow: "hidden",

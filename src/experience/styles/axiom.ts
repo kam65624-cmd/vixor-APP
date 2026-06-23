@@ -3,7 +3,7 @@
 // ============================================================================
 //
 // Inspired by Axiom trading terminal grid layout.
-// Very dark background (#0A0E1A) with blue accent (#3B82F6).
+// Very dark background (#121212) with blue accent (#10B981).
 // Clean grid-based layout, ideal for data-dense Discover pages.
 // ============================================================================
 
@@ -13,10 +13,10 @@ export const axiomTokens: StyleTokens = {
   id: "axiom",
   name: "Axiom Grid",
 
-  accent: "#3B82F6",
-  background: "#0A0E1A",
-  surface: "#111827",
-  foreground: "#F0F4FC",
+  accent: "#10B981",
+  background: "#121212",
+  surface: "#1A1A1A",
+  foreground: "#FFFFFF",
   border: "rgba(255, 255, 255, 0.06)",
   fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
   monoFontFamily: "'JetBrains Mono', ui-monospace, 'Fira Code', monospace",
@@ -24,33 +24,33 @@ export const axiomTokens: StyleTokens = {
 
   cssVars: {
     // Background
-    "--ws-bg": "#0A0E1A",
-    "--ws-bg-secondary": "#070B14",
-    "--ws-surface": "#111827",
-    "--ws-surface-hover": "#162032",
-    "--ws-surface-active": "#1C2A45",
+    "--ws-bg": "#121212",
+    "--ws-bg-secondary": "#0E0E0E",
+    "--ws-surface": "#1A1A1A",
+    "--ws-surface-hover": "#1E1E1E",
+    "--ws-surface-active": "#1E1E1E",
 
     // Accent
-    "--ws-accent": "#3B82F6",
-    "--ws-accent-dim": "rgba(59, 130, 246, 0.12)",
-    "--ws-accent-hover": "#60A5FA",
-    "--ws-accent-glow": "rgba(59, 130, 246, 0.25)",
+    "--ws-accent": "#10B981",
+    "--ws-accent-dim": "rgba(16, 185, 129, 0.12)",
+    "--ws-accent-hover": "#34D399",
+    "--ws-accent-glow": "rgba(16, 185, 129, 0.25)",
 
     // Text
-    "--ws-text-primary": "#F0F4FC",
-    "--ws-text-secondary": "#7B8BA8",
-    "--ws-text-tertiary": "#4A5568",
-    "--ws-text-accent": "#3B82F6",
+    "--ws-text-primary": "#FFFFFF",
+    "--ws-text-secondary": "#9CA3AF",
+    "--ws-text-tertiary": "#6B7280",
+    "--ws-text-accent": "#10B981",
 
     // Semantic
     "--ws-bullish": "#22C55E",
     "--ws-bearish": "#EF4444",
     "--ws-warning": "#F59E0B",
-    "--ws-info": "#3B82F6",
+    "--ws-info": "#10B981",
 
     // Borders
     "--ws-border": "rgba(255, 255, 255, 0.06)",
-    "--ws-border-accent": "rgba(59, 130, 246, 0.25)",
+    "--ws-border-accent": "rgba(16, 185, 129, 0.25)",
 
     // Layout
     "--ws-radius": "0.75rem",

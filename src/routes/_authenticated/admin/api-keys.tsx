@@ -72,8 +72,8 @@ function AdminApiKeysPage() {
     <div
       className="w-full min-h-screen"
       style={{
-        background: "#0A0E1A",
-        color: "#F0F4FC",
+        background: "#121212",
+        color: "#FFFFFF",
         fontFamily: "'Inter', system-ui, sans-serif",
       }}
     >
@@ -107,7 +107,7 @@ function AdminApiKeysPage() {
             ADMIN ONLY
           </span>
         </div>
-        <p className="text-[11px] mt-0.5" style={{ color: "#7B8BA8" }}>
+        <p className="text-[11px] mt-0.5" style={{ color: "#9CA3AF" }}>
           Centralized view of all platform API keys. Keys are stored in
           environment variables and never exposed to clients.
         </p>
@@ -122,7 +122,7 @@ function AdminApiKeysPage() {
           >
             <div
               className="text-[11px] font-mono"
-              style={{ color: "#7B8BA8" }}
+              style={{ color: "#9CA3AF" }}
             >
               Loading key statuses...
             </div>
@@ -149,7 +149,7 @@ function AdminApiKeysPage() {
             <div
               className="rounded-lg p-3 mb-4"
               style={{
-                background: "#111827",
+                background: "#1A1A1A",
                 border: "1px solid rgba(255,255,255,0.06)",
               }}
             >
@@ -160,7 +160,7 @@ function AdminApiKeysPage() {
                   </div>
                   <div
                     className="text-[10px] mt-0.5"
-                    style={{ color: "#7B8BA8" }}
+                    style={{ color: "#9CA3AF" }}
                   >
                     {configuredCount} of {totalKeys} keys configured
                   </div>
@@ -188,7 +188,7 @@ function AdminApiKeysPage() {
                     background:
                       configuredCount === totalKeys
                         ? "#22C55E"
-                        : "linear-gradient(90deg, #3B82F6, #F59E0B)",
+                        : "linear-gradient(90deg, #10B981, #F59E0B)",
                     transition: "width 0.5s ease",
                   }}
                 />
@@ -200,7 +200,7 @@ function AdminApiKeysPage() {
               <div key={category} className="mb-4">
                 <div
                   className="text-[10px] font-bold uppercase tracking-wider mb-2 px-1"
-                  style={{ color: "#4A5568" }}
+                  style={{ color: "#6B7280" }}
                 >
                   {category}
                 </div>
@@ -208,7 +208,7 @@ function AdminApiKeysPage() {
                 <div
                   className="rounded-lg overflow-hidden"
                   style={{
-                    background: "#111827",
+                    background: "#1A1A1A",
                     border: "1px solid rgba(255,255,255,0.06)",
                   }}
                 >
@@ -216,7 +216,7 @@ function AdminApiKeysPage() {
                   <div
                     className="flex items-center px-3 py-2 text-[9px] font-bold uppercase tracking-wider"
                     style={{
-                      color: "#4A5568",
+                      color: "#6B7280",
                       borderBottom: "1px solid rgba(255,255,255,0.06)",
                     }}
                   >
@@ -249,7 +249,7 @@ function AdminApiKeysPage() {
                           flex: 1.5,
                           fontFamily: "monospace",
                           fontSize: "10px",
-                          color: "#7B8BA8",
+                          color: "#9CA3AF",
                         }}
                       >
                         {key.envVar}
@@ -293,7 +293,7 @@ function AdminApiKeysPage() {
                             className="text-[9px] font-bold px-2 py-0.5 rounded-full"
                             style={{
                               background: "rgba(255,255,255,0.04)",
-                              color: "#4A5568",
+                              color: "#6B7280",
                             }}
                           >
                             Missing
@@ -306,7 +306,7 @@ function AdminApiKeysPage() {
                           textAlign: "right",
                           fontFamily: "monospace",
                           fontSize: "10px",
-                          color: key.configured ? "#7B8BA8" : "#2D3748",
+                          color: key.configured ? "#9CA3AF" : "#2D3748",
                         }}
                       >
                         {key.maskedValue || "\u2014"}
@@ -321,8 +321,8 @@ function AdminApiKeysPage() {
             <div
               className="rounded-lg p-3 mt-2"
               style={{
-                background: "rgba(59,130,246,0.06)",
-                border: "1px solid rgba(59,130,246,0.12)",
+                background: "rgba(16,185,129,0.06)",
+                border: "1px solid rgba(16,185,129,0.12)",
               }}
             >
               <div className="flex items-start gap-2">
@@ -331,7 +331,7 @@ function AdminApiKeysPage() {
                   height="14"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#60A5FA"
+                  stroke="#34D399"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -344,13 +344,13 @@ function AdminApiKeysPage() {
                 <div>
                   <div
                     className="text-[11px] font-bold"
-                    style={{ color: "#60A5FA" }}
+                    style={{ color: "#34D399" }}
                   >
                     How to configure
                   </div>
                   <div
                     className="text-[10px] mt-0.5"
-                    style={{ color: "#7B8BA8" }}
+                    style={{ color: "#9CA3AF" }}
                   >
                     Set environment variables in your Vercel project settings
                     or .env.local file. Keys are never sent to the browser.

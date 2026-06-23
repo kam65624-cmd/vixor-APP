@@ -47,7 +47,7 @@ const LOT_SIZES: Record<string, number> = {
 };
 
 const card = {
-  background: "#111827",
+  background: "#1A1A1A",
   border: "1px solid rgba(255,255,255,0.06)",
   borderRadius: "12px",
 };
@@ -57,12 +57,12 @@ const labelStyle = {
   fontWeight: 700,
   textTransform: "uppercase" as const,
   letterSpacing: "0.05em",
-  color: "#7B8BA8",
+  color: "#9CA3AF",
 };
 const inputStyle = {
   background: "rgba(255,255,255,0.05)",
   border: "1px solid rgba(255,255,255,0.06)",
-  color: "#F0F4FC",
+  color: "#FFFFFF",
   outline: "none",
 } as React.CSSProperties;
 
@@ -171,8 +171,8 @@ function TradeDesk() {
     <div
       className="w-full"
       style={{
-        background: "#0A0E1A",
-        color: "#F0F4FC",
+        background: "#121212",
+        color: "#FFFFFF",
         fontFamily: "'Inter', system-ui, sans-serif",
       }}
     >
@@ -202,7 +202,7 @@ function TradeDesk() {
       <div className="flex items-center gap-3">
         <div
           className="size-10 rounded-xl flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, #3B82F6, #2563EB)", borderRadius: "12px" }}
+          style={{ background: "linear-gradient(135deg, #10B981, #059669)", borderRadius: "12px" }}
         >
           <LayoutDashboard className="size-5" style={{ color: "#fff" }} />
         </div>
@@ -217,9 +217,9 @@ function TradeDesk() {
       </div>
 
       {/* RISK CALCULATOR */}
-      <div className="p-5" style={{ ...card, marginTop: "24px", borderLeft: "4px solid #3B82F6" }}>
+      <div className="p-5" style={{ ...card, marginTop: "24px", borderLeft: "4px solid #10B981" }}>
         <div className="flex items-center gap-2 mb-4">
-          <Calculator className="size-4" style={{ color: "#3B82F6" }} />
+          <Calculator className="size-4" style={{ color: "#10B981" }} />
           <h2 style={labelStyle}>{t("tradeDesk.riskCalculator")}</h2>
         </div>
 
@@ -283,11 +283,11 @@ function TradeDesk() {
           <div className="mb-1" style={{ ...labelStyle }}>
             {t("tradeDesk.recommendedLotSize")}
           </div>
-          <div className="text-3xl font-bold mb-2" style={{ ...mono, color: "#3B82F6" }}>
+          <div className="text-3xl font-bold mb-2" style={{ ...mono, color: "#10B981" }}>
             {result ? result.lots : "0.00"}
           </div>
           <div className="flex items-center justify-center gap-3">
-            <span className="text-xs font-bold" style={{ ...mono, color: "#7B8BA8" }}>
+            <span className="text-xs font-bold" style={{ ...mono, color: "#9CA3AF" }}>
               Risk: ${result?.riskAmount || "0.00"}
             </span>
             {result && (
@@ -327,7 +327,7 @@ function TradeDesk() {
           }}
         >
           <div className="flex items-center gap-2 mb-3">
-            <Save className="size-3.5" style={{ color: "#3B82F6" }} />
+            <Save className="size-3.5" style={{ color: "#10B981" }} />
             <span style={labelStyle}>Save as Trade</span>
           </div>
 
@@ -346,7 +346,7 @@ function TradeDesk() {
                       direction === "long"
                         ? "1px solid rgba(34,197,94,0.4)"
                         : "1px solid rgba(255,255,255,0.06)",
-                    color: direction === "long" ? "#22C55E" : "#7B8BA8",
+                    color: direction === "long" ? "#22C55E" : "#9CA3AF",
                   }}
                 >
                   <ArrowUpRight className="size-3" />
@@ -362,7 +362,7 @@ function TradeDesk() {
                       direction === "short"
                         ? "1px solid rgba(239,68,68,0.4)"
                         : "1px solid rgba(255,255,255,0.06)",
-                    color: direction === "short" ? "#EF4444" : "#7B8BA8",
+                    color: direction === "short" ? "#EF4444" : "#9CA3AF",
                   }}
                 >
                   <ArrowDownRight className="size-3" />
@@ -396,13 +396,13 @@ function TradeDesk() {
                   entryPrice && !saveMutation.isPending
                     ? saveSuccess
                       ? "rgba(34,197,94,0.2)"
-                      : "linear-gradient(135deg, #3B82F6, #2563EB)"
+                      : "linear-gradient(135deg, #10B981, #059669)"
                     : "rgba(255,255,255,0.05)",
                 color: saveSuccess
                   ? "#22C55E"
                   : entryPrice && !saveMutation.isPending
                     ? "#fff"
-                    : "#7B8BA8",
+                    : "#9CA3AF",
                 border: saveSuccess ? "1px solid rgba(34,197,94,0.4)" : "none",
                 opacity: !entryPrice || saveMutation.isPending ? 0.5 : 1,
               }}
@@ -433,7 +433,7 @@ function TradeDesk() {
                 border: showCoach
                   ? "1px solid rgba(56,189,248,0.4)"
                   : "1px solid rgba(255,255,255,0.06)",
-                color: showCoach ? "#38BDF8" : "#7B8BA8",
+                color: showCoach ? "#38BDF8" : "#9CA3AF",
                 opacity: !entryPrice ? 0.5 : 1,
               }}
               title="AI Coach — Get coaching feedback"
@@ -453,7 +453,7 @@ function TradeDesk() {
                 border: showGovernor
                   ? "1px solid rgba(245,158,11,0.4)"
                   : "1px solid rgba(255,255,255,0.06)",
-                color: showGovernor ? "#F59E0B" : "#7B8BA8",
+                color: showGovernor ? "#F59E0B" : "#9CA3AF",
                 opacity: !entryPrice ? 0.5 : 1,
               }}
               title="Risk Governor — Assess trade risk"
@@ -468,7 +468,7 @@ function TradeDesk() {
       {/* ACTIVE POSITIONS */}
       <div className="flex flex-col gap-3" style={{ marginTop: "24px" }}>
         <div className="flex items-center gap-2 px-1">
-          <Activity className="size-4" style={{ color: "#7B8BA8" }} />
+          <Activity className="size-4" style={{ color: "#9CA3AF" }} />
           <h2 style={labelStyle}>{t("tradeDesk.activePositions")}</h2>
         </div>
 
@@ -476,14 +476,14 @@ function TradeDesk() {
           <div className="p-6 text-center" style={card}>
             <div
               className="size-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
-              style={{ background: "rgba(59,130,246,0.1)" }}
+              style={{ background: "rgba(16,185,129,0.1)" }}
             >
-              <LayoutDashboard className="size-6" style={{ color: "#3B82F6" }} />
+              <LayoutDashboard className="size-6" style={{ color: "#10B981" }} />
             </div>
-            <p className="text-sm font-medium" style={{ color: "#7B8BA8" }}>
+            <p className="text-sm font-medium" style={{ color: "#9CA3AF" }}>
               {t("tradeDesk.noPositions")}
             </p>
-            <p className="text-xs mt-1" style={{ color: "#4A5568" }}>
+            <p className="text-xs mt-1" style={{ color: "#6B7280" }}>
               Use "Save as Trade" above to log your first position.
             </p>
           </div>
@@ -522,18 +522,18 @@ function TradeDesk() {
                       {trade.direction.toUpperCase()}
                     </span>
                   </div>
-                  <div className="text-[10px]" style={{ ...mono, color: "#7B8BA8" }}>
+                  <div className="text-[10px]" style={{ ...mono, color: "#9CA3AF" }}>
                     Entry: {trade.entry_price}
                     {trade.stop_loss && ` · SL: ${trade.stop_loss}`}
                     {trade.take_profit && ` · TP: ${trade.take_profit}`}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="text-[9px]" style={{ ...mono, color: "#7B8BA8" }}>
+                  <div className="text-[9px]" style={{ ...mono, color: "#9CA3AF" }}>
                     {new Date(trade.entry_date).toLocaleDateString()}
                   </div>
                   {trade.quantity && (
-                    <div className="text-[10px]" style={{ ...mono, color: "#7B8BA8" }}>
+                    <div className="text-[10px]" style={{ ...mono, color: "#9CA3AF" }}>
                       {trade.quantity} lots
                     </div>
                   )}

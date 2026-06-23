@@ -34,14 +34,14 @@ function BagsPage() {
   const pnlFmt = (n: number) => (n >= 0 ? `+$${n.toFixed(2)}` : `-$${Math.abs(n).toFixed(2)}`);
 
   return (
-    <div style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%" }}>
+    <div style={{ background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%" }}>
       {/* Header */}
       <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center gap-2">
           <span className="text-lg">🎒</span>
           <h1 className="text-lg font-bold">My Bags</h1>
         </div>
-        <p className="text-[11px] mt-0.5" style={{ color: "#7B8BA8" }}>
+        <p className="text-[11px] mt-0.5" style={{ color: "#9CA3AF" }}>
           {hasData
             ? `${holdings.length} holdings from ${tradeCount} trades`
             : "Portfolio data from your trades"}
@@ -50,22 +50,22 @@ function BagsPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#3B82F6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         </div>
       ) : hasData ? (
         <>
           {/* Total Value */}
           <div className="px-4 py-3 grid grid-cols-3 gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-              <div className="text-[9px]" style={{ color: "#4A5568" }}>Portfolio Value</div>
+            <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+              <div className="text-[9px]" style={{ color: "#6B7280" }}>Portfolio Value</div>
               <div className="text-xl font-bold font-mono">{fmt(totalValue)}</div>
             </div>
-            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-              <div className="text-[9px]" style={{ color: "#4A5568" }}>Total PnL</div>
+            <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+              <div className="text-[9px]" style={{ color: "#6B7280" }}>Total PnL</div>
               <div className="text-lg font-bold font-mono" style={{ color: totalPnl >= 0 ? "#22C55E" : "#EF4444" }}>{pnlFmt(totalPnl)}</div>
             </div>
-            <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-              <div className="text-[9px]" style={{ color: "#4A5568" }}>Total Return</div>
+            <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+              <div className="text-[9px]" style={{ color: "#6B7280" }}>Total Return</div>
               <div className="text-lg font-bold font-mono" style={{ color: totalPnlPct >= 0 ? "#22C55E" : "#EF4444" }}>{totalPnlPct >= 0 ? "+" : ""}{totalPnlPct.toFixed(1)}%</div>
             </div>
           </div>
@@ -83,15 +83,15 @@ function BagsPage() {
         </>
       ) : (
         <div className="px-4 py-2 flex flex-col items-center justify-center gap-3" style={{ padding: "40px 0" }}>
-          <span style={{ fontSize: "24px", fontWeight: 700, color: "#7B8BA8" }}>🎒</span>
-          <p style={{ fontSize: "11px", color: "#7B8BA8", textAlign: "center" }}>
+          <span style={{ fontSize: "24px", fontWeight: 700, color: "#9CA3AF" }}>🎒</span>
+          <p style={{ fontSize: "11px", color: "#9CA3AF", textAlign: "center" }}>
             No trades yet. Start trading to see your bags here.
           </p>
           <button
             onClick={() => navigate({ to: "/trade-desk" })}
             style={{
               padding: "10px 24px", borderRadius: "8px", border: "none", cursor: "pointer",
-              background: "rgba(59,130,246,0.12)", color: "#60A5FA",
+              background: "rgba(16,185,129,0.12)", color: "#34D399",
               fontSize: "11px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif",
             }}>
             Go to Trade Desk
@@ -126,17 +126,17 @@ const BagCard = memo(function BagCard({ bag }: { bag: BagData }) {
     <div
       className="flex items-center justify-between px-3 py-2.5 rounded-lg"
       style={{
-        background: "#161b2e", border: "1px solid rgba(255,255,255,0.06)",
+        background: "#1E1E1E", border: "1px solid rgba(255,255,255,0.06)",
         transition: "background 0.1s", cursor: "pointer",
       }}
       onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2438"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = "#161b2e"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "#1E1E1E"; }}
     >
       <div className="flex items-center gap-3 min-w-0">
         <div
           style={{
             width: "32px", height: "32px", borderRadius: "50%",
-            background: "rgba(59,130,246,0.12)",
+            background: "rgba(16,185,129,0.12)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: "10px", fontWeight: 800, color, flexShrink: 0,
           }}>
@@ -145,9 +145,9 @@ const BagCard = memo(function BagCard({ bag }: { bag: BagData }) {
         <div style={{ minWidth: 0 }}>
           <div className="flex items-center gap-1">
             <span className="text-[12px] font-bold">{bag.symbol}</span>
-            <span className="text-[9px]" style={{ color: "#4A5568" }}>{bag.chain}</span>
+            <span className="text-[9px]" style={{ color: "#6B7280" }}>{bag.chain}</span>
           </div>
-          <div className="text-[9px]" style={{ color: "#7B8BA8" }}>
+          <div className="text-[9px]" style={{ color: "#9CA3AF" }}>
             {bag.amount.toFixed(4)} tokens · avg {fmtPrice(bag.avgEntry)}
           </div>
         </div>

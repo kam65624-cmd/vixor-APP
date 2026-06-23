@@ -12,44 +12,44 @@ export const Route = createFileRoute("/_authenticated/profile")({
 // ── Styles ──────────────────────────────────────────────────────────────
 
 const S = {
-  page: { background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100vh", padding: "20px" },
+  page: { background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100vh", padding: "20px" },
   header: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" },
-  title: { fontSize: "22px", fontWeight: 700, color: "#F0F4FC", margin: 0 },
-  subtitle: { fontSize: "12px", color: "#7B8BA8", marginTop: "4px", marginBottom: "20px" },
-  profileCard: { background: "#161b2e", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.06)", padding: "24px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "20px" },
-  avatar: { width: "72px", height: "72px", borderRadius: "18px", background: "linear-gradient(135deg, #3B82F6, #2563EB)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", fontWeight: 800, color: "#fff", flexShrink: 0, border: "2px solid rgba(59,130,246,0.3)" },
-  avatarImg: { width: "72px", height: "72px", borderRadius: "18px", objectFit: "cover" as const, flexShrink: 0, border: "2px solid rgba(59,130,246,0.3)" },
+  title: { fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0 },
+  subtitle: { fontSize: "12px", color: "#9CA3AF", marginTop: "4px", marginBottom: "20px" },
+  profileCard: { background: "#1E1E1E", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.06)", padding: "24px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "20px" },
+  avatar: { width: "72px", height: "72px", borderRadius: "18px", background: "linear-gradient(135deg, #10B981, #059669)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", fontWeight: 800, color: "#fff", flexShrink: 0, border: "2px solid rgba(16,185,129,0.3)" },
+  avatarImg: { width: "72px", height: "72px", borderRadius: "18px", objectFit: "cover" as const, flexShrink: 0, border: "2px solid rgba(16,185,129,0.3)" },
   profileInfo: { flex: 1, minWidth: 0 },
-  username: { fontSize: "20px", fontWeight: 700, color: "#F0F4FC", marginBottom: "2px" },
-  joined: { fontSize: "12px", color: "#7B8BA8", marginBottom: "8px" },
+  username: { fontSize: "20px", fontWeight: 700, color: "#FFFFFF", marginBottom: "2px" },
+  joined: { fontSize: "12px", color: "#9CA3AF", marginBottom: "8px" },
   badgesRow: { display: "flex", gap: "6px", flexWrap: "wrap" as const },
   smallBadge: { fontSize: "10px", fontWeight: 700, padding: "3px 10px", borderRadius: "6px" },
   statsGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" },
-  statCard: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px", textAlign: "center" as const },
+  statCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px", textAlign: "center" as const },
   statValue: { fontSize: "24px", fontWeight: 800, fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", marginBottom: "4px" },
-  statLabel: { fontSize: "10px", fontWeight: 600, color: "#7B8BA8", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  sectionTitle: { fontSize: "13px", fontWeight: 700, color: "#F0F4FC", marginBottom: "14px", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  card: { background: "#161b2e", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", marginBottom: "24px" },
+  statLabel: { fontSize: "10px", fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
+  sectionTitle: { fontSize: "13px", fontWeight: 700, color: "#FFFFFF", marginBottom: "14px", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
+  card: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", marginBottom: "24px" },
   badgeGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" },
   badgeItem: { textAlign: "center" as const, padding: "14px 8px", borderRadius: "12px", background: "#1a2035", border: "1px solid rgba(255,255,255,0.04)" },
   badgeItemLocked: { opacity: 0.35 },
   badgeIcon: { fontSize: "28px", marginBottom: "6px" },
-  badgeName: { fontSize: "10px", fontWeight: 700, color: "#F0F4FC" },
-  badgeDesc: { fontSize: "9px", color: "#7B8BA8", marginTop: "2px" },
+  badgeName: { fontSize: "10px", fontWeight: 700, color: "#FFFFFF" },
+  badgeDesc: { fontSize: "9px", color: "#9CA3AF", marginTop: "2px" },
   accountRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" },
   accountRowLast: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0" },
   accountLeft: { display: "flex", alignItems: "center", gap: "12px" },
   accountIcon: { width: "38px", height: "38px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 },
-  accountName: { fontSize: "13px", fontWeight: 600, color: "#F0F4FC" },
-  accountHandle: { fontSize: "11px", color: "#7B8BA8" },
+  accountName: { fontSize: "13px", fontWeight: 600, color: "#FFFFFF" },
+  accountHandle: { fontSize: "11px", color: "#9CA3AF" },
   accountStatus: { fontSize: "10px", fontWeight: 700, padding: "3px 10px", borderRadius: "6px" },
   settingsList: { display: "flex", flexDirection: "column" as const, gap: "2px" },
   settingItem: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: "10px", cursor: "pointer", transition: "background 0.15s" },
   settingLeft: { display: "flex", alignItems: "center", gap: "12px" },
   settingIcon: { width: "36px", height: "36px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", flexShrink: 0 },
-  settingName: { fontSize: "13px", fontWeight: 600, color: "#F0F4FC" },
-  settingDesc: { fontSize: "10px", color: "#7B8BA8" },
-  settingArrow: { color: "#4A5568", fontSize: "16px" },
+  settingName: { fontSize: "13px", fontWeight: 600, color: "#FFFFFF" },
+  settingDesc: { fontSize: "10px", color: "#9CA3AF" },
+  settingArrow: { color: "#6B7280", fontSize: "16px" },
   skeletonPulse: { animation: "pulse 1.5s ease-in-out infinite" },
 };
 
@@ -68,7 +68,7 @@ const badges = [
 
 const settings = [
   { icon: "⚙️", name: "Account Settings", desc: "Email, password, 2FA", bgColor: "rgba(255,255,255,0.05)" },
-  { icon: "🔔", name: "Notifications", desc: "Alerts & push preferences", bgColor: "rgba(59,130,246,0.1)" },
+  { icon: "🔔", name: "Notifications", desc: "Alerts & push preferences", bgColor: "rgba(16,185,129,0.1)" },
   { icon: "🔗", name: "Connected Wallets", desc: "Manage wallet connections", bgColor: "rgba(34,197,94,0.1)" },
   { icon: "🎨", name: "Appearance", desc: "Theme & display settings", bgColor: "rgba(245,158,11,0.1)" },
   { icon: "🔒", name: "Privacy & Security", desc: "Data & security options", bgColor: "rgba(239,68,68,0.1)" },
@@ -146,7 +146,7 @@ const AccountItem = memo(function AccountItem({ item, isLast }: { item: AccountE
       <span style={{
         ...S.accountStatus,
         background: item.linked ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.05)",
-        color: item.linked ? "#22C55E" : "#4A5568",
+        color: item.linked ? "#22C55E" : "#6B7280",
       }}>
         {item.linked ? "Connected" : "Connect"}
       </span>
@@ -245,8 +245,8 @@ function ProfilePage() {
       name: "Twitter",
       handle: "Not connected",
       icon: "𝕏",
-      bgColor: "rgba(59,130,246,0.15)",
-      iconColor: "#60A5FA",
+      bgColor: "rgba(16,185,129,0.15)",
+      iconColor: "#34D399",
       linked: false,
     });
     list.push({
@@ -298,7 +298,7 @@ function ProfilePage() {
                 fallback.setAttribute("data-initials", "true");
                 fallback.textContent = initial;
                 fallback.style.cssText =
-                  "width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#3B82F6,#2563EB);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;flex-shrink:0;border:2px solid rgba(59,130,246,0.3)";
+                  "width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#10B981,#059669);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;flex-shrink:0;border:2px solid rgba(16,185,129,0.3)";
                 parent.insertBefore(fallback, img);
               }
             }}
@@ -316,7 +316,7 @@ function ProfilePage() {
           </div>
           <div style={S.joined}>{joinedText}</div>
           <div style={S.badgesRow}>
-            <span style={{ ...S.smallBadge, background: "rgba(59,130,246,0.15)", color: "#60A5FA" }}>
+            <span style={{ ...S.smallBadge, background: "rgba(16,185,129,0.15)", color: "#34D399" }}>
               ⚡ {pointsBalance.toLocaleString()} pts
             </span>
             {currentStreak > 0 && (
@@ -325,7 +325,7 @@ function ProfilePage() {
               </span>
             )}
             {pointsBalance >= 5000 && (
-              <span style={{ ...S.smallBadge, background: "rgba(59,130,246,0.15)", color: "#3B82F6" }}>
+              <span style={{ ...S.smallBadge, background: "rgba(16,185,129,0.15)", color: "#10B981" }}>
                 👑 PRO
               </span>
             )}
@@ -338,7 +338,7 @@ function ProfilePage() {
         <StatCard
           label="Total Trades"
           value={isLoading ? "—" : String(totalTrades)}
-          color="#3B82F6"
+          color="#10B981"
         />
         <StatCard
           label="Win Rate"

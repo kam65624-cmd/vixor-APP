@@ -27,34 +27,34 @@ function TokenPage() {
   const winRate = closedTrades.length > 0 ? Math.round((closedTrades.filter((t) => (t.pnl || 0) > 0).length / closedTrades.length) * 100) : 0;
 
   return (
-    <div style={{ background: "#0f1424", color: "#F0F4FC", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%" }}>
+    <div style={{ background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%" }}>
       {/* Header */}
       <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center gap-2">
-          <Link to="/discover" style={{ color: "#60A5FA", fontSize: "11px" }}>Discover</Link>
-          <span style={{ color: "#4A5568", fontSize: "11px" }}>/</span>
+          <Link to="/discover" style={{ color: "#34D399", fontSize: "11px" }}>Discover</Link>
+          <span style={{ color: "#6B7280", fontSize: "11px" }}>/</span>
           <span className="text-lg font-bold">{symbol.toUpperCase()}</span>
         </div>
       </div>
 
       {/* Token Stats */}
       <div className="px-4 py-3 grid grid-cols-4 gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-          <div className="text-[9px]" style={{ color: "#4A5568" }}>Your Trades</div>
+        <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+          <div className="text-[9px]" style={{ color: "#6B7280" }}>Your Trades</div>
           <div className="text-lg font-bold font-mono">{tokenTrades.length}</div>
         </div>
-        <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-          <div className="text-[9px]" style={{ color: "#4A5568" }}>Total PnL</div>
+        <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+          <div className="text-[9px]" style={{ color: "#6B7280" }}>Total PnL</div>
           <div className="text-lg font-bold font-mono" style={{ color: totalPnl >= 0 ? "#22C55E" : "#EF4444" }}>
             {totalPnl >= 0 ? "+" : ""}{totalPnl.toFixed(2)}
           </div>
         </div>
-        <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-          <div className="text-[9px]" style={{ color: "#4A5568" }}>Win Rate</div>
-          <div className="text-lg font-bold font-mono" style={{ color: "#3B82F6" }}>{winRate}%</div>
+        <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+          <div className="text-[9px]" style={{ color: "#6B7280" }}>Win Rate</div>
+          <div className="text-lg font-bold font-mono" style={{ color: "#10B981" }}>{winRate}%</div>
         </div>
-        <div className="px-3 py-2 rounded-lg" style={{ background: "#161b2e" }}>
-          <div className="text-[9px]" style={{ color: "#4A5568" }}>Closed</div>
+        <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
+          <div className="text-[9px]" style={{ color: "#6B7280" }}>Closed</div>
           <div className="text-lg font-bold font-mono">{closedTrades.length}</div>
         </div>
       </div>
@@ -63,7 +63,7 @@ function TokenPage() {
       <div style={{ height: "280px", background: "#0c101e", position: "relative", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "8px" }}>
           <span style={{ fontSize: "24px" }}>&#128200;</span>
-          <span style={{ fontSize: "11px", color: "#4A5568" }}>Chart requires OHLCV data feed</span>
+          <span style={{ fontSize: "11px", color: "#6B7280" }}>Chart requires OHLCV data feed</span>
           <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ background: "rgba(245,158,11,0.12)", color: "#F59E0B" }}>COMING SOON</span>
         </div>
       </div>
@@ -78,7 +78,7 @@ function TokenPage() {
           <TokenTradeRow key={trade.id} trade={trade} />
         )) : (
           <div className="flex flex-col items-center justify-center gap-3" style={{ padding: "40px 0" }}>
-            <p style={{ fontSize: "12px", color: "#7B8BA8" }}>
+            <p style={{ fontSize: "12px", color: "#9CA3AF" }}>
               {allTrades.length === 0
                 ? "No trades yet. Go to Trade Desk to log your first trade."
                 : `No trades found for ${symbol.toUpperCase()}. This token may be tracked under a different pair name.`}
@@ -104,15 +104,15 @@ const TokenTradeRow = memo(function TokenTradeRow({ trade }: { trade: any }) {
         }}>{(trade.direction || "").toUpperCase()}</span>
       </div>
       <div style={{ width: "80px", textAlign: "right" }}>{fmtPrice(trade.entry_price)}</div>
-      <div style={{ width: "80px", textAlign: "right", color: "#7B8BA8" }}>{trade.exit_price ? fmtPrice(trade.exit_price) : "—"}</div>
-      <div style={{ width: "60px", textAlign: "right", color: "#7B8BA8" }}>{trade.quantity ?? "—"}</div>
+      <div style={{ width: "80px", textAlign: "right", color: "#9CA3AF" }}>{trade.exit_price ? fmtPrice(trade.exit_price) : "—"}</div>
+      <div style={{ width: "60px", textAlign: "right", color: "#9CA3AF" }}>{trade.quantity ?? "—"}</div>
       <div style={{ width: "80px", textAlign: "right", fontWeight: 700, color: isPos ? "#22C55E" : "#EF4444" }}>
         {trade.pnl != null ? (isPos ? "+" : "") + trade.pnl.toFixed(2) : "—"}
       </div>
-      <div style={{ width: "50px", textAlign: "right", color: trade.r_multiple && trade.r_multiple > 0 ? "#22C55E" : "#4A5568" }}>
+      <div style={{ width: "50px", textAlign: "right", color: trade.r_multiple && trade.r_multiple > 0 ? "#22C55E" : "#6B7280" }}>
         {trade.r_multiple ? `${trade.r_multiple.toFixed(1)}R` : "—"}
       </div>
-      <div style={{ flex: 1, textAlign: "right", color: "#4A5568", fontSize: "10px" }}>
+      <div style={{ flex: 1, textAlign: "right", color: "#6B7280", fontSize: "10px" }}>
         {new Date(trade.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
       </div>
     </div>

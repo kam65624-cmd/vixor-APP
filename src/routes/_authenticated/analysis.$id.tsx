@@ -81,7 +81,7 @@ function highlightSMC(text: string): React.ReactNode[] {
   return parts.map((part, i) => {
     if (smcTerms.some((t) => t.toLowerCase() === part.toLowerCase())) {
       return (
-        <span key={i} className="text-[#3B82F6] font-bold bg-[#3B82F6]/10 px-0.5 rounded">
+        <span key={i} className="text-[#10B981] font-bold bg-[#10B981]/10 px-0.5 rounded">
           {part}
         </span>
       );
@@ -137,7 +137,7 @@ function AnalysisResult() {
           <Link
             to="/analyze"
             search={{ screenshot: undefined, pair: undefined }}
-            className="inline-flex mt-6 px-6 h-12 rounded-xl bg-[#3B82F6] text-white font-bold items-center transition-transform active:scale-95"
+            className="inline-flex mt-6 px-6 h-12 rounded-xl bg-[#10B981] text-white font-bold items-center transition-transform active:scale-95"
           >
             Try another chart
           </Link>
@@ -204,7 +204,7 @@ function AnalysisResult() {
         <div className="flex items-start justify-between mb-5">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-[#111827]/80 backdrop-blur px-2 py-0.5 rounded border border-[#1E293B]">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-[#1A1A1A]/80 backdrop-blur px-2 py-0.5 rounded border border-[#2A2A2A]">
                 {a.timeframe ?? "AUTO"}
               </span>
               <span className="text-[10px] font-bold text-gray-400">
@@ -229,7 +229,7 @@ function AnalysisResult() {
         {/* Signal Prices — the core data */}
         {signalBadge && (
           <div className="grid grid-cols-3 gap-2 mb-4">
-            <div className="bg-[#111827]/70 backdrop-blur p-3 rounded-xl border border-[#1E293B] text-center">
+            <div className="bg-[#1A1A1A]/70 backdrop-blur p-3 rounded-xl border border-[#2A2A2A] text-center">
               <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">
                 Entry
               </div>
@@ -339,13 +339,13 @@ function AnalysisResult() {
       <div className="grid grid-cols-3 gap-3">
         <Link
           to="/trade-desk"
-          className="h-12 rounded-xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-bold text-sm flex items-center justify-center gap-2  active:scale-95 transition-transform"
+          className="h-12 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] text-white font-bold text-sm flex items-center justify-center gap-2  active:scale-95 transition-transform"
         >
           <Zap className="size-4" /> Use in Calculator
         </Link>
         <Link
           to="/journal"
-          className="h-12 rounded-xl bg-[#111827] border border-[#1E293B] font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1a2234] active:scale-95 transition-all"
+          className="h-12 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1E1E1E] active:scale-95 transition-all"
         >
           <BookOpen className="size-4 text-gray-400" /> Journal
         </Link>
@@ -353,12 +353,12 @@ function AnalysisResult() {
       </div>
 
       {/* ═══ TABS ═══ */}
-      <div className="flex gap-1 p-1 bg-[#111827] border border-[#1E293B] rounded-xl overflow-x-auto no-scrollbar">
+      <div className="flex gap-1 p-1 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl overflow-x-auto no-scrollbar">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 h-9 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all px-2 ${tab === t ? "bg-[#3B82F6] text-white shadow-sm" : "text-gray-400 hover:text-white"}`}
+            className={`flex-1 h-9 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all px-2 ${tab === t ? "bg-[#10B981] text-white shadow-sm" : "text-gray-400 hover:text-white"}`}
           >
             {t}
           </button>
@@ -370,12 +370,12 @@ function AnalysisResult() {
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="vixor-card p-5">
             <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-gray-400 flex items-center gap-2">
-              <Target className="size-4 text-[#3B82F6]" /> Why This Trade
+              <Target className="size-4 text-[#10B981]" /> Why This Trade
             </h3>
             <ul className="space-y-3">
               {(a.reasons ?? []).map((r: string, i: number) => (
                 <li key={i} className="flex gap-3 text-sm">
-                  <CheckCircle className="size-4 text-[#3B82F6] shrink-0 mt-0.5" />
+                  <CheckCircle className="size-4 text-[#10B981] shrink-0 mt-0.5" />
                   <span className="font-medium">{highlightSMC(r)}</span>
                 </li>
               ))}
@@ -398,9 +398,9 @@ function AnalysisResult() {
                 {
                   label: "Balanced ✦",
                   s: scenarios.balanced,
-                  color: "text-[#3B82F6]",
+                  color: "text-[#10B981]",
                   border: "border-l-primary/80",
-                  bg: "bg-[#3B82F6]/5",
+                  bg: "bg-[#10B981]/5",
                   glow: true,
                 },
                 {
@@ -424,12 +424,12 @@ function AnalysisResult() {
                         PROB: {s.probability}%
                       </span>
                     </div>
-                    <span className="font-mono text-sm font-extrabold bg-[#111827] px-2 py-0.5 rounded border border-[#1E293B]">
+                    <span className="font-mono text-sm font-extrabold bg-[#1A1A1A] px-2 py-0.5 rounded border border-[#2A2A2A]">
                       R:R {s.rr}
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="bg-[#111827] p-2.5 rounded-xl border border-[#1E293B]">
+                    <div className="bg-[#1A1A1A] p-2.5 rounded-xl border border-[#2A2A2A]">
                       <div className="text-[9px] text-gray-400 font-bold uppercase mb-1">
                         Entry
                       </div>
@@ -461,7 +461,7 @@ function AnalysisResult() {
           {a.key_levels && (
             <div className="vixor-card p-5">
               <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-gray-400 flex items-center gap-2">
-                <BarChart2 className="size-4 text-[#3B82F6]" /> Key SMC Levels
+                <BarChart2 className="size-4 text-[#10B981]" /> Key SMC Levels
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -497,7 +497,7 @@ function AnalysisResult() {
           {a.liquidity_zones && (
             <div className="vixor-card p-5">
               <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-gray-400 flex items-center gap-2">
-                <Activity className="size-4 text-[#3B82F6]" /> Liquidity Pools
+                <Activity className="size-4 text-[#10B981]" /> Liquidity Pools
               </h3>
               <div className="space-y-2">
                 {((a.liquidity_zones as any).buySide || []).map((l: number, i: number) => (
@@ -529,7 +529,7 @@ function AnalysisResult() {
           {a.market_structure && (
             <div className="vixor-card p-5">
               <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-gray-400 flex items-center gap-2">
-                <TrendingUp className="size-4 text-[#3B82F6]" /> Market Structure (SMC)
+                <TrendingUp className="size-4 text-[#10B981]" /> Market Structure (SMC)
               </h3>
               <div className="space-y-2">
                 {[
@@ -555,7 +555,7 @@ function AnalysisResult() {
                 ].map(({ label, value, danger }) => (
                   <div
                     key={label}
-                    className={`flex justify-between items-center p-3 rounded-xl border ${danger ? "bg-red-500/10 border-red-500/30" : "bg-[#111827] border-[#1E293B]"}`}
+                    className={`flex justify-between items-center p-3 rounded-xl border ${danger ? "bg-red-500/10 border-red-500/30" : "bg-[#1A1A1A] border-[#2A2A2A]"}`}
                   >
                     <span
                       className={`text-xs font-bold uppercase ${danger ? "text-red-400" : "text-gray-400"}`}
@@ -585,13 +585,13 @@ function AnalysisResult() {
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="vixor-card p-5">
             <h3 className="font-bold text-xs mb-4 uppercase tracking-wider text-gray-400 flex items-center gap-2">
-              <Layers className="size-4 text-[#3B82F6]" /> Step-by-Step Management
+              <Layers className="size-4 text-[#10B981]" /> Step-by-Step Management
             </h3>
             <div className="space-y-3">
               {management.map((m, i) => (
-                <div key={i} className="flex gap-3 bg-[#111827] border border-[#1E293B] p-3.5 rounded-xl">
+                <div key={i} className="flex gap-3 bg-[#1A1A1A] border border-[#2A2A2A] p-3.5 rounded-xl">
                   <div
-                    className={`size-7 rounded-full flex items-center justify-center shrink-0 font-mono text-xs font-bold ${i === 0 ? "bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white" : "bg-muted text-gray-400"}`}
+                    className={`size-7 rounded-full flex items-center justify-center shrink-0 font-mono text-xs font-bold ${i === 0 ? "bg-gradient-to-r from-[#10B981] to-[#059669] text-white" : "bg-muted text-gray-400"}`}
                   >
                     {i + 1}
                   </div>
@@ -666,7 +666,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
       <div className="vixor-card p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-xs uppercase tracking-wider text-gray-400 flex items-center gap-2">
-            <Activity className="size-4 text-[#3B82F6]" /> Fundamental Sentiment
+            <Activity className="size-4 text-[#10B981]" /> Fundamental Sentiment
           </h3>
           <span
             className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border ${
@@ -694,7 +694,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
       {/* News Articles */}
       <div className="space-y-3">
         <h3 className="font-bold text-xs ml-1 uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-          <Newspaper className="size-4 text-[#3B82F6]" /> Key News Drivers
+          <Newspaper className="size-4 text-[#10B981]" /> Key News Drivers
         </h3>
         {relevant_news.map((n, i) => (
           <div key={i} className="vixor-card p-4 relative overflow-hidden space-y-3">
@@ -716,7 +716,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
                 {n.impact}
               </span>
             </div>
-            <div className="p-3 rounded-lg bg-[#111827]/60 border border-[#1E293B] text-xs text-gray-400 leading-relaxed ml-1">
+            <div className="p-3 rounded-lg bg-[#1A1A1A]/60 border border-[#2A2A2A] text-xs text-gray-400 leading-relaxed ml-1">
               <strong className="text-[9px] uppercase tracking-wider text-white block mb-1">
                 Technical Impact
               </strong>
@@ -774,9 +774,9 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
             queryClient.invalidateQueries({ queryKey: ["analysis-notes", analysisId] });
           }
         }}
-        className="h-12 rounded-xl bg-[#111827] border border-[#1E293B] font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1a2234] active:scale-95 transition-all"
+        className="h-12 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1E1E1E] active:scale-95 transition-all"
       >
-        <StickyNote className="size-4 text-[#3B82F6]" /> Notes
+        <StickyNote className="size-4 text-[#10B981]" /> Notes
       </button>
 
       {/* Notes panel below the action buttons */}
@@ -791,7 +791,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                 setEditingNote(null);
                 setNoteEditorOpen(true);
               }}
-              className="h-7 px-3 rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-[11px] font-bold flex items-center gap-1 hover:scale-[1.02] active:scale-95 transition-transform"
+              className="h-7 px-3 rounded-lg bg-gradient-to-r from-[#10B981] to-[#059669] text-white text-[11px] font-bold flex items-center gap-1 hover:scale-[1.02] active:scale-95 transition-transform"
             >
               <Plus className="size-3" /> Add Note
             </button>
@@ -799,14 +799,14 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
 
           {notesQuery.isLoading ? (
             <div className="vixor-card p-4 text-center">
-              <Loader2 className="size-4 text-[#3B82F6] animate-spin mx-auto" />
+              <Loader2 className="size-4 text-[#10B981] animate-spin mx-auto" />
             </div>
           ) : notes.length > 0 ? (
             <div className="space-y-2">
               {notes.map((note) => (
                 <div
                   key={note.id}
-                  className="vixor-card p-3 transition-colors hover:bg-[#1a2234] cursor-pointer"
+                  className="vixor-card p-3 transition-colors hover:bg-[#1E1E1E] cursor-pointer"
                   onClick={() => {
                     setEditingNote(note);
                     setNoteEditorOpen(true);
@@ -815,7 +815,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        {note.is_pinned && <Pin className="size-3 text-[#3B82F6] shrink-0" />}
+                        {note.is_pinned && <Pin className="size-3 text-[#10B981] shrink-0" />}
                         <span className="font-bold text-sm text-white truncate">
                           {note.title || "Untitled"}
                         </span>
@@ -867,7 +867,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
               <div className="flex gap-2">
                 <button
                   onClick={() => setDeleteTarget(null)}
-                  className="h-7 px-3 rounded-lg bg-[#111827] border border-[#1E293B] text-xs font-bold"
+                  className="h-7 px-3 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] text-xs font-bold"
                 >
                   Cancel
                 </button>
@@ -903,15 +903,15 @@ function BackHeader() {
     <div className="flex items-center justify-between pt-2 pb-1">
       <Link
         to="/"
-        className="size-10 rounded-xl bg-[#111827] border border-[#1E293B] flex items-center justify-center hover:bg-[#1a2234] transition-colors"
+        className="size-10 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center hover:bg-[#1E1E1E] transition-colors"
       >
         <ArrowLeft className="size-5" />
       </Link>
       <div className="flex gap-2">
-        <button className="size-10 rounded-xl bg-[#111827] border border-[#1E293B] flex items-center justify-center hover:bg-[#1a2234] transition-colors">
+        <button className="size-10 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center hover:bg-[#1E1E1E] transition-colors">
           <Bookmark className="size-4 text-gray-400" />
         </button>
-        <button className="size-10 rounded-xl bg-[#111827] border border-[#1E293B] flex items-center justify-center hover:bg-[#1a2234] transition-colors">
+        <button className="size-10 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center hover:bg-[#1E1E1E] transition-colors">
           <Share2 className="size-4 text-gray-400" />
         </button>
       </div>
@@ -926,7 +926,7 @@ function Loading({ label }: { label: string }) {
       <div className="vixor-card p-10 flex-1 flex flex-col items-center justify-center text-center">
         <div className="relative mb-6">
           <div className="absolute inset-0 rounded-2xl bg-primary/20 animate-ping" />
-          <div className="relative size-16 rounded-2xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB]  flex items-center justify-center">
+          <div className="relative size-16 rounded-2xl bg-gradient-to-r from-[#10B981] to-[#059669]  flex items-center justify-center">
             <Loader2 className="size-8 text-white animate-spin" strokeWidth={2.5} />
           </div>
         </div>

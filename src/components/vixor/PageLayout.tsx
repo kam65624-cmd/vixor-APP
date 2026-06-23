@@ -40,7 +40,7 @@ export const THEME = {
   // Borders
   border: "rgba(255,255,255,0.06)",
   borderLight: "rgba(255,255,255,0.04)",
-  borderAccent: "rgba(96,165,250,0.15)",
+  borderAccent: "rgba(52,211,153,0.15)",
 
   // Text
   text: "#FFFFFF",
@@ -51,8 +51,8 @@ export const THEME = {
   // Semantic colors
   green: "#10B981",
   red: "#EF4444",
-  blue: "#60A5FA",
-  blueDeep: "#3B82F6",
+  blue: "#34D399",
+  blueDeep: "#10B981",
   amber: "#F59E0B",
   purple: "#8B5CF6",
   pink: "#EC4899",
