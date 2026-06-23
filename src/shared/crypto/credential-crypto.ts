@@ -2,37 +2,28 @@
 // VIXOR Credential Crypto — AES-256-GCM Encryption for User API Keys
 // ============================================================================
 //
-// Port of QuantDinger's app/utils/credential_crypto.py (which used Fernet).
-// VIXOR uses standard Node.js `crypto` AES-256-GCM with scrypt key derivation
-// from the CREDENTIAL_ENCRYPTION_KEY env var.
+// Uses Node.js `crypto` module for AES-256-GCM encryption with scrypt key
+// derivation from `process.env.SECRET_KEY`.
 //
-// Wire format (base64-encoded):
+// Wire format (base64url-encoded):
 //   [12-byte IV] [N-byte ciphertext] [16-byte GCM auth tag]
 //
-// All three components are required for decryption. The tag is appended
-// (not prepended) to match the convention used by most GCM implementations.
-//
 // Usage:
-//   import { encrypt, decrypt, rotateKey } from "@/shared/crypto/credential-crypto";
-//
-//   const blob = await encrypt(JSON.stringify({ apiKey: "sk-..." }));
-//   // store `blob` in DB (text column)
-//
-//   const plaintext = await decrypt(blob); // → original JSON string
-//
-// Env var: CREDENTIAL_ENCRYPTION_KEY — a 32-byte hex string (64 hex chars)
-//   Generate one with: openssl rand -hex 32
+//   import { encryptCredential, decryptCredential, maskApiKey } from "@/shared/crypto";
+//   const token = encryptCredential({ apiKey: "sk-abc123" });
+//   const data = decryptCredential<{ apiKey: string }>(token);
+//   console.log(maskApiKey("sk-abc123def456")); // "sk-a...f456"
 // ============================================================================
 
-import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "node:crypto";
+import { createCipheriv, createDecipheriv, scryptSync, randomBytes } from "node:crypto";
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
 const ALGO = "aes-256-gcm";
 const IV_LENGTH = 12; // 96-bit IV is the GCM standard
 const TAG_LENGTH = 16;
-const KEY_LENGTH = 32; // 256-bit
-const SALT = "vixor-credential-crypto-v1"; // fixed salt — key rotation requires determinism
+const KEY_LENGTH = 32; // 256-bit key
+const SCRYPT_SALT = "vixor-credential-crypto-v1";
 
 // ── Key derivation ──────────────────────────────────────────────────────────
 
@@ -40,27 +31,28 @@ let cachedKey: Buffer | null = null;
 let cachedKeyFor: string | null = null;
 
 /**
- * Derive a 32-byte AES key from a passphrase via scrypt.
- * The same passphrase always yields the same key (deterministic), so key
- * rotation is possible by re-encrypting with a new passphrase.
+ * Derive a 32-byte AES key from `process.env.SECRET_KEY` using scrypt.
  *
- * Uses scrypt with N=2^15 (cost), r=8, p=1 — appropriate for interactive
- * workloads (per OWASP 2023 guidance).
+ * Uses scrypt with N=2^15, r=8, p=1 per OWASP 2023 guidance for
+ * interactive workloads. The result is cached to avoid recomputing
+ * the expensive key derivation on every call.
+ *
+ * @returns A 32-byte Buffer suitable for AES-256-GCM.
+ * @throws Error if `SECRET_KEY` is not set.
  */
-function deriveKey(passphrase: string): Buffer {
-  // Cache the most-recently-derived key to avoid recomputing scrypt on every
-  // call. (scrypt is intentionally slow.)
+export function getDerivedKey(): Buffer {
+  const passphrase = process.env.SECRET_KEY ?? "";
+
   if (cachedKey && cachedKeyFor === passphrase) return cachedKey;
 
   if (!passphrase || passphrase.length === 0) {
     throw new Error(
-      "CREDENTIAL_ENCRYPTION_KEY is not set; cannot encrypt or decrypt credentials. " +
+      "SECRET_KEY is not set; cannot encrypt or decrypt credentials. " +
         "Set it to a 32-byte hex string (e.g. `openssl rand -hex 32`).",
     );
   }
 
-  // If the passphrase looks like a 64-char hex string, use it directly as the
-  // key bytes (no need for slow scrypt). This is the recommended mode.
+  // If the passphrase looks like a 64-char hex string, use it directly
   if (/^[0-9a-fA-F]{64}$/.test(passphrase)) {
     const key = Buffer.from(passphrase, "hex");
     cachedKey = key;
@@ -68,185 +60,129 @@ function deriveKey(passphrase: string): Buffer {
     return key;
   }
 
-  // Otherwise, derive via scrypt. Slower but more forgiving for users who
-  // set a passphrase-style value.
-  const key = scryptSync(passphrase, SALT, KEY_LENGTH, {
+  // Otherwise derive via scrypt
+  const key = scryptSync(passphrase, SCRYPT_SALT, KEY_LENGTH, {
     N: 1 << 15,
     r: 8,
     p: 1,
-    maxmem: 128 * 1024 * 1024, // 128 MB scrypt scratch
+    maxmem: 128 * 1024 * 1024, // 128 MB scratch space
   });
+
   cachedKey = key;
   cachedKeyFor = passphrase;
   return key;
 }
 
-function getKey(): Buffer {
-  const raw = process.env.CREDENTIAL_ENCRYPTION_KEY ?? "";
-  return deriveKey(raw);
+// ── Encoding helpers ────────────────────────────────────────────────────────
+
+/**
+ * Convert a Buffer to a base64url string (URL-safe: replaces +/ with -_).
+ */
+function toBase64Url(buf: Buffer): string {
+  return buf.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/**
+ * Convert a base64url string back to a Buffer.
+ */
+function fromBase64Url(str: string): Buffer {
+  const padded = str.replace(/-/g, "+").replace(/_/g, "/");
+  return Buffer.from(padded, "base64");
 }
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
 /**
- * Encrypt a plaintext string. Returns a base64-encoded blob containing
- * iv || ciphertext || auth tag.
+ * Encrypt a credential object using AES-256-GCM.
  *
- * Empty/whitespace plaintext is allowed and returns an empty string for
- * convenience (matching the Python original's behavior).
+ * The input object is JSON-stringified, encrypted, and returned as a
+ * base64url-encoded string containing: IV + ciphertext + GCM auth tag.
+ *
+ * @param data - A plain object containing credential key-value pairs.
+ * @returns A base64url-encoded encrypted token.
+ *
+ * @example
+ *   const token = encryptCredential({ apiKey: "sk-abc123", secret: "xyz" });
+ *   // Store `token` in the database
  */
-export async function encrypt(plaintext: string): Promise<string> {
-  if (plaintext == null) plaintext = "";
-  const trimmed = String(plaintext);
-  if (trimmed.length === 0) return "";
-
-  const key = getKey();
+export function encryptCredential(data: Record<string, string>): string {
+  const key = getDerivedKey();
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGO, key, iv);
 
-  const ciphertext = Buffer.concat([cipher.update(trimmed, "utf8"), cipher.final()]);
-  const tag = cipher.getAuthTag(); // 16 bytes
-
-  // Wire format: iv || ciphertext || tag (then base64)
-  const blob = Buffer.concat([iv, ciphertext, tag]);
-  return blob.toString("base64");
-}
-
-/**
- * Decrypt a base64-encoded blob produced by `encrypt()`.
- * Returns the original plaintext.
- *
- * @throws Error if the blob is malformed, the key is wrong, or the auth
- *         tag fails verification (tampered ciphertext).
- */
-export async function decrypt(payload: string): Promise<string> {
-  if (payload == null) return "";
-  const s = String(payload).trim();
-  if (s.length === 0) return "";
-
-  const key = getKey();
-  const blob = Buffer.from(s, "base64");
-
-  if (blob.length < IV_LENGTH + TAG_LENGTH) {
-    throw new Error(
-      "Cannot decrypt credential: blob is too short (expected at least " +
-        `${IV_LENGTH + TAG_LENGTH} bytes, got ${blob.length}).`,
-    );
-  }
-
-  const iv = blob.subarray(0, IV_LENGTH);
-  const tag = blob.subarray(blob.length - TAG_LENGTH);
-  const ciphertext = blob.subarray(IV_LENGTH, blob.length - TAG_LENGTH);
-
-  const decipher = createDecipheriv(ALGO, key, iv);
-  decipher.setAuthTag(tag);
-
-  try {
-    const plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-    return plaintext.toString("utf8");
-  } catch (err) {
-    throw new Error(
-      "Cannot decrypt credential (wrong CREDENTIAL_ENCRYPTION_KEY or data " +
-        "tampered). Original error: " +
-        (err instanceof Error ? err.message : String(err)),
-    );
-  }
-}
-
-/**
- * Rotate the encryption key on a single payload.
- *
- * Decrypts with `oldKey`, re-encrypts with `newKey`. Both keys are passed
- * explicitly so the caller doesn't need to mutate the env var during rotation.
- *
- * @returns the re-encrypted blob under the new key.
- */
-export async function rotateKey(oldKey: string, newKey: string, payload: string): Promise<string> {
-  if (!payload || payload.trim().length === 0) return "";
-
-  // Temporarily swap the cached key for decryption.
-  const savedKey = cachedKey;
-  const savedKeyFor = cachedKeyFor;
-  cachedKey = null;
-  cachedKeyFor = null;
-
-  try {
-    // Decrypt with old key.
-    cachedKey = null;
-    cachedKeyFor = oldKey;
-    const oldKeyBuf = deriveKey(oldKey);
-    cachedKey = oldKeyBuf;
-    cachedKeyFor = oldKey;
-    const plaintext = await decryptImplWithKey(oldKeyBuf, payload);
-
-    // Encrypt with new key.
-    cachedKey = null;
-    cachedKeyFor = newKey;
-    const newKeyBuf = deriveKey(newKey);
-    cachedKey = newKeyBuf;
-    cachedKeyFor = newKey;
-    const reencrypted = await encryptImplWithKey(newKeyBuf, plaintext);
-
-    return reencrypted;
-  } finally {
-    // Restore the cached key (or clear it so the next call derives from env).
-    cachedKey = savedKey;
-    cachedKeyFor = savedKeyFor;
-  }
-}
-
-// ── Internal helpers (key-explicit versions for rotation) ───────────────────
-
-async function encryptImplWithKey(key: Buffer, plaintext: string): Promise<string> {
-  const iv = randomBytes(IV_LENGTH);
-  const cipher = createCipheriv(ALGO, key, iv);
+  const plaintext = JSON.stringify(data);
   const ciphertext = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
-  return Buffer.concat([iv, ciphertext, tag]).toString("base64");
+
+  // Wire format: iv || ciphertext || tag
+  const blob = Buffer.concat([iv, ciphertext, tag]);
+  return toBase64Url(blob);
 }
 
-async function decryptImplWithKey(key: Buffer, payload: string): Promise<string> {
-  const blob = Buffer.from(payload, "base64");
+/**
+ * Decrypt a base64url-encoded token produced by `encryptCredential()`.
+ *
+ * Verifies the GCM auth tag before returning the plaintext. If the tag
+ * fails verification (wrong key or tampered data), an error is thrown.
+ *
+ * @typeParam T - The expected shape of the decrypted object.
+ * @param token - The base64url-encoded encrypted token.
+ * @returns The original credential object.
+ * @throws Error if the token is malformed or decryption fails.
+ *
+ * @example
+ *   const data = decryptCredential<{ apiKey: string }>(token);
+ *   console.log(data.apiKey); // "sk-abc123"
+ */
+export function decryptCredential<T extends Record<string, string>>(token: string): T {
+  const key = getDerivedKey();
+  const blob = fromBase64Url(token);
+
   if (blob.length < IV_LENGTH + TAG_LENGTH) {
-    throw new Error("Cannot decrypt: blob too short");
+    throw new Error(
+      `Cannot decrypt: token too short (expected at least ${IV_LENGTH + TAG_LENGTH} bytes, got ${blob.length})`,
+    );
   }
+
   const iv = blob.subarray(0, IV_LENGTH);
   const tag = blob.subarray(blob.length - TAG_LENGTH);
   const ciphertext = blob.subarray(IV_LENGTH, blob.length - TAG_LENGTH);
+
   const decipher = createDecipheriv(ALGO, key, iv);
   decipher.setAuthTag(tag);
-  const plain = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-  return plain.toString("utf8");
-}
 
-// ── Synchronous variants (for cases where async is unnecessary) ─────────────
-
-export function encryptSync(plaintext: string): string {
-  if (plaintext == null) plaintext = "";
-  const trimmed = String(plaintext);
-  if (trimmed.length === 0) return "";
-  const key = getKey();
-  const iv = randomBytes(IV_LENGTH);
-  const cipher = createCipheriv(ALGO, key, iv);
-  const ciphertext = Buffer.concat([cipher.update(trimmed, "utf8"), cipher.final()]);
-  const tag = cipher.getAuthTag();
-  return Buffer.concat([iv, ciphertext, tag]).toString("base64");
-}
-
-export function decryptSync(payload: string): string {
-  if (payload == null) return "";
-  const s = String(payload).trim();
-  if (s.length === 0) return "";
-  const key = getKey();
-  const blob = Buffer.from(s, "base64");
-  if (blob.length < IV_LENGTH + TAG_LENGTH) {
-    throw new Error("Cannot decrypt credential: blob too short");
+  let plaintext: Buffer;
+  try {
+    plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+  } catch (err) {
+    throw new Error(
+      "Cannot decrypt credential (wrong SECRET_KEY or data tampered). " +
+        `Original: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
-  const iv = blob.subarray(0, IV_LENGTH);
-  const tag = blob.subarray(blob.length - TAG_LENGTH);
-  const ciphertext = blob.subarray(IV_LENGTH, blob.length - TAG_LENGTH);
-  const decipher = createDecipheriv(ALGO, key, iv);
-  decipher.setAuthTag(tag);
-  const plain = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-  return plain.toString("utf8");
+
+  return JSON.parse(plaintext.toString("utf8")) as T;
+}
+
+/**
+ * Mask an API key for safe display — shows the first 4 and last 4 characters
+ * only, with "..." in between.
+ *
+ * Keys shorter than 8 characters show only "***" (not enough chars to safely
+ * show both prefix and suffix).
+ *
+ * @param apiKey - The API key to mask.
+ * @returns The masked representation.
+ *
+ * @example
+ *   maskApiKey("sk-abc123def456ghi789");  // "sk-a...i789"
+ *   maskApiKey("short");                   // "***"
+ */
+export function maskApiKey(apiKey: string): string {
+  if (!apiKey || apiKey.length < 8) {
+    return "***";
+  }
+  const prefix = apiKey.slice(0, 4);
+  const suffix = apiKey.slice(-4);
+  return `${prefix}...${suffix}`;
 }

@@ -1,5 +1,11 @@
 // ============================================================================
 // VIXOR Crypto — Public API
 // ============================================================================
+//
+// Barrel export for the credential encryption module.
+//
+// Usage:
+//   import { encryptCredential, decryptCredential, maskApiKey, getDerivedKey } from "@/shared/crypto";
+// ============================================================================
 
-export { encrypt, decrypt, rotateKey, encryptSync, decryptSync } from "./credential-crypto";
+export { encryptCredential, decryptCredential, maskApiKey, getDerivedKey } from "./credential-crypto";

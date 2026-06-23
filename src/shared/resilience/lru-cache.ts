@@ -2,38 +2,36 @@
 // VIXOR LRU Cache — Least Recently Used with TTL
 // ============================================================================
 //
-// Port of QuantDinger's app/data_sources/cache_manager.py.
-//
-// Pure in-memory LRU cache. Each entry has:
-//   - A value (generic)
-//   - An optional TTL (expires after N ms)
-//   - A hit count for observability
-//
-// On access, expired entries are evicted and treated as a miss.
-// When `capacity` is exceeded, the least-recently-used entry is evicted.
-//
-// NOTE: This is a SYNCHRONOUS in-memory cache. It is NOT a drop-in
-// replacement for the async CacheProvider in @/shared/cache — use that for
-// cross-instance Redis-backed caching. Use LRUCache for hot in-process data
-// like the news cache, response-shape memoization, etc.
+// Generic in-memory LRU cache with per-entry TTL support.
+// Uses Map's insertion-order guarantee for O(1) LRU eviction.
 //
 // Usage:
-//   import { LRUCache } from "@/shared/resilience/lru-cache";
-//
-//   const cache = new LRUCache<string, NewsItem[]>({ capacity: 500, defaultTtlMs: 300_000 });
-//   cache.set("EURUSD", items, 60_000); // 60s override
-//   const hit = cache.get("EURUSD");    // NewsItem[] | undefined
+//   const cache = new LRUCache<string, number[]>({ maxSize: 500, defaultTTLMs: 10_000 });
+//   cache.set("BTC", [1, 2, 3]);
+//   cache.get("BTC"); // [1, 2, 3]
 // ============================================================================
 
-export interface LRUCacheOptions {
-  /** Max number of entries. When exceeded, LRU is evicted. Default: 1000. */
+/** Configuration for an LRUCache instance. */
+export interface LRUCacheConfig {
+  /**
+   * Maximum number of entries. Default: 1000.
+   * Alias: capacity (for backward compatibility).
+   */
+  maxSize?: number;
+  /** @deprecated Use maxSize instead. */
   capacity?: number;
-  /** Default TTL for entries (overridable per-set). Default: no expiry. */
+  /**
+   * Default TTL for entries in ms. Default: 600_000 (10 min).
+   * Alias: defaultTtlMs (for backward compatibility).
+   */
+  defaultTTLMs?: number;
+  /** @deprecated Use defaultTTLMs instead. */
   defaultTtlMs?: number;
-  /** Name used in stats() for observability. */
+  /** Name used for observability. */
   name?: string;
 }
 
+/** Cache stats snapshot. */
 export interface LRUCacheStats {
   name: string;
   size: number;
@@ -45,25 +43,23 @@ export interface LRUCacheStats {
   hitRate: number;
 }
 
-interface Entry<V> {
+interface CacheEntry<V> {
   value: V;
-  expiresAt: number | null; // null = never expires
-  hitCount: number;
+  expiresAt: number | null;
 }
 
 /**
- * Generic LRU cache with TTL support and integrated stats.
+ * Generic LRU cache with TTL support.
  *
- * Iteration order of the internal Map IS access order (most-recently-used
- * at the end) because we re-insert on get(). This gives us O(1) LRU
- * eviction via `map.keys().next()` returning the LRU entry.
+ * @typeParam K - Key type (must be usable as a Map key).
+ * @typeParam V - Value type.
  */
 export class LRUCache<K, V> {
+  readonly maxSize: number;
+  readonly defaultTTLMs: number;
   readonly name: string;
-  readonly capacity: number;
-  readonly defaultTtlMs: number | null;
 
-  private store = new Map<K, Entry<V>>();
+  private store = new Map<K, CacheEntry<V>>();
 
   // Stats
   private hits = 0;
@@ -71,21 +67,20 @@ export class LRUCache<K, V> {
   private evictions = 0;
   private expirations = 0;
 
-  constructor(options: LRUCacheOptions = {}) {
-    this.capacity = options.capacity ?? 1000;
-    this.defaultTtlMs = options.defaultTtlMs ?? null;
-    this.name = options.name ?? "default";
+  constructor(config: LRUCacheConfig = {}) {
+    // Support both old (capacity/defaultTtlMs) and new (maxSize/defaultTTLMs) names
+    this.maxSize = config.maxSize ?? config.capacity ?? 1000;
+    this.defaultTTLMs = config.defaultTTLMs ?? config.defaultTtlMs ?? 600_000;
+    this.name = config.name ?? "default";
 
-    if (this.capacity < 1) {
-      throw new Error(`LRUCache: capacity must be >= 1 (got ${this.capacity})`);
+    if (this.maxSize < 1) {
+      throw new Error(`LRUCache: maxSize must be >= 1 (got ${this.maxSize})`);
     }
   }
 
-  // ── Core operations ──────────────────────────────────────────────────────
-
   /**
-   * Get a value by key. Returns undefined on miss (expired or never set).
-   * Side effect: refreshes LRU order on hit.
+   * Get a value by key. Returns undefined on miss or expiry.
+   * Side-effect: refreshes LRU order on hit.
    */
   get(key: K): V | undefined {
     const entry = this.store.get(key);
@@ -94,7 +89,7 @@ export class LRUCache<K, V> {
       return undefined;
     }
 
-    // Check TTL expiry.
+    // Check TTL
     if (entry.expiresAt !== null && Date.now() > entry.expiresAt) {
       this.store.delete(key);
       this.misses += 1;
@@ -102,26 +97,26 @@ export class LRUCache<K, V> {
       return undefined;
     }
 
-    // Refresh LRU: delete + re-insert moves the entry to the end of the Map.
+    // Refresh LRU order: delete + re-insert
     this.store.delete(key);
     this.store.set(key, entry);
-    entry.hitCount += 1;
     this.hits += 1;
     return entry.value;
   }
 
   /**
-   * Set a value. Optionally override the default TTL.
+   * Set a value. If the cache is at capacity, the LRU entry is evicted.
    *
-   * If the cache is at capacity, the LRU entry is evicted before insert.
-   * If `key` already exists, its value + TTL are updated and LRU refreshed.
+   * @param key - Cache key.
+   * @param value - Value to cache.
+   * @param ttlMs - Optional per-entry TTL override. Uses defaultTTLMs if omitted.
    */
   set(key: K, value: V, ttlMs?: number): void {
-    // Delete existing entry so re-inserting refreshes LRU position.
+    // Remove existing to refresh LRU position
     if (this.store.has(key)) {
       this.store.delete(key);
-    } else if (this.store.size >= this.capacity) {
-      // Evict LRU (first key in Map iteration order).
+    } else if (this.store.size >= this.maxSize) {
+      // Evict LRU (first key in Map iteration order)
       const lruKey = this.store.keys().next().value;
       if (lruKey !== undefined) {
         this.store.delete(lruKey);
@@ -129,13 +124,15 @@ export class LRUCache<K, V> {
       }
     }
 
-    const resolvedTtl = ttlMs ?? this.defaultTtlMs;
-    const expiresAt = resolvedTtl !== null && resolvedTtl > 0 ? Date.now() + resolvedTtl : null;
+    const ttl = ttlMs ?? this.defaultTTLMs;
+    const expiresAt = ttl > 0 ? Date.now() + ttl : null;
 
-    this.store.set(key, { value, expiresAt, hitCount: 0 });
+    this.store.set(key, { value, expiresAt });
   }
 
-  /** Check if a key exists and is not expired. Does NOT refresh LRU. */
+  /**
+   * Check if a key exists and is not expired. Does NOT refresh LRU.
+   */
   has(key: K): boolean {
     const entry = this.store.get(key);
     if (!entry) return false;
@@ -147,43 +144,29 @@ export class LRUCache<K, V> {
     return true;
   }
 
-  /** Delete an entry. Returns true if it existed. */
+  /**
+   * Delete a single entry.
+   * @returns True if the entry existed and was removed.
+   */
   delete(key: K): boolean {
     return this.store.delete(key);
   }
 
-  /** Remove all entries. Returns the count removed. */
+  /**
+   * Remove all entries from the cache.
+   * Returns the count removed.
+   */
   clear(): number {
     const n = this.store.size;
     this.store.clear();
     return n;
   }
 
-  /** Current entry count. */
+  /**
+   * Current number of entries in the cache.
+   */
   size(): number {
     return this.store.size;
-  }
-
-  // ── Maintenance ──────────────────────────────────────────────────────────
-
-  /**
-   * Sweep through all entries and remove expired ones.
-   * Returns the count removed.
-   *
-   * This is O(n) — call periodically (e.g., every 5 min) rather than on every
-   * request. Gets/sets lazily evict on access, so this is just hygiene.
-   */
-  cleanupExpired(): number {
-    let removed = 0;
-    const now = Date.now();
-    for (const [k, entry] of this.store) {
-      if (entry.expiresAt !== null && now > entry.expiresAt) {
-        this.store.delete(k);
-        removed += 1;
-      }
-    }
-    this.expirations += removed;
-    return removed;
   }
 
   // ── Observability ────────────────────────────────────────────────────────
@@ -194,7 +177,7 @@ export class LRUCache<K, V> {
     return {
       name: this.name,
       size: this.store.size,
-      capacity: this.capacity,
+      capacity: this.maxSize,
       hits: this.hits,
       misses: this.misses,
       evictions: this.evictions,
@@ -211,3 +194,17 @@ export class LRUCache<K, V> {
     this.expirations = 0;
   }
 }
+
+// ── Pre-configured caches for common data types ────────────────────────────
+
+/** Pre-configured LRU caches keyed by data type. */
+export const Caches = {
+  /** Price quotes: 500 entries, 10s TTL. */
+  prices: new LRUCache<string, unknown>({ maxSize: 500, defaultTTLMs: 10_000 }),
+  /** Kline/candle data: 200 entries, 1min TTL. */
+  klines: new LRUCache<string, unknown>({ maxSize: 200, defaultTTLMs: 60_000 }),
+  /** News items: 100 entries, 5min TTL. */
+  news: new LRUCache<string, unknown>({ maxSize: 100, defaultTTLMs: 300_000 }),
+  /** LLM analysis results: 1000 entries, 10min TTL. */
+  analysis: new LRUCache<string, unknown>({ maxSize: 1000, defaultTTLMs: 600_000 }),
+} as const;

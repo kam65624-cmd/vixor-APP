@@ -16,6 +16,37 @@ interface NotificationChannels {
   signal_notifications?: boolean;
 }
 
+interface UserSettings {
+  soundEnabled: boolean;
+  darkMode: boolean;
+  compactMode: boolean;
+  showChartOnHover: boolean;
+  autoRefresh: boolean;
+  tradeConfirmations: boolean;
+  twoFactor: boolean;
+  slippageIdx: number;
+  chainIdx: number;
+}
+
+const SETTINGS_STORAGE_KEY = "vixor:user-settings";
+
+function loadLocalSettings(): Partial<UserSettings> {
+  try {
+    const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalSettings(settings: Partial<UserSettings>) {
+  try {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch {
+    // localStorage may be unavailable in private browsing
+  }
+}
+
 type SettingItem =
   | { type: "toggle-server"; id: string; label: string; desc: string; key: keyof NotificationChannels }
   | { type: "toggle-local"; id: string; label: string; desc: string }
@@ -99,22 +130,41 @@ function SettingsPage() {
     },
   });
 
-  // ── Local UI preferences (not persisted to server) ─────────────────────────
+  // ── Local UI preferences (persisted to localStorage) ───────────────────────
+  const stored = loadLocalSettings();
   const [localToggles, setLocalToggles] = useState<Record<string, boolean>>({
-    soundEnabled: false,
-    darkMode: true,
-    compactMode: false,
-    showChartOnHover: true,
-    autoRefresh: true,
-    tradeConfirmations: true,
-    twoFactor: false,
+    soundEnabled: stored.soundEnabled ?? false,
+    darkMode: stored.darkMode ?? true,
+    compactMode: stored.compactMode ?? false,
+    showChartOnHover: stored.showChartOnHover ?? true,
+    autoRefresh: stored.autoRefresh ?? true,
+    tradeConfirmations: stored.tradeConfirmations ?? true,
+    twoFactor: stored.twoFactor ?? false,
   });
 
-  const [slippageIdx, setSlippageIdx] = useState(1);
-  const [chainIdx, setChainIdx] = useState(0);
+  const [slippageIdx, setSlippageIdx] = useState(stored.slippageIdx ?? 1);
+  const [chainIdx, setChainIdx] = useState(stored.chainIdx ?? 0);
 
-  const toggleLocal = (id: string) =>
-    setLocalToggles((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggleLocal = (id: string) => {
+    setLocalToggles((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      saveLocalSettings({ ...loadLocalSettings(), ...next, slippageIdx, chainIdx });
+      showSavedToast();
+      return next;
+    });
+  };
+
+  const handleSlippageChange = (i: number) => {
+    setSlippageIdx(i);
+    saveLocalSettings({ ...loadLocalSettings(), ...localToggles, slippageIdx: i, chainIdx });
+    showSavedToast();
+  };
+
+  const handleChainChange = (i: number) => {
+    setChainIdx(i);
+    saveLocalSettings({ ...loadLocalSettings(), ...localToggles, slippageIdx, chainIdx: i });
+    showSavedToast();
+  };
 
   // ── Server-side editable state ─────────────────────────────────────────────
   const [notificationChannels, setNotificationChannels] = useState<NotificationChannels>({
@@ -217,8 +267,8 @@ function SettingsPage() {
     {
       title: "Trading",
       items: [
-        { type: "select", label: "Default Slippage", desc: "Maximum slippage tolerance for trades", options: ["0.5%", "1.0%", "2.0%", "3.0%"], current: slippageIdx, onChange: setSlippageIdx },
-        { type: "select", label: "Default Chain", desc: "Blockchain for trading", options: ["Solana", "Ethereum", "Base", "Arbitrum"], current: chainIdx, onChange: setChainIdx },
+        { type: "select", label: "Default Slippage", desc: "Maximum slippage tolerance for trades", options: ["0.5%", "1.0%", "2.0%", "3.0%"], current: slippageIdx, onChange: handleSlippageChange },
+        { type: "select", label: "Default Chain", desc: "Blockchain for trading", options: ["Solana", "Ethereum", "Base", "Arbitrum"], current: chainIdx, onChange: handleChainChange },
         { type: "toggle-local", id: "tradeConfirmations", label: "Trade Confirmations", desc: "Show confirmation dialog before executing trades" },
         { type: "toggle-local", id: "autoRefresh", label: "Auto Refresh Data", desc: "Automatically refresh token prices and data" },
       ],

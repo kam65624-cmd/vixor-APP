@@ -3,21 +3,15 @@
 // ============================================================================
 //
 // Barrel export for the safe-exec module: sandboxed execution of user-supplied
-// JavaScript code (e.g., user-defined strategy scripts).
+// JavaScript strategy code.
 //
 // Usage:
-//   import { safeExec, validateCodeSafety } from "@/shared/safe-exec";
-//
-//   const result = await safeExec("return 1 + 2", { timeoutMs: 1000 });
-//   if (result.success) {
-//     console.log("Result:", result.result);
-//   } else {
-//     console.error("Failed:", result.error);
-//   }
+//   import { safeExecStrategy, validateStrategyCode } from "@/shared/safe-exec";
+//   const res = await safeExecStrategy("return close > open;", { close: 150, open: 149 });
 // ============================================================================
 
-export { safeExec, safeExecSync, validateCodeSafety, isCodeSafe } from "./runner";
+export { validateStrategyCode } from "./validator";
+export type { ValidationResult } from "./validator";
 
-export type { SafeExecResult, SafeExecOptions, ValidationResult } from "./runner";
-
-export { SAFE_GLOBALS } from "./validator";
+export { safeExecStrategy } from "./runner";
+export type { ExecResult, StrategyContext } from "./runner";
