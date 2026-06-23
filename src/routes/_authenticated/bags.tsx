@@ -1,8 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { memo } from "react";
+import { memo, useCallback, useState } from "react";
 import { getPortfolioData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import {
+  PageLayout,
+  THEME,
+  StatsRow,
+  SectionTitle,
+  DataRowTwoLine,
+  DataRow,
+  LabelValue,
+  EmptyState,
+  SkeletonRow,
+  ScrollArea,
+} from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/bags")({
   head: () => ({ meta: [{ title: "Bags — Vixor Terminal" }] }),
@@ -30,77 +42,122 @@ function BagsPage() {
   const hasData = holdings.length > 0;
 
   const fmt = (n: number) =>
-    n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : n >= 1_000 ? `$${(n / 1_000).toFixed(2)}K` : `$${n.toFixed(2)}`;
-  const pnlFmt = (n: number) => (n >= 0 ? `+$${n.toFixed(2)}` : `-$${Math.abs(n).toFixed(2)}`);
+    n >= 1_000_000
+      ? `$${(n / 1_000_000).toFixed(2)}M`
+      : n >= 1_000
+        ? `$${(n / 1_000).toFixed(2)}K`
+        : `$${n.toFixed(2)}`;
+  const pnlFmt = (n: number) =>
+    n >= 0 ? `+$${n.toFixed(2)}` : `-$${Math.abs(n).toFixed(2)}`;
+
+  const pnlColor = totalPnl >= 0 ? THEME.green : THEME.red;
+  const pnlPctColor = totalPnlPct >= 0 ? THEME.green : THEME.red;
 
   return (
-    <div style={{ background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%" }}>
-      {/* Header */}
-      <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🎒</span>
-          <h1 className="text-lg font-bold">My Bags</h1>
-        </div>
-        <p className="text-[11px] mt-0.5" style={{ color: "#9CA3AF" }}>
-          {hasData
-            ? `${holdings.length} holdings from ${tradeCount} trades`
-            : "Portfolio data from your trades"}
-        </p>
-      </div>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        </div>
-      ) : hasData ? (
+    <PageLayout
+      title="My Bags"
+      badge="PORTFOLIO"
+      loading={isLoading}
+      description={
+        hasData
+          ? `${holdings.length} holdings from ${tradeCount} trades`
+          : "Portfolio data from your trades"
+      }
+    >
+      {hasData ? (
         <>
-          {/* Total Value */}
-          <div className="px-4 py-3 grid grid-cols-3 gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
-              <div className="text-[9px]" style={{ color: "#6B7280" }}>Portfolio Value</div>
-              <div className="text-xl font-bold font-mono">{fmt(totalValue)}</div>
-            </div>
-            <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
-              <div className="text-[9px]" style={{ color: "#6B7280" }}>Total PnL</div>
-              <div className="text-lg font-bold font-mono" style={{ color: totalPnl >= 0 ? "#22C55E" : "#EF4444" }}>{pnlFmt(totalPnl)}</div>
-            </div>
-            <div className="px-3 py-2 rounded-lg" style={{ background: "#1E1E1E" }}>
-              <div className="text-[9px]" style={{ color: "#6B7280" }}>Total Return</div>
-              <div className="text-lg font-bold font-mono" style={{ color: totalPnlPct >= 0 ? "#22C55E" : "#EF4444" }}>{totalPnlPct >= 0 ? "+" : ""}{totalPnlPct.toFixed(1)}%</div>
-            </div>
-          </div>
+          <StatsRow
+            stats={[
+              {
+                label: "Portfolio Value",
+                value: fmt(totalValue),
+              },
+              {
+                label: "Total PnL",
+                value: pnlFmt(totalPnl),
+                color: pnlColor,
+              },
+              {
+                label: "Total Return",
+                value: `${totalPnlPct >= 0 ? "+" : ""}${totalPnlPct.toFixed(1)}%`,
+                color: pnlPctColor,
+              },
+            ]}
+          />
 
-          {/* Holdings List */}
-          <div className="px-4 py-2 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <span className="text-[11px] font-bold">{holdings.length} Holdings</span>
-          </div>
+          <SectionTitle title="Holdings" count={holdings.length} />
 
-          <div className="overflow-y-auto px-4 py-2 space-y-2" style={{ maxHeight: "calc(100vh - 260px)" }}>
+          <ScrollArea>
             {holdings.map((bag) => (
-              <BagCard key={bag.symbol} bag={bag} />
+              <BagRow key={bag.symbol} bag={bag} />
             ))}
-          </div>
+          </ScrollArea>
         </>
       ) : (
-        <div className="px-4 py-2 flex flex-col items-center justify-center gap-3" style={{ padding: "40px 0" }}>
-          <span style={{ fontSize: "24px", fontWeight: 700, color: "#9CA3AF" }}>🎒</span>
-          <p style={{ fontSize: "11px", color: "#9CA3AF", textAlign: "center" }}>
-            No trades yet. Start trading to see your bags here.
-          </p>
-          <button
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            alignItems: "center",
+          }}
+        >
+          <EmptyState
+            icon="🎒"
+            title="No bags yet"
+            message="Start trading to see your portfolio holdings here."
+          />
+          <ActionButton
+            label="Go to Trade Desk"
             onClick={() => navigate({ to: "/trade-desk" })}
-            style={{
-              padding: "10px 24px", borderRadius: "8px", border: "none", cursor: "pointer",
-              background: "rgba(16,185,129,0.12)", color: "#34D399",
-              fontSize: "11px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif",
-            }}>
-            Go to Trade Desk
-          </button>
+          />
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 }
+
+/* ── Small action button for empty state ─────────────────────────────────── */
+
+function ActionButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  const onMouseEnter = useCallback(() => setHovered(true), []);
+  const onMouseLeave = useCallback(() => setHovered(false), []);
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      style={{
+        padding: "10px 24px",
+        borderRadius: "8px",
+        border: "none",
+        cursor: "pointer",
+        background: hovered
+          ? `${THEME.accentDeep}28`
+          : `${THEME.accentDeep}18`,
+        color: THEME.accent,
+        fontSize: "11px",
+        fontWeight: 700,
+        fontFamily: "'Inter', system-ui, sans-serif",
+        transition: "background 0.15s ease",
+        marginBottom: "32px",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+/* ── Bag row ──────────────────────────────────────────────────────────────── */
 
 interface BagData {
   symbol: string;
@@ -113,56 +170,130 @@ interface BagData {
   pnlPct: number;
 }
 
-const BagCard = memo(function BagCard({ bag }: { bag: BagData }) {
+const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
   const isPos = bag.pnlPct >= 0;
-  const color = isPos ? "#22C55E" : "#EF4444";
-  const totalVal = bag.value;
-  const allocPct = 0; // would need totalValue passed in
+  const color = isPos ? THEME.green : THEME.red;
 
   const fmtPrice = (n: number) =>
     n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2);
 
   return (
-    <div
-      className="flex items-center justify-between px-3 py-2.5 rounded-lg"
-      style={{
-        background: "#1E1E1E", border: "1px solid rgba(255,255,255,0.06)",
-        transition: "background 0.1s", cursor: "pointer",
-      }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "#1E1E1E"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = "#1E1E1E"; }}
-    >
-      <div className="flex items-center gap-3 min-w-0">
+    <DataRowTwoLine
+      leftAccent={color}
+      topContent={
         <div
           style={{
-            width: "32px", height: "32px", borderRadius: "50%",
-            background: "rgba(16,185,129,0.12)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "10px", fontWeight: 800, color, flexShrink: 0,
-          }}>
-          {bag.symbol.slice(0, 2)}
-        </div>
-        <div style={{ minWidth: 0 }}>
-          <div className="flex items-center gap-1">
-            <span className="text-[12px] font-bold">{bag.symbol}</span>
-            <span className="text-[9px]" style={{ color: "#6B7280" }}>{bag.chain}</span>
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            minWidth: 0,
+          }}
+        >
+          {/* Left: avatar + symbol + chain */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              minWidth: 0,
+            }}
+          >
+            <div
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: `${THEME.green}18`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "10px",
+                fontWeight: 800,
+                color,
+                flexShrink: 0,
+              }}
+            >
+              {bag.symbol.slice(0, 2)}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: THEME.text,
+                  }}
+                >
+                  {bag.symbol}
+                </span>
+                <span
+                  style={{ fontSize: "9px", color: THEME.textMuted }}
+                >
+                  {bag.chain}
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="text-[9px]" style={{ color: "#9CA3AF" }}>
-            {bag.amount.toFixed(4)} tokens · avg {fmtPrice(bag.avgEntry)}
+
+          {/* Right: current value */}
+          <div style={{ flexShrink: 0 }}>
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                color: THEME.text,
+              }}
+            >
+              ${bag.value.toFixed(2)}
+            </span>
           </div>
         </div>
-      </div>
-      <div className="text-right flex-shrink-0">
-        <div className="text-[12px] font-bold font-mono">${totalVal.toFixed(2)}</div>
-        <div className="flex items-center gap-2 justify-end">
-          <span className="text-[10px] font-mono font-bold" style={{ color }}>
-            {bag.pnl >= 0 ? "+" : ""}{bag.pnl.toFixed(2)}
+      }
+      bottomContent={
+        <>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              flexWrap: "wrap",
+            }}
+          >
+            <LabelValue
+              label="Tokens"
+              value={bag.amount.toFixed(4)}
+              mono
+            />
+            <LabelValue
+              label="Avg"
+              value={fmtPrice(bag.avgEntry)}
+              mono
+            />
+          </div>
+          <span
+            style={{
+              marginLeft: "auto",
+              fontSize: "10px",
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontWeight: 700,
+              color,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {bag.pnl >= 0 ? "+" : ""}
+            {bag.pnl.toFixed(2)} ({isPos ? "+" : ""}
+            {bag.pnlPct.toFixed(1)}%)
           </span>
-          <span className="text-[9px] font-mono font-bold" style={{ color }}>
-            {isPos ? "+" : ""}{bag.pnlPct.toFixed(1)}%
-          </span>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    />
   );
 });

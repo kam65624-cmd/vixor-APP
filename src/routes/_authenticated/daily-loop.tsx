@@ -8,14 +8,9 @@ import {
   Clock,
   Moon,
   Flame,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   CheckCircle2,
   Circle,
   Loader2,
-  Calendar,
-  ArrowRight,
   ChevronRight,
   Lightbulb,
   Target,
@@ -37,10 +32,10 @@ import type {
   TradingSession,
 } from "@/domains/daily-loop/types";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { ExpandableWidget, MiniWidget, WidgetGroup } from "@/components/vixor/ExpandableWidget";
+import { ExpandableWidget } from "@/components/vixor/ExpandableWidget";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
 import { AnalystReportPanel } from "@/components/vixor/AnalystReportPanel";
-import { cn } from "@/shared/utils";
+import { THEME, PageLayout, ScrollArea, EmptyState } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/daily-loop")({
   head: () => ({ meta: [{ title: "Daily Loop — Vixor" }] }),
@@ -48,45 +43,138 @@ export const Route = createFileRoute("/_authenticated/daily-loop")({
 });
 
 // ═══════════════════════════════════════════════
+// SHARED STYLE CONSTANTS
+// ═══════════════════════════════════════════════
+
+// Gradient endpoint — darker shade of THEME.green for depth
+const GREEN_DARK = "#059669";
+
+const CSS_VARS: React.CSSProperties = {
+  "--color-primary": THEME.green,
+  "--color-primary-foreground": THEME.text,
+  "--color-muted": "rgba(255,255,255,0.05)",
+  "--color-muted-foreground": THEME.textSecondary,
+  "--color-card": THEME.surface,
+  "--color-card-hover": THEME.rowHoverStrong,
+  "--color-border": THEME.border,
+  "--color-bullish": THEME.green,
+  "--color-bearish": THEME.red,
+  "--color-neutral-wait": THEME.amber,
+  "--color-info": THEME.green,
+  "--color-foreground": THEME.text,
+  "--gradient-primary": `linear-gradient(135deg, ${THEME.green}, ${GREEN_DARK})`,
+  "--shadow-glow": `0 0 20px ${THEME.green}4D`,
+} as React.CSSProperties;
+
+const CARD_STYLE: React.CSSProperties = {
+  background: THEME.surface,
+  border: `1px solid ${THEME.border}`,
+  borderRadius: 12,
+};
+
+const GRADIENT_BTN_STYLE: React.CSSProperties = {
+  background: `linear-gradient(135deg, ${THEME.green}, ${GREEN_DARK})`,
+  color: THEME.text,
+  boxShadow: `0 0 20px ${THEME.green}4D`,
+};
+
+const INPUT_STYLE: React.CSSProperties = {
+  background: THEME.surface,
+  border: `1px solid ${THEME.border}`,
+  color: THEME.text,
+  borderRadius: 8,
+  padding: "10px 12px",
+  fontSize: 12,
+  outline: "none",
+  width: "100%",
+};
+
+const TEXTAREA_STYLE: React.CSSProperties = {
+  ...INPUT_STYLE,
+  resize: "none",
+  height: 80,
+};
+
+const LABEL_STYLE: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 700,
+  color: THEME.textSecondary,
+  textTransform: "uppercase",
+  letterSpacing: "0.1em",
+  display: "block",
+  marginBottom: 8,
+};
+
+const SECTION_LABEL_STYLE: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 700,
+  color: THEME.textSecondary,
+  textTransform: "uppercase",
+  letterSpacing: "0.1em",
+};
+
+// ═══════════════════════════════════════════════
+// COLOR HELPERS
+// ═══════════════════════════════════════════════
+
+function biasColors(bias: MarketBias | undefined | null): { bg: string; text: string; border: string } {
+  if (bias === "bullish") return { bg: `${THEME.green}26`, text: THEME.green, border: `${THEME.green}66` };
+  if (bias === "bearish") return { bg: `${THEME.red}26`, text: THEME.red, border: `${THEME.red}66` };
+  return { bg: `${THEME.amber}26`, text: THEME.amber, border: `${THEME.amber}66` };
+}
+
+// ═══════════════════════════════════════════════
 // EMOTIONAL STATE CONFIG
 // ═══════════════════════════════════════════════
-const EMOTIONAL_STATES: { value: EmotionalState; emoji: string; label: string; color: string }[] = [
+
+const EMOTIONAL_STATES: {
+  value: EmotionalState;
+  emoji: string;
+  label: string;
+  color: { bg: string; text: string; border: string };
+}[] = [
   {
     value: "disciplined",
     emoji: "💪",
     label: "Disciplined",
-    color: "bg-bullish/15 text-bullish border-bullish/40",
+    color: { bg: `${THEME.green}26`, text: THEME.green, border: `${THEME.green}66` },
   },
-  { value: "calm", emoji: "🧘", label: "Calm", color: "bg-info/15 text-info border-info/40" },
+  {
+    value: "calm",
+    emoji: "🧘",
+    label: "Calm",
+    color: { bg: `${THEME.green}26`, text: THEME.green, border: `${THEME.green}66` },
+  },
   {
     value: "anxious",
     emoji: "😰",
     label: "Anxious",
-    color: "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40",
+    color: { bg: `${THEME.amber}26`, text: THEME.amber, border: `${THEME.amber}66` },
   },
   {
     value: "fomo",
     emoji: "🏃",
     label: "FOMO",
-    color: "bg-[#FF9800]/15 text-[#FF9800] border-[#FF9800]/40",
+    color: { bg: `${THEME.orange}26`, text: THEME.orange, border: `${THEME.orange}66` },
   },
   {
     value: "revenge",
     emoji: "🔥",
     label: "Revenge",
-    color: "bg-bearish/15 text-bearish border-bearish/40",
+    color: { bg: `${THEME.red}26`, text: THEME.red, border: `${THEME.red}66` },
   },
   {
     value: "tired",
     emoji: "😴",
     label: "Tired",
-    color: "bg-muted text-muted-foreground border-border",
+    color: { bg: THEME.surfaceAlt, text: THEME.textMuted, border: THEME.border },
   },
 ];
 
 // ═══════════════════════════════════════════════
 // SESSION CONFIG
 // ═══════════════════════════════════════════════
+
 const SESSIONS: {
   key: TradingSession;
   label: string;
@@ -205,103 +293,70 @@ function DailyLoopPage() {
   });
 
   return (
-    <div
-      className="space-y-5 pb-6 animate-in fade-in duration-500"
-      style={
-        {
-          background: "#121212",
-          color: "#FFFFFF",
-          fontFamily: "'Inter', system-ui, sans-serif",
-          "--color-primary": "#10B981",
-          "--color-primary-foreground": "#fff",
-          "--color-muted": "rgba(255,255,255,0.05)",
-          "--color-muted-foreground": "#9CA3AF",
-          "--color-card": "#1A1A1A",
-          "--color-card-hover": "rgba(255,255,255,0.08)",
-          "--color-border": "rgba(255,255,255,0.06)",
-          "--color-bullish": "#22C55E",
-          "--color-bearish": "#EF4444",
-          "--color-neutral-wait": "#F59E0B",
-          "--color-info": "#10B981",
-          "--gradient-primary": "linear-gradient(135deg, #10B981, #059669)",
-          "--shadow-glow": "0 0 20px rgba(16,185,129,0.3)",
-        } as React.CSSProperties
-      }
+    <PageLayout
+      title="Daily Loop"
+      badge="ROUTINE BUILDER"
+      badgeColor={THEME.green}
+      description="Build consistency, one day at a time"
+      tabs={["Today", "History"]}
+      activeTab={activeTab === "today" ? "Today" : "History"}
+      onTabChange={(tab) => setActiveTab(tab === "Today" ? "today" : "history")}
     >
-      {/* ── HEADER ── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center">
-            <Target className="size-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight leading-none">Daily Loop</h1>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
-              Build consistency, one day at a time
+      <div style={CSS_VARS}>
+        <ScrollArea>
+          <div
+            style={{
+              padding: "16px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+              paddingBottom: "32px",
+            }}
+          >
+            {activeTab === "today" ? (
+              <TodayTab
+                loop={loop}
+                isLoading={isLoading}
+                streak={streak}
+                history={history}
+                morningMutation={morningMutation}
+                sessionMutation={sessionMutation}
+                eodMutation={eodMutation}
+              />
+            ) : (
+              <HistoryTab
+                history={history}
+                isLoading={historyQuery.isLoading}
+                streak={streak}
+                page={historyPage}
+                pageSize={HISTORY_PAGE_SIZE}
+                total={historyTotal}
+                onPageChange={setHistoryPage}
+              />
+            )}
+
+            {/* ── WEEKLY BEHAVIORAL REPORT (Analyst Agent) ── */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 4px" }}>
+                <Brain size={14} style={{ color: THEME.green }} />
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    color: THEME.textSecondary,
+                  }}
+                >
+                  AI Behavioral Report
+                </span>
+              </div>
+              <AnalystReportPanel />
             </div>
           </div>
-        </div>
+        </ScrollArea>
       </div>
-
-      {/* ── TAB SWITCHER ── */}
-      <div
-        className="flex gap-1 p-1 rounded-lg bg-card border border-border"
-        style={{ borderRadius: "12px" }}
-      >
-        {(["today", "history"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={cn(
-              "flex-1 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors",
-              activeTab === tab
-                ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-            style={
-              activeTab === tab
-                ? { background: "rgba(16,185,129,0.15)", color: "#34D399" }
-                : undefined
-            }
-          >
-            {tab === "today" ? "Today" : "History"}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === "today" ? (
-        <TodayTab
-          loop={loop}
-          isLoading={isLoading}
-          streak={streak}
-          history={history}
-          morningMutation={morningMutation}
-          sessionMutation={sessionMutation}
-          eodMutation={eodMutation}
-        />
-      ) : (
-        <HistoryTab
-          history={history}
-          isLoading={historyQuery.isLoading}
-          streak={streak}
-          page={historyPage}
-          pageSize={HISTORY_PAGE_SIZE}
-          total={historyTotal}
-          onPageChange={setHistoryPage}
-        />
-      )}
-
-      {/* ── WEEKLY BEHAVIORAL REPORT (Analyst Agent) ── */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 px-1">
-          <Brain className="size-4 text-primary" />
-          <h2 className="font-bold text-[11px] uppercase tracking-widest text-muted-foreground">
-            AI Behavioral Report
-          </h2>
-        </div>
-        <AnalystReportPanel />
-      </div>
-    </div>
+    </PageLayout>
   );
 }
 
@@ -350,43 +405,68 @@ function TodayTab({
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="vixor-card h-40 shimmer" />
+          <div
+            key={i}
+            className="shimmer"
+            style={{ ...CARD_STYLE, height: 160 }}
+          />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       {/* ── PROGRESS BAR ── */}
-      <div className="vixor-card p-4">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Today's Progress
+      <div style={{ ...CARD_STYLE, padding: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <span style={SECTION_LABEL_STYLE}>Today&apos;s Progress</span>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              color: THEME.green,
+            }}
+          >
+            {progressPct}%
           </span>
-          <span className="text-sm font-bold font-mono text-primary">{progressPct}%</span>
         </div>
-        <div className="h-2.5 rounded-full bg-muted overflow-hidden mb-3">
+        <div
+          style={{
+            height: 10,
+            borderRadius: 9999,
+            background: "rgba(255,255,255,0.05)",
+            overflow: "hidden",
+            marginBottom: 12,
+          }}
+        >
           <div
-            className="h-full rounded-full bg-primary transition-all duration-700"
-            style={{ width: `${progressPct}%` }}
+            style={{
+              height: "100%",
+              borderRadius: 9999,
+              background: THEME.green,
+              transition: "width 0.7s ease",
+              width: `${progressPct}%`,
+            }}
           />
         </div>
-        <div className="flex items-center justify-between">
-          {phases.map((phase, i) => (
-            <div key={phase.label} className="flex items-center gap-1.5">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          {phases.map((phase) => (
+            <div key={phase.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
               {phase.done ? (
-                <CheckCircle2 className="size-4 text-primary" />
+                <CheckCircle2 size={14} style={{ color: THEME.green }} />
               ) : (
-                <Circle className="size-4 text-muted-foreground/40" />
+                <Circle size={14} style={{ color: "rgba(156,163,175,0.4)" }} />
               )}
               <span
-                className={cn(
-                  "text-[10px] font-bold",
-                  phase.done ? "text-primary" : "text-muted-foreground",
-                )}
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: phase.done ? THEME.green : THEME.textSecondary,
+                }}
               >
                 {phase.label}
               </span>
@@ -460,77 +540,119 @@ function StreakWidget({
   }, [history]);
 
   return (
-    <div className="vixor-card p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
+    <div style={{ ...CARD_STYLE, padding: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Flame
-            className={cn("size-4", currentStreak > 0 ? "text-[#FF9800]" : "text-muted-foreground")}
+            size={14}
+            style={{ color: currentStreak > 0 ? THEME.amber : THEME.textSecondary }}
           />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Streak
-          </span>
+          <span style={SECTION_LABEL_STYLE}>Streak</span>
         </div>
         {currentStreak > 0 && (
-          <span className="text-xs font-bold text-[#FF9800]">
+          <span style={{ fontSize: 12, fontWeight: 700, color: THEME.amber }}>
             🔥 {currentStreak} day{currentStreak !== 1 ? "s" : ""} in a row!
           </span>
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="text-center">
-          <div className="text-2xl font-bold font-mono text-foreground">{currentStreak}</div>
-          <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Current
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              fontSize: 24,
+              fontWeight: 700,
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              color: THEME.text,
+            }}
+          >
+            {currentStreak}
           </div>
+          <div style={{ ...SECTION_LABEL_STYLE, fontSize: 9 }}>Current</div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold font-mono text-primary">{longestStreak}</div>
-          <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Longest
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              fontSize: 24,
+              fontWeight: 700,
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              color: THEME.green,
+            }}
+          >
+            {longestStreak}
           </div>
+          <div style={{ ...SECTION_LABEL_STYLE, fontSize: 9 }}>Longest</div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold font-mono text-bullish">
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              fontSize: 24,
+              fontWeight: 700,
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              color: THEME.green,
+            }}
+          >
             {history.filter((l) => l.completion_percentage >= 100).length}
           </div>
-          <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Completed
-          </div>
+          <div style={{ ...SECTION_LABEL_STYLE, fontSize: 9 }}>Completed</div>
         </div>
       </div>
 
       {/* Calendar Heatmap */}
-      <div className="space-y-1">
-        <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
-          Last 30 Days
-        </div>
-        <div className="grid grid-cols-10 gap-1">
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ ...SECTION_LABEL_STYLE, fontSize: 9, marginBottom: 8 }}>Last 30 Days</div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(10, 1fr)",
+            gap: 4,
+          }}
+        >
           {heatmapDays.map((day) => {
-            const intensity =
+            const bg =
               day.completion >= 100
-                ? "bg-primary"
+                ? THEME.green
                 : day.completion >= 66
-                  ? "bg-primary/60"
+                  ? `${THEME.green}99`
                   : day.completion >= 33
-                    ? "bg-primary/30"
-                    : "bg-muted";
+                    ? `${THEME.green}4D`
+                    : "rgba(255,255,255,0.05)";
             return (
               <div
                 key={day.date}
-                className={cn("size-4 rounded-sm", intensity)}
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: 4,
+                  background: bg,
+                }}
                 title={`${day.date}: ${day.completion}%`}
               />
             );
           })}
         </div>
-        <div className="flex items-center gap-2 justify-end mt-1">
-          <span className="text-[8px] text-muted-foreground">Less</span>
-          <div className="size-2.5 rounded-sm bg-muted" />
-          <div className="size-2.5 rounded-sm bg-primary/30" />
-          <div className="size-2.5 rounded-sm bg-primary/60" />
-          <div className="size-2.5 rounded-sm bg-primary" />
-          <span className="text-[8px] text-muted-foreground">More</span>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            justifyContent: "flex-end",
+            marginTop: 4,
+          }}
+        >
+          <span style={{ fontSize: 8, color: THEME.textSecondary }}>Less</span>
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(255,255,255,0.05)" }} />
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: `${THEME.green}4D` }} />
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: `${THEME.green}99` }} />
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: THEME.green }} />
+          <span style={{ fontSize: 8, color: THEME.textSecondary }}>More</span>
         </div>
       </div>
     </div>
@@ -575,20 +697,19 @@ function MorningPrepPhase({
       badge={isCompleted ? "DONE" : undefined}
     >
       {isCompleted ? (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Market Bias:
-            </span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={SECTION_LABEL_STYLE}>Market Bias:</span>
             <span
-              className={cn(
-                "text-xs font-bold px-2 py-0.5 rounded-md border",
-                loop?.market_bias === "bullish"
-                  ? "bg-bullish/15 text-bullish border-bullish/40"
-                  : loop?.market_bias === "bearish"
-                    ? "bg-bearish/15 text-bearish border-bearish/40"
-                    : "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40",
-              )}
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: 6,
+                border: `1px solid ${biasColors(loop?.market_bias).border}`,
+                background: biasColors(loop?.market_bias).bg,
+                color: biasColors(loop?.market_bias).text,
+              }}
             >
               {loop?.market_bias === "bullish"
                 ? "📈 Bullish"
@@ -599,74 +720,74 @@ function MorningPrepPhase({
           </div>
           {loop?.key_levels && (
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                Key Levels
-              </span>
-              <p className="text-xs text-foreground/90 leading-relaxed">{loop.key_levels}</p>
+              <span style={{ ...LABEL_STYLE, marginBottom: 4 }}>Key Levels</span>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", lineHeight: 1.6 }}>
+                {loop.key_levels}
+              </p>
             </div>
           )}
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="size-3.5 text-primary" />
-            <span className="text-xs text-muted-foreground">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <CheckCircle2 size={12} style={{ color: THEME.green }} />
+            <span style={{ fontSize: 12, color: THEME.textSecondary }}>
               Watchlist {loop?.watchlist_reviewed ? "reviewed" : "not reviewed"}
             </span>
           </div>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {/* Market Bias */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-              Market Bias
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                {
-                  value: "bullish" as MarketBias,
-                  emoji: "📈",
-                  label: "Bullish",
-                  color: "bg-bullish/15 text-bullish border-bullish/40",
-                },
-                {
-                  value: "bearish" as MarketBias,
-                  emoji: "📉",
-                  label: "Bearish",
-                  color: "bg-bearish/15 text-bearish border-bearish/40",
-                },
-                {
-                  value: "neutral" as MarketBias,
-                  emoji: "↔️",
-                  label: "Neutral",
-                  color: "bg-neutral-wait/15 text-neutral-wait border-neutral-wait/40",
-                },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => setBias(opt.value)}
-                  className={cn(
-                    "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border text-xs font-bold transition-all",
-                    bias === opt.value
-                      ? opt.color
-                      : "bg-card border-border text-muted-foreground hover:bg-card-hover",
-                  )}
-                >
-                  <span>{opt.emoji}</span>
-                  {opt.label}
-                </button>
-              ))}
+            <label style={LABEL_STYLE}>Market Bias</label>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 8,
+              }}
+            >
+              {([
+                { value: "bullish" as MarketBias, emoji: "📈", label: "Bullish" },
+                { value: "bearish" as MarketBias, emoji: "📉", label: "Bearish" },
+                { value: "neutral" as MarketBias, emoji: "↔️", label: "Neutral" },
+              ] as const).map((opt) => {
+                const colors = biasColors(opt.value);
+                const isSelected = bias === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => setBias(opt.value)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 6,
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      border: `1px solid ${isSelected ? colors.border : THEME.border}`,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      background: isSelected ? colors.bg : THEME.surface,
+                      color: isSelected ? colors.text : THEME.textSecondary,
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <span>{opt.emoji}</span>
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Key Levels */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-              Key Support / Resistance Levels
-            </label>
+            <label style={LABEL_STYLE}>Key Support / Resistance Levels</label>
             <textarea
               value={keyLevels}
               onChange={(e) => setKeyLevels(e.target.value)}
               placeholder="e.g. S: 1.0850, 1.0820 | R: 1.0900, 1.0940"
-              className="w-full rounded-lg bg-card border border-border px-3 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none h-20"
+              style={TEXTAREA_STYLE}
             />
           </div>
 
@@ -674,18 +795,27 @@ function MorningPrepPhase({
           <button
             type="button"
             onClick={() => setWatchlistReviewed(!watchlistReviewed)}
-            className="flex items-center gap-2"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
           >
             {watchlistReviewed ? (
-              <CheckCircle2 className="size-4 text-primary" />
+              <CheckCircle2 size={14} style={{ color: THEME.green }} />
             ) : (
-              <Circle className="size-4 text-muted-foreground" />
+              <Circle size={14} style={{ color: THEME.textSecondary }} />
             )}
             <span
-              className={cn(
-                "text-xs font-bold",
-                watchlistReviewed ? "text-primary" : "text-muted-foreground",
-              )}
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: watchlistReviewed ? THEME.green : THEME.textSecondary,
+              }}
             >
               Watchlist Reviewed
             </span>
@@ -695,12 +825,27 @@ function MorningPrepPhase({
           <button
             onClick={handleSubmit}
             disabled={isSaving}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg gradient-primary text-primary-foreground text-xs font-bold glow-primary transition-transform active:scale-95 disabled:opacity-50"
+            style={{
+              ...GRADIENT_BTN_STYLE,
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              padding: "10px 16px",
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 700,
+              border: "none",
+              cursor: isSaving ? "not-allowed" : "pointer",
+              transition: "transform 0.15s ease",
+              opacity: isSaving ? 0.5 : 1,
+            }}
           >
             {isSaving ? (
-              <Loader2 className="size-3.5 animate-spin" />
+              <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} />
             ) : (
-              <Sun className="size-3.5" />
+              <Sun size={12} />
             )}
             Complete Morning Prep
           </button>
@@ -742,7 +887,7 @@ function SessionTrackingPhase({
       variant="info"
       defaultExpanded={true}
     >
-      <div className="space-y-3">
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {SESSIONS.map((session) => {
           const tradedField = `${session.key}_session_traded` as keyof DailyLoop;
           const notesField = `${session.key}_session_notes` as keyof DailyLoop;
@@ -797,37 +942,70 @@ function SessionCard({
 
   return (
     <div
-      className={cn(
-        "rounded-lg border p-3 space-y-2.5",
-        isActive ? "border-primary/40 bg-primary/5" : "border-border bg-card",
-      )}
+      style={{
+        borderRadius: 8,
+        border: `1px solid ${isActive ? `${THEME.green}66` : THEME.border}`,
+        background: isActive ? `${THEME.green}0D` : THEME.surface,
+        padding: 12,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Clock className={cn("size-3.5", isActive ? "text-primary" : "text-muted-foreground")} />
-          <span className="text-xs font-bold">{session.label}</span>
-          <span className="text-[10px] text-muted-foreground font-mono">{session.hours}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Clock
+            size={12}
+            style={{ color: isActive ? THEME.green : THEME.textSecondary }}
+          />
+          <span style={{ fontSize: 12, fontWeight: 700, color: THEME.text }}>{session.label}</span>
+          <span
+            style={{
+              fontSize: 10,
+              color: THEME.textSecondary,
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            }}
+          >
+            {session.hours}
+          </span>
         </div>
         {isActive && (
-          <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/15 text-primary border border-primary/30 animate-pulse">
+          <span
+            style={{
+              fontSize: 8,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              padding: "2px 6px",
+              borderRadius: 4,
+              background: `${THEME.green}26`,
+              color: THEME.green,
+              border: `1px solid ${THEME.green}4D`,
+              animation: "pulse 2s ease-in-out infinite",
+            }}
+          >
             ACTIVE
           </span>
         )}
       </div>
 
       {/* Did you trade toggle */}
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Did you trade?
-        </span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={SECTION_LABEL_STYLE}>Did you trade?</span>
         <button
           onClick={() => setLocalTraded(!localTraded)}
-          className={cn(
-            "px-3 py-1 rounded-md text-[10px] font-bold border transition-colors",
-            localTraded
-              ? "bg-bullish/15 text-bullish border-bullish/40"
-              : "bg-card border-border text-muted-foreground",
-          )}
+          style={{
+            padding: "4px 12px",
+            borderRadius: 6,
+            fontSize: 10,
+            fontWeight: 700,
+            border: `1px solid ${
+              localTraded ? `${THEME.green}66` : THEME.border
+            }`,
+            background: localTraded ? `${THEME.green}26` : THEME.surface,
+            color: localTraded ? THEME.green : THEME.textSecondary,
+            cursor: "pointer",
+            transition: "all 0.15s ease",
+          }}
         >
           {localTraded ? "✓ Yes" : "No"}
         </button>
@@ -838,19 +1016,41 @@ function SessionCard({
         value={localNotes}
         onChange={(e) => setLocalNotes(e.target.value)}
         placeholder={`Notes for ${session.label} session...`}
-        className="w-full rounded-md bg-card border border-border px-2.5 py-2 text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none h-14"
+        style={{
+          ...INPUT_STYLE,
+          borderRadius: 6,
+          fontSize: 11,
+          padding: "8px 10px",
+          height: 56,
+        }}
       />
 
       {/* Save button */}
       <button
         onClick={handleSave}
         disabled={isSaving}
-        className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-bold bg-card border border-border hover:bg-card-hover transition-colors disabled:opacity-50"
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          padding: "6px 12px",
+          borderRadius: 6,
+          fontSize: 10,
+          fontWeight: 700,
+          background: THEME.surface,
+          border: `1px solid ${THEME.border}`,
+          color: THEME.text,
+          cursor: isSaving ? "not-allowed" : "pointer",
+          transition: "all 0.15s ease",
+          opacity: isSaving ? 0.5 : 1,
+        }}
       >
         {isSaving ? (
-          <Loader2 className="size-3 animate-spin" />
+          <Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} />
         ) : (
-          <CheckCircle2 className="size-3" />
+          <CheckCircle2 size={10} />
         )}
         Save {session.label} Session
       </button>
@@ -922,172 +1122,226 @@ function EodReviewPhase({
       badge={isCompleted ? "DONE" : undefined}
     >
       {isCompleted ? (
-        <div className="space-y-3">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {loop?.daily_pnl != null && (
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                Daily P&L
-              </span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={SECTION_LABEL_STYLE}>Daily P&L</span>
               <span
-                className={cn(
-                  "text-sm font-bold font-mono",
-                  loop.daily_pnl >= 0 ? "text-bullish" : "text-bearish",
-                )}
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  color: loop.daily_pnl >= 0 ? THEME.green : THEME.red,
+                }}
               >
                 {loop.daily_pnl >= 0 ? "+" : ""}${Number(loop.daily_pnl).toFixed(2)}
               </span>
             </div>
           )}
-          <div className="grid grid-cols-3 gap-2 text-center">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 8,
+              textAlign: "center",
+            }}
+          >
             <div>
-              <div className="text-sm font-bold font-mono">{loop?.trades_taken ?? 0}</div>
-              <div className="text-[9px] text-muted-foreground">Trades</div>
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  color: THEME.text,
+                }}
+              >
+                {loop?.trades_taken ?? 0}
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textSecondary }}>Trades</div>
             </div>
             <div>
-              <div className="text-sm font-bold font-mono text-bullish">
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  color: THEME.green,
+                }}
+              >
                 {loop?.rules_followed ?? 0}
               </div>
-              <div className="text-[9px] text-muted-foreground">Rules ✓</div>
+              <div style={{ fontSize: 9, color: THEME.textSecondary }}>Rules ✓</div>
             </div>
             <div>
-              <div className="text-sm font-bold font-mono text-bearish">
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  color: THEME.red,
+                }}
+              >
                 {loop?.rules_broken ?? 0}
               </div>
-              <div className="text-[9px] text-muted-foreground">Rules ✗</div>
+              <div style={{ fontSize: 9, color: THEME.textSecondary }}>Rules ✗</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Mood:
-            </span>
-            <span className="text-xs">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={SECTION_LABEL_STYLE}>Mood:</span>
+            <span style={{ fontSize: 12, color: THEME.text }}>
               {EMOTIONAL_STATES.find((e) => e.value === loop?.emotional_state)?.emoji}{" "}
               {EMOTIONAL_STATES.find((e) => e.value === loop?.emotional_state)?.label}
             </span>
           </div>
           {loop?.lessons_learned && (
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                Lessons
-              </span>
-              <p className="text-xs text-foreground/90 leading-relaxed">{loop.lessons_learned}</p>
+              <span style={{ ...LABEL_STYLE, marginBottom: 4 }}>Lessons</span>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", lineHeight: 1.6 }}>
+                {loop.lessons_learned}
+              </p>
             </div>
           )}
           {loop?.tomorrow_plan && (
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                Tomorrow's Plan
-              </span>
-              <p className="text-xs text-foreground/90 leading-relaxed">{loop.tomorrow_plan}</p>
+              <span style={{ ...LABEL_STYLE, marginBottom: 4 }}>Tomorrow&apos;s Plan</span>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", lineHeight: 1.6 }}>
+                {loop.tomorrow_plan}
+              </p>
             </div>
           )}
         </div>
       ) : (
-        <div className="space-y-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {/* Daily P&L */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-              Daily P&L
-            </label>
+            <label style={LABEL_STYLE}>Daily P&L</label>
             <input
               type="number"
               step="0.01"
               value={dailyPnl}
               onChange={(e) => setDailyPnl(e.target.value)}
               placeholder="0.00"
-              className="w-full rounded-lg bg-card border border-border px-3 py-2.5 text-xs font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              style={{ ...INPUT_STYLE, fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
             />
           </div>
 
           {/* Trades / Rules */}
-          <div className="grid grid-cols-3 gap-2">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 8,
+            }}
+          >
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                Trades
-              </label>
+              <label style={{ ...LABEL_STYLE, fontSize: 9, marginBottom: 4 }}>Trades</label>
               <input
                 type="number"
                 min="0"
                 value={tradesTaken}
                 onChange={(e) => setTradesTaken(e.target.value)}
-                className="w-full rounded-md bg-card border border-border px-2.5 py-2 text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                style={{ ...INPUT_STYLE, borderRadius: 6, padding: "8px 10px", fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
               />
             </div>
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                Rules ✓
-              </label>
+              <label style={{ ...LABEL_STYLE, fontSize: 9, marginBottom: 4 }}>Rules ✓</label>
               <input
                 type="number"
                 min="0"
                 value={rulesFollowed}
                 onChange={(e) => setRulesFollowed(e.target.value)}
-                className="w-full rounded-md bg-card border border-border px-2.5 py-2 text-xs font-mono text-bullish focus:outline-none focus:ring-2 focus:ring-primary/30"
+                style={{
+                  ...INPUT_STYLE,
+                  borderRadius: 6,
+                  padding: "8px 10px",
+                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  color: THEME.green,
+                }}
               />
             </div>
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                Rules ✗
-              </label>
+              <label style={{ ...LABEL_STYLE, fontSize: 9, marginBottom: 4 }}>Rules ✗</label>
               <input
                 type="number"
                 min="0"
                 value={rulesBroken}
                 onChange={(e) => setRulesBroken(e.target.value)}
-                className="w-full rounded-md bg-card border border-border px-2.5 py-2 text-xs font-mono text-bearish focus:outline-none focus:ring-2 focus:ring-primary/30"
+                style={{
+                  ...INPUT_STYLE,
+                  borderRadius: 6,
+                  padding: "8px 10px",
+                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  color: THEME.red,
+                }}
               />
             </div>
           </div>
 
           {/* Emotional State */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-              How are you feeling?
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {EMOTIONAL_STATES.map((state) => (
-                <button
-                  key={state.value}
-                  onClick={() => setEmotionalState(state.value)}
-                  className={cn(
-                    "flex items-center justify-center gap-1 px-2 py-2 rounded-lg border text-[10px] font-bold transition-all",
-                    emotionalState === state.value
-                      ? state.color
-                      : "bg-card border-border text-muted-foreground hover:bg-card-hover",
-                  )}
-                >
-                  <span>{state.emoji}</span>
-                  {state.label}
-                </button>
-              ))}
+            <label style={LABEL_STYLE}>How are you feeling?</label>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 8,
+              }}
+            >
+              {EMOTIONAL_STATES.map((state) => {
+                const isSelected = emotionalState === state.value;
+                return (
+                  <button
+                    key={state.value}
+                    onClick={() => setEmotionalState(state.value)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 4,
+                      padding: "8px",
+                      borderRadius: 8,
+                      border: `1px solid ${isSelected ? state.color.border : THEME.border}`,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      background: isSelected ? state.color.bg : THEME.surface,
+                      color: isSelected ? state.color.text : THEME.textSecondary,
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <span>{state.emoji}</span>
+                    {state.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Lessons Learned */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-              <Lightbulb className="size-3 inline mr-1" />
+            <label style={LABEL_STYLE}>
+              <Lightbulb size={10} style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }} />
               Lessons Learned
             </label>
             <textarea
               value={lessons}
               onChange={(e) => setLessons(e.target.value)}
               placeholder="What did you learn today?"
-              className="w-full rounded-lg bg-card border border-border px-3 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none h-20"
+              style={TEXTAREA_STYLE}
             />
           </div>
 
           {/* Tomorrow's Plan */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-              <Brain className="size-3 inline mr-1" />
-              Tomorrow's Plan
+            <label style={LABEL_STYLE}>
+              <Brain size={10} style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }} />
+              Tomorrow&apos;s Plan
             </label>
             <textarea
               value={tomorrowPlan}
               onChange={(e) => setTomorrowPlan(e.target.value)}
               placeholder="What will you focus on tomorrow?"
-              className="w-full rounded-lg bg-card border border-border px-3 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none h-20"
+              style={TEXTAREA_STYLE}
             />
           </div>
 
@@ -1095,12 +1349,27 @@ function EodReviewPhase({
           <button
             onClick={handleSubmit}
             disabled={isSaving}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg gradient-primary text-primary-foreground text-xs font-bold glow-primary transition-transform active:scale-95 disabled:opacity-50"
+            style={{
+              ...GRADIENT_BTN_STYLE,
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              padding: "10px 16px",
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 700,
+              border: "none",
+              cursor: isSaving ? "not-allowed" : "pointer",
+              transition: "transform 0.15s ease",
+              opacity: isSaving ? 0.5 : 1,
+            }}
           >
             {isSaving ? (
-              <Loader2 className="size-3.5 animate-spin" />
+              <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} />
             ) : (
-              <Moon className="size-3.5" />
+              <Moon size={12} />
             )}
             Complete EOD Review
           </button>
@@ -1138,9 +1407,13 @@ function HistoryTab({
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="vixor-card h-16 shimmer" />
+          <div
+            key={i}
+            className="shimmer"
+            style={{ ...CARD_STYLE, height: 64 }}
+          />
         ))}
       </div>
     );
@@ -1148,23 +1421,30 @@ function HistoryTab({
 
   if (history.length === 0) {
     return (
-      <div className="vixor-card p-8 text-center border-dashed border-2">
-        <History className="size-8 text-muted-foreground/30 mx-auto mb-3" />
-        <h3 className="text-sm font-bold text-foreground mb-1">No History Yet</h3>
-        <p className="text-xs text-muted-foreground">
-          Complete your first daily loop to start building your track record.
-        </p>
-      </div>
+      <EmptyState
+        icon="📋"
+        title="No History Yet"
+        message="Complete your first daily loop to start building your track record."
+      />
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       {/* Streak widget (compact) */}
       <StreakWidget streak={streak} history={history} />
 
       {/* Loop list */}
-      <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin">
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          maxHeight: 384,
+          overflowY: "auto",
+        }}
+        className="scrollbar-hide"
+      >
         {history.map((loop) => {
           const isExpanded = expandedId === loop.id;
           const date = new Date(loop.date);
@@ -1174,117 +1454,206 @@ function HistoryTab({
             day: "numeric",
           });
           const emotion = EMOTIONAL_STATES.find((e) => e.value === loop.emotional_state);
+          const completionColors =
+            loop.completion_percentage >= 100
+              ? { bg: `${THEME.green}26`, text: THEME.green }
+              : loop.completion_percentage >= 50
+                ? { bg: `${THEME.green}26`, text: THEME.green }
+                : { bg: "rgba(255,255,255,0.05)", text: THEME.textSecondary };
 
           return (
-            <div key={loop.id} className="vixor-card overflow-hidden">
+            <div key={loop.id} style={{ ...CARD_STYLE, overflow: "hidden" }}>
               <button
                 onClick={() => setExpandedId(isExpanded ? null : loop.id)}
-                className="w-full flex items-center justify-between p-3 text-left"
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: 12,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: THEME.text,
+                  textAlign: "left",
+                }}
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                   <div
-                    className={cn(
-                      "size-8 rounded-lg flex items-center justify-center shrink-0",
-                      loop.completion_percentage >= 100
-                        ? "bg-bullish/15"
-                        : loop.completion_percentage >= 50
-                          ? "bg-primary/15"
-                          : "bg-muted",
-                    )}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      background: completionColors.bg,
+                    }}
                   >
                     {loop.completion_percentage >= 100 ? (
-                      <CheckCircle2 className="size-4 text-bullish" />
+                      <CheckCircle2 size={14} style={{ color: THEME.green }} />
                     ) : (
-                      <span className="text-[9px] font-bold font-mono text-muted-foreground">
+                      <span
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 700,
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          color: THEME.textSecondary,
+                        }}
+                      >
                         {loop.completion_percentage}%
                       </span>
                     )}
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold truncate">{dateStr}</div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {dateStr}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                       {loop.market_bias && (
                         <span
-                          className={cn(
-                            "text-[8px] font-bold px-1 py-0.5 rounded",
-                            loop.market_bias === "bullish"
-                              ? "bg-bullish/15 text-bullish"
-                              : loop.market_bias === "bearish"
-                                ? "bg-bearish/15 text-bearish"
-                                : "bg-neutral-wait/15 text-neutral-wait",
-                          )}
+                          style={{
+                            fontSize: 8,
+                            fontWeight: 700,
+                            padding: "2px 4px",
+                            borderRadius: 4,
+                            background: biasColors(loop.market_bias).bg,
+                            color: biasColors(loop.market_bias).text,
+                          }}
                         >
                           {loop.market_bias.toUpperCase()}
                         </span>
                       )}
-                      {emotion && <span className="text-[10px]">{emotion.emoji}</span>}
+                      {emotion && <span style={{ fontSize: 10 }}>{emotion.emoji}</span>}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                   {loop.daily_pnl != null && (
                     <span
-                      className={cn(
-                        "text-xs font-bold font-mono",
-                        loop.daily_pnl >= 0 ? "text-bullish" : "text-bearish",
-                      )}
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                        color: loop.daily_pnl >= 0 ? THEME.green : THEME.red,
+                      }}
                     >
                       {loop.daily_pnl >= 0 ? "+" : ""}${Number(loop.daily_pnl).toFixed(2)}
                     </span>
                   )}
                   <ChevronRight
-                    className={cn(
-                      "size-3.5 text-muted-foreground transition-transform",
-                      isExpanded && "rotate-90",
-                    )}
+                    size={12}
+                    style={{
+                      color: THEME.textSecondary,
+                      transition: "transform 0.15s ease",
+                      transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+                    }}
                   />
                 </div>
               </button>
 
               {isExpanded && (
-                <div className="px-3 pb-3 pt-0 space-y-2 border-t border-border">
-                  <div className="grid grid-cols-3 gap-2 text-center pt-2">
+                <div
+                  style={{
+                    padding: "0 12px 12px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                    borderTop: `1px solid ${THEME.border}`,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(3, 1fr)",
+                      gap: 8,
+                      textAlign: "center",
+                      paddingTop: 8,
+                    }}
+                  >
                     <div>
-                      <div className="text-xs font-bold font-mono">{loop.trades_taken}</div>
-                      <div className="text-[8px] text-muted-foreground uppercase">Trades</div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          color: THEME.text,
+                        }}
+                      >
+                        {loop.trades_taken}
+                      </div>
+                      <div style={{ fontSize: 8, color: THEME.textSecondary, textTransform: "uppercase" }}>
+                        Trades
+                      </div>
                     </div>
                     <div>
-                      <div className="text-xs font-bold font-mono text-bullish">
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          color: THEME.green,
+                        }}
+                      >
                         {loop.rules_followed}
                       </div>
-                      <div className="text-[8px] text-muted-foreground uppercase">Rules ✓</div>
+                      <div style={{ fontSize: 8, color: THEME.textSecondary, textTransform: "uppercase" }}>
+                        Rules ✓
+                      </div>
                     </div>
                     <div>
-                      <div className="text-xs font-bold font-mono text-bearish">
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          color: THEME.red,
+                        }}
+                      >
                         {loop.rules_broken}
                       </div>
-                      <div className="text-[8px] text-muted-foreground uppercase">Rules ✗</div>
+                      <div style={{ fontSize: 8, color: THEME.textSecondary, textTransform: "uppercase" }}>
+                        Rules ✗
+                      </div>
                     </div>
                   </div>
                   {loop.key_levels && (
                     <div>
-                      <span className="text-[9px] font-bold uppercase text-muted-foreground">
+                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: THEME.textSecondary }}>
                         Key Levels:
                       </span>
-                      <p className="text-[11px] text-foreground/90 mt-0.5">{loop.key_levels}</p>
+                      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", marginTop: 2 }}>
+                        {loop.key_levels}
+                      </p>
                     </div>
                   )}
                   {loop.lessons_learned && (
                     <div>
-                      <span className="text-[9px] font-bold uppercase text-muted-foreground">
+                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: THEME.textSecondary }}>
                         Lessons:
                       </span>
-                      <p className="text-[11px] text-foreground/90 mt-0.5">
+                      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", marginTop: 2 }}>
                         {loop.lessons_learned}
                       </p>
                     </div>
                   )}
                   {loop.tomorrow_plan && (
                     <div>
-                      <span className="text-[9px] font-bold uppercase text-muted-foreground">
+                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: THEME.textSecondary }}>
                         Tomorrow:
                       </span>
-                      <p className="text-[11px] text-foreground/90 mt-0.5">{loop.tomorrow_plan}</p>
+                      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", marginTop: 2 }}>
+                        {loop.tomorrow_plan}
+                      </p>
                     </div>
                   )}
                 </div>

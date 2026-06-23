@@ -3,16 +3,43 @@ import { useQuery } from "@tanstack/react-query";
 import { memo, useState } from "react";
 import { getPortfolioData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import {
+  THEME,
+  PageLayout,
+  StatsRow,
+  SectionTitle,
+  DataRowTwoLine,
+  LabelValue,
+  Badge,
+  EmptyState,
+  ScrollArea,
+} from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/portfolio")({
   head: () => ({ meta: [{ title: "Portfolio — Vixor" }] }),
   component: PortfolioPage,
 });
 
+// ── Allocation bar colours from THEME tokens ─────────────────────────────
+const ALLOC_COLORS = [
+  THEME.green,
+  THEME.purple,
+  THEME.pink,
+  THEME.amber,
+  THEME.accent,
+  THEME.red,
+  THEME.cyan,
+  THEME.orange,
+];
+
+// ── Page ─────────────────────────────────────────────────────────────────
+
 function PortfolioPage() {
   const navigate = useNavigate();
   const fetchPortfolio = useStableServerFn(getPortfolioData);
-  const [activeTab, setActiveTab] = useState<"holdings" | "history">("holdings");
+  const [activeTab, setActiveTab] = useState<"holdings" | "history">(
+    "holdings",
+  );
 
   const query = useQuery({
     queryKey: ["portfolio-data-page"],
@@ -29,127 +56,303 @@ function PortfolioPage() {
   const tradeCount = data?.tradeCount ?? 0;
 
   const fmt = (n: number) =>
-    n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : n >= 1_000 ? `$${(n / 1_000).toFixed(2)}K` : `$${n.toFixed(2)}`;
+    n >= 1_000_000
+      ? `$${(n / 1_000_000).toFixed(2)}M`
+      : n >= 1_000
+        ? `$${(n / 1_000).toFixed(2)}K`
+        : `$${n.toFixed(2)}`;
 
   return (
-    <div style={{ background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%", padding: "20px" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-        <span style={{ fontSize: "18px" }}>\uD83D\uDCBC</span>
-        <h1 style={{ fontSize: "22px", fontWeight: 700, margin: 0 }}>Portfolio</h1>
-      </div>
-      <p style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "4px", marginBottom: "20px" }}>
-        Derived from your {tradeCount} recorded trades
-      </p>
+    <PageLayout
+      title="Portfolio"
+      badge="PORTFOLIO"
+      badgeColor={THEME.accent}
+      description={`Derived from your ${tradeCount} recorded trades`}
+      tabs={["Holdings", "History"]}
+      activeTab={activeTab}
+      onTabChange={(t) => setActiveTab(t as "holdings" | "history")}
+      loading={isLoading}
+      loadingColor={THEME.green}
+    >
+      {/* ── Stats ─────────────────────────────────────────────────── */}
+      <StatsRow
+        stats={[
+          {
+            label: "Total Value",
+            value: fmt(totalValue),
+            icon: "💎",
+            color: THEME.text,
+          },
+          {
+            label: "Total PnL",
+            value: `${totalPnl >= 0 ? "+" : ""}${fmt(totalPnl)}`,
+            color: totalPnl >= 0 ? THEME.green : THEME.red,
+            sub: `${totalPnlPct >= 0 ? "+" : ""}${totalPnlPct.toFixed(1)}%`,
+          },
+          {
+            label: "Holdings",
+            value: String(holdings.length),
+            icon: "📊",
+            color: THEME.text,
+          },
+        ]}
+      />
 
-      {isLoading ? (
-        <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      {/* ── Allocation bar (THEME colours) ────────────────────────── */}
+      {holdings.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            height: "6px",
+            borderRadius: "3px",
+            overflow: "hidden",
+            background: THEME.surface,
+            borderBottom: `1px solid ${THEME.border}`,
+          }}
+        >
+          {holdings.map((h, i) => {
+            const pct = totalValue > 0 ? (h.value / totalValue) * 100 : 0;
+            if (pct < 1) return null;
+            return (
+              <div
+                key={h.symbol}
+                style={{
+                  width: `${pct}%`,
+                  background: ALLOC_COLORS[i % ALLOC_COLORS.length],
+                  transition: "width 0.3s ease",
+                }}
+                title={`${h.symbol}: ${pct.toFixed(1)}%`}
+              />
+            );
+          })}
         </div>
-      ) : (
+      )}
+
+      {/* ── Holdings tab ──────────────────────────────────────────── */}
+      {activeTab === "holdings" && (
         <>
-          {/* Portfolio Value */}
-          <div style={{ background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", marginBottom: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div>
-                <div style={{ fontSize: "10px", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Portfolio Value</div>
-                <div style={{ fontSize: "32px", fontWeight: 800, fontFamily: "monospace", marginTop: "4px" }}>{fmt(totalValue)}</div>
-                <div style={{ fontSize: "13px", fontWeight: 700, fontFamily: "monospace", color: totalPnl >= 0 ? "#22C55E" : "#EF4444", marginTop: "4px" }}>
-                  {totalPnl >= 0 ? "+" : ""}{fmt(totalPnl)} ({totalPnlPct >= 0 ? "+" : ""}{totalPnlPct.toFixed(1)}%)
-                </div>
-              </div>
-            </div>
-            {/* Allocation bar */}
-            {holdings.length > 0 && (
-              <div style={{ display: "flex", height: "6px", borderRadius: "3px", overflow: "hidden", marginTop: "16px" }}>
-                {holdings.map((h, i) => {
-                  const pct = totalValue > 0 ? (h.value / totalValue) * 100 : 0;
-                  if (pct < 1) return null;
-                  const colors = ["#10B981", "#8B5CF6", "#EC4899", "#F59E0B", "#22C55E", "#EF4444", "#06B6D4"];
-                  return (
-                    <div key={h.symbol} style={{ width: `${pct}%`, background: colors[i % colors.length], borderRadius: i === 0 ? "3px 0 0 3px" : i === holdings.length - 1 ? "0 3px 3px 0" : undefined }} title={`${h.symbol}: ${pct.toFixed(1)}%`} />
-                  );
-                })}
-              </div>
+          <SectionTitle title="Holdings" count={holdings.length} />
+
+          <ScrollArea>
+            {holdings.length > 0 ? (
+              holdings.map((h) => (
+                <HoldingRow
+                  key={h.symbol}
+                  holding={h}
+                  totalValue={totalValue}
+                />
+              ))
+            ) : (
+              <LinkedEmptyState
+                icon="📭"
+                title="No trades yet"
+                message="Start trading to see your portfolio here."
+                actionLabel="Start trading →"
+                onAction={() => navigate({ to: "/trade-desk" })}
+              />
             )}
-          </div>
-
-          {/* Tabs */}
-          <div style={{ display: "flex", gap: "4px", marginBottom: "16px", background: "#1E1E1E", borderRadius: "10px", padding: "4px", width: "fit-content" }}>
-            {(["holdings", "history"] as const).map((t) => (
-              <button key={t} onClick={() => setActiveTab(t)} style={{
-                fontSize: "12px", fontWeight: 600, padding: "8px 16px", borderRadius: "8px", border: "none",
-                cursor: "pointer", color: activeTab === t ? "#FFFFFF" : "#9CA3AF",
-                background: activeTab === t ? "#1E1E1E" : "transparent",
-                fontFamily: "'Inter', system-ui, sans-serif",
-              }}>{t === "holdings" ? "Holdings" : "History"}</button>
-            ))}
-          </div>
-
-          {activeTab === "holdings" ? (
-            <div style={{ background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-              <div className="flex items-center px-4 py-2 text-[9px] font-bold uppercase tracking-wider" style={{ color: "#6B7280", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <div style={{ width: "20%" }}>Token</div>
-                <div style={{ width: "15%" }} className="text-right">Amount</div>
-                <div style={{ width: "15%" }} className="text-right">Avg Entry</div>
-                <div style={{ width: "15%" }} className="text-right">Value</div>
-                <div style={{ width: "15%" }} className="text-right">PnL</div>
-                <div style={{ width: "10%" }} className="text-right">PnL %</div>
-                <div style={{ width: "10%" }} className="text-right">Alloc</div>
-              </div>
-              {holdings.length > 0 ? holdings.map((h) => (
-                <HoldingRow key={h.symbol} holding={h} totalValue={totalValue} />
-              )) : (
-                <div style={{ padding: "40px", textAlign: "center", color: "#9CA3AF", fontSize: 13 }}>
-                  No trades yet. <span style={{ color: "#34D399", cursor: "pointer" }} onClick={() => navigate({ to: "/trade-desk" })}>Start trading →</span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div style={{ background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-              <div style={{ padding: "40px", textAlign: "center", color: "#9CA3AF", fontSize: 13 }}>
-                View your full trade history on the <span style={{ color: "#34D399", cursor: "pointer" }} onClick={() => navigate({ to: "/pnl" })}>PnL Tracker</span> page.
-              </div>
-            </div>
-          )}
+          </ScrollArea>
         </>
       )}
-    </div>
+
+      {/* ── History tab ───────────────────────────────────────────── */}
+      {activeTab === "history" && (
+        <LinkedEmptyState
+          icon="📋"
+          title="Trade History"
+          message="View your full trade history on the"
+          actionLabel="PnL Tracker"
+          onAction={() => navigate({ to: "/pnl" })}
+        />
+      )}
+    </PageLayout>
   );
 }
 
-const HoldingRow = memo(function HoldingRow({ holding, totalValue }: { holding: any; totalValue: number }) {
+// ── Holding row (two-line card, no fixed % widths) ───────────────────────
+
+const HoldingRow = memo(function HoldingRow({
+  holding,
+  totalValue,
+}: {
+  holding: any;
+  totalValue: number;
+}) {
   const isPos = holding.pnlPct >= 0;
-  const color = isPos ? "#22C55E" : "#EF4444";
-  const alloc = totalValue > 0 ? ((holding.value / totalValue) * 100).toFixed(1) : "0";
-  const fmtPrice = (n: number) => n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2);
+  const pnlColor = isPos ? THEME.green : THEME.red;
+  const alloc =
+    totalValue > 0
+      ? ((holding.value / totalValue) * 100).toFixed(1)
+      : "0";
+
+  const fmtPrice = (n: number) =>
+    n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2);
 
   return (
-    <div className="flex items-center px-4 py-3 text-[11px] font-mono" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s", cursor: "pointer" }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-    >
-      <div style={{ width: "20%", fontWeight: 700 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: isPos ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px", fontWeight: 800, color, flexShrink: 0 }}>
-            {holding.symbol.slice(0, 2)}
+    <DataRowTwoLine
+      leftAccent={pnlColor}
+      topContent={
+        <>
+          {/* Token identity */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              minWidth: 0,
+              flex: 1,
+            }}
+          >
+            <div
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: "50%",
+                background: isPos ? `${THEME.green}18` : `${THEME.red}18`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "9px",
+                fontWeight: 800,
+                color: pnlColor,
+                flexShrink: 0,
+              }}
+            >
+              {holding.symbol.slice(0, 2)}
+            </div>
+
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: THEME.text,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {holding.symbol}
+              </div>
+              <Badge label={holding.chain} color={THEME.textMuted} small />
+            </div>
           </div>
-          <div>
-            <div style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>{holding.symbol}</div>
-            <div style={{ fontSize: "9px", color: "#6B7280" }}>{holding.chain}</div>
+
+          {/* PnL summary */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              flexShrink: 0,
+            }}
+          >
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                color: pnlColor,
+              }}
+            >
+              {holding.pnl >= 0 ? "+" : ""}
+              {holding.pnl.toFixed(2)}
+            </span>
+            <Badge
+              label={`${isPos ? "+" : ""}${holding.pnlPct.toFixed(1)}%`}
+              color={pnlColor}
+              small
+            />
           </div>
-        </div>
-      </div>
-      <div style={{ width: "15%", textAlign: "right" }}>{holding.amount.toFixed(4)}</div>
-      <div style={{ width: "15%", textAlign: "right", color: "#9CA3AF" }}>${fmtPrice(holding.avgEntry)}</div>
-      <div style={{ width: "15%", textAlign: "right", fontWeight: 600 }}>${holding.value.toFixed(2)}</div>
-      <div style={{ width: "15%", textAlign: "right", fontWeight: 700, color }}>
-        {holding.pnl >= 0 ? "+" : ""}{holding.pnl.toFixed(2)}
-      </div>
-      <div style={{ width: "10%", textAlign: "right", fontWeight: 700, color }}>
-        {isPos ? "+" : ""}{holding.pnlPct.toFixed(1)}%
-      </div>
-      <div style={{ width: "10%", textAlign: "right", color: "#9CA3AF" }}>{alloc}%</div>
-    </div>
+        </>
+      }
+      bottomContent={
+        <>
+          <LabelValue
+            label="Value"
+            value={`$${holding.value.toFixed(2)}`}
+            mono
+          />
+          <LabelValue
+            label="Amt"
+            value={holding.amount.toFixed(4)}
+            mono
+          />
+          <LabelValue
+            label="Entry"
+            value={`$${fmtPrice(holding.avgEntry)}`}
+            valueColor={THEME.textSecondary}
+            mono
+          />
+          <LabelValue
+            label="Alloc"
+            value={`${alloc}%`}
+            valueColor={THEME.textSecondary}
+          />
+        </>
+      }
+    />
   );
 });
+
+// ── Empty state with an action link (follows EmptyState styling) ─────────
+
+function LinkedEmptyState({
+  icon,
+  title,
+  message,
+  actionLabel,
+  actionColor = THEME.accent,
+  onAction,
+}: {
+  icon: string;
+  title: string;
+  message: string;
+  actionLabel: string;
+  actionColor?: string;
+  onAction: () => void;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "10px",
+        padding: "48px 20px",
+        background: THEME.surface,
+        flex: 1,
+      }}
+    >
+      <span style={{ fontSize: "28px", opacity: 0.4 }}>{icon}</span>
+      <div
+        style={{
+          fontSize: "13px",
+          fontWeight: 600,
+          color: THEME.textSecondary,
+        }}
+      >
+        {title}
+      </div>
+      <div
+        style={{
+          fontSize: "11px",
+          color: THEME.textMuted,
+          textAlign: "center",
+          maxWidth: "280px",
+          lineHeight: 1.5,
+        }}
+      >
+        {message}{" "}
+        <span
+          style={{ color: actionColor, cursor: "pointer" }}
+          onClick={onAction}
+        >
+          {actionLabel}
+        </span>
+      </div>
+    </div>
+  );
+}

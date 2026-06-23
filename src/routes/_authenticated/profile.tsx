@@ -3,55 +3,20 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile, getUserPoints, getTradeHistory } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import {
+  PageLayout,
+  THEME,
+  StatsRow,
+  SectionTitle,
+  Badge,
+  DataRow,
+  ScrollArea,
+} from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — Vixor" }] }),
   component: ProfilePage,
 });
-
-// ── Styles ──────────────────────────────────────────────────────────────
-
-const S = {
-  page: { background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100vh", padding: "20px" },
-  header: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" },
-  title: { fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0 },
-  subtitle: { fontSize: "12px", color: "#9CA3AF", marginTop: "4px", marginBottom: "20px" },
-  profileCard: { background: "#1E1E1E", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.06)", padding: "24px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "20px" },
-  avatar: { width: "72px", height: "72px", borderRadius: "18px", background: "linear-gradient(135deg, #10B981, #059669)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", fontWeight: 800, color: "#fff", flexShrink: 0, border: "2px solid rgba(16,185,129,0.3)" },
-  avatarImg: { width: "72px", height: "72px", borderRadius: "18px", objectFit: "cover" as const, flexShrink: 0, border: "2px solid rgba(16,185,129,0.3)" },
-  profileInfo: { flex: 1, minWidth: 0 },
-  username: { fontSize: "20px", fontWeight: 700, color: "#FFFFFF", marginBottom: "2px" },
-  joined: { fontSize: "12px", color: "#9CA3AF", marginBottom: "8px" },
-  badgesRow: { display: "flex", gap: "6px", flexWrap: "wrap" as const },
-  smallBadge: { fontSize: "10px", fontWeight: 700, padding: "3px 10px", borderRadius: "6px" },
-  statsGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" },
-  statCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px", textAlign: "center" as const },
-  statValue: { fontSize: "24px", fontWeight: 800, fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", marginBottom: "4px" },
-  statLabel: { fontSize: "10px", fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  sectionTitle: { fontSize: "13px", fontWeight: 700, color: "#FFFFFF", marginBottom: "14px", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  card: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", marginBottom: "24px" },
-  badgeGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" },
-  badgeItem: { textAlign: "center" as const, padding: "14px 8px", borderRadius: "12px", background: "#1A1A1A", border: "1px solid rgba(255,255,255,0.04)" },
-  badgeItemLocked: { opacity: 0.35 },
-  badgeIcon: { fontSize: "28px", marginBottom: "6px" },
-  badgeName: { fontSize: "10px", fontWeight: 700, color: "#FFFFFF" },
-  badgeDesc: { fontSize: "9px", color: "#9CA3AF", marginTop: "2px" },
-  accountRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" },
-  accountRowLast: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0" },
-  accountLeft: { display: "flex", alignItems: "center", gap: "12px" },
-  accountIcon: { width: "38px", height: "38px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 },
-  accountName: { fontSize: "13px", fontWeight: 600, color: "#FFFFFF" },
-  accountHandle: { fontSize: "11px", color: "#9CA3AF" },
-  accountStatus: { fontSize: "10px", fontWeight: 700, padding: "3px 10px", borderRadius: "6px" },
-  settingsList: { display: "flex", flexDirection: "column" as const, gap: "2px" },
-  settingItem: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: "10px", cursor: "pointer", transition: "background 0.15s" },
-  settingLeft: { display: "flex", alignItems: "center", gap: "12px" },
-  settingIcon: { width: "36px", height: "36px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", flexShrink: 0 },
-  settingName: { fontSize: "13px", fontWeight: 600, color: "#FFFFFF" },
-  settingDesc: { fontSize: "10px", color: "#9CA3AF" },
-  settingArrow: { color: "#6B7280", fontSize: "16px" },
-  skeletonPulse: { animation: "pulse 1.5s ease-in-out infinite" },
-};
 
 // ── Static data (achievements badges are product-level) ─────────────────
 
@@ -67,11 +32,31 @@ const badges = [
 ];
 
 const settings = [
-  { icon: "⚙️", name: "Account Settings", desc: "Email, password, 2FA", bgColor: "rgba(255,255,255,0.05)" },
-  { icon: "🔔", name: "Notifications", desc: "Alerts & push preferences", bgColor: "rgba(16,185,129,0.1)" },
-  { icon: "🔗", name: "Connected Wallets", desc: "Manage wallet connections", bgColor: "rgba(34,197,94,0.1)" },
-  { icon: "🎨", name: "Appearance", desc: "Theme & display settings", bgColor: "rgba(245,158,11,0.1)" },
-  { icon: "🔒", name: "Privacy & Security", desc: "Data & security options", bgColor: "rgba(239,68,68,0.1)" },
+  {
+    icon: "⚙️",
+    name: "Account Settings",
+    desc: "Email, password, 2FA",
+    bgColor: `${THEME.text}0D`,
+  },
+  {
+    icon: "🔔",
+    name: "Notifications",
+    desc: "Alerts & push preferences",
+    bgColor: `${THEME.green}1A`,
+  },
+  {
+    icon: "🔗",
+    name: "Connected Wallets",
+    desc: "Manage wallet connections",
+    bgColor: `${THEME.accent}1A`,
+  },
+  { icon: "🎨", name: "Appearance", desc: "Theme & display settings", bgColor: `${THEME.amber}1A` },
+  {
+    icon: "🔒",
+    name: "Privacy & Security",
+    desc: "Data & security options",
+    bgColor: `${THEME.red}1A`,
+  },
 ];
 
 // ── Helpers ─────────────────────────────────────────────────────────────
@@ -84,10 +69,7 @@ function formatJoinDate(createdAt: string | undefined): string {
     day: "numeric",
     year: "numeric",
   });
-  const daysAgo = Math.max(
-    0,
-    Math.floor((Date.now() - date.getTime()) / 86_400_000),
-  );
+  const daysAgo = Math.max(0, Math.floor((Date.now() - date.getTime()) / 86_400_000));
   if (daysAgo === 0) return `Joined ${formatted} · Today`;
   if (daysAgo === 1) return `Joined ${formatted} · Yesterday`;
   return `Joined ${formatted} · ${daysAgo} days ago`;
@@ -95,9 +77,11 @@ function formatJoinDate(createdAt: string | undefined): string {
 
 function computeStats(trades: Array<{ pnl: number | null; status: string }>) {
   const totalTrades = trades.length;
-  const closedTrades = trades.filter((t) => t.status === "closed" || t.status === "won" || t.status === "lost");
+  const closedTrades = trades.filter(
+    (t) => t.status === "closed" || t.status === "won" || t.status === "lost",
+  );
   const wins = closedTrades.filter((t) => (t.pnl ?? 0) > 0);
-  const winRate = closedTrades.length > 0 ? ((wins.length / closedTrades.length) * 100) : 0;
+  const winRate = closedTrades.length > 0 ? (wins.length / closedTrades.length) * 100 : 0;
   const totalPnl = trades.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
 
   return { totalTrades, winRate, totalPnl };
@@ -105,21 +89,21 @@ function computeStats(trades: Array<{ pnl: number | null; status: string }>) {
 
 // ── Sub-components ───────────────────────────────────────────────────────
 
-const StatCard = memo(function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
+const BadgeItem = memo(function BadgeItem({ item }: { item: (typeof badges)[0] }) {
   return (
-    <div style={S.statCard}>
-      <div style={{ ...S.statValue, color }}>{value}</div>
-      <div style={S.statLabel}>{label}</div>
-    </div>
-  );
-});
-
-const BadgeItem = memo(function BadgeItem({ item }: { item: typeof badges[0] }) {
-  return (
-    <div style={{ ...S.badgeItem, ...(item.unlocked ? {} : S.badgeItemLocked) }}>
-      <div style={S.badgeIcon}>{item.icon}</div>
-      <div style={S.badgeName}>{item.name}</div>
-      <div style={S.badgeDesc}>{item.desc}</div>
+    <div
+      style={{
+        textAlign: "center",
+        padding: "14px 8px",
+        borderRadius: 12,
+        background: THEME.surface,
+        border: `1px solid ${THEME.borderLight}`,
+        opacity: item.unlocked ? 1 : 0.35,
+      }}
+    >
+      <div style={{ fontSize: 28, marginBottom: 6 }}>{item.icon}</div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: THEME.text }}>{item.name}</div>
+      <div style={{ fontSize: 9, color: THEME.textSecondary, marginTop: 2 }}>{item.desc}</div>
     </div>
   );
 });
@@ -133,39 +117,77 @@ interface AccountEntry {
   linked: boolean;
 }
 
-const AccountItem = memo(function AccountItem({ item, isLast }: { item: AccountEntry; isLast: boolean }) {
+const AccountItem = memo(function AccountItem({ item }: { item: AccountEntry }) {
   return (
-    <div style={isLast ? S.accountRowLast : S.accountRow}>
-      <div style={S.accountLeft}>
-        <div style={{ ...S.accountIcon, background: item.bgColor, color: item.iconColor }}>{item.icon}</div>
-        <div>
-          <div style={S.accountName}>{item.name}</div>
-          <div style={S.accountHandle}>{item.linked ? item.handle : "Not connected"}</div>
+    <DataRow>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 16,
+              flexShrink: 0,
+              background: item.bgColor,
+              color: item.iconColor,
+            }}
+          >
+            {item.icon}
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: THEME.text }}>{item.name}</div>
+            <div style={{ fontSize: 11, color: THEME.textSecondary }}>
+              {item.linked ? item.handle : "Not connected"}
+            </div>
+          </div>
         </div>
+        <Badge
+          label={item.linked ? "Connected" : "Connect"}
+          color={item.linked ? THEME.accent : THEME.textMuted}
+        />
       </div>
-      <span style={{
-        ...S.accountStatus,
-        background: item.linked ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.05)",
-        color: item.linked ? "#22C55E" : "#6B7280",
-      }}>
-        {item.linked ? "Connected" : "Connect"}
-      </span>
-    </div>
+    </DataRow>
   );
 });
 
-const SettingItem = memo(function SettingItem({ item, onClick }: { item: typeof settings[0]; onClick: () => void }) {
+const SettingItem = memo(function SettingItem({
+  item,
+  onClick,
+}: {
+  item: (typeof settings)[0];
+  onClick: () => void;
+}) {
   return (
-    <div style={S.settingItem} onClick={onClick} onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}>
-      <div style={S.settingLeft}>
-        <div style={{ ...S.settingIcon, background: item.bgColor }}>{item.icon}</div>
-        <div>
-          <div style={S.settingName}>{item.name}</div>
-          <div style={S.settingDesc}>{item.desc}</div>
+    <DataRow onClick={onClick}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 15,
+              flexShrink: 0,
+              background: item.bgColor,
+            }}
+          >
+            {item.icon}
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: THEME.text }}>{item.name}</div>
+            <div style={{ fontSize: 10, color: THEME.textSecondary }}>{item.desc}</div>
+          </div>
         </div>
+        <span style={{ color: THEME.textMuted, fontSize: 16 }}>›</span>
       </div>
-      <span style={S.settingArrow}>›</span>
-    </div>
+    </DataRow>
   );
 });
 
@@ -225,8 +247,8 @@ function ProfilePage() {
         name: "Telegram",
         handle: `@${profile.telegram_username}`,
         icon: "✈️",
-        bgColor: "rgba(34,197,94,0.15)",
-        iconColor: "#22C55E",
+        bgColor: `${THEME.accent}26`,
+        iconColor: THEME.accent,
         linked: true,
       });
     } else {
@@ -234,8 +256,8 @@ function ProfilePage() {
         name: "Telegram",
         handle: "Not connected",
         icon: "✈️",
-        bgColor: "rgba(34,197,94,0.15)",
-        iconColor: "#22C55E",
+        bgColor: `${THEME.accent}26`,
+        iconColor: THEME.accent,
         linked: false,
       });
     }
@@ -245,16 +267,16 @@ function ProfilePage() {
       name: "Twitter",
       handle: "Not connected",
       icon: "𝕏",
-      bgColor: "rgba(16,185,129,0.15)",
-      iconColor: "#34D399",
+      bgColor: `${THEME.green}26`,
+      iconColor: THEME.accent,
       linked: false,
     });
     list.push({
       name: "Discord",
       handle: "Not connected",
       icon: "💬",
-      bgColor: "rgba(139,92,246,0.15)",
-      iconColor: "#A78BFA",
+      bgColor: `${THEME.purple}26`,
+      iconColor: THEME.purple,
       linked: false,
     });
 
@@ -264,31 +286,44 @@ function ProfilePage() {
   // PnL formatting
   const pnlFormatted = useMemo(() => {
     const abs = Math.abs(totalPnl);
-    const formatted = abs >= 1_000
-      ? `$${(abs / 1_000).toFixed(1)}k`
-      : `$${abs.toFixed(2)}`;
+    const formatted = abs >= 1_000 ? `$${(abs / 1_000).toFixed(1)}k` : `$${abs.toFixed(2)}`;
     return `${totalPnl >= 0 ? "+" : "-"}${formatted}`;
   }, [totalPnl]);
 
-  const pnlColor = totalPnl >= 0 ? "#22C55E" : "#EF4444";
+  const pnlColor = totalPnl >= 0 ? THEME.accent : THEME.red;
 
   const isLoading = profileQuery.isLoading || pointsQuery.isLoading || tradesQuery.isLoading;
 
   return (
-    <div style={S.page}>
-      {/* Header */}
-      <div style={S.header}>
-        <h1 style={S.title}>Profile</h1>
-      </div>
-      <p style={S.subtitle}>Manage your account and view trading statistics</p>
-
+    <PageLayout
+      title="Profile"
+      description="Manage your account and view trading statistics"
+      loading={isLoading}
+    >
       {/* Profile Card */}
-      <div style={S.profileCard}>
+      <div
+        style={{
+          background: THEME.surface,
+          borderBottom: `1px solid ${THEME.border}`,
+          padding: "16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          flexShrink: 0,
+        }}
+      >
         {hasAvatar ? (
           <img
             src={avatarSrc}
             alt={displayName}
-            style={S.avatarImg}
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 16,
+              objectFit: "cover" as const,
+              flexShrink: 0,
+              border: `2px solid ${THEME.borderAccent}`,
+            }}
             onError={(e) => {
               const img = e.target as HTMLImageElement;
               img.style.display = "none";
@@ -297,95 +332,101 @@ function ProfilePage() {
                 const fallback = document.createElement("div");
                 fallback.setAttribute("data-initials", "true");
                 fallback.textContent = initial;
-                fallback.style.cssText =
-                  "width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#10B981,#059669);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;flex-shrink:0;border:2px solid rgba(16,185,129,0.3)";
+                fallback.style.cssText = `width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,${THEME.accent},${THEME.green});display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:${THEME.text};flex-shrink:0;border:2px solid ${THEME.borderAccent}`;
                 parent.insertBefore(fallback, img);
               }
             }}
           />
         ) : (
-          <div style={S.avatar}>{initial}</div>
-        )}
-        <div style={S.profileInfo}>
-          <div style={S.username}>
-            {isLoading ? (
-              <span style={{ opacity: 0.4 }}>Loading…</span>
-            ) : (
-              displayName
-            )}
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 16,
+              background: `linear-gradient(135deg, ${THEME.accent}, ${THEME.green})`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 24,
+              fontWeight: 800,
+              color: THEME.text,
+              flexShrink: 0,
+              border: `2px solid ${THEME.borderAccent}`,
+            }}
+          >
+            {initial}
           </div>
-          <div style={S.joined}>{joinedText}</div>
-          <div style={S.badgesRow}>
-            <span style={{ ...S.smallBadge, background: "rgba(16,185,129,0.15)", color: "#34D399" }}>
-              ⚡ {pointsBalance.toLocaleString()} pts
-            </span>
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: THEME.text, marginBottom: 2 }}>
+            {isLoading ? <span style={{ opacity: 0.4 }}>Loading…</span> : displayName}
+          </div>
+          <div style={{ fontSize: 11, color: THEME.textSecondary, marginBottom: 8 }}>
+            {joinedText}
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
+            <Badge label={`⚡ ${pointsBalance.toLocaleString()} pts`} color={THEME.accent} />
             {currentStreak > 0 && (
-              <span style={{ ...S.smallBadge, background: "rgba(245,158,11,0.15)", color: "#F59E0B" }}>
-                🔥 {currentStreak}-day streak
-              </span>
+              <Badge label={`🔥 ${currentStreak}-day streak`} color={THEME.amber} />
             )}
-            {pointsBalance >= 5000 && (
-              <span style={{ ...S.smallBadge, background: "rgba(16,185,129,0.15)", color: "#10B981" }}>
-                👑 PRO
-              </span>
-            )}
+            {pointsBalance >= 5000 && <Badge label="👑 PRO" color={THEME.green} />}
           </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div style={S.statsGrid}>
-        <StatCard
-          label="Total Trades"
-          value={isLoading ? "—" : String(totalTrades)}
-          color="#10B981"
-        />
-        <StatCard
-          label="Win Rate"
-          value={isLoading ? "—" : `${winRate.toFixed(1)}%`}
-          color="#22C55E"
-        />
-        <StatCard
-          label="Total PnL"
-          value={isLoading ? "—" : pnlFormatted}
-          color={pnlColor}
-        />
-        <StatCard
-          label="Best Streak"
-          value={isLoading ? "—" : longestStreak > 0 ? `${longestStreak} W` : "—"}
-          color="#F59E0B"
-        />
-      </div>
+      {/* Stats Row */}
+      <StatsRow
+        stats={[
+          {
+            label: "Total Trades",
+            value: isLoading ? "—" : String(totalTrades),
+            color: THEME.green,
+          },
+          {
+            label: "Win Rate",
+            value: isLoading ? "—" : `${winRate.toFixed(1)}%`,
+            color: THEME.accent,
+          },
+          { label: "Total PnL", value: isLoading ? "—" : pnlFormatted, color: pnlColor },
+          {
+            label: "Best Streak",
+            value: isLoading ? "—" : longestStreak > 0 ? `${longestStreak} W` : "—",
+            color: THEME.amber,
+          },
+        ]}
+      />
 
-      {/* Achievements */}
-      <div style={{ ...S.sectionTitle }}>Achievements</div>
-      <div style={{ ...S.card, padding: "16px" }}>
-        <div style={S.badgeGrid}>
+      {/* Scrollable Content */}
+      <ScrollArea>
+        {/* Achievements */}
+        <SectionTitle title="Achievements" count={badges.filter((b) => b.unlocked).length} />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
+            gap: 10,
+            padding: "12px 16px",
+            background: THEME.surface,
+            borderBottom: `1px solid ${THEME.border}`,
+          }}
+        >
           {badges.map((b) => (
             <BadgeItem key={b.name} item={b} />
           ))}
         </div>
-      </div>
 
-      {/* Connected Accounts */}
-      <div style={{ ...S.sectionTitle }}>Connected Accounts</div>
-      <div style={S.card}>
-        {connectedAccounts.map((a, i) => (
-          <AccountItem key={a.name} item={a} isLast={i === connectedAccounts.length - 1} />
+        {/* Connected Accounts */}
+        <SectionTitle title="Connected Accounts" />
+        {connectedAccounts.map((a) => (
+          <AccountItem key={a.name} item={a} />
         ))}
-      </div>
 
-      {/* Settings */}
-      <div style={{ ...S.sectionTitle }}>Account Settings</div>
-      <div style={S.settingsList}>
+        {/* Settings */}
+        <SectionTitle title="Account Settings" />
         {settings.map((s) => (
-          <SettingItem
-            key={s.name}
-            item={s}
-            onClick={() => navigate({ to: "/settings" })}
-          />
+          <SettingItem key={s.name} item={s} onClick={() => navigate({ to: "/settings" })} />
         ))}
-      </div>
-    </div>
+      </ScrollArea>
+    </PageLayout>
   );
 }

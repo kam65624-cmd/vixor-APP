@@ -24,6 +24,14 @@ import { cn } from "@/shared/utils";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
 import { CoachOverlay } from "@/components/vixor/CoachOverlay";
 import { GovernorRiskPanel } from "@/components/vixor/GovernorRiskPanel";
+import {
+  PageLayout,
+  THEME,
+  ScrollArea,
+  Badge,
+  EmptyState,
+  SectionTitle,
+} from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/trade-desk")({
   head: () => ({ meta: [{ title: "Trade Desk — Vixor" }] }),
@@ -47,22 +55,24 @@ const LOT_SIZES: Record<string, number> = {
 };
 
 const card = {
-  background: "#1A1A1A",
-  border: "1px solid rgba(255,255,255,0.06)",
+  background: THEME.surface,
+  border: `1px solid ${THEME.border}`,
   borderRadius: "12px",
 };
-const mono = { fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace" };
+const mono = {
+  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+};
 const labelStyle = {
   fontSize: "10px",
   fontWeight: 700,
   textTransform: "uppercase" as const,
   letterSpacing: "0.05em",
-  color: "#9CA3AF",
+  color: THEME.textSecondary,
 };
 const inputStyle = {
-  background: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.06)",
-  color: "#FFFFFF",
+  background: THEME.rowHoverStrong,
+  border: `1px solid ${THEME.border}`,
+  color: THEME.text,
   outline: "none",
 } as React.CSSProperties;
 
@@ -168,13 +178,11 @@ function TradeDesk() {
   }, [entryPrice, pair, slPips, direction, result, riskPct, saveMutation]);
 
   return (
-    <div
-      className="w-full"
-      style={{
-        background: "#121212",
-        color: "#FFFFFF",
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}
+    <PageLayout
+      title={t("tradeDesk.tradeDesk")}
+      badge="TRADE DESK"
+      badgeColor={THEME.green}
+      description={t("tradeDesk.institutionalExecution")}
     >
       {/* AI Coach Overlay */}
       {showCoach && entryPrice && (
@@ -199,359 +207,401 @@ function TradeDesk() {
           onClose={() => setShowGovernor(false)}
         />
       )}
-      <div className="flex items-center gap-3">
+
+      <ScrollArea>
+        {/* RISK CALCULATOR */}
         <div
-          className="size-10 rounded-xl flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, #10B981, #059669)", borderRadius: "12px" }}
-        >
-          <LayoutDashboard className="size-5" style={{ color: "#fff" }} />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight leading-none">
-            {t("tradeDesk.tradeDesk")}
-          </h1>
-          <div className="mt-1" style={labelStyle}>
-            {t("tradeDesk.institutionalExecution")}
-          </div>
-        </div>
-      </div>
-
-      {/* RISK CALCULATOR */}
-      <div className="p-5" style={{ ...card, marginTop: "24px", borderLeft: "4px solid #10B981" }}>
-        <div className="flex items-center gap-2 mb-4">
-          <Calculator className="size-4" style={{ color: "#10B981" }} />
-          <h2 style={labelStyle}>{t("tradeDesk.riskCalculator")}</h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          <div className="col-span-2 flex flex-col gap-1.5">
-            <label style={labelStyle}>{t("tradeDesk.tradingPair")}</label>
-            <select
-              value={pair}
-              onChange={(e) => setPair(e.target.value)}
-              className="w-full h-12 px-3 rounded-xl text-sm cursor-pointer"
-              style={{ ...inputStyle, ...mono }}
-            >
-              {PAIRS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label style={labelStyle}>{t("tradeDesk.balance")} ($)</label>
-            <input
-              type="number"
-              value={balance}
-              onChange={(e) => setBalance(e.target.value)}
-              className="w-full h-12 px-3 rounded-xl text-sm"
-              style={{ ...inputStyle, ...mono }}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label style={labelStyle}>{t("tradeDesk.riskPct")}</label>
-            <input
-              type="number"
-              step="0.1"
-              value={riskPct}
-              onChange={(e) => setRiskPct(e.target.value)}
-              className="w-full h-12 px-3 rounded-xl text-sm"
-              style={{ ...inputStyle, ...mono }}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label style={labelStyle}>{t("tradeDesk.stopLossPips")}</label>
-            <input
-              type="number"
-              value={slPips}
-              onChange={(e) => setSlPips(e.target.value)}
-              className="w-full h-12 px-3 rounded-xl text-sm"
-              style={{ ...inputStyle, ...mono }}
-            />
-          </div>
-        </div>
-
-        <div
-          className="p-4 rounded-xl text-center"
           style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            borderRadius: "12px",
+            ...card,
+            margin: "16px 16px 0",
+            padding: "20px",
+            borderLeft: `4px solid ${THEME.green}`,
           }}
         >
-          <div className="mb-1" style={{ ...labelStyle }}>
-            {t("tradeDesk.recommendedLotSize")}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "16px",
+            }}
+          >
+            <Calculator className="size-4" style={{ color: THEME.green }} />
+            <h2 style={labelStyle}>{t("tradeDesk.riskCalculator")}</h2>
           </div>
-          <div className="text-3xl font-bold mb-2" style={{ ...mono, color: "#10B981" }}>
-            {result ? result.lots : "0.00"}
-          </div>
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-xs font-bold" style={{ ...mono, color: "#9CA3AF" }}>
-              Risk: ${result?.riskAmount || "0.00"}
-            </span>
-            {result && (
-              <span
-                className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase"
-                style={{
-                  background:
-                    result.riskLevel === "LOW"
-                      ? "rgba(34,197,94,0.15)"
-                      : result.riskLevel === "MEDIUM"
-                        ? "rgba(245,158,11,0.15)"
-                        : "rgba(239,68,68,0.15)",
-                  color:
-                    result.riskLevel === "LOW"
-                      ? "#22C55E"
-                      : result.riskLevel === "MEDIUM"
-                        ? "#F59E0B"
-                        : "#EF4444",
-                }}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+            <div className="sm:col-span-2 flex flex-col gap-1.5">
+              <label style={labelStyle}>{t("tradeDesk.tradingPair")}</label>
+              <select
+                value={pair}
+                onChange={(e) => setPair(e.target.value)}
+                className="w-full h-12 px-3 rounded-xl text-sm cursor-pointer"
+                style={{ ...inputStyle, ...mono }}
               >
-                {result.riskLevel === "LOW"
-                  ? t("tradeDesk.lowRisk")
-                  : result.riskLevel === "MEDIUM"
-                    ? t("tradeDesk.mediumRisk")
-                    : t("tradeDesk.highRisk")}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* ── SAVE AS TRADE ── */}
-        <div
-          style={{
-            marginTop: "16px",
-            paddingTop: "16px",
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-          }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <Save className="size-3.5" style={{ color: "#10B981" }} />
-            <span style={labelStyle}>Save as Trade</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            {/* Direction */}
-            <div className="flex flex-col gap-1.5">
-              <label style={labelStyle}>Direction</label>
-              <div className="grid grid-cols-2 gap-1.5">
-                <button
-                  onClick={() => setDirection("long")}
-                  className="h-10 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-1 transition-colors"
-                  style={{
-                    background:
-                      direction === "long" ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.05)",
-                    border:
-                      direction === "long"
-                        ? "1px solid rgba(34,197,94,0.4)"
-                        : "1px solid rgba(255,255,255,0.06)",
-                    color: direction === "long" ? "#22C55E" : "#9CA3AF",
-                  }}
-                >
-                  <ArrowUpRight className="size-3" />
-                  Long
-                </button>
-                <button
-                  onClick={() => setDirection("short")}
-                  className="h-10 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-1 transition-colors"
-                  style={{
-                    background:
-                      direction === "short" ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.05)",
-                    border:
-                      direction === "short"
-                        ? "1px solid rgba(239,68,68,0.4)"
-                        : "1px solid rgba(255,255,255,0.06)",
-                    color: direction === "short" ? "#EF4444" : "#9CA3AF",
-                  }}
-                >
-                  <ArrowDownRight className="size-3" />
-                  Short
-                </button>
-              </div>
+                {PAIRS.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
             </div>
-
-            {/* Entry Price */}
             <div className="flex flex-col gap-1.5">
-              <label style={labelStyle}>Entry Price</label>
+              <label style={labelStyle}>{t("tradeDesk.balance")} ($)</label>
               <input
                 type="number"
-                step="any"
-                value={entryPrice}
-                onChange={(e) => setEntryPrice(e.target.value)}
-                placeholder="0.00"
-                className="w-full h-10 px-3 rounded-lg text-sm"
+                value={balance}
+                onChange={(e) => setBalance(e.target.value)}
+                className="w-full h-12 px-3 rounded-xl text-sm"
+                style={{ ...inputStyle, ...mono }}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label style={labelStyle}>{t("tradeDesk.riskPct")}</label>
+              <input
+                type="number"
+                step="0.1"
+                value={riskPct}
+                onChange={(e) => setRiskPct(e.target.value)}
+                className="w-full h-12 px-3 rounded-xl text-sm"
+                style={{ ...inputStyle, ...mono }}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label style={labelStyle}>{t("tradeDesk.stopLossPips")}</label>
+              <input
+                type="number"
+                value={slPips}
+                onChange={(e) => setSlPips(e.target.value)}
+                className="w-full h-12 px-3 rounded-xl text-sm"
                 style={{ ...inputStyle, ...mono }}
               />
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleSaveAsTrade}
-              disabled={!entryPrice || saveMutation.isPending}
-              className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-lg text-xs font-bold transition-all"
-              style={{
-                background:
-                  entryPrice && !saveMutation.isPending
-                    ? saveSuccess
-                      ? "rgba(34,197,94,0.2)"
-                      : "linear-gradient(135deg, #10B981, #059669)"
-                    : "rgba(255,255,255,0.05)",
-                color: saveSuccess
-                  ? "#22C55E"
-                  : entryPrice && !saveMutation.isPending
-                    ? "#fff"
-                    : "#9CA3AF",
-                border: saveSuccess ? "1px solid rgba(34,197,94,0.4)" : "none",
-                opacity: !entryPrice || saveMutation.isPending ? 0.5 : 1,
-              }}
-            >
-              {saveMutation.isPending ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : saveSuccess ? (
-                <>
-                  <Target className="size-3.5" />
-                  Saved!
-                </>
-              ) : (
-                <>
-                  <Save className="size-3.5" />
-                  Save Trade
-                </>
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setShowCoach(!showCoach);
-                setShowGovernor(false);
-              }}
-              disabled={!entryPrice}
-              className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all"
-              style={{
-                background: showCoach ? "rgba(56,189,248,0.15)" : "rgba(255,255,255,0.05)",
-                border: showCoach
-                  ? "1px solid rgba(56,189,248,0.4)"
-                  : "1px solid rgba(255,255,255,0.06)",
-                color: showCoach ? "#38BDF8" : "#9CA3AF",
-                opacity: !entryPrice ? 0.5 : 1,
-              }}
-              title="AI Coach — Get coaching feedback"
-            >
-              <MessageSquare className="size-3.5" />
-              Coach
-            </button>
-            <button
-              onClick={() => {
-                setShowGovernor(!showGovernor);
-                setShowCoach(false);
-              }}
-              disabled={!entryPrice}
-              className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all"
-              style={{
-                background: showGovernor ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.05)",
-                border: showGovernor
-                  ? "1px solid rgba(245,158,11,0.4)"
-                  : "1px solid rgba(255,255,255,0.06)",
-                color: showGovernor ? "#F59E0B" : "#9CA3AF",
-                opacity: !entryPrice ? 0.5 : 1,
-              }}
-              title="Risk Governor — Assess trade risk"
-            >
-              <Shield className="size-3.5" />
-              Risk
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ACTIVE POSITIONS */}
-      <div className="flex flex-col gap-3" style={{ marginTop: "24px" }}>
-        <div className="flex items-center gap-2 px-1">
-          <Activity className="size-4" style={{ color: "#9CA3AF" }} />
-          <h2 style={labelStyle}>{t("tradeDesk.activePositions")}</h2>
-        </div>
-
-        {openTrades.length === 0 ? (
-          <div className="p-6 text-center" style={card}>
-            <div
-              className="size-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
-              style={{ background: "rgba(16,185,129,0.1)" }}
-            >
-              <LayoutDashboard className="size-6" style={{ color: "#10B981" }} />
+          <div
+            style={{
+              padding: "16px",
+              borderRadius: "12px",
+              textAlign: "center",
+              background: THEME.rowHover,
+              border: `1px solid ${THEME.border}`,
+            }}
+          >
+            <div style={{ ...labelStyle, marginBottom: "4px" }}>
+              {t("tradeDesk.recommendedLotSize")}
             </div>
-            <p className="text-sm font-medium" style={{ color: "#9CA3AF" }}>
-              {t("tradeDesk.noPositions")}
-            </p>
-            <p className="text-xs mt-1" style={{ color: "#6B7280" }}>
-              Use "Save as Trade" above to log your first position.
-            </p>
+            <div
+              style={{
+                fontSize: "30px",
+                fontWeight: 700,
+                ...mono,
+                color: THEME.green,
+                marginBottom: "8px",
+              }}
+            >
+              {result ? result.lots : "0.00"}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "12px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  ...mono,
+                  color: THEME.textSecondary,
+                }}
+              >
+                Risk: ${result?.riskAmount || "0.00"}
+              </span>
+              {result && (
+                <Badge
+                  label={
+                    result.riskLevel === "LOW"
+                      ? t("tradeDesk.lowRisk")
+                      : result.riskLevel === "MEDIUM"
+                        ? t("tradeDesk.mediumRisk")
+                        : t("tradeDesk.highRisk")
+                  }
+                  color={
+                    result.riskLevel === "LOW"
+                      ? THEME.green
+                      : result.riskLevel === "MEDIUM"
+                        ? THEME.amber
+                        : THEME.red
+                  }
+                  small
+                />
+              )}
+            </div>
           </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {openTrades.map((trade) => (
-              <div key={trade.id} className="p-3 flex items-center gap-3" style={card}>
-                <div
-                  className="size-9 rounded-lg flex items-center justify-center shrink-0"
-                  style={{
-                    background:
-                      trade.direction === "long" ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
-                  }}
-                >
-                  {trade.direction === "long" ? (
-                    <ArrowUpRight className="size-4" style={{ color: "#22C55E" }} />
-                  ) : (
-                    <ArrowDownRight className="size-4" style={{ color: "#EF4444" }} />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold" style={mono}>
-                      {trade.pair}
-                    </span>
-                    <span
-                      className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded"
-                      style={{
-                        background:
-                          trade.direction === "long"
-                            ? "rgba(34,197,94,0.15)"
-                            : "rgba(239,68,68,0.15)",
-                        color: trade.direction === "long" ? "#22C55E" : "#EF4444",
-                      }}
-                    >
-                      {trade.direction.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="text-[10px]" style={{ ...mono, color: "#9CA3AF" }}>
-                    Entry: {trade.entry_price}
-                    {trade.stop_loss && ` · SL: ${trade.stop_loss}`}
-                    {trade.take_profit && ` · TP: ${trade.take_profit}`}
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="text-[9px]" style={{ ...mono, color: "#9CA3AF" }}>
-                    {new Date(trade.entry_date).toLocaleDateString()}
-                  </div>
-                  {trade.quantity && (
-                    <div className="text-[10px]" style={{ ...mono, color: "#9CA3AF" }}>
-                      {trade.quantity} lots
-                    </div>
-                  )}
+
+          {/* ── SAVE AS TRADE ── */}
+          <div
+            style={{
+              marginTop: "16px",
+              paddingTop: "16px",
+              borderTop: `1px solid ${THEME.border}`,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "12px",
+              }}
+            >
+              <Save className="size-3.5" style={{ color: THEME.green }} />
+              <span style={labelStyle}>Save as Trade</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              {/* Direction */}
+              <div className="flex flex-col gap-1.5">
+                <label style={labelStyle}>Direction</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={() => setDirection("long")}
+                    className="h-10 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-1 transition-colors"
+                    style={{
+                      background: direction === "long" ? `${THEME.green}20` : THEME.rowHoverStrong,
+                      border: `1px solid ${
+                        direction === "long" ? `${THEME.green}66` : THEME.border
+                      }`,
+                      color: direction === "long" ? THEME.green : THEME.textSecondary,
+                    }}
+                  >
+                    <ArrowUpRight className="size-3" />
+                    Long
+                  </button>
+                  <button
+                    onClick={() => setDirection("short")}
+                    className="h-10 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-1 transition-colors"
+                    style={{
+                      background: direction === "short" ? `${THEME.red}20` : THEME.rowHoverStrong,
+                      border: `1px solid ${
+                        direction === "short" ? `${THEME.red}66` : THEME.border
+                      }`,
+                      color: direction === "short" ? THEME.red : THEME.textSecondary,
+                    }}
+                  >
+                    <ArrowDownRight className="size-3" />
+                    Short
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
 
-        {openTradesTotal > TRADES_PAGE_SIZE && (
-          <PaginationBar
-            page={tradesPage}
-            pageSize={TRADES_PAGE_SIZE}
-            total={openTradesTotal}
-            onPageChange={setTradesPage}
-          />
-        )}
-      </div>
-    </div>
+              {/* Entry Price */}
+              <div className="flex flex-col gap-1.5">
+                <label style={labelStyle}>Entry Price</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={entryPrice}
+                  onChange={(e) => setEntryPrice(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full h-10 px-3 rounded-lg text-sm"
+                  style={{ ...inputStyle, ...mono }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={handleSaveAsTrade}
+                disabled={!entryPrice || saveMutation.isPending}
+                className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-lg text-xs font-bold transition-all"
+                style={{
+                  background:
+                    entryPrice && !saveMutation.isPending
+                      ? saveSuccess
+                        ? `${THEME.green}30`
+                        : THEME.green
+                      : THEME.rowHoverStrong,
+                  color: saveSuccess
+                    ? THEME.green
+                    : entryPrice && !saveMutation.isPending
+                      ? THEME.text
+                      : THEME.textSecondary,
+                  border: saveSuccess ? `1px solid ${THEME.green}66` : "none",
+                  opacity: !entryPrice || saveMutation.isPending ? 0.5 : 1,
+                }}
+              >
+                {saveMutation.isPending ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : saveSuccess ? (
+                  <>
+                    <Target className="size-3.5" />
+                    Saved!
+                  </>
+                ) : (
+                  <>
+                    <Save className="size-3.5" />
+                    Save Trade
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setShowCoach(!showCoach);
+                  setShowGovernor(false);
+                }}
+                disabled={!entryPrice}
+                className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all"
+                style={{
+                  background: showCoach ? `${THEME.cyan}20` : THEME.rowHoverStrong,
+                  border: `1px solid ${showCoach ? `${THEME.cyan}66` : THEME.border}`,
+                  color: showCoach ? THEME.cyan : THEME.textSecondary,
+                  opacity: !entryPrice ? 0.5 : 1,
+                }}
+                title="AI Coach — Get coaching feedback"
+              >
+                <MessageSquare className="size-3.5" />
+                <span className="hidden sm:inline">Coach</span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowGovernor(!showGovernor);
+                  setShowCoach(false);
+                }}
+                disabled={!entryPrice}
+                className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all"
+                style={{
+                  background: showGovernor ? `${THEME.amber}20` : THEME.rowHoverStrong,
+                  border: `1px solid ${showGovernor ? `${THEME.amber}66` : THEME.border}`,
+                  color: showGovernor ? THEME.amber : THEME.textSecondary,
+                  opacity: !entryPrice ? 0.5 : 1,
+                }}
+                title="Risk Governor — Assess trade risk"
+              >
+                <Shield className="size-3.5" />
+                <span className="hidden sm:inline">Risk</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ACTIVE POSITIONS */}
+        <div style={{ marginTop: "24px" }}>
+          <SectionTitle title={t("tradeDesk.activePositions")} count={openTrades.length} />
+
+          {openTrades.length === 0 ? (
+            <EmptyState
+              icon="📊"
+              title={t("tradeDesk.noPositions")}
+              message='Use "Save as Trade" above to log your first position.'
+            />
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+                padding: "0 16px 16px",
+              }}
+            >
+              {openTrades.map((trade) => (
+                <div key={trade.id} className="p-3 flex items-center gap-3" style={card}>
+                  <div
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      background:
+                        trade.direction === "long" ? `${THEME.green}18` : `${THEME.red}18`,
+                    }}
+                  >
+                    {trade.direction === "long" ? (
+                      <ArrowUpRight className="size-4" style={{ color: THEME.green }} />
+                    ) : (
+                      <ArrowDownRight className="size-4" style={{ color: THEME.red }} />
+                    )}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <span className="text-sm font-bold" style={mono}>
+                        {trade.pair}
+                      </span>
+                      <Badge
+                        label={trade.direction.toUpperCase()}
+                        color={trade.direction === "long" ? THEME.green : THEME.red}
+                        small
+                      />
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        ...mono,
+                        color: THEME.textSecondary,
+                        marginTop: "2px",
+                      }}
+                    >
+                      Entry: {trade.entry_price}
+                      {trade.stop_loss && ` · SL: ${trade.stop_loss}`}
+                      {trade.take_profit && ` · TP: ${trade.take_profit}`}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      textAlign: "right",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "9px",
+                        ...mono,
+                        color: THEME.textSecondary,
+                      }}
+                    >
+                      {new Date(trade.entry_date).toLocaleDateString()}
+                    </div>
+                    {trade.quantity && (
+                      <div
+                        style={{
+                          fontSize: "10px",
+                          ...mono,
+                          color: THEME.textSecondary,
+                        }}
+                      >
+                        {trade.quantity} lots
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {openTradesTotal > TRADES_PAGE_SIZE && (
+            <div style={{ padding: "0 16px 16px" }}>
+              <PaginationBar
+                page={tradesPage}
+                pageSize={TRADES_PAGE_SIZE}
+                total={openTradesTotal}
+                onPageChange={setTradesPage}
+              />
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+    </PageLayout>
   );
 }

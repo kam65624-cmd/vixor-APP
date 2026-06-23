@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserSettings, updateUserSettings } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { PageLayout, THEME, ScrollArea } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Vixor" }] }),
@@ -64,7 +65,7 @@ function ToggleSwitch({ enabled, onClick }: { enabled: boolean; onClick: () => v
         height: "20px",
         borderRadius: "10px",
         cursor: "pointer",
-        background: enabled ? "#10B981" : "rgba(255,255,255,0.1)",
+        background: enabled ? THEME.green : "rgba(255,255,255,0.1)",
         position: "relative",
         transition: "background 0.2s",
         flexShrink: 0,
@@ -75,7 +76,7 @@ function ToggleSwitch({ enabled, onClick }: { enabled: boolean; onClick: () => v
           width: "16px",
           height: "16px",
           borderRadius: "50%",
-          background: "#fff",
+          background: THEME.text,
           position: "absolute",
           top: "2px",
           left: enabled ? "18px" : "2px",
@@ -99,7 +100,7 @@ function SettingRow({ item, children }: { item: SettingItem; children?: React.Re
     >
       <div>
         <div style={{ fontSize: "11px", fontWeight: 600 }}>{item.label}</div>
-        <div style={{ fontSize: "9px", color: "#9CA3AF", marginTop: "2px" }}>{item.desc}</div>
+        <div style={{ fontSize: "9px", color: THEME.textSecondary, marginTop: "2px" }}>{item.desc}</div>
       </div>
       {children}
     </div>
@@ -232,36 +233,6 @@ function SettingsPage() {
     toastTimerRef.current = setTimeout(() => setShowToast(false), 2200);
   }, []);
 
-  // ── Loading state ──────────────────────────────────────────────────────────
-  if (settingsQuery.isLoading) {
-    return (
-      <div
-        style={{
-          fontFamily: "'Inter', system-ui, sans-serif",
-          color: "#FFFFFF",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "200px",
-          gap: "10px",
-        }}
-      >
-        <div
-          style={{
-            width: "16px",
-            height: "16px",
-            border: "2px solid rgba(255,255,255,0.1)",
-            borderTopColor: "#10B981",
-            borderRadius: "50%",
-            animation: "spin 0.6s linear infinite",
-          }}
-        />
-        <span style={{ fontSize: "12px", color: "#9CA3AF" }}>Loading settings…</span>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
-  }
-
   // ── Section definitions ────────────────────────────────────────────────────
   const sections: { title: string; items: SettingItem[] }[] = [
     {
@@ -307,9 +278,9 @@ function SettingsPage() {
       title: "Security & Account",
       items: [
         { type: "toggle-local", id: "twoFactor", label: "Two-Factor Auth", desc: "Add an extra layer of security to your account" },
-        { type: "button", label: "Change Password", desc: "Update your account password", btnText: "Change", btnColor: "#10B981" },
-        { type: "button", label: "Export Data", desc: "Download your trading history and portfolio data", btnText: "Export", btnColor: "#22C55E" },
-        { type: "button", label: "Delete Account", desc: "Permanently delete your account and all data", btnText: "Delete", btnColor: "#EF4444" },
+        { type: "button", label: "Change Password", desc: "Update your account password", btnText: "Change", btnColor: THEME.green },
+        { type: "button", label: "Export Data", desc: "Download your trading history and portfolio data", btnText: "Export", btnColor: THEME.accent },
+        { type: "button", label: "Delete Account", desc: "Permanently delete your account and all data", btnText: "Delete", btnColor: THEME.red },
       ],
     },
   ];
@@ -320,9 +291,9 @@ function SettingsPage() {
     fontWeight: 500,
     padding: "4px 8px",
     borderRadius: "4px",
-    border: "1px solid rgba(255,255,255,0.08)",
-    background: "rgba(255,255,255,0.04)",
-    color: "#FFFFFF",
+    border: `1px solid ${THEME.border}`,
+    background: THEME.borderLight,
+    color: THEME.text,
     width: "160px",
     outline: "none",
     font: "inherit",
@@ -349,8 +320,8 @@ function SettingsPage() {
                   borderRadius: "4px",
                   border: "none",
                   cursor: "pointer",
-                  color: oi === item.current ? "#fff" : "#9CA3AF",
-                  background: oi === item.current ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
+                  color: oi === item.current ? THEME.text : THEME.textSecondary,
+                  background: oi === item.current ? `${THEME.green}26` : THEME.borderLight,
                 }}
               >
                 {opt}
@@ -389,33 +360,7 @@ function SettingsPage() {
   };
 
   return (
-    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#FFFFFF", position: "relative" }}>
-      {/* Header */}
-      <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "16px" }}>&#9881;</span>
-          <span style={{ fontSize: "16px", fontWeight: 800 }}>Settings</span>
-        </div>
-        <button
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-          style={{
-            fontSize: "10px",
-            fontWeight: 700,
-            padding: "5px 14px",
-            borderRadius: "6px",
-            border: "none",
-            cursor: updateMutation.isPending ? "wait" : "pointer",
-            background: updateMutation.isPending ? "rgba(16,185,129,0.4)" : "#10B981",
-            color: "#fff",
-            transition: "background 0.2s, opacity 0.2s",
-            opacity: updateMutation.isPending ? 0.7 : 1,
-          }}
-        >
-          {updateMutation.isPending ? "Saving…" : "Save"}
-        </button>
-      </div>
-
+    <PageLayout title="⚙ Settings" loading={settingsQuery.isLoading} loadingColor={THEME.green}>
       {/* Toast indicator */}
       {showToast && (
         <div
@@ -424,9 +369,9 @@ function SettingsPage() {
             top: "10px",
             left: "50%",
             transform: "translateX(-50%)",
-            background: "rgba(34,197,94,0.15)",
-            border: "1px solid rgba(34,197,94,0.3)",
-            color: "#22C55E",
+            background: `${THEME.green}26`,
+            border: `1px solid ${THEME.green}4D`,
+            color: THEME.green,
             fontSize: "11px",
             fontWeight: 600,
             padding: "4px 14px",
@@ -453,9 +398,9 @@ function SettingsPage() {
         <div
           style={{
             padding: "6px 12px",
-            background: "rgba(239,68,68,0.1)",
-            borderBottom: "1px solid rgba(239,68,68,0.2)",
-            color: "#EF4444",
+            background: `${THEME.red}1A`,
+            borderBottom: `1px solid ${THEME.red}33`,
+            color: THEME.red,
             fontSize: "10px",
             fontWeight: 500,
           }}
@@ -464,14 +409,45 @@ function SettingsPage() {
         </div>
       )}
 
-      <div style={{ padding: "8px 12px", overflowY: "auto", maxHeight: "calc(100vh - 120px)" }}>
+      {/* Save button toolbar */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "8px 16px",
+          borderBottom: `1px solid ${THEME.border}`,
+          flexShrink: 0,
+        }}
+      >
+        <button
+          onClick={handleSave}
+          disabled={updateMutation.isPending}
+          style={{
+            fontSize: "10px",
+            fontWeight: 700,
+            padding: "5px 14px",
+            borderRadius: "6px",
+            border: "none",
+            cursor: updateMutation.isPending ? "wait" : "pointer",
+            background: updateMutation.isPending ? `${THEME.green}66` : THEME.green,
+            color: THEME.text,
+            transition: "background 0.2s, opacity 0.2s",
+            opacity: updateMutation.isPending ? 0.7 : 1,
+          }}
+        >
+          {updateMutation.isPending ? "Saving…" : "Save"}
+        </button>
+      </div>
+
+      {/* Scrollable sections */}
+      <ScrollArea style={{ padding: "8px 16px" }}>
         {sections.map((section) => (
           <div key={section.title} style={{ marginBottom: "12px" }}>
             <div
               style={{
                 fontSize: "11px",
                 fontWeight: 700,
-                color: "#9CA3AF",
+                color: THEME.textSecondary,
                 padding: "6px 0",
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
@@ -481,9 +457,9 @@ function SettingsPage() {
             </div>
             <div
               style={{
-                background: "#1E1E1E",
+                background: THEME.surfaceAlt,
                 borderRadius: "8px",
-                border: "1px solid rgba(255,255,255,0.06)",
+                border: `1px solid ${THEME.border}`,
                 overflow: "hidden",
               }}
             >
@@ -491,7 +467,7 @@ function SettingsPage() {
                 <div
                   key={item.type === "input" ? item.id : item.type === "toggle-local" || item.type === "toggle-server" ? item.id : i}
                   style={{
-                    borderBottom: i < section.items.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                    borderBottom: i < section.items.length - 1 ? `1px solid ${THEME.borderLight}` : "none",
                   }}
                 >
                   <SettingRow item={item}>{renderItemControl(item)}</SettingRow>
@@ -500,7 +476,7 @@ function SettingsPage() {
             </div>
           </div>
         ))}
-      </div>
-    </div>
+      </ScrollArea>
+    </PageLayout>
   );
 }

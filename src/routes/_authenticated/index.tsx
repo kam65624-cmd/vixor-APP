@@ -1,31 +1,25 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { memo, useState, useEffect } from "react";
+import { memo, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getDashboardData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { THEME, StatsRow, DataRow, ScrollArea, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Vixor — Solana Meme Coin Terminal" }] }),
   component: HomePage,
 });
 
-const C = {
-  bg: "#121212", surface: "#1E1E1E", surfaceLight: "#1A1A1A", surfaceHover: "#1E1E1E",
-  border: "rgba(255,255,255,0.06)", borderLight: "rgba(255,255,255,0.04)",
-  text: "#FFFFFF", textSecondary: "#9CA3AF", textTertiary: "#6B7280",
-  blue: "#10B981", blueLight: "#34D399", green: "#22C55E", red: "#EF4444",
-  yellow: "#F59E0B", purple: "#8B5CF6",
-};
-
 const QUICK_ACTIONS = [
-  { label: "Discover", icon: "\uD83D\uDD0D", to: "/discover" as const, color: "#10B981" },
-  { label: "AI Copilot", icon: "\uD83E\uDD16", to: "/copilot" as const, color: "#8B5CF6" },
-  { label: "Whale Alerts", icon: "\uD83D\uDC0B", to: "/whale" as const, color: "#10B981" },
-  { label: "PnL Tracker", icon: "\uD83D\uDCC8", to: "/pnl" as const, color: "#22C55E" },
-  { label: "Alpha Signals", icon: "\u26A1", to: "/alpha" as const, color: "#F59E0B" },
-  { label: "My Bags", icon: "\uD83C\uDF92", to: "/bags" as const, color: "#EC4899" },
+  { label: "Discover", icon: "🔍", to: "/discover" as const, color: THEME.green },
+  { label: "AI Copilot", icon: "🤖", to: "/copilot" as const, color: THEME.purple },
+  { label: "Whale Alerts", icon: "🐋", to: "/whale" as const, color: THEME.green },
+  { label: "PnL Tracker", icon: "📊", to: "/pnl" as const, color: THEME.green },
+  { label: "Alpha Signals", icon: "⚡", to: "/alpha" as const, color: THEME.amber },
+  { label: "My Bags", icon: "🏛️", to: "/bags" as const, color: THEME.pink },
 ];
 
+// ── Sparkline ──────────────────────────────────────────────────────────────
 const MiniSpark = memo(function MiniSpark({ up, small }: { up: boolean; small?: boolean }) {
   const w = small ? 48 : 60, h = small ? 16 : 20;
   const pts: string[] = [];
@@ -39,11 +33,133 @@ const MiniSpark = memo(function MiniSpark({ up, small }: { up: boolean; small?: 
   }
   return (
     <svg width={w} height={h} style={{ flexShrink: 0 }}>
-      <polyline points={pts.join(" ")} fill="none" stroke={up ? C.green : C.red} strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round" />
+      <polyline
+        points={pts.join(" ")} fill="none"
+        stroke={up ? THEME.green : THEME.red}
+        strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round"
+      />
     </svg>
   );
 });
 
+// ── Dashboard Card ─────────────────────────────────────────────────────────
+function Card({
+  children, style,
+}: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <div style={{
+      background: THEME.surface, borderRadius: "8px",
+      border: `1px solid ${THEME.border}`, overflow: "hidden", ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function CardHeader({
+  title, action, icon,
+}: { title: string; action?: { label: string; onClick: () => void }; icon?: string }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "8px 12px", borderBottom: `1px solid ${THEME.border}`,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        {icon && <span style={{ fontSize: "11px" }}>{icon}</span>}
+        <span style={{ fontSize: "11px", fontWeight: 700, color: THEME.text }}>{title}</span>
+      </div>
+      {action && (
+        <button
+          onClick={action.onClick}
+          style={{
+            fontSize: "9px", fontWeight: 600, color: THEME.accent,
+            background: "none", border: "none", cursor: "pointer", padding: 0,
+          }}
+        >
+          {action.label} →
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Holding Row ────────────────────────────────────────────────────────────
+function HoldingRow({ h, onClick }: { h: { symbol: string; value: number; pnlPct: number; up: boolean; amount: number }; onClick: () => void }) {
+  const fmt = (n: number) =>
+    n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : n >= 1_000 ? `$${(n / 1_000).toFixed(2)}K` : `$${n.toFixed(2)}`;
+
+  return (
+    <DataRow onClick={onClick} leftAccent={h.up ? THEME.green : THEME.red}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
+          <div style={{
+            width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0,
+            background: h.up ? `${THEME.green}15` : `${THEME.red}15`,
+            border: `1px solid ${h.up ? `${THEME.green}30` : `${THEME.red}30`}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "8px", fontWeight: 800, color: h.up ? THEME.green : THEME.red,
+          }}>
+            {h.symbol.slice(0, 2)}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, color: THEME.text }}>{h.symbol}</div>
+            <div style={{ fontSize: "9px", color: THEME.textSecondary }}>
+              {h.amount.toFixed(2)} tokens
+            </div>
+          </div>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "8px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: THEME.text }}>
+            {fmt(h.value)}
+          </div>
+          <div style={{
+            fontSize: "10px", fontWeight: 600,
+            fontFamily: "'JetBrains Mono', monospace",
+            color: h.up ? THEME.green : THEME.red,
+          }}>
+            {h.pnlPct >= 0 ? "+" : ""}{h.pnlPct.toFixed(1)}%
+          </div>
+        </div>
+      </div>
+    </DataRow>
+  );
+}
+
+// ── Signal Row ─────────────────────────────────────────────────────────────
+function SignalRow({ s }: { s: { token: string; type: string; reason: string; confidence: number; up?: boolean } }) {
+  const isBuy = s.type === "BUY";
+  return (
+    <div
+      style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "7px 12px", margin: "3px 4px", borderRadius: "6px", cursor: "pointer",
+        background: isBuy ? `${THEME.green}08` : `${THEME.red}08`,
+        border: `1px solid ${isBuy ? `${THEME.green}18` : `${THEME.red}18`}`,
+        transition: "background 0.15s",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = isBuy ? `${THEME.green}14` : `${THEME.red}14`)}
+      onMouseLeave={(e) => (e.currentTarget.style.background = isBuy ? `${THEME.green}08` : `${THEME.red}08`)}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, minWidth: 0 }}>
+        <span style={{
+          fontSize: "8px", fontWeight: 800, padding: "2px 5px", borderRadius: "3px",
+          background: isBuy ? `${THEME.green}25` : `${THEME.red}25`,
+          color: isBuy ? THEME.green : THEME.red, flexShrink: 0,
+        }}>{s.type}</span>
+        <span style={{ fontSize: "11px", fontWeight: 700, color: THEME.text, flexShrink: 0 }}>{s.token}</span>
+        <span style={{ fontSize: "9px", color: THEME.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.reason}</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0, marginLeft: "8px" }}>
+        <span style={{ fontSize: "11px", fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", width: "28px", textAlign: "right", color: THEME.amber }}>
+          {s.confidence}%
+        </span>
+        <MiniSpark up={isBuy} small />
+      </div>
+    </div>
+  );
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────
 function HomePage() {
   const navigate = useNavigate();
   const fetchDashboard = useStableServerFn(getDashboardData);
@@ -68,239 +184,206 @@ function HomePage() {
     n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : n >= 1_000 ? `$${(n / 1_000).toFixed(2)}K` : `$${n.toFixed(2)}`;
   const pnlFmt = (n: number) => (n >= 0 ? `+$${n.toFixed(2)}` : `-$${Math.abs(n).toFixed(2)}`);
 
+  const nav = useCallback((to: string) => navigate({ to: to as any }), [navigate]);
+
   return (
-    <div style={{ padding: "6px 8px", fontFamily: "'Inter', system-ui, sans-serif", color: C.text, minHeight: "100%" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
-        {/* LEFT COLUMN — Portfolio */}
+    <div style={{ background: THEME.bg, color: THEME.text, minHeight: "100%", fontFamily: "'Inter', system-ui, sans-serif" }}>
+      {/* Stats Bar */}
+      <StatsRow stats={[
+        { label: "Portfolio", value: fmt(totalValue), color: THEME.accent, icon: "💰" },
+        { label: "PnL", value: isLoading ? "..." : pnlFmt(totalPnl), color: totalPnl >= 0 ? THEME.green : THEME.red, icon: "📈", sub: totalPnlPct > 0 ? `+${totalPnlPct.toFixed(1)}%` : `${totalPnlPct.toFixed(1)}%` },
+        { label: "Trades", value: isLoading ? "..." : String(tradeCount), color: THEME.accent, icon: "📊" },
+        { label: "Signals", value: isLoading ? "..." : String(liveSignals.length), color: THEME.amber, icon: "⚡" },
+      ]} />
+
+      {/* 3-Column Grid — responsive: 3 cols desktop, 1 col mobile */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+        gap: "6px", padding: "6px",
+      }}>
+        {/* ── Column 1: Portfolio + Holdings + Activity ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <div style={{ background: C.surface, borderRadius: "8px", border: `1px solid ${C.border}`, padding: "12px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div>
-                <div style={{ fontSize: "10px", color: C.textSecondary, marginBottom: "4px" }}>Total Portfolio</div>
-                <div style={{ fontSize: "22px", fontWeight: 800, fontFamily: "monospace", lineHeight: 1 }}>{fmt(totalValue)}</div>
-                {tradeCount > 0 && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "6px" }}>
-                    <span style={{ fontSize: "11px", fontWeight: 700, fontFamily: "monospace", color: totalPnl >= 0 ? C.green : C.red }}>
-                      {pnlFmt(totalPnl)} ({totalPnlPct >= 0 ? "+" : ""}{totalPnlPct.toFixed(1)}%)
-                    </span>
-                    <span style={{ fontSize: "9px", color: C.textTertiary }}>{tradeCount} trades</span>
-                  </div>
-                )}
+          {/* Portfolio Summary */}
+          <Card>
+            <div style={{ padding: "14px 12px" }}>
+              <div style={{ fontSize: "10px", color: THEME.textSecondary, marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Total Portfolio Value
               </div>
-            </div>
-          </div>
-
-          <div style={{ background: C.surface, borderRadius: "8px", border: `1px solid ${C.border}`, overflow: "hidden", flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", borderBottom: `1px solid ${C.border}` }}>
-              <span style={{ fontSize: "11px", fontWeight: 700 }}>Holdings</span>
-              <span style={{ fontSize: "9px", color: C.blueLight, cursor: "pointer" }} onClick={() => navigate({ to: "/bags" })}>View All →</span>
-            </div>
-            {isLoading ? (
-              <div className="flex items-center justify-center" style={{ padding: "30px 0" }}>
-                <div style={{ width: 24, height: 24, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+              <div style={{ fontSize: "24px", fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1, color: THEME.text }}>
+                {isLoading ? "..." : fmt(totalValue)}
               </div>
-            ) : holdings.length > 0 ? holdings.map((h) => (
-              <div key={h.symbol} style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "7px 10px", borderBottom: `1px solid ${C.borderLight}`, cursor: "pointer",
-                transition: "background 0.1s",
-              }} onClick={() => navigate({ to: "/bags" })}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div style={{
-                    width: "26px", height: "26px", borderRadius: "50%",
-                    background: h.up ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "8px", fontWeight: 800, color: h.up ? C.green : C.red,
-                    flexShrink: 0, border: `1px solid ${h.up ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`,
-                  }}>{h.symbol.slice(0, 2)}</div>
-                  <div>
-                    <div style={{ fontSize: "11px", fontWeight: 700 }}>{h.symbol}</div>
-                    <div style={{ fontSize: "9px", color: C.textSecondary }}>{h.amount.toFixed(2)} tokens</div>
-                  </div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: "11px", fontWeight: 600, fontFamily: "monospace" }}>{fmt(h.value)}</div>
-                  <div style={{ fontSize: "10px", fontWeight: 600, fontFamily: "monospace", color: h.up ? C.green : C.red }}>
-                    {h.pnlPct >= 0 ? "+" : ""}{h.pnlPct.toFixed(1)}%
-                  </div>
-                </div>
-              </div>
-            )) : (
-              <div style={{ padding: "20px 10px", textAlign: "center", color: C.textTertiary, fontSize: "11px" }}>
-                No trades yet. <span style={{ color: C.blueLight, cursor: "pointer" }} onClick={() => navigate({ to: "/trade-desk" })}>Start trading →</span>
-              </div>
-            )}
-          </div>
-
-          {/* Recent Activity */}
-          <div style={{ background: C.surface, borderRadius: "8px", border: `1px solid ${C.border}`, overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", borderBottom: `1px solid ${C.border}` }}>
-              <span style={{ fontSize: "11px", fontWeight: 700 }}>Recent Activity</span>
-              <span style={{ fontSize: "9px", color: C.blueLight, cursor: "pointer" }} onClick={() => navigate({ to: "/pnl" })}>History →</span>
-            </div>
-            {isLoading ? null : recentActivity.length > 0 ? recentActivity.map((a, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", borderBottom: `1px solid ${C.borderLight}` }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: "10px", flexShrink: 0 }}>
-                    {a.type === "buy" ? "\uD83D\uDFE2" : "\uD83D\uDD34"}
+              {tradeCount > 0 && (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+                  <span style={{
+                    fontSize: "12px", fontWeight: 700,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    color: totalPnl >= 0 ? THEME.green : THEME.red,
+                  }}>
+                    {pnlFmt(totalPnl)} ({totalPnlPct >= 0 ? "+" : ""}{totalPnlPct.toFixed(1)}%)
                   </span>
-                  <span style={{ fontSize: "10px", color: C.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.msg}</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
-                  {a.pnl && <span style={{ fontSize: "10px", fontWeight: 600, fontFamily: "monospace", color: a.type === "sell" ? C.red : C.green }}>{a.pnl}</span>}
-                  <span style={{ fontSize: "8px", color: C.textTertiary }}>{a.time}</span>
-                </div>
-              </div>
-            )) : (
-              <div style={{ padding: "16px 10px", textAlign: "center", color: C.textTertiary, fontSize: "11px" }}>
-                No activity yet
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* CENTER COLUMN — Signals + Quick Actions */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <div style={{ background: C.surface, borderRadius: "8px", border: `1px solid ${C.border}`, overflow: "hidden", flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", borderBottom: `1px solid ${C.border}` }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ fontSize: "12px" }}>\u26A1</span>
-                <span style={{ fontSize: "11px", fontWeight: 700 }}>Live Signals</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: C.green, animation: "pulse 2s infinite" }} />
-                <span style={{ fontSize: "9px", color: C.textTertiary }}>AI-Powered</span>
-              </div>
-            </div>
-            <div style={{ padding: "4px" }}>
-              {isLoading ? (
-                <div className="flex items-center justify-center" style={{ padding: "30px 0" }}>
-                  <div style={{ width: 24, height: 24, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-                </div>
-              ) : liveSignals.length > 0 ? liveSignals.map((s) => {
-                const isBuy = s.type === "BUY";
-                return (
-                  <div key={s.token + s.type} style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "7px 8px", marginBottom: "3px", borderRadius: "6px", cursor: "pointer",
-                    background: isBuy ? "rgba(34,197,94,0.04)" : "rgba(239,68,68,0.04)",
-                    border: `1px solid ${isBuy ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)"}`,
-                    transition: "background 0.15s",
-                  }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = isBuy ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = isBuy ? "rgba(34,197,94,0.04)" : "rgba(239,68,68,0.04)")}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, minWidth: 0 }}>
-                      <span style={{
-                        fontSize: "8px", fontWeight: 800, padding: "2px 5px", borderRadius: "3px",
-                        background: isBuy ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)",
-                        color: isBuy ? C.green : C.red, flexShrink: 0,
-                      }}>{s.type}</span>
-                      <span style={{ fontSize: "11px", fontWeight: 700, flexShrink: 0 }}>{s.token}</span>
-                      <span style={{ fontSize: "9px", color: C.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.reason}</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0, marginLeft: "8px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 800, fontFamily: "monospace", width: "28px", textAlign: "right", color: C.yellow }}>{s.confidence}%</span>
-                      <MiniSpark up={isBuy} small />
-                    </div>
-                  </div>
-                );
-              }) : (
-                <div style={{ padding: "30px 10px", textAlign: "center", color: C.textTertiary, fontSize: "11px" }}>
-                  No signals available yet
+                  <span style={{ fontSize: "9px", color: THEME.textMuted }}>{tradeCount} trades</span>
                 </div>
               )}
             </div>
-          </div>
+          </Card>
+
+          {/* Holdings */}
+          <Card style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <CardHeader title="Holdings" action={{ label: "View All", onClick: () => nav("/bags") }} />
+            <ScrollArea style={{ flex: 1 }}>
+              {isLoading
+                ? Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} />)
+                : holdings.length > 0
+                  ? holdings.map((h) => <HoldingRow key={h.symbol} h={h} onClick={() => nav("/bags")} />)
+                  : (
+                    <div style={{ padding: "24px 12px", textAlign: "center" }}>
+                      <EmptyState icon="🏛️" title="No Holdings" message="Start trading to see your holdings here" />
+                    </div>
+                  )
+              }
+            </ScrollArea>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card>
+            <CardHeader title="Recent Activity" action={{ label: "History", onClick: () => nav("/pnl") }} />
+            <ScrollArea style={{ maxHeight: "200px" }}>
+              {isLoading ? null : recentActivity.length > 0
+                ? recentActivity.map((a, i) => (
+                  <DataRow key={i}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, minWidth: 0 }}>
+                        <span style={{ fontSize: "10px", flexShrink: 0 }}>{a.type === "buy" ? "🟢" : "🔴"}</span>
+                        <span style={{ fontSize: "10px", color: THEME.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {a.msg}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+                        {a.pnl && (
+                          <span style={{
+                            fontSize: "10px", fontWeight: 600,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            color: a.type === "sell" ? THEME.red : THEME.green,
+                          }}>
+                            {a.pnl}
+                          </span>
+                        )}
+                        <span style={{ fontSize: "8px", color: THEME.textMuted }}>{a.time}</span>
+                      </div>
+                    </div>
+                  </DataRow>
+                ))
+                : <EmptyState icon="📋" title="No Activity" message="Your recent trades and actions will appear here" />
+              }
+            </ScrollArea>
+          </Card>
+        </div>
+
+        {/* ── Column 2: Signals + Quick Actions ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          {/* Live Signals */}
+          <Card style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <CardHeader
+              title="Live Signals"
+              icon="⚡"
+              action={{ label: "All Signals", onClick: () => nav("/signals") }}
+            />
+            <div style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 12px 0" }}>
+              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: THEME.green, animation: "pulse 2s infinite" }} />
+              <span style={{ fontSize: "9px", color: THEME.textMuted }}>AI-Powered</span>
+            </div>
+            <ScrollArea style={{ flex: 1, padding: "4px 0" }}>
+              {isLoading
+                ? <div style={{ padding: "30px 0" }}><SkeletonRow /><SkeletonRow /><SkeletonRow /></div>
+                : liveSignals.length > 0
+                  ? liveSignals.map((s) => <SignalRow key={s.token + s.type} s={s} />)
+                  : <EmptyState icon="📡" title="No Signals" message="AI signal generation is in progress. Check back soon." />
+              }
+            </ScrollArea>
+          </Card>
 
           {/* Quick Actions */}
-          <div style={{ background: C.surface, borderRadius: "8px", border: `1px solid ${C.border}`, overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderBottom: `1px solid ${C.border}` }}>
-              <span style={{ fontSize: "11px", fontWeight: 700 }}>Quick Actions</span>
-            </div>
+          <Card>
+            <CardHeader title="Quick Actions" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "4px", padding: "6px" }}>
               {QUICK_ACTIONS.map((a) => (
-                <button key={a.label} onClick={() => navigate({ to: a.to })} style={{
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
-                  padding: "10px 4px", borderRadius: "6px", cursor: "pointer",
-                  background: C.surfaceLight, border: `1px solid ${C.border}`,
-                  color: C.textSecondary, fontSize: "10px", fontWeight: 500,
-                  transition: "all 0.15s",
-                }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = C.surfaceHover; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = C.surfaceLight; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; }}
+                <button
+                  key={a.label} onClick={() => nav(a.to)}
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
+                    padding: "10px 4px", borderRadius: "6px", cursor: "pointer",
+                    background: THEME.surfaceAlt, border: `1px solid ${THEME.border}`,
+                    color: THEME.textSecondary, fontSize: "10px", fontWeight: 500,
+                    transition: "all 0.15s",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = THEME.rowHoverStrong; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = THEME.surfaceAlt; e.currentTarget.style.borderColor = THEME.border; }}
                 >
                   <span style={{ fontSize: "16px" }}>{a.icon}</span>
                   {a.label}
                 </button>
               ))}
             </div>
-          </div>
+          </Card>
         </div>
 
-        {/* RIGHT COLUMN — Trending from signals */}
+        {/* ── Column 3: Analyses + Stats ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <div style={{ background: C.surface, borderRadius: "8px", border: `1px solid ${C.border}`, overflow: "hidden", flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", borderBottom: `1px solid ${C.border}` }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ fontSize: "12px" }}>\uD83D\uDCA0</span>
-                <span style={{ fontSize: "11px", fontWeight: 700 }}>Latest Analyses</span>
-              </div>
-              <span style={{ fontSize: "9px", color: C.blueLight, cursor: "pointer" }} onClick={() => navigate({ to: "/analyze" as any })}>Analyze →</span>
-            </div>
-            {isLoading ? (
-              <div className="flex items-center justify-center" style={{ padding: "30px 0" }}>
-                <div style={{ width: 24, height: 24, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-              </div>
-            ) : liveSignals.length > 0 ? liveSignals.map((s, i) => (
-              <div key={i} style={{
-                display: "flex", alignItems: "flex-start", gap: "6px",
-                padding: "8px 10px", borderBottom: `1px solid ${C.borderLight}`, cursor: "pointer",
-              }}
-                onClick={() => navigate({ to: "/signals" })}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >
-                <span style={{ fontSize: "10px", marginTop: "1px", color: C.textTertiary, flexShrink: 0, width: "14px" }}>{i + 1}.</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: "10px", color: C.textSecondary, lineHeight: 1.4 }}>
-                    <span style={{ fontWeight: 700, color: s.type === "BUY" ? C.green : s.type === "SELL" ? C.red : C.yellow }}>{s.token}</span>
-                    {" "}{s.reason}
-                  </span>
-                </div>
-              </div>
-            )) : (
-              <div style={{ padding: "30px 10px", textAlign: "center", color: C.textTertiary, fontSize: "11px" }}>
-                Run an analysis to see results here
-              </div>
-            )}
-          </div>
+          {/* Latest Analyses */}
+          <Card style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <CardHeader
+              title="Latest Analyses"
+              icon="🔬"
+              action={{ label: "Analyze", onClick: () => nav("/analyze") }}
+            />
+            <ScrollArea style={{ flex: 1 }}>
+              {isLoading
+                ? <div style={{ padding: "20px 0" }}><SkeletonRow /><SkeletonRow /></div>
+                : liveSignals.length > 0
+                  ? liveSignals.map((s, i) => (
+                    <DataRow key={i} onClick={() => nav("/signals")}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                        <span style={{ fontSize: "10px", marginTop: "1px", color: THEME.textMuted, flexShrink: 0, width: "14px" }}>{i + 1}.</span>
+                        <span style={{ fontSize: "10px", color: THEME.textSecondary, lineHeight: 1.4 }}>
+                          <span style={{ fontWeight: 700, color: s.type === "BUY" ? THEME.green : s.type === "SELL" ? THEME.red : THEME.amber }}>
+                            {s.token}
+                          </span>{" "}{s.reason}
+                        </span>
+                      </div>
+                    </DataRow>
+                  ))
+                  : <EmptyState icon="🧠" title="No Analyses" message="Run your first AI analysis to see results here" />
+              }
+            </ScrollArea>
+          </Card>
 
-          {/* Stats */}
-          <div style={{ background: C.surface, borderRadius: "8px", border: `1px solid ${C.border}`, overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderBottom: `1px solid ${C.border}` }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ fontSize: "12px" }}>\uD83D\uDCCA</span>
-                <span style={{ fontSize: "11px", fontWeight: 700 }}>Stats</span>
-              </div>
-            </div>
-            <div style={{ padding: "8px 10px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+          {/* Mini Stats Grid */}
+          <Card>
+            <CardHeader title="Stats" icon="📊" />
+            <div style={{ padding: "8px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
               {[
-                { label: "Total Trades", value: String(tradeCount), color: C.blue },
-                { label: "Holdings", value: String(holdings.length), color: C.purple },
-                { label: "Signals", value: String(liveSignals.length), color: C.yellow },
-                { label: "PnL", value: pnlFmt(totalPnl), color: totalPnl >= 0 ? C.green : C.red },
+                { label: "Total Trades", value: String(tradeCount), color: THEME.accent },
+                { label: "Holdings", value: String(holdings.length), color: THEME.purple },
+                { label: "Signals", value: String(liveSignals.length), color: THEME.amber },
+                { label: "PnL", value: pnlFmt(totalPnl), color: totalPnl >= 0 ? THEME.green : THEME.red },
               ].map((s) => (
-                <div key={s.label} style={{ padding: "8px", background: C.surfaceLight, borderRadius: "6px" }}>
-                  <div style={{ fontSize: "8px", color: C.textTertiary, textTransform: "uppercase", letterSpacing: "0.05em" }}>{s.label}</div>
-                  <div style={{ fontSize: "14px", fontWeight: 800, fontFamily: "monospace", color: s.color, marginTop: "2px" }}>{isLoading ? "..." : s.value}</div>
+                <div key={s.label} style={{
+                  padding: "10px 8px", background: THEME.surfaceAlt, borderRadius: "6px", textAlign: "center",
+                }}>
+                  <div style={{ fontSize: "8px", color: THEME.textMuted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    {s.label}
+                  </div>
+                  <div style={{
+                    fontSize: "14px", fontWeight: 800,
+                    fontFamily: "'JetBrains Mono', monospace", color: s.color, marginTop: "2px",
+                  }}>
+                    {isLoading ? "..." : s.value}
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </div>

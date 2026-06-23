@@ -17,57 +17,40 @@ import {
   ShoppingBag,
   ChevronDown,
 } from "lucide-react";
+import { THEME, PageLayout, StatsRow, EmptyState, ScrollArea } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/experiments")({
   head: () => ({ meta: [{ title: "Experiments — Vixor" }] }),
   component: ExperimentsPage,
 });
 
-// ── Axiom Design System ──
-const S = {
-  bg: "#121212",
-  card: "#1A1A1A",
-  cardBorder: "1px solid rgba(255,255,255,0.06)",
-  divider: "1px solid rgba(255,255,255,0.06)",
-  text1: "#FFFFFF",
-  text2: "#9CA3AF",
-  text3: "#6B7280",
-  accent: "#10B981",
-  accentLight: "#34D399",
-  bullish: "#22C55E",
-  bearish: "#EF4444",
-  warning: "#F59E0B",
-  font: "'Inter', system-ui, sans-serif",
-  mono: "'JetBrains Mono', monospace",
-  radius: 8,
-  badgeRadius: 6,
-} as const;
+// ── Local style constants using THEME ──
 
 const cardStyle: React.CSSProperties = {
-  background: S.card,
-  border: S.cardBorder,
-  borderRadius: S.radius,
+  background: THEME.surface,
+  border: `1px solid ${THEME.border}`,
+  borderRadius: 8,
 };
 
 const labelStyle: React.CSSProperties = {
   fontSize: 10,
   textTransform: "uppercase",
   fontWeight: 700,
-  color: S.text2,
+  color: THEME.textSecondary,
   marginBottom: 6,
   display: "block",
 };
 
 const inputStyle: React.CSSProperties = {
-  background: S.card,
-  border: S.cardBorder,
-  color: S.text1,
-  borderRadius: S.badgeRadius,
+  background: THEME.surface,
+  border: `1px solid ${THEME.border}`,
+  color: THEME.text,
+  borderRadius: 6,
   height: 36,
   paddingLeft: 12,
   paddingRight: 12,
   fontSize: 14,
-  fontFamily: S.mono,
+  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
   width: "100%",
   outline: "none",
   boxSizing: "border-box",
@@ -158,17 +141,17 @@ function extractRankedCount(result: Record<string, unknown> | null): number {
 
 function StatusBadge({ status }: { status: ExperimentStatus }) {
   const config: Record<string, { bg: string; color: string; border: string }> = {
-    running: { bg: "rgba(16,185,129,0.1)", color: S.accent, border: "rgba(16,185,129,0.2)" },
-    completed: { bg: "rgba(34,197,94,0.1)", color: S.bullish, border: "rgba(34,197,94,0.2)" },
-    failed: { bg: "rgba(239,68,68,0.1)", color: S.bearish, border: "rgba(239,68,68,0.2)" },
-    cancelled: { bg: "rgba(255,255,255,0.04)", color: S.text2, border: "rgba(255,255,255,0.06)" },
+    running: { bg: "rgba(16,185,129,0.1)", color: THEME.accentDeep, border: "rgba(16,185,129,0.2)" },
+    completed: { bg: "rgba(34,197,94,0.1)", color: THEME.green, border: "rgba(34,197,94,0.2)" },
+    failed: { bg: "rgba(239,68,68,0.1)", color: THEME.red, border: "rgba(239,68,68,0.2)" },
+    cancelled: { bg: "rgba(255,255,255,0.04)", color: THEME.textSecondary, border: "rgba(255,255,255,0.06)" },
   };
   const c = config[status] || config.cancelled;
   return (
     <span style={{
-      display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: S.badgeRadius,
+      display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 6,
       fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
-      background: c.bg, color: c.color, border: `1px solid ${c.border}`, fontFamily: S.font,
+      background: c.bg, color: c.color, border: `1px solid ${c.border}`,
     }}>
       {status === "running" && <Loader2 style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }} />}
       {status === "completed" && <CheckCircle2 style={{ width: 12, height: 12 }} />}
@@ -209,11 +192,11 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
   const rankedCount = extractRankedCount(experiment.result);
 
   const gradeColor: Record<string, string> = {
-    A: S.bullish,
-    B: S.accent,
-    C: S.warning,
-    D: S.bearish,
-    F: S.bearish,
+    A: THEME.green,
+    B: THEME.accentDeep,
+    C: THEME.amber,
+    D: THEME.red,
+    F: THEME.red,
   };
 
   const iconBg = experiment.status === "running"
@@ -223,13 +206,13 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
       : "rgba(239,68,68,0.1)";
 
   const iconColor = experiment.status === "running"
-    ? S.accent
+    ? THEME.accentDeep
     : experiment.status === "completed"
-      ? S.bullish
-      : S.bearish;
+      ? THEME.green
+      : THEME.red;
 
   return (
-    <div style={{ ...cardStyle, border: S.cardBorder, overflow: "hidden" }}>
+    <div style={{ ...cardStyle, border: `1px solid ${THEME.border}`, overflow: "hidden" }}>
       {/* Main row */}
       <div
         style={{ padding: 16, cursor: "pointer" }}
@@ -239,12 +222,12 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
       >
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 40, height: 40, borderRadius: S.radius, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 40, height: 40, borderRadius: 8, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <FlaskConical style={{ width: 20, height: 20, color: iconColor }} />
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: S.text1 }}>{experiment.config.name}</div>
-              <div style={{ fontSize: 12, color: S.text2, fontFamily: S.mono }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: THEME.text }}>{experiment.config.name}</div>
+              <div style={{ fontSize: 12, color: THEME.textSecondary, fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
                 {experiment.config.assetSymbol} · {experiment.config.timeframe}
               </div>
             </div>
@@ -252,7 +235,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <StatusBadge status={experiment.status} />
             <ChevronDown
-              style={{ width: 16, height: 16, color: S.text3, transition: "transform 200ms", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+              style={{ width: 16, height: 16, color: THEME.textMuted, transition: "transform 200ms", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
             />
           </div>
         </div>
@@ -260,28 +243,28 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
         {/* Quick stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
               Created
             </div>
-            <div style={{ fontSize: 11, fontFamily: S.mono, color: S.text1 }}>{formatDate(experiment.created_at)}</div>
+            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.text }}>{formatDate(experiment.created_at)}</div>
           </div>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
               Generations
             </div>
-            <div style={{ fontSize: 11, fontFamily: S.mono, fontWeight: 700, color: S.text1 }}>{experiment.config.generations}</div>
+            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontWeight: 700, color: THEME.text }}>{experiment.config.generations}</div>
           </div>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
               Population
             </div>
-            <div style={{ fontSize: 11, fontFamily: S.mono, color: S.text1 }}>{experiment.config.populationSize}</div>
+            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.text }}>{experiment.config.populationSize}</div>
           </div>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
               Duration
             </div>
-            <div style={{ fontSize: 11, fontFamily: S.mono, color: S.text1 }}>
+            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.text }}>
               {elapsedMs ? `${(elapsedMs / 1000).toFixed(1)}s` : "---"}
             </div>
           </div>
@@ -290,51 +273,51 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
 
       {/* Expanded details */}
       {expanded && (
-        <div style={{ borderTop: S.divider, padding: 16, display: "flex", flexDirection: "column", gap: 12, background: "rgba(10,14,26,0.5)" }}>
+        <div style={{ borderTop: `1px solid ${THEME.border}`, padding: 16, display: "flex", flexDirection: "column", gap: 12, background: "rgba(10,14,26,0.5)" }}>
           {experiment.status === "completed" && bestScore ? (
             <>
               {/* Score summary */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg, border: S.cardBorder }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg, border: `1px solid ${THEME.border}` }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
                     Overall Score
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: S.accent }}>
+                    <span style={{ fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.accentDeep }}>
                       {bestScore.overall}
                     </span>
-                    <span style={{ fontSize: 18, fontWeight: 700, color: gradeColor[bestScore.grade] || S.text2 }}>
+                    <span style={{ fontSize: 18, fontWeight: 700, color: gradeColor[bestScore.grade] || THEME.textSecondary }}>
                       {bestScore.grade}
                     </span>
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg, border: S.cardBorder }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg, border: `1px solid ${THEME.border}` }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
                     Total Return
                   </div>
                   <div style={{
-                    fontSize: 18, fontWeight: 700, fontFamily: S.mono,
-                    color: bestScore.totalReturn > 0 ? S.bullish : S.bearish,
+                    fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    color: bestScore.totalReturn > 0 ? THEME.green : THEME.red,
                   }}>
                     {bestScore.totalReturn > 0 ? "+" : ""}
                     {bestScore.totalReturn}%
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg, border: S.cardBorder }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg, border: `1px solid ${THEME.border}` }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
                     Max Drawdown
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: S.bearish }}>
+                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.red }}>
                     -{bestScore.maxDrawdown}%
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg, border: S.cardBorder }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg, border: `1px solid ${THEME.border}` }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
                     Sharpe Ratio
                   </div>
                   <div style={{
-                    fontSize: 18, fontWeight: 700, fontFamily: S.mono,
-                    color: bestScore.sharpe > 1.5 ? S.bullish : bestScore.sharpe > 1 ? S.accent : S.bearish,
+                    fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    color: bestScore.sharpe > 1.5 ? THEME.green : bestScore.sharpe > 1 ? THEME.accentDeep : THEME.red,
                   }}>
                     {bestScore.sharpe}
                   </div>
@@ -343,32 +326,32 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
 
               {/* Strategy info */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginTop: 8 }}>
-                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
                     Template
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: S.mono, color: S.text1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.text }}>
                     {experiment.config.strategyTemplate}
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
                     Ranked Strategies
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: S.mono, color: S.text1 }}>{rankedCount}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.text }}>{rankedCount}</div>
                 </div>
               </div>
             </>
           ) : experiment.status === "running" ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: S.text2 }}>
-              <Loader2 style={{ width: 16, height: 16, color: S.accent, animation: "spin 1s linear infinite" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: THEME.textSecondary }}>
+              <Loader2 style={{ width: 16, height: 16, color: THEME.accentDeep, animation: "spin 1s linear infinite" }} />
               <span>
                 {translate("experiments.runningMsg") ||
                   "Experiment is running... Results will appear here once complete."}
               </span>
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: S.bearish }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: THEME.red }}>
               <XCircle style={{ width: 16, height: 16 }} />
               <span>
                 {translate("experiments.failedMsg") ||
@@ -500,295 +483,245 @@ function ExperimentsPage() {
     .filter((s): s is BestScoreSummary => s !== null)
     .sort((a, b) => b.overall - a.overall)[0];
 
-  // Show loading
-  if (me.isLoading) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 24, fontFamily: S.font }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: S.accent, marginBottom: 2 }}>
-              {useT("signals.vixorIntelligence") || "VIXOR ENGINE"}
-            </div>
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: S.text1, margin: 0, letterSpacing: "-0.02em" }}>
-              {useT("experiments.title") || "Experiments"}
-            </h1>
-          </div>
-        </div>
-        <div style={{ ...cardStyle, border: S.cardBorder, padding: 24, textAlign: "center" }}>
-          <Loader2 style={{ width: 24, height: 24, color: S.accent, animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
-          <div style={{ fontSize: 14, color: S.text2 }}>
-            {useT("common.loading") || "Loading..."}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 24, fontFamily: S.font }}>
-      {/* Header + Points Balance */}
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: S.accent, marginBottom: 2 }}>
-            {useT("signals.vixorIntelligence") || "VIXOR ENGINE"}
-          </div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: S.text1, margin: 0, letterSpacing: "-0.02em" }}>
-            {useT("experiments.title") || "Experiments"}
-          </h1>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <PageLayout
+      title={useT("experiments.title") || "Experiments"}
+      badge={useT("signals.vixorIntelligence") || "VIXOR ENGINE"}
+      badgeColor={THEME.accentDeep}
+      loading={me.isLoading}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 24 }}>
+        {/* Points Balance + New Experiment Button */}
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
           <div style={{
-            display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: S.badgeRadius,
+            display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 6,
             fontSize: 12, fontWeight: 700,
             background: hasEnoughPoints ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.1)",
-            color: hasEnoughPoints ? S.accentLight : S.bearish,
+            color: hasEnoughPoints ? THEME.accent : THEME.red,
           }}>
             <Coins style={{ width: 14, height: 14 }} />
             <span>{pointsBalance}</span>
-            <span style={{ color: S.text2, fontWeight: 400 }}>{useT("common.points") || "pts"}</span>
+            <span style={{ color: THEME.textSecondary, fontWeight: 400 }}>{useT("common.points") || "pts"}</span>
           </div>
           <button
             onClick={() => setShowNewForm((prev) => !prev)}
             style={{
-              height: 36, padding: "0 12px", borderRadius: S.radius, background: S.accent, color: "#fff",
+              height: 36, padding: "0 12px", borderRadius: 8, background: THEME.accentDeep, color: "#fff",
               fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
-              border: "none", cursor: "pointer", fontFamily: S.font,
+              border: "none", cursor: "pointer",
             }}
           >
             <Plus style={{ width: 14, height: 14 }} />
             {useT("experiments.newExperiment") || "New Experiment"}
           </button>
         </div>
-      </div>
 
-      {/* New experiment form */}
-      {showNewForm && (
-        <div style={{ ...cardStyle, border: S.cardBorder, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <FlaskConical style={{ width: 16, height: 16, color: S.accent }} />
-            <span style={{ fontSize: 14, fontWeight: 700, color: S.text1 }}>
-              {useT("experiments.newExperiment") || "New Experiment"}
-            </span>
-            <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: S.accent }}>
-              -{EXPERIMENT_COST} pts
-            </span>
-          </div>
-
-          {/* Insufficient points warning */}
-          {!hasEnoughPoints && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, borderRadius: S.badgeRadius, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}>
-              <AlertTriangle style={{ width: 16, height: 16, color: S.bearish, flexShrink: 0 }} />
-              <span style={{ fontSize: 12, color: S.bearish }}>
-                {useT("experiments.needMorePoints") ||
-                  `You need ${EXPERIMENT_COST} points. You have ${pointsBalance}.`}
+        {/* New experiment form */}
+        {showNewForm && (
+          <div style={{ ...cardStyle, border: `1px solid ${THEME.border}`, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <FlaskConical style={{ width: 16, height: 16, color: THEME.accentDeep }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: THEME.text }}>
+                {useT("experiments.newExperiment") || "New Experiment"}
               </span>
-              <a
-                href="/premium"
-                style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: S.accent, whiteSpace: "nowrap", textDecoration: "none" }}
-              >
-                {useT("premium.getPoints") || "Get Points"}
-              </a>
+              <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: THEME.accentDeep }}>
+                -{EXPERIMENT_COST} pts
+              </span>
             </div>
-          )}
 
-          {/* Name */}
-          <div>
-            <label style={labelStyle}>{useT("experiments.experimentName") || "Experiment Name"}</label>
-            <input
-              type="text"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="e.g. SMA Crossover - BTC/USDT"
-              style={{ ...inputStyle, fontFamily: S.font }}
-            />
-          </div>
-
-          {/* Asset + Timeframe */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-            <div>
-              <label style={labelStyle}>{useT("experiments.assetSymbol") || "Asset Symbol"}</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {ASSET_SYMBOLS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setNewAsset(s)}
-                    style={{
-                      padding: "0 10px", height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700, cursor: "pointer",
-                      background: newAsset === s ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
-                      color: newAsset === s ? S.accentLight : S.text2,
-                      border: newAsset === s ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(255,255,255,0.06)",
-                    }}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label style={labelStyle}>{useT("experiments.timeframe") || "Timeframe"}</label>
-              <div style={{ display: "flex", gap: 6 }}>
-                {TIMEFRAMES.map((tf) => (
-                  <button
-                    key={tf}
-                    onClick={() => setNewTimeframe(tf)}
-                    style={{
-                      flex: 1, height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700,
-                      border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                      background: newTimeframe === tf ? "rgba(16,185,129,0.15)" : S.card,
-                      borderColor: newTimeframe === tf ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
-                      color: newTimeframe === tf ? S.accentLight : S.text2,
-                    }}
-                  >
-                    {tf}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Strategy */}
-          <div>
-            <label style={labelStyle}>{useT("experiments.strategyTemplate") || "Strategy Template"}</label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {STRATEGY_TEMPLATES.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setNewStrategy(s.id)}
-                  style={{
-                    padding: "0 10px", height: 28, borderRadius: S.badgeRadius, fontSize: 11, fontWeight: 700,
-                    border: "1px solid", cursor: "pointer",
-                    background: newStrategy === s.id ? "rgba(16,185,129,0.15)" : S.card,
-                    borderColor: newStrategy === s.id ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
-                    color: newStrategy === s.id ? S.accentLight : S.text2,
-                  }}
+            {/* Insufficient points warning */}
+            {!hasEnoughPoints && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, borderRadius: 6, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                <AlertTriangle style={{ width: 16, height: 16, color: THEME.red, flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: THEME.red }}>
+                  {useT("experiments.needMorePoints") ||
+                    `You need ${EXPERIMENT_COST} points. You have ${pointsBalance}.`}
+                </span>
+                <a
+                  href="/premium"
+                  style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: THEME.accentDeep, whiteSpace: "nowrap", textDecoration: "none" }}
                 >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          </div>
+                  {useT("premium.getPoints") || "Get Points"}
+                </a>
+              </div>
+            )}
 
-          {/* Generations + Population */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+            {/* Name */}
             <div>
-              <label style={labelStyle}>{useT("experiments.generations") || "Generations"}</label>
+              <label style={labelStyle}>{useT("experiments.experimentName") || "Experiment Name"}</label>
               <input
-                type="number"
-                min={1}
-                max={20}
-                value={newGenerations}
-                onChange={(e) => setNewGenerations(Number(e.target.value))}
-                style={inputStyle}
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g. SMA Crossover - BTC/USDT"
+                style={{ ...inputStyle, fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
               />
             </div>
+
+            {/* Asset + Timeframe */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+              <div>
+                <label style={labelStyle}>{useT("experiments.assetSymbol") || "Asset Symbol"}</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {ASSET_SYMBOLS.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setNewAsset(s)}
+                      style={{
+                        padding: "0 10px", height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                        background: newAsset === s ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
+                        color: newAsset === s ? THEME.accent : THEME.textSecondary,
+                        border: newAsset === s ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                      }}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label style={labelStyle}>{useT("experiments.timeframe") || "Timeframe"}</label>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {TIMEFRAMES.map((tf) => (
+                    <button
+                      key={tf}
+                      onClick={() => setNewTimeframe(tf)}
+                      style={{
+                        flex: 1, height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700,
+                        border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                        background: newTimeframe === tf ? "rgba(16,185,129,0.15)" : THEME.surface,
+                        borderColor: newTimeframe === tf ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
+                        color: newTimeframe === tf ? THEME.accent : THEME.textSecondary,
+                      }}
+                    >
+                      {tf}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Strategy */}
             <div>
-              <label style={labelStyle}>{useT("experiments.populationSize") || "Population Size"}</label>
-              <input
-                type="number"
-                min={4}
-                max={50}
-                value={newPopulation}
-                onChange={(e) => setNewPopulation(Number(e.target.value))}
-                style={inputStyle}
-              />
+              <label style={labelStyle}>{useT("experiments.strategyTemplate") || "Strategy Template"}</label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {STRATEGY_TEMPLATES.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setNewStrategy(s.id)}
+                    style={{
+                      padding: "0 10px", height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700,
+                      border: "1px solid", cursor: "pointer",
+                      background: newStrategy === s.id ? "rgba(16,185,129,0.15)" : THEME.surface,
+                      borderColor: newStrategy === s.id ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
+                      color: newStrategy === s.id ? THEME.accent : THEME.textSecondary,
+                    }}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <button
-            onClick={handleCreate}
-            disabled={creating || !newName.trim() || !hasEnoughPoints}
-            style={{
-              width: "100%", height: 44, borderRadius: S.radius, fontWeight: 700,
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              border: "none", cursor: "pointer", opacity: (creating || !newName.trim() || !hasEnoughPoints) ? 0.5 : 1,
-              background: hasEnoughPoints ? S.accent : S.text3,
-              color: hasEnoughPoints ? "#fff" : S.text2,
-              fontFamily: S.font, fontSize: 14,
-            }}
-          >
-            {creating ? (
-              <>
-                <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} />
-                {useT("experiments.starting") || "Starting experiment..."}
-              </>
-            ) : (
-              <>
-                <FlaskConical style={{ width: 16, height: 16 }} />
-                <span>{useT("experiments.startExperiment") || "Start Experiment"}</span>
-                <span style={{ fontSize: 12, opacity: 0.75 }}>(-{EXPERIMENT_COST} pts)</span>
-              </>
-            )}
-          </button>
-        </div>
-      )}
+            {/* Generations + Population */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+              <div>
+                <label style={labelStyle}>{useT("experiments.generations") || "Generations"}</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={newGenerations}
+                  onChange={(e) => setNewGenerations(Number(e.target.value))}
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>{useT("experiments.populationSize") || "Population Size"}</label>
+                <input
+                  type="number"
+                  min={4}
+                  max={50}
+                  value={newPopulation}
+                  onChange={(e) => setNewPopulation(Number(e.target.value))}
+                  style={inputStyle}
+                />
+              </div>
+            </div>
 
-      {/* Create error */}
-      {createError && (
-        <div style={{ ...cardStyle, borderLeft: "4px solid " + S.bearish, padding: 12 }}>
-          <div style={{ fontSize: 12, color: S.bearish }}>{createError}</div>
-        </div>
-      )}
-
-      {/* Summary stats */}
-      <div style={{ ...cardStyle, border: S.cardBorder, padding: 16 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-          <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
-              {useT("experiments.totalExperiments") || "Total"}
-            </div>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: S.text1 }}>{experiments.length}</div>
-            {runningCount > 0 && (
-              <div style={{ fontSize: 10, color: S.accent, fontWeight: 700 }}>{runningCount} running</div>
-            )}
-          </div>
-          <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
-              {useT("experiments.completed") || "Completed"}
-            </div>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: S.bullish }}>{completedCount}</div>
-          </div>
-          <div style={{ padding: 8, borderRadius: S.badgeRadius, background: S.bg }}>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: S.text2, fontWeight: 700 }}>
-              {useT("experiments.bestScore") || "Best Score"}
-            </div>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: S.mono, color: S.accent }}>
-              {bestOverall ? (
-                <>
-                  {bestOverall.overall}
-                  <span style={{ fontSize: 12, color: S.text2, marginLeft: 4 }}>{bestOverall.grade}</span>
-                </>
-              ) : (
-                "---"
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Experiment list */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {experiments.length === 0 ? (
-          <div style={{ ...cardStyle, border: S.cardBorder, padding: 24, textAlign: "center" }}>
-            <FlaskConical style={{ width: 32, height: 32, color: S.text3, margin: "0 auto 8px", opacity: 0.3 }} />
-            <div style={{ fontSize: 14, color: S.text2, marginBottom: 8 }}>
-              {useT("experiments.noExperiments") ||
-                "No experiments yet. Create one to get started."}
-            </div>
             <button
-              onClick={() => setShowNewForm(true)}
+              onClick={handleCreate}
+              disabled={creating || !newName.trim() || !hasEnoughPoints}
               style={{
-                padding: "0 16px", height: 36, borderRadius: S.radius, background: S.accent, color: "#fff",
-                fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer",
+                width: "100%", height: 44, borderRadius: 8, fontWeight: 700,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                border: "none", cursor: "pointer", opacity: (creating || !newName.trim() || !hasEnoughPoints) ? 0.5 : 1,
+                background: hasEnoughPoints ? THEME.accentDeep : THEME.textMuted,
+                color: hasEnoughPoints ? "#fff" : THEME.textSecondary,
+                fontSize: 14,
               }}
             >
-              <Plus style={{ width: 14, height: 14, display: "inline", verticalAlign: "middle", marginRight: 4 }} />
-              {useT("experiments.createFirst") || "Create Your First Experiment"}
+              {creating ? (
+                <>
+                  <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} />
+                  {useT("experiments.starting") || "Starting experiment..."}
+                </>
+              ) : (
+                <>
+                  <FlaskConical style={{ width: 16, height: 16 }} />
+                  <span>{useT("experiments.startExperiment") || "Start Experiment"}</span>
+                  <span style={{ fontSize: 12, opacity: 0.75 }}>(-{EXPERIMENT_COST} pts)</span>
+                </>
+              )}
             </button>
           </div>
+        )}
+
+        {/* Create error */}
+        {createError && (
+          <div style={{ ...cardStyle, borderLeft: "4px solid " + THEME.red, padding: 12 }}>
+            <div style={{ fontSize: 12, color: THEME.red }}>{createError}</div>
+          </div>
+        )}
+
+        {/* Summary stats */}
+        <StatsRow
+          stats={[
+            {
+              label: useT("experiments.totalExperiments") || "Total",
+              value: String(experiments.length),
+              sub: runningCount > 0 ? `${runningCount} running` : undefined,
+              color: runningCount > 0 ? THEME.accentDeep : THEME.text,
+            },
+            {
+              label: useT("experiments.completed") || "Completed",
+              value: String(completedCount),
+              color: THEME.green,
+            },
+            {
+              label: useT("experiments.bestScore") || "Best Score",
+              value: bestOverall ? `${bestOverall.overall}` : "---",
+              sub: bestOverall ? bestOverall.grade : undefined,
+              color: THEME.accentDeep,
+            },
+          ]}
+        />
+
+        {/* Experiment list */}
+        {experiments.length === 0 ? (
+          <EmptyState
+            icon="🧪"
+            title={useT("experiments.noExperiments") || "No experiments yet"}
+            message={useT("experiments.noExperimentsDesc") || "Create your first experiment to start optimizing trading strategies."}
+          />
         ) : (
-          experiments.map((exp) => <ExperimentCard key={exp.id} experiment={exp} />)
+          <ScrollArea>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 0 16px" }}>
+              {experiments.map((exp) => <ExperimentCard key={exp.id} experiment={exp} />)}
+            </div>
+          </ScrollArea>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 }

@@ -13,6 +13,7 @@ import {
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
+import { PageLayout, THEME, ScrollArea, Badge, EmptyState } from "@/components/vixor/PageLayout";
 import {
   Bot,
   Send,
@@ -47,6 +48,16 @@ export const Route = createFileRoute("/_authenticated/copilot")({
     chartSymbol: (search.chartSymbol as string) || undefined,
   }),
 });
+
+// ─── Helpers ───
+
+/** Append hex alpha to a hex color for opacity (pct 0-100) */
+const alpha = (hex: string, pct: number) => {
+  const a = Math.round((pct / 100) * 255)
+    .toString(16)
+    .padStart(2, "0");
+  return `${hex}${a}`;
+};
 
 // ─── Types ───
 
@@ -89,8 +100,8 @@ const AGENTS: AgentConfig[] = [
     id: "auto",
     label: "Auto",
     icon: Zap,
-    color: "text-[#10B981]",
-    bgColor: "bg-[#10B981]/10",
+    color: THEME.green,
+    bgColor: alpha(THEME.green, 10),
     desc: "AI Picks Best Agent",
     capabilities: ["Auto-detects question type", "Routes to the best agent"],
   },
@@ -98,8 +109,8 @@ const AGENTS: AgentConfig[] = [
     id: "market_analyst",
     label: "Market Analyst",
     icon: BarChart3,
-    color: "text-emerald-400",
-    bgColor: "bg-emerald-500/10",
+    color: THEME.green,
+    bgColor: alpha(THEME.green, 10),
     desc: "SMC/ICT Technical Analysis",
     capabilities: [
       "Market structure (BOS/ChoCh)",
@@ -112,8 +123,8 @@ const AGENTS: AgentConfig[] = [
     id: "risk_manager",
     label: "Risk Manager",
     icon: Shield,
-    color: "text-amber-400",
-    bgColor: "bg-amber-500/10",
+    color: THEME.amber,
+    bgColor: alpha(THEME.amber, 10),
     desc: "Position Sizing & Risk Control",
     capabilities: [
       "Position sizing",
@@ -126,8 +137,8 @@ const AGENTS: AgentConfig[] = [
     id: "news_analyst",
     label: "News Analyst",
     icon: Newspaper,
-    color: "text-sky-400",
-    bgColor: "bg-sky-500/10",
+    color: THEME.cyan,
+    bgColor: alpha(THEME.cyan, 10),
     desc: "Fundamental News Impact",
     capabilities: [
       "Economic calendar",
@@ -140,8 +151,8 @@ const AGENTS: AgentConfig[] = [
     id: "strategy_builder",
     label: "Strategy Builder",
     icon: Wrench,
-    color: "text-violet-400",
-    bgColor: "bg-violet-500/10",
+    color: THEME.purple,
+    bgColor: alpha(THEME.purple, 10),
     desc: "Trading Plans & Systems",
     capabilities: ["Daily routines", "Trading plans", "Backtesting ideas", "Psychology coaching"],
   },
@@ -185,6 +196,21 @@ const QUICK_ACTIONS: { label: string; prompt: string; agent: AgentId }[] = [
     agent: "auto",
   },
 ];
+
+// ─── Shared button style (icon button) ───
+const iconBtnBase: React.CSSProperties = {
+  width: "36px",
+  height: "36px",
+  borderRadius: "12px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+  border: `1px solid ${THEME.border}`,
+  background: THEME.surface,
+  cursor: "pointer",
+  transition: "background 0.15s ease",
+};
 
 // ─── Main Component ───
 
@@ -717,49 +743,21 @@ function CopilotPage() {
 
   const getAgentColor = (agentId: string | null) => {
     const agent = AGENTS.find((a) => a.id === agentId);
-    if (!agent || agentId === "auto") return "text-[#10B981]";
+    if (!agent || agentId === "auto") return THEME.green;
     return agent.color;
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] animate-in fade-in slide-in-from-bottom-2 duration-500">
-      {/* ─── Desktop Sidebar ─── */}
-      <div
-        className={`hidden lg:flex flex-col border-r border-[#2A2A2A] transition-all duration-300 shrink-0 ${
-          sidebarOpen ? "w-72" : "w-0 overflow-hidden"
-        }`}
-      >
-        <ConversationSidebar
-          conversations={conversations}
-          activeConversationId={activeConversationId}
-          isLoading={conversationsQuery.isLoading}
-          onSelect={loadConversation}
-          onDelete={handleDeleteConversation}
-          onRename={handleRenameConversation}
-          onNewChat={startNewChat}
-          deleteConfirmId={deleteConfirmId}
-          setDeleteConfirmId={setDeleteConfirmId}
-          editingTitleId={editingTitleId}
-          setEditingTitleId={setEditingTitleId}
-          editingTitleValue={editingTitleValue}
-          setEditingTitleValue={setEditingTitleValue}
-          getAgentIcon={getAgentIcon}
-          getAgentColor={getAgentColor}
-          page={convPage}
-          pageSize={CONV_PAGE_SIZE}
-          total={conversationsTotal}
-          onPageChange={setConvPage}
-        />
-      </div>
-
-      {/* ─── Mobile Drawer Overlay ─── */}
-      {mobileDrawerOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
+    <div style={{ height: "calc(100vh - 8rem)" }}>
+      <PageLayout title="AI Copilot" badge="COPILOT" badgeColor={THEME.purple}>
+        <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+          {/* ─── Desktop Sidebar ─── */}
           <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setMobileDrawerOpen(false)}
-          />
-          <div className="relative w-80 max-w-[85vw] h-full bg-[#121212] border-r border-[#2A2A2A] animate-in slide-in-from-left duration-200">
+            className={`hidden lg:flex flex-col transition-all duration-300 shrink-0 ${
+              sidebarOpen ? "w-72" : "w-0 overflow-hidden"
+            }`}
+            style={{ borderRight: `1px solid ${THEME.border}` }}
+          >
             <ConversationSidebar
               conversations={conversations}
               activeConversationId={activeConversationId}
@@ -782,281 +780,444 @@ function CopilotPage() {
               onPageChange={setConvPage}
             />
           </div>
-        </div>
-      )}
 
-      {/* ─── Main Chat Area ─── */}
-      <div className="flex flex-col flex-1 min-w-0">
-        {/* ─── Header ─── */}
-        <div className="flex-shrink-0 pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {/* Sidebar toggle */}
-              <button
-                onClick={() => {
-                  if (window.innerWidth < 1024) {
-                    setMobileDrawerOpen(true);
-                  } else {
-                    setSidebarOpen(!sidebarOpen);
-                  }
+          {/* ─── Mobile Drawer Overlay ─── */}
+          {mobileDrawerOpen && (
+            <div className="lg:hidden fixed inset-0 z-50 flex">
+              <div
+                style={{ background: "rgba(0,0,0,0.5)" }}
+                className="absolute inset-0"
+                onClick={() => setMobileDrawerOpen(false)}
+              />
+              <div
+                className="relative w-80 max-w-[85vw] h-full animate-in slide-in-from-left duration-200"
+                style={{
+                  background: THEME.bg,
+                  borderRight: `1px solid ${THEME.border}`,
                 }}
-                className="size-9 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center hover:bg-[#1E1E1E] transition-colors"
-                title="Chat history"
               >
-                {sidebarOpen ? (
-                  <PanelLeftClose className="size-4 text-gray-400" />
-                ) : (
-                  <PanelLeftOpen className="size-4 text-gray-400" />
-                )}
-              </button>
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#10B981] mb-0.5">
-                  {t("copilot.vixorAi") || "Vixor AI"}
-                </div>
-                <h1 className="text-2xl font-bold tracking-tight">
-                  {t("copilot.title") || "AI Copilot"}
-                </h1>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {messages.length > 0 && (
-                <button
-                  onClick={startNewChat}
-                  className="size-9 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center hover:bg-[#1E1E1E] transition-colors"
-                  title="New chat"
-                >
-                  <Plus className="size-4 text-gray-400" />
-                </button>
-              )}
-              {messages.length > 0 && (
-                <button
-                  onClick={() => {
-                    setMessages([]);
-                    setActiveConversationId(null);
-                    setConsensusMode(false);
-                  }}
-                  className="size-9 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center hover:bg-[#1E1E1E] transition-colors"
-                  title="Clear chat"
-                >
-                  <RotateCcw className="size-4 text-gray-400" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* ─── Agent Selector + Consensus Toggle ─── */}
-          <div className="mt-3 space-y-2">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowAgents(!showAgents)}
-                className="flex items-center gap-2 px-3 h-9 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#1E1E1E] transition-colors flex-1 sm:flex-none"
-              >
-                <currentAgentConfig.icon className={`size-4 ${currentAgentConfig.color}`} />
-                <span className="text-xs font-bold">{currentAgentConfig.label}</span>
-                <ChevronDown
-                  className={`size-3.5 text-gray-400 transition-transform ${showAgents ? "rotate-180" : ""}`}
+                <ConversationSidebar
+                  conversations={conversations}
+                  activeConversationId={activeConversationId}
+                  isLoading={conversationsQuery.isLoading}
+                  onSelect={loadConversation}
+                  onDelete={handleDeleteConversation}
+                  onRename={handleRenameConversation}
+                  onNewChat={startNewChat}
+                  deleteConfirmId={deleteConfirmId}
+                  setDeleteConfirmId={setDeleteConfirmId}
+                  editingTitleId={editingTitleId}
+                  setEditingTitleId={setEditingTitleId}
+                  editingTitleValue={editingTitleValue}
+                  setEditingTitleValue={setEditingTitleValue}
+                  getAgentIcon={getAgentIcon}
+                  getAgentColor={getAgentColor}
+                  page={convPage}
+                  pageSize={CONV_PAGE_SIZE}
+                  total={conversationsTotal}
+                  onPageChange={setConvPage}
                 />
-              </button>
-
-              <button
-                onClick={() => setConsensusMode(!consensusMode)}
-                className={`flex items-center gap-2 px-3 h-9 rounded-xl border text-xs font-bold transition-all ${
-                  consensusMode
-                    ? "bg-[#10B981]/15 border-[#10B981]/40 text-[#10B981]"
-                    : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:bg-[#1E1E1E]"
-                }`}
-              >
-                <Users className="size-4" />
-                <span className="hidden sm:inline">
-                  {t("copilot.consensusMode") || "Consensus"}
-                </span>
-                <span className="sm:hidden">{t("copilot.consensusShort") || "All"}</span>
-              </button>
+              </div>
             </div>
-
-            {consensusMode && (
-              <div className="p-2.5 rounded-xl bg-[#10B981]/5 border border-[#10B981]/20 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div className="flex items-center gap-2 text-xs text-[#10B981] font-bold">
-                  <Users className="size-3.5" />
-                  {t("copilot.consensusMode") || "Multi-Agent Consensus"}
-                </div>
-                <p className="text-[10px] text-gray-400 mt-0.5">
-                  {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
-                </p>
-              </div>
-            )}
-
-            {showAgents && (
-              <div className="space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                {AGENTS.map((agent) => {
-                  const Icon = agent.icon;
-                  const isActive = activeAgent === agent.id;
-                  return (
-                    <button
-                      key={agent.id}
-                      onClick={() => {
-                        setActiveAgent(agent.id);
-                        setShowAgents(false);
-                        if (agent.id === "auto") setConsensusMode(false);
-                      }}
-                      className={`w-full p-3 rounded-xl border text-left transition-all ${
-                        isActive
-                          ? "bg-[#10B981]/10 border-[#10B981]/30"
-                          : "bg-[#1A1A1A] border-[#2A2A2A] hover:bg-[#1E1E1E]"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <div
-                          className={`size-6 rounded-lg ${agent.bgColor} flex items-center justify-center`}
-                        >
-                          <Icon className={`size-3.5 ${agent.color}`} />
-                        </div>
-                        <span
-                          className={`text-xs font-bold ${isActive ? "text-[#10B981]" : "text-white"}`}
-                        >
-                          {agent.label}
-                        </span>
-                        {agent.id === "auto" && (
-                          <span className="text-[9px] bg-[#10B981]/10 text-[#10B981] px-1.5 py-0.5 rounded-md font-bold">
-                            {t("copilot.autoMode")?.split(" ")[0] || "AUTO"}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[10px] text-gray-400 mb-1.5">{agent.desc}</div>
-                      <div className="flex flex-wrap gap-1">
-                        {agent.capabilities.slice(0, 4).map((cap, i) => (
-                          <span
-                            key={i}
-                            className="text-[9px] bg-[#1A1A1A] border border-[#2A2A2A] px-1.5 py-0.5 rounded-md text-gray-400"
-                          >
-                            {cap}
-                          </span>
-                        ))}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ─── Messages Area ─── */}
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
-          {messages.length === 0 ? (
-            <EmptyState onQuickAction={sendMessage} onConsensus={setConsensusMode} />
-          ) : (
-            messages.map((msg) => (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                onConsultAgent={(agent) => {
-                  setActiveAgent(agent);
-                  setShowAgents(false);
-                  sendMessage(msg.role === "user" ? msg.content : "", agent);
-                }}
-              />
-            ))
           )}
 
-          {copilotMutation.isPending && (
-            <div className="flex items-start gap-3 animate-in fade-in duration-300">
-              <div className="size-8 rounded-xl bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center shrink-0">
-                <Bot className="size-4 text-[#10B981]" />
-              </div>
-              <div className="vixor-card p-4 flex-1">
+          {/* ─── Main Chat Area ─── */}
+          <div className="flex flex-col flex-1 min-w-0">
+            {/* ─── Header Controls ─── */}
+            <div className="flex-shrink-0 pb-3">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="size-4 animate-spin text-[#10B981]" />
-                  <span className="text-xs text-gray-400">
-                    {consensusMode
-                      ? "Getting consensus from all agents..."
-                      : "Vixor is thinking..."}
-                  </span>
+                  {/* Sidebar toggle */}
+                  <button
+                    onClick={() => {
+                      if (window.innerWidth < 1024) {
+                        setMobileDrawerOpen(true);
+                      } else {
+                        setSidebarOpen(!sidebarOpen);
+                      }
+                    }}
+                    style={iconBtnBase}
+                    title="Chat history"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = THEME.surfaceAlt;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = THEME.surface;
+                    }}
+                  >
+                    {sidebarOpen ? (
+                      <PanelLeftClose size={16} style={{ color: THEME.textSecondary }} />
+                    ) : (
+                      <PanelLeftOpen size={16} style={{ color: THEME.textSecondary }} />
+                    )}
+                  </button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {consensusMutation.isPending && (
-            <div className="flex items-start gap-3 animate-in fade-in duration-300">
-              <div className="size-8 rounded-xl bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center shrink-0">
-                <Users className="size-4 text-[#10B981]" />
-              </div>
-              <div className="vixor-card p-4 flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Loader2 className="size-4 animate-spin text-[#10B981]" />
-                  <span className="text-xs text-gray-400">Consulting all 4 agents...</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {AGENTS.filter((a) => a.id !== "auto").map((agent, i) => (
-                    <div
-                      key={agent.id}
-                      className="flex items-center gap-1.5 text-[10px] text-gray-400 animate-pulse"
-                      style={{ animationDelay: `${i * 300}ms` }}
+                <div className="flex items-center gap-2">
+                  {messages.length > 0 && (
+                    <button
+                      onClick={startNewChat}
+                      style={iconBtnBase}
+                      title="New chat"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = THEME.surfaceAlt;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = THEME.surface;
+                      }}
                     >
-                      <agent.icon className={`size-3 ${agent.color}`} />
-                      {agent.label}
-                    </div>
-                  ))}
+                      <Plus size={16} style={{ color: THEME.textSecondary }} />
+                    </button>
+                  )}
+                  {messages.length > 0 && (
+                    <button
+                      onClick={() => {
+                        setMessages([]);
+                        setActiveConversationId(null);
+                        setConsensusMode(false);
+                      }}
+                      style={iconBtnBase}
+                      title="Clear chat"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = THEME.surfaceAlt;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = THEME.surface;
+                      }}
+                    >
+                      <RotateCcw size={16} style={{ color: THEME.textSecondary }} />
+                    </button>
+                  )}
                 </div>
               </div>
-            </div>
-          )}
 
-          <div ref={messagesEndRef} />
-        </div>
+              {/* ─── Agent Selector + Consensus Toggle ─── */}
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowAgents(!showAgents)}
+                    className="flex items-center gap-2 px-3 h-9 rounded-xl transition-colors flex-1 sm:flex-none"
+                    style={{
+                      background: THEME.surface,
+                      border: `1px solid ${THEME.border}`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = THEME.surfaceAlt;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = THEME.surface;
+                    }}
+                  >
+                    <currentAgentConfig.icon
+                      size={16}
+                      style={{ color: currentAgentConfig.color }}
+                    />
+                    <span className="text-xs font-bold" style={{ color: THEME.text }}>
+                      {currentAgentConfig.label}
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      style={{
+                        color: THEME.textSecondary,
+                        transition: "transform 0.2s",
+                        transform: showAgents ? "rotate(180deg)" : "none",
+                      }}
+                    />
+                  </button>
 
-        {/* ─── Input Area ─── */}
-        <div className="flex-shrink-0 pt-3 border-t border-[#2A2A2A]">
-          <form onSubmit={handleSubmit} className="flex items-end gap-2">
-            <div className="flex-1 relative">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                  consensusMode
-                    ? t("copilot.consensusPlaceholder") ||
-                      "Ask all 4 agents for their perspective..."
-                    : t("copilot.placeholder") || "Ask Vixor anything about trading..."
-                }
-                rows={1}
-                className="w-full resize-none rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] px-4 py-3 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#10B981]/30 focus:border-[#10B981]/50 transition-all max-h-32 min-h-[44px]"
-                style={{ height: "auto" }}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = "auto";
-                  target.style.height = Math.min(target.scrollHeight, 128) + "px";
-                }}
-                disabled={isPending}
-              />
+                  <button
+                    onClick={() => setConsensusMode(!consensusMode)}
+                    className="flex items-center gap-2 px-3 h-9 rounded-xl text-xs font-bold transition-all"
+                    style={
+                      consensusMode
+                        ? {
+                            background: alpha(THEME.green, 15),
+                            border: `1px solid ${alpha(THEME.green, 40)}`,
+                            color: THEME.green,
+                          }
+                        : {
+                            background: THEME.surface,
+                            border: `1px solid ${THEME.border}`,
+                            color: THEME.textSecondary,
+                          }
+                    }
+                    onMouseEnter={(e) => {
+                      if (!consensusMode) e.currentTarget.style.background = THEME.surfaceAlt;
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!consensusMode) e.currentTarget.style.background = THEME.surface;
+                    }}
+                  >
+                    <Users size={16} />
+                    <span className="hidden sm:inline">
+                      {t("copilot.consensusMode") || "Consensus"}
+                    </span>
+                    <span className="sm:hidden">{t("copilot.consensusShort") || "All"}</span>
+                  </button>
+                </div>
+
+                {consensusMode && (
+                  <div
+                    className="p-2.5 rounded-xl animate-in fade-in slide-in-from-top-1 duration-200"
+                    style={{
+                      background: alpha(THEME.green, 5),
+                      border: `1px solid ${alpha(THEME.green, 20)}`,
+                    }}
+                  >
+                    <div
+                      className="flex items-center gap-2 text-xs font-bold"
+                      style={{ color: THEME.green }}
+                    >
+                      <Users size={14} />
+                      {t("copilot.consensusMode") || "Multi-Agent Consensus"}
+                    </div>
+                    <p className="text-[10px] mt-0.5" style={{ color: THEME.textSecondary }}>
+                      {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
+                    </p>
+                  </div>
+                )}
+
+                {showAgents && (
+                  <div className="space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                    {AGENTS.map((agent) => {
+                      const Icon = agent.icon;
+                      const isActive = activeAgent === agent.id;
+                      return (
+                        <button
+                          key={agent.id}
+                          onClick={() => {
+                            setActiveAgent(agent.id);
+                            setShowAgents(false);
+                            if (agent.id === "auto") setConsensusMode(false);
+                          }}
+                          className="w-full p-3 rounded-xl text-left transition-all"
+                          style={
+                            isActive
+                              ? {
+                                  background: alpha(agent.color, 10),
+                                  border: `1px solid ${alpha(agent.color, 30)}`,
+                                }
+                              : {
+                                  background: THEME.surface,
+                                  border: `1px solid ${THEME.border}`,
+                                }
+                          }
+                          onMouseEnter={(e) => {
+                            if (!isActive) e.currentTarget.style.background = THEME.surfaceAlt;
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isActive) e.currentTarget.style.background = THEME.surface;
+                          }}
+                        >
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div
+                              className="size-6 rounded-lg flex items-center justify-center"
+                              style={{ background: agent.bgColor }}
+                            >
+                              <Icon size={14} style={{ color: agent.color }} />
+                            </div>
+                            <span
+                              className="text-xs font-bold"
+                              style={{ color: isActive ? agent.color : THEME.text }}
+                            >
+                              {agent.label}
+                            </span>
+                            {agent.id === "auto" && (
+                              <Badge
+                                label={t("copilot.autoMode")?.split(" ")[0] || "AUTO"}
+                                color={THEME.green}
+                                small
+                              />
+                            )}
+                          </div>
+                          <div
+                            className="text-[10px] mb-1.5"
+                            style={{ color: THEME.textSecondary }}
+                          >
+                            {agent.desc}
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {agent.capabilities.slice(0, 4).map((cap, i) => (
+                              <span
+                                key={i}
+                                className="text-[9px] px-1.5 py-0.5 rounded-md"
+                                style={{
+                                  background: THEME.surface,
+                                  border: `1px solid ${THEME.border}`,
+                                  color: THEME.textSecondary,
+                                }}
+                              >
+                                {cap}
+                              </span>
+                            ))}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
-            <button
-              type="submit"
-              disabled={!input.trim() || isPending}
-              className={`size-11 rounded-xl flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${
-                consensusMode
-                  ? "bg-gradient-to-r from-emerald-500 via-amber-500 to-violet-500 text-white"
-                  : "bg-gradient-to-r from-[#10B981] to-[#059669] text-white "
-              }`}
+
+            {/* ─── Messages Area ─── */}
+            <ScrollArea
+              style={{
+                flex: 1,
+                padding: "0 4px",
+                gap: "12px",
+                display: "flex",
+                flexDirection: "column",
+              }}
             >
-              {isPending ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : consensusMode ? (
-                <Users className="size-5" />
+              {messages.length === 0 ? (
+                <ChatWelcome onQuickAction={sendMessage} onConsensus={setConsensusMode} />
               ) : (
-                <Send className="size-5" />
+                messages.map((msg) => (
+                  <MessageBubble
+                    key={msg.id}
+                    message={msg}
+                    onConsultAgent={(agent) => {
+                      setActiveAgent(agent);
+                      setShowAgents(false);
+                      sendMessage(msg.role === "user" ? msg.content : "", agent);
+                    }}
+                  />
+                ))
               )}
-            </button>
-          </form>
-          <div className="mt-1.5 text-center">
-            <span className="text-[9px] text-gray-400/50">
-              AI responses may not always be accurate. Always verify with your own analysis.
-            </span>
+
+              {copilotMutation.isPending && (
+                <div className="flex items-start gap-3 animate-in fade-in duration-300">
+                  <div
+                    className="size-8 rounded-xl flex items-center justify-center shrink-0"
+                    style={{
+                      background: alpha(THEME.green, 10),
+                      border: `1px solid ${alpha(THEME.green, 20)}`,
+                    }}
+                  >
+                    <Bot size={16} style={{ color: THEME.green }} />
+                  </div>
+                  <div className="vixor-card p-4 flex-1">
+                    <div className="flex items-center gap-2">
+                      <Loader2 size={16} className="animate-spin" style={{ color: THEME.green }} />
+                      <span className="text-xs" style={{ color: THEME.textSecondary }}>
+                        {consensusMode
+                          ? "Getting consensus from all agents..."
+                          : "Vixor is thinking..."}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {consensusMutation.isPending && (
+                <div className="flex items-start gap-3 animate-in fade-in duration-300">
+                  <div
+                    className="size-8 rounded-xl flex items-center justify-center shrink-0"
+                    style={{
+                      background: alpha(THEME.green, 10),
+                      border: `1px solid ${alpha(THEME.green, 20)}`,
+                    }}
+                  >
+                    <Users size={16} style={{ color: THEME.green }} />
+                  </div>
+                  <div className="vixor-card p-4 flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Loader2 size={16} className="animate-spin" style={{ color: THEME.green }} />
+                      <span className="text-xs" style={{ color: THEME.textSecondary }}>
+                        Consulting all 4 agents...
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {AGENTS.filter((a) => a.id !== "auto").map((agent, i) => (
+                        <div
+                          key={agent.id}
+                          className="flex items-center gap-1.5 text-[10px] animate-pulse"
+                          style={{ color: THEME.textSecondary, animationDelay: `${i * 300}ms` }}
+                        >
+                          <agent.icon size={12} style={{ color: agent.color }} />
+                          {agent.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </ScrollArea>
+
+            {/* ─── Input Area ─── */}
+            <div className="flex-shrink-0 pt-3" style={{ borderTop: `1px solid ${THEME.border}` }}>
+              <form onSubmit={handleSubmit} className="flex items-end gap-2">
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={
+                      consensusMode
+                        ? t("copilot.consensusPlaceholder") ||
+                          "Ask all 4 agents for their perspective..."
+                        : t("copilot.placeholder") || "Ask Vixor anything about trading..."
+                    }
+                    rows={1}
+                    className="w-full resize-none rounded-xl px-4 py-3 text-sm transition-all max-h-32 min-h-[44px]"
+                    style={{
+                      background: THEME.surface,
+                      border: `1px solid ${THEME.border}`,
+                      color: THEME.text,
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.outline = "none";
+                      e.currentTarget.style.boxShadow = `0 0 0 2px ${alpha(THEME.green, 30)}`;
+                      e.currentTarget.style.borderColor = alpha(THEME.green, 50);
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.boxShadow = "none";
+                      e.currentTarget.style.borderColor = THEME.border;
+                    }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = "auto";
+                      target.style.height = Math.min(target.scrollHeight, 128) + "px";
+                    }}
+                    disabled={isPending}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={!input.trim() || isPending}
+                  className="size-11 rounded-xl flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={
+                    consensusMode
+                      ? {
+                          background: `linear-gradient(to right, ${THEME.green}, ${THEME.amber}, ${THEME.purple})`,
+                          color: THEME.text,
+                        }
+                      : {
+                          background: `linear-gradient(to right, ${THEME.green}, ${THEME.green})`,
+                          color: THEME.text,
+                        }
+                  }
+                >
+                  {isPending ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : consensusMode ? (
+                    <Users size={20} />
+                  ) : (
+                    <Send size={20} />
+                  )}
+                </button>
+              </form>
+              <div className="mt-1.5 text-center">
+                <span className="text-[9px]" style={{ color: alpha(THEME.textMuted, 50) }}>
+                  AI responses may not always be accurate. Always verify with your own analysis.
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </PageLayout>
     </div>
   );
 }
@@ -1116,29 +1277,31 @@ function ConversationSidebar({
   return (
     <div className="flex flex-col h-full">
       {/* New Chat Button */}
-      <div className="p-3 border-b border-[#2A2A2A]">
+      <div className="p-3" style={{ borderBottom: `1px solid ${THEME.border}` }}>
         <button
           onClick={onNewChat}
-          className="w-full flex items-center gap-2 px-3 h-9 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] text-white text-xs font-bold hover:opacity-90 transition-opacity"
+          className="w-full flex items-center gap-2 px-3 h-9 rounded-xl text-white text-xs font-bold transition-opacity"
+          style={{ background: `linear-gradient(to right, ${THEME.green}, ${THEME.green})` }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = "0.9";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = "1";
+          }}
         >
-          <Plus className="size-4" />
+          <Plus size={16} />
           New Chat
         </button>
       </div>
 
       {/* Conversation List */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
+      <ScrollArea style={{ padding: "8px", gap: "4px", display: "flex", flexDirection: "column" }}>
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="size-5 animate-spin text-gray-400" />
+            <Loader2 size={20} className="animate-spin" style={{ color: THEME.textSecondary }} />
           </div>
         ) : conversations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 px-4">
-            <MessageSquare className="size-8 text-gray-400/30 mb-2" />
-            <p className="text-xs text-gray-400 text-center">
-              No conversations yet. Start a new chat!
-            </p>
-          </div>
+          <EmptyState icon="💬" title="No conversations yet" message="Start a new chat to begin!" />
         ) : (
           conversations.map((conv) => {
             const isActive = activeConversationId === conv.id;
@@ -1150,11 +1313,23 @@ function ConversationSidebar({
             return (
               <div
                 key={conv.id}
-                className={`group rounded-xl border transition-all ${
+                className="group rounded-xl transition-all"
+                style={
                   isActive
-                    ? "bg-[#10B981]/10 border-[#10B981]/20"
-                    : "border-transparent hover:bg-[#1A1A1A] hover:border-[#2A2A2A]"
-                }`}
+                    ? {
+                        background: alpha(THEME.green, 10),
+                        border: `1px solid ${alpha(THEME.green, 20)}`,
+                      }
+                    : {
+                        border: "1px solid transparent",
+                      }
+                }
+                onMouseEnter={(e) => {
+                  if (!isActive) e.currentTarget.style.background = THEME.surface;
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) e.currentTarget.style.background = "transparent";
+                }}
               >
                 {isEditing ? (
                   <div className="flex items-center gap-1 p-2">
@@ -1169,36 +1344,84 @@ function ConversationSidebar({
                           setEditingTitleId(null);
                         }
                       }}
-                      className="flex-1 text-xs bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#10B981]/30"
+                      className="flex-1 text-xs rounded-lg px-2 py-1"
+                      style={{
+                        background: THEME.surface,
+                        border: `1px solid ${THEME.border}`,
+                        color: THEME.text,
+                        outline: "none",
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.boxShadow = `0 0 0 1px ${alpha(THEME.green, 30)}`;
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
                     />
                     <button
                       onClick={() => onRename(conv.id, editingTitleValue)}
-                      className="size-6 rounded-lg flex items-center justify-center hover:bg-[#1E1E1E]"
+                      className="size-6 rounded-lg flex items-center justify-center"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = THEME.surfaceAlt;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                      }}
                     >
-                      <Check className="size-3 text-emerald-400" />
+                      <Check size={12} style={{ color: THEME.green }} />
                     </button>
                     <button
                       onClick={() => setEditingTitleId(null)}
-                      className="size-6 rounded-lg flex items-center justify-center hover:bg-[#1E1E1E]"
+                      className="size-6 rounded-lg flex items-center justify-center"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = THEME.surfaceAlt;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                      }}
                     >
-                      <X className="size-3 text-gray-400" />
+                      <X size={12} style={{ color: THEME.textSecondary }} />
                     </button>
                   </div>
                 ) : isConfirmingDelete ? (
                   <div className="p-2">
-                    <p className="text-[10px] text-gray-400 mb-1.5 truncate">
+                    <p
+                      className="text-[10px] mb-1.5 truncate"
+                      style={{ color: THEME.textSecondary }}
+                    >
                       Delete &quot;{conv.title}&quot;?
                     </p>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => onDelete(conv.id)}
-                        className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                        className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg transition-colors"
+                        style={{
+                          background: alpha(THEME.red, 10),
+                          color: THEME.red,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = alpha(THEME.red, 20);
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = alpha(THEME.red, 10);
+                        }}
                       >
                         Delete
                       </button>
                       <button
                         onClick={() => setDeleteConfirmId(null)}
-                        className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#1E1E1E] transition-colors"
+                        className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg transition-colors"
+                        style={{
+                          background: THEME.surface,
+                          border: `1px solid ${THEME.border}`,
+                          color: THEME.text,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = THEME.surfaceAlt;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = THEME.surface;
+                        }}
                       >
                         Cancel
                       </button>
@@ -1211,48 +1434,75 @@ function ConversationSidebar({
                       className="flex items-center gap-2 flex-1 min-w-0 text-left"
                     >
                       <div
-                        className={`size-6 rounded-lg ${isActive ? "bg-[#10B981]/15" : "bg-[#1A1A1A]"} border border-[#2A2A2A] flex items-center justify-center shrink-0`}
+                        className="size-6 rounded-lg flex items-center justify-center shrink-0"
+                        style={{
+                          background: isActive ? alpha(THEME.green, 15) : THEME.surface,
+                          border: `1px solid ${THEME.border}`,
+                        }}
                       >
                         {conv.is_consensus ? (
-                          <Users className={`size-3 ${isActive ? "text-[#10B981]" : agentColor}`} />
+                          <Users size={12} style={{ color: isActive ? THEME.green : agentColor }} />
                         ) : (
                           <AgentIcon
-                            className={`size-3 ${isActive ? "text-[#10B981]" : agentColor}`}
+                            size={12}
+                            style={{ color: isActive ? THEME.green : agentColor }}
                           />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div
-                          className={`text-xs font-medium truncate ${isActive ? "text-[#10B981]" : "text-white"}`}
+                          className="text-xs font-medium truncate"
+                          style={{ color: isActive ? THEME.green : THEME.text }}
                         >
                           {conv.title}
                         </div>
-                        <div className="text-[9px] text-gray-400">
+                        <div className="text-[9px]" style={{ color: THEME.textSecondary }}>
                           {formatRelativeTime(conv.updated_at)}
                         </div>
                       </div>
                     </button>
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <div
+                      className="flex items-center gap-0.5 shrink-0 transition-opacity"
+                      style={{ opacity: 0 }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = "1";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = "0";
+                      }}
+                    >
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setEditingTitleId(conv.id);
                           setEditingTitleValue(conv.title);
                         }}
-                        className="size-6 rounded-lg flex items-center justify-center hover:bg-[#1E1E1E]"
+                        className="size-6 rounded-lg flex items-center justify-center"
                         title="Rename"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = THEME.surfaceAlt;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }}
                       >
-                        <Pencil className="size-3 text-gray-400" />
+                        <Pencil size={12} style={{ color: THEME.textSecondary }} />
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setDeleteConfirmId(conv.id);
                         }}
-                        className="size-6 rounded-lg flex items-center justify-center hover:bg-red-500/10"
+                        className="size-6 rounded-lg flex items-center justify-center"
                         title="Delete"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = alpha(THEME.red, 10);
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }}
                       >
-                        <Trash2 className="size-3 text-gray-400" />
+                        <Trash2 size={12} style={{ color: THEME.textSecondary }} />
                       </button>
                     </div>
                   </div>
@@ -1261,11 +1511,11 @@ function ConversationSidebar({
             );
           })
         )}
-      </div>
+      </ScrollArea>
 
       {/* Pagination */}
       {total > pageSize && (
-        <div className="border-t border-[#2A2A2A] p-2">
+        <div className="p-2" style={{ borderTop: `1px solid ${THEME.border}` }}>
           <PaginationBar
             page={page}
             pageSize={pageSize}
@@ -1300,9 +1550,9 @@ function formatRelativeTime(dateStr: string): string {
   });
 }
 
-// ─── Empty State with Quick Actions ───
+// ─── Chat Welcome (with Quick Actions) ───
 
-function EmptyState({
+function ChatWelcome({
   onQuickAction,
   onConsensus,
 }: {
@@ -1314,18 +1564,27 @@ function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center h-full py-8 px-4">
       <div className="relative mb-6">
-        <div className="size-20 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center">
-          <Sparkles className="size-9 text-[#10B981]" />
+        <div
+          className="size-20 rounded-2xl flex items-center justify-center"
+          style={{
+            background: alpha(THEME.green, 10),
+            border: `1px solid ${alpha(THEME.green, 20)}`,
+          }}
+        >
+          <Sparkles size={36} style={{ color: THEME.green }} />
         </div>
-        <div className="absolute -right-1 -top-1 size-5 rounded-full bg-[#10B981] flex items-center justify-center">
-          <Bot className="size-3 text-white" />
+        <div
+          className="absolute -right-1 -top-1 size-5 rounded-full flex items-center justify-center"
+          style={{ background: THEME.green }}
+        >
+          <Bot size={12} style={{ color: THEME.text }} />
         </div>
       </div>
 
-      <h2 className="text-lg font-bold mb-1">
+      <h2 className="text-lg font-bold mb-1" style={{ color: THEME.text }}>
         {t("copilot.welcomeTitle") || "How can I help you today?"}
       </h2>
-      <p className="text-sm text-gray-400 text-center max-w-xs mb-4">
+      <p className="text-sm text-center max-w-xs mb-4" style={{ color: THEME.textSecondary }}>
         {t("copilot.welcomeDesc") ||
           "I'm your context-aware AI trading assistant. I know your recent analyses, signals, and alerts."}
       </p>
@@ -1333,15 +1592,25 @@ function EmptyState({
       {/* Consensus CTA */}
       <button
         onClick={() => onConsensus(true)}
-        className="w-full max-w-lg mb-4 p-3 rounded-xl bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-violet-500/10 border border-[#10B981]/20 hover:border-[#10B981]/40 transition-all group"
+        className="w-full max-w-lg mb-4 p-3 rounded-xl transition-all group"
+        style={{
+          background: `linear-gradient(to right, ${alpha(THEME.green, 10)}, ${alpha(THEME.amber, 10)}, ${alpha(THEME.purple, 10)})`,
+          border: `1px solid ${alpha(THEME.green, 20)}`,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = alpha(THEME.green, 40);
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = alpha(THEME.green, 20);
+        }}
       >
         <div className="flex items-center gap-2 justify-center">
-          <Users className="size-4 text-[#10B981]" />
-          <span className="text-xs font-bold text-[#10B981]">
+          <Users size={16} style={{ color: THEME.green }} />
+          <span className="text-xs font-bold" style={{ color: THEME.green }}>
             {t("copilot.getConsensus") || "Get Multi-Agent Consensus"}
           </span>
         </div>
-        <p className="text-[10px] text-gray-400 mt-1 text-center">
+        <p className="text-[10px] mt-1 text-center" style={{ color: THEME.textSecondary }}>
           {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
         </p>
       </button>
@@ -1354,15 +1623,32 @@ function EmptyState({
             <button
               key={i}
               onClick={() => onQuickAction(action.prompt, action.agent)}
-              className="p-3 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] text-left hover:bg-[#1E1E1E] hover:border-[#10B981]/30 transition-all group"
+              className="p-3 rounded-xl text-left transition-all group"
+              style={{
+                background: THEME.surface,
+                border: `1px solid ${THEME.border}`,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = THEME.surfaceAlt;
+                e.currentTarget.style.borderColor = alpha(THEME.green, 30);
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = THEME.surface;
+                e.currentTarget.style.borderColor = THEME.border;
+              }}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Icon className={`size-3.5 ${agentConfig?.color || "text-[#10B981]"}`} />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 group-hover:text-[#10B981] transition-colors">
+                <Icon size={14} style={{ color: agentConfig?.color || THEME.green }} />
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider transition-colors"
+                  style={{ color: THEME.textSecondary }}
+                >
                   {agentConfig?.label}
                 </span>
               </div>
-              <div className="text-xs font-medium text-white line-clamp-2">{action.label}</div>
+              <div className="text-xs font-medium" style={{ color: THEME.text }}>
+                {action.label}
+              </div>
             </button>
           );
         })}
@@ -1398,10 +1684,10 @@ function MessageBubble({
   const agentConfig = AGENTS.find((a) => a.id === message.agent);
   const Icon = isUser ? User : agentConfig?.icon || Bot;
   const iconColor = isError
-    ? "text-red-400"
+    ? THEME.red
     : isUser
-      ? "text-gray-400"
-      : agentConfig?.color || "text-[#10B981]";
+      ? THEME.textSecondary
+      : agentConfig?.color || THEME.green;
 
   // Detect agent handoff suggestions in the message
   const handoffAgents = detectHandoffAgents(message.content);
@@ -1411,30 +1697,39 @@ function MessageBubble({
       className={`flex items-start gap-3 animate-in fade-in slide-in-from-bottom-1 duration-300 ${isUser ? "flex-row-reverse" : ""}`}
     >
       <div
-        className={`size-8 rounded-xl flex items-center justify-center shrink-0 ${
-          isUser
-            ? "bg-[#1A1A1A] border border-[#2A2A2A]"
+        className="size-8 rounded-xl flex items-center justify-center shrink-0"
+        style={{
+          background: isUser
+            ? THEME.surface
             : isError
-              ? "bg-red-500/10 border border-red-500/20"
-              : `bg-[#10B981]/10 border border-[#10B981]/20`
-        }`}
+              ? alpha(THEME.red, 10)
+              : alpha(THEME.green, 10),
+          border: `1px solid ${
+            isUser ? THEME.border : isError ? alpha(THEME.red, 20) : alpha(THEME.green, 20)
+          }`,
+        }}
       >
-        <Icon className={`size-4 ${iconColor}`} />
+        <Icon size={16} style={{ color: iconColor }} />
       </div>
       <div
-        className={`max-w-[85%] vixor-card p-4 ${
+        className="max-w-[85%] vixor-card p-4"
+        style={
           isUser
-            ? "bg-[#10B981]/5 border-[#10B981]/15"
+            ? {
+                background: alpha(THEME.green, 5),
+                borderColor: alpha(THEME.green, 15),
+              }
             : isError
-              ? "border-red-500/20 bg-bearish/5"
-              : ""
-        }`}
+              ? {
+                  borderColor: alpha(THEME.red, 20),
+                  background: alpha(THEME.red, 5),
+                }
+              : undefined
+        }
       >
         {!isUser && !isError && agentConfig && (
           <div className="flex items-center gap-1.5 mb-2">
-            <span className={`text-[9px] font-bold uppercase tracking-widest ${agentConfig.color}`}>
-              {agentConfig.label}
-            </span>
+            <Badge label={agentConfig.label} color={agentConfig.color} small />
           </div>
         )}
         <div className="text-sm leading-relaxed prose-sm">
@@ -1443,7 +1738,10 @@ function MessageBubble({
 
         {/* Agent handoff buttons */}
         {!isUser && handoffAgents.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-[#2A2A2A]/50">
+          <div
+            className="flex flex-wrap gap-1.5 mt-3 pt-2"
+            style={{ borderTop: `1px solid ${alpha(THEME.border, 50)}` }}
+          >
             {handoffAgents.map((hAgent) => {
               const hConfig = AGENTS.find((a) => a.id === hAgent);
               if (!hConfig) return null;
@@ -1452,10 +1750,22 @@ function MessageBubble({
                 <button
                   key={hAgent}
                   onClick={() => onConsultAgent(hAgent)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] text-[10px] font-bold hover:bg-[#1E1E1E] hover:border-[#10B981]/30 transition-all"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all"
+                  style={{
+                    background: THEME.surface,
+                    border: `1px solid ${THEME.border}`,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = THEME.surfaceAlt;
+                    e.currentTarget.style.borderColor = alpha(THEME.green, 30);
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = THEME.surface;
+                    e.currentTarget.style.borderColor = THEME.border;
+                  }}
                 >
-                  <HIcon className={`size-3 ${hConfig.color}`} />
-                  <span className={hConfig.color}>
+                  <HIcon size={12} style={{ color: hConfig.color }} />
+                  <span style={{ color: hConfig.color }}>
                     {t("copilot.consultAgent", { agent: hConfig.label }) ||
                       `Consult ${hConfig.label}`}
                   </span>
@@ -1465,7 +1775,10 @@ function MessageBubble({
           </div>
         )}
 
-        <div className={`text-[9px] text-gray-400/50 mt-2 ${isUser ? "text-right" : ""}`}>
+        <div
+          className="text-[9px] mt-2"
+          style={{ color: alpha(THEME.textMuted, 50), textAlign: isUser ? "right" : "left" }}
+        >
           {new Date(message.timestamp).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -1494,15 +1807,19 @@ function ConsensusBubble({
     <div className="animate-in fade-in slide-in-from-bottom-1 duration-300">
       {/* Synthesis section */}
       <div className="flex items-start gap-3 mb-3">
-        <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-500/20 via-amber-500/20 to-violet-500/20 border border-[#10B981]/20 flex items-center justify-center shrink-0">
-          <Users className="size-4 text-[#10B981]" />
+        <div
+          className="size-8 rounded-xl flex items-center justify-center shrink-0"
+          style={{
+            background: `linear-gradient(135deg, ${alpha(THEME.green, 20)}, ${alpha(THEME.amber, 20)}, ${alpha(THEME.purple, 20)})`,
+            border: `1px solid ${alpha(THEME.green, 20)}`,
+          }}
+        >
+          <Users size={16} style={{ color: THEME.green }} />
         </div>
-        <div className="vixor-card p-4 flex-1 border-[#10B981]/15">
+        <div className="vixor-card p-4 flex-1" style={{ borderColor: alpha(THEME.green, 15) }}>
           <div className="flex items-center gap-1.5 mb-2">
-            <Sparkles className="size-3 text-[#10B981]" />
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[#10B981]">
-              {t("copilot.synthesis") || "AI Synthesis"}
-            </span>
+            <Sparkles size={12} style={{ color: THEME.green }} />
+            <Badge label={t("copilot.synthesis") || "AI Synthesis"} color={THEME.green} small />
           </div>
           <div className="text-sm leading-relaxed prose-sm">
             <FormattedContent content={data.synthesis} />
@@ -1522,20 +1839,34 @@ function ConsensusBubble({
             <div key={r.agent} className="vixor-card overflow-hidden">
               <button
                 onClick={() => setExpandedAgent(isExpanded ? null : r.agent)}
-                className="w-full flex items-center gap-2 p-3 hover:bg-[#1E1E1E] transition-colors"
+                className="w-full flex items-center gap-2 p-3 transition-colors"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = THEME.surfaceAlt;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                }}
               >
                 <div
-                  className={`size-6 rounded-lg ${agentConfig.bgColor} flex items-center justify-center`}
+                  className="size-6 rounded-lg flex items-center justify-center"
+                  style={{ background: agentConfig.bgColor }}
                 >
-                  <AIcon className={`size-3 ${agentConfig.color}`} />
+                  <AIcon size={12} style={{ color: agentConfig.color }} />
                 </div>
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-widest ${agentConfig.color}`}
+                  className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{ color: agentConfig.color }}
                 >
                   {agentConfig.label}
                 </span>
                 <ChevronDown
-                  className={`size-3 text-gray-400 ml-auto transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                  size={12}
+                  className="ml-auto"
+                  style={{
+                    color: THEME.textSecondary,
+                    transition: "transform 0.2s",
+                    transform: isExpanded ? "rotate(180deg)" : "none",
+                  }}
                 />
               </button>
               {isExpanded && (
@@ -1545,10 +1876,20 @@ function ConsensusBubble({
                   </div>
                   <button
                     onClick={() => onConsultAgent(r.agent)}
-                    className="mt-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] text-[10px] font-bold hover:bg-[#1E1E1E] transition-all"
+                    className="mt-2 flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all"
+                    style={{
+                      background: THEME.surface,
+                      border: `1px solid ${THEME.border}`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = THEME.surfaceAlt;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = THEME.surface;
+                    }}
                   >
-                    <AIcon className={`size-3 ${agentConfig.color}`} />
-                    <span className={agentConfig.color}>
+                    <AIcon size={12} style={{ color: agentConfig.color }} />
+                    <span style={{ color: agentConfig.color }}>
                       {t("copilot.consultAgent", { agent: agentConfig.label }) ||
                         `Consult ${agentConfig.label}`}
                     </span>
@@ -1560,7 +1901,7 @@ function ConsensusBubble({
         })}
       </div>
 
-      <div className="text-[9px] text-gray-400/50 mt-2 ml-11">
+      <div className="text-[9px] mt-2 ml-11" style={{ color: alpha(THEME.textMuted, 50) }}>
         {new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
       </div>
     </div>
@@ -1603,13 +1944,21 @@ function FormattedContent({ content }: { content: string }) {
           {lines.map((line, lineIdx) => {
             if (line.startsWith("## "))
               return (
-                <h3 key={lineIdx} className="text-sm font-bold text-white mt-2 mb-1">
+                <h3
+                  key={lineIdx}
+                  className="text-sm font-bold mt-2 mb-1"
+                  style={{ color: THEME.text }}
+                >
                   {formatInline(line.slice(3))}
                 </h3>
               );
             if (line.startsWith("# "))
               return (
-                <h3 key={lineIdx} className="text-sm font-bold text-[#10B981] mt-2 mb-1">
+                <h3
+                  key={lineIdx}
+                  className="text-sm font-bold mt-2 mb-1"
+                  style={{ color: THEME.green }}
+                >
                   {formatInline(line.slice(2))}
                 </h3>
               );
@@ -1617,7 +1966,11 @@ function FormattedContent({ content }: { content: string }) {
               return (
                 <div
                   key={lineIdx}
-                  className="pl-3 border-l-2 border-[#10B981]/40 my-1 text-gray-400"
+                  className="pl-3 my-1"
+                  style={{
+                    borderLeft: `2px solid ${alpha(THEME.green, 40)}`,
+                    color: THEME.textSecondary,
+                  }}
                 >
                   {formatInline(line.slice(2))}
                 </div>
@@ -1625,7 +1978,9 @@ function FormattedContent({ content }: { content: string }) {
             if (line.match(/^[-*•]\s/))
               return (
                 <div key={lineIdx} className="flex items-start gap-1.5 my-0.5">
-                  <span className="text-[#10B981] mt-0.5 shrink-0">•</span>
+                  <span className="mt-0.5 shrink-0" style={{ color: THEME.green }}>
+                    •
+                  </span>
                   <span>{formatInline(line.replace(/^[-*•]\s/, ""))}</span>
                 </div>
               );
@@ -1634,7 +1989,10 @@ function FormattedContent({ content }: { content: string }) {
               if (match)
                 return (
                   <div key={lineIdx} className="flex items-start gap-1.5 my-0.5">
-                    <span className="text-[#10B981] font-bold text-xs mt-0.5 shrink-0">
+                    <span
+                      className="font-bold text-xs mt-0.5 shrink-0"
+                      style={{ color: THEME.green }}
+                    >
                       {match[1]}
                     </span>
                     <span>{formatInline(match[2])}</span>
@@ -1671,7 +2029,7 @@ function formatInline(text: string): React.ReactNode[] {
       parts.push(<span key={key++}>{text.slice(lastIndex, match.index)}</span>);
     if (match[2])
       parts.push(
-        <strong key={key++} className="font-bold text-white">
+        <strong key={key++} style={{ fontWeight: 700, color: THEME.text }}>
           {match[2]}
         </strong>,
       );
@@ -1679,7 +2037,11 @@ function formatInline(text: string): React.ReactNode[] {
       parts.push(
         <code
           key={key++}
-          className="px-1.5 py-0.5 rounded-md bg-[#10B981]/10 text-[#10B981] font-mono text-xs font-bold"
+          className="px-1.5 py-0.5 rounded-md font-mono text-xs font-bold"
+          style={{
+            background: alpha(THEME.green, 10),
+            color: THEME.green,
+          }}
         >
           {match[3]}
         </code>,

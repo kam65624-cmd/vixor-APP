@@ -3,20 +3,45 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, memo } from "react";
 import { getNotifications, markNotificationRead } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import {
+  PageLayout,
+  THEME,
+  DataRow,
+  Badge,
+  EmptyState,
+  SkeletonRow,
+  ScrollArea,
+  SectionTitle,
+} from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({ meta: [{ title: "Notifications — Vixor" }] }),
   component: NotificationsPage,
 });
 
-const typeConfig: Record<string, { icon: string; color: string }> = {
-  trade: { icon: "💰", color: "#10B981" },
-  alert: { icon: "🔔", color: "#F59E0B" },
-  whale: { icon: "🐋", color: "#8B5CF6" },
-  signal: { icon: "⚡", color: "#22C55E" },
-  system: { icon: "⚙️", color: "#9CA3AF" },
-  default: { icon: "📌", color: "#9CA3AF" },
+// ── Type config using THEME semantic colors ──────────────────────────────
+
+const typeConfig: Record<string, { icon: string; color: string; label: string }> = {
+  trade:   { icon: "💰", color: THEME.green,         label: "TRADE" },
+  alert:   { icon: "🔔", color: THEME.amber,         label: "ALERT" },
+  whale:   { icon: "🐋", color: THEME.purple,        label: "WHALE" },
+  signal:  { icon: "⚡", color: THEME.green,         label: "SIGNAL" },
+  system:  { icon: "⚙️", color: THEME.textSecondary, label: "SYSTEM" },
+  default: { icon: "📌", color: THEME.textSecondary, label: "" },
 };
+
+// ── Tab definitions (display label → internal filter value) ──────────────
+
+const TAB_ITEMS = [
+  { filter: "All",    label: "All" },
+  { filter: "Unread", label: "Unread" },
+  { filter: "trade",  label: "Trades" },
+  { filter: "alert",  label: "Alerts" },
+  { filter: "whale",  label: "Whale" },
+  { filter: "signal", label: "Signals" },
+] as const;
+
+// ── Helpers ───────────────────────────────────────────────────────────────
 
 function timeAgo(dateStr: string) {
   const ms = Date.now() - new Date(dateStr).getTime();
@@ -30,6 +55,8 @@ function timeAgo(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+// ── Notification item using DataRow + Badge ───────────────────────────────
+
 const NotifItem = memo(function NotifItem({
   notif,
   onRead,
@@ -41,40 +68,60 @@ const NotifItem = memo(function NotifItem({
   const cfg = typeConfig[notif.type] || typeConfig.default;
 
   return (
-    <div
-      style={{
-        display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 10px", borderRadius: 6,
-        borderLeft: isRead ? "none" : "3px solid #10B981",
-        background: isRead ? "transparent" : "rgba(16,185,129,0.03)",
-        borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer",
-        transition: "background 0.1s",
-      }}
+    <DataRow
       onClick={() => !isRead && onRead(notif.id)}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = isRead ? "transparent" : "rgba(16,185,129,0.03)"; }}
+      leftAccent={isRead ? undefined : THEME.green}
     >
-      <div
-        style={{
-          width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-          background: `${cfg.color}15`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 14,
-        }}
-      >
-        {cfg.icon}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 11, fontWeight: isRead ? 500 : 700, color: "#FFFFFF" }}>{notif.title}</span>
-          <span style={{ fontSize: 9, color: "#6B7280", flexShrink: 0 }}>{timeAgo(notif.created_at)}</span>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+        {/* Type icon */}
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            flexShrink: 0,
+            background: `${cfg.color}15`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 14,
+          }}
+        >
+          {cfg.icon}
         </div>
-        <p style={{ fontSize: 10, color: "#9CA3AF", marginTop: 2, lineHeight: 1.4 }}>
-          {notif.body || "No details"}
-        </p>
+
+        {/* Content */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: isRead ? 500 : 700,
+                  color: THEME.text,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {notif.title}
+              </span>
+              {cfg.label && <Badge label={cfg.label} color={cfg.color} small />}
+            </div>
+            <span style={{ fontSize: 9, color: THEME.textMuted, flexShrink: 0 }}>
+              {timeAgo(notif.created_at)}
+            </span>
+          </div>
+          <p style={{ fontSize: 10, color: THEME.textSecondary, marginTop: 2, lineHeight: 1.4 }}>
+            {notif.body || "No details"}
+          </p>
+        </div>
       </div>
-    </div>
+    </DataRow>
   );
 });
+
+// ── Page component ────────────────────────────────────────────────────────
 
 function NotificationsPage() {
   const queryClient = useQueryClient();
@@ -112,67 +159,66 @@ function NotificationsPage() {
     markReadMutation.mutate({ data: { id } });
   };
 
+  // ── Tab plumbing ──
+  const tabLabels = TAB_ITEMS.map((t) => t.label);
+  const activeTabLabel = TAB_ITEMS.find((t) => t.filter === filter)?.label ?? "All";
+
+  const tabCounts: Record<string, number> = {
+    All: notifications.length,
+    Unread: unreadCount,
+    Trades: notifications.filter((n) => n.type === "trade").length,
+    Alerts: notifications.filter((n) => n.type === "alert").length,
+    Whale: notifications.filter((n) => n.type === "whale").length,
+    Signals: notifications.filter((n) => n.type === "signal").length,
+  };
+
+  const handleTabChange = (tab: string) => {
+    const item = TAB_ITEMS.find((t) => t.label === tab);
+    if (item) setFilter(item.filter);
+  };
+
+  // ── Render ──
   return (
-    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#FFFFFF" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 16 }}>🔔</span>
-          <span style={{ fontSize: 16, fontWeight: 800 }}>Notifications</span>
+    <PageLayout
+      title="Notifications"
+      badge={unreadCount > 0 ? `${unreadCount} new` : undefined}
+      badgeColor={THEME.accent}
+      tabs={tabLabels}
+      activeTab={activeTabLabel}
+      onTabChange={handleTabChange}
+      tabCounts={tabCounts}
+      loading={notifsQuery.isLoading}
+    >
+      {filtered.length > 0 ? (
+        <>
           {unreadCount > 0 && (
-            <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 10, background: "rgba(16,185,129,0.15)", color: "#34D399", fontWeight: 700 }}>
-              {unreadCount} new
-            </span>
+            <SectionTitle
+              title="All Notifications"
+              count={filtered.length}
+              action={
+                markReadMutation.isPending
+                  ? undefined
+                  : { label: "Mark all read", onClick: handleMarkAllRead }
+              }
+            />
           )}
-        </div>
-        {unreadCount > 0 && (
-          <button
-            onClick={handleMarkAllRead}
-            disabled={markReadMutation.isPending}
-            style={{ fontSize: 10, padding: "4px 10px", borderRadius: 4, border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "#9CA3AF", cursor: "pointer", fontWeight: 600 }}
-          >
-            Mark all read
-          </button>
-        )}
-      </div>
-
-      {/* Filters */}
-      <div style={{ display: "flex", gap: 4, padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)", overflowX: "auto" }}>
-        {["All", "Unread", "trade", "alert", "whale", "signal"].map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            style={{
-              fontSize: 10, fontWeight: 600, padding: "4px 10px", borderRadius: 4, border: "none", cursor: "pointer", whiteSpace: "nowrap",
-              color: filter === f ? "#fff" : "#9CA3AF",
-              background: filter === f ? "rgba(16,185,129,0.15)" : "transparent",
-              borderBottom: filter === f ? "2px solid #10B981" : "2px solid transparent",
-            }}
-          >
-            {f === "trade" ? "Trades" : f === "alert" ? "Alerts" : f === "whale" ? "Whale" : f === "signal" ? "Signals" : f}
-          </button>
-        ))}
-      </div>
-
-      {/* List */}
-      {notifsQuery.isLoading ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        </div>
-      ) : filtered.length > 0 ? (
-        <div style={{ padding: "4px 8px" }}>
-          {filtered.map((n) => (
-            <NotifItem key={n.id} notif={n} onRead={handleRead} />
-          ))}
-        </div>
+          <ScrollArea>
+            {filtered.map((n) => (
+              <NotifItem key={n.id} notif={n} onRead={handleRead} />
+            ))}
+          </ScrollArea>
+        </>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px", gap: 12 }}>
-          <span style={{ fontSize: 32, opacity: 0.5 }}>🔔</span>
-          <p style={{ fontSize: 13, color: "#9CA3AF" }}>
-            {notifications.length === 0 ? "No notifications yet" : "No notifications match this filter"}
-          </p>
-        </div>
+        <EmptyState
+          icon="🔔"
+          title="No notifications"
+          message={
+            notifications.length === 0
+              ? "No notifications yet"
+              : "No notifications match this filter"
+          }
+        />
       )}
-    </div>
+    </PageLayout>
   );
 }

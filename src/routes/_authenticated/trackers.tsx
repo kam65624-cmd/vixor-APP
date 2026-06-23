@@ -3,17 +3,26 @@ import { useQuery } from "@tanstack/react-query";
 import { memo, useState } from "react";
 import { getWatchlistData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import {
+  PageLayout,
+  THEME,
+  TableHeader,
+  DataRow,
+  Badge,
+  EmptyState,
+  ScrollArea,
+} from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/trackers")({
   head: () => ({ meta: [{ title: "Trackers — Vixor" }] }),
   component: TrackersPage,
 });
 
-const TABS = ["Watchlist", "Price Alerts"];
+const TABS = ["Watchlist", "Price Alerts"] as const;
 
 function TrackersPage() {
   const fetchData = useStableServerFn(getWatchlistData);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState<string>(TABS[0]);
 
   const query = useQuery({
     queryKey: ["watchlist-data"],
@@ -27,130 +36,251 @@ function TrackersPage() {
   const alerts = query.data?.priceAlerts ?? [];
 
   return (
-    <div style={{ background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100%" }}>
-      {/* Header */}
-      <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="flex items-center gap-2">
-          <span className="text-lg">\uD83D\uDCCA</span>
-          <h1 className="text-lg font-bold">Trackers</h1>
-        </div>
-        <p className="text-[11px] mt-0.5" style={{ color: "#9CA3AF" }}>
-          {items.length} watchlist items · {alerts.length} price alerts
-        </p>
-      </div>
+    <PageLayout
+      title="Trackers"
+      badge="TRACKER"
+      badgeColor={THEME.amber}
+      description={`${items.length} watchlist items · ${alerts.length} price alerts`}
+      tabs={[...TABS]}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      tabCounts={{
+        Watchlist: items.length,
+        "Price Alerts": alerts.length,
+      }}
+      loading={isLoading}
+      loadingColor={THEME.amber}
+    >
+      {activeTab === "Watchlist" ? (
+        <ScrollArea>
+          {watchlists.length > 0 ? (
+            watchlists.map((wl: any) => {
+              const wlItems = (items as any[]).filter((item: any) => item.watchlist_id === wl.id);
+              return (
+                <div key={wl.id}>
+                  {/* ── Watchlist Section Header ── */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "8px 16px 6px",
+                      borderBottom: `1px solid ${THEME.border}`,
+                      background: THEME.tabBarBg,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color: THEME.text,
+                      }}
+                    >
+                      {wl.name}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 500,
+                        color: THEME.textMuted,
+                      }}
+                    >
+                      ({wlItems.length})
+                    </span>
+                    {wl.is_default && <Badge label="DEFAULT" color={THEME.accent} small />}
+                  </div>
 
-      {/* Tabs */}
-      <div className="px-4 py-2 flex gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        {TABS.map((t, i) => (
-          <button key={t} onClick={() => setActiveTab(i)} style={{
-            fontSize: "11px", fontWeight: 700, padding: "6px 14px", borderRadius: "6px",
-            border: "none", cursor: "pointer",
-            color: activeTab === i ? "#fff" : "#9CA3AF",
-            background: activeTab === i ? "#1E1E1E" : "transparent",
-          }}>{t} ({activeTab === 0 ? items.length : alerts.length})</button>
-        ))}
-      </div>
+                  {/* ── Table Header ── */}
+                  <TableHeader
+                    columns={[
+                      { label: "Symbol", width: "30%" },
+                      {
+                        label: "Entry Price",
+                        width: "25%",
+                        align: "right",
+                      },
+                      { label: "Target", width: "25%", align: "right" },
+                      { label: "Added", width: "20%", align: "right" },
+                    ]}
+                  />
 
-      {isLoading ? (
-        <div className="flex items-center justify-center" style={{ padding: "60px 0" }}>
-          <div style={{ width: 32, height: 32, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#10B981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        </div>
-      ) : activeTab === 0 ? (
-        /* Watchlist Tab */
-        <div className="px-4 py-2">
-          {watchlists.length > 0 && (
-            <div className="text-[11px] font-bold mb-2" style={{ color: "#9CA3AF" }}>
-              Watchlists ({watchlists.length})
-            </div>
-          )}
-          {watchlists.map((wl) => (
-            <div key={wl.id} className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[12px] font-bold">{wl.name}</span>
-                {wl.is_default && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(16,185,129,0.12)", color: "#34D399" }}>DEFAULT</span>
-                )}
-              </div>
-              <div className="rounded-lg overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="flex items-center px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider" style={{ color: "#6B7280", background: "#1E1E1E", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                  <div style={{ width: "30%" }}>Symbol</div>
-                  <div style={{ width: "25%" }} className="text-right">Entry Price</div>
-                  <div style={{ width: "25%" }} className="text-right">Target</div>
-                  <div style={{ width: "20%" }} className="text-right">Added</div>
+                  {/* ── Rows ── */}
+                  {wlItems.length > 0 ? (
+                    wlItems.map((item: any) => <WatchlistItemRow key={item.id} item={item} />)
+                  ) : (
+                    <div
+                      style={{
+                        padding: "20px 16px",
+                        textAlign: "center",
+                        fontSize: "11px",
+                        color: THEME.textMuted,
+                        background: THEME.surface,
+                      }}
+                    >
+                      Empty watchlist
+                    </div>
+                  )}
                 </div>
-                {items.filter((item) => item.watchlist_id === wl.id).map((item) => (
-                  <WatchlistItemRow key={item.id} item={item} />
-                ))}
-                {items.filter((item) => item.watchlist_id === wl.id).length === 0 && (
-                  <div className="px-3 py-4 text-center text-[11px]" style={{ color: "#6B7280", background: "#1E1E1E" }}>Empty watchlist</div>
-                )}
-              </div>
-            </div>
-          ))}
-          {watchlists.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-3" style={{ padding: "40px 0" }}>
-              <span style={{ fontSize: "24px" }}>\uD83D\uDCCC</span>
-              <p style={{ fontSize: "12px", color: "#9CA3AF" }}>No watchlists yet. Create one from the Discover page.</p>
-            </div>
+              );
+            })
+          ) : (
+            <EmptyState
+              icon="📌"
+              title="No watchlists yet"
+              message="No watchlists yet. Create one from the Discover page."
+            />
           )}
-        </div>
+        </ScrollArea>
       ) : (
-        /* Price Alerts Tab */
-        <div className="px-4 py-2">
+        <ScrollArea>
           {alerts.length > 0 ? (
-            <div className="rounded-lg overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
-              <div className="flex items-center px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider" style={{ color: "#6B7280", background: "#1E1E1E", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                <div style={{ width: "25%" }}>Symbol</div>
-                <div style={{ width: "20%" }}>Condition</div>
-                <div style={{ width: "20%" }} className="text-right">Target</div>
-                <div style={{ width: "15%" }} className="text-right">Status</div>
-                <div style={{ width: "20%" }} className="text-right">Created</div>
-              </div>
-              {alerts.map((alert) => (
+            <>
+              <TableHeader
+                columns={[
+                  { label: "Symbol", width: "25%" },
+                  { label: "Condition", width: "20%" },
+                  { label: "Target", width: "20%", align: "right" },
+                  { label: "Status", width: "15%", align: "right" },
+                  { label: "Created", width: "20%", align: "right" },
+                ]}
+              />
+              {(alerts as any[]).map((alert: any) => (
                 <AlertRow key={alert.id} alert={alert} />
               ))}
-            </div>
+            </>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-3" style={{ padding: "40px 0" }}>
-              <span style={{ fontSize: "24px" }}>\uD83D\uDD14</span>
-              <p style={{ fontSize: "12px", color: "#9CA3AF" }}>No price alerts set. Add alerts from token pages.</p>
-            </div>
+            <EmptyState
+              icon="🔔"
+              title="No price alerts"
+              message="No price alerts set. Add alerts from token pages."
+            />
           )}
-        </div>
+        </ScrollArea>
       )}
-    </div>
+    </PageLayout>
   );
 }
 
+/* ── Watchlist Item Row ─────────────────────────────────────────────────── */
+
 const WatchlistItemRow = memo(function WatchlistItemRow({ item }: { item: any }) {
   return (
-    <div className="flex items-center px-3 py-2 text-[11px]" style={{ background: "#1E1E1E", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-      <div style={{ width: "30%", fontWeight: 700 }}>{item.symbol || "—"}</div>
-      <div style={{ width: "25%", textAlign: "right", fontFamily: "monospace", color: "#9CA3AF" }}>{item.entry_price ?? "—"}</div>
-      <div style={{ width: "25%", textAlign: "right", fontFamily: "monospace", color: "#22C55E" }}>{item.target_price ?? "—"}</div>
-      <div style={{ width: "20%", textAlign: "right", color: "#6B7280", fontSize: "10px" }}>
-        {new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+    <DataRow>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <div
+          style={{
+            width: "30%",
+            fontWeight: 700,
+            fontSize: "11px",
+            color: THEME.text,
+          }}
+        >
+          {item.symbol || "—"}
+        </div>
+        <div
+          style={{
+            width: "25%",
+            textAlign: "right",
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            color: THEME.textSecondary,
+            fontSize: "11px",
+          }}
+        >
+          {item.entry_price ?? "—"}
+        </div>
+        <div
+          style={{
+            width: "25%",
+            textAlign: "right",
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            color: THEME.green,
+            fontSize: "11px",
+          }}
+        >
+          {item.target_price ?? "—"}
+        </div>
+        <div
+          style={{
+            width: "20%",
+            textAlign: "right",
+            color: THEME.textMuted,
+            fontSize: "10px",
+          }}
+        >
+          {new Date(item.created_at).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
+        </div>
       </div>
-    </div>
+    </DataRow>
   );
 });
 
+/* ── Alert Row ──────────────────────────────────────────────────────────── */
+
 const AlertRow = memo(function AlertRow({ alert }: { alert: any }) {
-  const statusColor = alert.status === "active" ? "#22C55E" : alert.status === "triggered" ? "#F59E0B" : "#6B7280";
-  const condColor = alert.condition === "above" || alert.condition === "crosses_up" ? "#22C55E" : "#EF4444";
+  const statusColor =
+    alert.status === "active"
+      ? THEME.green
+      : alert.status === "triggered"
+        ? THEME.amber
+        : THEME.textMuted;
+  const condColor =
+    alert.condition === "above" || alert.condition === "crosses_up" ? THEME.green : THEME.red;
+
   return (
-    <div className="flex items-center px-3 py-2 text-[11px]" style={{ background: "#1E1E1E", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-      <div style={{ width: "25%", fontWeight: 700 }}>{alert.symbol}</div>
-      <div style={{ width: "20%" }}>
-        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${condColor}15`, color: condColor }}>{alert.condition}</span>
+    <DataRow>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <div
+          style={{
+            width: "25%",
+            fontWeight: 700,
+            fontSize: "11px",
+            color: THEME.text,
+          }}
+        >
+          {alert.symbol}
+        </div>
+        <div style={{ width: "20%" }}>
+          <Badge label={alert.condition} color={condColor} small />
+        </div>
+        <div
+          style={{
+            width: "20%",
+            textAlign: "right",
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontSize: "11px",
+            color: THEME.text,
+          }}
+        >
+          ${alert.target_price}
+        </div>
+        <div
+          style={{
+            width: "15%",
+            textAlign: "right",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Badge label={alert.status} color={statusColor} small />
+        </div>
+        <div
+          style={{
+            width: "20%",
+            textAlign: "right",
+            color: THEME.textMuted,
+            fontSize: "10px",
+          }}
+        >
+          {new Date(alert.created_at).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
+        </div>
       </div>
-      <div style={{ width: "20%", textAlign: "right", fontFamily: "monospace" }}>${alert.target_price}</div>
-      <div style={{ width: "15%", textAlign: "right" }}>
-        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${statusColor}15`, color: statusColor }}>{alert.status}</span>
-      </div>
-      <div style={{ width: "20%", textAlign: "right", color: "#6B7280", fontSize: "10px" }}>
-        {new Date(alert.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-      </div>
-    </div>
+    </DataRow>
   );
 });

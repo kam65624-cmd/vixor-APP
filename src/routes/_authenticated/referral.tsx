@@ -1,67 +1,39 @@
-import { memo, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getReferralData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import {
+  PageLayout,
+  THEME,
+  StatsRow,
+  SectionTitle,
+  EmptyState,
+  ScrollArea,
+} from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/referral")({
   head: () => ({ meta: [{ title: "Referral Program — Vixor" }] }),
   component: ReferralPage,
 });
 
-const S = {
-  page: { background: "#121212", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", minHeight: "100vh", padding: "20px" },
-  header: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" },
-  title: { fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0 },
-  subtitle: { fontSize: "12px", color: "#9CA3AF", marginTop: "4px", marginBottom: "20px" },
-  heroCard: { background: "linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.03) 100%)", borderRadius: "16px", border: "1px solid rgba(16,185,129,0.15)", padding: "32px", marginBottom: "24px", textAlign: "center" as const, position: "relative" as const, overflow: "hidden" },
-  heroTitle: { fontSize: "20px", fontWeight: 700, color: "#FFFFFF", marginBottom: "6px" },
-  heroSub: { fontSize: "13px", color: "#9CA3AF" },
-  codeCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", marginBottom: "24px" },
-  codeLabel: { fontSize: "11px", fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "10px" },
-  codeRow: { display: "flex", alignItems: "center", gap: "10px" },
-  codeBox: { flex: 1, background: "#1A1A1A", borderRadius: "10px", padding: "14px 18px", fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", fontSize: "16px", fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.1em", border: "1px solid rgba(255,255,255,0.06)" },
-  copyBtn: { padding: "14px 20px", borderRadius: "10px", border: "none", cursor: "pointer", background: "rgba(16,185,129,0.15)", color: "#34D399", fontSize: "12px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", whiteSpace: "nowrap" as const },
-  shareBtn: { width: "100%", padding: "14px", borderRadius: "10px", border: "none", cursor: "pointer", background: "linear-gradient(135deg, #10B981, #059669)", color: "#fff", fontSize: "13px", fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif", marginTop: "12px" },
-  statsGrid: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "24px" },
-  statCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "18px", textAlign: "center" as const },
-  statValue: { fontSize: "24px", fontWeight: 800, fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace", marginBottom: "4px" },
-  statLabel: { fontSize: "10px", fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  sectionTitle: { fontSize: "13px", fontWeight: 700, color: "#FFFFFF", marginBottom: "14px", textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  stepsCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "24px" },
-  stepRow: { display: "flex", gap: "16px", alignItems: "flex-start", marginBottom: "20px" },
-  stepRowLast: { display: "flex", gap: "16px", alignItems: "flex-start" },
-  stepNumber: { width: "32px", height: "32px", borderRadius: "10px", background: "rgba(16,185,129,0.15)", color: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 800, flexShrink: 0 },
-  stepTitle: { fontSize: "13px", fontWeight: 700, color: "#FFFFFF", marginBottom: "4px" },
-  stepDesc: { fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6 },
-  connector: { width: "2px", height: "16px", background: "rgba(255,255,255,0.06)", marginLeft: "15px" },
-  emptyCard: { background: "#1E1E1E", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "32px", textAlign: "center" as const, marginBottom: "24px" },
-  emptyIcon: { fontSize: "32px", marginBottom: "12px" },
-  emptyTitle: { fontSize: "15px", fontWeight: 700, color: "#FFFFFF", marginBottom: "6px" },
-  emptyDesc: { fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6, maxWidth: "360px", margin: "0 auto" },
-  spinnerWrap: { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "200px" },
-};
-
-const StatCard = memo(function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <div style={S.statCard}>
-      <div style={{ ...S.statValue, color }}>{value}</div>
-      <div style={S.statLabel}>{label}</div>
-    </div>
-  );
-});
-
-function Spinner() {
-  return (
-    <div style={S.spinnerWrap}>
-      <svg width="36" height="36" viewBox="0 0 36 36" style={{ animation: "spin 0.8s linear infinite" }}>
-        <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(16,185,129,0.2)" strokeWidth="3" />
-        <circle cx="18" cy="18" r="14" fill="none" stroke="#10B981" strokeWidth="3" strokeDasharray="60 40" strokeLinecap="round" />
-        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-      </svg>
-    </div>
-  );
-}
+const STEPS = [
+  {
+    num: "1",
+    title: "Share Your Referral Code",
+    desc: "Copy your unique code and share it with friends via Telegram, Twitter, or any social platform. Each friend who signs up with your code becomes your referral.",
+  },
+  {
+    num: "2",
+    title: "Friends Sign Up & Trade",
+    desc: "When your referral creates an account and makes their first trade, both of you earn bonus points. You earn 10% of their trading points as a bonus on top.",
+  },
+  {
+    num: "3",
+    title: "Earn Points & Climb Tiers",
+    desc: "As your referrals grow, you earn points rewards and climb through referral tiers (Bronze → Silver → Gold → Platinum) for increasingly better perks and multipliers.",
+  },
+] as const;
 
 function ReferralPage() {
   const fetchRef = useStableServerFn(getReferralData);
@@ -103,88 +75,247 @@ function ReferralPage() {
     window.open(url, "_blank");
   }, [referralCode]);
 
-  if (refQuery.isLoading) {
-    return (
-      <div style={S.page}>
-        <div style={S.header}>
-          <h1 style={S.title}>Referral Program</h1>
-        </div>
-        <Spinner />
-      </div>
-    );
-  }
-
   return (
-    <div style={S.page}>
-      <div style={S.header}>
-        <h1 style={S.title}>Referral Program</h1>
-      </div>
-      <p style={S.subtitle}>Invite friends and earn rewards together</p>
+    <PageLayout
+      title="Referral Program"
+      badge="REFERRAL"
+      badgeColor={THEME.green}
+      description="Invite friends and earn rewards together"
+      loading={refQuery.isLoading}
+      loadingColor={THEME.green}
+    >
+      <ScrollArea>
+        {/* ── Hero Card ── */}
+        <div
+          style={{
+            background: `linear-gradient(135deg, ${THEME.green}1F 0%, ${THEME.green}08 100%)`,
+            borderRadius: "12px",
+            border: `1px solid ${THEME.green}26`,
+            padding: "24px 16px",
+            margin: "12px 16px",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: "36px", marginBottom: "10px" }}>🚀</div>
+          <div
+            style={{
+              fontSize: "16px",
+              fontWeight: 700,
+              color: THEME.text,
+              marginBottom: "4px",
+            }}
+          >
+            Welcome back, {username}!
+          </div>
+          <div
+            style={{
+              fontSize: "12px",
+              color: THEME.textSecondary,
+              lineHeight: 1.5,
+            }}
+          >
+            Get +25 pts for every referral · +15 pts for them · 10% of their trading points
+          </div>
+        </div>
 
-      {/* Hero Card */}
-      <div style={S.heroCard}>
-        <div style={{ fontSize: "40px", marginBottom: "12px" }}>🚀</div>
-        <div style={S.heroTitle}>Welcome back, {username}!</div>
-        <div style={S.heroSub}>Get +25 pts for every referral · +15 pts for them · 10% of their trading points</div>
-      </div>
-
-      {/* Referral Code Card */}
-      <div style={S.codeCard}>
-        <div style={S.codeLabel}>Your Referral Code</div>
-        <div style={S.codeRow}>
-          <div style={S.codeBox}>{referralCode}</div>
-          <button style={S.copyBtn} onClick={handleCopy}>
-            {copied ? "✓ Copied" : "Copy Code"}
+        {/* ── Referral Code Card ── */}
+        <div
+          style={{
+            background: THEME.surfaceAlt,
+            borderRadius: "12px",
+            border: `1px solid ${THEME.border}`,
+            padding: "16px",
+            margin: "0 16px 12px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "10px",
+              fontWeight: 600,
+              color: THEME.textMuted,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              marginBottom: "10px",
+            }}
+          >
+            Your Referral Code
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                minWidth: "160px",
+                background: THEME.surface,
+                borderRadius: "8px",
+                padding: "12px 16px",
+                fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
+                fontSize: "15px",
+                fontWeight: 700,
+                color: THEME.text,
+                letterSpacing: "0.1em",
+                border: `1px solid ${THEME.border}`,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {referralCode}
+            </div>
+            <button
+              onClick={handleCopy}
+              style={{
+                padding: "12px 16px",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                background: `${THEME.green}26`,
+                color: THEME.accent,
+                fontSize: "11px",
+                fontWeight: 700,
+                fontFamily: "'Inter', system-ui, sans-serif",
+                whiteSpace: "nowrap",
+                transition: "background 0.15s ease",
+              }}
+            >
+              {copied ? "✓ Copied" : "Copy Code"}
+            </button>
+          </div>
+          <button
+            onClick={handleShare}
+            style={{
+              width: "100%",
+              padding: "12px",
+              borderRadius: "8px",
+              border: "none",
+              cursor: "pointer",
+              background: THEME.green,
+              color: THEME.text,
+              fontSize: "12px",
+              fontWeight: 700,
+              fontFamily: "'Inter', system-ui, sans-serif",
+              marginTop: "10px",
+              transition: "opacity 0.15s ease",
+            }}
+          >
+            Share via Telegram
           </button>
         </div>
-        <button style={S.shareBtn} onClick={handleShare}>Share via Telegram</button>
-      </div>
 
-      {/* Stats Grid */}
-      <div style={S.statsGrid}>
-        <StatCard label="Total Referred" value={String(referredCount)} color="#10B981" />
-        <StatCard label="Earned Points" value={earnedPoints.toLocaleString()} color="#22C55E" />
-        <StatCard label="Streak" value={`${streakDays}d`} color="#F59E0B" />
-      </div>
+        {/* ── Stats Row ── */}
+        <StatsRow
+          stats={[
+            {
+              label: "Total Referred",
+              value: String(referredCount),
+              color: THEME.green,
+              icon: "👥",
+            },
+            {
+              label: "Earned Points",
+              value: earnedPoints.toLocaleString(),
+              color: THEME.accent,
+              icon: "⭐",
+            },
+            {
+              label: "Streak",
+              value: `${streakDays}d`,
+              color: THEME.amber,
+              icon: "🔥",
+            },
+          ]}
+        />
 
-      {/* Empty State — only show when no referrals yet */}
-      {referredCount === 0 && (
-        <div style={S.emptyCard}>
-          <div style={S.emptyIcon}>🔗</div>
-          <div style={S.emptyTitle}>No referrals yet</div>
-          <div style={S.emptyDesc}>
-            Share your referral code with friends to start earning points. You get +25 pts for each friend who signs up, and they get +15 pts too!
-          </div>
-        </div>
-      )}
+        {/* ── Empty State (only when no referrals) ── */}
+        {referredCount === 0 && (
+          <EmptyState
+            icon="🔗"
+            title="No referrals yet"
+            message="Share your referral code with friends to start earning points. You get +25 pts for each friend who signs up, and they get +15 pts too!"
+          />
+        )}
 
-      {/* How It Works */}
-      <div style={{ ...S.sectionTitle }}>How It Works</div>
-      <div style={S.stepsCard}>
-        <div style={S.stepRow}>
-          <div style={S.stepNumber}>1</div>
-          <div>
-            <div style={S.stepTitle}>Share Your Referral Code</div>
-            <div style={S.stepDesc}>Copy your unique code and share it with friends via Telegram, Twitter, or any social platform. Each friend who signs up with your code becomes your referral.</div>
+        {/* ── How It Works ── */}
+        <SectionTitle title="How It Works" />
+        <div style={{ padding: "16px" }}>
+          <div
+            style={{
+              background: THEME.surfaceAlt,
+              borderRadius: "12px",
+              border: `1px solid ${THEME.border}`,
+              padding: "20px 16px",
+            }}
+          >
+            {STEPS.map((step, i) => (
+              <div key={step.num}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "8px",
+                      background: `${THEME.green}26`,
+                      color: THEME.green,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "13px",
+                      fontWeight: 800,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {step.num}
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        color: THEME.text,
+                        marginBottom: "3px",
+                      }}
+                    >
+                      {step.title}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: THEME.textSecondary,
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {step.desc}
+                    </div>
+                  </div>
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div
+                    style={{
+                      width: "2px",
+                      height: "12px",
+                      background: THEME.border,
+                      marginLeft: "13px",
+                      marginBottom: "4px",
+                    }}
+                  />
+                )}
+              </div>
+            ))}
           </div>
         </div>
-        <div style={S.connector} />
-        <div style={S.stepRow}>
-          <div style={S.stepNumber}>2</div>
-          <div>
-            <div style={S.stepTitle}>Friends Sign Up & Trade</div>
-            <div style={S.stepDesc}>When your referral creates an account and makes their first trade, both of you earn bonus points. You earn 10% of their trading points as a bonus on top.</div>
-          </div>
-        </div>
-        <div style={S.connector} />
-        <div style={S.stepRowLast}>
-          <div style={S.stepNumber}>3</div>
-          <div>
-            <div style={S.stepTitle}>Earn Points & Climb Tiers</div>
-            <div style={S.stepDesc}>As your referrals grow, you earn points rewards and climb through referral tiers (Bronze → Silver → Gold → Platinum) for increasingly better perks and multipliers.</div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </ScrollArea>
+    </PageLayout>
   );
 }

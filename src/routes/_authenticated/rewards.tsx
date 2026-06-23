@@ -3,6 +3,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getUserPoints, getReferralData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import {
+  PageLayout,
+  THEME,
+  StatsRow,
+  SectionTitle,
+  Badge,
+  DataRow,
+  ScrollArea,
+  EmptyState,
+  ProgressBar,
+} from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/rewards")({
   head: () => ({ meta: [{ title: "Rewards — Vixor" }] }),
@@ -14,8 +25,8 @@ export const Route = createFileRoute("/_authenticated/rewards")({
 const tiers = [
   { name: "Bronze", min: 0, color: "#A0703C" },
   { name: "Silver", min: 2500, color: "#A0AEC0" },
-  { name: "Gold", min: 5000, color: "#F59E0B" },
-  { name: "Platinum", min: 10000, color: "#34D399" },
+  { name: "Gold", min: 5000, color: THEME.amber },
+  { name: "Platinum", min: 10000, color: THEME.accent },
 ];
 
 const WEEK_POINTS = [50, 50, 75, 75, 100, 100, 150];
@@ -29,206 +40,6 @@ const rewards = [
   { icon: "🎁", name: "Mystery Box", cost: "750 pts" },
   { icon: "🏆", name: "Profile Badge", cost: "1,500 pts" },
 ];
-
-/* ── Styles ───────────────────────────────────────── */
-
-const S = {
-  page: {
-    background: "#121212",
-    color: "#FFFFFF",
-    fontFamily: "'Inter', system-ui, sans-serif",
-    minHeight: "100vh",
-    padding: "20px",
-  },
-  header: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" },
-  title: { fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0 },
-  subtitle: { fontSize: "12px", color: "#9CA3AF", marginTop: "4px", marginBottom: "20px" },
-  pointsHero: {
-    background: "linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(245,158,11,0.06) 100%)",
-    borderRadius: "16px",
-    border: "1px solid rgba(16,185,129,0.15)",
-    padding: "28px",
-    marginBottom: "24px",
-    textAlign: "center" as const,
-  },
-  pointsLabel: {
-    fontSize: "11px",
-    fontWeight: 600,
-    color: "#9CA3AF",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.08em",
-  },
-  pointsValue: {
-    fontSize: "48px",
-    fontWeight: 800,
-    fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
-    color: "#F59E0B",
-    margin: "6px 0",
-  },
-  pointsSub: { fontSize: "12px", color: "#9CA3AF" },
-  sectionTitle: {
-    fontSize: "13px",
-    fontWeight: 700,
-    color: "#FFFFFF",
-    marginBottom: "14px",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.05em",
-  },
-  card: {
-    background: "#1E1E1E",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.06)",
-    padding: "20px",
-    marginBottom: "24px",
-  },
-  streakGrid: { display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "8px" },
-  streakDay: { textAlign: "center" as const, padding: "10px 0", borderRadius: "10px" },
-  streakDayLabel: { fontSize: "10px", fontWeight: 600, color: "#6B7280", marginBottom: "6px" },
-  streakDayIcon: { fontSize: "20px", marginBottom: "4px" },
-  streakDayStatus: { fontSize: "9px", fontWeight: 600 },
-  streakDayChecked: {
-    background: "rgba(34,197,94,0.12)",
-    border: "1px solid rgba(34,197,94,0.2)",
-  },
-  streakDayCurrent: {
-    background: "rgba(16,185,129,0.12)",
-    border: "1px solid rgba(16,185,129,0.3)",
-  },
-  streakDayFuture: {
-    background: "#1A1A1A",
-    border: "1px solid rgba(255,255,255,0.04)",
-  },
-  streakDayMissed: {
-    background: "rgba(239,68,68,0.06)",
-    border: "1px solid rgba(239,68,68,0.12)",
-  },
-  referralCard: {
-    background: "#1E1E1E",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.06)",
-    padding: "20px",
-    marginBottom: "24px",
-  },
-  referralLink: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    background: "#1A1A1A",
-    borderRadius: "8px",
-    padding: "12px 16px",
-    marginBottom: "16px",
-    border: "1px solid rgba(255,255,255,0.06)",
-  },
-  referralUrl: {
-    flex: 1,
-    fontSize: "12px",
-    fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
-    color: "#9CA3AF",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap" as const,
-  },
-  copyBtn: {
-    fontSize: "11px",
-    fontWeight: 600,
-    padding: "6px 14px",
-    borderRadius: "6px",
-    border: "none",
-    cursor: "pointer",
-    background: "rgba(16,185,129,0.15)",
-    color: "#34D399",
-    fontFamily: "'Inter', system-ui, sans-serif",
-  },
-  referralStats: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "12px",
-  },
-  refStat: { textAlign: "center" as const },
-  refStatValue: {
-    fontSize: "20px",
-    fontWeight: 700,
-    fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
-  },
-  refStatLabel: { fontSize: "10px", color: "#9CA3AF", marginTop: "4px" },
-  tierCard: {
-    background: "#1E1E1E",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.06)",
-    padding: "20px",
-    marginBottom: "24px",
-  },
-  tierBar: { display: "flex", alignItems: "center", gap: "0", marginBottom: "8px" },
-  tierSegment: { flex: 1, height: "10px", background: "#1A1A1A" },
-  tierSegmentFill: { height: "100%", borderRadius: "4px" },
-  tierLabels: { display: "flex", justifyContent: "space-between" },
-  tierLabel: { fontSize: "10px", fontWeight: 600 },
-  tierProgress: {
-    fontSize: "11px",
-    color: "#9CA3AF",
-    marginTop: "8px",
-    textAlign: "center" as const,
-  },
-  rewardGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "12px",
-  },
-  rewardItem: {
-    background: "#1A1A1A",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.06)",
-    padding: "16px",
-    textAlign: "center" as const,
-    cursor: "pointer",
-    transition: "background 0.15s",
-  },
-  rewardIcon: { fontSize: "28px", marginBottom: "8px" },
-  rewardName: { fontSize: "12px", fontWeight: 600, color: "#FFFFFF", marginBottom: "4px" },
-  rewardCost: {
-    fontSize: "11px",
-    fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
-    fontWeight: 600,
-    color: "#F59E0B",
-  },
-  rewardBtn: {
-    marginTop: "10px",
-    fontSize: "10px",
-    fontWeight: 700,
-    padding: "6px 12px",
-    borderRadius: "6px",
-    border: "none",
-    cursor: "pointer",
-    background: "rgba(16,185,129,0.15)",
-    color: "#34D399",
-    fontFamily: "'Inter', system-ui, sans-serif",
-  },
-  txList: { display: "flex", flexDirection: "column" as const, gap: "8px" },
-  txRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "10px 14px",
-    background: "#1A1A1A",
-    borderRadius: "8px",
-    border: "1px solid rgba(255,255,255,0.04)",
-  },
-  txReason: { fontSize: "12px", color: "#FFFFFF", fontWeight: 500 },
-  txDate: { fontSize: "10px", color: "#6B7280", marginTop: "2px" },
-  txDelta: {
-    fontSize: "13px",
-    fontWeight: 700,
-    fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
-  },
-  loadingShimmer: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "40vh",
-    fontSize: "14px",
-    color: "#6B7280",
-  },
-};
 
 /* ── Helpers ──────────────────────────────────────── */
 
@@ -272,33 +83,45 @@ type StreakDayData = {
 };
 
 const StreakDayItem = memo(function StreakDayItem({ item }: { item: StreakDayData }) {
-  const style = item.checked
-    ? S.streakDayChecked
+  const bgStyle = item.checked
+    ? { background: `${THEME.accent}1F`, border: `1px solid ${THEME.accent}33` }
     : item.missed
-      ? S.streakDayMissed
+      ? { background: `${THEME.red}0F`, border: `1px solid ${THEME.red}1F` }
       : item.current
-        ? S.streakDayCurrent
-        : S.streakDayFuture;
+        ? { background: `${THEME.green}1F`, border: `1px solid ${THEME.green}4D` }
+        : { background: THEME.surface, border: `1px solid ${THEME.borderLight}` };
+
+  const statusColor = item.checked
+    ? THEME.accent
+    : item.missed
+      ? THEME.red
+      : item.current
+        ? THEME.accent
+        : THEME.textMuted;
 
   return (
-    <div style={{ ...S.streakDay, ...style }}>
-      <div style={S.streakDayLabel}>{item.day}</div>
-      <div style={S.streakDayIcon}>
+    <div
+      style={{
+        textAlign: "center",
+        padding: "10px 0",
+        borderRadius: 10,
+        ...bgStyle,
+      }}
+    >
+      <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMuted, marginBottom: 6 }}>
+        {item.day}
+      </div>
+      <div style={{ fontSize: 20, marginBottom: 4 }}>
         {item.checked ? "✅" : item.missed ? "✕" : item.current ? "⭐" : "○"}
       </div>
-      <div
-        style={{
-          ...S.streakDayStatus,
-          color: item.checked
-            ? "#22C55E"
-            : item.missed
-              ? "#EF4444"
-              : item.current
-                ? "#34D399"
-                : "#6B7280",
-        }}
-      >
-        {item.checked ? "Done" : item.missed ? "Missed" : item.current ? "Today" : `+${item.points}`}
+      <div style={{ fontSize: 9, fontWeight: 600, color: statusColor }}>
+        {item.checked
+          ? "Done"
+          : item.missed
+            ? "Missed"
+            : item.current
+              ? "Today"
+              : `+${item.points}`}
       </div>
     </div>
   );
@@ -306,11 +129,53 @@ const StreakDayItem = memo(function StreakDayItem({ item }: { item: StreakDayDat
 
 const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0] }) {
   return (
-    <div style={S.rewardItem}>
-      <div style={S.rewardIcon}>{item.icon}</div>
-      <div style={S.rewardName}>{item.name}</div>
-      <div style={S.rewardCost}>{item.cost}</div>
-      <button style={S.rewardBtn}>Redeem</button>
+    <div
+      style={{
+        background: THEME.surface,
+        borderRadius: 12,
+        border: `1px solid ${THEME.border}`,
+        padding: 16,
+        textAlign: "center",
+        cursor: "pointer",
+        transition: "background 0.15s",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLDivElement).style.background = THEME.rowHover;
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLDivElement).style.background = THEME.surface;
+      }}
+    >
+      <div style={{ fontSize: 28, marginBottom: 8 }}>{item.icon}</div>
+      <div style={{ fontSize: 12, fontWeight: 600, color: THEME.text, marginBottom: 4 }}>
+        {item.name}
+      </div>
+      <div
+        style={{
+          fontSize: 11,
+          fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
+          fontWeight: 600,
+          color: THEME.amber,
+        }}
+      >
+        {item.cost}
+      </div>
+      <button
+        style={{
+          marginTop: 10,
+          fontSize: 10,
+          fontWeight: 700,
+          padding: "6px 12px",
+          borderRadius: 6,
+          border: "none",
+          cursor: "pointer",
+          background: `${THEME.green}26`,
+          color: THEME.accent,
+          fontFamily: "'Inter', system-ui, sans-serif",
+        }}
+      >
+        Redeem
+      </button>
     </div>
   );
 });
@@ -385,11 +250,7 @@ function RewardsPage() {
         dayDate >= streakStart;
 
       const isMissed =
-        !isFuture &&
-        !isToday &&
-        !isChecked &&
-        lastCompleted !== null &&
-        dayDate < lastCompleted;
+        !isFuture && !isToday && !isChecked && lastCompleted !== null && dayDate < lastCompleted;
 
       return {
         day: label,
@@ -412,9 +273,7 @@ function RewardsPage() {
     }
     const ct = tiers[idx];
     const nt = idx < tiers.length - 1 ? tiers[idx + 1] : null;
-    const prog = nt
-      ? Math.min(100, ((lifetimeEarned - ct.min) / (nt.min - ct.min)) * 100)
-      : 100;
+    const prog = nt ? Math.min(100, ((lifetimeEarned - ct.min) / (nt.min - ct.min)) * 100) : 100;
     return { currentTierIndex: idx, nextTier: nt, currentTier: ct, progress: prog };
   }, [lifetimeEarned]);
 
@@ -432,97 +291,181 @@ function RewardsPage() {
 
   // Recent transactions (positive deltas only, last 10)
   const recentPositive = useMemo(
-    () =>
-      transactions
-        .filter((t) => (t.delta ?? 0) > 0)
-        .slice(0, 10),
+    () => transactions.filter((t) => (t.delta ?? 0) > 0).slice(0, 10),
     [transactions],
   );
 
-  // ── Loading state ──
-  if (pointsQuery.isLoading || refQuery.isLoading) {
-    return (
-      <div style={S.page}>
-        <div style={S.loadingShimmer}>Loading rewards data…</div>
-      </div>
-    );
-  }
+  const isLoading = pointsQuery.isLoading || refQuery.isLoading;
 
   // ── Render ──
   return (
-    <div style={S.page}>
-      <div style={S.header}>
-        <h1 style={S.title}>Rewards</h1>
-      </div>
-      <p style={S.subtitle}>Earn points, unlock tiers, and redeem rewards</p>
-
+    <PageLayout
+      title="Rewards"
+      description="Earn points, unlock tiers, and redeem rewards"
+      loading={isLoading}
+    >
       {/* ── Points Hero ── */}
-      <div style={S.pointsHero}>
-        <div style={S.pointsLabel}>Points Balance</div>
-        <div style={S.pointsValue}>{fmtNum(balance)}</div>
-        <div style={S.pointsSub}>
+      <div
+        style={{
+          background: `linear-gradient(135deg, ${THEME.green}1F 0%, ${THEME.amber}0F 100%)`,
+          borderRadius: 0,
+          border: `1px solid ${THEME.borderAccent}`,
+          borderLeft: 0,
+          borderRight: 0,
+          padding: "24px 16px",
+          textAlign: "center",
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: THEME.textSecondary,
+            textTransform: "uppercase" as const,
+            letterSpacing: "0.08em",
+          }}
+        >
+          Points Balance
+        </div>
+        <div
+          style={{
+            fontSize: 42,
+            fontWeight: 800,
+            fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
+            color: THEME.amber,
+            margin: "6px 0",
+          }}
+        >
+          {fmtNum(balance)}
+        </div>
+        <div style={{ fontSize: 12, color: THEME.textSecondary }}>
           +{fmtNum(weekEarned)} earned this week · Streak: {streak?.current_streak ?? 0} days
         </div>
       </div>
 
-      {/* ── Daily Check-in Streak ── */}
-      <div style={S.sectionTitle}>Daily Check-in Streak</div>
-      <div style={S.card}>
-        <div style={S.streakGrid}>
+      {/* ── Scrollable Content ── */}
+      <ScrollArea>
+        {/* ── Daily Check-in Streak ── */}
+        <SectionTitle title="Daily Check-in Streak" />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            gap: 8,
+            padding: "12px 16px",
+            background: THEME.surface,
+            borderBottom: `1px solid ${THEME.border}`,
+          }}
+        >
           {streakDays.map((d) => (
             <StreakDayItem key={d.day} item={d} />
           ))}
         </div>
-      </div>
 
-      {/* ── Referral Earnings ── */}
-      <div style={S.sectionTitle}>Referral Earnings</div>
-      <div style={S.referralCard}>
-        <div style={S.referralLink}>
-          <span style={S.referralUrl}>
+        {/* ── Referral Earnings ── */}
+        <SectionTitle title="Referral Earnings" />
+
+        {/* Referral link */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: THEME.surface,
+            padding: "12px 16px",
+            borderBottom: `1px solid ${THEME.border}`,
+          }}
+        >
+          <span
+            style={{
+              flex: 1,
+              fontSize: 12,
+              fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
+              color: THEME.textSecondary,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap" as const,
+            }}
+          >
             {referralUrl || "Generating link…"}
           </span>
-          <button style={S.copyBtn} onClick={handleCopy}>
+          <button
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              padding: "6px 14px",
+              borderRadius: 6,
+              border: "none",
+              cursor: "pointer",
+              background: `${THEME.green}26`,
+              color: THEME.accent,
+              fontFamily: "'Inter', system-ui, sans-serif",
+            }}
+            onClick={handleCopy}
+          >
             {copied ? "Copied!" : "Copy"}
           </button>
         </div>
-        <div style={S.referralStats}>
-          <div style={S.refStat}>
-            <div style={{ ...S.refStatValue, color: "#10B981" }}>{referredCount}</div>
-            <div style={S.refStatLabel}>Total Referrals</div>
-          </div>
-          <div style={S.refStat}>
-            <div style={{ ...S.refStatValue, color: "#22C55E" }}>
-              {referredCount > 0 ? referredCount : 0}
-            </div>
-            <div style={S.refStatLabel}>Active</div>
-          </div>
-          <div style={S.refStat}>
-            <div style={{ ...S.refStatValue, color: "#F59E0B" }}>
-              {fmtNum(referralEarned)} pts
-            </div>
-            <div style={S.refStatLabel}>Earned</div>
-          </div>
-        </div>
-      </div>
 
-      {/* ── Rewards Tier ── */}
-      <div style={S.sectionTitle}>Rewards Tier</div>
-      <div style={S.tierCard}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-          <span style={{ fontSize: "12px", fontWeight: 600, color: "#FFFFFF" }}>
+        {/* Referral stats */}
+        <StatsRow
+          stats={[
+            { label: "Total Referrals", value: String(referredCount), color: THEME.green },
+            {
+              label: "Active",
+              value: String(referredCount > 0 ? referredCount : 0),
+              color: THEME.accent,
+            },
+            { label: "Earned", value: `${fmtNum(referralEarned)} pts`, color: THEME.amber },
+          ]}
+        />
+
+        {/* ── Rewards Tier ── */}
+        <SectionTitle title="Rewards Tier" />
+
+        {/* Tier info */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            padding: "10px 16px",
+            background: THEME.surface,
+            borderBottom: `1px solid ${THEME.border}`,
+          }}
+        >
+          <span style={{ fontSize: 12, fontWeight: 600, color: THEME.text }}>
             Current: <span style={{ color: currentTier.color }}>{currentTier.name}</span>
           </span>
           {nextTier && (
-            <span style={{ fontSize: "12px", fontWeight: 600, color: "#FFFFFF" }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: THEME.text }}>
               Next: <span style={{ color: nextTier.color }}>{nextTier.name}</span>
             </span>
           )}
         </div>
-        <div style={S.tierBar}>
+
+        {/* Tier progress bar (design system component) */}
+        <ProgressBar
+          value={lifetimeEarned}
+          max={nextTier?.min ?? lifetimeEarned}
+          color={currentTier.color}
+          label="Progress"
+          labelRight={`${progress.toFixed(0)}%`}
+        />
+
+        {/* Tier segment bar */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0,
+            padding: "0 16px 8px",
+            background: THEME.surface,
+          }}
+        >
           {tiers.map((t, i) => {
             let fillPct = 0;
-            let fillBg = t.color;
+            const fillBg = t.color;
             if (i < currentTierIndex) {
               fillPct = 100;
             } else if (i === currentTierIndex) {
@@ -532,14 +475,17 @@ function RewardsPage() {
               <div
                 key={t.name}
                 style={{
-                  ...S.tierSegment,
-                  borderRight: i < tiers.length - 1 ? "2px solid #121212" : "none",
+                  flex: 1,
+                  height: 10,
+                  background: THEME.surface,
+                  borderRight: i < tiers.length - 1 ? `2px solid ${THEME.bg}` : "none",
                 }}
               >
                 <div
                   style={{
-                    ...S.tierSegmentFill,
                     width: `${fillPct}%`,
+                    height: "100%",
+                    borderRadius: 4,
                     background: fillBg,
                     opacity: fillPct > 0 ? 0.3 : 0,
                   }}
@@ -548,51 +494,92 @@ function RewardsPage() {
             );
           })}
         </div>
-        <div style={S.tierLabels}>
+
+        {/* Tier labels */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            padding: "0 16px 4px",
+            background: THEME.surface,
+            borderBottom: `1px solid ${THEME.border}`,
+          }}
+        >
           {tiers.map((t) => (
-            <span key={t.name} style={{ ...S.tierLabel, color: t.color }}>
-              {t.name}
-            </span>
+            <Badge key={t.name} label={t.name} color={t.color} small />
           ))}
         </div>
-        <div style={S.tierProgress}>
+
+        {/* Tier progress text */}
+        <div
+          style={{
+            fontSize: 11,
+            color: THEME.textSecondary,
+            padding: "8px 16px 12px",
+            background: THEME.surface,
+            textAlign: "center",
+            borderBottom: `1px solid ${THEME.border}`,
+          }}
+        >
           {nextTier
             ? `${fmtNum(lifetimeEarned)} / ${fmtNum(nextTier.min)} pts to ${nextTier.name} — ${progress.toFixed(0)}%`
             : `${fmtNum(lifetimeEarned)} pts — Max tier reached!`}
         </div>
-      </div>
 
-      {/* ── Recent Earnings ── */}
-      {recentPositive.length > 0 && (
-        <>
-          <div style={S.sectionTitle}>Recent Earnings</div>
-          <div style={S.card}>
-            <div style={S.txList}>
-              {recentPositive.map((tx) => (
-                <div key={tx.id} style={S.txRow}>
+        {/* ── Recent Earnings ── */}
+        {recentPositive.length > 0 && (
+          <>
+            <SectionTitle title="Recent Earnings" count={recentPositive.length} />
+            {recentPositive.map((tx) => (
+              <DataRow key={tx.id}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <div>
-                    <div style={S.txReason}>
-                      {tx.reason?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Points"}
+                    <div style={{ fontSize: 12, color: THEME.text, fontWeight: 500 }}>
+                      {tx.reason?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ??
+                        "Points"}
                     </div>
-                    <div style={S.txDate}>
+                    <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 2 }}>
                       {fmtDate(tx.created_at)} · {fmtTime(tx.created_at)}
                     </div>
                   </div>
-                  <div style={{ ...S.txDelta, color: "#22C55E" }}>+{fmtNum(tx.delta ?? 0)}</div>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
+                      color: THEME.accent,
+                    }}
+                  >
+                    +{fmtNum(tx.delta ?? 0)}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
+              </DataRow>
+            ))}
+          </>
+        )}
 
-      {/* ── Available Rewards ── */}
-      <div style={S.sectionTitle}>Available Rewards</div>
-      <div style={S.rewardGrid}>
-        {rewards.map((r) => (
-          <RewardItem key={r.name} item={r} />
-        ))}
-      </div>
-    </div>
+        {/* ── Available Rewards ── */}
+        <SectionTitle title="Available Rewards" count={rewards.length} />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+            gap: 12,
+            padding: "12px 16px",
+            background: THEME.surface,
+          }}
+        >
+          {rewards.map((r) => (
+            <RewardItem key={r.name} item={r} />
+          ))}
+        </div>
+      </ScrollArea>
+    </PageLayout>
   );
 }

@@ -2,14 +2,23 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import {
+  PageLayout,
+  THEME,
+  StatsRow,
+  ProgressBar,
+  ScrollArea,
+  Badge,
+  EmptyState,
+  SectionTitle,
+  DataRow,
+} from "@/components/vixor/PageLayout";
 
 // ── Server function: get all key statuses (admin only) ──
 const getKeyStatuses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { requireAdmin, getAllKeyStatuses } = await import(
-      "@/shared/api-keys"
-    );
+    const { requireAdmin, getAllKeyStatuses } = await import("@/shared/api-keys");
     requireAdmin(context.userId);
 
     return {
@@ -34,6 +43,15 @@ interface KeyStatus {
   configured: boolean;
   maskedValue?: string;
 }
+
+/** Shared style for a single column in the table header */
+const thCol: React.CSSProperties = {
+  fontSize: "9px",
+  fontWeight: 700,
+  color: THEME.textMuted,
+  textTransform: "uppercase",
+  letterSpacing: "0.06em",
+};
 
 function AdminApiKeysPage() {
   const [keys, setKeys] = useState<KeyStatus[]>([]);
@@ -67,189 +85,137 @@ function AdminApiKeysPage() {
 
   const totalKeys = keys.length;
   const configuredCount = keys.filter((k) => k.configured).length;
+  const pct = totalKeys > 0 ? Math.round((configuredCount / totalKeys) * 100) : 0;
+  const allConfigured = configuredCount === totalKeys && totalKeys > 0;
 
   return (
-    <div
-      className="w-full min-h-screen"
-      style={{
-        background: "#121212",
-        color: "#FFFFFF",
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}
+    <PageLayout
+      title="API Key Management"
+      badge="ADMIN ONLY"
+      badgeColor={THEME.amber}
+      description="Centralized view of all platform API keys. Keys are stored in environment variables and never exposed to clients."
+      loading={loading}
+      loadingColor={THEME.amber}
     >
-      {/* Header */}
-      <div
-        className="px-4 py-3"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-      >
-        <div className="flex items-center gap-2">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#F59E0B"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          <h1 className="text-lg font-bold">API Key Management</h1>
-          <span
-            className="text-[9px] px-1.5 rounded font-bold"
+      {/* Error banner */}
+      {error && (
+        <div
+          style={{
+            padding: "16px",
+            background: `${THEME.red}18`,
+            borderBottom: `1px solid ${THEME.red}30`,
+          }}
+        >
+          <p
             style={{
-              background: "rgba(245,158,11,0.15)",
-              color: "#F59E0B",
+              fontSize: "12px",
+              fontWeight: 700,
+              color: THEME.red,
+              margin: 0,
             }}
           >
-            ADMIN ONLY
-          </span>
+            {error}
+          </p>
         </div>
-        <p className="text-[11px] mt-0.5" style={{ color: "#9CA3AF" }}>
-          Centralized view of all platform API keys. Keys are stored in
-          environment variables and never exposed to clients.
-        </p>
-      </div>
+      )}
+
+      {/* No error, no keys */}
+      {!error && !loading && keys.length === 0 && (
+        <EmptyState
+          icon="🔒"
+          title="No API Keys Found"
+          message="No API keys are configured in the system."
+        />
+      )}
 
       {/* Content */}
-      <div className="p-4">
-        {loading && (
-          <div
-            className="flex items-center justify-center"
-            style={{ height: "200px" }}
-          >
-            <div
-              className="text-[11px] font-mono"
-              style={{ color: "#9CA3AF" }}
-            >
-              Loading key statuses...
-            </div>
-          </div>
-        )}
+      {!error && !loading && keys.length > 0 && (
+        <>
+          <StatsRow
+            stats={[
+              {
+                label: "CONFIG STATUS",
+                value: `${pct}%`,
+                color: allConfigured ? THEME.green : THEME.amber,
+                sub: `${configuredCount} of ${totalKeys} keys configured`,
+              },
+            ]}
+          />
 
-        {error && (
-          <div
-            className="rounded-lg p-4"
-            style={{
-              background: "rgba(239,68,68,0.1)",
-              border: "1px solid rgba(239,68,68,0.2)",
-            }}
-          >
-            <p className="text-[12px] font-bold" style={{ color: "#EF4444" }}>
-              {error}
-            </p>
-          </div>
-        )}
+          <ProgressBar
+            value={configuredCount}
+            max={totalKeys}
+            color={allConfigured ? THEME.green : THEME.amber}
+            height={4}
+          />
 
-        {!loading && !error && keys.length > 0 && (
-          <>
-            {/* Summary */}
-            <div
-              className="rounded-lg p-3 mb-4"
-              style={{
-                background: "#1A1A1A",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-[12px] font-bold">
-                    Configuration Status
-                  </div>
-                  <div
-                    className="text-[10px] mt-0.5"
-                    style={{ color: "#9CA3AF" }}
-                  >
-                    {configuredCount} of {totalKeys} keys configured
-                  </div>
-                </div>
-                <div
-                  className="text-[18px] font-mono font-bold"
-                  style={{
-                    color:
-                      configuredCount === totalKeys ? "#22C55E" : "#F59E0B",
-                  }}
-                >
-                  {Math.round((configuredCount / totalKeys) * 100)}%
-                </div>
-              </div>
-              {/* Progress bar */}
-              <div
-                className="mt-2 h-1.5 rounded-full overflow-hidden"
-                style={{ background: "rgba(255,255,255,0.06)" }}
-              >
-                <div
-                  style={{
-                    width: `${(configuredCount / totalKeys) * 100}%`,
-                    height: "100%",
-                    borderRadius: "9999px",
-                    background:
-                      configuredCount === totalKeys
-                        ? "#22C55E"
-                        : "linear-gradient(90deg, #10B981, #F59E0B)",
-                    transition: "width 0.5s ease",
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Keys by category */}
+          <ScrollArea>
+            {/* Keys grouped by category */}
             {Object.entries(categories).map(([category, categoryKeys]) => (
-              <div key={category} className="mb-4">
-                <div
-                  className="text-[10px] font-bold uppercase tracking-wider mb-2 px-1"
-                  style={{ color: "#6B7280" }}
-                >
-                  {category}
-                </div>
+              <div key={category}>
+                <SectionTitle title={category} count={categoryKeys.length} />
 
+                {/* Table header */}
                 <div
-                  className="rounded-lg overflow-hidden"
                   style={{
-                    background: "#1A1A1A",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 16px",
+                    height: "32px",
+                    background: THEME.tabBarBg,
+                    borderBottom: `1px solid ${THEME.border}`,
+                    flexShrink: 0,
+                    overflowX: "auto",
                   }}
+                  className="scrollbar-hide"
                 >
-                  {/* Table header */}
+                  <div style={{ flex: 1.2, minWidth: 80, ...thCol }}>Key</div>
+                  <div style={{ flex: 1.5, minWidth: 100, ...thCol }}>Environment Variable</div>
                   <div
-                    className="flex items-center px-3 py-2 text-[9px] font-bold uppercase tracking-wider"
                     style={{
-                      color: "#6B7280",
-                      borderBottom: "1px solid rgba(255,255,255,0.06)",
+                      flex: 2,
+                      minWidth: 120,
+                      ...thCol,
                     }}
                   >
-                    <div style={{ flex: 1.2 }}>Key</div>
-                    <div style={{ flex: 1.5 }}>Environment Variable</div>
-                    <div style={{ flex: 2 }}>Description</div>
-                    <div style={{ width: "70px", textAlign: "center" }}>
-                      Status
-                    </div>
-                    <div style={{ width: "90px", textAlign: "right" }}>
-                      Value
-                    </div>
+                    Description
                   </div>
+                  <div style={{ width: "70px", textAlign: "center", ...thCol }}>Status</div>
+                  <div style={{ width: "90px", textAlign: "right", ...thCol }}>Value</div>
+                </div>
 
-                  {/* Rows */}
-                  {categoryKeys.map((key) => (
+                {/* Rows */}
+                {categoryKeys.map((key) => (
+                  <DataRow key={key.id}>
                     <div
-                      key={key.id}
-                      className="flex items-center px-3 py-2.5"
                       style={{
-                        borderBottom: "1px solid rgba(255,255,255,0.03)",
-                        fontSize: "11px",
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                        overflowX: "auto",
                       }}
+                      className="scrollbar-hide"
                     >
-                      <div style={{ flex: 1.2 }} className="font-semibold">
+                      <div
+                        style={{
+                          flex: 1.2,
+                          minWidth: 80,
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          color: THEME.text,
+                          flexShrink: 0,
+                        }}
+                      >
                         {key.label}
                       </div>
                       <div
                         style={{
                           flex: 1.5,
-                          fontFamily: "monospace",
+                          minWidth: 100,
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                           fontSize: "10px",
-                          color: "#9CA3AF",
+                          color: THEME.textSecondary,
+                          flexShrink: 0,
                         }}
                       >
                         {key.envVar}
@@ -257,8 +223,9 @@ function AdminApiKeysPage() {
                       <div
                         style={{
                           flex: 2,
+                          minWidth: 120,
                           fontSize: "10px",
-                          color: "#6B7A8D",
+                          color: THEME.textMuted,
                         }}
                       >
                         {key.description}
@@ -267,71 +234,54 @@ function AdminApiKeysPage() {
                         style={{
                           width: "70px",
                           textAlign: "center",
+                          flexShrink: 0,
                         }}
                       >
                         {key.configured ? (
-                          <span
-                            className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full"
-                            style={{
-                              background: "rgba(34,197,94,0.12)",
-                              color: "#22C55E",
-                            }}
-                          >
-                            <span
-                              style={{
-                                width: "5px",
-                                height: "5px",
-                                borderRadius: "50%",
-                                background: "#22C55E",
-                                display: "inline-block",
-                              }}
-                            />
-                            Active
-                          </span>
+                          <Badge label="Active" color={THEME.green} small />
                         ) : (
-                          <span
-                            className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-                            style={{
-                              background: "rgba(255,255,255,0.04)",
-                              color: "#6B7280",
-                            }}
-                          >
-                            Missing
-                          </span>
+                          <Badge label="Missing" color={THEME.textMuted} small />
                         )}
                       </div>
                       <div
                         style={{
                           width: "90px",
                           textAlign: "right",
-                          fontFamily: "monospace",
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                           fontSize: "10px",
-                          color: key.configured ? "#9CA3AF" : "#6B7280",
+                          color: key.configured ? THEME.textSecondary : THEME.textMuted,
+                          flexShrink: 0,
                         }}
                       >
                         {key.maskedValue || "\u2014"}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </DataRow>
+                ))}
               </div>
             ))}
 
             {/* Info note */}
             <div
-              className="rounded-lg p-3 mt-2"
               style={{
-                background: "rgba(16,185,129,0.06)",
-                border: "1px solid rgba(16,185,129,0.12)",
+                padding: "12px 16px",
+                background: `${THEME.green}10`,
+                borderTop: `1px solid ${THEME.green}18`,
               }}
             >
-              <div className="flex items-start gap-2">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "8px",
+                }}
+              >
                 <svg
                   width="14"
                   height="14"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#34D399"
+                  stroke={THEME.accent}
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -343,26 +293,32 @@ function AdminApiKeysPage() {
                 </svg>
                 <div>
                   <div
-                    className="text-[11px] font-bold"
-                    style={{ color: "#34D399" }}
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color: THEME.accent,
+                    }}
                   >
                     How to configure
                   </div>
                   <div
-                    className="text-[10px] mt-0.5"
-                    style={{ color: "#9CA3AF" }}
+                    style={{
+                      fontSize: "10px",
+                      color: THEME.textSecondary,
+                      marginTop: "2px",
+                      lineHeight: 1.5,
+                    }}
                   >
-                    Set environment variables in your Vercel project settings
-                    or .env.local file. Keys are never sent to the browser.
-                    Admin access is controlled via the VIXOR_ADMIN_IDS
-                    environment variable.
+                    Set environment variables in your Vercel project settings or .env.local file.
+                    Keys are never sent to the browser. Admin access is controlled via the
+                    VIXOR_ADMIN_IDS environment variable.
                   </div>
                 </div>
               </div>
             </div>
-          </>
-        )}
-      </div>
-    </div>
+          </ScrollArea>
+        </>
+      )}
+    </PageLayout>
   );
 }
