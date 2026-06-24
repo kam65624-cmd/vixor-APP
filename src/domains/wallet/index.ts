@@ -21,7 +21,14 @@ export type {
   TokenBalance,
   ChainConfig,
   WalletJwtPayload,
+  EvmChainId,
+  EvmChainInfo,
+  WalletProvider,
+  WalletProviderInfo,
 } from "./types";
+
+// Constants
+export { EVM_CHAINS } from "./types";
 
 // Config
 export {
