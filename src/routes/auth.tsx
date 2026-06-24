@@ -75,7 +75,7 @@ function AuthPage() {
         let attempts = 0;
         const iv = setInterval(() => {
           const t = (window as any).Telegram?.WebApp;
-          if ((t?.initData && t.initData.length > 10) || attempts++ > 20) {
+          if ((t?.initData && t.initData.length > 10) || attempts++ > 50) {
             clearInterval(iv);
             resolve(t?.initData ? t : null);
           }
@@ -84,13 +84,21 @@ function AuthPage() {
 
     (async () => {
       // Check if already logged in
-      const { data } = await supabase.auth.getUser();
-      if (data.user && active) {
-        navigateRef.current({ to: "/" });
-        return;
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (data.user && active) {
+          navigateRef.current({ to: "/" });
+          return;
+        }
+      } catch (getUserErr) {
+        console.warn("[Auth] getUser check failed (Supabase may not be configured):", getUserErr);
       }
 
+      console.log("[Auth] Waiting for Telegram WebApp initData...");
       const tg = await waitForTelegram();
+      console.log("[Auth] Telegram WebApp result:", tg ? "found" : "not found",
+        tg?.initData ? `initData length=${tg.initData.length}` : "no initData");
+
       const initData: string | undefined = tg?.initData;
 
       if (initData && initData.length > 10) {
@@ -100,17 +108,22 @@ function AuthPage() {
           setBusy(true);
         }
         try {
+          console.log("[Auth] Calling telegramSignIn...");
           const { email, password } = await tgSignIn({ data: { initData } });
+          console.log("[Auth] telegramSignIn success, signing in to Supabase...");
           const { error } = await supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
+          console.log("[Auth] Sign-in success, navigating to /");
           navigateRef.current({ to: "/" });
         } catch (e) {
+          console.error("[Auth] Telegram auto-signin failed:", e);
           if (active) setErr(e instanceof Error ? e.message : "Telegram sign-in failed");
         } finally {
           if (active) setBusy(false);
         }
       } else {
         // ── Outside Telegram — show Telegram Login Widget + fallback ──
+        console.log("[Auth] No Telegram initData — showing widget mode");
         if (active) setTgStatus("widget");
       }
     })();
