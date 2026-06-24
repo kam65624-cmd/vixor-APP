@@ -8,3 +8,4 @@
 
 export { WalletProvider, useWallet, WalletContext } from "./WalletProvider";
 export { WalletConnectButton, WalletIcon, truncateAddress } from "./WalletConnectButton";
+export { WalletProviderSelector } from "./WalletProviderSelector";
