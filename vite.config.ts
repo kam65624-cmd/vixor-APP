@@ -22,6 +22,13 @@ export default defineConfig({
     }),
     nitro({
       preset: "vercel",
+      vercel: {
+        functions: {
+          // Vercel supports up to nodejs22.x as of 2025.
+          // nodejs24.x (Nitro 3 default) causes deployment failures.
+          runtime: "nodejs22.x",
+        },
+      },
       // Security headers — applied to all routes
       routeRules: {
         "/**": {
