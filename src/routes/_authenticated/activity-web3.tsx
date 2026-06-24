@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { THEME, PageLayout, EmptyState } from "@/components/vixor/PageLayout";
+import { PageLayout, EmptyState } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/activity-web3")({
   head: () => ({ meta: [{ title: "Activity — Vixor" }] }),
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/activity-web3")({
 
 function ActivityPage() {
   return (
-    <PageLayout title="On-Chain Activity" badge="COMING SOON" badgeColor={THEME.amber}>
+    <PageLayout title="On-Chain Activity" badge="COMING SOON" badgeColor={"var(--color-neutral-wait)"}>
       <EmptyState
         icon="🔄"
         title="On-Chain Activity"

@@ -11,8 +11,7 @@ import {
   Badge,
   DataRow,
   LabelValue,
-  SectionTitle,
-  THEME,
+  SectionTitle, 
 } from "@/components/vixor/PageLayout";
 import {
   formatCurrency,
@@ -64,21 +63,21 @@ const YieldCard = memo(function YieldCard({
             style={{
               fontSize: 14,
               fontWeight: 600,
-              color: THEME.text,
+              color: "var(--color-foreground)",
             }}
           >
             {position.pair}
           </span>
           <Badge
             label={position.direction.toUpperCase()}
-            color={isLong ? THEME.green : THEME.red}
+            color={isLong ? "var(--color-bullish)" : "var(--color-bearish)"}
           />
         </div>
         <span
           style={{
             fontSize: 14,
             fontWeight: 700,
-            color: THEME.green,
+            color: "var(--color-bullish)",
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
           }}
         >
@@ -98,7 +97,7 @@ const YieldCard = memo(function YieldCard({
         <LabelValue
           label="Yield"
           value={formatPercentRaw(position.yieldPct)}
-          valueColor={position.yieldPct >= 0 ? THEME.green : THEME.red}
+          valueColor={position.yieldPct >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"}
         />
         <LabelValue
           label="Dur"
@@ -115,7 +114,7 @@ const YieldCard = memo(function YieldCard({
         <LabelValue
           label="R"
           value={formatRMultiple(position.rMultiple)}
-          valueColor={position.rMultiple >= 0 ? THEME.green : THEME.red}
+          valueColor={position.rMultiple >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"}
         />
         <LabelValue
           label="Qty"
@@ -127,7 +126,7 @@ const YieldCard = memo(function YieldCard({
       <div
         style={{
           fontSize: 11,
-          color: THEME.textMuted,
+          color: "var(--color-muted-foreground)",
           fontFamily: "'JetBrains Mono', ui-monospace, monospace",
         }}
       >
@@ -157,23 +156,23 @@ function YieldPage() {
     {
       label: "Total Yield",
       value: formatCurrency(totalYield),
-      color: totalYield >= 0 ? THEME.green : THEME.red,
+      color: totalYield >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
     },
     {
       label: "Avg Yield/Trade",
       value: formatCurrency(avgYield),
-      color: avgYield >= 0 ? THEME.green : THEME.red,
+      color: avgYield >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
     },
     {
       label: "Best Yield",
       value: bestTrade ? formatCurrency(bestTrade.yield) : "$0.00",
-      color: THEME.green,
+      color: "var(--color-bullish)",
       sub: bestTrade?.pair ?? undefined,
     },
     {
       label: "Yield Trades",
       value: `${yieldCount}/${totalClosed}`,
-      color: THEME.accent,
+      color: "var(--color-primary)",
     },
   ];
 
@@ -181,7 +180,7 @@ function YieldPage() {
     <PageLayout
       title="Yield"
       badge="YIELD"
-      badgeColor={THEME.green}
+      badgeColor={"var(--color-bullish)"}
       description="Closed trade yield performance and returns"
       loading={isLoading}
     >

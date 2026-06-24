@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { THEME, PageLayout, EmptyState } from "@/components/vixor/PageLayout";
+import { PageLayout, EmptyState } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/charts")({
   head: () => ({ meta: [{ title: "Charts — Vixor" }] }),
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/charts")({
 
 function ChartsPage() {
   return (
-    <PageLayout title="Charts" badge="COMING SOON" badgeColor={THEME.amber}>
+    <PageLayout title="Charts" badge="COMING SOON" badgeColor={"var(--color-neutral-wait)"}>
       <EmptyState
         icon="📈"
         title="Charts"

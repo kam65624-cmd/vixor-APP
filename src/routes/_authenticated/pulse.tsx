@@ -12,8 +12,7 @@ import {
   ScrollArea,
   EmptyState,
   Badge,
-  DataRow,
-  THEME,
+  DataRow, 
 } from "@/components/vixor/PageLayout";
 import {
   formatTimeAgo,
@@ -28,13 +27,13 @@ type Tab = (typeof TABS)[number];
 
 const PulseRow = memo(function PulseRow({ item }: { item: any }) {
   const isTrade = item.type === "trade";
-  const typeColor = isTrade ? THEME.accent : THEME.purple;
+  const typeColor = isTrade ? "var(--color-primary)" : "var(--color-info)";
   const actionColor =
     item.action === "BOUGHT" || item.action === "BUY"
-      ? THEME.green
+      ? "var(--color-bullish)"
       : item.action === "SOLD" || item.action === "SELL"
-        ? THEME.red
-        : THEME.amber;
+        ? "var(--color-bearish)"
+        : "var(--color-neutral-wait)";
 
   return (
     <DataRow style={{ padding: "8px 16px", alignItems: "center" }}>
@@ -74,7 +73,7 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
           style={{
             fontSize: "11px",
             fontWeight: 700,
-            color: THEME.text,
+            color: "var(--color-foreground)",
             flexShrink: 0,
           }}
         >
@@ -84,7 +83,7 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
         <span
           style={{
             fontSize: "10px",
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -102,7 +101,7 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
                 <span
                   style={{
                     color:
-                      item.pnl >= 0 ? THEME.green : THEME.red,
+                      item.pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                     marginLeft: 8,
                     fontWeight: 700,
                   }}
@@ -115,7 +114,7 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
           ) : (
             <>
               {item.confidence != null && (
-                <span style={{ color: THEME.amber }}>
+                <span style={{ color: "var(--color-neutral-wait)" }}>
                   {item.confidence}%
                 </span>
               )}
@@ -124,7 +123,7 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
                   style={{
                     marginLeft: 8,
                     fontSize: "9px",
-                    color: THEME.textMuted,
+                    color: "var(--color-muted-foreground)",
                   }}
                 >
                   {item.pattern}
@@ -137,7 +136,7 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
       <span
         style={{
           fontSize: "9px",
-          color: THEME.textMuted,
+          color: "var(--color-muted-foreground)",
           flexShrink: 0,
           marginLeft: "8px",
         }}
@@ -171,7 +170,7 @@ function PulsePage() {
     <PageLayout
       title="Pulse"
       badge="LIVE"
-      badgeColor={THEME.green}
+      badgeColor={"var(--color-bullish)"}
       description="Real-time trade signals and activity feed"
       tabs={TABS as unknown as string[]}
       activeTab={tab}

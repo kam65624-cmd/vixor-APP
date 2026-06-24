@@ -150,14 +150,14 @@ export function AnalystReportPanel({ onRefresh }: AnalystReportPanelProps) {
 
   if (reportMutation.isError) {
     return (
-      <div className="rounded-xl border border-red-500/30 bg-card/80 backdrop-blur-sm shadow-lg shadow-black/20 p-5 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="rounded-xl border border-bearish/30 bg-card/80 backdrop-blur-sm shadow-lg shadow-black/20 p-5 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center gap-2.5 mb-3">
           <div className="flex items-center justify-center size-8 rounded-lg bg-red-500/10">
-            <AlertCircle className="size-4 text-red-400" />
+            <AlertCircle className="size-4 text-bearish" />
           </div>
-          <span className="text-sm font-semibold text-red-400">Report Error</span>
+          <span className="text-sm font-semibold text-bearish">Report Error</span>
         </div>
-        <p className="text-xs text-red-300 mb-3">
+        <p className="text-xs text-bearish mb-3">
           {reportMutation.error?.message || "Failed to generate weekly report. Please try again."}
         </p>
         <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-2 text-xs">
@@ -247,7 +247,7 @@ export function AnalystReportPanel({ onRefresh }: AnalystReportPanelProps) {
           variant="outline"
           onClick={handleAccept}
           disabled={feedbackMutation.isPending || feedbackMutation.isSuccess}
-          className="gap-1.5 text-xs flex-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
+          className="gap-1.5 text-xs flex-1 border-bullish/30 text-bullish hover:bg-bullish/10 hover:text-bullish"
         >
           {feedbackMutation.isPending ? (
             <Loader2 className="size-3.5 animate-spin" />
@@ -261,7 +261,7 @@ export function AnalystReportPanel({ onRefresh }: AnalystReportPanelProps) {
           variant="outline"
           onClick={handleDismiss}
           disabled={feedbackMutation.isPending || feedbackMutation.isSuccess}
-          className="gap-1.5 text-xs flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+          className="gap-1.5 text-xs flex-1 border-bearish/30 text-bearish hover:bg-bearish/10 hover:text-bearish"
         >
           <ThumbsDown className="size-3.5" />
           Dismiss

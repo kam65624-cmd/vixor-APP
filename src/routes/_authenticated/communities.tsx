@@ -11,8 +11,7 @@ import {
   Badge,
   DataRow,
   LabelValue,
-  SectionTitle,
-  THEME,
+  SectionTitle, 
 } from "@/components/vixor/PageLayout";
 import {
   formatNumber,
@@ -24,16 +23,16 @@ export const Route = createFileRoute("/_authenticated/communities")({
 });
 
 const moodConfig: Record<string, { emoji: string; color: string; label: string }> = {
-  confident: { emoji: "\uD83D\uDCAA", color: THEME.green, label: "Confident" },
-  cautious: { emoji: "\u26A0\uFE0F", color: THEME.amber, label: "Cautious" },
-  anxious: { emoji: "\uD83D\uDE30", color: THEME.red, label: "Anxious" },
-  neutral: { emoji: "\uD83D\uDE10", color: THEME.textSecondary, label: "Neutral" },
+  confident: { emoji: "\uD83D\uDCAA", color: "var(--color-bullish)", label: "Confident" },
+  cautious: { emoji: "\u26A0\uFE0F", color: "var(--color-neutral-wait)", label: "Cautious" },
+  anxious: { emoji: "\uD83D\uDE30", color: "var(--color-bearish)", label: "Anxious" },
+  neutral: { emoji: "\uD83D\uDE10", color: "var(--color-muted-foreground)", label: "Neutral" },
 };
 
 const riskConfig: Record<string, { color: string }> = {
-  low: { color: THEME.green },
-  medium: { color: THEME.amber },
-  high: { color: THEME.red },
+  low: { color: "var(--color-bullish)" },
+  medium: { color: "var(--color-neutral-wait)" },
+  high: { color: "var(--color-bearish)" },
 };
 
 const StrategyCard = memo(function StrategyCard({
@@ -52,7 +51,7 @@ const StrategyCard = memo(function StrategyCard({
 }) {
   const displayedPairs = strategy.pairs.slice(0, 5);
   const morePairs = strategy.pairs.length - 5;
-  const riskColor = riskConfig[strategy.riskTolerance]?.color ?? THEME.textSecondary;
+  const riskColor = riskConfig[strategy.riskTolerance]?.color ?? "var(--color-muted-foreground)";
 
   return (
     <DataRow>
@@ -72,7 +71,7 @@ const StrategyCard = memo(function StrategyCard({
             style={{
               fontSize: 14,
               fontWeight: 600,
-              color: THEME.text,
+              color: "var(--color-foreground)",
             }}
           >
             {strategy.name}
@@ -80,13 +79,13 @@ const StrategyCard = memo(function StrategyCard({
           <span
             style={{
               fontSize: 12,
-              color: THEME.textSecondary,
+              color: "var(--color-muted-foreground)",
             }}
           >
             {strategy.tradingStyle}
           </span>
           {strategy.isActive && (
-            <Badge label="ACTIVE" color={THEME.green} />
+            <Badge label="ACTIVE" color={"var(--color-bullish)"} />
           )}
           <Badge
             label={strategy.riskTolerance.toUpperCase()}
@@ -98,10 +97,10 @@ const StrategyCard = memo(function StrategyCard({
       {/* Middle: pair badges */}
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
         {displayedPairs.map((pair) => (
-          <Badge key={pair} label={pair} color={THEME.accent} />
+          <Badge key={pair} label={pair} color={"var(--color-primary)"} />
         ))}
         {morePairs > 0 && (
-          <Badge label={`+${morePairs} more`} color={THEME.textMuted} />
+          <Badge label={`+${morePairs} more`} color={"var(--color-muted-foreground)"} />
         )}
       </div>
 
@@ -115,13 +114,13 @@ const StrategyCard = memo(function StrategyCard({
       >
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {strategy.timeframes.map((tf) => (
-            <Badge key={tf} label={tf} color={THEME.purple} />
+            <Badge key={tf} label={tf} color={"var(--color-info)"} />
           ))}
         </div>
         <span
           style={{
             fontSize: 11,
-            color: THEME.textMuted,
+            color: "var(--color-muted-foreground)",
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             flexShrink: 0,
           }}
@@ -170,7 +169,7 @@ const PostCard = memo(function PostCard({
             style={{
               fontSize: 14,
               fontWeight: 600,
-              color: THEME.text,
+              color: "var(--color-foreground)",
             }}
           >
             {post.title}
@@ -180,7 +179,7 @@ const PostCard = memo(function PostCard({
             color={mood.color}
           />
           {post.isPinned && (
-            <Badge label="PINNED" color={THEME.amber} />
+            <Badge label="PINNED" color={"var(--color-neutral-wait)"} />
           )}
         </div>
       </div>
@@ -188,7 +187,7 @@ const PostCard = memo(function PostCard({
       {/* Middle: pair badge */}
       {post.pair && (
         <div style={{ marginBottom: 6 }}>
-          <Badge label={post.pair} color={THEME.accent} />
+          <Badge label={post.pair} color={"var(--color-primary)"} />
         </div>
       )}
 
@@ -196,7 +195,7 @@ const PostCard = memo(function PostCard({
       <div
         style={{
           fontSize: 13,
-          color: THEME.textSecondary,
+          color: "var(--color-muted-foreground)",
           lineHeight: 1.5,
           marginBottom: 8,
         }}
@@ -215,13 +214,13 @@ const PostCard = memo(function PostCard({
       >
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {post.tags.map((tag) => (
-            <Badge key={tag} label={tag} color={THEME.purple} />
+            <Badge key={tag} label={tag} color={"var(--color-info)"} />
           ))}
         </div>
         <span
           style={{
             fontSize: 11,
-            color: THEME.textMuted,
+            color: "var(--color-muted-foreground)",
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             flexShrink: 0,
           }}
@@ -255,22 +254,22 @@ function CommunitiesPage() {
     {
       label: "Shared Strategies",
       value: formatNumber(strategyCount),
-      color: THEME.green,
+      color: "var(--color-bullish)",
     },
     {
       label: "Community Posts",
       value: formatNumber(postCount),
-      color: THEME.accent,
+      color: "var(--color-primary)",
     },
     {
       label: "Active Traders",
       value: formatNumber(activeTraders),
-      color: THEME.amber,
+      color: "var(--color-neutral-wait)",
     },
     {
       label: "Total Activity",
       value: formatNumber(totalActivity),
-      color: THEME.purple,
+      color: "var(--color-info)",
     },
   ];
 
@@ -278,7 +277,7 @@ function CommunitiesPage() {
     <PageLayout
       title="Communities"
       badge="COMMUNITY"
-      badgeColor={THEME.purple}
+      badgeColor={"var(--color-info)"}
       description="Shared trading strategies and community activity"
       tabs={["Strategies", "Activity"]}
       activeTab={activeTab}

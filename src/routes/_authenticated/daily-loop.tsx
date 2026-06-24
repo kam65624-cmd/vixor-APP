@@ -35,7 +35,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { ExpandableWidget } from "@/components/vixor/ExpandableWidget";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
 import { AnalystReportPanel } from "@/components/vixor/AnalystReportPanel";
-import { THEME, PageLayout, ScrollArea, EmptyState } from "@/components/vixor/PageLayout";
+import { PageLayout, ScrollArea, EmptyState } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/daily-loop")({
   head: () => ({ meta: [{ title: "Daily Loop — Vixor" }] }),
@@ -46,42 +46,42 @@ export const Route = createFileRoute("/_authenticated/daily-loop")({
 // SHARED STYLE CONSTANTS
 // ═══════════════════════════════════════════════
 
-// Gradient endpoint — darker shade of THEME.green for depth
+// Gradient endpoint — darker shade of "var(--color-bullish)" for depth
 const GREEN_DARK = "#059669";
 
 const CSS_VARS: React.CSSProperties = {
-  "--color-primary": THEME.green,
-  "--color-primary-foreground": THEME.text,
+  "--color-primary": "var(--color-bullish)",
+  "--color-primary-foreground": "var(--color-foreground)",
   "--color-muted": "rgba(255,255,255,0.05)",
-  "--color-muted-foreground": THEME.textSecondary,
-  "--color-card": THEME.surface,
-  "--color-card-hover": THEME.rowHoverStrong,
-  "--color-border": THEME.border,
-  "--color-bullish": THEME.green,
-  "--color-bearish": THEME.red,
-  "--color-neutral-wait": THEME.amber,
-  "--color-info": THEME.green,
-  "--color-foreground": THEME.text,
-  "--gradient-primary": `linear-gradient(135deg, ${THEME.green}, ${GREEN_DARK})`,
-  "--shadow-glow": `0 0 20px ${THEME.green}4D`,
+  "--color-muted-foreground": "var(--color-muted-foreground)",
+  "--color-card": "var(--color-card)",
+  "--color-card-hover": "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+  "--color-border": "var(--color-border)",
+  "--color-bullish": "var(--color-bullish)",
+  "--color-bearish": "var(--color-bearish)",
+  "--color-neutral-wait": "var(--color-neutral-wait)",
+  "--color-info": "var(--color-bullish)",
+  "--color-foreground": "var(--color-foreground)",
+  "--gradient-primary": `linear-gradient(135deg, ${"var(--color-bullish)"}, ${GREEN_DARK})`,
+  "--shadow-glow": `0 0 20px ${"var(--color-bullish)"}4D`,
 } as React.CSSProperties;
 
 const CARD_STYLE: React.CSSProperties = {
-  background: THEME.surface,
-  border: `1px solid ${THEME.border}`,
+  background: "var(--color-card)",
+  border: `1px solid ${"var(--color-border)"}`,
   borderRadius: 12,
 };
 
 const GRADIENT_BTN_STYLE: React.CSSProperties = {
-  background: `linear-gradient(135deg, ${THEME.green}, ${GREEN_DARK})`,
-  color: THEME.text,
-  boxShadow: `0 0 20px ${THEME.green}4D`,
+  background: `linear-gradient(135deg, ${"var(--color-bullish)"}, ${GREEN_DARK})`,
+  color: "var(--color-foreground)",
+  boxShadow: `0 0 20px ${"var(--color-bullish)"}4D`,
 };
 
 const INPUT_STYLE: React.CSSProperties = {
-  background: THEME.surface,
-  border: `1px solid ${THEME.border}`,
-  color: THEME.text,
+  background: "var(--color-card)",
+  border: `1px solid ${"var(--color-border)"}`,
+  color: "var(--color-foreground)",
   borderRadius: 8,
   padding: "10px 12px",
   fontSize: 12,
@@ -98,7 +98,7 @@ const TEXTAREA_STYLE: React.CSSProperties = {
 const LABEL_STYLE: React.CSSProperties = {
   fontSize: 10,
   fontWeight: 700,
-  color: THEME.textSecondary,
+  color: "var(--color-muted-foreground)",
   textTransform: "uppercase",
   letterSpacing: "0.1em",
   display: "block",
@@ -108,7 +108,7 @@ const LABEL_STYLE: React.CSSProperties = {
 const SECTION_LABEL_STYLE: React.CSSProperties = {
   fontSize: 10,
   fontWeight: 700,
-  color: THEME.textSecondary,
+  color: "var(--color-muted-foreground)",
   textTransform: "uppercase",
   letterSpacing: "0.1em",
 };
@@ -118,9 +118,9 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
 // ═══════════════════════════════════════════════
 
 function biasColors(bias: MarketBias | undefined | null): { bg: string; text: string; border: string } {
-  if (bias === "bullish") return { bg: `${THEME.green}26`, text: THEME.green, border: `${THEME.green}66` };
-  if (bias === "bearish") return { bg: `${THEME.red}26`, text: THEME.red, border: `${THEME.red}66` };
-  return { bg: `${THEME.amber}26`, text: THEME.amber, border: `${THEME.amber}66` };
+  if (bias === "bullish") return { bg: `${"var(--color-bullish)"}26`, text: "var(--color-bullish)", border: `${"var(--color-bullish)"}66` };
+  if (bias === "bearish") return { bg: `${"var(--color-bearish)"}26`, text: "var(--color-bearish)", border: `${"var(--color-bearish)"}66` };
+  return { bg: `${"var(--color-neutral-wait)"}26`, text: "var(--color-neutral-wait)", border: `${"var(--color-neutral-wait)"}66` };
 }
 
 // ═══════════════════════════════════════════════
@@ -137,37 +137,37 @@ const EMOTIONAL_STATES: {
     value: "disciplined",
     emoji: "💪",
     label: "Disciplined",
-    color: { bg: `${THEME.green}26`, text: THEME.green, border: `${THEME.green}66` },
+    color: { bg: `${"var(--color-bullish)"}26`, text: "var(--color-bullish)", border: `${"var(--color-bullish)"}66` },
   },
   {
     value: "calm",
     emoji: "🧘",
     label: "Calm",
-    color: { bg: `${THEME.green}26`, text: THEME.green, border: `${THEME.green}66` },
+    color: { bg: `${"var(--color-bullish)"}26`, text: "var(--color-bullish)", border: `${"var(--color-bullish)"}66` },
   },
   {
     value: "anxious",
     emoji: "😰",
     label: "Anxious",
-    color: { bg: `${THEME.amber}26`, text: THEME.amber, border: `${THEME.amber}66` },
+    color: { bg: `${"var(--color-neutral-wait)"}26`, text: "var(--color-neutral-wait)", border: `${"var(--color-neutral-wait)"}66` },
   },
   {
     value: "fomo",
     emoji: "🏃",
     label: "FOMO",
-    color: { bg: `${THEME.orange}26`, text: THEME.orange, border: `${THEME.orange}66` },
+    color: { bg: `${"var(--color-neutral-wait)"}26`, text: "var(--color-neutral-wait)", border: `${"var(--color-neutral-wait)"}66` },
   },
   {
     value: "revenge",
     emoji: "🔥",
     label: "Revenge",
-    color: { bg: `${THEME.red}26`, text: THEME.red, border: `${THEME.red}66` },
+    color: { bg: `${"var(--color-bearish)"}26`, text: "var(--color-bearish)", border: `${"var(--color-bearish)"}66` },
   },
   {
     value: "tired",
     emoji: "😴",
     label: "Tired",
-    color: { bg: THEME.surfaceAlt, text: THEME.textMuted, border: THEME.border },
+    color: { bg: "var(--color-card-hover)", text: "var(--color-muted-foreground)", border: "var(--color-border)" },
   },
 ];
 
@@ -296,7 +296,7 @@ function DailyLoopPage() {
     <PageLayout
       title="Daily Loop"
       badge="ROUTINE BUILDER"
-      badgeColor={THEME.green}
+      badgeColor={"var(--color-bullish)"}
       description="Build consistency, one day at a time"
       tabs={["Today", "History"]}
       activeTab={activeTab === "today" ? "Today" : "History"}
@@ -338,14 +338,14 @@ function DailyLoopPage() {
             {/* ── WEEKLY BEHAVIORAL REPORT (Analyst Agent) ── */}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 4px" }}>
-                <Brain size={14} style={{ color: THEME.green }} />
+                <Brain size={14} style={{ color: "var(--color-bullish)" }} />
                 <span
                   style={{
                     fontSize: 11,
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
-                    color: THEME.textSecondary,
+                    color: "var(--color-muted-foreground)",
                   }}
                 >
                   AI Behavioral Report
@@ -428,7 +428,7 @@ function TodayTab({
               fontSize: 14,
               fontWeight: 700,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              color: THEME.green,
+              color: "var(--color-bullish)",
             }}
           >
             {progressPct}%
@@ -447,7 +447,7 @@ function TodayTab({
             style={{
               height: "100%",
               borderRadius: 9999,
-              background: THEME.green,
+              background: "var(--color-bullish)",
               transition: "width 0.7s ease",
               width: `${progressPct}%`,
             }}
@@ -457,7 +457,7 @@ function TodayTab({
           {phases.map((phase) => (
             <div key={phase.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
               {phase.done ? (
-                <CheckCircle2 size={14} style={{ color: THEME.green }} />
+                <CheckCircle2 size={14} style={{ color: "var(--color-bullish)" }} />
               ) : (
                 <Circle size={14} style={{ color: "rgba(156,163,175,0.4)" }} />
               )}
@@ -465,7 +465,7 @@ function TodayTab({
                 style={{
                   fontSize: 10,
                   fontWeight: 700,
-                  color: phase.done ? THEME.green : THEME.textSecondary,
+                  color: phase.done ? "var(--color-bullish)" : "var(--color-muted-foreground)",
                 }}
               >
                 {phase.label}
@@ -545,12 +545,12 @@ function StreakWidget({
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Flame
             size={14}
-            style={{ color: currentStreak > 0 ? THEME.amber : THEME.textSecondary }}
+            style={{ color: currentStreak > 0 ? "var(--color-neutral-wait)" : "var(--color-muted-foreground)" }}
           />
           <span style={SECTION_LABEL_STYLE}>Streak</span>
         </div>
         {currentStreak > 0 && (
-          <span style={{ fontSize: 12, fontWeight: 700, color: THEME.amber }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-neutral-wait)" }}>
             🔥 {currentStreak} day{currentStreak !== 1 ? "s" : ""} in a row!
           </span>
         )}
@@ -570,7 +570,7 @@ function StreakWidget({
               fontSize: 24,
               fontWeight: 700,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              color: THEME.text,
+              color: "var(--color-foreground)",
             }}
           >
             {currentStreak}
@@ -583,7 +583,7 @@ function StreakWidget({
               fontSize: 24,
               fontWeight: 700,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              color: THEME.green,
+              color: "var(--color-bullish)",
             }}
           >
             {longestStreak}
@@ -596,7 +596,7 @@ function StreakWidget({
               fontSize: 24,
               fontWeight: 700,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              color: THEME.green,
+              color: "var(--color-bullish)",
             }}
           >
             {history.filter((l) => l.completion_percentage >= 100).length}
@@ -618,11 +618,11 @@ function StreakWidget({
           {heatmapDays.map((day) => {
             const bg =
               day.completion >= 100
-                ? THEME.green
+                ? "var(--color-bullish)"
                 : day.completion >= 66
-                  ? `${THEME.green}99`
+                  ? `${"var(--color-bullish)"}99`
                   : day.completion >= 33
-                    ? `${THEME.green}4D`
+                    ? `${"var(--color-bullish)"}4D`
                     : "rgba(255,255,255,0.05)";
             return (
               <div
@@ -647,12 +647,12 @@ function StreakWidget({
             marginTop: 4,
           }}
         >
-          <span style={{ fontSize: 8, color: THEME.textSecondary }}>Less</span>
+          <span style={{ fontSize: 8, color: "var(--color-muted-foreground)" }}>Less</span>
           <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(255,255,255,0.05)" }} />
-          <div style={{ width: 10, height: 10, borderRadius: 3, background: `${THEME.green}4D` }} />
-          <div style={{ width: 10, height: 10, borderRadius: 3, background: `${THEME.green}99` }} />
-          <div style={{ width: 10, height: 10, borderRadius: 3, background: THEME.green }} />
-          <span style={{ fontSize: 8, color: THEME.textSecondary }}>More</span>
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: `${"var(--color-bullish)"}4D` }} />
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: `${"var(--color-bullish)"}99` }} />
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: "var(--color-bullish)" }} />
+          <span style={{ fontSize: 8, color: "var(--color-muted-foreground)" }}>More</span>
         </div>
       </div>
     </div>
@@ -727,8 +727,8 @@ function MorningPrepPhase({
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <CheckCircle2 size={12} style={{ color: THEME.green }} />
-            <span style={{ fontSize: 12, color: THEME.textSecondary }}>
+            <CheckCircle2 size={12} style={{ color: "var(--color-bullish)" }} />
+            <span style={{ fontSize: 12, color: "var(--color-muted-foreground)" }}>
               Watchlist {loop?.watchlist_reviewed ? "reviewed" : "not reviewed"}
             </span>
           </div>
@@ -763,11 +763,11 @@ function MorningPrepPhase({
                       gap: 6,
                       padding: "10px 12px",
                       borderRadius: 8,
-                      border: `1px solid ${isSelected ? colors.border : THEME.border}`,
+                      border: `1px solid ${isSelected ? colors.border : "var(--color-border)"}`,
                       fontSize: 12,
                       fontWeight: 700,
-                      background: isSelected ? colors.bg : THEME.surface,
-                      color: isSelected ? colors.text : THEME.textSecondary,
+                      background: isSelected ? colors.bg : "var(--color-card)",
+                      color: isSelected ? colors.text : "var(--color-muted-foreground)",
                       cursor: "pointer",
                       transition: "all 0.15s ease",
                     }}
@@ -806,15 +806,15 @@ function MorningPrepPhase({
             }}
           >
             {watchlistReviewed ? (
-              <CheckCircle2 size={14} style={{ color: THEME.green }} />
+              <CheckCircle2 size={14} style={{ color: "var(--color-bullish)" }} />
             ) : (
-              <Circle size={14} style={{ color: THEME.textSecondary }} />
+              <Circle size={14} style={{ color: "var(--color-muted-foreground)" }} />
             )}
             <span
               style={{
                 fontSize: 12,
                 fontWeight: 700,
-                color: watchlistReviewed ? THEME.green : THEME.textSecondary,
+                color: watchlistReviewed ? "var(--color-bullish)" : "var(--color-muted-foreground)",
               }}
             >
               Watchlist Reviewed
@@ -944,8 +944,8 @@ function SessionCard({
     <div
       style={{
         borderRadius: 8,
-        border: `1px solid ${isActive ? `${THEME.green}66` : THEME.border}`,
-        background: isActive ? `${THEME.green}0D` : THEME.surface,
+        border: `1px solid ${isActive ? `${"var(--color-bullish)"}66` : "var(--color-border)"}`,
+        background: isActive ? `${"var(--color-bullish)"}0D` : "var(--color-card)",
         padding: 12,
         display: "flex",
         flexDirection: "column",
@@ -956,13 +956,13 @@ function SessionCard({
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Clock
             size={12}
-            style={{ color: isActive ? THEME.green : THEME.textSecondary }}
+            style={{ color: isActive ? "var(--color-bullish)" : "var(--color-muted-foreground)" }}
           />
-          <span style={{ fontSize: 12, fontWeight: 700, color: THEME.text }}>{session.label}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-foreground)" }}>{session.label}</span>
           <span
             style={{
               fontSize: 10,
-              color: THEME.textSecondary,
+              color: "var(--color-muted-foreground)",
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             }}
           >
@@ -977,9 +977,9 @@ function SessionCard({
               textTransform: "uppercase",
               padding: "2px 6px",
               borderRadius: 4,
-              background: `${THEME.green}26`,
-              color: THEME.green,
-              border: `1px solid ${THEME.green}4D`,
+              background: `${"var(--color-bullish)"}26`,
+              color: "var(--color-bullish)",
+              border: `1px solid ${"var(--color-bullish)"}4D`,
               animation: "pulse 2s ease-in-out infinite",
             }}
           >
@@ -999,10 +999,10 @@ function SessionCard({
             fontSize: 10,
             fontWeight: 700,
             border: `1px solid ${
-              localTraded ? `${THEME.green}66` : THEME.border
+              localTraded ? `${"var(--color-bullish)"}66` : "var(--color-border)"
             }`,
-            background: localTraded ? `${THEME.green}26` : THEME.surface,
-            color: localTraded ? THEME.green : THEME.textSecondary,
+            background: localTraded ? `${"var(--color-bullish)"}26` : "var(--color-card)",
+            color: localTraded ? "var(--color-bullish)" : "var(--color-muted-foreground)",
             cursor: "pointer",
             transition: "all 0.15s ease",
           }}
@@ -1039,9 +1039,9 @@ function SessionCard({
           borderRadius: 6,
           fontSize: 10,
           fontWeight: 700,
-          background: THEME.surface,
-          border: `1px solid ${THEME.border}`,
-          color: THEME.text,
+          background: "var(--color-card)",
+          border: `1px solid ${"var(--color-border)"}`,
+          color: "var(--color-foreground)",
           cursor: isSaving ? "not-allowed" : "pointer",
           transition: "all 0.15s ease",
           opacity: isSaving ? 0.5 : 1,
@@ -1131,7 +1131,7 @@ function EodReviewPhase({
                   fontSize: 14,
                   fontWeight: 700,
                   fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                  color: loop.daily_pnl >= 0 ? THEME.green : THEME.red,
+                  color: loop.daily_pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                 }}
               >
                 {loop.daily_pnl >= 0 ? "+" : ""}${Number(loop.daily_pnl).toFixed(2)}
@@ -1152,12 +1152,12 @@ function EodReviewPhase({
                   fontSize: 14,
                   fontWeight: 700,
                   fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                  color: THEME.text,
+                  color: "var(--color-foreground)",
                 }}
               >
                 {loop?.trades_taken ?? 0}
               </div>
-              <div style={{ fontSize: 9, color: THEME.textSecondary }}>Trades</div>
+              <div style={{ fontSize: 9, color: "var(--color-muted-foreground)" }}>Trades</div>
             </div>
             <div>
               <div
@@ -1165,12 +1165,12 @@ function EodReviewPhase({
                   fontSize: 14,
                   fontWeight: 700,
                   fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                  color: THEME.green,
+                  color: "var(--color-bullish)",
                 }}
               >
                 {loop?.rules_followed ?? 0}
               </div>
-              <div style={{ fontSize: 9, color: THEME.textSecondary }}>Rules ✓</div>
+              <div style={{ fontSize: 9, color: "var(--color-muted-foreground)" }}>Rules ✓</div>
             </div>
             <div>
               <div
@@ -1178,17 +1178,17 @@ function EodReviewPhase({
                   fontSize: 14,
                   fontWeight: 700,
                   fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                  color: THEME.red,
+                  color: "var(--color-bearish)",
                 }}
               >
                 {loop?.rules_broken ?? 0}
               </div>
-              <div style={{ fontSize: 9, color: THEME.textSecondary }}>Rules ✗</div>
+              <div style={{ fontSize: 9, color: "var(--color-muted-foreground)" }}>Rules ✗</div>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={SECTION_LABEL_STYLE}>Mood:</span>
-            <span style={{ fontSize: 12, color: THEME.text }}>
+            <span style={{ fontSize: 12, color: "var(--color-foreground)" }}>
               {EMOTIONAL_STATES.find((e) => e.value === loop?.emotional_state)?.emoji}{" "}
               {EMOTIONAL_STATES.find((e) => e.value === loop?.emotional_state)?.label}
             </span>
@@ -1255,7 +1255,7 @@ function EodReviewPhase({
                   borderRadius: 6,
                   padding: "8px 10px",
                   fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                  color: THEME.green,
+                  color: "var(--color-bullish)",
                 }}
               />
             </div>
@@ -1271,7 +1271,7 @@ function EodReviewPhase({
                   borderRadius: 6,
                   padding: "8px 10px",
                   fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                  color: THEME.red,
+                  color: "var(--color-bearish)",
                 }}
               />
             </div>
@@ -1300,11 +1300,11 @@ function EodReviewPhase({
                       gap: 4,
                       padding: "8px",
                       borderRadius: 8,
-                      border: `1px solid ${isSelected ? state.color.border : THEME.border}`,
+                      border: `1px solid ${isSelected ? state.color.border : "var(--color-border)"}`,
                       fontSize: 10,
                       fontWeight: 700,
-                      background: isSelected ? state.color.bg : THEME.surface,
-                      color: isSelected ? state.color.text : THEME.textSecondary,
+                      background: isSelected ? state.color.bg : "var(--color-card)",
+                      color: isSelected ? state.color.text : "var(--color-muted-foreground)",
                       cursor: "pointer",
                       transition: "all 0.15s ease",
                     }}
@@ -1456,10 +1456,10 @@ function HistoryTab({
           const emotion = EMOTIONAL_STATES.find((e) => e.value === loop.emotional_state);
           const completionColors =
             loop.completion_percentage >= 100
-              ? { bg: `${THEME.green}26`, text: THEME.green }
+              ? { bg: `${"var(--color-bullish)"}26`, text: "var(--color-bullish)" }
               : loop.completion_percentage >= 50
-                ? { bg: `${THEME.green}26`, text: THEME.green }
-                : { bg: "rgba(255,255,255,0.05)", text: THEME.textSecondary };
+                ? { bg: `${"var(--color-bullish)"}26`, text: "var(--color-bullish)" }
+                : { bg: "rgba(255,255,255,0.05)", text: "var(--color-muted-foreground)" };
 
           return (
             <div key={loop.id} style={{ ...CARD_STYLE, overflow: "hidden" }}>
@@ -1474,7 +1474,7 @@ function HistoryTab({
                   background: "none",
                   border: "none",
                   cursor: "pointer",
-                  color: THEME.text,
+                  color: "var(--color-foreground)",
                   textAlign: "left",
                 }}
               >
@@ -1492,14 +1492,14 @@ function HistoryTab({
                     }}
                   >
                     {loop.completion_percentage >= 100 ? (
-                      <CheckCircle2 size={14} style={{ color: THEME.green }} />
+                      <CheckCircle2 size={14} style={{ color: "var(--color-bullish)" }} />
                     ) : (
                       <span
                         style={{
                           fontSize: 9,
                           fontWeight: 700,
                           fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                          color: THEME.textSecondary,
+                          color: "var(--color-muted-foreground)",
                         }}
                       >
                         {loop.completion_percentage}%
@@ -1544,7 +1544,7 @@ function HistoryTab({
                         fontSize: 12,
                         fontWeight: 700,
                         fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                        color: loop.daily_pnl >= 0 ? THEME.green : THEME.red,
+                        color: loop.daily_pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                       }}
                     >
                       {loop.daily_pnl >= 0 ? "+" : ""}${Number(loop.daily_pnl).toFixed(2)}
@@ -1553,7 +1553,7 @@ function HistoryTab({
                   <ChevronRight
                     size={12}
                     style={{
-                      color: THEME.textSecondary,
+                      color: "var(--color-muted-foreground)",
                       transition: "transform 0.15s ease",
                       transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
                     }}
@@ -1568,7 +1568,7 @@ function HistoryTab({
                     display: "flex",
                     flexDirection: "column",
                     gap: 8,
-                    borderTop: `1px solid ${THEME.border}`,
+                    borderTop: `1px solid ${"var(--color-border)"}`,
                   }}
                 >
                   <div
@@ -1586,12 +1586,12 @@ function HistoryTab({
                           fontSize: 12,
                           fontWeight: 700,
                           fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                          color: THEME.text,
+                          color: "var(--color-foreground)",
                         }}
                       >
                         {loop.trades_taken}
                       </div>
-                      <div style={{ fontSize: 8, color: THEME.textSecondary, textTransform: "uppercase" }}>
+                      <div style={{ fontSize: 8, color: "var(--color-muted-foreground)", textTransform: "uppercase" }}>
                         Trades
                       </div>
                     </div>
@@ -1601,12 +1601,12 @@ function HistoryTab({
                           fontSize: 12,
                           fontWeight: 700,
                           fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                          color: THEME.green,
+                          color: "var(--color-bullish)",
                         }}
                       >
                         {loop.rules_followed}
                       </div>
-                      <div style={{ fontSize: 8, color: THEME.textSecondary, textTransform: "uppercase" }}>
+                      <div style={{ fontSize: 8, color: "var(--color-muted-foreground)", textTransform: "uppercase" }}>
                         Rules ✓
                       </div>
                     </div>
@@ -1616,19 +1616,19 @@ function HistoryTab({
                           fontSize: 12,
                           fontWeight: 700,
                           fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                          color: THEME.red,
+                          color: "var(--color-bearish)",
                         }}
                       >
                         {loop.rules_broken}
                       </div>
-                      <div style={{ fontSize: 8, color: THEME.textSecondary, textTransform: "uppercase" }}>
+                      <div style={{ fontSize: 8, color: "var(--color-muted-foreground)", textTransform: "uppercase" }}>
                         Rules ✗
                       </div>
                     </div>
                   </div>
                   {loop.key_levels && (
                     <div>
-                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: THEME.textSecondary }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: "var(--color-muted-foreground)" }}>
                         Key Levels:
                       </span>
                       <p style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", marginTop: 2 }}>
@@ -1638,7 +1638,7 @@ function HistoryTab({
                   )}
                   {loop.lessons_learned && (
                     <div>
-                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: THEME.textSecondary }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: "var(--color-muted-foreground)" }}>
                         Lessons:
                       </span>
                       <p style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", marginTop: 2 }}>
@@ -1648,7 +1648,7 @@ function HistoryTab({
                   )}
                   {loop.tomorrow_plan && (
                     <div>
-                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: THEME.textSecondary }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: "var(--color-muted-foreground)" }}>
                         Tomorrow:
                       </span>
                       <p style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", marginTop: 2 }}>

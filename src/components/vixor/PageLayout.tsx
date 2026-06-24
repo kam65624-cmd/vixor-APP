@@ -7,14 +7,14 @@
 //   <PageLayout
 //     title="Whale Alerts"
 //     badge="WHALE TRACKER"
-//     badgeColor={THEME.green}
+//     badgeColor={"var(--color-bullish)"}
 //     description="Track large transactions..."
 //     tabs={["All", "Trades"]}
 //     activeTab={tab}
 //     onTabChange={setTab}
 //     tabCounts={{ All: 10, Trades: 5 }}
 //     loading={isLoading}
-//     loadingColor={THEME.purple}
+//     loadingColor={"var(--color-info)"}
 //   >
 //     <StatsRow stats={[...]} />
 //     <SectionTitle title="Active Positions" count={5} />
@@ -23,42 +23,12 @@
 //     </div>
 //   </PageLayout>
 
-import type { ReactNode } from "react";
+import type { ReactNode, KeyboardEvent } from "react";
 import { memo, useState, useCallback } from "react";
 
-// ── Design Tokens — DexScreener-style dark palette ─────────────────────
-export const THEME = {
-  // Backgrounds
-  bg: "#121212",
-  surface: "#1A1A1A",
-  surfaceAlt: "#1E1E1E",
-  headerBg: "#121212",
-  tabBarBg: "#161616",
-  rowHover: "rgba(255,255,255,0.03)",
-  rowHoverStrong: "rgba(255,255,255,0.06)",
-
-  // Borders
-  border: "rgba(255,255,255,0.06)",
-  borderLight: "rgba(255,255,255,0.04)",
-  borderAccent: "rgba(52,211,153,0.15)",
-
-  // Text
-  text: "#FFFFFF",
-  textSecondary: "#9CA3AF",
-  textMuted: "#6B7280",
-  textFaint: "#374151",
-
-  // Semantic colors
-  green: "#10B981",
-  red: "#EF4444",
-  accent: "#34D399",
-  accentDeep: "#10B981",
-  amber: "#F59E0B",
-  purple: "#8B5CF6",
-  pink: "#EC4899",
-  cyan: "#06B6D4",
-  orange: "#F97316",
-} as const;
+// ── Design Tokens ─────────────────────────────────────────────────────────
+// All colors now use CSS custom properties defined in styles.css.
+// This enables proper dark/light theme switching.
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -91,22 +61,22 @@ interface PageLayoutProps {
 export function PageLayout({
   title,
   badge,
-  badgeColor = THEME.accent,
+  badgeColor = "var(--color-primary)",
   description,
   tabs,
   activeTab,
   onTabChange,
   tabCounts,
   loading = false,
-  loadingColor = THEME.accent,
+  loadingColor = "var(--color-primary)",
   children,
   banner,
 }: PageLayoutProps) {
   return (
     <div
       style={{
-        background: THEME.bg,
-        color: THEME.text,
+        background: "var(--color-background)",
+        color: "var(--color-foreground)",
         fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
         minHeight: "100%",
         display: "flex",
@@ -117,8 +87,8 @@ export function PageLayout({
       <div
         style={{
           padding: "12px 16px 10px",
-          borderBottom: `1px solid ${THEME.border}`,
-          background: THEME.headerBg,
+          borderBottom: `1px solid ${"var(--color-border)"}`,
+          background: "var(--color-background)",
           flexShrink: 0,
         }}
       >
@@ -128,7 +98,7 @@ export function PageLayout({
               fontSize: "15px",
               fontWeight: 700,
               margin: 0,
-              color: THEME.text,
+              color: "var(--color-foreground)",
               letterSpacing: "-0.01em",
             }}
           >
@@ -154,7 +124,7 @@ export function PageLayout({
           <p
             style={{
               fontSize: "11px",
-              color: THEME.textSecondary,
+              color: "var(--color-muted-foreground)",
               margin: "4px 0 0",
               lineHeight: 1.4,
             }}
@@ -172,8 +142,8 @@ export function PageLayout({
             alignItems: "center",
             gap: "2px",
             padding: "0 16px",
-            borderBottom: `1px solid ${THEME.border}`,
-            background: THEME.tabBarBg,
+            borderBottom: `1px solid ${"var(--color-border)"}`,
+            background: "var(--color-muted)",
             height: "36px",
             overflowX: "auto",
             flexShrink: 0,
@@ -193,14 +163,14 @@ export function PageLayout({
                   borderRadius: "4px",
                   border: "none",
                   cursor: "pointer",
-                  color: isActive ? THEME.text : THEME.textSecondary,
+                  color: isActive ? "var(--color-foreground)" : "var(--color-muted-foreground)",
                   background: isActive
                     ? "rgba(255,255,255,0.08)"
                     : "transparent",
                   whiteSpace: "nowrap",
                   transition: "all 0.15s ease",
                   borderBottom: isActive
-                    ? `2px solid ${THEME.accent}`
+                    ? `2px solid ${"var(--color-primary)"}`
                     : "2px solid transparent",
                   marginBottom: "-1px",
                 }}
@@ -211,7 +181,7 @@ export function PageLayout({
                     style={{
                       marginLeft: "4px",
                       fontSize: "10px",
-                      color: isActive ? THEME.textMuted : THEME.textMuted,
+                      color: isActive ? "var(--color-muted-foreground)" : "var(--color-muted-foreground)",
                     }}
                   >
                     {tabCounts[t]}
@@ -239,7 +209,7 @@ export function PageLayout({
               style={{
                 width: "28px",
                 height: "28px",
-                border: `2px solid ${THEME.border}`,
+                border: `2px solid ${"var(--color-border)"}`,
                 borderTopColor: loadingColor,
                 borderRadius: "50%",
                 animation: "spin 0.7s linear infinite",
@@ -267,8 +237,8 @@ export const StatsRow = memo(function StatsRow({
       style={{
         display: "flex",
         gap: "1px",
-        background: THEME.border,
-        borderBottom: `1px solid ${THEME.border}`,
+        background: "var(--color-border)",
+        borderBottom: `1px solid ${"var(--color-border)"}`,
         flexShrink: 0,
       }}
     >
@@ -278,7 +248,7 @@ export const StatsRow = memo(function StatsRow({
           style={{
             flex: 1,
             padding: "10px 12px",
-            background: THEME.surface,
+            background: "var(--color-card)",
             minWidth: 0,
           }}
         >
@@ -286,7 +256,7 @@ export const StatsRow = memo(function StatsRow({
             style={{
               fontSize: "9px",
               fontWeight: 600,
-              color: THEME.textMuted,
+              color: "var(--color-muted-foreground)",
               textTransform: "uppercase" as const,
               letterSpacing: "0.05em",
               marginBottom: "3px",
@@ -303,7 +273,7 @@ export const StatsRow = memo(function StatsRow({
               fontSize: "14px",
               fontWeight: 700,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              color: s.color || THEME.text,
+              color: s.color || "var(--color-foreground)",
               lineHeight: 1.2,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -316,7 +286,7 @@ export const StatsRow = memo(function StatsRow({
             <div
               style={{
                 fontSize: "9px",
-                color: THEME.textSecondary,
+                color: "var(--color-muted-foreground)",
                 marginTop: "2px",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -349,8 +319,8 @@ export function SectionTitle({
         alignItems: "center",
         justifyContent: "space-between",
         padding: "8px 16px 6px",
-        borderBottom: `1px solid ${THEME.border}`,
-        background: THEME.tabBarBg,
+        borderBottom: `1px solid ${"var(--color-border)"}`,
+        background: "var(--color-muted)",
         flexShrink: 0,
       }}
     >
@@ -359,7 +329,7 @@ export function SectionTitle({
           style={{
             fontSize: "11px",
             fontWeight: 600,
-            color: THEME.text,
+            color: "var(--color-foreground)",
           }}
         >
           {title}
@@ -369,7 +339,7 @@ export function SectionTitle({
             style={{
               fontSize: "10px",
               fontWeight: 500,
-              color: THEME.textMuted,
+              color: "var(--color-muted-foreground)",
             }}
           >
             ({count})
@@ -382,7 +352,7 @@ export function SectionTitle({
           style={{
             fontSize: "10px",
             fontWeight: 600,
-            color: THEME.accent,
+            color: "var(--color-primary)",
             background: "none",
             border: "none",
             cursor: "pointer",
@@ -413,7 +383,7 @@ export function ProgressBar({
   labelRight?: string;
 }) {
   const pct = Math.min(100, (value / max) * 100);
-  const barColor = color || (pct >= 50 ? THEME.green : THEME.red);
+  const barColor = color || (pct >= 50 ? "var(--color-bullish)" : "var(--color-bearish)");
 
   return (
     <div
@@ -422,8 +392,8 @@ export function ProgressBar({
         alignItems: "center",
         gap: "10px",
         padding: "8px 16px",
-        background: THEME.surface,
-        borderBottom: `1px solid ${THEME.border}`,
+        background: "var(--color-card)",
+        borderBottom: `1px solid ${"var(--color-border)"}`,
         flexShrink: 0,
       }}
     >
@@ -432,7 +402,7 @@ export function ProgressBar({
           style={{
             fontSize: "10px",
             fontWeight: 600,
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
             textTransform: "uppercase" as const,
             letterSpacing: "0.05em",
             whiteSpace: "nowrap",
@@ -445,7 +415,7 @@ export function ProgressBar({
         style={{
           flex: 1,
           height: `${height}px`,
-          background: THEME.border,
+          background: "var(--color-border)",
           borderRadius: `${height / 2}px`,
           overflow: "hidden",
         }}
@@ -520,7 +490,7 @@ export function EmptyState({
         justifyContent: "center",
         gap: "10px",
         padding: "48px 20px",
-        background: THEME.surface,
+        background: "var(--color-card)",
         flex: 1,
       }}
     >
@@ -529,7 +499,7 @@ export function EmptyState({
         style={{
           fontSize: "13px",
           fontWeight: 600,
-          color: THEME.textSecondary,
+          color: "var(--color-muted-foreground)",
         }}
       >
         {title}
@@ -537,7 +507,7 @@ export function EmptyState({
       <div
         style={{
           fontSize: "11px",
-          color: THEME.textMuted,
+          color: "var(--color-muted-foreground)",
           textAlign: "center",
           maxWidth: "280px",
           lineHeight: 1.5,
@@ -597,15 +567,28 @@ export const DataRow = memo(function DataRow({
   const handleMouseEnter = useCallback(() => setHovered(true), []);
   const handleMouseLeave = useCallback(() => setHovered(false), []);
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      if (onClick && (e.key === "Enter" || e.key === " ")) {
+        e.preventDefault();
+        onClick();
+      }
+    },
+    [onClick]
+  );
+
   return (
     <div
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onKeyDown={onClick ? handleKeyDown : undefined}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       style={{
         padding: "10px 16px",
-        borderBottom: `1px solid ${THEME.borderLight}`,
-        background: hovered ? THEME.rowHover : THEME.surface,
+        borderBottom: `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}`,
+        background: hovered ? "color-mix(in oklab, var(--color-foreground) 3%, transparent)" : "var(--color-card)",
         borderLeft: leftAccent ? `2px solid ${leftAccent}` : undefined,
         transition: "background 0.1s ease",
         cursor: onClick ? "pointer" : "default",
@@ -672,14 +655,14 @@ export function LabelValue({
     <span
       style={{
         fontSize: "10px",
-        color: THEME.textSecondary,
+        color: "var(--color-muted-foreground)",
         fontFamily: mono ? "'JetBrains Mono', ui-monospace, monospace" : undefined,
       }}
     >
       {label}{" "}
       <span
         style={{
-          color: valueColor || THEME.text,
+          color: valueColor || "var(--color-foreground)",
           fontWeight: 700,
         }}
       >
@@ -692,8 +675,8 @@ export function LabelValue({
 /** Mini progress bar inside a row (e.g. buy/sell ratio) */
 export function MiniBar({
   leftPct,
-  leftColor = THEME.green,
-  rightColor = THEME.red,
+  leftColor = "var(--color-bullish)",
+  rightColor = "var(--color-bearish)",
   height = 3,
 }: {
   leftPct: number;
@@ -736,8 +719,8 @@ export function SkeletonRow() {
     <div
       style={{
         padding: "10px 16px",
-        borderBottom: `1px solid ${THEME.borderLight}`,
-        background: THEME.surface,
+        borderBottom: `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}`,
+        background: "var(--color-card)",
       }}
     >
       <div className="shimmer" style={{ height: "14px", borderRadius: "4px", width: "60%", marginBottom: "6px" }} />
@@ -759,8 +742,8 @@ export function TableHeader({
         alignItems: "center",
         padding: "0 16px",
         height: "32px",
-        background: THEME.tabBarBg,
-        borderBottom: `1px solid ${THEME.border}`,
+        background: "var(--color-muted)",
+        borderBottom: `1px solid ${"var(--color-border)"}`,
         flexShrink: 0,
         overflowX: "auto",
       }}
@@ -774,7 +757,7 @@ export function TableHeader({
             minWidth: col.width,
             fontSize: "9px",
             fontWeight: 700,
-            color: THEME.textMuted,
+            color: "var(--color-muted-foreground)",
             textTransform: "uppercase" as const,
             letterSpacing: "0.06em",
             textAlign: col.align || "left",
@@ -807,8 +790,8 @@ export function ProfileCard({
   return (
     <div
       style={{
-        background: THEME.surface,
-        borderBottom: `1px solid ${THEME.border}`,
+        background: "var(--color-card)",
+        borderBottom: `1px solid ${"var(--color-border)"}`,
         padding: "14px 16px",
         display: "flex",
         alignItems: "center",
@@ -821,13 +804,13 @@ export function ProfileCard({
           width: "38px",
           height: "38px",
           borderRadius: "50%",
-          background: `${THEME.accent}15`,
+          background: `color-mix(in oklab, var(--color-primary) 8%, transparent)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontSize: "16px",
           fontWeight: 800,
-          color: THEME.accent,
+          color: "var(--color-primary)",
           flexShrink: 0,
         }}
       >
@@ -838,7 +821,7 @@ export function ProfileCard({
           style={{
             fontSize: "12px",
             fontWeight: 700,
-            color: THEME.text,
+            color: "var(--color-foreground)",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -849,16 +832,16 @@ export function ProfileCard({
         <div
           style={{
             fontSize: "10px",
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
           }}
         >
           {username ? `@${username}` : ""}
         </div>
       </div>
       <div style={{ display: "flex", gap: "16px" }}>
-        <MiniStat label="XP" value={String(xp ?? 0)} color={THEME.amber} />
-        <MiniStat label="Streak" value={`${streak ?? 0}d`} color={THEME.pink} />
-        <MiniStat label="Trades" value={String(tradeCount ?? 0)} color={THEME.accent} />
+        <MiniStat label="XP" value={String(xp ?? 0)} color={"var(--color-neutral-wait)"} />
+        <MiniStat label="Streak" value={`${streak ?? 0}d`} color={"var(--color-bearish)"} />
+        <MiniStat label="Trades" value={String(tradeCount ?? 0)} color={"var(--color-primary)"} />
       </div>
     </div>
   );
@@ -878,7 +861,7 @@ function MiniStat({
       <div
         style={{
           fontSize: "9px",
-          color: THEME.textMuted,
+          color: "var(--color-muted-foreground)",
           textTransform: "uppercase" as const,
           letterSpacing: "0.05em",
         }}

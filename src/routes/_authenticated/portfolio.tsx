@@ -4,7 +4,6 @@ import { memo, useState } from "react";
 import { getPortfolioData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  THEME,
   PageLayout,
   StatsRow,
   SectionTitle,
@@ -22,14 +21,14 @@ export const Route = createFileRoute("/_authenticated/portfolio")({
 
 // ── Allocation bar colours from THEME tokens ─────────────────────────────
 const ALLOC_COLORS = [
-  THEME.green,
-  THEME.purple,
-  THEME.pink,
-  THEME.amber,
-  THEME.accent,
-  THEME.red,
-  THEME.cyan,
-  THEME.orange,
+  "var(--color-bullish)",
+  "var(--color-info)",
+  "var(--color-bearish)",
+  "var(--color-neutral-wait)",
+  "var(--color-primary)",
+  "var(--color-bearish)",
+  "var(--color-info)",
+  "var(--color-neutral-wait)",
 ];
 
 // ── Page ─────────────────────────────────────────────────────────────────
@@ -66,13 +65,13 @@ function PortfolioPage() {
     <PageLayout
       title="Portfolio"
       badge="PORTFOLIO"
-      badgeColor={THEME.accent}
+      badgeColor={"var(--color-primary)"}
       description={`Derived from your ${tradeCount} recorded trades`}
       tabs={["Holdings", "History"]}
       activeTab={activeTab}
       onTabChange={(t) => setActiveTab(t as "holdings" | "history")}
       loading={isLoading}
-      loadingColor={THEME.green}
+      loadingColor={"var(--color-bullish)"}
     >
       {/* ── Stats ─────────────────────────────────────────────────── */}
       <StatsRow
@@ -81,19 +80,19 @@ function PortfolioPage() {
             label: "Total Value",
             value: fmt(totalValue),
             icon: "💎",
-            color: THEME.text,
+            color: "var(--color-foreground)",
           },
           {
             label: "Total PnL",
             value: `${totalPnl >= 0 ? "+" : ""}${fmt(totalPnl)}`,
-            color: totalPnl >= 0 ? THEME.green : THEME.red,
+            color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
             sub: `${totalPnlPct >= 0 ? "+" : ""}${totalPnlPct.toFixed(1)}%`,
           },
           {
             label: "Holdings",
             value: String(holdings.length),
             icon: "📊",
-            color: THEME.text,
+            color: "var(--color-foreground)",
           },
         ]}
       />
@@ -106,8 +105,8 @@ function PortfolioPage() {
             height: "6px",
             borderRadius: "3px",
             overflow: "hidden",
-            background: THEME.surface,
-            borderBottom: `1px solid ${THEME.border}`,
+            background: "var(--color-card)",
+            borderBottom: `1px solid ${"var(--color-border)"}`,
           }}
         >
           {holdings.map((h, i) => {
@@ -179,7 +178,7 @@ const HoldingRow = memo(function HoldingRow({
   totalValue: number;
 }) {
   const isPos = holding.pnlPct >= 0;
-  const pnlColor = isPos ? THEME.green : THEME.red;
+  const pnlColor = isPos ? "var(--color-bullish)" : "var(--color-bearish)";
   const alloc =
     totalValue > 0
       ? ((holding.value / totalValue) * 100).toFixed(1)
@@ -208,7 +207,7 @@ const HoldingRow = memo(function HoldingRow({
                 width: 26,
                 height: 26,
                 borderRadius: "50%",
-                background: isPos ? `${THEME.green}18` : `${THEME.red}18`,
+                background: isPos ? `color-mix(in oklab, var(--color-bullish) 10%, transparent)` : `color-mix(in oklab, var(--color-bearish) 10%, transparent)`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -227,7 +226,7 @@ const HoldingRow = memo(function HoldingRow({
                   fontFamily: "'Inter', system-ui, sans-serif",
                   fontSize: "12px",
                   fontWeight: 700,
-                  color: THEME.text,
+                  color: "var(--color-foreground)",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -235,7 +234,7 @@ const HoldingRow = memo(function HoldingRow({
               >
                 {holding.symbol}
               </div>
-              <Badge label={holding.chain} color={THEME.textMuted} small />
+              <Badge label={holding.chain} color={"var(--color-muted-foreground)"} small />
             </div>
           </div>
 
@@ -282,13 +281,13 @@ const HoldingRow = memo(function HoldingRow({
           <LabelValue
             label="Entry"
             value={`$${fmtPrice(holding.avgEntry)}`}
-            valueColor={THEME.textSecondary}
+            valueColor={"var(--color-muted-foreground)"}
             mono
           />
           <LabelValue
             label="Alloc"
             value={`${alloc}%`}
-            valueColor={THEME.textSecondary}
+            valueColor={"var(--color-muted-foreground)"}
           />
         </>
       }
@@ -303,7 +302,7 @@ function LinkedEmptyState({
   title,
   message,
   actionLabel,
-  actionColor = THEME.accent,
+  actionColor = "var(--color-primary)",
   onAction,
 }: {
   icon: string;
@@ -322,7 +321,7 @@ function LinkedEmptyState({
         justifyContent: "center",
         gap: "10px",
         padding: "48px 20px",
-        background: THEME.surface,
+        background: "var(--color-card)",
         flex: 1,
       }}
     >
@@ -331,7 +330,7 @@ function LinkedEmptyState({
         style={{
           fontSize: "13px",
           fontWeight: 600,
-          color: THEME.textSecondary,
+          color: "var(--color-muted-foreground)",
         }}
       >
         {title}
@@ -339,7 +338,7 @@ function LinkedEmptyState({
       <div
         style={{
           fontSize: "11px",
-          color: THEME.textMuted,
+          color: "var(--color-muted-foreground)",
           textAlign: "center",
           maxWidth: "280px",
           lineHeight: 1.5,

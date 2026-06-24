@@ -11,8 +11,7 @@ import {
   Badge,
   DataRow,
   LabelValue,
-  ProgressBar,
-  THEME,
+  ProgressBar, 
 } from "@/components/vixor/PageLayout";
 import {
   formatCompact,
@@ -61,7 +60,7 @@ function AlphaPage() {
     <PageLayout
       title="Alpha Feed"
       badge="ALPHA INTEL"
-      badgeColor={THEME.pink}
+      badgeColor={"var(--color-bearish)"}
       description="AI-generated signals & pattern analyses across all traded pairs"
       tabs={[...TABS]}
       activeTab={activeTab}
@@ -72,24 +71,24 @@ function AlphaPage() {
         Analyses: stats.analysisCount,
       }}
       loading={isLoading}
-      loadingColor={THEME.pink}
+      loadingColor={"var(--color-bearish)"}
     >
       <StatsRow
         stats={[
           {
             label: "Active Signals",
             value: String(stats.activeBuySignals),
-            color: THEME.green,
+            color: "var(--color-bullish)",
           },
           {
             label: "Avg Confidence",
             value: formatPercentRaw(stats.avgConfidence),
-            color: THEME.accent,
+            color: "var(--color-primary)",
           },
           {
             label: "Top Confidence",
             value: formatPercentRaw(stats.highestConfidence),
-            color: THEME.pink,
+            color: "var(--color-bearish)",
             sub: stats.highestConfidencePair ?? undefined,
           },
         ]}
@@ -131,14 +130,14 @@ function formatTP(tp: number | number[] | undefined): string {
 
 const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
   const isSignal = item.source === "signal";
-  const badgeColor = isSignal ? THEME.accent : THEME.purple;
+  const badgeColor = isSignal ? "var(--color-primary)" : "var(--color-info)";
   const confidencePct = item.confidence || 0;
   const confidenceColor =
     confidencePct >= 80
-      ? THEME.green
+      ? "var(--color-bullish)"
       : confidencePct >= 60
-        ? THEME.amber
-        : THEME.red;
+        ? "var(--color-neutral-wait)"
+        : "var(--color-bearish)";
 
   return (
     <DataRow leftAccent={badgeColor}>
@@ -168,16 +167,16 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
             style={{
               fontSize: "12px",
               fontWeight: 700,
-              color: THEME.text,
+              color: "var(--color-foreground)",
             }}
           >
             {item.pair || "\u2014"}
           </span>
           {item.timeframe && (
-            <Badge label={item.timeframe} color={THEME.textMuted} small />
+            <Badge label={item.timeframe} color={"var(--color-muted-foreground)"} small />
           )}
           {item.pattern && (
-            <Badge label={item.pattern} color={THEME.amber} small />
+            <Badge label={item.pattern} color={"var(--color-neutral-wait)"} small />
           )}
         </div>
         <div
@@ -228,7 +227,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
             label="SL"
             value={formatPrice(item.stopLoss)}
             mono
-            valueColor={THEME.red}
+            valueColor={"var(--color-bearish)"}
           />
         )}
         {item.takeProfit !== undefined && item.takeProfit !== null && (
@@ -236,14 +235,14 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
             label="TP"
             value={formatTP(item.takeProfit)}
             mono
-            valueColor={THEME.green}
+            valueColor={"var(--color-bullish)"}
           />
         )}
         {item.created_at && (
           <span
             style={{
               fontSize: "9px",
-              color: THEME.textMuted,
+              color: "var(--color-muted-foreground)",
               marginLeft: "auto",
               flexShrink: 0,
             }}
@@ -269,7 +268,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
                 <Badge
                   key={i}
                   label={reason}
-                  color={THEME.textMuted}
+                  color={"var(--color-muted-foreground)"}
                   small
                 />
               )

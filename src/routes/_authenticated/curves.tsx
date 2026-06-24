@@ -11,8 +11,7 @@ import {
   Badge,
   DataRow,
   LabelValue,
-  MiniBar,
-  THEME,
+  MiniBar, 
 } from "@/components/vixor/PageLayout";
 import { formatCompact } from "@/shared/utils/formatters";
 
@@ -52,7 +51,7 @@ function CurvesPage() {
     <PageLayout
       title="Bonding Curves"
       badge="ACCUMULATION TRACKER"
-      badgeColor={THEME.green}
+      badgeColor={"var(--color-bullish)"}
       description="Trade distribution analysis \u2014 spot accumulation patterns across pairs"
       tabs={[...TABS]}
       activeTab={activeTab}
@@ -62,24 +61,24 @@ function CurvesPage() {
         Accumulating: accumulating.length,
       }}
       loading={isLoading}
-      loadingColor={THEME.green}
+      loadingColor={"var(--color-bullish)"}
     >
       <StatsRow
         stats={[
           {
             label: "Accumulating",
             value: String(stats.accumulatingCount),
-            color: THEME.green,
+            color: "var(--color-bullish)",
           },
           {
             label: "Unique Pairs",
             value: String(stats.uniquePairs),
-            color: THEME.accent,
+            color: "var(--color-primary)",
           },
           {
             label: "Most Traded",
             value: stats.mostTradedPair,
-            color: THEME.amber,
+            color: "var(--color-neutral-wait)",
             sub: formatCompact(stats.mostTradedVolume),
           },
         ]}
@@ -116,7 +115,7 @@ const CurveCard = memo(function CurveCard({ pair }: { pair: any }) {
     totalTrades > 0 ? (pair.buyCount / totalTrades) * 100 : 50;
 
   return (
-    <DataRow leftAccent={isAccumulating ? THEME.green : undefined}>
+    <DataRow leftAccent={isAccumulating ? "var(--color-bullish)" : undefined}>
       {/* Top row */}
       <div
         style={{
@@ -139,13 +138,13 @@ const CurveCard = memo(function CurveCard({ pair }: { pair: any }) {
             style={{
               fontSize: "11px",
               fontWeight: 700,
-              color: THEME.text,
+              color: "var(--color-foreground)",
             }}
           >
             {pair.pair}
           </span>
           {isAccumulating && (
-            <Badge label="ACCUMULATING" color={THEME.green} small />
+            <Badge label="ACCUMULATING" color={"var(--color-bullish)"} small />
           )}
         </div>
         <span
@@ -153,7 +152,7 @@ const CurveCard = memo(function CurveCard({ pair }: { pair: any }) {
             fontSize: "12px",
             fontWeight: 700,
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-            color: isAccumulating ? THEME.green : THEME.red,
+            color: isAccumulating ? "var(--color-bullish)" : "var(--color-bearish)",
           }}
         >
           {(pair.ratio || 0).toFixed(1)}x
@@ -173,12 +172,12 @@ const CurveCard = memo(function CurveCard({ pair }: { pair: any }) {
         <LabelValue
           label="Buy"
           value={String(pair.buyCount)}
-          valueColor={THEME.green}
+          valueColor={"var(--color-bullish)"}
         />
         <LabelValue
           label="Sell"
           value={String(pair.sellCount)}
-          valueColor={THEME.red}
+          valueColor={"var(--color-bearish)"}
         />
         <LabelValue
           label="Vol"

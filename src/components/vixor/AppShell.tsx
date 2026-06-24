@@ -354,7 +354,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: "#121212", color: "#FFFFFF" }}
+      style={{ background: "var(--color-background)", color: "var(--color-foreground)" }}
     >
       {/* ── Top Bar: Logo + SOL Price + Actions ── */}
       <TopNav solPrice={sol.price} solChange={sol.change} isTg={isTg} />
@@ -412,7 +412,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
     <header
       className="fixed inset-x-0 z-50"
       style={{
-        background: "#121212",
+        background: "var(--color-background)",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
         height: "40px",
         top: isTg ? "env(safe-area-inset-top, 0px)" : "0px",
@@ -437,7 +437,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
                 width: "22px",
                 height: "22px",
                 borderRadius: "6px",
-                background: "linear-gradient(135deg, #059669, #10B981)",
+                background: "var(--gradient-primary)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -461,7 +461,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
               style={{
                 fontSize: "13px",
                 fontWeight: 700,
-                color: "#FFFFFF",
+                color: "var(--color-foreground)",
                 letterSpacing: "-0.02em",
               }}
             >
@@ -473,7 +473,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
           <div
             className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold"
             style={{
-              color: (solChange ?? 0) >= 0 ? "#22C55E" : "#EF4444",
+              color: (solChange ?? 0) >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
             }}
           >
             SOL{" "}
@@ -491,7 +491,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
             to="/wallet-web3"
             className="hidden sm:flex items-center gap-1 px-3 py-1 rounded text-[11px] font-bold"
             style={{
-              background: "linear-gradient(135deg, #059669, #10B981)",
+              background: "var(--gradient-primary)",
               color: "white",
               textDecoration: "none",
             }}
@@ -518,7 +518,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
             }}
           >
             <span
-              style={{ fontSize: "9px", fontWeight: 800, color: "#FFFFFF" }}
+              style={{ fontSize: "9px", fontWeight: 800, color: "var(--color-foreground)" }}
             >
               ME
             </span>
@@ -540,7 +540,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
               height="13"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#9CA3AF"
+              stroke="var(--color-muted-foreground)"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -556,7 +556,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
                 width: "6px",
                 height: "6px",
                 borderRadius: "50%",
-                background: "#10B981",
+                background: "var(--color-bullish)",
               }}
             />
           </Link>
@@ -590,7 +590,7 @@ const BottomBar = memo(function BottomBar({
     <nav
       className="fixed bottom-0 inset-x-0 z-50"
       style={{
-        background: "#121212",
+        background: "var(--color-background)",
         borderTop: "1px solid rgba(255,255,255,0.06)",
         height: isTg ? "calc(52px + env(safe-area-inset-bottom, 0px))" : "52px",
         display: "flex",
@@ -624,7 +624,7 @@ const BottomBar = memo(function BottomBar({
             >
               <span
                 style={{
-                  color: isActive ? "#34D399" : "#9CA3AF",
+                  color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
                   transition: "color 0.2s ease",
                 }}
               >
@@ -634,7 +634,7 @@ const BottomBar = memo(function BottomBar({
                 style={{
                   fontSize: "9px",
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "#34D399" : "#9CA3AF",
+                  color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
                   marginTop: "2px",
                   letterSpacing: "0.02em",
                   transition: "all 0.2s ease",
@@ -665,19 +665,19 @@ const BottomBar = memo(function BottomBar({
           height="20"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#9CA3AF"
+          stroke="var(--color-muted-foreground)"
           strokeWidth="1.8"
           strokeLinecap="round"
         >
-          <circle cx="12" cy="5" r="1" fill="#9CA3AF" />
-          <circle cx="12" cy="12" r="1" fill="#9CA3AF" />
-          <circle cx="12" cy="19" r="1" fill="#9CA3AF" />
+          <circle cx="12" cy="5" r="1" fill="var(--color-muted-foreground)" />
+          <circle cx="12" cy="12" r="1" fill="var(--color-muted-foreground)" />
+          <circle cx="12" cy="19" r="1" fill="var(--color-muted-foreground)" />
         </svg>
         <span
           style={{
             fontSize: "9px",
             fontWeight: 500,
-            color: "#9CA3AF",
+            color: "var(--color-muted-foreground)",
             marginTop: "2px",
             letterSpacing: "0.02em",
           }}
@@ -730,7 +730,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
           bottom: 0,
           left: 0,
           right: 0,
-          background: "#1A1A1A",
+          background: "var(--color-card)",
           borderTopLeftRadius: "16px",
           borderTopRightRadius: "16px",
           borderTop: "1px solid rgba(255,255,255,0.08)",
@@ -774,7 +774,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
             style={{
               fontSize: "14px",
               fontWeight: 700,
-              color: "#FFFFFF",
+              color: "var(--color-foreground)",
             }}
           >
             Explore
@@ -786,7 +786,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
               border: "none",
               borderRadius: "6px",
               padding: "4px 10px",
-              color: "#9CA3AF",
+              color: "var(--color-muted-foreground)",
               fontSize: "11px",
               fontWeight: 600,
               cursor: "pointer",
@@ -805,7 +805,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                 style={{
                   fontSize: "10px",
                   fontWeight: 700,
-                  color: "#6B7280",
+                  color: "var(--color-muted-foreground)",
                   textTransform: "uppercase",
                   letterSpacing: "0.08em",
                   padding: "4px 8px 6px",
@@ -844,7 +844,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                           ? "1px solid rgba(16,185,129,0.2)"
                           : "1px solid rgba(255,255,255,0.04)",
                         textDecoration: "none",
-                        color: isActive ? "#34D399" : "#9CA3AF",
+                        color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
                         fontSize: "12px",
                         fontWeight: isActive ? 600 : 500,
                         transition: "all 0.15s ease",
@@ -852,7 +852,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                     >
                       <span
                         style={{
-                          color: isActive ? "#34D399" : "#9CA3AF",
+                          color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
                           display: "flex",
                           flexShrink: 0,
                         }}

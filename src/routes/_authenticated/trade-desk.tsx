@@ -25,8 +25,7 @@ import { PaginationBar } from "@/components/vixor/PaginationBar";
 import { CoachOverlay } from "@/components/vixor/CoachOverlay";
 import { GovernorRiskPanel } from "@/components/vixor/GovernorRiskPanel";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   ScrollArea,
   Badge,
   EmptyState,
@@ -55,8 +54,8 @@ const LOT_SIZES: Record<string, number> = {
 };
 
 const card = {
-  background: THEME.surface,
-  border: `1px solid ${THEME.border}`,
+  background: "var(--color-card)",
+  border: `1px solid ${"var(--color-border)"}`,
   borderRadius: "12px",
 };
 const mono = {
@@ -67,12 +66,12 @@ const labelStyle = {
   fontWeight: 700,
   textTransform: "uppercase" as const,
   letterSpacing: "0.05em",
-  color: THEME.textSecondary,
+  color: "var(--color-muted-foreground)",
 };
 const inputStyle = {
-  background: THEME.rowHoverStrong,
-  border: `1px solid ${THEME.border}`,
-  color: THEME.text,
+  background: "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+  border: `1px solid ${"var(--color-border)"}`,
+  color: "var(--color-foreground)",
   outline: "none",
 } as React.CSSProperties;
 
@@ -181,7 +180,7 @@ function TradeDesk() {
     <PageLayout
       title={t("tradeDesk.tradeDesk")}
       badge="TRADE DESK"
-      badgeColor={THEME.green}
+      badgeColor={"var(--color-bullish)"}
       description={t("tradeDesk.institutionalExecution")}
     >
       {/* AI Coach Overlay */}
@@ -215,7 +214,7 @@ function TradeDesk() {
             ...card,
             margin: "16px 16px 0",
             padding: "20px",
-            borderLeft: `4px solid ${THEME.green}`,
+            borderLeft: `4px solid ${"var(--color-bullish)"}`,
           }}
         >
           <div
@@ -226,7 +225,7 @@ function TradeDesk() {
               marginBottom: "16px",
             }}
           >
-            <Calculator className="size-4" style={{ color: THEME.green }} />
+            <Calculator className="size-4" style={{ color: "var(--color-bullish)" }} />
             <h2 style={labelStyle}>{t("tradeDesk.riskCalculator")}</h2>
           </div>
 
@@ -284,8 +283,8 @@ function TradeDesk() {
               padding: "16px",
               borderRadius: "12px",
               textAlign: "center",
-              background: THEME.rowHover,
-              border: `1px solid ${THEME.border}`,
+              background: "color-mix(in oklab, var(--color-foreground) 3%, transparent)",
+              border: `1px solid ${"var(--color-border)"}`,
             }}
           >
             <div style={{ ...labelStyle, marginBottom: "4px" }}>
@@ -296,7 +295,7 @@ function TradeDesk() {
                 fontSize: "30px",
                 fontWeight: 700,
                 ...mono,
-                color: THEME.green,
+                color: "var(--color-bullish)",
                 marginBottom: "8px",
               }}
             >
@@ -315,7 +314,7 @@ function TradeDesk() {
                   fontSize: "12px",
                   fontWeight: 700,
                   ...mono,
-                  color: THEME.textSecondary,
+                  color: "var(--color-muted-foreground)",
                 }}
               >
                 Risk: ${result?.riskAmount || "0.00"}
@@ -331,10 +330,10 @@ function TradeDesk() {
                   }
                   color={
                     result.riskLevel === "LOW"
-                      ? THEME.green
+                      ? "var(--color-bullish)"
                       : result.riskLevel === "MEDIUM"
-                        ? THEME.amber
-                        : THEME.red
+                        ? "var(--color-neutral-wait)"
+                        : "var(--color-bearish)"
                   }
                   small
                 />
@@ -347,7 +346,7 @@ function TradeDesk() {
             style={{
               marginTop: "16px",
               paddingTop: "16px",
-              borderTop: `1px solid ${THEME.border}`,
+              borderTop: `1px solid ${"var(--color-border)"}`,
             }}
           >
             <div
@@ -358,7 +357,7 @@ function TradeDesk() {
                 marginBottom: "12px",
               }}
             >
-              <Save className="size-3.5" style={{ color: THEME.green }} />
+              <Save className="size-3.5" style={{ color: "var(--color-bullish)" }} />
               <span style={labelStyle}>Save as Trade</span>
             </div>
 
@@ -371,11 +370,11 @@ function TradeDesk() {
                     onClick={() => setDirection("long")}
                     className="h-10 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-1 transition-colors"
                     style={{
-                      background: direction === "long" ? `${THEME.green}20` : THEME.rowHoverStrong,
+                      background: direction === "long" ? `${"var(--color-bullish)"}20` : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
                       border: `1px solid ${
-                        direction === "long" ? `${THEME.green}66` : THEME.border
+                        direction === "long" ? `${"var(--color-bullish)"}66` : "var(--color-border)"
                       }`,
-                      color: direction === "long" ? THEME.green : THEME.textSecondary,
+                      color: direction === "long" ? "var(--color-bullish)" : "var(--color-muted-foreground)",
                     }}
                   >
                     <ArrowUpRight className="size-3" />
@@ -385,11 +384,11 @@ function TradeDesk() {
                     onClick={() => setDirection("short")}
                     className="h-10 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-1 transition-colors"
                     style={{
-                      background: direction === "short" ? `${THEME.red}20` : THEME.rowHoverStrong,
+                      background: direction === "short" ? `${"var(--color-bearish)"}20` : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
                       border: `1px solid ${
-                        direction === "short" ? `${THEME.red}66` : THEME.border
+                        direction === "short" ? `${"var(--color-bearish)"}66` : "var(--color-border)"
                       }`,
-                      color: direction === "short" ? THEME.red : THEME.textSecondary,
+                      color: direction === "short" ? "var(--color-bearish)" : "var(--color-muted-foreground)",
                     }}
                   >
                     <ArrowDownRight className="size-3" />
@@ -422,15 +421,15 @@ function TradeDesk() {
                   background:
                     entryPrice && !saveMutation.isPending
                       ? saveSuccess
-                        ? `${THEME.green}30`
-                        : THEME.green
-                      : THEME.rowHoverStrong,
+                        ? `color-mix(in oklab, var(--color-bullish) 19%, transparent)`
+                        : "var(--color-bullish)"
+                      : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
                   color: saveSuccess
-                    ? THEME.green
+                    ? "var(--color-bullish)"
                     : entryPrice && !saveMutation.isPending
-                      ? THEME.text
-                      : THEME.textSecondary,
-                  border: saveSuccess ? `1px solid ${THEME.green}66` : "none",
+                      ? "var(--color-foreground)"
+                      : "var(--color-muted-foreground)",
+                  border: saveSuccess ? `1px solid ${"var(--color-bullish)"}66` : "none",
                   opacity: !entryPrice || saveMutation.isPending ? 0.5 : 1,
                 }}
               >
@@ -456,9 +455,9 @@ function TradeDesk() {
                 disabled={!entryPrice}
                 className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all"
                 style={{
-                  background: showCoach ? `${THEME.cyan}20` : THEME.rowHoverStrong,
-                  border: `1px solid ${showCoach ? `${THEME.cyan}66` : THEME.border}`,
-                  color: showCoach ? THEME.cyan : THEME.textSecondary,
+                  background: showCoach ? `${"var(--color-info)"}20` : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                  border: `1px solid ${showCoach ? `${"var(--color-info)"}66` : "var(--color-border)"}`,
+                  color: showCoach ? "var(--color-info)" : "var(--color-muted-foreground)",
                   opacity: !entryPrice ? 0.5 : 1,
                 }}
                 title="AI Coach — Get coaching feedback"
@@ -474,9 +473,9 @@ function TradeDesk() {
                 disabled={!entryPrice}
                 className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all"
                 style={{
-                  background: showGovernor ? `${THEME.amber}20` : THEME.rowHoverStrong,
-                  border: `1px solid ${showGovernor ? `${THEME.amber}66` : THEME.border}`,
-                  color: showGovernor ? THEME.amber : THEME.textSecondary,
+                  background: showGovernor ? `${"var(--color-neutral-wait)"}20` : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                  border: `1px solid ${showGovernor ? `${"var(--color-neutral-wait)"}66` : "var(--color-border)"}`,
+                  color: showGovernor ? "var(--color-neutral-wait)" : "var(--color-muted-foreground)",
                   opacity: !entryPrice ? 0.5 : 1,
                 }}
                 title="Risk Governor — Assess trade risk"
@@ -519,13 +518,13 @@ function TradeDesk() {
                       justifyContent: "center",
                       flexShrink: 0,
                       background:
-                        trade.direction === "long" ? `${THEME.green}18` : `${THEME.red}18`,
+                        trade.direction === "long" ? `color-mix(in oklab, var(--color-bullish) 10%, transparent)` : `color-mix(in oklab, var(--color-bearish) 10%, transparent)`,
                     }}
                   >
                     {trade.direction === "long" ? (
-                      <ArrowUpRight className="size-4" style={{ color: THEME.green }} />
+                      <ArrowUpRight className="size-4" style={{ color: "var(--color-bullish)" }} />
                     ) : (
-                      <ArrowDownRight className="size-4" style={{ color: THEME.red }} />
+                      <ArrowDownRight className="size-4" style={{ color: "var(--color-bearish)" }} />
                     )}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -541,7 +540,7 @@ function TradeDesk() {
                       </span>
                       <Badge
                         label={trade.direction.toUpperCase()}
-                        color={trade.direction === "long" ? THEME.green : THEME.red}
+                        color={trade.direction === "long" ? "var(--color-bullish)" : "var(--color-bearish)"}
                         small
                       />
                     </div>
@@ -549,7 +548,7 @@ function TradeDesk() {
                       style={{
                         fontSize: "10px",
                         ...mono,
-                        color: THEME.textSecondary,
+                        color: "var(--color-muted-foreground)",
                         marginTop: "2px",
                       }}
                     >
@@ -568,7 +567,7 @@ function TradeDesk() {
                       style={{
                         fontSize: "9px",
                         ...mono,
-                        color: THEME.textSecondary,
+                        color: "var(--color-muted-foreground)",
                       }}
                     >
                       {new Date(trade.entry_date).toLocaleDateString()}
@@ -578,7 +577,7 @@ function TradeDesk() {
                         style={{
                           fontSize: "10px",
                           ...mono,
-                          color: THEME.textSecondary,
+                          color: "var(--color-muted-foreground)",
                         }}
                       >
                         {trade.quantity} lots

@@ -33,17 +33,17 @@ import type { TradingNote, Mood } from "@/domains/notes/types";
 import { NoteEditorDialog } from "@/components/vixor/NoteEditorDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { PageLayout, THEME, ScrollArea, Badge, ProgressBar } from "@/components/vixor/PageLayout";
+import { PageLayout,  ScrollArea, Badge, ProgressBar } from "@/components/vixor/PageLayout";
 
 // ── Local style constants ──────────────────────────────────────────────
-const GREEN_DEEP = "#059669";
-const GREEN_GRAD = `linear-gradient(to right, ${THEME.green}, ${GREEN_DEEP})`;
+const GREEN_DEEP = "var(--color-bullish)";
+const GREEN_GRAD = `linear-gradient(to right, ${"var(--color-bullish)"}, ${GREEN_DEEP})`;
 
 const CARD: React.CSSProperties = {
-  background: THEME.surface,
-  border: `1px solid ${THEME.border}`,
+  background: "var(--color-card)",
+  border: `1px solid ${"var(--color-border)"}`,
   borderRadius: "12px",
-  boxShadow: "0 4px 24px -8px rgba(0,0,0,0.4)",
+  boxShadow: "0 4px 24px -8px oklch(0 0 0 / 0.4)",
 };
 
 const MONO = { fontFamily: "'JetBrains Mono', ui-monospace, monospace" } as const;
@@ -53,7 +53,7 @@ const LABEL: React.CSSProperties = {
   fontWeight: 700,
   textTransform: "uppercase",
   letterSpacing: "0.05em",
-  color: THEME.textMuted,
+  color: "var(--color-muted-foreground)",
 };
 
 export const Route = createFileRoute("/_authenticated/analysis/$id")({
@@ -106,9 +106,9 @@ function highlightSMC(text: string): React.ReactNode[] {
         <span
           key={i}
           style={{
-            color: THEME.green,
+            color: "var(--color-bullish)",
             fontWeight: 700,
-            background: `${THEME.green}18`,
+            background: `color-mix(in oklab, var(--color-bullish) 10%, transparent)`,
             padding: "0 2px",
             borderRadius: "2px",
           }}
@@ -173,12 +173,12 @@ function AnalysisResult() {
   const isBearish = a?.recommendation === "SELL";
   const isWait = a?.recommendation === "WAIT";
 
-  const recColor = isBullish ? THEME.green : isBearish ? THEME.red : THEME.amber;
+  const recColor = isBullish ? "var(--color-bullish)" : isBearish ? "var(--color-bearish)" : "var(--color-neutral-wait)";
 
   // PageLayout header props
   const pageTitle = a?.pair ?? "Analysis";
   const pageBadge = isComplete ? (a.recommendation ?? undefined) : undefined;
-  const pageBadgeColor = isBullish ? THEME.green : isBearish ? THEME.red : THEME.amber;
+  const pageBadgeColor = isBullish ? "var(--color-bullish)" : isBearish ? "var(--color-bearish)" : "var(--color-neutral-wait)";
   const pageDescription = isComplete ? (a.pattern ?? "Signal Analysis") : undefined;
 
   return (
@@ -191,7 +191,7 @@ function AnalysisResult() {
       activeTab={tab}
       onTabChange={(t) => setTab(t as (typeof TABS)[number])}
       loading={isLoading}
-      loadingColor={THEME.green}
+      loadingColor={"var(--color-bullish)"}
     >
       {/* ── Not Found ── */}
       {!q.isLoading && !a && (
@@ -209,7 +209,7 @@ function AnalysisResult() {
               ...CARD,
               padding: "32px",
               textAlign: "center",
-              borderColor: "rgba(239,68,68,0.30)",
+              borderColor: "color-mix(in oklab, var(--color-bearish) 30%, transparent)",
             }}
           >
             <div
@@ -217,17 +217,17 @@ function AnalysisResult() {
                 width: "64px",
                 height: "64px",
                 borderRadius: "50%",
-                background: "rgba(239,68,68,0.10)",
+                background: "color-mix(in oklab, var(--color-bearish) 10%, transparent)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 margin: "0 auto 16px",
               }}
             >
-              <AlertTriangle size={32} style={{ color: THEME.red }} />
+              <AlertTriangle size={32} style={{ color: "var(--color-bearish)" }} />
             </div>
             <div style={{ fontSize: "18px", fontWeight: 700 }}>Analysis Failed</div>
-            <div style={{ fontSize: "14px", color: THEME.textSecondary, marginTop: "8px" }}>
+            <div style={{ fontSize: "14px", color: "var(--color-muted-foreground)", marginTop: "8px" }}>
               {a.error_message ?? "The AI encountered an issue reading this chart."}
             </div>
             <Link
@@ -240,7 +240,7 @@ function AnalysisResult() {
                 height: "48px",
                 borderRadius: "12px",
                 background: GREEN_GRAD,
-                color: THEME.text,
+                color: "var(--color-foreground)",
                 fontWeight: 700,
                 alignItems: "center",
                 textDecoration: "none",
@@ -272,20 +272,20 @@ function AnalysisResult() {
                 overflow: "hidden",
                 margin: "0 16px 16px",
                 borderColor: isBullish
-                  ? "rgba(16,185,129,0.50)"
+                  ? "color-mix(in oklab, var(--color-bullish) 50%, transparent)"
                   : isBearish
-                    ? "rgba(239,68,68,0.50)"
-                    : "rgba(245,158,11,0.40)",
+                    ? "color-mix(in oklab, var(--color-bearish) 50%, transparent)"
+                    : "color-mix(in oklab, var(--color-neutral-wait) 40%, transparent)",
                 boxShadow: isBullish
-                  ? "0 0 40px rgba(16,185,129,0.2)"
+                  ? "0 0 40px color-mix(in oklab, var(--color-bullish) 20%, transparent)"
                   : isBearish
-                    ? "0 0 40px rgba(239,68,68,0.2)"
-                    : "0 0 30px rgba(245,158,11,0.15)",
+                    ? "0 0 40px color-mix(in oklab, var(--color-bearish) 20%, transparent)"
+                    : "0 0 30px color-mix(in oklab, var(--color-neutral-wait) 15%, transparent)",
                 background: isBullish
-                  ? `linear-gradient(to bottom right, rgba(16,185,129,0.08), ${THEME.surface}, ${THEME.surface})`
+                  ? `linear-gradient(to bottom right, color-mix(in oklab, var(--color-bullish) 8%, transparent), ${"var(--color-card)"}, ${"var(--color-card)"})`
                   : isBearish
-                    ? `linear-gradient(to bottom right, rgba(239,68,68,0.08), ${THEME.surface}, ${THEME.surface})`
-                    : `linear-gradient(to bottom right, rgba(245,158,11,0.08), ${THEME.surface}, ${THEME.surface})`,
+                    ? `linear-gradient(to bottom right, color-mix(in oklab, var(--color-bearish) 8%, transparent), ${"var(--color-card)"}, ${"var(--color-card)"})`
+                    : `linear-gradient(to bottom right, color-mix(in oklab, var(--color-neutral-wait) 8%, transparent), ${"var(--color-card)"}, ${"var(--color-card)"})`,
               }}
             >
               {/* Animated top bar */}
@@ -297,7 +297,7 @@ function AnalysisResult() {
                   left: 0,
                   right: 0,
                   height: "2px",
-                  background: isBullish ? THEME.green : isBearish ? THEME.red : THEME.amber,
+                  background: isBullish ? "var(--color-bullish)" : isBearish ? "var(--color-bearish)" : "var(--color-neutral-wait)",
                 }}
               />
 
@@ -325,17 +325,17 @@ function AnalysisResult() {
                         fontWeight: 700,
                         textTransform: "uppercase",
                         letterSpacing: "0.1em",
-                        color: THEME.textSecondary,
-                        background: "rgba(26,26,26,0.8)",
+                        color: "var(--color-muted-foreground)",
+                        background: "color-mix(in oklab, var(--color-card) 80%, oklch(0 0 0))",
                         backdropFilter: "blur(8px)",
                         padding: "2px 8px",
                         borderRadius: "4px",
-                        border: `1px solid ${THEME.border}`,
+                        border: `1px solid ${"var(--color-border)"}`,
                       }}
                     >
                       {a.timeframe ?? "AUTO"}
                     </span>
-                    <span style={{ fontSize: "10px", fontWeight: 700, color: THEME.textSecondary }}>
+                    <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--color-muted-foreground)" }}>
                       {relTime(a.created_at)}
                     </span>
                   </div>
@@ -346,7 +346,7 @@ function AnalysisResult() {
                       ...MONO,
                       letterSpacing: "-0.02em",
                       lineHeight: 1,
-                      color: THEME.text,
+                      color: "var(--color-foreground)",
                     }}
                   >
                     {a.pair ?? "?"}
@@ -355,7 +355,7 @@ function AnalysisResult() {
                     style={{
                       fontSize: "12px",
                       fontWeight: 700,
-                      color: THEME.textSecondary,
+                      color: "var(--color-muted-foreground)",
                       marginTop: "4px",
                     }}
                   >
@@ -375,19 +375,19 @@ function AnalysisResult() {
                     ...MONO,
                     letterSpacing: "0.05em",
                     background: isBullish
-                      ? "rgba(16,185,129,0.06)"
+                      ? "color-mix(in oklab, var(--color-bullish) 6%, transparent)"
                       : isBearish
-                        ? "rgba(239,68,68,0.06)"
-                        : "rgba(245,158,11,0.06)",
+                        ? "color-mix(in oklab, var(--color-bearish) 6%, transparent)"
+                        : "color-mix(in oklab, var(--color-neutral-wait) 6%, transparent)",
                     borderColor: isBullish
-                      ? "rgba(16,185,129,0.30)"
+                      ? "color-mix(in oklab, var(--color-bullish) 30%, transparent)"
                       : isBearish
-                        ? "rgba(239,68,68,0.30)"
-                        : "rgba(245,158,11,0.30)",
+                        ? "color-mix(in oklab, var(--color-bearish) 30%, transparent)"
+                        : "color-mix(in oklab, var(--color-neutral-wait) 30%, transparent)",
                     boxShadow: isBullish
-                      ? "0 0 20px rgba(16,185,129,0.3)"
+                      ? "0 0 20px color-mix(in oklab, var(--color-bullish) 30%, transparent)"
                       : isBearish
-                        ? "0 0 20px rgba(239,68,68,0.3)"
+                        ? "0 0 20px color-mix(in oklab, var(--color-bearish) 30%, transparent)"
                         : "none",
                   }}
                 >
@@ -408,46 +408,46 @@ function AnalysisResult() {
                   {/* Entry */}
                   <div
                     style={{
-                      background: "rgba(26,26,26,0.70)",
+                      background: "color-mix(in oklab, var(--color-card) 70%, oklch(0 0 0))",
                       backdropFilter: "blur(8px)",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: `1px solid ${THEME.border}`,
+                      border: `1px solid ${"var(--color-border)"}`,
                       textAlign: "center",
                     }}
                   >
                     <div style={{ ...LABEL, marginBottom: "6px" }}>Entry</div>
-                    <div style={{ ...MONO, fontWeight: 700, fontSize: "16px", color: THEME.text }}>
+                    <div style={{ ...MONO, fontWeight: 700, fontSize: "16px", color: "var(--color-foreground)" }}>
                       {signalBadge.entry}
                     </div>
                   </div>
                   {/* Stop Loss */}
                   <div
                     style={{
-                      background: "rgba(239,68,68,0.05)",
+                      background: "color-mix(in oklab, var(--color-bearish) 5%, transparent)",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: "1px solid rgba(239,68,68,0.30)",
+                      border: "1px solid color-mix(in oklab, var(--color-bearish) 30%, transparent)",
                       textAlign: "center",
                     }}
                   >
-                    <div style={{ ...LABEL, color: THEME.red, marginBottom: "6px" }}>Stop Loss</div>
-                    <div style={{ ...MONO, fontWeight: 700, fontSize: "16px", color: THEME.red }}>
+                    <div style={{ ...LABEL, color: "var(--color-bearish)", marginBottom: "6px" }}>Stop Loss</div>
+                    <div style={{ ...MONO, fontWeight: 700, fontSize: "16px", color: "var(--color-bearish)" }}>
                       {signalBadge.stop_loss}
                     </div>
                   </div>
                   {/* Target */}
                   <div
                     style={{
-                      background: "rgba(16,185,129,0.05)",
+                      background: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: "1px solid rgba(16,185,129,0.30)",
+                      border: "1px solid color-mix(in oklab, var(--color-bullish) 30%, transparent)",
                       textAlign: "center",
                     }}
                   >
-                    <div style={{ ...LABEL, color: THEME.green, marginBottom: "6px" }}>Target</div>
-                    <div style={{ ...MONO, fontWeight: 700, fontSize: "16px", color: THEME.green }}>
+                    <div style={{ ...LABEL, color: "var(--color-bullish)", marginBottom: "6px" }}>Target</div>
+                    <div style={{ ...MONO, fontWeight: 700, fontSize: "16px", color: "var(--color-bullish)" }}>
                       {signalBadge.take_profit}
                     </div>
                   </div>
@@ -468,15 +468,15 @@ function AnalysisResult() {
                       fontSize: "14px",
                       color: recColor,
                       background: isBullish
-                        ? "rgba(16,185,129,0.06)"
+                        ? "color-mix(in oklab, var(--color-bullish) 6%, transparent)"
                         : isBearish
-                          ? "rgba(239,68,68,0.06)"
-                          : "rgba(245,158,11,0.06)",
+                          ? "color-mix(in oklab, var(--color-bearish) 6%, transparent)"
+                          : "color-mix(in oklab, var(--color-neutral-wait) 6%, transparent)",
                       borderColor: isBullish
-                        ? "rgba(16,185,129,0.30)"
+                        ? "color-mix(in oklab, var(--color-bullish) 30%, transparent)"
                         : isBearish
-                          ? "rgba(239,68,68,0.30)"
-                          : "rgba(245,158,11,0.30)",
+                          ? "color-mix(in oklab, var(--color-bearish) 30%, transparent)"
+                          : "color-mix(in oklab, var(--color-neutral-wait) 30%, transparent)",
                     }}
                   >
                     R:R {signalBadge.rr}
@@ -499,7 +499,7 @@ function AnalysisResult() {
                   <div
                     style={{
                       height: "6px",
-                      background: THEME.border,
+                      background: "var(--color-border)",
                       borderRadius: "9999px",
                       overflow: "hidden",
                     }}
@@ -541,7 +541,7 @@ function AnalysisResult() {
                     fontSize: "14px",
                     fontWeight: 500,
                     lineHeight: 1.6,
-                    color: "rgba(255,255,255,0.90)",
+                    color: "color-mix(in oklab, var(--color-foreground) 90%, transparent)",
                   }}
                 >
                   {highlightSMC(vixorMsg)}
@@ -568,7 +568,7 @@ function AnalysisResult() {
                     width: "100%",
                     maxHeight: "208px",
                     objectFit: "contain",
-                    background: "#000000",
+                    background: "oklch(0 0 0)",
                     display: "block",
                   }}
                 />
@@ -580,9 +580,9 @@ function AnalysisResult() {
                     width: "32px",
                     height: "32px",
                     borderRadius: "8px",
-                    background: "rgba(0,0,0,0.60)",
+                    background: "oklch(0 0 0 / 0.60)",
                     backdropFilter: "blur(8px)",
-                    color: THEME.text,
+                    color: "var(--color-foreground)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -600,7 +600,7 @@ function AnalysisResult() {
                   position: "fixed",
                   inset: 0,
                   zIndex: 50,
-                  background: "rgba(0,0,0,0.95)",
+                  background: "oklch(0 0 0 / 0.95)",
                   backdropFilter: "blur(8px)",
                   display: "flex",
                   alignItems: "center",
@@ -617,12 +617,12 @@ function AnalysisResult() {
                     width: "40px",
                     height: "40px",
                     borderRadius: "50%",
-                    background: "rgba(255,255,255,0.10)",
-                    border: "1px solid rgba(255,255,255,0.20)",
+                    background: "color-mix(in oklab, var(--color-foreground) 10%, transparent)",
+                    border: "1px solid color-mix(in oklab, var(--color-foreground) 20%, transparent)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: THEME.text,
+                    color: "var(--color-foreground)",
                     cursor: "pointer",
                   }}
                 >
@@ -651,7 +651,7 @@ function AnalysisResult() {
                   height: "48px",
                   borderRadius: "12px",
                   background: GREEN_GRAD,
-                  color: THEME.text,
+                  color: "var(--color-foreground)",
                   fontWeight: 700,
                   fontSize: "14px",
                   display: "flex",
@@ -669,8 +669,8 @@ function AnalysisResult() {
                 style={{
                   height: "48px",
                   borderRadius: "12px",
-                  background: THEME.surface,
-                  border: `1px solid ${THEME.border}`,
+                  background: "var(--color-card)",
+                  border: `1px solid ${"var(--color-border)"}`,
                   fontWeight: 700,
                   fontSize: "14px",
                   display: "flex",
@@ -678,10 +678,10 @@ function AnalysisResult() {
                   justifyContent: "center",
                   gap: "8px",
                   textDecoration: "none",
-                  color: THEME.text,
+                  color: "var(--color-foreground)",
                 }}
               >
-                <BookOpen size={16} style={{ color: THEME.textSecondary }} /> Journal
+                <BookOpen size={16} style={{ color: "var(--color-muted-foreground)" }} /> Journal
               </Link>
               <AnalysisNotesSection analysisId={id} pair={a.pair} />
             </div>
@@ -702,11 +702,11 @@ function AnalysisResult() {
                       fontWeight: 700,
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
-                      color: THEME.textSecondary,
+                      color: "var(--color-muted-foreground)",
                       marginBottom: "16px",
                     }}
                   >
-                    <Target size={16} style={{ color: THEME.green }} /> Why This Trade
+                    <Target size={16} style={{ color: "var(--color-bullish)" }} /> Why This Trade
                   </h3>
                   <ul
                     style={{
@@ -722,9 +722,9 @@ function AnalysisResult() {
                       <li key={i} style={{ display: "flex", gap: "12px", fontSize: "14px" }}>
                         <CheckCircle
                           size={16}
-                          style={{ color: THEME.green, flexShrink: 0, marginTop: "2px" }}
+                          style={{ color: "var(--color-bullish)", flexShrink: 0, marginTop: "2px" }}
                         />
-                        <span style={{ fontWeight: 500, color: THEME.text }}>
+                        <span style={{ fontWeight: 500, color: "var(--color-foreground)" }}>
                           {highlightSMC(r)}
                         </span>
                       </li>
@@ -740,7 +740,7 @@ function AnalysisResult() {
                         fontWeight: 700,
                         textTransform: "uppercase",
                         letterSpacing: "0.05em",
-                        color: THEME.textSecondary,
+                        color: "var(--color-muted-foreground)",
                         marginLeft: "4px",
                       }}
                     >
@@ -750,24 +750,24 @@ function AnalysisResult() {
                       {
                         label: "Conservative",
                         s: scenarios.conservative,
-                        color: THEME.cyan,
-                        border: THEME.cyan,
-                        bg: "rgba(6,182,212,0.05)",
+                        color: "var(--color-info)",
+                        border: "var(--color-info)",
+                        bg: "color-mix(in oklab, var(--color-info) 5%, transparent)",
                       },
                       {
                         label: "Balanced ✦",
                         s: scenarios.balanced,
-                        color: THEME.green,
-                        border: THEME.green,
-                        bg: "rgba(16,185,129,0.05)",
+                        color: "var(--color-bullish)",
+                        border: "var(--color-bullish)",
+                        bg: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
                         glow: true,
                       },
                       {
                         label: "Aggressive",
                         s: scenarios.aggressive,
-                        color: THEME.amber,
-                        border: THEME.amber,
-                        bg: "rgba(245,158,11,0.05)",
+                        color: "var(--color-neutral-wait)",
+                        border: "var(--color-neutral-wait)",
+                        bg: "color-mix(in oklab, var(--color-neutral-wait) 5%, transparent)",
                       },
                     ].map(({ label, s, color, border, bg, glow }) => (
                       <div
@@ -777,7 +777,7 @@ function AnalysisResult() {
                           padding: "16px",
                           borderLeft: `4px solid ${border}`,
                           background: bg,
-                          boxShadow: glow ? "0 0 20px rgba(16,185,129,0.12)" : undefined,
+                          boxShadow: glow ? "0 0 20px color-mix(in oklab, var(--color-bullish) 12%, transparent)" : undefined,
                         }}
                       >
                         <div
@@ -804,8 +804,8 @@ function AnalysisResult() {
                               style={{
                                 fontSize: "10px",
                                 fontWeight: 700,
-                                color: THEME.textSecondary,
-                                background: THEME.tabBarBg,
+                                color: "var(--color-muted-foreground)",
+                                background: "var(--color-muted)",
                                 padding: "2px 6px",
                                 borderRadius: "4px",
                               }}
@@ -818,11 +818,11 @@ function AnalysisResult() {
                               ...MONO,
                               fontSize: "14px",
                               fontWeight: 800,
-                              background: THEME.surface,
+                              background: "var(--color-card)",
                               padding: "2px 8px",
                               borderRadius: "4px",
-                              border: `1px solid ${THEME.border}`,
-                              color: THEME.text,
+                              border: `1px solid ${"var(--color-border)"}`,
+                              color: "var(--color-foreground)",
                             }}
                           >
                             R:R {s.rr}
@@ -838,10 +838,10 @@ function AnalysisResult() {
                           {/* Entry */}
                           <div
                             style={{
-                              background: THEME.surface,
+                              background: "var(--color-card)",
                               padding: "10px",
                               borderRadius: "12px",
-                              border: `1px solid ${THEME.border}`,
+                              border: `1px solid ${"var(--color-border)"}`,
                             }}
                           >
                             <div style={{ ...LABEL, marginBottom: "4px" }}>Entry</div>
@@ -850,7 +850,7 @@ function AnalysisResult() {
                                 ...MONO,
                                 fontSize: "14px",
                                 fontWeight: 700,
-                                color: THEME.text,
+                                color: "var(--color-foreground)",
                               }}
                             >
                               {s.entry}
@@ -859,13 +859,13 @@ function AnalysisResult() {
                           {/* SL */}
                           <div
                             style={{
-                              background: "rgba(239,68,68,0.05)",
+                              background: "color-mix(in oklab, var(--color-bearish) 5%, transparent)",
                               padding: "10px",
                               borderRadius: "12px",
-                              border: "1px solid rgba(239,68,68,0.20)",
+                              border: "1px solid color-mix(in oklab, var(--color-bearish) 20%, transparent)",
                             }}
                           >
-                            <div style={{ ...LABEL, color: THEME.red, marginBottom: "4px" }}>
+                            <div style={{ ...LABEL, color: "var(--color-bearish)", marginBottom: "4px" }}>
                               SL
                             </div>
                             <div
@@ -873,7 +873,7 @@ function AnalysisResult() {
                                 ...MONO,
                                 fontSize: "14px",
                                 fontWeight: 700,
-                                color: THEME.red,
+                                color: "var(--color-bearish)",
                               }}
                             >
                               {s.sl?.toLocaleString()}
@@ -882,13 +882,13 @@ function AnalysisResult() {
                           {/* TP */}
                           <div
                             style={{
-                              background: "rgba(16,185,129,0.05)",
+                              background: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
                               padding: "10px",
                               borderRadius: "12px",
-                              border: "1px solid rgba(16,185,129,0.20)",
+                              border: "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)",
                             }}
                           >
-                            <div style={{ ...LABEL, color: THEME.green, marginBottom: "4px" }}>
+                            <div style={{ ...LABEL, color: "var(--color-bullish)", marginBottom: "4px" }}>
                               TP
                             </div>
                             <div
@@ -896,7 +896,7 @@ function AnalysisResult() {
                                 ...MONO,
                                 fontSize: "14px",
                                 fontWeight: 700,
-                                color: THEME.green,
+                                color: "var(--color-bullish)",
                               }}
                             >
                               {s.tp2?.toLocaleString()}
@@ -927,11 +927,11 @@ function AnalysisResult() {
                         fontWeight: 700,
                         textTransform: "uppercase",
                         letterSpacing: "0.05em",
-                        color: THEME.textSecondary,
+                        color: "var(--color-muted-foreground)",
                         marginBottom: "16px",
                       }}
                     >
-                      <BarChart2 size={16} style={{ color: THEME.green }} /> Key SMC Levels
+                      <BarChart2 size={16} style={{ color: "var(--color-bullish)" }} /> Key SMC Levels
                     </h3>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                       {/* Resistance / BSL */}
@@ -940,7 +940,7 @@ function AnalysisResult() {
                           style={{
                             fontSize: "12px",
                             fontWeight: 700,
-                            color: THEME.red,
+                            color: "var(--color-bearish)",
                             textTransform: "uppercase",
                             letterSpacing: "0.05em",
                           }}
@@ -951,14 +951,14 @@ function AnalysisResult() {
                           <div
                             key={i}
                             style={{
-                              background: "rgba(239,68,68,0.05)",
-                              border: "1px solid rgba(239,68,68,0.20)",
+                              background: "color-mix(in oklab, var(--color-bearish) 5%, transparent)",
+                              border: "1px solid color-mix(in oklab, var(--color-bearish) 20%, transparent)",
                               padding: "8px 12px",
                               borderRadius: "8px",
                               ...MONO,
                               fontSize: "14px",
                               fontWeight: 700,
-                              color: "rgba(239,68,68,0.90)",
+                              color: "color-mix(in oklab, var(--color-bearish) 90%, transparent)",
                             }}
                           >
                             {l.toLocaleString()}
@@ -971,7 +971,7 @@ function AnalysisResult() {
                           style={{
                             fontSize: "12px",
                             fontWeight: 700,
-                            color: THEME.green,
+                            color: "var(--color-bullish)",
                             textTransform: "uppercase",
                             letterSpacing: "0.05em",
                           }}
@@ -982,14 +982,14 @@ function AnalysisResult() {
                           <div
                             key={i}
                             style={{
-                              background: "rgba(16,185,129,0.05)",
-                              border: "1px solid rgba(16,185,129,0.20)",
+                              background: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
+                              border: "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)",
                               padding: "8px 12px",
                               borderRadius: "8px",
                               ...MONO,
                               fontSize: "14px",
                               fontWeight: 700,
-                              color: "rgba(16,185,129,0.90)",
+                              color: "color-mix(in oklab, var(--color-bullish) 90%, transparent)",
                             }}
                           >
                             {l.toLocaleString()}
@@ -1011,11 +1011,11 @@ function AnalysisResult() {
                         fontWeight: 700,
                         textTransform: "uppercase",
                         letterSpacing: "0.05em",
-                        color: THEME.textSecondary,
+                        color: "var(--color-muted-foreground)",
                         marginBottom: "16px",
                       }}
                     >
-                      <Activity size={16} style={{ color: THEME.green }} /> Liquidity Pools
+                      <Activity size={16} style={{ color: "var(--color-bullish)" }} /> Liquidity Pools
                     </h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       {((a.liquidity_zones as any).buySide || []).map((l: number, i: number) => (
@@ -1027,21 +1027,21 @@ function AnalysisResult() {
                             justifyContent: "space-between",
                             padding: "12px",
                             borderRadius: "12px",
-                            background: "rgba(16,185,129,0.05)",
-                            border: "1px solid rgba(16,185,129,0.20)",
+                            background: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
+                            border: "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)",
                           }}
                         >
                           <span
                             style={{
                               fontSize: "12px",
                               fontWeight: 700,
-                              color: THEME.green,
+                              color: "var(--color-bullish)",
                               textTransform: "uppercase",
                             }}
                           >
                             Buy-Side Liquidity (BSL)
                           </span>
-                          <span style={{ ...MONO, fontWeight: 700, color: THEME.green }}>
+                          <span style={{ ...MONO, fontWeight: 700, color: "var(--color-bullish)" }}>
                             {l.toLocaleString()}
                           </span>
                         </div>
@@ -1055,21 +1055,21 @@ function AnalysisResult() {
                             justifyContent: "space-between",
                             padding: "12px",
                             borderRadius: "12px",
-                            background: "rgba(239,68,68,0.05)",
-                            border: "1px solid rgba(239,68,68,0.20)",
+                            background: "color-mix(in oklab, var(--color-bearish) 5%, transparent)",
+                            border: "1px solid color-mix(in oklab, var(--color-bearish) 20%, transparent)",
                           }}
                         >
                           <span
                             style={{
                               fontSize: "12px",
                               fontWeight: 700,
-                              color: THEME.red,
+                              color: "var(--color-bearish)",
                               textTransform: "uppercase",
                             }}
                           >
                             Sell-Side Liquidity (SSL)
                           </span>
-                          <span style={{ ...MONO, fontWeight: 700, color: THEME.red }}>
+                          <span style={{ ...MONO, fontWeight: 700, color: "var(--color-bearish)" }}>
                             {l.toLocaleString()}
                           </span>
                         </div>
@@ -1089,11 +1089,11 @@ function AnalysisResult() {
                         fontWeight: 700,
                         textTransform: "uppercase",
                         letterSpacing: "0.05em",
-                        color: THEME.textSecondary,
+                        color: "var(--color-muted-foreground)",
                         marginBottom: "16px",
                       }}
                     >
-                      <TrendingUp size={16} style={{ color: THEME.green }} /> Market Structure (SMC)
+                      <TrendingUp size={16} style={{ color: "var(--color-bullish)" }} /> Market Structure (SMC)
                     </h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       {[
@@ -1126,8 +1126,8 @@ function AnalysisResult() {
                             padding: "12px",
                             borderRadius: "12px",
                             border: "1px solid",
-                            background: danger ? "rgba(239,68,68,0.10)" : THEME.surface,
-                            borderColor: danger ? "rgba(239,68,68,0.30)" : THEME.border,
+                            background: danger ? "color-mix(in oklab, var(--color-bearish) 10%, transparent)" : "var(--color-card)",
+                            borderColor: danger ? "color-mix(in oklab, var(--color-bearish) 30%, transparent)" : "var(--color-border)",
                           }}
                         >
                           <span
@@ -1135,7 +1135,7 @@ function AnalysisResult() {
                               fontSize: "12px",
                               fontWeight: 700,
                               textTransform: "uppercase",
-                              color: danger ? THEME.red : THEME.textSecondary,
+                              color: danger ? "var(--color-bearish)" : "var(--color-muted-foreground)",
                             }}
                           >
                             {label}
@@ -1144,7 +1144,7 @@ function AnalysisResult() {
                             style={{
                               ...MONO,
                               fontWeight: 700,
-                              color: danger ? THEME.red : THEME.text,
+                              color: danger ? "var(--color-bearish)" : "var(--color-foreground)",
                             }}
                           >
                             {String(value)}
@@ -1180,11 +1180,11 @@ function AnalysisResult() {
                       fontWeight: 700,
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
-                      color: THEME.textSecondary,
+                      color: "var(--color-muted-foreground)",
                       marginBottom: "16px",
                     }}
                   >
-                    <Layers size={16} style={{ color: THEME.green }} /> Step-by-Step Management
+                    <Layers size={16} style={{ color: "var(--color-bullish)" }} /> Step-by-Step Management
                   </h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {management.map((m, i) => (
@@ -1193,8 +1193,8 @@ function AnalysisResult() {
                         style={{
                           display: "flex",
                           gap: "12px",
-                          background: THEME.surface,
-                          border: `1px solid ${THEME.border}`,
+                          background: "var(--color-card)",
+                          border: `1px solid ${"var(--color-border)"}`,
                           padding: "14px",
                           borderRadius: "12px",
                         }}
@@ -1211,8 +1211,8 @@ function AnalysisResult() {
                             ...MONO,
                             fontSize: "12px",
                             fontWeight: 700,
-                            background: i === 0 ? GREEN_GRAD : THEME.tabBarBg,
-                            color: i === 0 ? THEME.text : THEME.textSecondary,
+                            background: i === 0 ? GREEN_GRAD : "var(--color-muted)",
+                            color: i === 0 ? "var(--color-foreground)" : "var(--color-muted-foreground)",
                           }}
                         >
                           {i + 1}
@@ -1222,7 +1222,7 @@ function AnalysisResult() {
                             fontSize: "14px",
                             fontWeight: 500,
                             lineHeight: 1.6,
-                            color: THEME.text,
+                            color: "var(--color-foreground)",
                           }}
                         >
                           {highlightSMC(m)}
@@ -1238,7 +1238,7 @@ function AnalysisResult() {
                       ...CARD,
                       padding: "20px",
                       marginBottom: "16px",
-                      borderColor: "rgba(239,68,68,0.20)",
+                      borderColor: "color-mix(in oklab, var(--color-bearish) 20%, transparent)",
                     }}
                   >
                     <h3
@@ -1250,11 +1250,11 @@ function AnalysisResult() {
                         fontWeight: 700,
                         textTransform: "uppercase",
                         letterSpacing: "0.05em",
-                        color: THEME.red,
+                        color: "var(--color-bearish)",
                         marginBottom: "16px",
                       }}
                     >
-                      <ShieldCheck size={16} style={{ color: THEME.red }} /> Risk Factors
+                      <ShieldCheck size={16} style={{ color: "var(--color-bearish)" }} /> Risk Factors
                     </h3>
                     <ul
                       style={{
@@ -1268,10 +1268,10 @@ function AnalysisResult() {
                     >
                       {a.risk_reasons.map((r: string, i: number) => (
                         <li key={i} style={{ display: "flex", gap: "8px", fontSize: "14px" }}>
-                          <span style={{ color: THEME.red, marginTop: "2px", flexShrink: 0 }}>
+                          <span style={{ color: "var(--color-bearish)", marginTop: "2px", flexShrink: 0 }}>
                             •
                           </span>
-                          <span style={{ fontWeight: 500, color: THEME.textSecondary }}>{r}</span>
+                          <span style={{ fontWeight: 500, color: "var(--color-muted-foreground)" }}>{r}</span>
                         </li>
                       ))}
                     </ul>
@@ -1285,28 +1285,28 @@ function AnalysisResult() {
                     gap: "12px",
                     padding: "16px",
                     borderRadius: "12px",
-                    background: "rgba(245,158,11,0.10)",
-                    border: "1px solid rgba(245,158,11,0.20)",
+                    background: "color-mix(in oklab, var(--color-neutral-wait) 10%, transparent)",
+                    border: "1px solid color-mix(in oklab, var(--color-neutral-wait) 20%, transparent)",
                   }}
                 >
                   <AlertTriangle
                     size={20}
-                    style={{ color: THEME.amber, flexShrink: 0, marginTop: "2px" }}
+                    style={{ color: "var(--color-neutral-wait)", flexShrink: 0, marginTop: "2px" }}
                   />
                   <div
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
-                      color: THEME.textSecondary,
+                      color: "var(--color-muted-foreground)",
                       lineHeight: 1.6,
                     }}
                   >
-                    <strong style={{ color: THEME.text, display: "block", marginBottom: "4px" }}>
+                    <strong style={{ color: "var(--color-foreground)", display: "block", marginBottom: "4px" }}>
                       Risk Disclaimer
                     </strong>
                     This analysis is generated by Vixor AI based on technical patterns and
                     fundamental data. It is{" "}
-                    <strong style={{ color: THEME.text }}>not financial advice</strong>. Always
+                    <strong style={{ color: "var(--color-foreground)" }}>not financial advice</strong>. Always
                     apply your own risk management and judgment before executing any trade.
                   </div>
                 </div>
@@ -1346,8 +1346,8 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
             alignItems: "center",
           }}
         >
-          <Newspaper size={40} style={{ color: THEME.textSecondary, margin: "0 auto" }} />
-          <p style={{ fontSize: "14px", color: THEME.textSecondary }}>
+          <Newspaper size={40} style={{ color: "var(--color-muted-foreground)", margin: "0 auto" }} />
+          <p style={{ fontSize: "14px", color: "var(--color-muted-foreground)" }}>
             No fundamental news analysis for this session.
           </p>
         </div>
@@ -1359,7 +1359,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
   const isBullish = overall_sentiment === "BULLISH";
   const isBearish = overall_sentiment === "BEARISH";
 
-  const sentColor = isBullish ? THEME.green : isBearish ? THEME.red : THEME.amber;
+  const sentColor = isBullish ? "var(--color-bullish)" : isBearish ? "var(--color-bearish)" : "var(--color-neutral-wait)";
 
   return (
     <div
@@ -1387,10 +1387,10 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
               fontWeight: 700,
               textTransform: "uppercase",
               letterSpacing: "0.05em",
-              color: THEME.textSecondary,
+              color: "var(--color-muted-foreground)",
             }}
           >
-            <Activity size={16} style={{ color: THEME.green }} /> Fundamental Sentiment
+            <Activity size={16} style={{ color: "var(--color-bullish)" }} /> Fundamental Sentiment
           </h3>
           <span
             style={{
@@ -1403,15 +1403,15 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
               border: "1px solid",
               color: sentColor,
               background: isBullish
-                ? "rgba(16,185,129,0.06)"
+                ? "color-mix(in oklab, var(--color-bullish) 6%, transparent)"
                 : isBearish
-                  ? "rgba(239,68,68,0.06)"
-                  : "rgba(245,158,11,0.06)",
+                  ? "color-mix(in oklab, var(--color-bearish) 6%, transparent)"
+                  : "color-mix(in oklab, var(--color-neutral-wait) 6%, transparent)",
               borderColor: isBullish
-                ? "rgba(16,185,129,0.30)"
+                ? "color-mix(in oklab, var(--color-bullish) 30%, transparent)"
                 : isBearish
-                  ? "rgba(239,68,68,0.30)"
-                  : "rgba(245,158,11,0.30)",
+                  ? "color-mix(in oklab, var(--color-bearish) 30%, transparent)"
+                  : "color-mix(in oklab, var(--color-neutral-wait) 30%, transparent)",
             }}
           >
             {overall_sentiment}
@@ -1424,16 +1424,16 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
             borderRadius: "12px",
             borderLeft: `4px solid ${sentColor}`,
             background: isBullish
-              ? "rgba(16,185,129,0.05)"
+              ? "color-mix(in oklab, var(--color-bullish) 5%, transparent)"
               : isBearish
-                ? "rgba(239,68,68,0.05)"
-                : "rgba(245,158,11,0.05)",
+                ? "color-mix(in oklab, var(--color-bearish) 5%, transparent)"
+                : "color-mix(in oklab, var(--color-neutral-wait) 5%, transparent)",
           }}
         >
           <span style={{ ...LABEL, letterSpacing: "0.1em", display: "block", marginBottom: "4px" }}>
             AI Confluence Verdict
           </span>
-          <p style={{ fontSize: "14px", fontWeight: 500, lineHeight: 1.6, color: THEME.text }}>
+          <p style={{ fontSize: "14px", fontWeight: 500, lineHeight: 1.6, color: "var(--color-foreground)" }}>
             {highlightSMC(verdict)}
           </p>
         </div>
@@ -1450,19 +1450,19 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
             fontWeight: 700,
             textTransform: "uppercase",
             letterSpacing: "0.05em",
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
             marginLeft: "4px",
           }}
         >
-          <Newspaper size={16} style={{ color: THEME.green }} /> Key News Drivers
+          <Newspaper size={16} style={{ color: "var(--color-bullish)" }} /> Key News Drivers
         </h3>
         {relevant_news.map((n, i) => {
           const impactColor =
             n.impact === "POSITIVE"
-              ? THEME.green
+              ? "var(--color-bullish)"
               : n.impact === "NEGATIVE"
-                ? THEME.red
-                : THEME.amber;
+                ? "var(--color-bearish)"
+                : "var(--color-neutral-wait)";
           return (
             <div
               key={i}
@@ -1500,9 +1500,9 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
                     style={{
                       fontSize: "9px",
                       fontWeight: 700,
-                      color: THEME.textSecondary,
+                      color: "var(--color-muted-foreground)",
                       textTransform: "uppercase",
-                      background: THEME.tabBarBg,
+                      background: "var(--color-muted)",
                       padding: "2px 6px",
                       borderRadius: "4px",
                     }}
@@ -1513,7 +1513,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
                     style={{
                       fontWeight: 700,
                       fontSize: "14px",
-                      color: THEME.text,
+                      color: "var(--color-foreground)",
                       marginTop: "6px",
                       lineHeight: 1.4,
                     }}
@@ -1540,10 +1540,10 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
                 style={{
                   padding: "12px",
                   borderRadius: "8px",
-                  background: "rgba(26,26,26,0.60)",
-                  border: `1px solid ${THEME.border}`,
+                  background: "color-mix(in oklab, var(--color-card) 60%, oklch(0 0 0))",
+                  border: `1px solid ${"var(--color-border)"}`,
                   fontSize: "12px",
-                  color: THEME.textSecondary,
+                  color: "var(--color-muted-foreground)",
                   lineHeight: 1.6,
                   marginLeft: "4px",
                 }}
@@ -1553,7 +1553,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
                     fontSize: "9px",
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
-                    color: THEME.text,
+                    color: "var(--color-foreground)",
                     display: "block",
                     marginBottom: "4px",
                   }}
@@ -1618,19 +1618,19 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
         style={{
           height: "48px",
           borderRadius: "12px",
-          background: THEME.surface,
-          border: `1px solid ${THEME.border}`,
+          background: "var(--color-card)",
+          border: `1px solid ${"var(--color-border)"}`,
           fontWeight: 700,
           fontSize: "14px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           gap: "8px",
-          color: THEME.text,
+          color: "var(--color-foreground)",
           cursor: "pointer",
         }}
       >
-        <StickyNote size={16} style={{ color: THEME.green }} /> Notes
+        <StickyNote size={16} style={{ color: "var(--color-bullish)" }} /> Notes
       </button>
 
       {/* Notes panel below the action buttons */}
@@ -1646,7 +1646,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
-                color: THEME.textSecondary,
+                color: "var(--color-muted-foreground)",
               }}
             >
               Notes for this analysis
@@ -1661,7 +1661,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                 padding: "0 12px",
                 borderRadius: "8px",
                 background: GREEN_GRAD,
-                color: THEME.text,
+                color: "var(--color-foreground)",
                 fontSize: "11px",
                 fontWeight: 700,
                 display: "flex",
@@ -1680,7 +1680,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
               <Loader2
                 size={16}
                 style={{
-                  color: THEME.green,
+                  color: "var(--color-bullish)",
                   margin: "0 auto",
                   animation: "spin 1s linear infinite",
                 }}
@@ -1719,13 +1719,13 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                         }}
                       >
                         {note.is_pinned && (
-                          <Pin size={12} style={{ color: THEME.green, flexShrink: 0 }} />
+                          <Pin size={12} style={{ color: "var(--color-bullish)", flexShrink: 0 }} />
                         )}
                         <span
                           style={{
                             fontWeight: 700,
                             fontSize: "14px",
-                            color: THEME.text,
+                            color: "var(--color-foreground)",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
@@ -1741,7 +1741,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                         <p
                           style={{
                             fontSize: "12px",
-                            color: THEME.textSecondary,
+                            color: "var(--color-muted-foreground)",
                             marginBottom: "6px",
                             lineHeight: 1.6,
                             display: "-webkit-box",
@@ -1769,8 +1769,8 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                               borderRadius: "4px",
                               fontSize: "9px",
                               fontWeight: 700,
-                              background: THEME.tabBarBg,
-                              color: THEME.textSecondary,
+                              background: "var(--color-muted)",
+                              color: "var(--color-muted-foreground)",
                             }}
                           >
                             #{tag}
@@ -1780,7 +1780,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                           style={{
                             fontSize: "10px",
                             ...MONO,
-                            color: THEME.textSecondary,
+                            color: "var(--color-muted-foreground)",
                             marginLeft: "auto",
                           }}
                         >
@@ -1800,7 +1800,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: THEME.textSecondary,
+                        color: "var(--color-muted-foreground)",
                         background: "none",
                         border: "none",
                         cursor: "pointer",
@@ -1817,9 +1817,9 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
             <div style={{ ...CARD, padding: "24px", textAlign: "center" }}>
               <StickyNote
                 size={24}
-                style={{ color: `${THEME.textSecondary}40`, margin: "0 auto 8px" }}
+                style={{ color: `${"var(--color-muted-foreground)"}40`, margin: "0 auto 8px" }}
               />
-              <div style={{ fontSize: "12px", color: THEME.textSecondary }}>
+              <div style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>
                 No notes for this analysis yet
               </div>
             </div>
@@ -1834,11 +1834,11 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                borderColor: "rgba(239,68,68,0.30)",
-                background: "rgba(239,68,68,0.05)",
+                borderColor: "color-mix(in oklab, var(--color-bearish) 30%, transparent)",
+                background: "color-mix(in oklab, var(--color-bearish) 5%, transparent)",
               }}
             >
-              <span style={{ fontSize: "12px", color: THEME.textSecondary }}>
+              <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>
                 Delete this note?
               </span>
               <div style={{ display: "flex", gap: "8px" }}>
@@ -1848,11 +1848,11 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                     height: "28px",
                     padding: "0 12px",
                     borderRadius: "8px",
-                    background: THEME.surface,
-                    border: `1px solid ${THEME.border}`,
+                    background: "var(--color-card)",
+                    border: `1px solid ${"var(--color-border)"}`,
                     fontSize: "12px",
                     fontWeight: 700,
-                    color: THEME.text,
+                    color: "var(--color-foreground)",
                     cursor: "pointer",
                   }}
                 >
@@ -1864,11 +1864,11 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                     height: "28px",
                     padding: "0 12px",
                     borderRadius: "8px",
-                    background: THEME.red,
+                    background: "var(--color-bearish)",
                     border: "none",
                     fontSize: "12px",
                     fontWeight: 700,
-                    color: THEME.text,
+                    color: "var(--color-foreground)",
                     cursor: "pointer",
                   }}
                 >
@@ -1911,12 +1911,12 @@ function BackHeader() {
           width: "40px",
           height: "40px",
           borderRadius: "12px",
-          background: THEME.surface,
-          border: `1px solid ${THEME.border}`,
+          background: "var(--color-card)",
+          border: `1px solid ${"var(--color-border)"}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: THEME.text,
+          color: "var(--color-foreground)",
           textDecoration: "none",
         }}
       >
@@ -1928,12 +1928,12 @@ function BackHeader() {
             width: "40px",
             height: "40px",
             borderRadius: "12px",
-            background: THEME.surface,
-            border: `1px solid ${THEME.border}`,
+            background: "var(--color-card)",
+            border: `1px solid ${"var(--color-border)"}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
             cursor: "pointer",
           }}
         >
@@ -1944,12 +1944,12 @@ function BackHeader() {
             width: "40px",
             height: "40px",
             borderRadius: "12px",
-            background: THEME.surface,
-            border: `1px solid ${THEME.border}`,
+            background: "var(--color-card)",
+            border: `1px solid ${"var(--color-border)"}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
             cursor: "pointer",
           }}
         >

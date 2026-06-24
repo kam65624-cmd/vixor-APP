@@ -3,7 +3,7 @@ import { memo, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getDashboardData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { THEME, StatsRow, DataRow, ScrollArea, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
+import { StatsRow, DataRow, ScrollArea, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Vixor — Solana Meme Coin Terminal" }] }),
@@ -11,12 +11,12 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 const QUICK_ACTIONS = [
-  { label: "Discover", icon: "🔍", to: "/discover" as const, color: THEME.green },
-  { label: "AI Copilot", icon: "🤖", to: "/copilot" as const, color: THEME.purple },
-  { label: "Whale Alerts", icon: "🐋", to: "/whale" as const, color: THEME.green },
-  { label: "PnL Tracker", icon: "📊", to: "/pnl" as const, color: THEME.green },
-  { label: "Alpha Signals", icon: "⚡", to: "/alpha" as const, color: THEME.amber },
-  { label: "My Bags", icon: "🏛️", to: "/bags" as const, color: THEME.pink },
+  { label: "Discover", icon: "🔍", to: "/discover" as const, color: "var(--color-bullish)" },
+  { label: "AI Copilot", icon: "🤖", to: "/copilot" as const, color: "var(--color-info)" },
+  { label: "Whale Alerts", icon: "🐋", to: "/whale" as const, color: "var(--color-bullish)" },
+  { label: "PnL Tracker", icon: "📊", to: "/pnl" as const, color: "var(--color-bullish)" },
+  { label: "Alpha Signals", icon: "⚡", to: "/alpha" as const, color: "var(--color-neutral-wait)" },
+  { label: "My Bags", icon: "🏛️", to: "/bags" as const, color: "var(--color-bearish)" },
 ];
 
 // ── Sparkline ──────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ const MiniSpark = memo(function MiniSpark({ up, small }: { up: boolean; small?: 
     <svg width={w} height={h} style={{ flexShrink: 0 }}>
       <polyline
         points={pts.join(" ")} fill="none"
-        stroke={up ? THEME.green : THEME.red}
+        stroke={up ? "var(--color-bullish)" : "var(--color-bearish)"}
         strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round"
       />
     </svg>
@@ -48,8 +48,8 @@ function Card({
 }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{
-      background: THEME.surface, borderRadius: "8px",
-      border: `1px solid ${THEME.border}`, overflow: "hidden", ...style,
+      background: "var(--color-card)", borderRadius: "8px",
+      border: `1px solid ${"var(--color-border)"}`, overflow: "hidden", ...style,
     }}>
       {children}
     </div>
@@ -62,17 +62,17 @@ function CardHeader({
   return (
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "8px 12px", borderBottom: `1px solid ${THEME.border}`,
+      padding: "8px 12px", borderBottom: `1px solid ${"var(--color-border)"}`,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
         {icon && <span style={{ fontSize: "11px" }}>{icon}</span>}
-        <span style={{ fontSize: "11px", fontWeight: 700, color: THEME.text }}>{title}</span>
+        <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-foreground)" }}>{title}</span>
       </div>
       {action && (
         <button
           onClick={action.onClick}
           style={{
-            fontSize: "9px", fontWeight: 600, color: THEME.accent,
+            fontSize: "9px", fontWeight: 600, color: "var(--color-primary)",
             background: "none", border: "none", cursor: "pointer", padding: 0,
           }}
         >
@@ -89,33 +89,33 @@ function HoldingRow({ h, onClick }: { h: { symbol: string; value: number; pnlPct
     n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : n >= 1_000 ? `$${(n / 1_000).toFixed(2)}K` : `$${n.toFixed(2)}`;
 
   return (
-    <DataRow onClick={onClick} leftAccent={h.up ? THEME.green : THEME.red}>
+    <DataRow onClick={onClick} leftAccent={h.up ? "var(--color-bullish)" : "var(--color-bearish)"}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
           <div style={{
             width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0,
-            background: h.up ? `${THEME.green}15` : `${THEME.red}15`,
-            border: `1px solid ${h.up ? `${THEME.green}30` : `${THEME.red}30`}`,
+            background: h.up ? `color-mix(in oklab, var(--color-bullish) 8%, transparent)` : `color-mix(in oklab, var(--color-bearish) 8%, transparent)`,
+            border: `1px solid ${h.up ? `color-mix(in oklab, var(--color-bullish) 19%, transparent)` : `color-mix(in oklab, var(--color-bearish) 19%, transparent)`}`,
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "8px", fontWeight: 800, color: h.up ? THEME.green : THEME.red,
+            fontSize: "8px", fontWeight: 800, color: h.up ? "var(--color-bullish)" : "var(--color-bearish)",
           }}>
             {h.symbol.slice(0, 2)}
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, color: THEME.text }}>{h.symbol}</div>
-            <div style={{ fontSize: "9px", color: THEME.textSecondary }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-foreground)" }}>{h.symbol}</div>
+            <div style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>
               {h.amount.toFixed(2)} tokens
             </div>
           </div>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "8px" }}>
-          <div style={{ fontSize: "11px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: THEME.text }}>
+          <div style={{ fontSize: "11px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: "var(--color-foreground)" }}>
             {fmt(h.value)}
           </div>
           <div style={{
             fontSize: "10px", fontWeight: 600,
             fontFamily: "'JetBrains Mono', monospace",
-            color: h.up ? THEME.green : THEME.red,
+            color: h.up ? "var(--color-bullish)" : "var(--color-bearish)",
           }}>
             {h.pnlPct >= 0 ? "+" : ""}{h.pnlPct.toFixed(1)}%
           </div>
@@ -133,24 +133,24 @@ function SignalRow({ s }: { s: { token: string; type: string; reason: string; co
       style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "7px 12px", margin: "3px 4px", borderRadius: "6px", cursor: "pointer",
-        background: isBuy ? `${THEME.green}08` : `${THEME.red}08`,
-        border: `1px solid ${isBuy ? `${THEME.green}18` : `${THEME.red}18`}`,
+        background: isBuy ? `${"var(--color-bullish)"}08` : `${"var(--color-bearish)"}08`,
+        border: `1px solid ${isBuy ? `color-mix(in oklab, var(--color-bullish) 10%, transparent)` : `color-mix(in oklab, var(--color-bearish) 10%, transparent)`}`,
         transition: "background 0.15s",
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = isBuy ? `${THEME.green}14` : `${THEME.red}14`)}
-      onMouseLeave={(e) => (e.currentTarget.style.background = isBuy ? `${THEME.green}08` : `${THEME.red}08`)}
+      onMouseEnter={(e) => (e.currentTarget.style.background = isBuy ? `${"var(--color-bullish)"}14` : `${"var(--color-bearish)"}14`)}
+      onMouseLeave={(e) => (e.currentTarget.style.background = isBuy ? `${"var(--color-bullish)"}08` : `${"var(--color-bearish)"}08`)}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, minWidth: 0 }}>
         <span style={{
           fontSize: "8px", fontWeight: 800, padding: "2px 5px", borderRadius: "3px",
-          background: isBuy ? `${THEME.green}25` : `${THEME.red}25`,
-          color: isBuy ? THEME.green : THEME.red, flexShrink: 0,
+          background: isBuy ? `${"var(--color-bullish)"}25` : `${"var(--color-bearish)"}25`,
+          color: isBuy ? "var(--color-bullish)" : "var(--color-bearish)", flexShrink: 0,
         }}>{s.type}</span>
-        <span style={{ fontSize: "11px", fontWeight: 700, color: THEME.text, flexShrink: 0 }}>{s.token}</span>
-        <span style={{ fontSize: "9px", color: THEME.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.reason}</span>
+        <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-foreground)", flexShrink: 0 }}>{s.token}</span>
+        <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.reason}</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0, marginLeft: "8px" }}>
-        <span style={{ fontSize: "11px", fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", width: "28px", textAlign: "right", color: THEME.amber }}>
+        <span style={{ fontSize: "11px", fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", width: "28px", textAlign: "right", color: "var(--color-neutral-wait)" }}>
           {s.confidence}%
         </span>
         <MiniSpark up={isBuy} small />
@@ -187,13 +187,13 @@ function HomePage() {
   const nav = useCallback((to: string) => navigate({ to: to as any }), [navigate]);
 
   return (
-    <div style={{ background: THEME.bg, color: THEME.text, minHeight: "100%", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div style={{ background: "var(--color-background)", color: "var(--color-foreground)", minHeight: "100%", fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Stats Bar */}
       <StatsRow stats={[
-        { label: "Portfolio", value: fmt(totalValue), color: THEME.accent, icon: "💰" },
-        { label: "PnL", value: isLoading ? "..." : pnlFmt(totalPnl), color: totalPnl >= 0 ? THEME.green : THEME.red, icon: "📈", sub: totalPnlPct > 0 ? `+${totalPnlPct.toFixed(1)}%` : `${totalPnlPct.toFixed(1)}%` },
-        { label: "Trades", value: isLoading ? "..." : String(tradeCount), color: THEME.accent, icon: "📊" },
-        { label: "Signals", value: isLoading ? "..." : String(liveSignals.length), color: THEME.amber, icon: "⚡" },
+        { label: "Portfolio", value: fmt(totalValue), color: "var(--color-primary)", icon: "💰" },
+        { label: "PnL", value: isLoading ? "..." : pnlFmt(totalPnl), color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)", icon: "📈", sub: totalPnlPct > 0 ? `+${totalPnlPct.toFixed(1)}%` : `${totalPnlPct.toFixed(1)}%` },
+        { label: "Trades", value: isLoading ? "..." : String(tradeCount), color: "var(--color-primary)", icon: "📊" },
+        { label: "Signals", value: isLoading ? "..." : String(liveSignals.length), color: "var(--color-neutral-wait)", icon: "⚡" },
       ]} />
 
       {/* 3-Column Grid — responsive: 3 cols desktop, 1 col mobile */}
@@ -207,10 +207,10 @@ function HomePage() {
           {/* Portfolio Summary */}
           <Card>
             <div style={{ padding: "14px 12px" }}>
-              <div style={{ fontSize: "10px", color: THEME.textSecondary, marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <div style={{ fontSize: "10px", color: "var(--color-muted-foreground)", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 Total Portfolio Value
               </div>
-              <div style={{ fontSize: "24px", fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1, color: THEME.text }}>
+              <div style={{ fontSize: "24px", fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1, color: "var(--color-foreground)" }}>
                 {isLoading ? "..." : fmt(totalValue)}
               </div>
               {tradeCount > 0 && (
@@ -218,11 +218,11 @@ function HomePage() {
                   <span style={{
                     fontSize: "12px", fontWeight: 700,
                     fontFamily: "'JetBrains Mono', monospace",
-                    color: totalPnl >= 0 ? THEME.green : THEME.red,
+                    color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                   }}>
                     {pnlFmt(totalPnl)} ({totalPnlPct >= 0 ? "+" : ""}{totalPnlPct.toFixed(1)}%)
                   </span>
-                  <span style={{ fontSize: "9px", color: THEME.textMuted }}>{tradeCount} trades</span>
+                  <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>{tradeCount} trades</span>
                 </div>
               )}
             </div>
@@ -255,7 +255,7 @@ function HomePage() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, minWidth: 0 }}>
                         <span style={{ fontSize: "10px", flexShrink: 0 }}>{a.type === "buy" ? "🟢" : "🔴"}</span>
-                        <span style={{ fontSize: "10px", color: THEME.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: "10px", color: "var(--color-muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {a.msg}
                         </span>
                       </div>
@@ -264,12 +264,12 @@ function HomePage() {
                           <span style={{
                             fontSize: "10px", fontWeight: 600,
                             fontFamily: "'JetBrains Mono', monospace",
-                            color: a.type === "sell" ? THEME.red : THEME.green,
+                            color: a.type === "sell" ? "var(--color-bearish)" : "var(--color-bullish)",
                           }}>
                             {a.pnl}
                           </span>
                         )}
-                        <span style={{ fontSize: "8px", color: THEME.textMuted }}>{a.time}</span>
+                        <span style={{ fontSize: "8px", color: "var(--color-muted-foreground)" }}>{a.time}</span>
                       </div>
                     </div>
                   </DataRow>
@@ -290,8 +290,8 @@ function HomePage() {
               action={{ label: "All Signals", onClick: () => nav("/signals") }}
             />
             <div style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 12px 0" }}>
-              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: THEME.green, animation: "pulse 2s infinite" }} />
-              <span style={{ fontSize: "9px", color: THEME.textMuted }}>AI-Powered</span>
+              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--color-bullish)", animation: "pulse 2s infinite" }} />
+              <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>AI-Powered</span>
             </div>
             <ScrollArea style={{ flex: 1, padding: "4px 0" }}>
               {isLoading
@@ -313,12 +313,12 @@ function HomePage() {
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
                     padding: "10px 4px", borderRadius: "6px", cursor: "pointer",
-                    background: THEME.surfaceAlt, border: `1px solid ${THEME.border}`,
-                    color: THEME.textSecondary, fontSize: "10px", fontWeight: 500,
+                    background: "var(--color-card-hover)", border: `1px solid ${"var(--color-border)"}`,
+                    color: "var(--color-muted-foreground)", fontSize: "10px", fontWeight: 500,
                     transition: "all 0.15s",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = THEME.rowHoverStrong; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = THEME.surfaceAlt; e.currentTarget.style.borderColor = THEME.border; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "color-mix(in oklab, var(--color-foreground) 6%, transparent)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "var(--color-card-hover)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
                 >
                   <span style={{ fontSize: "16px" }}>{a.icon}</span>
                   {a.label}
@@ -344,9 +344,9 @@ function HomePage() {
                   ? liveSignals.map((s, i) => (
                     <DataRow key={i} onClick={() => nav("/signals")}>
                       <div style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                        <span style={{ fontSize: "10px", marginTop: "1px", color: THEME.textMuted, flexShrink: 0, width: "14px" }}>{i + 1}.</span>
-                        <span style={{ fontSize: "10px", color: THEME.textSecondary, lineHeight: 1.4 }}>
-                          <span style={{ fontWeight: 700, color: s.type === "BUY" ? THEME.green : s.type === "SELL" ? THEME.red : THEME.amber }}>
+                        <span style={{ fontSize: "10px", marginTop: "1px", color: "var(--color-muted-foreground)", flexShrink: 0, width: "14px" }}>{i + 1}.</span>
+                        <span style={{ fontSize: "10px", color: "var(--color-muted-foreground)", lineHeight: 1.4 }}>
+                          <span style={{ fontWeight: 700, color: s.type === "BUY" ? "var(--color-bullish)" : s.type === "SELL" ? "var(--color-bearish)" : "var(--color-neutral-wait)" }}>
                             {s.token}
                           </span>{" "}{s.reason}
                         </span>
@@ -363,15 +363,15 @@ function HomePage() {
             <CardHeader title="Stats" icon="📊" />
             <div style={{ padding: "8px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
               {[
-                { label: "Total Trades", value: String(tradeCount), color: THEME.accent },
-                { label: "Holdings", value: String(holdings.length), color: THEME.purple },
-                { label: "Signals", value: String(liveSignals.length), color: THEME.amber },
-                { label: "PnL", value: pnlFmt(totalPnl), color: totalPnl >= 0 ? THEME.green : THEME.red },
+                { label: "Total Trades", value: String(tradeCount), color: "var(--color-primary)" },
+                { label: "Holdings", value: String(holdings.length), color: "var(--color-info)" },
+                { label: "Signals", value: String(liveSignals.length), color: "var(--color-neutral-wait)" },
+                { label: "PnL", value: pnlFmt(totalPnl), color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)" },
               ].map((s) => (
                 <div key={s.label} style={{
-                  padding: "10px 8px", background: THEME.surfaceAlt, borderRadius: "6px", textAlign: "center",
+                  padding: "10px 8px", background: "var(--color-card-hover)", borderRadius: "6px", textAlign: "center",
                 }}>
-                  <div style={{ fontSize: "8px", color: THEME.textMuted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <div style={{ fontSize: "8px", color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     {s.label}
                   </div>
                   <div style={{
