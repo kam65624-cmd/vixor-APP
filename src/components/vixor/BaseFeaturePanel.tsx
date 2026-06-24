@@ -18,10 +18,10 @@ interface BaseFeaturePanelProps {
 }
 
 const STATUS_COLORS = {
-  active: "var(--bullish, #10B981)",
-  warning: "var(--neutral-wait, #F59E0B)",
-  danger: "var(--bearish, #EF4444)",
-  neutral: "var(--info, #06B6D4)",
+  active: "var(--bullish)",
+  warning: "var(--neutral-wait)",
+  danger: "var(--bearish)",
+  neutral: "var(--info)",
 };
 
 export function BaseFeaturePanel({
@@ -38,8 +38,8 @@ export function BaseFeaturePanel({
     <div
       className={cn("rounded-md border p-4", className)}
       style={{
-        background: "var(--surface, #1A1A1A)",
-        borderColor: "var(--border, rgba(255,255,255,0.06))",
+        background: "var(--surface)",
+        borderColor: "var(--border)",
       }}
     >
       {/* Header */}
@@ -58,7 +58,7 @@ export function BaseFeaturePanel({
         <div className="min-w-0 flex-1">
           <div
             className="flex items-center gap-2 text-sm font-semibold"
-            style={{ color: "var(--text-primary, #FFFFFF)" }}
+            style={{ color: "var(--text-primary)" }}
           >
             {title}
             <span
@@ -70,7 +70,7 @@ export function BaseFeaturePanel({
           {subtitle && (
             <p
               className="mt-0.5 truncate text-[11px]"
-              style={{ color: "var(--text-secondary, #9CA3AF)" }}
+              style={{ color: "var(--text-secondary)" }}
             >
               {subtitle}
             </p>
@@ -86,19 +86,19 @@ export function BaseFeaturePanel({
               key={i}
               className="rounded-md border p-2"
               style={{
-                background: "var(--surface-2, #1E1E1E)",
-                borderColor: "var(--border, rgba(255,255,255,0.06))",
+                background: "var(--surface-2)",
+                borderColor: "var(--border)",
               }}
             >
               <div
                 className="text-[10px] uppercase tracking-wide"
-                style={{ color: "var(--text-secondary, #9CA3AF)" }}
+                style={{ color: "var(--text-secondary)" }}
               >
                 {m.label}
               </div>
               <div
                 className="font-mono text-sm font-medium tabular-nums"
-                style={{ color: m.color || "var(--text-primary, #FFFFFF)" }}
+                style={{ color: m.color || "var(--text-primary)" }}
               >
                 {m.value}
               </div>

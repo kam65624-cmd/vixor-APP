@@ -30,13 +30,13 @@ export const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
         ref={ref}
         className={cn("rounded-md border p-3 transition-colors", className)}
         style={{
-          background: "var(--surface, #1A1A1A)",
-          borderColor: "var(--border, rgba(255,255,255,0.06))",
+          background: "var(--surface)",
+          borderColor: "var(--border)",
         }}
       >
         <div
           className="mb-1.5 flex items-center gap-1.5"
-          style={{ color: "var(--text-secondary, #9CA3AF)" }}
+          style={{ color: "var(--text-secondary)" }}
         >
           {icon && <span className="text-[11px]">{icon}</span>}
           <span className="text-[11px] font-medium uppercase tracking-wide">
@@ -46,7 +46,7 @@ export const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
         </div>
         <div
           className="font-mono text-xl font-medium tabular-nums"
-          style={{ color: color || "var(--text-primary, #FFFFFF)" }}
+          style={{ color: color || "var(--text-primary)" }}
         >
           {value}
         </div>
@@ -63,7 +63,7 @@ export const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
           {sub && (
             <span
               className="text-[11px]"
-              style={{ color: "var(--text-secondary, #9CA3AF)" }}
+              style={{ color: "var(--text-secondary)" }}
             >
               {sub}
             </span>

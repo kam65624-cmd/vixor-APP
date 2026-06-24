@@ -35,9 +35,9 @@ export function EmptyState({
         <div
           className="mb-3 flex h-12 w-12 items-center justify-center rounded-full"
           style={{
-            background: "var(--surface-2, #1E1E1E)",
-            color: "var(--text-tertiary, #6B7280)",
-            border: "1px solid var(--border, rgba(255,255,255,0.06))",
+            background: "var(--surface-2)",
+            color: "var(--text-tertiary)",
+            border: "1px solid var(--border)",
           }}
         >
           {icon}
@@ -45,14 +45,14 @@ export function EmptyState({
       )}
       <p
         className="mb-1.5 text-sm font-medium"
-        style={{ color: "var(--text-primary, #FFFFFF)" }}
+        style={{ color: "var(--text-primary)" }}
       >
         {title}
       </p>
       {description && (
         <p
           className="mb-5 max-w-sm text-[13px] leading-relaxed"
-          style={{ color: "var(--text-secondary, #9CA3AF)" }}
+          style={{ color: "var(--text-secondary)" }}
         >
           {description}
         </p>
@@ -68,13 +68,13 @@ export function EmptyState({
           style={{
             background:
               action.variant === "primary"
-                ? "var(--info, #06B6D4)"
-                : "var(--surface, #1A1A1A)",
+                ? "var(--info)"
+                : "var(--surface)",
             color:
               action.variant === "primary"
-                ? "var(--surface, #1A1A1A)"
-                : "var(--text-primary, #FFFFFF)",
-            borderColor: "var(--border, rgba(255,255,255,0.06))",
+                ? "var(--surface)"
+                : "var(--text-primary)",
+            borderColor: "var(--border)",
           }}
         >
           {action.label}

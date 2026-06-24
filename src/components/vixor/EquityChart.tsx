@@ -32,7 +32,7 @@ export function EquityChart({
   if (!data || data.length === 0) return null;
 
   const isUp = (data.at(-1)?.equity ?? 0) >= (data[0]?.equity ?? 0);
-  const color = isUp ? "var(--bullish, #10B981)" : "var(--bearish, #EF4444)";
+  const color = isUp ? "var(--bullish)" : "var(--bearish)";
   const startEquity = data[0]?.equity ?? 0;
 
   return (
@@ -54,12 +54,12 @@ export function EquityChart({
             <>
               <XAxis
                 dataKey="day"
-                tick={{ fill: "var(--text-tertiary, #6B7280)", fontSize: 10 }}
+                tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
                 axisLine={{ stroke: "var(--border, rgba(255,255,255,0.06))" }}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fill: "var(--text-tertiary, #6B7280)", fontSize: 10 }}
+                tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
                 width={50}
@@ -69,13 +69,13 @@ export function EquityChart({
           )}
           <Tooltip
             contentStyle={{
-              background: "var(--surface-2, #1E1E1E)",
+              background: "var(--surface-2)",
               border: "1px solid var(--border, rgba(255,255,255,0.06))",
               borderRadius: 8,
               fontSize: 12,
-              color: "var(--text-primary, #FFFFFF)",
+              color: "var(--text-primary)",
             }}
-            labelStyle={{ color: "var(--text-secondary, #9CA3AF)" }}
+            labelStyle={{ color: "var(--text-secondary)" }}
           />
           <ReferenceLine
             y={startEquity}
