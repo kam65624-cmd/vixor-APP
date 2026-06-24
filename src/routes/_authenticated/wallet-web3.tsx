@@ -1,315 +1,258 @@
-import { memo, useState } from "react";
+import { memo, useState, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { getWalletData } from "@/shared/data";
-import {
-  PageLayout,
-  StatsRow,
-  ScrollArea,
-  EmptyState,
-  Badge,
-  DataRow,
-  LabelValue,
-  SectionTitle,
-  ProfileCard, 
-} from "@/components/vixor/PageLayout";
-import {
-  formatCurrency,
-  formatPnL,
-  formatNumber,
-  formatQuantity,
-  formatPrice,
-} from "@/shared/utils/formatters";
+import { useWallet } from "@/domains/wallet/adapter/WalletProvider";
+import { WalletProviderSelector } from "@/domains/wallet/adapter/WalletProviderSelector";
+import { WalletConnectButton, WalletIcon, truncateAddress } from "@/domains/wallet/adapter/WalletConnectButton";
+import { EVM_CHAINS } from "@/domains/wallet/types";
+import type { TokenBalance } from "@/domains/wallet/types";
+import { getPhantomSolBalance, getPhantomTokenBalances } from "@/domains/wallet/adapters/phantom-adapter";
+import { getEvmNativeBalance } from "@/domains/wallet/adapters/metamask-adapter";
+import { PageLayout, StatsRow, ScrollArea, PageBadge as Badge, SectionTitle } from "@/components/vixor/PageLayout";
+import { EmptyState } from "@/components/vixor/EmptyState";
+import { formatCurrency, formatNumber } from "@/shared/utils/formatters";
+import { LiveDot } from "@/components/vixor/LiveDot";
+import { MiniSparkline } from "@/components/vixor/MiniSparkline";
 
 export const Route = createFileRoute("/_authenticated/wallet-web3")({
   component: WalletWeb3Page,
 });
 
-const TOKEN_COLORS = [
-  "var(--color-bullish)",
-  "var(--color-primary)",
-  "var(--color-info)",
-  "var(--color-neutral-wait)",
-  "var(--color-bearish)",
-];
+// ── Token Card (OpenSea Collection style) ──
 
 const TokenCard = memo(function TokenCard({
   token,
+  chainLabel,
 }: {
-  token: {
-    symbol: string;
-    amount: number;
-    totalValue: number;
-    pnl: number;
-    totalEntry: number;
-    lastPrice: number;
-    tradeCount: number;
-  };
+  token: TokenBalance;
+  chainLabel: string;
 }) {
-  const colorIdx =
-    token.symbol.charCodeAt(0) % TOKEN_COLORS.length;
-  const avatarColor = TOKEN_COLORS[colorIdx];
-
-  const pnlColor = token.pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)";
+  const verifiedIcon = token.isVerified ? (
+    <span className="text-[var(--info)] text-xs" title="Verified token" aria-label="Verified">✓</span>
+  ) : token.isHoneypot ? (
+    <span className="text-[var(--bearish)] text-xs" title="Potential honeypot" aria-label="Warning">⚠</span>
+  ) : null;
 
   return (
-    <DataRow>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        {/* Left: avatar + symbol + trade count */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              backgroundColor: avatarColor,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 14,
-              fontWeight: 700,
-              color: "#000",
-            }}
-          >
-            {token.symbol.charAt(0)}
-          </div>
-          <div>
-            <div
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: "var(--color-foreground)",
-              }}
-            >
-              {token.symbol}
-            </div>
-            <div
-              style={{
-                fontSize: 11,
-                color: "var(--color-muted-foreground)",
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              }}
-            >
-              {token.tradeCount} trades
-            </div>
-          </div>
-        </div>
-
-        {/* Right: amount | value | pnl | price */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 20,
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-          }}
-        >
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>Amount</div>
-            <div style={{ fontSize: 13, color: "var(--color-foreground)", fontWeight: 500 }}>
-              {formatQuantity(token.amount)}
-            </div>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>Value</div>
-            <div style={{ fontSize: 13, color: "var(--color-foreground)", fontWeight: 500 }}>
-              {formatCurrency(token.totalValue)}
-            </div>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>PnL</div>
-            <div style={{ fontSize: 13, color: pnlColor, fontWeight: 600 }}>
-              {formatPnL(token.pnl)}
-            </div>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>Price</div>
-            <div style={{ fontSize: 13, color: "var(--color-foreground)", fontWeight: 500 }}>
-              {formatPrice(token.lastPrice)}
-            </div>
-          </div>
-        </div>
-      </div>
-    </DataRow>
-  );
-});
-
-const TxnCard = memo(function TxnCard({
-  txn,
-}: {
-  txn: {
-    id: string;
-    type: "BUY" | "SELL";
-    pair: string;
-    amount: number;
-    price: number;
-    pnl: number;
-  };
-}) {
-  const isBuy = txn.type === "BUY";
-
-  return (
-    <DataRow>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        {/* Left: badge + pair */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Badge
-            label={txn.type}
-            color={isBuy ? "var(--color-bullish)" : "var(--color-bearish)"}
+    <div className="rounded-xl border border-[var(--border)] p-3 hover:border-[var(--border-hover)] transition-colors">
+      {/* Token header */}
+      <div className="flex items-start gap-2.5 mb-2.5">
+        {token.logoURI ? (
+          <img
+            src={token.logoURI}
+            alt={token.symbol}
+            className="h-9 w-9 rounded-full bg-[var(--surface-2)]"
+            loading="lazy"
           />
-          <span
-            style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: "var(--color-foreground)",
-            }}
-          >
-            {txn.pair}
-          </span>
-        </div>
-
-        {/* Right: amount | price | pnl */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 20,
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-          }}
-        >
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>Amount</div>
-            <div style={{ fontSize: 13, color: "var(--color-foreground)", fontWeight: 500 }}>
-              {formatQuantity(txn.amount)}
-            </div>
+        ) : (
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)]/20 text-xs font-bold text-[var(--accent)]">
+            {token.symbol.slice(0, 2)}
           </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>Price</div>
-            <div style={{ fontSize: 13, color: "var(--color-foreground)", fontWeight: 500 }}>
-              {formatPrice(txn.price)}
-            </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-sm font-semibold text-[var(--text-primary)]">
+              {token.symbol}
+            </span>
+            {verifiedIcon}
           </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>PnL</div>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: txn.pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
-              }}
-            >
-              {formatPnL(txn.pnl)}
-            </div>
+          <div className="truncate text-[11px] text-[var(--text-tertiary)]">
+            {token.name || token.symbol}
           </div>
         </div>
       </div>
-    </DataRow>
+
+      {/* Balance */}
+      <div className="font-mono text-base font-medium text-[var(--text-primary)]">
+        {token.balanceFormatted}
+      </div>
+
+      {/* Value row */}
+      <div className="flex items-center justify-between mt-1.5">
+        <span className="text-[11px] text-[var(--text-secondary)]">
+          {token.valueUsd ? formatCurrency(token.valueUsd) : `— ${chainLabel}`}
+        </span>
+      </div>
+    </div>
   );
 });
+
+// ── Wallet Page ──
 
 function WalletWeb3Page() {
-  const getFn = useStableServerFn(getWalletData);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["walletData"],
-    queryFn: getFn,
-    staleTime: 30_000,
-  });
-
+  const { wallet, loading } = useWallet();
   const [activeTab, setActiveTab] = useState("Holdings");
+  const [tokens, setTokens] = useState<TokenBalance[]>([]);
+  const [nativeBalance, setNativeBalance] = useState<number | null>(null);
+  const [tokensLoading, setTokensLoading] = useState(false);
 
-  const profile = data?.profile ?? null;
-  const totalPortfolioValue = data?.totalPortfolioValue ?? 0;
-  const totalPnl = data?.totalPnl ?? 0;
-  const tokens = data?.tokens ?? [];
-  const activeTrades = data?.activeTrades ?? 0;
-  const totalTrades = data?.totalTrades ?? 0;
-  const recentTransactions = data?.recentTransactions ?? [];
+  const isConnected = wallet?.status === "connected";
 
-  const stats = [
-    {
-      label: "Portfolio Value",
-      value: formatCurrency(totalPortfolioValue),
-      color: "var(--color-foreground)",
-    },
-    {
-      label: "Total PnL",
-      value: formatPnL(totalPnl),
-      color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
-    },
-    {
-      label: "Tokens Traded",
-      value: formatNumber(tokens.length),
-      color: "var(--color-primary)",
-    },
-    {
-      label: "Active Trades",
-      value: `${activeTrades}/${totalTrades}`,
-      color: "var(--color-neutral-wait)",
-    },
-  ];
+  // Fetch balances when wallet connects
+  const refreshBalances = useCallback(async () => {
+    if (!wallet?.address || !isConnected) return;
+    setTokensLoading(true);
+
+    try {
+      if (wallet.chain === "solana") {
+        const [sol, tokenBals] = await Promise.all([
+          getPhantomSolBalance(wallet.address),
+          getPhantomTokenBalances(wallet.address),
+        ]);
+        setNativeBalance(sol);
+        setTokens(tokenBals);
+      } else if (wallet.chain === "evm") {
+        const chainId = wallet.evmChainId || "0x1";
+        const bal = await getEvmNativeBalance(wallet.address, chainId);
+        setNativeBalance(bal);
+        setTokens([]); // EVM tokens require Alchemy — shown as empty for now
+      }
+    } catch (err) {
+      console.error("[Wallet] Failed to fetch balances:", err);
+    } finally {
+      setTokensLoading(false);
+    }
+  }, [wallet?.address, wallet?.chain, wallet?.evmChainId, isConnected]);
+
+  // Auto-fetch on connect
+  const handleConnect = useCallback(() => {
+    // Small delay to ensure wallet state is updated
+    setTimeout(refreshBalances, 500);
+  }, [refreshBalances]);
+
+  // Native token symbol
+  const nativeSymbol = wallet?.chain === "solana"
+    ? "SOL"
+    : wallet?.evmChainId
+      ? EVM_CHAINS[wallet.evmChainId]?.nativeSymbol ?? "ETH"
+      : "ETH";
+
+  const chainLabel = wallet?.chain === "solana"
+    ? "Solana"
+    : wallet?.evmChainId
+      ? EVM_CHAINS[wallet.evmChainId]?.label ?? "Ethereum"
+      : "Ethereum";
+
+  const totalValue = tokens.reduce((sum, t) => sum + (t.valueUsd ?? 0), 0);
+  const unverifiedCount = tokens.filter(t => !t.isVerified).length;
+
+  const stats = isConnected
+    ? [
+        { label: nativeSymbol + " Balance", value: nativeBalance !== null ? nativeBalance.toFixed(4) : "—" },
+        { label: "Tokens", value: String(tokens.length), sub: `${tokens.filter(t => t.isVerified).length} verified` },
+        { label: "Chain", value: chainLabel },
+        { label: "Portfolio", value: totalValue > 0 ? formatCurrency(totalValue) : "—" },
+      ]
+    : [
+        { label: "Status", value: "Disconnected" },
+        { label: "Tokens", value: "0" },
+        { label: "Chain", value: "—" },
+        { label: "Portfolio", value: "$0.00" },
+      ];
+
+  // Top action bar (outside PageLayout since it doesn't support actions prop)
+  const actionBar = (
+    <div className="flex items-center justify-end gap-2 px-4 py-2">
+      {isConnected ? (
+        <>
+          <WalletConnectButton onConnect={handleConnect} />
+          <button
+            onClick={refreshBalances}
+            disabled={tokensLoading}
+            className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-xs text-[var(--text-secondary)] hover:border-[var(--border-hover)] min-h-[44px] transition-colors"
+            aria-label="Refresh balances"
+          >
+            {tokensLoading ? (
+              <div className="size-3.5 rounded-full border-2 border-[var(--text-tertiary)] border-t-transparent animate-spin" />
+            ) : (
+              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+            )}
+          </button>
+        </>
+      ) : (
+        <WalletProviderSelector />
+      )}
+    </div>
+  );
 
   return (
-    <PageLayout
-      title="Wallet"
-      badge="WEB3"
-      badgeColor={"var(--color-primary)"}
-      description="Web3 portfolio holdings and transaction history"
-      tabs={["Holdings", "Transactions"]}
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      loading={isLoading}
+    <>
+      {actionBar}
+      <PageLayout
+        title="Wallet"
+        badge="WEB3"
+        badgeColor="var(--accent)"
+        description="Multi-chain wallet — Solana + EVM"
+        tabs={["Holdings", "Transactions"]}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        loading={false}
     >
-      {profile && (
-        <ProfileCard
-          displayName={profile.display_name ?? undefined}
-          username={profile.username ?? undefined}
-          xp={profile.xp ?? undefined}
-          streak={profile.streak_days ?? undefined}
-
-        />
+      {/* Unverified tokens warning */}
+      {isConnected && unverifiedCount > 0 && (
+        <div className="mx-4 mt-2 rounded-lg border border-[var(--neutral-wait)]/40 bg-[var(--neutral-wait)]/10 p-3">
+          <div className="flex items-center gap-2 text-[var(--neutral-wait)]">
+            <span className="text-sm">⚠</span>
+            <span className="text-xs font-semibold">
+              {unverifiedCount} unverified token{unverifiedCount > 1 ? "s" : ""} detected
+            </span>
+          </div>
+          <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+            Always DYOR. Unverified tokens may be honeypots or scams. Verify before trading.
+          </p>
+        </div>
       )}
 
       <StatsRow stats={stats} />
 
       {activeTab === "Holdings" && (
         <>
-          <SectionTitle title="Token Holdings" count={tokens.length} />
-          <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
-            {tokens.length === 0 ? (
-              <EmptyState icon="💰" title="No Holdings" message="No token holdings found. Connect a wallet to see your portfolio." />
-            ) : (
-              tokens.map((t) => <TokenCard key={t.symbol} token={t} />)
-            )}
-          </ScrollArea>
+          {!isConnected ? (
+            <EmptyState
+              icon={
+                <svg className="size-12 text-[var(--text-tertiary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+                  <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+                  <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+                </svg>
+              }
+              title="No wallet connected"
+              description="Connect Phantom (Solana) or MetaMask (ETH, Polygon, Avalanche) to view your portfolio across chains."
+            />
+          ) : tokensLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="size-6 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" />
+              <span className="ml-3 text-sm text-[var(--text-secondary)]">Loading balances...</span>
+            </div>
+          ) : tokens.length === 0 ? (
+            <EmptyState
+              icon="💎"
+              title="No tokens found"
+              description={`This ${chainLabel} wallet has no SPL/ERC-20 token balances.`}
+            />
+          ) : (
+            <>
+              <SectionTitle title="Token Holdings" count={tokens.length} />
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
+                {tokens.map((token) => (
+                  <TokenCard key={token.mint} token={token} chainLabel={chainLabel} />
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
 
       {activeTab === "Transactions" && (
         <>
-          <SectionTitle title="Recent Transactions" count={recentTransactions.length} />
-          <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
-            {recentTransactions.length === 0 ? (
-              <EmptyState icon="📋" title="No Transactions" message="No transaction history found. Start trading to see your activity." />
-            ) : (
-              recentTransactions.map((tx: any) => <TxnCard key={tx.id} txn={tx} />)
-            )}
-          </ScrollArea>
+          <SectionTitle title="Recent Transactions" count={0} />
+          <EmptyState
+            icon="📋"
+            title="No Transactions"
+            description="Transaction history will appear here after swaps, transfers, or trades."
+          />
         </>
       )}
     </PageLayout>
+    </>
   );
 }
