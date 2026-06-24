@@ -62,8 +62,18 @@ const OnboardingModal = lazy(() =>
 
 // ── Navigation Data ─────────────────────────────────────────────────────────
 
-// Bottom nav: only 5 core items
+// Bottom nav: 5 core items (Home + 4 features)
 const bottomNavItems = [
+  {
+    to: "/",
+    label: "Home",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9,22 9,12 15,12 15,22" />
+      </svg>
+    ),
+  },
   {
     to: "/discover",
     label: "Discover",
@@ -88,15 +98,6 @@ const bottomNavItems = [
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" />
-      </svg>
-    ),
-  },
-  {
-    to: "/analyze",
-    label: "Analyze",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M2 12h5" /><path d="M17 12h5" /><path d="M7 7l3.5 5-3.5 5H5l3.5-5L5 7z" /><path d="M14 7l3.5 5-3.5 5h-2l3.5-5L12 7z" />
       </svg>
     ),
   },
@@ -280,6 +281,18 @@ const moreNavCategories: MoreNavCategory[] = [
 
 // ── AppShell ────────────────────────────────────────────────────────────────
 
+// Detect Telegram WebApp for layout adjustments
+function useIsTelegram() {
+  const [isTg, setIsTg] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const tg = (window as any).Telegram?.WebApp;
+      setIsTg(!!tg);
+    }
+  }, []);
+  return isTg;
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   useRenderGuard("AppShell");
   const location = useLocation();
@@ -287,6 +300,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const sol = useSolPrice();
+  const isTg = useIsTelegram();
 
   const signedIn = path !== "/auth";
 
@@ -343,12 +357,17 @@ export function AppShell({ children }: { children: ReactNode }) {
       style={{ background: "#121212", color: "#FFFFFF" }}
     >
       {/* ── Top Bar: Logo + SOL Price + Actions ── */}
-      <TopNav solPrice={sol.price} solChange={sol.change} />
+      <TopNav solPrice={sol.price} solChange={sol.change} isTg={isTg} />
 
       {/* ── Main Content ── */}
       <main
         className="flex-1 overflow-auto"
-        style={{ paddingTop: "40px", paddingBottom: "52px" }}
+        style={{
+          paddingTop: isTg
+            ? "calc(40px + env(safe-area-inset-top, 0px))"
+            : "40px",
+          paddingBottom: "calc(52px + env(safe-area-inset-bottom, 0px))",
+        }}
       >
         {children}
       </main>
@@ -358,6 +377,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         onMoreOpen={() => setShowMore(true)}
         solPrice={sol.price}
         solChange={sol.change}
+        isTg={isTg}
       />
 
       {/* ── More Panel (Slide-up) ── */}
@@ -384,16 +404,18 @@ export function AppShell({ children }: { children: ReactNode }) {
 interface TopNavProps {
   solPrice?: number | null;
   solChange?: number | null;
+  isTg?: boolean;
 }
 
-const TopNav = memo(function TopNav({ solPrice, solChange }: TopNavProps) {
+const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) {
   return (
     <header
-      className="fixed top-0 inset-x-0 z-50"
+      className="fixed inset-x-0 z-50"
       style={{
         background: "#121212",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
         height: "40px",
+        top: isTg ? "env(safe-area-inset-top, 0px)" : "0px",
         display: "flex",
         alignItems: "center",
         padding: "0 12px",
@@ -552,12 +574,14 @@ interface BottomBarProps {
   onMoreOpen: () => void;
   solPrice?: number | null;
   solChange?: number | null;
+  isTg?: boolean;
 }
 
 const BottomBar = memo(function BottomBar({
   onMoreOpen,
   solPrice,
   solChange,
+  isTg,
 }: BottomBarProps) {
   const location = useLocation();
   const path = location.pathname;
@@ -568,14 +592,15 @@ const BottomBar = memo(function BottomBar({
       style={{
         background: "#121212",
         borderTop: "1px solid rgba(255,255,255,0.06)",
-        height: "52px",
+        height: isTg ? "calc(52px + env(safe-area-inset-bottom, 0px))" : "52px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-around",
+        paddingBottom: isTg ? "env(safe-area-inset-bottom, 0px)" : "0px",
         padding: "0 4px",
       }}
     >
-      {/* 4 core nav items */}
+      {/* 5 core nav items */}
       {bottomNavItems.map((item) => {
         const isActive = path === item.to || path.startsWith(item.to + "/");
         return (
