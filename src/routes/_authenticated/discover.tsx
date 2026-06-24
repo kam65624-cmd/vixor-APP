@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { THEME, PageLayout, EmptyState } from "@/components/vixor/PageLayout";
+import { PageLayout, EmptyState } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/discover")({
   head: () => ({ meta: [{ title: "Discover — Vixor" }] }),
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/discover")({
 
 function DiscoverPage() {
   return (
-    <PageLayout title="Discover" badge="COMING SOON" badgeColor={THEME.amber}>
+    <PageLayout title="Discover" badge="COMING SOON" badgeColor={"var(--color-neutral-wait)"}>
       <EmptyState
         icon="🔍"
         title="Discover"

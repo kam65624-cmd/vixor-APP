@@ -14,8 +14,7 @@ import {
   Badge,
   DataRow,
   DataRowTwoLine,
-  LabelValue,
-  THEME,
+  LabelValue, 
 } from "@/components/vixor/PageLayout";
 import {
   formatCurrency,
@@ -37,9 +36,9 @@ const OpenPositionCard = memo(function OpenPositionCard({
   position: any;
 }) {
   const isLong = position.direction === "LONG";
-  const dirColor = isLong ? THEME.green : THEME.red;
+  const dirColor = isLong ? "var(--color-bullish)" : "var(--color-bearish)";
   const pnl = position.pnl || 0;
-  const pnlColor = pnl >= 0 ? THEME.green : THEME.red;
+  const pnlColor = pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)";
 
   return (
     <DataRowTwoLine
@@ -47,10 +46,10 @@ const OpenPositionCard = memo(function OpenPositionCard({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <Badge label={position.direction} color={dirColor} small />
-            <span style={{ fontSize: "12px", fontWeight: 700, color: THEME.text }}>
+            <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-foreground)" }}>
               {position.pair}
             </span>
-            <Badge label="OPEN" color={THEME.accent} small />
+            <Badge label="OPEN" color={"var(--color-primary)"} small />
           </div>
           <span style={{ fontSize: "12px", fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: pnlColor }}>
             {pnl >= 0 ? "+" : ""}{pnl.toFixed(2)}
@@ -76,18 +75,18 @@ const ClosedTradeCard = memo(function ClosedTradeCard({
   trade: any;
 }) {
   const isLong = trade.direction === "LONG";
-  const dirColor = isLong ? THEME.green : THEME.red;
+  const dirColor = isLong ? "var(--color-bullish)" : "var(--color-bearish)";
   const pnl = trade.pnl || 0;
-  const pnlColor = pnl >= 0 ? THEME.green : THEME.red;
+  const pnlColor = pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)";
   const rMult = trade.rMultiple || 0;
 
   const statusColors: Record<string, string> = {
-    closed: THEME.green,
-    win: THEME.green,
-    loss: THEME.red,
-    breakeven: THEME.amber,
+    closed: "var(--color-bullish)",
+    win: "var(--color-bullish)",
+    loss: "var(--color-bearish)",
+    breakeven: "var(--color-neutral-wait)",
   };
-  const statusColor = statusColors[trade.status] || THEME.textMuted;
+  const statusColor = statusColors[trade.status] || "var(--color-muted-foreground)";
 
   return (
     <DataRow>
@@ -105,7 +104,7 @@ const ClosedTradeCard = memo(function ClosedTradeCard({
             style={{
               fontSize: "12px",
               fontWeight: 700,
-              color: THEME.text,
+              color: "var(--color-foreground)",
             }}
           >
             {trade.pair}
@@ -119,7 +118,7 @@ const ClosedTradeCard = memo(function ClosedTradeCard({
             gap: "8px",
             fontSize: "10px",
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
           }}
         >
           <span>
@@ -142,7 +141,7 @@ const ClosedTradeCard = memo(function ClosedTradeCard({
             style={{
               fontSize: "10px",
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              color: rMult >= 0 ? THEME.green : THEME.red,
+              color: rMult >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
             }}
           >
             {formatRMultiple(rMult)}
@@ -182,7 +181,7 @@ function PerpetualsPage() {
     <PageLayout
       title="Perpetuals"
       badge="FUTURES"
-      badgeColor={THEME.purple}
+      badgeColor={"var(--color-info)"}
       description="Open positions and closed trade performance"
       tabs={TABS as unknown as string[]}
       activeTab={tab}
@@ -198,12 +197,12 @@ function PerpetualsPage() {
           {
             label: "Unrealized PnL",
             value: `${totalUnrealized >= 0 ? "+" : ""}${totalUnrealized.toFixed(2)}`,
-            color: totalUnrealized >= 0 ? THEME.green : THEME.red,
+            color: totalUnrealized >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
           },
           {
             label: "Realized PnL",
             value: `${totalRealized >= 0 ? "+" : ""}${totalRealized.toFixed(2)}`,
-            color: totalRealized >= 0 ? THEME.green : THEME.red,
+            color: totalRealized >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
           },
           {
             label: "Win Rate",

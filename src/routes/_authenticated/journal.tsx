@@ -7,8 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   StatsRow,
   ScrollArea,
   Badge,
@@ -53,28 +52,28 @@ export const createJournalEntry = createServerFn({ method: "POST" })
 const journalTabs = ["All", "Confident", "Cautious", "Anxious", "With Tags"];
 
 const moodColors: Record<string, string> = {
-  confident: THEME.green,
-  cautious: THEME.amber,
-  anxious: THEME.red,
-  neutral: THEME.textMuted,
+  confident: "var(--color-bullish)",
+  cautious: "var(--color-neutral-wait)",
+  anxious: "var(--color-bearish)",
+  neutral: "var(--color-muted-foreground)",
 };
 
 /** Shared style for table header columns */
 const thCol: React.CSSProperties = {
   fontSize: "9px",
   fontWeight: 700,
-  color: THEME.textMuted,
+  color: "var(--color-muted-foreground)",
   textTransform: "uppercase",
   letterSpacing: "0.06em",
 };
 
 /** Base style for form inputs */
 const inputBase: React.CSSProperties = {
-  background: THEME.bg,
-  border: `1px solid ${THEME.border}`,
+  background: "var(--color-background)",
+  border: `1px solid ${"var(--color-border)"}`,
   borderRadius: 8,
   padding: "10px 14px",
-  color: THEME.text,
+  color: "var(--color-foreground)",
   fontSize: 13,
   outline: "none",
   fontFamily: "'Inter', system-ui, sans-serif",
@@ -130,19 +129,19 @@ function JournalPage() {
       label: "Total Notes",
       value: String(entries.length),
       sub: `${pinnedCount} pinned`,
-      color: THEME.green,
+      color: "var(--color-bullish)",
     },
     {
       label: "Pairs Covered",
       value: String(uniquePairs),
       sub: "Unique pairs",
-      color: THEME.accent,
+      color: "var(--color-primary)",
     },
     {
       label: "Top Mood",
       value: topMood?.charAt(0).toUpperCase() + topMood?.slice(1) || "—",
       sub: `${moodCount(topMood || "")} entries`,
-      color: moodColors[topMood || "neutral"] || THEME.textSecondary,
+      color: moodColors[topMood || "neutral"] || "var(--color-muted-foreground)",
     },
     {
       label: "This Week",
@@ -150,7 +149,7 @@ function JournalPage() {
         entries.filter((e) => new Date(e.created_at) > new Date(Date.now() - 7 * 86400000)).length,
       ),
       sub: "Last 7 days",
-      color: THEME.amber,
+      color: "var(--color-neutral-wait)",
     },
   ];
 
@@ -206,7 +205,7 @@ function JournalPage() {
     <PageLayout
       title="Trading Journal"
       badge="JOURNAL"
-      badgeColor={THEME.green}
+      badgeColor={"var(--color-bullish)"}
       description="Track your trades, review performance, and improve your strategy"
       tabs={journalTabs}
       activeTab={activeTab}
@@ -220,8 +219,8 @@ function JournalPage() {
           alignItems: "center",
           justifyContent: "flex-end",
           padding: "8px 16px",
-          borderBottom: `1px solid ${THEME.border}`,
-          background: THEME.tabBarBg,
+          borderBottom: `1px solid ${"var(--color-border)"}`,
+          background: "var(--color-muted)",
           flexShrink: 0,
         }}
       >
@@ -232,8 +231,8 @@ function JournalPage() {
             borderRadius: "10px",
             border: "none",
             cursor: "pointer",
-            background: THEME.green,
-            color: THEME.text,
+            background: "var(--color-bullish)",
+            color: "var(--color-foreground)",
             fontSize: "12px",
             fontWeight: 700,
             fontFamily: "'Inter', system-ui, sans-serif",
@@ -252,9 +251,9 @@ function JournalPage() {
           <form
             onSubmit={handleSubmit}
             style={{
-              background: THEME.surfaceAlt,
+              background: "var(--color-card-hover)",
               borderRadius: 12,
-              border: `1px solid ${THEME.border}`,
+              border: `1px solid ${"var(--color-border)"}`,
               padding: 16,
               margin: "16px 16px 0",
             }}
@@ -334,8 +333,8 @@ function JournalPage() {
                   borderRadius: 8,
                   border: "none",
                   cursor: createMutation.isPending ? "wait" : "pointer",
-                  background: createMutation.isPending ? THEME.surfaceAlt : THEME.green,
-                  color: THEME.text,
+                  background: createMutation.isPending ? "var(--color-card-hover)" : "var(--color-bullish)",
+                  color: "var(--color-foreground)",
                   fontSize: 12,
                   fontWeight: 700,
                   fontFamily: "'Inter', system-ui, sans-serif",
@@ -365,8 +364,8 @@ function JournalPage() {
               style={{
                 width: 28,
                 height: 28,
-                border: `2px solid ${THEME.border}`,
-                borderTopColor: THEME.green,
+                border: `2px solid ${"var(--color-border)"}`,
+                borderTopColor: "var(--color-bullish)",
                 borderRadius: "50%",
                 animation: "spin 0.7s linear infinite",
               }}
@@ -381,8 +380,8 @@ function JournalPage() {
                 alignItems: "center",
                 padding: "0 16px",
                 height: "32px",
-                background: THEME.tabBarBg,
-                borderBottom: `1px solid ${THEME.border}`,
+                background: "var(--color-muted)",
+                borderBottom: `1px solid ${"var(--color-border)"}`,
                 flexShrink: 0,
                 overflowX: "auto",
               }}
@@ -439,7 +438,7 @@ const COL = {
     width: "85px",
     minWidth: 70,
     fontSize: "11px",
-    color: THEME.textSecondary,
+    color: "var(--color-muted-foreground)",
     fontFamily: "'JetBrains Mono', ui-monospace, monospace",
     flexShrink: 0,
   },
@@ -449,7 +448,7 @@ const COL = {
     fontSize: "12px",
     fontWeight: 700,
     fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-    color: THEME.text,
+    color: "var(--color-foreground)",
     flexShrink: 0,
   },
   mood: {
@@ -461,7 +460,7 @@ const COL = {
     flex: 1,
     minWidth: 120,
     fontSize: "11px",
-    color: THEME.textSecondary,
+    color: "var(--color-muted-foreground)",
     paddingLeft: "16px",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -493,7 +492,7 @@ const JournalRow = memo(function JournalRow({
   index: number;
   fmtDate: (d: string) => string;
 }) {
-  const moodColor = moodColors[entry.mood] || THEME.textMuted;
+  const moodColor = moodColors[entry.mood] || "var(--color-muted-foreground)";
   const moodEmoji: Record<string, string> = {
     confident: "😎",
     cautious: "🤔",
@@ -519,14 +518,14 @@ const JournalRow = memo(function JournalRow({
           <Badge label={`${moodEmoji[entry.mood] || "😐"} ${entry.mood}`} color={moodColor} small />
         </div>
         <div style={COL.notes} title={entry.content}>
-          <span style={{ color: THEME.text, fontWeight: 600 }}>{entry.title}</span>
-          {entry.is_pinned && <span style={{ marginLeft: 6, color: THEME.amber }}>📌</span>}
+          <span style={{ color: "var(--color-foreground)", fontWeight: 600 }}>{entry.title}</span>
+          {entry.is_pinned && <span style={{ marginLeft: 6, color: "var(--color-neutral-wait)" }}>📌</span>}
           {entry.tags && entry.tags.length > 0 && (
             <span
               style={{
                 marginLeft: 8,
                 fontSize: 9,
-                color: THEME.textMuted,
+                color: "var(--color-muted-foreground)",
               }}
             >
               {entry.tags
@@ -540,7 +539,7 @@ const JournalRow = memo(function JournalRow({
           <span
             style={{
               fontSize: "14px",
-              color: THEME.textMuted,
+              color: "var(--color-muted-foreground)",
               cursor: "pointer",
             }}
           >

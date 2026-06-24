@@ -5,8 +5,7 @@ import { getTradeHistory } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import type { Tables } from "@/shared/supabase/types";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   StatsRow,
   SectionTitle,
   DataRow,
@@ -88,12 +87,12 @@ function PnLPage() {
         {
           label: "Total PnL",
           value: pnlFmt(totalPnl),
-          color: totalPnl >= 0 ? THEME.green : THEME.red,
+          color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
         },
         {
           label: "Win Rate",
           value: `${winRate}%`,
-          color: THEME.accentDeep,
+          color: "var(--color-bullish)",
           sub: `${wins}W / ${losses}L`,
         },
         {
@@ -103,7 +102,7 @@ function PnLPage() {
         {
           label: "Best Trade",
           value: bestTrade ? bestTrade.pair : "—",
-          color: bestTrade ? THEME.green : THEME.textMuted,
+          color: bestTrade ? "var(--color-bullish)" : "var(--color-muted-foreground)",
           sub: bestTrade ? pnlFmt(bestTrade.pnl || 0) : undefined,
         },
       ]
@@ -115,7 +114,7 @@ function PnLPage() {
       badge="TRADE HISTORY"
       description={description}
       loading={isLoading}
-      loadingColor={THEME.green}
+      loadingColor={"var(--color-bullish)"}
     >
       {statsItems.length > 0 && <StatsRow stats={statsItems} />}
 
@@ -150,8 +149,8 @@ function PnLPage() {
                 borderRadius: "6px",
                 border: "none",
                 cursor: "pointer",
-                background: `${THEME.green}1F`,
-                color: THEME.accent,
+                background: `${"var(--color-bullish)"}1F`,
+                color: "var(--color-primary)",
                 fontSize: "11px",
                 fontWeight: 700,
                 letterSpacing: "0.02em",
@@ -180,9 +179,9 @@ const TradeRow = memo(function TradeRow({
   fmtDuration: (e: string, x?: string | null) => string;
 }) {
   const isPositive = (trade.pnl || 0) >= 0;
-  const pnlColor = isPositive ? THEME.green : THEME.red;
+  const pnlColor = isPositive ? "var(--color-bullish)" : "var(--color-bearish)";
   const isLong = trade.direction === "long";
-  const rColor = trade.r_multiple && trade.r_multiple > 0 ? THEME.green : THEME.textMuted;
+  const rColor = trade.r_multiple && trade.r_multiple > 0 ? "var(--color-bullish)" : "var(--color-muted-foreground)";
 
   return (
     <DataRow style={{ padding: "8px 16px" }}>
@@ -199,30 +198,30 @@ const TradeRow = memo(function TradeRow({
       >
         {/* Pair */}
         <div style={{ width: "80px", minWidth: "80px", flexShrink: 0 }}>
-          <span style={{ fontWeight: 700, color: THEME.text }}>{trade.pair}</span>
+          <span style={{ fontWeight: 700, color: "var(--color-foreground)" }}>{trade.pair}</span>
         </div>
 
         {/* Side */}
         <div style={{ width: "50px", minWidth: "50px", flexShrink: 0 }}>
           <Badge
             label={trade.direction.toUpperCase()}
-            color={isLong ? THEME.green : THEME.red}
+            color={isLong ? "var(--color-bullish)" : "var(--color-bearish)"}
             small
           />
         </div>
 
         {/* Entry */}
-        <div style={{ width: "75px", minWidth: "75px", flexShrink: 0, textAlign: "right", color: THEME.text }}>
+        <div style={{ width: "75px", minWidth: "75px", flexShrink: 0, textAlign: "right", color: "var(--color-foreground)" }}>
           {fmtPrice(trade.entry_price)}
         </div>
 
         {/* Exit */}
-        <div style={{ width: "75px", minWidth: "75px", flexShrink: 0, textAlign: "right", color: THEME.text }}>
+        <div style={{ width: "75px", minWidth: "75px", flexShrink: 0, textAlign: "right", color: "var(--color-foreground)" }}>
           {trade.exit_price ? fmtPrice(trade.exit_price) : "—"}
         </div>
 
         {/* Qty */}
-        <div style={{ width: "55px", minWidth: "55px", flexShrink: 0, textAlign: "right", color: THEME.textSecondary }}>
+        <div style={{ width: "55px", minWidth: "55px", flexShrink: 0, textAlign: "right", color: "var(--color-muted-foreground)" }}>
           {trade.quantity ?? "—"}
         </div>
 
@@ -237,7 +236,7 @@ const TradeRow = memo(function TradeRow({
         </div>
 
         {/* Duration */}
-        <div style={{ width: "65px", minWidth: "65px", flexShrink: 0, textAlign: "right", color: THEME.textMuted }}>
+        <div style={{ width: "65px", minWidth: "65px", flexShrink: 0, textAlign: "right", color: "var(--color-muted-foreground)" }}>
           {fmtDuration(trade.entry_date, trade.exit_date)}
         </div>
       </div>

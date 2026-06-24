@@ -4,8 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getReferralData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   StatsRow,
   SectionTitle,
   EmptyState,
@@ -79,18 +78,18 @@ function ReferralPage() {
     <PageLayout
       title="Referral Program"
       badge="REFERRAL"
-      badgeColor={THEME.green}
+      badgeColor={"var(--color-bullish)"}
       description="Invite friends and earn rewards together"
       loading={refQuery.isLoading}
-      loadingColor={THEME.green}
+      loadingColor={"var(--color-bullish)"}
     >
       <ScrollArea>
         {/* ── Hero Card ── */}
         <div
           style={{
-            background: `linear-gradient(135deg, ${THEME.green}1F 0%, ${THEME.green}08 100%)`,
+            background: `linear-gradient(135deg, ${"var(--color-bullish)"}1F 0%, ${"var(--color-bullish)"}08 100%)`,
             borderRadius: "12px",
-            border: `1px solid ${THEME.green}26`,
+            border: `1px solid ${"var(--color-bullish)"}26`,
             padding: "24px 16px",
             margin: "12px 16px",
             textAlign: "center",
@@ -101,7 +100,7 @@ function ReferralPage() {
             style={{
               fontSize: "16px",
               fontWeight: 700,
-              color: THEME.text,
+              color: "var(--color-foreground)",
               marginBottom: "4px",
             }}
           >
@@ -110,7 +109,7 @@ function ReferralPage() {
           <div
             style={{
               fontSize: "12px",
-              color: THEME.textSecondary,
+              color: "var(--color-muted-foreground)",
               lineHeight: 1.5,
             }}
           >
@@ -121,9 +120,9 @@ function ReferralPage() {
         {/* ── Referral Code Card ── */}
         <div
           style={{
-            background: THEME.surfaceAlt,
+            background: "var(--color-card-hover)",
             borderRadius: "12px",
-            border: `1px solid ${THEME.border}`,
+            border: `1px solid ${"var(--color-border)"}`,
             padding: "16px",
             margin: "0 16px 12px",
           }}
@@ -132,7 +131,7 @@ function ReferralPage() {
             style={{
               fontSize: "10px",
               fontWeight: 600,
-              color: THEME.textMuted,
+              color: "var(--color-muted-foreground)",
               textTransform: "uppercase",
               letterSpacing: "0.05em",
               marginBottom: "10px",
@@ -152,15 +151,15 @@ function ReferralPage() {
               style={{
                 flex: 1,
                 minWidth: "160px",
-                background: THEME.surface,
+                background: "var(--color-card)",
                 borderRadius: "8px",
                 padding: "12px 16px",
                 fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
                 fontSize: "15px",
                 fontWeight: 700,
-                color: THEME.text,
+                color: "var(--color-foreground)",
                 letterSpacing: "0.1em",
-                border: `1px solid ${THEME.border}`,
+                border: `1px solid ${"var(--color-border)"}`,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -175,8 +174,8 @@ function ReferralPage() {
                 borderRadius: "8px",
                 border: "none",
                 cursor: "pointer",
-                background: `${THEME.green}26`,
-                color: THEME.accent,
+                background: `${"var(--color-bullish)"}26`,
+                color: "var(--color-primary)",
                 fontSize: "11px",
                 fontWeight: 700,
                 fontFamily: "'Inter', system-ui, sans-serif",
@@ -195,8 +194,8 @@ function ReferralPage() {
               borderRadius: "8px",
               border: "none",
               cursor: "pointer",
-              background: THEME.green,
-              color: THEME.text,
+              background: "var(--color-bullish)",
+              color: "var(--color-foreground)",
               fontSize: "12px",
               fontWeight: 700,
               fontFamily: "'Inter', system-ui, sans-serif",
@@ -214,19 +213,19 @@ function ReferralPage() {
             {
               label: "Total Referred",
               value: String(referredCount),
-              color: THEME.green,
+              color: "var(--color-bullish)",
               icon: "👥",
             },
             {
               label: "Earned Points",
               value: earnedPoints.toLocaleString(),
-              color: THEME.accent,
+              color: "var(--color-primary)",
               icon: "⭐",
             },
             {
               label: "Streak",
               value: `${streakDays}d`,
-              color: THEME.amber,
+              color: "var(--color-neutral-wait)",
               icon: "🔥",
             },
           ]}
@@ -246,9 +245,9 @@ function ReferralPage() {
         <div style={{ padding: "16px" }}>
           <div
             style={{
-              background: THEME.surfaceAlt,
+              background: "var(--color-card-hover)",
               borderRadius: "12px",
-              border: `1px solid ${THEME.border}`,
+              border: `1px solid ${"var(--color-border)"}`,
               padding: "20px 16px",
             }}
           >
@@ -266,8 +265,8 @@ function ReferralPage() {
                       width: "28px",
                       height: "28px",
                       borderRadius: "8px",
-                      background: `${THEME.green}26`,
-                      color: THEME.green,
+                      background: `${"var(--color-bullish)"}26`,
+                      color: "var(--color-bullish)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -283,7 +282,7 @@ function ReferralPage() {
                       style={{
                         fontSize: "12px",
                         fontWeight: 700,
-                        color: THEME.text,
+                        color: "var(--color-foreground)",
                         marginBottom: "3px",
                       }}
                     >
@@ -292,7 +291,7 @@ function ReferralPage() {
                     <div
                       style={{
                         fontSize: "11px",
-                        color: THEME.textSecondary,
+                        color: "var(--color-muted-foreground)",
                         lineHeight: 1.6,
                       }}
                     >
@@ -305,7 +304,7 @@ function ReferralPage() {
                     style={{
                       width: "2px",
                       height: "12px",
-                      background: THEME.border,
+                      background: "var(--color-border)",
                       marginLeft: "13px",
                       marginBottom: "4px",
                     }}

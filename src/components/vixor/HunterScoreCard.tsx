@@ -51,10 +51,10 @@ const signalConfig: Record<
   strong_buy: {
     label: "Strong Buy",
     bg: "bg-emerald-500/10",
-    border: "border-emerald-500/30",
-    text: "text-emerald-400",
+    border: "border-bullish/30",
+    text: "text-bullish",
     gradient: "from-emerald-500/5 to-emerald-500/10",
-    circleColor: "text-emerald-500",
+    circleColor: "text-bullish",
     icon: TrendingUp,
   },
   buy: {
@@ -78,10 +78,10 @@ const signalConfig: Record<
   sell: {
     label: "Sell",
     bg: "bg-red-500/10",
-    border: "border-red-500/30",
-    text: "text-red-400",
+    border: "border-bearish/30",
+    text: "text-bearish",
     gradient: "from-red-500/5 to-red-500/10",
-    circleColor: "text-red-500",
+    circleColor: "text-bearish",
     icon: TrendingDown,
   },
 };
@@ -151,10 +151,10 @@ export function HunterScoreCard({
   // ─── Score Color Helper ─────────────────────────────────────────────────
 
   const getScoreColor = (s: number): string => {
-    if (s >= 75) return "text-emerald-400";
+    if (s >= 75) return "text-bullish";
     if (s >= 50) return "text-sky-400";
     if (s >= 25) return "text-slate-400";
-    return "text-red-400";
+    return "text-bearish";
   };
 
   const getScoreLabel = (s: number): string => {
@@ -203,12 +203,12 @@ export function HunterScoreCard({
 
   if (scoreMutation.isError) {
     return (
-      <div className="rounded-xl border border-red-500/30 bg-card/80 backdrop-blur-sm shadow-lg shadow-black/20 p-5 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="rounded-xl border border-bearish/30 bg-card/80 backdrop-blur-sm shadow-lg shadow-black/20 p-5 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center gap-2.5 mb-3">
           <div className="flex items-center justify-center size-8 rounded-lg bg-red-500/10">
-            <AlertCircle className="size-4 text-red-400" />
+            <AlertCircle className="size-4 text-bearish" />
           </div>
-          <span className="text-sm font-semibold text-red-400">Score Error</span>
+          <span className="text-sm font-semibold text-bearish">Score Error</span>
           <button
             onClick={handleRetry}
             className="ml-auto p-1 rounded-md hover:bg-muted transition-colors"
@@ -216,7 +216,7 @@ export function HunterScoreCard({
             <RefreshCw className="size-3.5 text-muted-foreground" />
           </button>
         </div>
-        <p className="text-xs text-red-300">
+        <p className="text-xs text-bearish">
           {scoreMutation.error?.message || "Failed to score opportunity. Please try again."}
         </p>
       </div>
@@ -347,7 +347,7 @@ export function HunterScoreCard({
           variant="outline"
           onClick={handleAccept}
           disabled={feedbackMutation.isPending || feedbackMutation.isSuccess}
-          className="gap-1.5 text-xs flex-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
+          className="gap-1.5 text-xs flex-1 border-bullish/30 text-bullish hover:bg-bullish/10 hover:text-bullish"
         >
           {feedbackMutation.isPending ? (
             <Loader2 className="size-3.5 animate-spin" />
@@ -361,7 +361,7 @@ export function HunterScoreCard({
           variant="outline"
           onClick={handleDismiss}
           disabled={feedbackMutation.isPending || feedbackMutation.isSuccess}
-          className="gap-1.5 text-xs flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+          className="gap-1.5 text-xs flex-1 border-bearish/30 text-bearish hover:bg-bearish/10 hover:text-bearish"
         >
           <ThumbsDown className="size-3.5" />
           Not Helpful

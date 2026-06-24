@@ -12,8 +12,7 @@ import {
   DataRow,
   LabelValue,
   SectionTitle,
-  ProfileCard,
-  THEME,
+  ProfileCard, 
 } from "@/components/vixor/PageLayout";
 import {
   formatCurrency,
@@ -28,11 +27,11 @@ export const Route = createFileRoute("/_authenticated/wallet-web3")({
 });
 
 const TOKEN_COLORS = [
-  THEME.green,
-  THEME.accent,
-  THEME.purple,
-  THEME.amber,
-  THEME.pink,
+  "var(--color-bullish)",
+  "var(--color-primary)",
+  "var(--color-info)",
+  "var(--color-neutral-wait)",
+  "var(--color-bearish)",
 ];
 
 const TokenCard = memo(function TokenCard({
@@ -52,7 +51,7 @@ const TokenCard = memo(function TokenCard({
     token.symbol.charCodeAt(0) % TOKEN_COLORS.length;
   const avatarColor = TOKEN_COLORS[colorIdx];
 
-  const pnlColor = token.pnl >= 0 ? THEME.green : THEME.red;
+  const pnlColor = token.pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)";
 
   return (
     <DataRow>
@@ -86,7 +85,7 @@ const TokenCard = memo(function TokenCard({
               style={{
                 fontSize: 14,
                 fontWeight: 600,
-                color: THEME.text,
+                color: "var(--color-foreground)",
               }}
             >
               {token.symbol}
@@ -94,7 +93,7 @@ const TokenCard = memo(function TokenCard({
             <div
               style={{
                 fontSize: 11,
-                color: THEME.textMuted,
+                color: "var(--color-muted-foreground)",
                 fontFamily: "'JetBrains Mono', ui-monospace, monospace",
               }}
             >
@@ -113,26 +112,26 @@ const TokenCard = memo(function TokenCard({
           }}
         >
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: THEME.textMuted }}>Amount</div>
-            <div style={{ fontSize: 13, color: THEME.text, fontWeight: 500 }}>
+            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>Amount</div>
+            <div style={{ fontSize: 13, color: "var(--color-foreground)", fontWeight: 500 }}>
               {formatQuantity(token.amount)}
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: THEME.textMuted }}>Value</div>
-            <div style={{ fontSize: 13, color: THEME.text, fontWeight: 500 }}>
+            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>Value</div>
+            <div style={{ fontSize: 13, color: "var(--color-foreground)", fontWeight: 500 }}>
               {formatCurrency(token.totalValue)}
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: THEME.textMuted }}>PnL</div>
+            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>PnL</div>
             <div style={{ fontSize: 13, color: pnlColor, fontWeight: 600 }}>
               {formatPnL(token.pnl)}
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: THEME.textMuted }}>Price</div>
-            <div style={{ fontSize: 13, color: THEME.text, fontWeight: 500 }}>
+            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>Price</div>
+            <div style={{ fontSize: 13, color: "var(--color-foreground)", fontWeight: 500 }}>
               {formatPrice(token.lastPrice)}
             </div>
           </div>
@@ -169,13 +168,13 @@ const TxnCard = memo(function TxnCard({
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Badge
             label={txn.type}
-            color={isBuy ? THEME.green : THEME.red}
+            color={isBuy ? "var(--color-bullish)" : "var(--color-bearish)"}
           />
           <span
             style={{
               fontSize: 14,
               fontWeight: 600,
-              color: THEME.text,
+              color: "var(--color-foreground)",
             }}
           >
             {txn.pair}
@@ -192,24 +191,24 @@ const TxnCard = memo(function TxnCard({
           }}
         >
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: THEME.textMuted }}>Amount</div>
-            <div style={{ fontSize: 13, color: THEME.text, fontWeight: 500 }}>
+            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>Amount</div>
+            <div style={{ fontSize: 13, color: "var(--color-foreground)", fontWeight: 500 }}>
               {formatQuantity(txn.amount)}
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: THEME.textMuted }}>Price</div>
-            <div style={{ fontSize: 13, color: THEME.text, fontWeight: 500 }}>
+            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>Price</div>
+            <div style={{ fontSize: 13, color: "var(--color-foreground)", fontWeight: 500 }}>
               {formatPrice(txn.price)}
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: THEME.textMuted }}>PnL</div>
+            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>PnL</div>
             <div
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: txn.pnl >= 0 ? THEME.green : THEME.red,
+                color: txn.pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
               }}
             >
               {formatPnL(txn.pnl)}
@@ -244,22 +243,22 @@ function WalletWeb3Page() {
     {
       label: "Portfolio Value",
       value: formatCurrency(totalPortfolioValue),
-      color: THEME.text,
+      color: "var(--color-foreground)",
     },
     {
       label: "Total PnL",
       value: formatPnL(totalPnl),
-      color: totalPnl >= 0 ? THEME.green : THEME.red,
+      color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
     },
     {
       label: "Tokens Traded",
       value: formatNumber(tokens.length),
-      color: THEME.accent,
+      color: "var(--color-primary)",
     },
     {
       label: "Active Trades",
       value: `${activeTrades}/${totalTrades}`,
-      color: THEME.amber,
+      color: "var(--color-neutral-wait)",
     },
   ];
 
@@ -267,7 +266,7 @@ function WalletWeb3Page() {
     <PageLayout
       title="Wallet"
       badge="WEB3"
-      badgeColor={THEME.accent}
+      badgeColor={"var(--color-primary)"}
       description="Web3 portfolio holdings and transaction history"
       tabs={["Holdings", "Transactions"]}
       activeTab={activeTab}

@@ -4,8 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserProfile, getUserPoints, getTradeHistory } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   StatsRow,
   SectionTitle,
   Badge,
@@ -36,26 +35,26 @@ const settings = [
     icon: "⚙️",
     name: "Account Settings",
     desc: "Email, password, 2FA",
-    bgColor: `${THEME.text}0D`,
+    bgColor: `${"var(--color-foreground)"}0D`,
   },
   {
     icon: "🔔",
     name: "Notifications",
     desc: "Alerts & push preferences",
-    bgColor: `${THEME.green}1A`,
+    bgColor: `${"var(--color-bullish)"}1A`,
   },
   {
     icon: "🔗",
     name: "Connected Wallets",
     desc: "Manage wallet connections",
-    bgColor: `${THEME.accent}1A`,
+    bgColor: `${"var(--color-primary)"}1A`,
   },
-  { icon: "🎨", name: "Appearance", desc: "Theme & display settings", bgColor: `${THEME.amber}1A` },
+  { icon: "🎨", name: "Appearance", desc: "Theme & display settings", bgColor: `${"var(--color-neutral-wait)"}1A` },
   {
     icon: "🔒",
     name: "Privacy & Security",
     desc: "Data & security options",
-    bgColor: `${THEME.red}1A`,
+    bgColor: `${"var(--color-bearish)"}1A`,
   },
 ];
 
@@ -96,14 +95,14 @@ const BadgeItem = memo(function BadgeItem({ item }: { item: (typeof badges)[0] }
         textAlign: "center",
         padding: "14px 8px",
         borderRadius: 12,
-        background: THEME.surface,
-        border: `1px solid ${THEME.borderLight}`,
+        background: "var(--color-card)",
+        border: `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}`,
         opacity: item.unlocked ? 1 : 0.35,
       }}
     >
       <div style={{ fontSize: 28, marginBottom: 6 }}>{item.icon}</div>
-      <div style={{ fontSize: 10, fontWeight: 700, color: THEME.text }}>{item.name}</div>
-      <div style={{ fontSize: 9, color: THEME.textSecondary, marginTop: 2 }}>{item.desc}</div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--color-foreground)" }}>{item.name}</div>
+      <div style={{ fontSize: 9, color: "var(--color-muted-foreground)", marginTop: 2 }}>{item.desc}</div>
     </div>
   );
 });
@@ -139,15 +138,15 @@ const AccountItem = memo(function AccountItem({ item }: { item: AccountEntry }) 
             {item.icon}
           </div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: THEME.text }}>{item.name}</div>
-            <div style={{ fontSize: 11, color: THEME.textSecondary }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-foreground)" }}>{item.name}</div>
+            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>
               {item.linked ? item.handle : "Not connected"}
             </div>
           </div>
         </div>
         <Badge
           label={item.linked ? "Connected" : "Connect"}
-          color={item.linked ? THEME.accent : THEME.textMuted}
+          color={item.linked ? "var(--color-primary)" : "var(--color-muted-foreground)"}
         />
       </div>
     </DataRow>
@@ -181,11 +180,11 @@ const SettingItem = memo(function SettingItem({
             {item.icon}
           </div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: THEME.text }}>{item.name}</div>
-            <div style={{ fontSize: 10, color: THEME.textSecondary }}>{item.desc}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-foreground)" }}>{item.name}</div>
+            <div style={{ fontSize: 10, color: "var(--color-muted-foreground)" }}>{item.desc}</div>
           </div>
         </div>
-        <span style={{ color: THEME.textMuted, fontSize: 16 }}>›</span>
+        <span style={{ color: "var(--color-muted-foreground)", fontSize: 16 }}>›</span>
       </div>
     </DataRow>
   );
@@ -247,8 +246,8 @@ function ProfilePage() {
         name: "Telegram",
         handle: `@${profile.telegram_username}`,
         icon: "✈️",
-        bgColor: `${THEME.accent}26`,
-        iconColor: THEME.accent,
+        bgColor: `${"var(--color-primary)"}26`,
+        iconColor: "var(--color-primary)",
         linked: true,
       });
     } else {
@@ -256,8 +255,8 @@ function ProfilePage() {
         name: "Telegram",
         handle: "Not connected",
         icon: "✈️",
-        bgColor: `${THEME.accent}26`,
-        iconColor: THEME.accent,
+        bgColor: `${"var(--color-primary)"}26`,
+        iconColor: "var(--color-primary)",
         linked: false,
       });
     }
@@ -267,16 +266,16 @@ function ProfilePage() {
       name: "Twitter",
       handle: "Not connected",
       icon: "𝕏",
-      bgColor: `${THEME.green}26`,
-      iconColor: THEME.accent,
+      bgColor: `${"var(--color-bullish)"}26`,
+      iconColor: "var(--color-primary)",
       linked: false,
     });
     list.push({
       name: "Discord",
       handle: "Not connected",
       icon: "💬",
-      bgColor: `${THEME.purple}26`,
-      iconColor: THEME.purple,
+      bgColor: `${"var(--color-info)"}26`,
+      iconColor: "var(--color-info)",
       linked: false,
     });
 
@@ -290,7 +289,7 @@ function ProfilePage() {
     return `${totalPnl >= 0 ? "+" : "-"}${formatted}`;
   }, [totalPnl]);
 
-  const pnlColor = totalPnl >= 0 ? THEME.accent : THEME.red;
+  const pnlColor = totalPnl >= 0 ? "var(--color-primary)" : "var(--color-bearish)";
 
   const isLoading = profileQuery.isLoading || pointsQuery.isLoading || tradesQuery.isLoading;
 
@@ -303,8 +302,8 @@ function ProfilePage() {
       {/* Profile Card */}
       <div
         style={{
-          background: THEME.surface,
-          borderBottom: `1px solid ${THEME.border}`,
+          background: "var(--color-card)",
+          borderBottom: `1px solid ${"var(--color-border)"}`,
           padding: "16px",
           display: "flex",
           alignItems: "center",
@@ -322,7 +321,7 @@ function ProfilePage() {
               borderRadius: 16,
               objectFit: "cover" as const,
               flexShrink: 0,
-              border: `2px solid ${THEME.borderAccent}`,
+              border: `2px solid ${"color-mix(in oklab, var(--color-primary) 15%, transparent)"}`,
             }}
             onError={(e) => {
               const img = e.target as HTMLImageElement;
@@ -332,7 +331,7 @@ function ProfilePage() {
                 const fallback = document.createElement("div");
                 fallback.setAttribute("data-initials", "true");
                 fallback.textContent = initial;
-                fallback.style.cssText = `width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,${THEME.accent},${THEME.green});display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:${THEME.text};flex-shrink:0;border:2px solid ${THEME.borderAccent}`;
+                fallback.style.cssText = `width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,${"var(--color-primary)"},${"var(--color-bullish)"});display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:${"var(--color-foreground)"};flex-shrink:0;border:2px solid ${"color-mix(in oklab, var(--color-primary) 15%, transparent)"}`;
                 parent.insertBefore(fallback, img);
               }
             }}
@@ -343,33 +342,33 @@ function ProfilePage() {
               width: 64,
               height: 64,
               borderRadius: 16,
-              background: `linear-gradient(135deg, ${THEME.accent}, ${THEME.green})`,
+              background: `linear-gradient(135deg, ${"var(--color-primary)"}, ${"var(--color-bullish)"})`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 24,
               fontWeight: 800,
-              color: THEME.text,
+              color: "var(--color-foreground)",
               flexShrink: 0,
-              border: `2px solid ${THEME.borderAccent}`,
+              border: `2px solid ${"color-mix(in oklab, var(--color-primary) 15%, transparent)"}`,
             }}
           >
             {initial}
           </div>
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: THEME.text, marginBottom: 2 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--color-foreground)", marginBottom: 2 }}>
             {isLoading ? <span style={{ opacity: 0.4 }}>Loading…</span> : displayName}
           </div>
-          <div style={{ fontSize: 11, color: THEME.textSecondary, marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: "var(--color-muted-foreground)", marginBottom: 8 }}>
             {joinedText}
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
-            <Badge label={`⚡ ${pointsBalance.toLocaleString()} pts`} color={THEME.accent} />
+            <Badge label={`⚡ ${pointsBalance.toLocaleString()} pts`} color={"var(--color-primary)"} />
             {currentStreak > 0 && (
-              <Badge label={`🔥 ${currentStreak}-day streak`} color={THEME.amber} />
+              <Badge label={`🔥 ${currentStreak}-day streak`} color={"var(--color-neutral-wait)"} />
             )}
-            {pointsBalance >= 5000 && <Badge label="👑 PRO" color={THEME.green} />}
+            {pointsBalance >= 5000 && <Badge label="👑 PRO" color={"var(--color-bullish)"} />}
           </div>
         </div>
       </div>
@@ -380,18 +379,18 @@ function ProfilePage() {
           {
             label: "Total Trades",
             value: isLoading ? "—" : String(totalTrades),
-            color: THEME.green,
+            color: "var(--color-bullish)",
           },
           {
             label: "Win Rate",
             value: isLoading ? "—" : `${winRate.toFixed(1)}%`,
-            color: THEME.accent,
+            color: "var(--color-primary)",
           },
           { label: "Total PnL", value: isLoading ? "—" : pnlFormatted, color: pnlColor },
           {
             label: "Best Streak",
             value: isLoading ? "—" : longestStreak > 0 ? `${longestStreak} W` : "—",
-            color: THEME.amber,
+            color: "var(--color-neutral-wait)",
           },
         ]}
       />
@@ -406,8 +405,8 @@ function ProfilePage() {
             gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
             gap: 10,
             padding: "12px 16px",
-            background: THEME.surface,
-            borderBottom: `1px solid ${THEME.border}`,
+            background: "var(--color-card)",
+            borderBottom: `1px solid ${"var(--color-border)"}`,
           }}
         >
           {badges.map((b) => (

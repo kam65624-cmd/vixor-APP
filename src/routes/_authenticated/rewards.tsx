@@ -4,8 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserPoints, getReferralData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   StatsRow,
   SectionTitle,
   Badge,
@@ -25,8 +24,8 @@ export const Route = createFileRoute("/_authenticated/rewards")({
 const tiers = [
   { name: "Bronze", min: 0, color: "#A0703C" },
   { name: "Silver", min: 2500, color: "#A0AEC0" },
-  { name: "Gold", min: 5000, color: THEME.amber },
-  { name: "Platinum", min: 10000, color: THEME.accent },
+  { name: "Gold", min: 5000, color: "var(--color-neutral-wait)" },
+  { name: "Platinum", min: 10000, color: "var(--color-primary)" },
 ];
 
 const WEEK_POINTS = [50, 50, 75, 75, 100, 100, 150];
@@ -84,20 +83,20 @@ type StreakDayData = {
 
 const StreakDayItem = memo(function StreakDayItem({ item }: { item: StreakDayData }) {
   const bgStyle = item.checked
-    ? { background: `${THEME.accent}1F`, border: `1px solid ${THEME.accent}33` }
+    ? { background: `${"var(--color-primary)"}1F`, border: `1px solid ${"var(--color-primary)"}33` }
     : item.missed
-      ? { background: `${THEME.red}0F`, border: `1px solid ${THEME.red}1F` }
+      ? { background: `${"var(--color-bearish)"}0F`, border: `1px solid ${"var(--color-bearish)"}1F` }
       : item.current
-        ? { background: `${THEME.green}1F`, border: `1px solid ${THEME.green}4D` }
-        : { background: THEME.surface, border: `1px solid ${THEME.borderLight}` };
+        ? { background: `${"var(--color-bullish)"}1F`, border: `1px solid ${"var(--color-bullish)"}4D` }
+        : { background: "var(--color-card)", border: `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}` };
 
   const statusColor = item.checked
-    ? THEME.accent
+    ? "var(--color-primary)"
     : item.missed
-      ? THEME.red
+      ? "var(--color-bearish)"
       : item.current
-        ? THEME.accent
-        : THEME.textMuted;
+        ? "var(--color-primary)"
+        : "var(--color-muted-foreground)";
 
   return (
     <div
@@ -108,7 +107,7 @@ const StreakDayItem = memo(function StreakDayItem({ item }: { item: StreakDayDat
         ...bgStyle,
       }}
     >
-      <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMuted, marginBottom: 6 }}>
+      <div style={{ fontSize: 10, fontWeight: 600, color: "var(--color-muted-foreground)", marginBottom: 6 }}>
         {item.day}
       </div>
       <div style={{ fontSize: 20, marginBottom: 4 }}>
@@ -131,23 +130,23 @@ const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0
   return (
     <div
       style={{
-        background: THEME.surface,
+        background: "var(--color-card)",
         borderRadius: 12,
-        border: `1px solid ${THEME.border}`,
+        border: `1px solid ${"var(--color-border)"}`,
         padding: 16,
         textAlign: "center",
         cursor: "pointer",
         transition: "background 0.15s",
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.background = THEME.rowHover;
+        (e.currentTarget as HTMLDivElement).style.background = "color-mix(in oklab, var(--color-foreground) 3%, transparent)";
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.background = THEME.surface;
+        (e.currentTarget as HTMLDivElement).style.background = "var(--color-card)";
       }}
     >
       <div style={{ fontSize: 28, marginBottom: 8 }}>{item.icon}</div>
-      <div style={{ fontSize: 12, fontWeight: 600, color: THEME.text, marginBottom: 4 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--color-foreground)", marginBottom: 4 }}>
         {item.name}
       </div>
       <div
@@ -155,7 +154,7 @@ const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0
           fontSize: 11,
           fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
           fontWeight: 600,
-          color: THEME.amber,
+          color: "var(--color-neutral-wait)",
         }}
       >
         {item.cost}
@@ -169,8 +168,8 @@ const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0
           borderRadius: 6,
           border: "none",
           cursor: "pointer",
-          background: `${THEME.green}26`,
-          color: THEME.accent,
+          background: `${"var(--color-bullish)"}26`,
+          color: "var(--color-primary)",
           fontFamily: "'Inter', system-ui, sans-serif",
         }}
       >
@@ -307,9 +306,9 @@ function RewardsPage() {
       {/* ── Points Hero ── */}
       <div
         style={{
-          background: `linear-gradient(135deg, ${THEME.green}1F 0%, ${THEME.amber}0F 100%)`,
+          background: `linear-gradient(135deg, ${"var(--color-bullish)"}1F 0%, ${"var(--color-neutral-wait)"}0F 100%)`,
           borderRadius: 0,
-          border: `1px solid ${THEME.borderAccent}`,
+          border: `1px solid ${"color-mix(in oklab, var(--color-primary) 15%, transparent)"}`,
           borderLeft: 0,
           borderRight: 0,
           padding: "24px 16px",
@@ -321,7 +320,7 @@ function RewardsPage() {
           style={{
             fontSize: 11,
             fontWeight: 600,
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
             textTransform: "uppercase" as const,
             letterSpacing: "0.08em",
           }}
@@ -333,13 +332,13 @@ function RewardsPage() {
             fontSize: 42,
             fontWeight: 800,
             fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
-            color: THEME.amber,
+            color: "var(--color-neutral-wait)",
             margin: "6px 0",
           }}
         >
           {fmtNum(balance)}
         </div>
-        <div style={{ fontSize: 12, color: THEME.textSecondary }}>
+        <div style={{ fontSize: 12, color: "var(--color-muted-foreground)" }}>
           +{fmtNum(weekEarned)} earned this week · Streak: {streak?.current_streak ?? 0} days
         </div>
       </div>
@@ -354,8 +353,8 @@ function RewardsPage() {
             gridTemplateColumns: "repeat(7, 1fr)",
             gap: 8,
             padding: "12px 16px",
-            background: THEME.surface,
-            borderBottom: `1px solid ${THEME.border}`,
+            background: "var(--color-card)",
+            borderBottom: `1px solid ${"var(--color-border)"}`,
           }}
         >
           {streakDays.map((d) => (
@@ -372,9 +371,9 @@ function RewardsPage() {
             display: "flex",
             alignItems: "center",
             gap: 8,
-            background: THEME.surface,
+            background: "var(--color-card)",
             padding: "12px 16px",
-            borderBottom: `1px solid ${THEME.border}`,
+            borderBottom: `1px solid ${"var(--color-border)"}`,
           }}
         >
           <span
@@ -382,7 +381,7 @@ function RewardsPage() {
               flex: 1,
               fontSize: 12,
               fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
-              color: THEME.textSecondary,
+              color: "var(--color-muted-foreground)",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap" as const,
@@ -398,8 +397,8 @@ function RewardsPage() {
               borderRadius: 6,
               border: "none",
               cursor: "pointer",
-              background: `${THEME.green}26`,
-              color: THEME.accent,
+              background: `${"var(--color-bullish)"}26`,
+              color: "var(--color-primary)",
               fontFamily: "'Inter', system-ui, sans-serif",
             }}
             onClick={handleCopy}
@@ -411,13 +410,13 @@ function RewardsPage() {
         {/* Referral stats */}
         <StatsRow
           stats={[
-            { label: "Total Referrals", value: String(referredCount), color: THEME.green },
+            { label: "Total Referrals", value: String(referredCount), color: "var(--color-bullish)" },
             {
               label: "Active",
               value: String(referredCount > 0 ? referredCount : 0),
-              color: THEME.accent,
+              color: "var(--color-primary)",
             },
-            { label: "Earned", value: `${fmtNum(referralEarned)} pts`, color: THEME.amber },
+            { label: "Earned", value: `${fmtNum(referralEarned)} pts`, color: "var(--color-neutral-wait)" },
           ]}
         />
 
@@ -430,15 +429,15 @@ function RewardsPage() {
             display: "flex",
             justifyContent: "space-between",
             padding: "10px 16px",
-            background: THEME.surface,
-            borderBottom: `1px solid ${THEME.border}`,
+            background: "var(--color-card)",
+            borderBottom: `1px solid ${"var(--color-border)"}`,
           }}
         >
-          <span style={{ fontSize: 12, fontWeight: 600, color: THEME.text }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-foreground)" }}>
             Current: <span style={{ color: currentTier.color }}>{currentTier.name}</span>
           </span>
           {nextTier && (
-            <span style={{ fontSize: 12, fontWeight: 600, color: THEME.text }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-foreground)" }}>
               Next: <span style={{ color: nextTier.color }}>{nextTier.name}</span>
             </span>
           )}
@@ -460,7 +459,7 @@ function RewardsPage() {
             alignItems: "center",
             gap: 0,
             padding: "0 16px 8px",
-            background: THEME.surface,
+            background: "var(--color-card)",
           }}
         >
           {tiers.map((t, i) => {
@@ -477,8 +476,8 @@ function RewardsPage() {
                 style={{
                   flex: 1,
                   height: 10,
-                  background: THEME.surface,
-                  borderRight: i < tiers.length - 1 ? `2px solid ${THEME.bg}` : "none",
+                  background: "var(--color-card)",
+                  borderRight: i < tiers.length - 1 ? `2px solid ${"var(--color-background)"}` : "none",
                 }}
               >
                 <div
@@ -501,8 +500,8 @@ function RewardsPage() {
             display: "flex",
             justifyContent: "space-between",
             padding: "0 16px 4px",
-            background: THEME.surface,
-            borderBottom: `1px solid ${THEME.border}`,
+            background: "var(--color-card)",
+            borderBottom: `1px solid ${"var(--color-border)"}`,
           }}
         >
           {tiers.map((t) => (
@@ -514,11 +513,11 @@ function RewardsPage() {
         <div
           style={{
             fontSize: 11,
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
             padding: "8px 16px 12px",
-            background: THEME.surface,
+            background: "var(--color-card)",
             textAlign: "center",
-            borderBottom: `1px solid ${THEME.border}`,
+            borderBottom: `1px solid ${"var(--color-border)"}`,
           }}
         >
           {nextTier
@@ -540,11 +539,11 @@ function RewardsPage() {
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: 12, color: THEME.text, fontWeight: 500 }}>
+                    <div style={{ fontSize: 12, color: "var(--color-foreground)", fontWeight: 500 }}>
                       {tx.reason?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ??
                         "Points"}
                     </div>
-                    <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 2 }}>
+                    <div style={{ fontSize: 10, color: "var(--color-muted-foreground)", marginTop: 2 }}>
                       {fmtDate(tx.created_at)} · {fmtTime(tx.created_at)}
                     </div>
                   </div>
@@ -553,7 +552,7 @@ function RewardsPage() {
                       fontSize: 13,
                       fontWeight: 700,
                       fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
-                      color: THEME.accent,
+                      color: "var(--color-primary)",
                     }}
                   >
                     +{fmtNum(tx.delta ?? 0)}
@@ -572,7 +571,7 @@ function RewardsPage() {
             gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
             gap: 12,
             padding: "12px 16px",
-            background: THEME.surface,
+            background: "var(--color-card)",
           }}
         >
           {rewards.map((r) => (

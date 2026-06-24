@@ -3,8 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   StatsRow,
   ProgressBar,
   ScrollArea,
@@ -48,7 +47,7 @@ interface KeyStatus {
 const thCol: React.CSSProperties = {
   fontSize: "9px",
   fontWeight: 700,
-  color: THEME.textMuted,
+  color: "var(--color-muted-foreground)",
   textTransform: "uppercase",
   letterSpacing: "0.06em",
 };
@@ -92,25 +91,25 @@ function AdminApiKeysPage() {
     <PageLayout
       title="API Key Management"
       badge="ADMIN ONLY"
-      badgeColor={THEME.amber}
+      badgeColor={"var(--color-neutral-wait)"}
       description="Centralized view of all platform API keys. Keys are stored in environment variables and never exposed to clients."
       loading={loading}
-      loadingColor={THEME.amber}
+      loadingColor={"var(--color-neutral-wait)"}
     >
       {/* Error banner */}
       {error && (
         <div
           style={{
             padding: "16px",
-            background: `${THEME.red}18`,
-            borderBottom: `1px solid ${THEME.red}30`,
+            background: `color-mix(in oklab, var(--color-bearish) 10%, transparent)`,
+            borderBottom: `1px solid color-mix(in oklab, var(--color-bearish) 19%, transparent)`,
           }}
         >
           <p
             style={{
               fontSize: "12px",
               fontWeight: 700,
-              color: THEME.red,
+              color: "var(--color-bearish)",
               margin: 0,
             }}
           >
@@ -136,7 +135,7 @@ function AdminApiKeysPage() {
               {
                 label: "CONFIG STATUS",
                 value: `${pct}%`,
-                color: allConfigured ? THEME.green : THEME.amber,
+                color: allConfigured ? "var(--color-bullish)" : "var(--color-neutral-wait)",
                 sub: `${configuredCount} of ${totalKeys} keys configured`,
               },
             ]}
@@ -145,7 +144,7 @@ function AdminApiKeysPage() {
           <ProgressBar
             value={configuredCount}
             max={totalKeys}
-            color={allConfigured ? THEME.green : THEME.amber}
+            color={allConfigured ? "var(--color-bullish)" : "var(--color-neutral-wait)"}
             height={4}
           />
 
@@ -162,8 +161,8 @@ function AdminApiKeysPage() {
                     alignItems: "center",
                     padding: "0 16px",
                     height: "32px",
-                    background: THEME.tabBarBg,
-                    borderBottom: `1px solid ${THEME.border}`,
+                    background: "var(--color-muted)",
+                    borderBottom: `1px solid ${"var(--color-border)"}`,
                     flexShrink: 0,
                     overflowX: "auto",
                   }}
@@ -202,7 +201,7 @@ function AdminApiKeysPage() {
                           minWidth: 80,
                           fontSize: "11px",
                           fontWeight: 600,
-                          color: THEME.text,
+                          color: "var(--color-foreground)",
                           flexShrink: 0,
                         }}
                       >
@@ -214,7 +213,7 @@ function AdminApiKeysPage() {
                           minWidth: 100,
                           fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                           fontSize: "10px",
-                          color: THEME.textSecondary,
+                          color: "var(--color-muted-foreground)",
                           flexShrink: 0,
                         }}
                       >
@@ -225,7 +224,7 @@ function AdminApiKeysPage() {
                           flex: 2,
                           minWidth: 120,
                           fontSize: "10px",
-                          color: THEME.textMuted,
+                          color: "var(--color-muted-foreground)",
                         }}
                       >
                         {key.description}
@@ -238,9 +237,9 @@ function AdminApiKeysPage() {
                         }}
                       >
                         {key.configured ? (
-                          <Badge label="Active" color={THEME.green} small />
+                          <Badge label="Active" color={"var(--color-bullish)"} small />
                         ) : (
-                          <Badge label="Missing" color={THEME.textMuted} small />
+                          <Badge label="Missing" color={"var(--color-muted-foreground)"} small />
                         )}
                       </div>
                       <div
@@ -249,7 +248,7 @@ function AdminApiKeysPage() {
                           textAlign: "right",
                           fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                           fontSize: "10px",
-                          color: key.configured ? THEME.textSecondary : THEME.textMuted,
+                          color: key.configured ? "var(--color-muted-foreground)" : "var(--color-muted-foreground)",
                           flexShrink: 0,
                         }}
                       >
@@ -265,8 +264,8 @@ function AdminApiKeysPage() {
             <div
               style={{
                 padding: "12px 16px",
-                background: `${THEME.green}10`,
-                borderTop: `1px solid ${THEME.green}18`,
+                background: `color-mix(in oklab, var(--color-bullish) 6%, transparent)`,
+                borderTop: `1px solid color-mix(in oklab, var(--color-bullish) 10%, transparent)`,
               }}
             >
               <div
@@ -281,7 +280,7 @@ function AdminApiKeysPage() {
                   height="14"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke={THEME.accent}
+                  stroke={"var(--color-primary)"}
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -296,7 +295,7 @@ function AdminApiKeysPage() {
                     style={{
                       fontSize: "11px",
                       fontWeight: 700,
-                      color: THEME.accent,
+                      color: "var(--color-primary)",
                     }}
                   >
                     How to configure
@@ -304,7 +303,7 @@ function AdminApiKeysPage() {
                   <div
                     style={{
                       fontSize: "10px",
-                      color: THEME.textSecondary,
+                      color: "var(--color-muted-foreground)",
                       marginTop: "2px",
                       lineHeight: 1.5,
                     }}

@@ -4,8 +4,7 @@ import { memo } from "react";
 import { getRecentAnalyses } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   StatsRow,
   DataRow,
   Badge,
@@ -42,17 +41,17 @@ function VisionPage() {
     <PageLayout
       title="AI Vision"
       badge="AI ANALYSIS"
-      badgeColor={THEME.purple}
+      badgeColor={"var(--color-info)"}
       description="Overview of your AI-powered analyses, patterns detected, and market insights"
       loading={isLoading}
-      loadingColor={THEME.purple}
+      loadingColor={"var(--color-info)"}
     >
       <StatsRow
         stats={[
-          { label: "Total Analyses", value: String(analyses.length), color: THEME.green },
-          { label: "BUY Signals", value: String(buySignals.length), color: THEME.green },
-          { label: "SELL Signals", value: String(sellSignals.length), color: THEME.red },
-          { label: "Avg Confidence", value: `${avgConfidence}%`, color: THEME.amber },
+          { label: "Total Analyses", value: String(analyses.length), color: "var(--color-bullish)" },
+          { label: "BUY Signals", value: String(buySignals.length), color: "var(--color-bullish)" },
+          { label: "SELL Signals", value: String(sellSignals.length), color: "var(--color-bearish)" },
+          { label: "Avg Confidence", value: `${avgConfidence}%`, color: "var(--color-neutral-wait)" },
         ]}
       />
 
@@ -63,8 +62,8 @@ function VisionPage() {
           alignItems: "center",
           padding: "0 16px",
           height: "32px",
-          background: THEME.tabBarBg,
-          borderBottom: `1px solid ${THEME.border}`,
+          background: "var(--color-muted)",
+          borderBottom: `1px solid ${"var(--color-border)"}`,
           flexShrink: 0,
           overflowX: "auto",
         }}
@@ -87,7 +86,7 @@ function VisionPage() {
               minWidth: col.w,
               fontSize: "9px",
               fontWeight: 700,
-              color: THEME.textMuted,
+              color: "var(--color-muted-foreground)",
               textTransform: "uppercase" as const,
               letterSpacing: "0.06em",
               textAlign: col.align || "left",
@@ -122,10 +121,10 @@ function VisionPage() {
 const AnalysisRow = memo(function AnalysisRow({ analysis }: { analysis: any }) {
   const recColor =
     analysis.recommendation === "BUY"
-      ? THEME.green
+      ? "var(--color-bullish)"
       : analysis.recommendation === "SELL"
-        ? THEME.red
-        : THEME.amber;
+        ? "var(--color-bearish)"
+        : "var(--color-neutral-wait)";
 
   return (
     <DataRow>
@@ -143,7 +142,7 @@ const AnalysisRow = memo(function AnalysisRow({ analysis }: { analysis: any }) {
           {analysis.pair || "—"}
         </div>
         <div style={{ width: "12%" }}>
-          <Badge label={analysis.status} color={THEME.green} small />
+          <Badge label={analysis.status} color={"var(--color-bullish)"} small />
         </div>
         <div style={{ width: "12%" }}>
           <Badge label={analysis.recommendation || "—"} color={recColor} small />
@@ -154,18 +153,18 @@ const AnalysisRow = memo(function AnalysisRow({ analysis }: { analysis: any }) {
             textAlign: "right",
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             fontWeight: 700,
-            color: THEME.amber,
+            color: "var(--color-neutral-wait)",
           }}
         >
           {analysis.confidence ?? 0}%
         </div>
-        <div style={{ width: "12%", color: THEME.textSecondary }}>{analysis.pattern || "—"}</div>
-        <div style={{ width: "12%", color: THEME.textSecondary }}>{analysis.trend || "—"}</div>
+        <div style={{ width: "12%", color: "var(--color-muted-foreground)" }}>{analysis.pattern || "—"}</div>
+        <div style={{ width: "12%", color: "var(--color-muted-foreground)" }}>{analysis.trend || "—"}</div>
         <div
           style={{
             flex: 1,
             paddingLeft: 16,
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -177,7 +176,7 @@ const AnalysisRow = memo(function AnalysisRow({ analysis }: { analysis: any }) {
           style={{
             width: "12%",
             textAlign: "right",
-            color: THEME.textMuted,
+            color: "var(--color-muted-foreground)",
             fontSize: "10px",
           }}
         >

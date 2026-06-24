@@ -17,7 +17,7 @@ import {
   ShoppingBag,
   ChevronDown,
 } from "lucide-react";
-import { THEME, PageLayout, StatsRow, EmptyState, ScrollArea } from "@/components/vixor/PageLayout";
+import { PageLayout, StatsRow, EmptyState, ScrollArea } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/experiments")({
   head: () => ({ meta: [{ title: "Experiments — Vixor" }] }),
@@ -27,8 +27,8 @@ export const Route = createFileRoute("/_authenticated/experiments")({
 // ── Local style constants using THEME ──
 
 const cardStyle: React.CSSProperties = {
-  background: THEME.surface,
-  border: `1px solid ${THEME.border}`,
+  background: "var(--color-card)",
+  border: `1px solid ${"var(--color-border)"}`,
   borderRadius: 8,
 };
 
@@ -36,15 +36,15 @@ const labelStyle: React.CSSProperties = {
   fontSize: 10,
   textTransform: "uppercase",
   fontWeight: 700,
-  color: THEME.textSecondary,
+  color: "var(--color-muted-foreground)",
   marginBottom: 6,
   display: "block",
 };
 
 const inputStyle: React.CSSProperties = {
-  background: THEME.surface,
-  border: `1px solid ${THEME.border}`,
-  color: THEME.text,
+  background: "var(--color-card)",
+  border: `1px solid ${"var(--color-border)"}`,
+  color: "var(--color-foreground)",
   borderRadius: 6,
   height: 36,
   paddingLeft: 12,
@@ -141,10 +141,10 @@ function extractRankedCount(result: Record<string, unknown> | null): number {
 
 function StatusBadge({ status }: { status: ExperimentStatus }) {
   const config: Record<string, { bg: string; color: string; border: string }> = {
-    running: { bg: "rgba(16,185,129,0.1)", color: THEME.accentDeep, border: "rgba(16,185,129,0.2)" },
-    completed: { bg: "rgba(34,197,94,0.1)", color: THEME.green, border: "rgba(34,197,94,0.2)" },
-    failed: { bg: "rgba(239,68,68,0.1)", color: THEME.red, border: "rgba(239,68,68,0.2)" },
-    cancelled: { bg: "rgba(255,255,255,0.04)", color: THEME.textSecondary, border: "rgba(255,255,255,0.06)" },
+    running: { bg: "rgba(16,185,129,0.1)", color: "var(--color-bullish)", border: "rgba(16,185,129,0.2)" },
+    completed: { bg: "rgba(34,197,94,0.1)", color: "var(--color-bullish)", border: "rgba(34,197,94,0.2)" },
+    failed: { bg: "rgba(239,68,68,0.1)", color: "var(--color-bearish)", border: "rgba(239,68,68,0.2)" },
+    cancelled: { bg: "rgba(255,255,255,0.04)", color: "var(--color-muted-foreground)", border: "rgba(255,255,255,0.06)" },
   };
   const c = config[status] || config.cancelled;
   return (
@@ -192,11 +192,11 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
   const rankedCount = extractRankedCount(experiment.result);
 
   const gradeColor: Record<string, string> = {
-    A: THEME.green,
-    B: THEME.accentDeep,
-    C: THEME.amber,
-    D: THEME.red,
-    F: THEME.red,
+    A: "var(--color-bullish)",
+    B: "var(--color-bullish)",
+    C: "var(--color-neutral-wait)",
+    D: "var(--color-bearish)",
+    F: "var(--color-bearish)",
   };
 
   const iconBg = experiment.status === "running"
@@ -206,13 +206,13 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
       : "rgba(239,68,68,0.1)";
 
   const iconColor = experiment.status === "running"
-    ? THEME.accentDeep
+    ? "var(--color-bullish)"
     : experiment.status === "completed"
-      ? THEME.green
-      : THEME.red;
+      ? "var(--color-bullish)"
+      : "var(--color-bearish)";
 
   return (
-    <div style={{ ...cardStyle, border: `1px solid ${THEME.border}`, overflow: "hidden" }}>
+    <div style={{ ...cardStyle, border: `1px solid ${"var(--color-border)"}`, overflow: "hidden" }}>
       {/* Main row */}
       <div
         style={{ padding: 16, cursor: "pointer" }}
@@ -226,8 +226,8 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
               <FlaskConical style={{ width: 20, height: 20, color: iconColor }} />
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: THEME.text }}>{experiment.config.name}</div>
-              <div style={{ fontSize: 12, color: THEME.textSecondary, fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "var(--color-foreground)" }}>{experiment.config.name}</div>
+              <div style={{ fontSize: 12, color: "var(--color-muted-foreground)", fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
                 {experiment.config.assetSymbol} · {experiment.config.timeframe}
               </div>
             </div>
@@ -235,7 +235,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <StatusBadge status={experiment.status} />
             <ChevronDown
-              style={{ width: 16, height: 16, color: THEME.textMuted, transition: "transform 200ms", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+              style={{ width: 16, height: 16, color: "var(--color-muted-foreground)", transition: "transform 200ms", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
             />
           </div>
         </div>
@@ -243,28 +243,28 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
         {/* Quick stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
               Created
             </div>
-            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.text }}>{formatDate(experiment.created_at)}</div>
+            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)" }}>{formatDate(experiment.created_at)}</div>
           </div>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
               Generations
             </div>
-            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontWeight: 700, color: THEME.text }}>{experiment.config.generations}</div>
+            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontWeight: 700, color: "var(--color-foreground)" }}>{experiment.config.generations}</div>
           </div>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
               Population
             </div>
-            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.text }}>{experiment.config.populationSize}</div>
+            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)" }}>{experiment.config.populationSize}</div>
           </div>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
+            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
               Duration
             </div>
-            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.text }}>
+            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)" }}>
               {elapsedMs ? `${(elapsedMs / 1000).toFixed(1)}s` : "---"}
             </div>
           </div>
@@ -273,51 +273,51 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
 
       {/* Expanded details */}
       {expanded && (
-        <div style={{ borderTop: `1px solid ${THEME.border}`, padding: 16, display: "flex", flexDirection: "column", gap: 12, background: "rgba(10,14,26,0.5)" }}>
+        <div style={{ borderTop: `1px solid ${"var(--color-border)"}`, padding: 16, display: "flex", flexDirection: "column", gap: 12, background: "rgba(10,14,26,0.5)" }}>
           {experiment.status === "completed" && bestScore ? (
             <>
               {/* Score summary */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg, border: `1px solid ${THEME.border}` }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)", border: `1px solid ${"var(--color-border)"}` }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
                     Overall Score
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.accentDeep }}>
+                    <span style={{ fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-bullish)" }}>
                       {bestScore.overall}
                     </span>
-                    <span style={{ fontSize: 18, fontWeight: 700, color: gradeColor[bestScore.grade] || THEME.textSecondary }}>
+                    <span style={{ fontSize: 18, fontWeight: 700, color: gradeColor[bestScore.grade] || "var(--color-muted-foreground)" }}>
                       {bestScore.grade}
                     </span>
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg, border: `1px solid ${THEME.border}` }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)", border: `1px solid ${"var(--color-border)"}` }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
                     Total Return
                   </div>
                   <div style={{
                     fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                    color: bestScore.totalReturn > 0 ? THEME.green : THEME.red,
+                    color: bestScore.totalReturn > 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                   }}>
                     {bestScore.totalReturn > 0 ? "+" : ""}
                     {bestScore.totalReturn}%
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg, border: `1px solid ${THEME.border}` }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)", border: `1px solid ${"var(--color-border)"}` }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
                     Max Drawdown
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.red }}>
+                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-bearish)" }}>
                     -{bestScore.maxDrawdown}%
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg, border: `1px solid ${THEME.border}` }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)", border: `1px solid ${"var(--color-border)"}` }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
                     Sharpe Ratio
                   </div>
                   <div style={{
                     fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                    color: bestScore.sharpe > 1.5 ? THEME.green : bestScore.sharpe > 1 ? THEME.accentDeep : THEME.red,
+                    color: bestScore.sharpe > 1.5 ? "var(--color-bullish)" : bestScore.sharpe > 1 ? "var(--color-bullish)" : "var(--color-bearish)",
                   }}>
                     {bestScore.sharpe}
                   </div>
@@ -326,32 +326,32 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
 
               {/* Strategy info */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginTop: 8 }}>
-                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)" }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
                     Template
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.text }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)" }}>
                     {experiment.config.strategyTemplate}
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: 6, background: THEME.bg }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary, fontWeight: 700 }}>
+                <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)" }}>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
                     Ranked Strategies
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.text }}>{rankedCount}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)" }}>{rankedCount}</div>
                 </div>
               </div>
             </>
           ) : experiment.status === "running" ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: THEME.textSecondary }}>
-              <Loader2 style={{ width: 16, height: 16, color: THEME.accentDeep, animation: "spin 1s linear infinite" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--color-muted-foreground)" }}>
+              <Loader2 style={{ width: 16, height: 16, color: "var(--color-bullish)", animation: "spin 1s linear infinite" }} />
               <span>
                 {translate("experiments.runningMsg") ||
                   "Experiment is running... Results will appear here once complete."}
               </span>
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: THEME.red }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--color-bearish)" }}>
               <XCircle style={{ width: 16, height: 16 }} />
               <span>
                 {translate("experiments.failedMsg") ||
@@ -487,7 +487,7 @@ function ExperimentsPage() {
     <PageLayout
       title={useT("experiments.title") || "Experiments"}
       badge={useT("signals.vixorIntelligence") || "VIXOR ENGINE"}
-      badgeColor={THEME.accentDeep}
+      badgeColor={"var(--color-bullish)"}
       loading={me.isLoading}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 24 }}>
@@ -497,16 +497,16 @@ function ExperimentsPage() {
             display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 6,
             fontSize: 12, fontWeight: 700,
             background: hasEnoughPoints ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.1)",
-            color: hasEnoughPoints ? THEME.accent : THEME.red,
+            color: hasEnoughPoints ? "var(--color-primary)" : "var(--color-bearish)",
           }}>
             <Coins style={{ width: 14, height: 14 }} />
             <span>{pointsBalance}</span>
-            <span style={{ color: THEME.textSecondary, fontWeight: 400 }}>{useT("common.points") || "pts"}</span>
+            <span style={{ color: "var(--color-muted-foreground)", fontWeight: 400 }}>{useT("common.points") || "pts"}</span>
           </div>
           <button
             onClick={() => setShowNewForm((prev) => !prev)}
             style={{
-              height: 36, padding: "0 12px", borderRadius: 8, background: THEME.accentDeep, color: "#fff",
+              height: 36, padding: "0 12px", borderRadius: 8, background: "var(--color-bullish)", color: "#fff",
               fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
               border: "none", cursor: "pointer",
             }}
@@ -518,13 +518,13 @@ function ExperimentsPage() {
 
         {/* New experiment form */}
         {showNewForm && (
-          <div style={{ ...cardStyle, border: `1px solid ${THEME.border}`, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ ...cardStyle, border: `1px solid ${"var(--color-border)"}`, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <FlaskConical style={{ width: 16, height: 16, color: THEME.accentDeep }} />
-              <span style={{ fontSize: 14, fontWeight: 700, color: THEME.text }}>
+              <FlaskConical style={{ width: 16, height: 16, color: "var(--color-bullish)" }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--color-foreground)" }}>
                 {useT("experiments.newExperiment") || "New Experiment"}
               </span>
-              <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: THEME.accentDeep }}>
+              <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: "var(--color-bullish)" }}>
                 -{EXPERIMENT_COST} pts
               </span>
             </div>
@@ -532,14 +532,14 @@ function ExperimentsPage() {
             {/* Insufficient points warning */}
             {!hasEnoughPoints && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, borderRadius: 6, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}>
-                <AlertTriangle style={{ width: 16, height: 16, color: THEME.red, flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: THEME.red }}>
+                <AlertTriangle style={{ width: 16, height: 16, color: "var(--color-bearish)", flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: "var(--color-bearish)" }}>
                   {useT("experiments.needMorePoints") ||
                     `You need ${EXPERIMENT_COST} points. You have ${pointsBalance}.`}
                 </span>
                 <a
                   href="/premium"
-                  style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: THEME.accentDeep, whiteSpace: "nowrap", textDecoration: "none" }}
+                  style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: "var(--color-bullish)", whiteSpace: "nowrap", textDecoration: "none" }}
                 >
                   {useT("premium.getPoints") || "Get Points"}
                 </a>
@@ -570,7 +570,7 @@ function ExperimentsPage() {
                       style={{
                         padding: "0 10px", height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
                         background: newAsset === s ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
-                        color: newAsset === s ? THEME.accent : THEME.textSecondary,
+                        color: newAsset === s ? "var(--color-primary)" : "var(--color-muted-foreground)",
                         border: newAsset === s ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(255,255,255,0.06)",
                       }}
                     >
@@ -589,9 +589,9 @@ function ExperimentsPage() {
                       style={{
                         flex: 1, height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700,
                         border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                        background: newTimeframe === tf ? "rgba(16,185,129,0.15)" : THEME.surface,
+                        background: newTimeframe === tf ? "rgba(16,185,129,0.15)" : "var(--color-card)",
                         borderColor: newTimeframe === tf ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
-                        color: newTimeframe === tf ? THEME.accent : THEME.textSecondary,
+                        color: newTimeframe === tf ? "var(--color-primary)" : "var(--color-muted-foreground)",
                       }}
                     >
                       {tf}
@@ -612,9 +612,9 @@ function ExperimentsPage() {
                     style={{
                       padding: "0 10px", height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700,
                       border: "1px solid", cursor: "pointer",
-                      background: newStrategy === s.id ? "rgba(16,185,129,0.15)" : THEME.surface,
+                      background: newStrategy === s.id ? "rgba(16,185,129,0.15)" : "var(--color-card)",
                       borderColor: newStrategy === s.id ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
-                      color: newStrategy === s.id ? THEME.accent : THEME.textSecondary,
+                      color: newStrategy === s.id ? "var(--color-primary)" : "var(--color-muted-foreground)",
                     }}
                   >
                     {s.label}
@@ -656,8 +656,8 @@ function ExperimentsPage() {
                 width: "100%", height: 44, borderRadius: 8, fontWeight: 700,
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 border: "none", cursor: "pointer", opacity: (creating || !newName.trim() || !hasEnoughPoints) ? 0.5 : 1,
-                background: hasEnoughPoints ? THEME.accentDeep : THEME.textMuted,
-                color: hasEnoughPoints ? "#fff" : THEME.textSecondary,
+                background: hasEnoughPoints ? "var(--color-bullish)" : "var(--color-muted-foreground)",
+                color: hasEnoughPoints ? "#fff" : "var(--color-muted-foreground)",
                 fontSize: 14,
               }}
             >
@@ -679,8 +679,8 @@ function ExperimentsPage() {
 
         {/* Create error */}
         {createError && (
-          <div style={{ ...cardStyle, borderLeft: "4px solid " + THEME.red, padding: 12 }}>
-            <div style={{ fontSize: 12, color: THEME.red }}>{createError}</div>
+          <div style={{ ...cardStyle, borderLeft: "4px solid " + "var(--color-bearish)", padding: 12 }}>
+            <div style={{ fontSize: 12, color: "var(--color-bearish)" }}>{createError}</div>
           </div>
         )}
 
@@ -691,18 +691,18 @@ function ExperimentsPage() {
               label: useT("experiments.totalExperiments") || "Total",
               value: String(experiments.length),
               sub: runningCount > 0 ? `${runningCount} running` : undefined,
-              color: runningCount > 0 ? THEME.accentDeep : THEME.text,
+              color: runningCount > 0 ? "var(--color-bullish)" : "var(--color-foreground)",
             },
             {
               label: useT("experiments.completed") || "Completed",
               value: String(completedCount),
-              color: THEME.green,
+              color: "var(--color-bullish)",
             },
             {
               label: useT("experiments.bestScore") || "Best Score",
               value: bestOverall ? `${bestOverall.overall}` : "---",
               sub: bestOverall ? bestOverall.grade : undefined,
-              color: THEME.accentDeep,
+              color: "var(--color-bullish)",
             },
           ]}
         />

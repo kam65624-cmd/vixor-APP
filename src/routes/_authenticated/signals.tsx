@@ -4,8 +4,7 @@ import { memo, useState } from "react";
 import { getDailySignals } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   StatsRow,
   SectionTitle,
   DataRow,
@@ -49,13 +48,13 @@ function SignalsPage() {
   const avgConfidence = signals.length > 0 ? Math.round(signals.reduce((s, sig) => s + sig.confidence, 0) / signals.length) : 0;
 
   const recColor = (rec: string) =>
-    rec === "BUY" ? THEME.green : rec === "SELL" ? THEME.red : THEME.amber;
+    rec === "BUY" ? "var(--color-bullish)" : rec === "SELL" ? "var(--color-bearish)" : "var(--color-neutral-wait)";
 
   return (
     <PageLayout
       title="Signals"
       badge="AI SIGNALS"
-      badgeColor={THEME.amber}
+      badgeColor={"var(--color-neutral-wait)"}
       description="Daily technical analysis signals across all tracked pairs"
       tabs={TABS}
       activeTab={activeTab}
@@ -64,10 +63,10 @@ function SignalsPage() {
     >
       <StatsRow
         stats={[
-          { label: "Total Signals", value: String(signals.length), color: THEME.green },
-          { label: "Buy Signals", value: String(buyCount), color: THEME.green },
-          { label: "Sell Signals", value: String(sellCount), color: THEME.red },
-          { label: "Avg Confidence", value: `${avgConfidence}%`, color: THEME.amber },
+          { label: "Total Signals", value: String(signals.length), color: "var(--color-bullish)" },
+          { label: "Buy Signals", value: String(buyCount), color: "var(--color-bullish)" },
+          { label: "Sell Signals", value: String(sellCount), color: "var(--color-bearish)" },
+          { label: "Avg Confidence", value: `${avgConfidence}%`, color: "var(--color-neutral-wait)" },
         ]}
       />
 
@@ -109,21 +108,21 @@ const SignalRow = memo(function SignalRow({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: signal.reasons && signal.reasons.length > 0 ? "6px" : "0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
           <Badge label={signal.recommendation} color={color} />
-          <span style={{ fontSize: "13px", fontWeight: 700, color: THEME.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {signal.pair}
           </span>
-          <span style={{ fontSize: "9px", color: THEME.textMuted, flexShrink: 0 }}>{signal.timeframe}</span>
+          <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)", flexShrink: 0 }}>{signal.timeframe}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
           {signal.pattern && (
-            <span style={{ fontSize: "9px", color: THEME.textSecondary }}>{signal.pattern}</span>
+            <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>{signal.pattern}</span>
           )}
           <span
             style={{
               fontSize: "11px",
               fontWeight: 700,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              color: THEME.amber,
+              color: "var(--color-neutral-wait)",
             }}
           >
             {signal.confidence}%
@@ -133,7 +132,7 @@ const SignalRow = memo(function SignalRow({
 
       {/* Reasons */}
       {signal.reasons && signal.reasons.length > 0 && (
-        <div style={{ fontSize: "10px", color: THEME.textSecondary, lineHeight: 1.5, marginBottom: "6px" }}>
+        <div style={{ fontSize: "10px", color: "var(--color-muted-foreground)", lineHeight: 1.5, marginBottom: "6px" }}>
           {signal.reasons.join(" · ")}
         </div>
       )}
@@ -146,24 +145,24 @@ const SignalRow = memo(function SignalRow({
           gap: "16px",
           fontSize: "10px",
           fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-          color: THEME.textSecondary,
+          color: "var(--color-muted-foreground)",
           flexWrap: "wrap",
         }}
       >
         {signal.entry != null && (
           <span>
-            Entry: <span style={{ color: THEME.text }}>${signal.entry}</span>
+            Entry: <span style={{ color: "var(--color-foreground)" }}>${signal.entry}</span>
           </span>
         )}
         {signal.stop_loss != null && (
           <span>
-            SL: <span style={{ color: THEME.red }}>${signal.stop_loss}</span>
+            SL: <span style={{ color: "var(--color-bearish)" }}>${signal.stop_loss}</span>
           </span>
         )}
         {signal.take_profit && signal.take_profit.length > 0 && (
           <span>
             TP:{" "}
-            <span style={{ color: THEME.green }}>
+            <span style={{ color: "var(--color-bullish)" }}>
               {signal.take_profit.map((t) => `$${t}`).join(", ")}
             </span>
           </span>

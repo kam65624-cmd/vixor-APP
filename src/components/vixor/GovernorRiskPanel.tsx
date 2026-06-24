@@ -52,8 +52,8 @@ const decisionConfig: Record<
   allow: {
     label: "Allow",
     bg: "bg-emerald-500/10",
-    border: "border-emerald-500/30",
-    text: "text-emerald-400",
+    border: "border-bullish/30",
+    text: "text-bullish",
     panelBorder: "border-emerald-500/40",
     progressColor: "[&>div]:bg-emerald-500",
     icon: ShieldCheck,
@@ -61,8 +61,8 @@ const decisionConfig: Record<
   warn: {
     label: "Warning",
     bg: "bg-amber-500/10",
-    border: "border-amber-500/30",
-    text: "text-amber-400",
+    border: "border-neutral-wait/30",
+    text: "text-neutral-wait",
     panelBorder: "border-amber-500/40",
     progressColor: "[&>div]:bg-amber-500",
     icon: AlertTriangle,
@@ -70,8 +70,8 @@ const decisionConfig: Record<
   block: {
     label: "Blocked",
     bg: "bg-red-500/10",
-    border: "border-red-500/30",
-    text: "text-red-400",
+    border: "border-bearish/30",
+    text: "text-bearish",
     panelBorder: "border-red-500/40",
     progressColor: "[&>div]:bg-red-500",
     icon: Ban,
@@ -133,9 +133,9 @@ export function GovernorRiskPanel({
   // ─── Risk Score Color Helper ──────────────────────────────────────────
 
   const getRiskScoreColor = (score: number): string => {
-    if (score <= 30) return "text-emerald-400";
-    if (score <= 60) return "text-amber-400";
-    return "text-red-400";
+    if (score <= 30) return "text-bullish";
+    if (score <= 60) return "text-neutral-wait";
+    return "text-bearish";
   };
 
   const getRiskLabel = (score: number): string => {
@@ -183,12 +183,12 @@ export function GovernorRiskPanel({
 
   if (riskMutation.isError) {
     return (
-      <div className="rounded-xl border border-red-500/30 bg-card/80 backdrop-blur-sm shadow-lg shadow-black/20 p-5 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="rounded-xl border border-bearish/30 bg-card/80 backdrop-blur-sm shadow-lg shadow-black/20 p-5 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center gap-2.5 mb-3">
           <div className="flex items-center justify-center size-8 rounded-lg bg-red-500/10">
-            <AlertCircle className="size-4 text-red-400" />
+            <AlertCircle className="size-4 text-bearish" />
           </div>
-          <span className="text-sm font-semibold text-red-400">Risk Assessment Error</span>
+          <span className="text-sm font-semibold text-bearish">Risk Assessment Error</span>
           <button
             onClick={onClose}
             className="ml-auto p-1 rounded-md hover:bg-muted transition-colors"
@@ -196,7 +196,7 @@ export function GovernorRiskPanel({
             <X className="size-3.5 text-muted-foreground" />
           </button>
         </div>
-        <p className="text-xs text-red-300 mb-3">
+        <p className="text-xs text-bearish mb-3">
           {riskMutation.error?.message || "Failed to assess trade risk. Please try again."}
         </p>
         <Button variant="outline" size="sm" onClick={handleRetry} className="gap-2 text-xs">
@@ -264,10 +264,10 @@ export function GovernorRiskPanel({
               className={cn(
                 "transition-all duration-700",
                 (riskScore ?? 0) <= 30
-                  ? "text-emerald-500"
+                  ? "text-bullish"
                   : (riskScore ?? 0) <= 60
-                    ? "text-amber-500"
-                    : "text-red-500",
+                    ? "text-neutral-wait"
+                    : "text-bearish",
               )}
             />
           </svg>
@@ -358,7 +358,7 @@ export function GovernorRiskPanel({
           variant="outline"
           onClick={handleAccept}
           disabled={feedbackMutation.isPending || feedbackMutation.isSuccess}
-          className="gap-1.5 text-xs flex-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
+          className="gap-1.5 text-xs flex-1 border-bullish/30 text-bullish hover:bg-bullish/10 hover:text-bullish"
         >
           {feedbackMutation.isPending ? (
             <Loader2 className="size-3.5 animate-spin" />
@@ -372,7 +372,7 @@ export function GovernorRiskPanel({
           variant="outline"
           onClick={handleOverride}
           disabled={feedbackMutation.isPending || feedbackMutation.isSuccess}
-          className="gap-1.5 text-xs flex-1 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+          className="gap-1.5 text-xs flex-1 border-neutral-wait/30 text-neutral-wait hover:bg-neutral-wait/10 hover:text-neutral-wait"
         >
           <ShieldAlert className="size-3.5" />
           Override

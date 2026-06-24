@@ -10,8 +10,7 @@ import {
   EmptyState,
   Badge,
   DataRowTwoLine,
-  LabelValue,
-  THEME,
+  LabelValue, 
 } from "@/components/vixor/PageLayout";
 import {
   formatCompact,
@@ -48,27 +47,27 @@ function WhalePage() {
     <PageLayout
       title="Whale Alerts"
       badge="WHALE TRACKER"
-      badgeColor={THEME.purple}
+      badgeColor={"var(--color-info)"}
       description="Largest trades sorted by value \u2014 spot whale-like activity"
       loading={isLoading}
-      loadingColor={THEME.purple}
+      loadingColor={"var(--color-info)"}
     >
       <StatsRow
         stats={[
           {
             label: "24h Volume",
             value: formatCompact(stats.volume24h),
-            color: THEME.accent,
+            color: "var(--color-primary)",
           },
           {
             label: "Large Trades",
             value: String(stats.largeTradeCount),
-            color: THEME.amber,
+            color: "var(--color-neutral-wait)",
           },
           {
             label: "Biggest Trade",
             value: formatCompact(stats.biggestTrade),
-            color: THEME.green,
+            color: "var(--color-bullish)",
             sub: stats.biggestPair,
           },
         ]}
@@ -98,7 +97,7 @@ const WhaleCard = memo(function WhaleCard({
   index: number;
 }) {
   const isLong = trade.direction === "long";
-  const dirColor = isLong ? THEME.green : THEME.red;
+  const dirColor = isLong ? "var(--color-bullish)" : "var(--color-bearish)";
   const value =
     trade.tradeValue || (trade.quantity || 1) * (trade.entry_price || 0);
 
@@ -121,17 +120,17 @@ const WhaleCard = memo(function WhaleCard({
               style={{
                 fontSize: "12px",
                 fontWeight: 700,
-                color: THEME.text,
+                color: "var(--color-foreground)",
               }}
             >
               {trade.pair || "\u2014"}
             </span>
-            {index === 0 && <Badge label="BIGGEST" color={THEME.amber} small />}
+            {index === 0 && <Badge label="BIGGEST" color={"var(--color-neutral-wait)"} small />}
           </div>
           <span
             style={{
               fontSize: "9px",
-              color: THEME.textMuted,
+              color: "var(--color-muted-foreground)",
               flexShrink: 0,
               marginLeft: "8px",
             }}

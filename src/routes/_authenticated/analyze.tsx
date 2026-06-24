@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { THEME, PageLayout } from "@/components/vixor/PageLayout";
+import { PageLayout } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/analyze")({
   head: () => ({ meta: [{ title: "Analyze — Vixor" }] }),
@@ -38,15 +38,15 @@ export const Route = createFileRoute("/_authenticated/analyze")({
 // ── Local style constants using THEME ──
 
 const cardStyle: React.CSSProperties = {
-  background: THEME.surface,
-  border: `1px solid ${THEME.border}`,
+  background: "var(--color-card)",
+  border: `1px solid ${"var(--color-border)"}`,
   borderRadius: 8,
 };
 
 const inputStyle: React.CSSProperties = {
-  background: THEME.surface,
-  border: `1px solid ${THEME.border}`,
-  color: THEME.text,
+  background: "var(--color-card)",
+  border: `1px solid ${"var(--color-border)"}`,
+  color: "var(--color-foreground)",
   borderRadius: 6,
   height: 44,
   paddingLeft: 12,
@@ -248,16 +248,16 @@ function Analyze() {
     <PageLayout
       title={t("analyze.title") || "Chart Analysis"}
       badge={t("analyze.subtitle") || "AI ANALYSIS"}
-      badgeColor={THEME.accentDeep}
+      badgeColor={"var(--color-bullish)"}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 32 }}>
         {/* Back button */}
         <button
           onClick={() => navigate({ to: "/" })}
           style={{
-            width: 40, height: 40, borderRadius: 8, ...cardStyle, border: `1px solid ${THEME.border}`,
+            width: 40, height: 40, borderRadius: 8, ...cardStyle, border: `1px solid ${"var(--color-border)"}`,
             display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
           }}
         >
           <ArrowLeft style={{ width: 20, height: 20 }} />
@@ -266,7 +266,7 @@ function Analyze() {
         {err && (
           <div style={{
             padding: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
-            color: THEME.red, fontSize: 12, fontWeight: 700, borderRadius: 8,
+            color: "var(--color-bearish)", fontSize: 12, fontWeight: 700, borderRadius: 8,
           }}>
             {err}
           </div>
@@ -277,10 +277,10 @@ function Analyze() {
             <label style={{ display: "block", width: "100%", aspectRatio: "4/3", borderRadius: 8, border: "2px dashed rgba(255,255,255,0.1)", background: "rgba(17,24,39,0.5)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
               <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24 }}>
                 <div style={{ width: 64, height: 64, borderRadius: 8, background: "rgba(16,185,129,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-                  <Upload style={{ width: 32, height: 32, color: THEME.accentDeep }} />
+                  <Upload style={{ width: 32, height: 32, color: "var(--color-bullish)" }} />
                 </div>
-                <div style={{ fontWeight: 700, fontSize: 18, color: THEME.text, marginBottom: 4 }}>{t("analyze.tapToUpload")}</div>
-                <div style={{ fontSize: 12, color: THEME.textSecondary }}>PNG, JPG, WebP (Max 8MB)</div>
+                <div style={{ fontWeight: 700, fontSize: 18, color: "var(--color-foreground)", marginBottom: 4 }}>{t("analyze.tapToUpload")}</div>
+                <div style={{ fontSize: 12, color: "var(--color-muted-foreground)" }}>PNG, JPG, WebP (Max 8MB)</div>
               </div>
               <input
                 type="file"
@@ -293,7 +293,7 @@ function Analyze() {
 
             {/* Pair Selection Dropdown */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <label style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, color: THEME.textSecondary, letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 6 }}>
+              <label style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, color: "var(--color-muted-foreground)", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 6 }}>
                 <Crosshair style={{ width: 12, height: 12 }} /> Pair / Instrument
               </label>
               <Select value={selectedPair} onValueChange={setSelectedPair}>
@@ -305,9 +305,9 @@ function Analyze() {
                     <SelectItem key={p.value} value={p.value}>
                       <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
                         <span style={{ fontSize: 16 }}>{p.icon}</span>
-                        <span style={{ fontWeight: 700, color: THEME.text }}>{p.label}</span>
+                        <span style={{ fontWeight: 700, color: "var(--color-foreground)" }}>{p.label}</span>
                         {p.value === "auto" && (
-                          <span style={{ fontSize: 10, color: THEME.textSecondary, marginLeft: 4 }}>(VLM detect)</span>
+                          <span style={{ fontSize: 10, color: "var(--color-muted-foreground)", marginLeft: 4 }}>(VLM detect)</span>
                         )}
                       </span>
                     </SelectItem>
@@ -316,8 +316,8 @@ function Analyze() {
               </Select>
               {selectedPair !== "auto" && (
                 <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 6, background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
-                  <Crosshair style={{ width: 14, height: 14, color: THEME.accentDeep }} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: THEME.accentDeep }}>Analyzing: {selectedPair}</span>
+                  <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-bullish)" }}>Analyzing: {selectedPair}</span>
                 </div>
               )}
             </div>
@@ -326,24 +326,24 @@ function Analyze() {
               <button
                 onClick={() => fileRef.current?.click()}
                 style={{
-                  height: 56, borderRadius: 8, ...cardStyle, border: `1px solid ${THEME.border}`,
+                  height: 56, borderRadius: 8, ...cardStyle, border: `1px solid ${"var(--color-border)"}`,
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, cursor: "pointer",
                 }}
               >
-                <ImageIcon style={{ width: 20, height: 20, color: THEME.textSecondary }} />
-                <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary }}>
+                <ImageIcon style={{ width: 20, height: 20, color: "var(--color-muted-foreground)" }} />
+                <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)" }}>
                   {t("analyze.gallery")}
                 </span>
               </button>
               <button
                 onClick={handlePaste}
                 style={{
-                  height: 56, borderRadius: 8, ...cardStyle, border: `1px solid ${THEME.border}`,
+                  height: 56, borderRadius: 8, ...cardStyle, border: `1px solid ${"var(--color-border)"}`,
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, cursor: "pointer",
                 }}
               >
-                <Clipboard style={{ width: 20, height: 20, color: THEME.textSecondary }} />
-                <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: THEME.textSecondary }}>
+                <Clipboard style={{ width: 20, height: 20, color: "var(--color-muted-foreground)" }} />
+                <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)" }}>
                   {t("analyze.paste")}
                 </span>
               </button>
@@ -353,7 +353,7 @@ function Analyze() {
 
         {stage === "preview" && preview && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", border: `1px solid ${THEME.border}`, aspectRatio: "4/3", background: "#000" }}>
+            <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", border: `1px solid ${"var(--color-border)"}`, aspectRatio: "4/3", background: "#000" }}>
               <img src={preview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
               <button
                 onClick={() => {
@@ -372,10 +372,10 @@ function Analyze() {
               </button>
             </div>
 
-            <div style={{ ...cardStyle, border: `1px solid ${THEME.border}`, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ ...cardStyle, border: `1px solid ${"var(--color-border)"}`, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Pair Selection (in preview too) */}
               <div>
-                <label style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, color: THEME.textSecondary, marginBottom: 6, display: "block", alignItems: "center", gap: 6 }}>
+                <label style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, color: "var(--color-muted-foreground)", marginBottom: 6, display: "block", alignItems: "center", gap: 6 }}>
                   <Crosshair style={{ width: 12, height: 12 }} /> Pair / Instrument
                 </label>
                 <Select value={selectedPair} onValueChange={setSelectedPair}>
@@ -387,9 +387,9 @@ function Analyze() {
                       <SelectItem key={p.value} value={p.value}>
                         <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
                           <span style={{ fontSize: 16 }}>{p.icon}</span>
-                          <span style={{ fontWeight: 700, color: THEME.text }}>{p.label}</span>
+                          <span style={{ fontWeight: 700, color: "var(--color-foreground)" }}>{p.label}</span>
                           {p.value === "auto" && (
-                            <span style={{ fontSize: 10, color: THEME.textSecondary, marginLeft: 4 }}>(VLM detect)</span>
+                            <span style={{ fontSize: 10, color: "var(--color-muted-foreground)", marginLeft: 4 }}>(VLM detect)</span>
                           )}
                         </span>
                       </SelectItem>
@@ -398,14 +398,14 @@ function Analyze() {
                 </Select>
                 {selectedPair !== "auto" && (
                   <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 6, background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
-                    <Crosshair style={{ width: 14, height: 14, color: THEME.accentDeep }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.accentDeep }}>Analyzing: {selectedPair}</span>
+                    <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-bullish)" }}>Analyzing: {selectedPair}</span>
                   </div>
                 )}
               </div>
 
               <div>
-                <label style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, color: THEME.textSecondary, marginBottom: 6, display: "block" }}>
+                <label style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, color: "var(--color-muted-foreground)", marginBottom: 6, display: "block" }}>
                   Trading Style
                 </label>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
@@ -416,9 +416,9 @@ function Analyze() {
                       style={{
                         height: 48, borderRadius: 8, fontSize: 12, fontWeight: 700, border: "1px solid",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer",
-                        background: tradingStyle === s.id ? "rgba(16,185,129,0.15)" : THEME.surface,
+                        background: tradingStyle === s.id ? "rgba(16,185,129,0.15)" : "var(--color-card)",
                         borderColor: tradingStyle === s.id ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
-                        color: tradingStyle === s.id ? THEME.accent : THEME.textSecondary,
+                        color: tradingStyle === s.id ? "var(--color-primary)" : "var(--color-muted-foreground)",
                       }}
                     >
                       <span style={{ fontSize: 16 }}>{s.icon}</span>{" "}
@@ -430,10 +430,10 @@ function Analyze() {
 
               {/* SMC/ICT Engine Note */}
               <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: 12, borderRadius: 8, background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.15)" }}>
-                <Info style={{ width: 16, height: 16, color: THEME.accentDeep, flexShrink: 0, marginTop: 2 }} />
-                <p style={{ fontSize: 11, color: THEME.textSecondary, lineHeight: 1.5, margin: 0 }}>
+                <Info style={{ width: 16, height: 16, color: "var(--color-bullish)", flexShrink: 0, marginTop: 2 }} />
+                <p style={{ fontSize: 11, color: "var(--color-muted-foreground)", lineHeight: 1.5, margin: 0 }}>
                   Analysis powered by the{" "}
-                  <span style={{ fontWeight: 700, color: THEME.text }}>local SMC/ICT engine</span> — Smart
+                  <span style={{ fontWeight: 700, color: "var(--color-foreground)" }}>local SMC/ICT engine</span> — Smart
                   Money Concepts &amp; Inner Circle Trader methodology for order blocks, FVGs,
                   liquidity zones, and more.
                 </p>
@@ -443,7 +443,7 @@ function Analyze() {
                 onClick={startAnalysis}
                 disabled={!isPremium && points < 10}
                 style={{
-                  width: "100%", height: 64, borderRadius: 8, background: THEME.accentDeep, color: "#fff",
+                  width: "100%", height: 64, borderRadius: 8, background: "var(--color-bullish)", color: "#fff",
                   fontWeight: 700, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   border: "none", cursor: "pointer", opacity: (!isPremium && points < 10) ? 0.5 : 1,
                 }}
@@ -461,18 +461,18 @@ function Analyze() {
           <div style={{ height: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
             <div style={{ position: "relative", marginBottom: 32 }}>
               <div style={{ position: "absolute", inset: 0, borderRadius: 12, background: "rgba(16,185,129,0.2)", animation: "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite" }} />
-              <div style={{ position: "relative", width: 96, height: 96, borderRadius: 12, background: THEME.accentDeep, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ position: "relative", width: 96, height: 96, borderRadius: 12, background: "var(--color-bullish)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Loader2 style={{ width: 40, height: 40, color: "#fff", animation: "spin 1s linear infinite" }} strokeWidth={2.5} />
               </div>
             </div>
 
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: THEME.text, marginBottom: 8, letterSpacing: "-0.02em" }}>{t("analyze.analyzing")}</h2>
-            <div style={{ fontSize: 14, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: THEME.accentDeep, fontWeight: 700 }}>{t(STEPS_KEYS[progress])}</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--color-foreground)", marginBottom: 8, letterSpacing: "-0.02em" }}>{t("analyze.analyzing")}</h2>
+            <div style={{ fontSize: 14, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-bullish)", fontWeight: 700 }}>{t(STEPS_KEYS[progress])}</div>
 
-            <div style={{ width: 192, height: 6, background: THEME.textMuted, borderRadius: 50, marginTop: 24, overflow: "hidden" }}>
+            <div style={{ width: 192, height: 6, background: "var(--color-muted-foreground)", borderRadius: 50, marginTop: 24, overflow: "hidden" }}>
               <div
                 style={{
-                  height: "100%", background: THEME.accentDeep, transition: "width 500ms ease-out",
+                  height: "100%", background: "var(--color-bullish)", transition: "width 500ms ease-out",
                   width: `${((progress + 1) / STEPS_KEYS.length) * 100}%`,
                 }}
               />

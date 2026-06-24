@@ -13,7 +13,7 @@ import {
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
-import { PageLayout, THEME, ScrollArea, Badge, EmptyState } from "@/components/vixor/PageLayout";
+import { PageLayout,  ScrollArea, Badge, EmptyState } from "@/components/vixor/PageLayout";
 import {
   Bot,
   Send,
@@ -100,8 +100,8 @@ const AGENTS: AgentConfig[] = [
     id: "auto",
     label: "Auto",
     icon: Zap,
-    color: THEME.green,
-    bgColor: alpha(THEME.green, 10),
+    color: "var(--color-bullish)",
+    bgColor: alpha("var(--color-bullish)", 10),
     desc: "AI Picks Best Agent",
     capabilities: ["Auto-detects question type", "Routes to the best agent"],
   },
@@ -109,8 +109,8 @@ const AGENTS: AgentConfig[] = [
     id: "market_analyst",
     label: "Market Analyst",
     icon: BarChart3,
-    color: THEME.green,
-    bgColor: alpha(THEME.green, 10),
+    color: "var(--color-bullish)",
+    bgColor: alpha("var(--color-bullish)", 10),
     desc: "SMC/ICT Technical Analysis",
     capabilities: [
       "Market structure (BOS/ChoCh)",
@@ -123,8 +123,8 @@ const AGENTS: AgentConfig[] = [
     id: "risk_manager",
     label: "Risk Manager",
     icon: Shield,
-    color: THEME.amber,
-    bgColor: alpha(THEME.amber, 10),
+    color: "var(--color-neutral-wait)",
+    bgColor: alpha("var(--color-neutral-wait)", 10),
     desc: "Position Sizing & Risk Control",
     capabilities: [
       "Position sizing",
@@ -137,8 +137,8 @@ const AGENTS: AgentConfig[] = [
     id: "news_analyst",
     label: "News Analyst",
     icon: Newspaper,
-    color: THEME.cyan,
-    bgColor: alpha(THEME.cyan, 10),
+    color: "var(--color-info)",
+    bgColor: alpha("var(--color-info)", 10),
     desc: "Fundamental News Impact",
     capabilities: [
       "Economic calendar",
@@ -151,8 +151,8 @@ const AGENTS: AgentConfig[] = [
     id: "strategy_builder",
     label: "Strategy Builder",
     icon: Wrench,
-    color: THEME.purple,
-    bgColor: alpha(THEME.purple, 10),
+    color: "var(--color-info)",
+    bgColor: alpha("var(--color-info)", 10),
     desc: "Trading Plans & Systems",
     capabilities: ["Daily routines", "Trading plans", "Backtesting ideas", "Psychology coaching"],
   },
@@ -206,8 +206,8 @@ const iconBtnBase: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   flexShrink: 0,
-  border: `1px solid ${THEME.border}`,
-  background: THEME.surface,
+  border: `1px solid ${"var(--color-border)"}`,
+  background: "var(--color-card)",
   cursor: "pointer",
   transition: "background 0.15s ease",
 };
@@ -743,20 +743,20 @@ function CopilotPage() {
 
   const getAgentColor = (agentId: string | null) => {
     const agent = AGENTS.find((a) => a.id === agentId);
-    if (!agent || agentId === "auto") return THEME.green;
+    if (!agent || agentId === "auto") return "var(--color-bullish)";
     return agent.color;
   };
 
   return (
     <div style={{ height: "calc(100vh - 8rem)" }}>
-      <PageLayout title="AI Copilot" badge="COPILOT" badgeColor={THEME.purple}>
+      <PageLayout title="AI Copilot" badge="COPILOT" badgeColor={"var(--color-info)"}>
         <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
           {/* ─── Desktop Sidebar ─── */}
           <div
             className={`hidden lg:flex flex-col transition-all duration-300 shrink-0 ${
               sidebarOpen ? "w-72" : "w-0 overflow-hidden"
             }`}
-            style={{ borderRight: `1px solid ${THEME.border}` }}
+            style={{ borderRight: `1px solid ${"var(--color-border)"}` }}
           >
             <ConversationSidebar
               conversations={conversations}
@@ -792,8 +792,8 @@ function CopilotPage() {
               <div
                 className="relative w-80 max-w-[85vw] h-full animate-in slide-in-from-left duration-200"
                 style={{
-                  background: THEME.bg,
-                  borderRight: `1px solid ${THEME.border}`,
+                  background: "var(--color-background)",
+                  borderRight: `1px solid ${"var(--color-border)"}`,
                 }}
               >
                 <ConversationSidebar
@@ -839,16 +839,16 @@ function CopilotPage() {
                     style={iconBtnBase}
                     title="Chat history"
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = THEME.surfaceAlt;
+                      e.currentTarget.style.background = "var(--color-card-hover)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = THEME.surface;
+                      e.currentTarget.style.background = "var(--color-card)";
                     }}
                   >
                     {sidebarOpen ? (
-                      <PanelLeftClose size={16} style={{ color: THEME.textSecondary }} />
+                      <PanelLeftClose size={16} style={{ color: "var(--color-muted-foreground)" }} />
                     ) : (
-                      <PanelLeftOpen size={16} style={{ color: THEME.textSecondary }} />
+                      <PanelLeftOpen size={16} style={{ color: "var(--color-muted-foreground)" }} />
                     )}
                   </button>
                 </div>
@@ -859,13 +859,13 @@ function CopilotPage() {
                       style={iconBtnBase}
                       title="New chat"
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = THEME.surfaceAlt;
+                        e.currentTarget.style.background = "var(--color-card-hover)";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = THEME.surface;
+                        e.currentTarget.style.background = "var(--color-card)";
                       }}
                     >
-                      <Plus size={16} style={{ color: THEME.textSecondary }} />
+                      <Plus size={16} style={{ color: "var(--color-muted-foreground)" }} />
                     </button>
                   )}
                   {messages.length > 0 && (
@@ -878,13 +878,13 @@ function CopilotPage() {
                       style={iconBtnBase}
                       title="Clear chat"
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = THEME.surfaceAlt;
+                        e.currentTarget.style.background = "var(--color-card-hover)";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = THEME.surface;
+                        e.currentTarget.style.background = "var(--color-card)";
                       }}
                     >
-                      <RotateCcw size={16} style={{ color: THEME.textSecondary }} />
+                      <RotateCcw size={16} style={{ color: "var(--color-muted-foreground)" }} />
                     </button>
                   )}
                 </div>
@@ -897,27 +897,27 @@ function CopilotPage() {
                     onClick={() => setShowAgents(!showAgents)}
                     className="flex items-center gap-2 px-3 h-9 rounded-xl transition-colors flex-1 sm:flex-none"
                     style={{
-                      background: THEME.surface,
-                      border: `1px solid ${THEME.border}`,
+                      background: "var(--color-card)",
+                      border: `1px solid ${"var(--color-border)"}`,
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = THEME.surfaceAlt;
+                      e.currentTarget.style.background = "var(--color-card-hover)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = THEME.surface;
+                      e.currentTarget.style.background = "var(--color-card)";
                     }}
                   >
                     <currentAgentConfig.icon
                       size={16}
                       style={{ color: currentAgentConfig.color }}
                     />
-                    <span className="text-xs font-bold" style={{ color: THEME.text }}>
+                    <span className="text-xs font-bold" style={{ color: "var(--color-foreground)" }}>
                       {currentAgentConfig.label}
                     </span>
                     <ChevronDown
                       size={14}
                       style={{
-                        color: THEME.textSecondary,
+                        color: "var(--color-muted-foreground)",
                         transition: "transform 0.2s",
                         transform: showAgents ? "rotate(180deg)" : "none",
                       }}
@@ -930,21 +930,21 @@ function CopilotPage() {
                     style={
                       consensusMode
                         ? {
-                            background: alpha(THEME.green, 15),
-                            border: `1px solid ${alpha(THEME.green, 40)}`,
-                            color: THEME.green,
+                            background: alpha("var(--color-bullish)", 15),
+                            border: `1px solid ${alpha("var(--color-bullish)", 40)}`,
+                            color: "var(--color-bullish)",
                           }
                         : {
-                            background: THEME.surface,
-                            border: `1px solid ${THEME.border}`,
-                            color: THEME.textSecondary,
+                            background: "var(--color-card)",
+                            border: `1px solid ${"var(--color-border)"}`,
+                            color: "var(--color-muted-foreground)",
                           }
                     }
                     onMouseEnter={(e) => {
-                      if (!consensusMode) e.currentTarget.style.background = THEME.surfaceAlt;
+                      if (!consensusMode) e.currentTarget.style.background = "var(--color-card-hover)";
                     }}
                     onMouseLeave={(e) => {
-                      if (!consensusMode) e.currentTarget.style.background = THEME.surface;
+                      if (!consensusMode) e.currentTarget.style.background = "var(--color-card)";
                     }}
                   >
                     <Users size={16} />
@@ -959,18 +959,18 @@ function CopilotPage() {
                   <div
                     className="p-2.5 rounded-xl animate-in fade-in slide-in-from-top-1 duration-200"
                     style={{
-                      background: alpha(THEME.green, 5),
-                      border: `1px solid ${alpha(THEME.green, 20)}`,
+                      background: alpha("var(--color-bullish)", 5),
+                      border: `1px solid ${alpha("var(--color-bullish)", 20)}`,
                     }}
                   >
                     <div
                       className="flex items-center gap-2 text-xs font-bold"
-                      style={{ color: THEME.green }}
+                      style={{ color: "var(--color-bullish)" }}
                     >
                       <Users size={14} />
                       {t("copilot.consensusMode") || "Multi-Agent Consensus"}
                     </div>
-                    <p className="text-[10px] mt-0.5" style={{ color: THEME.textSecondary }}>
+                    <p className="text-[10px] mt-0.5" style={{ color: "var(--color-muted-foreground)" }}>
                       {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
                     </p>
                   </div>
@@ -997,15 +997,15 @@ function CopilotPage() {
                                   border: `1px solid ${alpha(agent.color, 30)}`,
                                 }
                               : {
-                                  background: THEME.surface,
-                                  border: `1px solid ${THEME.border}`,
+                                  background: "var(--color-card)",
+                                  border: `1px solid ${"var(--color-border)"}`,
                                 }
                           }
                           onMouseEnter={(e) => {
-                            if (!isActive) e.currentTarget.style.background = THEME.surfaceAlt;
+                            if (!isActive) e.currentTarget.style.background = "var(--color-card-hover)";
                           }}
                           onMouseLeave={(e) => {
-                            if (!isActive) e.currentTarget.style.background = THEME.surface;
+                            if (!isActive) e.currentTarget.style.background = "var(--color-card)";
                           }}
                         >
                           <div className="flex items-center gap-2 mb-1.5">
@@ -1017,21 +1017,21 @@ function CopilotPage() {
                             </div>
                             <span
                               className="text-xs font-bold"
-                              style={{ color: isActive ? agent.color : THEME.text }}
+                              style={{ color: isActive ? agent.color : "var(--color-foreground)" }}
                             >
                               {agent.label}
                             </span>
                             {agent.id === "auto" && (
                               <Badge
                                 label={t("copilot.autoMode")?.split(" ")[0] || "AUTO"}
-                                color={THEME.green}
+                                color={"var(--color-bullish)"}
                                 small
                               />
                             )}
                           </div>
                           <div
                             className="text-[10px] mb-1.5"
-                            style={{ color: THEME.textSecondary }}
+                            style={{ color: "var(--color-muted-foreground)" }}
                           >
                             {agent.desc}
                           </div>
@@ -1041,9 +1041,9 @@ function CopilotPage() {
                                 key={i}
                                 className="text-[9px] px-1.5 py-0.5 rounded-md"
                                 style={{
-                                  background: THEME.surface,
-                                  border: `1px solid ${THEME.border}`,
-                                  color: THEME.textSecondary,
+                                  background: "var(--color-card)",
+                                  border: `1px solid ${"var(--color-border)"}`,
+                                  color: "var(--color-muted-foreground)",
                                 }}
                               >
                                 {cap}
@@ -1089,16 +1089,16 @@ function CopilotPage() {
                   <div
                     className="size-8 rounded-xl flex items-center justify-center shrink-0"
                     style={{
-                      background: alpha(THEME.green, 10),
-                      border: `1px solid ${alpha(THEME.green, 20)}`,
+                      background: alpha("var(--color-bullish)", 10),
+                      border: `1px solid ${alpha("var(--color-bullish)", 20)}`,
                     }}
                   >
-                    <Bot size={16} style={{ color: THEME.green }} />
+                    <Bot size={16} style={{ color: "var(--color-bullish)" }} />
                   </div>
                   <div className="vixor-card p-4 flex-1">
                     <div className="flex items-center gap-2">
-                      <Loader2 size={16} className="animate-spin" style={{ color: THEME.green }} />
-                      <span className="text-xs" style={{ color: THEME.textSecondary }}>
+                      <Loader2 size={16} className="animate-spin" style={{ color: "var(--color-bullish)" }} />
+                      <span className="text-xs" style={{ color: "var(--color-muted-foreground)" }}>
                         {consensusMode
                           ? "Getting consensus from all agents..."
                           : "Vixor is thinking..."}
@@ -1113,16 +1113,16 @@ function CopilotPage() {
                   <div
                     className="size-8 rounded-xl flex items-center justify-center shrink-0"
                     style={{
-                      background: alpha(THEME.green, 10),
-                      border: `1px solid ${alpha(THEME.green, 20)}`,
+                      background: alpha("var(--color-bullish)", 10),
+                      border: `1px solid ${alpha("var(--color-bullish)", 20)}`,
                     }}
                   >
-                    <Users size={16} style={{ color: THEME.green }} />
+                    <Users size={16} style={{ color: "var(--color-bullish)" }} />
                   </div>
                   <div className="vixor-card p-4 flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Loader2 size={16} className="animate-spin" style={{ color: THEME.green }} />
-                      <span className="text-xs" style={{ color: THEME.textSecondary }}>
+                      <Loader2 size={16} className="animate-spin" style={{ color: "var(--color-bullish)" }} />
+                      <span className="text-xs" style={{ color: "var(--color-muted-foreground)" }}>
                         Consulting all 4 agents...
                       </span>
                     </div>
@@ -1131,7 +1131,7 @@ function CopilotPage() {
                         <div
                           key={agent.id}
                           className="flex items-center gap-1.5 text-[10px] animate-pulse"
-                          style={{ color: THEME.textSecondary, animationDelay: `${i * 300}ms` }}
+                          style={{ color: "var(--color-muted-foreground)", animationDelay: `${i * 300}ms` }}
                         >
                           <agent.icon size={12} style={{ color: agent.color }} />
                           {agent.label}
@@ -1146,7 +1146,7 @@ function CopilotPage() {
             </ScrollArea>
 
             {/* ─── Input Area ─── */}
-            <div className="flex-shrink-0 pt-3" style={{ borderTop: `1px solid ${THEME.border}` }}>
+            <div className="flex-shrink-0 pt-3" style={{ borderTop: `1px solid ${"var(--color-border)"}` }}>
               <form onSubmit={handleSubmit} className="flex items-end gap-2">
                 <div className="flex-1 relative">
                   <textarea
@@ -1163,18 +1163,18 @@ function CopilotPage() {
                     rows={1}
                     className="w-full resize-none rounded-xl px-4 py-3 text-sm transition-all max-h-32 min-h-[44px]"
                     style={{
-                      background: THEME.surface,
-                      border: `1px solid ${THEME.border}`,
-                      color: THEME.text,
+                      background: "var(--color-card)",
+                      border: `1px solid ${"var(--color-border)"}`,
+                      color: "var(--color-foreground)",
                     }}
                     onFocus={(e) => {
                       e.currentTarget.style.outline = "none";
-                      e.currentTarget.style.boxShadow = `0 0 0 2px ${alpha(THEME.green, 30)}`;
-                      e.currentTarget.style.borderColor = alpha(THEME.green, 50);
+                      e.currentTarget.style.boxShadow = `0 0 0 2px ${alpha("var(--color-bullish)", 30)}`;
+                      e.currentTarget.style.borderColor = alpha("var(--color-bullish)", 50);
                     }}
                     onBlur={(e) => {
                       e.currentTarget.style.boxShadow = "none";
-                      e.currentTarget.style.borderColor = THEME.border;
+                      e.currentTarget.style.borderColor = "var(--color-border)";
                     }}
                     onInput={(e) => {
                       const target = e.target as HTMLTextAreaElement;
@@ -1191,12 +1191,12 @@ function CopilotPage() {
                   style={
                     consensusMode
                       ? {
-                          background: `linear-gradient(to right, ${THEME.green}, ${THEME.amber}, ${THEME.purple})`,
-                          color: THEME.text,
+                          background: `linear-gradient(to right, ${"var(--color-bullish)"}, ${"var(--color-neutral-wait)"}, ${"var(--color-info)"})`,
+                          color: "var(--color-foreground)",
                         }
                       : {
-                          background: `linear-gradient(to right, ${THEME.green}, ${THEME.green})`,
-                          color: THEME.text,
+                          background: `linear-gradient(to right, ${"var(--color-bullish)"}, ${"var(--color-bullish)"})`,
+                          color: "var(--color-foreground)",
                         }
                   }
                 >
@@ -1210,7 +1210,7 @@ function CopilotPage() {
                 </button>
               </form>
               <div className="mt-1.5 text-center">
-                <span className="text-[9px]" style={{ color: alpha(THEME.textMuted, 50) }}>
+                <span className="text-[9px]" style={{ color: alpha("var(--color-muted-foreground)", 50) }}>
                   AI responses may not always be accurate. Always verify with your own analysis.
                 </span>
               </div>
@@ -1277,11 +1277,11 @@ function ConversationSidebar({
   return (
     <div className="flex flex-col h-full">
       {/* New Chat Button */}
-      <div className="p-3" style={{ borderBottom: `1px solid ${THEME.border}` }}>
+      <div className="p-3" style={{ borderBottom: `1px solid ${"var(--color-border)"}` }}>
         <button
           onClick={onNewChat}
           className="w-full flex items-center gap-2 px-3 h-9 rounded-xl text-white text-xs font-bold transition-opacity"
-          style={{ background: `linear-gradient(to right, ${THEME.green}, ${THEME.green})` }}
+          style={{ background: `linear-gradient(to right, ${"var(--color-bullish)"}, ${"var(--color-bullish)"})` }}
           onMouseEnter={(e) => {
             e.currentTarget.style.opacity = "0.9";
           }}
@@ -1298,7 +1298,7 @@ function ConversationSidebar({
       <ScrollArea style={{ padding: "8px", gap: "4px", display: "flex", flexDirection: "column" }}>
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 size={20} className="animate-spin" style={{ color: THEME.textSecondary }} />
+            <Loader2 size={20} className="animate-spin" style={{ color: "var(--color-muted-foreground)" }} />
           </div>
         ) : conversations.length === 0 ? (
           <EmptyState icon="💬" title="No conversations yet" message="Start a new chat to begin!" />
@@ -1317,15 +1317,15 @@ function ConversationSidebar({
                 style={
                   isActive
                     ? {
-                        background: alpha(THEME.green, 10),
-                        border: `1px solid ${alpha(THEME.green, 20)}`,
+                        background: alpha("var(--color-bullish)", 10),
+                        border: `1px solid ${alpha("var(--color-bullish)", 20)}`,
                       }
                     : {
                         border: "1px solid transparent",
                       }
                 }
                 onMouseEnter={(e) => {
-                  if (!isActive) e.currentTarget.style.background = THEME.surface;
+                  if (!isActive) e.currentTarget.style.background = "var(--color-card)";
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) e.currentTarget.style.background = "transparent";
@@ -1346,13 +1346,13 @@ function ConversationSidebar({
                       }}
                       className="flex-1 text-xs rounded-lg px-2 py-1"
                       style={{
-                        background: THEME.surface,
-                        border: `1px solid ${THEME.border}`,
-                        color: THEME.text,
+                        background: "var(--color-card)",
+                        border: `1px solid ${"var(--color-border)"}`,
+                        color: "var(--color-foreground)",
                         outline: "none",
                       }}
                       onFocus={(e) => {
-                        e.currentTarget.style.boxShadow = `0 0 0 1px ${alpha(THEME.green, 30)}`;
+                        e.currentTarget.style.boxShadow = `0 0 0 1px ${alpha("var(--color-bullish)", 30)}`;
                       }}
                       onBlur={(e) => {
                         e.currentTarget.style.boxShadow = "none";
@@ -1362,32 +1362,32 @@ function ConversationSidebar({
                       onClick={() => onRename(conv.id, editingTitleValue)}
                       className="size-6 rounded-lg flex items-center justify-center"
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = THEME.surfaceAlt;
+                        e.currentTarget.style.background = "var(--color-card-hover)";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = "transparent";
                       }}
                     >
-                      <Check size={12} style={{ color: THEME.green }} />
+                      <Check size={12} style={{ color: "var(--color-bullish)" }} />
                     </button>
                     <button
                       onClick={() => setEditingTitleId(null)}
                       className="size-6 rounded-lg flex items-center justify-center"
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = THEME.surfaceAlt;
+                        e.currentTarget.style.background = "var(--color-card-hover)";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = "transparent";
                       }}
                     >
-                      <X size={12} style={{ color: THEME.textSecondary }} />
+                      <X size={12} style={{ color: "var(--color-muted-foreground)" }} />
                     </button>
                   </div>
                 ) : isConfirmingDelete ? (
                   <div className="p-2">
                     <p
                       className="text-[10px] mb-1.5 truncate"
-                      style={{ color: THEME.textSecondary }}
+                      style={{ color: "var(--color-muted-foreground)" }}
                     >
                       Delete &quot;{conv.title}&quot;?
                     </p>
@@ -1396,14 +1396,14 @@ function ConversationSidebar({
                         onClick={() => onDelete(conv.id)}
                         className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg transition-colors"
                         style={{
-                          background: alpha(THEME.red, 10),
-                          color: THEME.red,
+                          background: alpha("var(--color-bearish)", 10),
+                          color: "var(--color-bearish)",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = alpha(THEME.red, 20);
+                          e.currentTarget.style.background = alpha("var(--color-bearish)", 20);
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = alpha(THEME.red, 10);
+                          e.currentTarget.style.background = alpha("var(--color-bearish)", 10);
                         }}
                       >
                         Delete
@@ -1412,15 +1412,15 @@ function ConversationSidebar({
                         onClick={() => setDeleteConfirmId(null)}
                         className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg transition-colors"
                         style={{
-                          background: THEME.surface,
-                          border: `1px solid ${THEME.border}`,
-                          color: THEME.text,
+                          background: "var(--color-card)",
+                          border: `1px solid ${"var(--color-border)"}`,
+                          color: "var(--color-foreground)",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = THEME.surfaceAlt;
+                          e.currentTarget.style.background = "var(--color-card-hover)";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = THEME.surface;
+                          e.currentTarget.style.background = "var(--color-card)";
                         }}
                       >
                         Cancel
@@ -1436,27 +1436,27 @@ function ConversationSidebar({
                       <div
                         className="size-6 rounded-lg flex items-center justify-center shrink-0"
                         style={{
-                          background: isActive ? alpha(THEME.green, 15) : THEME.surface,
-                          border: `1px solid ${THEME.border}`,
+                          background: isActive ? alpha("var(--color-bullish)", 15) : "var(--color-card)",
+                          border: `1px solid ${"var(--color-border)"}`,
                         }}
                       >
                         {conv.is_consensus ? (
-                          <Users size={12} style={{ color: isActive ? THEME.green : agentColor }} />
+                          <Users size={12} style={{ color: isActive ? "var(--color-bullish)" : agentColor }} />
                         ) : (
                           <AgentIcon
                             size={12}
-                            style={{ color: isActive ? THEME.green : agentColor }}
+                            style={{ color: isActive ? "var(--color-bullish)" : agentColor }}
                           />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div
                           className="text-xs font-medium truncate"
-                          style={{ color: isActive ? THEME.green : THEME.text }}
+                          style={{ color: isActive ? "var(--color-bullish)" : "var(--color-foreground)" }}
                         >
                           {conv.title}
                         </div>
-                        <div className="text-[9px]" style={{ color: THEME.textSecondary }}>
+                        <div className="text-[9px]" style={{ color: "var(--color-muted-foreground)" }}>
                           {formatRelativeTime(conv.updated_at)}
                         </div>
                       </div>
@@ -1480,13 +1480,13 @@ function ConversationSidebar({
                         className="size-6 rounded-lg flex items-center justify-center"
                         title="Rename"
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = THEME.surfaceAlt;
+                          e.currentTarget.style.background = "var(--color-card-hover)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = "transparent";
                         }}
                       >
-                        <Pencil size={12} style={{ color: THEME.textSecondary }} />
+                        <Pencil size={12} style={{ color: "var(--color-muted-foreground)" }} />
                       </button>
                       <button
                         onClick={(e) => {
@@ -1496,13 +1496,13 @@ function ConversationSidebar({
                         className="size-6 rounded-lg flex items-center justify-center"
                         title="Delete"
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = alpha(THEME.red, 10);
+                          e.currentTarget.style.background = alpha("var(--color-bearish)", 10);
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = "transparent";
                         }}
                       >
-                        <Trash2 size={12} style={{ color: THEME.textSecondary }} />
+                        <Trash2 size={12} style={{ color: "var(--color-muted-foreground)" }} />
                       </button>
                     </div>
                   </div>
@@ -1515,7 +1515,7 @@ function ConversationSidebar({
 
       {/* Pagination */}
       {total > pageSize && (
-        <div className="p-2" style={{ borderTop: `1px solid ${THEME.border}` }}>
+        <div className="p-2" style={{ borderTop: `1px solid ${"var(--color-border)"}` }}>
           <PaginationBar
             page={page}
             pageSize={pageSize}
@@ -1567,24 +1567,24 @@ function ChatWelcome({
         <div
           className="size-20 rounded-2xl flex items-center justify-center"
           style={{
-            background: alpha(THEME.green, 10),
-            border: `1px solid ${alpha(THEME.green, 20)}`,
+            background: alpha("var(--color-bullish)", 10),
+            border: `1px solid ${alpha("var(--color-bullish)", 20)}`,
           }}
         >
-          <Sparkles size={36} style={{ color: THEME.green }} />
+          <Sparkles size={36} style={{ color: "var(--color-bullish)" }} />
         </div>
         <div
           className="absolute -right-1 -top-1 size-5 rounded-full flex items-center justify-center"
-          style={{ background: THEME.green }}
+          style={{ background: "var(--color-bullish)" }}
         >
-          <Bot size={12} style={{ color: THEME.text }} />
+          <Bot size={12} style={{ color: "var(--color-foreground)" }} />
         </div>
       </div>
 
-      <h2 className="text-lg font-bold mb-1" style={{ color: THEME.text }}>
+      <h2 className="text-lg font-bold mb-1" style={{ color: "var(--color-foreground)" }}>
         {t("copilot.welcomeTitle") || "How can I help you today?"}
       </h2>
-      <p className="text-sm text-center max-w-xs mb-4" style={{ color: THEME.textSecondary }}>
+      <p className="text-sm text-center max-w-xs mb-4" style={{ color: "var(--color-muted-foreground)" }}>
         {t("copilot.welcomeDesc") ||
           "I'm your context-aware AI trading assistant. I know your recent analyses, signals, and alerts."}
       </p>
@@ -1594,23 +1594,23 @@ function ChatWelcome({
         onClick={() => onConsensus(true)}
         className="w-full max-w-lg mb-4 p-3 rounded-xl transition-all group"
         style={{
-          background: `linear-gradient(to right, ${alpha(THEME.green, 10)}, ${alpha(THEME.amber, 10)}, ${alpha(THEME.purple, 10)})`,
-          border: `1px solid ${alpha(THEME.green, 20)}`,
+          background: `linear-gradient(to right, ${alpha("var(--color-bullish)", 10)}, ${alpha("var(--color-neutral-wait)", 10)}, ${alpha("var(--color-info)", 10)})`,
+          border: `1px solid ${alpha("var(--color-bullish)", 20)}`,
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = alpha(THEME.green, 40);
+          e.currentTarget.style.borderColor = alpha("var(--color-bullish)", 40);
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = alpha(THEME.green, 20);
+          e.currentTarget.style.borderColor = alpha("var(--color-bullish)", 20);
         }}
       >
         <div className="flex items-center gap-2 justify-center">
-          <Users size={16} style={{ color: THEME.green }} />
-          <span className="text-xs font-bold" style={{ color: THEME.green }}>
+          <Users size={16} style={{ color: "var(--color-bullish)" }} />
+          <span className="text-xs font-bold" style={{ color: "var(--color-bullish)" }}>
             {t("copilot.getConsensus") || "Get Multi-Agent Consensus"}
           </span>
         </div>
-        <p className="text-[10px] mt-1 text-center" style={{ color: THEME.textSecondary }}>
+        <p className="text-[10px] mt-1 text-center" style={{ color: "var(--color-muted-foreground)" }}>
           {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
         </p>
       </button>
@@ -1625,28 +1625,28 @@ function ChatWelcome({
               onClick={() => onQuickAction(action.prompt, action.agent)}
               className="p-3 rounded-xl text-left transition-all group"
               style={{
-                background: THEME.surface,
-                border: `1px solid ${THEME.border}`,
+                background: "var(--color-card)",
+                border: `1px solid ${"var(--color-border)"}`,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = THEME.surfaceAlt;
-                e.currentTarget.style.borderColor = alpha(THEME.green, 30);
+                e.currentTarget.style.background = "var(--color-card-hover)";
+                e.currentTarget.style.borderColor = alpha("var(--color-bullish)", 30);
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = THEME.surface;
-                e.currentTarget.style.borderColor = THEME.border;
+                e.currentTarget.style.background = "var(--color-card)";
+                e.currentTarget.style.borderColor = "var(--color-border)";
               }}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Icon size={14} style={{ color: agentConfig?.color || THEME.green }} />
+                <Icon size={14} style={{ color: agentConfig?.color || "var(--color-bullish)" }} />
                 <span
                   className="text-[10px] font-bold uppercase tracking-wider transition-colors"
-                  style={{ color: THEME.textSecondary }}
+                  style={{ color: "var(--color-muted-foreground)" }}
                 >
                   {agentConfig?.label}
                 </span>
               </div>
-              <div className="text-xs font-medium" style={{ color: THEME.text }}>
+              <div className="text-xs font-medium" style={{ color: "var(--color-foreground)" }}>
                 {action.label}
               </div>
             </button>
@@ -1684,10 +1684,10 @@ function MessageBubble({
   const agentConfig = AGENTS.find((a) => a.id === message.agent);
   const Icon = isUser ? User : agentConfig?.icon || Bot;
   const iconColor = isError
-    ? THEME.red
+    ? "var(--color-bearish)"
     : isUser
-      ? THEME.textSecondary
-      : agentConfig?.color || THEME.green;
+      ? "var(--color-muted-foreground)"
+      : agentConfig?.color || "var(--color-bullish)";
 
   // Detect agent handoff suggestions in the message
   const handoffAgents = detectHandoffAgents(message.content);
@@ -1700,12 +1700,12 @@ function MessageBubble({
         className="size-8 rounded-xl flex items-center justify-center shrink-0"
         style={{
           background: isUser
-            ? THEME.surface
+            ? "var(--color-card)"
             : isError
-              ? alpha(THEME.red, 10)
-              : alpha(THEME.green, 10),
+              ? alpha("var(--color-bearish)", 10)
+              : alpha("var(--color-bullish)", 10),
           border: `1px solid ${
-            isUser ? THEME.border : isError ? alpha(THEME.red, 20) : alpha(THEME.green, 20)
+            isUser ? "var(--color-border)" : isError ? alpha("var(--color-bearish)", 20) : alpha("var(--color-bullish)", 20)
           }`,
         }}
       >
@@ -1716,13 +1716,13 @@ function MessageBubble({
         style={
           isUser
             ? {
-                background: alpha(THEME.green, 5),
-                borderColor: alpha(THEME.green, 15),
+                background: alpha("var(--color-bullish)", 5),
+                borderColor: alpha("var(--color-bullish)", 15),
               }
             : isError
               ? {
-                  borderColor: alpha(THEME.red, 20),
-                  background: alpha(THEME.red, 5),
+                  borderColor: alpha("var(--color-bearish)", 20),
+                  background: alpha("var(--color-bearish)", 5),
                 }
               : undefined
         }
@@ -1740,7 +1740,7 @@ function MessageBubble({
         {!isUser && handoffAgents.length > 0 && (
           <div
             className="flex flex-wrap gap-1.5 mt-3 pt-2"
-            style={{ borderTop: `1px solid ${alpha(THEME.border, 50)}` }}
+            style={{ borderTop: `1px solid ${alpha("var(--color-border)", 50)}` }}
           >
             {handoffAgents.map((hAgent) => {
               const hConfig = AGENTS.find((a) => a.id === hAgent);
@@ -1752,16 +1752,16 @@ function MessageBubble({
                   onClick={() => onConsultAgent(hAgent)}
                   className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all"
                   style={{
-                    background: THEME.surface,
-                    border: `1px solid ${THEME.border}`,
+                    background: "var(--color-card)",
+                    border: `1px solid ${"var(--color-border)"}`,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = THEME.surfaceAlt;
-                    e.currentTarget.style.borderColor = alpha(THEME.green, 30);
+                    e.currentTarget.style.background = "var(--color-card-hover)";
+                    e.currentTarget.style.borderColor = alpha("var(--color-bullish)", 30);
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = THEME.surface;
-                    e.currentTarget.style.borderColor = THEME.border;
+                    e.currentTarget.style.background = "var(--color-card)";
+                    e.currentTarget.style.borderColor = "var(--color-border)";
                   }}
                 >
                   <HIcon size={12} style={{ color: hConfig.color }} />
@@ -1777,7 +1777,7 @@ function MessageBubble({
 
         <div
           className="text-[9px] mt-2"
-          style={{ color: alpha(THEME.textMuted, 50), textAlign: isUser ? "right" : "left" }}
+          style={{ color: alpha("var(--color-muted-foreground)", 50), textAlign: isUser ? "right" : "left" }}
         >
           {new Date(message.timestamp).toLocaleTimeString([], {
             hour: "2-digit",
@@ -1810,16 +1810,16 @@ function ConsensusBubble({
         <div
           className="size-8 rounded-xl flex items-center justify-center shrink-0"
           style={{
-            background: `linear-gradient(135deg, ${alpha(THEME.green, 20)}, ${alpha(THEME.amber, 20)}, ${alpha(THEME.purple, 20)})`,
-            border: `1px solid ${alpha(THEME.green, 20)}`,
+            background: `linear-gradient(135deg, ${alpha("var(--color-bullish)", 20)}, ${alpha("var(--color-neutral-wait)", 20)}, ${alpha("var(--color-info)", 20)})`,
+            border: `1px solid ${alpha("var(--color-bullish)", 20)}`,
           }}
         >
-          <Users size={16} style={{ color: THEME.green }} />
+          <Users size={16} style={{ color: "var(--color-bullish)" }} />
         </div>
-        <div className="vixor-card p-4 flex-1" style={{ borderColor: alpha(THEME.green, 15) }}>
+        <div className="vixor-card p-4 flex-1" style={{ borderColor: alpha("var(--color-bullish)", 15) }}>
           <div className="flex items-center gap-1.5 mb-2">
-            <Sparkles size={12} style={{ color: THEME.green }} />
-            <Badge label={t("copilot.synthesis") || "AI Synthesis"} color={THEME.green} small />
+            <Sparkles size={12} style={{ color: "var(--color-bullish)" }} />
+            <Badge label={t("copilot.synthesis") || "AI Synthesis"} color={"var(--color-bullish)"} small />
           </div>
           <div className="text-sm leading-relaxed prose-sm">
             <FormattedContent content={data.synthesis} />
@@ -1841,7 +1841,7 @@ function ConsensusBubble({
                 onClick={() => setExpandedAgent(isExpanded ? null : r.agent)}
                 className="w-full flex items-center gap-2 p-3 transition-colors"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = THEME.surfaceAlt;
+                  e.currentTarget.style.background = "var(--color-card-hover)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = "transparent";
@@ -1863,7 +1863,7 @@ function ConsensusBubble({
                   size={12}
                   className="ml-auto"
                   style={{
-                    color: THEME.textSecondary,
+                    color: "var(--color-muted-foreground)",
                     transition: "transform 0.2s",
                     transform: isExpanded ? "rotate(180deg)" : "none",
                   }}
@@ -1878,14 +1878,14 @@ function ConsensusBubble({
                     onClick={() => onConsultAgent(r.agent)}
                     className="mt-2 flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all"
                     style={{
-                      background: THEME.surface,
-                      border: `1px solid ${THEME.border}`,
+                      background: "var(--color-card)",
+                      border: `1px solid ${"var(--color-border)"}`,
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = THEME.surfaceAlt;
+                      e.currentTarget.style.background = "var(--color-card-hover)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = THEME.surface;
+                      e.currentTarget.style.background = "var(--color-card)";
                     }}
                   >
                     <AIcon size={12} style={{ color: agentConfig.color }} />
@@ -1901,7 +1901,7 @@ function ConsensusBubble({
         })}
       </div>
 
-      <div className="text-[9px] mt-2 ml-11" style={{ color: alpha(THEME.textMuted, 50) }}>
+      <div className="text-[9px] mt-2 ml-11" style={{ color: alpha("var(--color-muted-foreground)", 50) }}>
         {new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
       </div>
     </div>
@@ -1947,7 +1947,7 @@ function FormattedContent({ content }: { content: string }) {
                 <h3
                   key={lineIdx}
                   className="text-sm font-bold mt-2 mb-1"
-                  style={{ color: THEME.text }}
+                  style={{ color: "var(--color-foreground)" }}
                 >
                   {formatInline(line.slice(3))}
                 </h3>
@@ -1957,7 +1957,7 @@ function FormattedContent({ content }: { content: string }) {
                 <h3
                   key={lineIdx}
                   className="text-sm font-bold mt-2 mb-1"
-                  style={{ color: THEME.green }}
+                  style={{ color: "var(--color-bullish)" }}
                 >
                   {formatInline(line.slice(2))}
                 </h3>
@@ -1968,8 +1968,8 @@ function FormattedContent({ content }: { content: string }) {
                   key={lineIdx}
                   className="pl-3 my-1"
                   style={{
-                    borderLeft: `2px solid ${alpha(THEME.green, 40)}`,
-                    color: THEME.textSecondary,
+                    borderLeft: `2px solid ${alpha("var(--color-bullish)", 40)}`,
+                    color: "var(--color-muted-foreground)",
                   }}
                 >
                   {formatInline(line.slice(2))}
@@ -1978,7 +1978,7 @@ function FormattedContent({ content }: { content: string }) {
             if (line.match(/^[-*•]\s/))
               return (
                 <div key={lineIdx} className="flex items-start gap-1.5 my-0.5">
-                  <span className="mt-0.5 shrink-0" style={{ color: THEME.green }}>
+                  <span className="mt-0.5 shrink-0" style={{ color: "var(--color-bullish)" }}>
                     •
                   </span>
                   <span>{formatInline(line.replace(/^[-*•]\s/, ""))}</span>
@@ -1991,7 +1991,7 @@ function FormattedContent({ content }: { content: string }) {
                   <div key={lineIdx} className="flex items-start gap-1.5 my-0.5">
                     <span
                       className="font-bold text-xs mt-0.5 shrink-0"
-                      style={{ color: THEME.green }}
+                      style={{ color: "var(--color-bullish)" }}
                     >
                       {match[1]}
                     </span>
@@ -2029,7 +2029,7 @@ function formatInline(text: string): React.ReactNode[] {
       parts.push(<span key={key++}>{text.slice(lastIndex, match.index)}</span>);
     if (match[2])
       parts.push(
-        <strong key={key++} style={{ fontWeight: 700, color: THEME.text }}>
+        <strong key={key++} style={{ fontWeight: 700, color: "var(--color-foreground)" }}>
           {match[2]}
         </strong>,
       );
@@ -2039,8 +2039,8 @@ function formatInline(text: string): React.ReactNode[] {
           key={key++}
           className="px-1.5 py-0.5 rounded-md font-mono text-xs font-bold"
           style={{
-            background: alpha(THEME.green, 10),
-            color: THEME.green,
+            background: alpha("var(--color-bullish)", 10),
+            color: "var(--color-bullish)",
           }}
         >
           {match[3]}

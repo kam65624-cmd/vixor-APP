@@ -4,8 +4,7 @@ import { memo, useCallback, useState } from "react";
 import { getPortfolioData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   StatsRow,
   SectionTitle,
   DataRowTwoLine,
@@ -50,8 +49,8 @@ function BagsPage() {
   const pnlFmt = (n: number) =>
     n >= 0 ? `+$${n.toFixed(2)}` : `-$${Math.abs(n).toFixed(2)}`;
 
-  const pnlColor = totalPnl >= 0 ? THEME.green : THEME.red;
-  const pnlPctColor = totalPnlPct >= 0 ? THEME.green : THEME.red;
+  const pnlColor = totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)";
+  const pnlPctColor = totalPnlPct >= 0 ? "var(--color-bullish)" : "var(--color-bearish)";
 
   return (
     <PageLayout
@@ -142,9 +141,9 @@ function ActionButton({
         border: "none",
         cursor: "pointer",
         background: hovered
-          ? `${THEME.accentDeep}28`
-          : `${THEME.accentDeep}18`,
-        color: THEME.accent,
+          ? `${"var(--color-bullish)"}28`
+          : `color-mix(in oklab, var(--color-bullish) 10%, transparent)`,
+        color: "var(--color-primary)",
         fontSize: "11px",
         fontWeight: 700,
         fontFamily: "'Inter', system-ui, sans-serif",
@@ -172,7 +171,7 @@ interface BagData {
 
 const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
   const isPos = bag.pnlPct >= 0;
-  const color = isPos ? THEME.green : THEME.red;
+  const color = isPos ? "var(--color-bullish)" : "var(--color-bearish)";
 
   const fmtPrice = (n: number) =>
     n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2);
@@ -204,7 +203,7 @@ const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
                 width: "32px",
                 height: "32px",
                 borderRadius: "50%",
-                background: `${THEME.green}18`,
+                background: `color-mix(in oklab, var(--color-bullish) 10%, transparent)`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -228,13 +227,13 @@ const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
                   style={{
                     fontSize: "12px",
                     fontWeight: 700,
-                    color: THEME.text,
+                    color: "var(--color-foreground)",
                   }}
                 >
                   {bag.symbol}
                 </span>
                 <span
-                  style={{ fontSize: "9px", color: THEME.textMuted }}
+                  style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}
                 >
                   {bag.chain}
                 </span>
@@ -249,7 +248,7 @@ const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
                 fontSize: "12px",
                 fontWeight: 700,
                 fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                color: THEME.text,
+                color: "var(--color-foreground)",
               }}
             >
               ${bag.value.toFixed(2)}

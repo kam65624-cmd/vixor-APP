@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserSettings, updateUserSettings } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { PageLayout, THEME, ScrollArea } from "@/components/vixor/PageLayout";
+import { PageLayout,  ScrollArea } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Vixor" }] }),
@@ -65,7 +65,7 @@ function ToggleSwitch({ enabled, onClick }: { enabled: boolean; onClick: () => v
         height: "20px",
         borderRadius: "10px",
         cursor: "pointer",
-        background: enabled ? THEME.green : "rgba(255,255,255,0.1)",
+        background: enabled ? "var(--color-bullish)" : "rgba(255,255,255,0.1)",
         position: "relative",
         transition: "background 0.2s",
         flexShrink: 0,
@@ -76,7 +76,7 @@ function ToggleSwitch({ enabled, onClick }: { enabled: boolean; onClick: () => v
           width: "16px",
           height: "16px",
           borderRadius: "50%",
-          background: THEME.text,
+          background: "var(--color-foreground)",
           position: "absolute",
           top: "2px",
           left: enabled ? "18px" : "2px",
@@ -100,7 +100,7 @@ function SettingRow({ item, children }: { item: SettingItem; children?: React.Re
     >
       <div>
         <div style={{ fontSize: "11px", fontWeight: 600 }}>{item.label}</div>
-        <div style={{ fontSize: "9px", color: THEME.textSecondary, marginTop: "2px" }}>{item.desc}</div>
+        <div style={{ fontSize: "9px", color: "var(--color-muted-foreground)", marginTop: "2px" }}>{item.desc}</div>
       </div>
       {children}
     </div>
@@ -278,9 +278,9 @@ function SettingsPage() {
       title: "Security & Account",
       items: [
         { type: "toggle-local", id: "twoFactor", label: "Two-Factor Auth", desc: "Add an extra layer of security to your account" },
-        { type: "button", label: "Change Password", desc: "Update your account password", btnText: "Change", btnColor: THEME.green },
-        { type: "button", label: "Export Data", desc: "Download your trading history and portfolio data", btnText: "Export", btnColor: THEME.accent },
-        { type: "button", label: "Delete Account", desc: "Permanently delete your account and all data", btnText: "Delete", btnColor: THEME.red },
+        { type: "button", label: "Change Password", desc: "Update your account password", btnText: "Change", btnColor: "var(--color-bullish)" },
+        { type: "button", label: "Export Data", desc: "Download your trading history and portfolio data", btnText: "Export", btnColor: "var(--color-primary)" },
+        { type: "button", label: "Delete Account", desc: "Permanently delete your account and all data", btnText: "Delete", btnColor: "var(--color-bearish)" },
       ],
     },
   ];
@@ -291,9 +291,9 @@ function SettingsPage() {
     fontWeight: 500,
     padding: "4px 8px",
     borderRadius: "4px",
-    border: `1px solid ${THEME.border}`,
-    background: THEME.borderLight,
-    color: THEME.text,
+    border: `1px solid ${"var(--color-border)"}`,
+    background: "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
+    color: "var(--color-foreground)",
     width: "160px",
     outline: "none",
     font: "inherit",
@@ -320,8 +320,8 @@ function SettingsPage() {
                   borderRadius: "4px",
                   border: "none",
                   cursor: "pointer",
-                  color: oi === item.current ? THEME.text : THEME.textSecondary,
-                  background: oi === item.current ? `${THEME.green}26` : THEME.borderLight,
+                  color: oi === item.current ? "var(--color-foreground)" : "var(--color-muted-foreground)",
+                  background: oi === item.current ? `${"var(--color-bullish)"}26` : "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
                 }}
               >
                 {opt}
@@ -360,7 +360,7 @@ function SettingsPage() {
   };
 
   return (
-    <PageLayout title="⚙ Settings" loading={settingsQuery.isLoading} loadingColor={THEME.green}>
+    <PageLayout title="⚙ Settings" loading={settingsQuery.isLoading} loadingColor={"var(--color-bullish)"}>
       {/* Toast indicator */}
       {showToast && (
         <div
@@ -369,9 +369,9 @@ function SettingsPage() {
             top: "10px",
             left: "50%",
             transform: "translateX(-50%)",
-            background: `${THEME.green}26`,
-            border: `1px solid ${THEME.green}4D`,
-            color: THEME.green,
+            background: `${"var(--color-bullish)"}26`,
+            border: `1px solid ${"var(--color-bullish)"}4D`,
+            color: "var(--color-bullish)",
             fontSize: "11px",
             fontWeight: 600,
             padding: "4px 14px",
@@ -398,9 +398,9 @@ function SettingsPage() {
         <div
           style={{
             padding: "6px 12px",
-            background: `${THEME.red}1A`,
-            borderBottom: `1px solid ${THEME.red}33`,
-            color: THEME.red,
+            background: `${"var(--color-bearish)"}1A`,
+            borderBottom: `1px solid ${"var(--color-bearish)"}33`,
+            color: "var(--color-bearish)",
             fontSize: "10px",
             fontWeight: 500,
           }}
@@ -415,7 +415,7 @@ function SettingsPage() {
           display: "flex",
           justifyContent: "flex-end",
           padding: "8px 16px",
-          borderBottom: `1px solid ${THEME.border}`,
+          borderBottom: `1px solid ${"var(--color-border)"}`,
           flexShrink: 0,
         }}
       >
@@ -429,8 +429,8 @@ function SettingsPage() {
             borderRadius: "6px",
             border: "none",
             cursor: updateMutation.isPending ? "wait" : "pointer",
-            background: updateMutation.isPending ? `${THEME.green}66` : THEME.green,
-            color: THEME.text,
+            background: updateMutation.isPending ? `${"var(--color-bullish)"}66` : "var(--color-bullish)",
+            color: "var(--color-foreground)",
             transition: "background 0.2s, opacity 0.2s",
             opacity: updateMutation.isPending ? 0.7 : 1,
           }}
@@ -447,7 +447,7 @@ function SettingsPage() {
               style={{
                 fontSize: "11px",
                 fontWeight: 700,
-                color: THEME.textSecondary,
+                color: "var(--color-muted-foreground)",
                 padding: "6px 0",
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
@@ -457,9 +457,9 @@ function SettingsPage() {
             </div>
             <div
               style={{
-                background: THEME.surfaceAlt,
+                background: "var(--color-card-hover)",
                 borderRadius: "8px",
-                border: `1px solid ${THEME.border}`,
+                border: `1px solid ${"var(--color-border)"}`,
                 overflow: "hidden",
               }}
             >
@@ -467,7 +467,7 @@ function SettingsPage() {
                 <div
                   key={item.type === "input" ? item.id : item.type === "toggle-local" || item.type === "toggle-server" ? item.id : i}
                   style={{
-                    borderBottom: i < section.items.length - 1 ? `1px solid ${THEME.borderLight}` : "none",
+                    borderBottom: i < section.items.length - 1 ? `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}` : "none",
                   }}
                 >
                   <SettingRow item={item}>{renderItemControl(item)}</SettingRow>

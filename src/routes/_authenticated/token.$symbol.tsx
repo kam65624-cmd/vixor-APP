@@ -4,8 +4,7 @@ import { memo } from "react";
 import { getTradeHistory } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   StatsRow,
   DataRow,
   Badge,
@@ -45,9 +44,9 @@ function TokenPage() {
     <PageLayout
       title={symbol.toUpperCase()}
       badge="TOKEN"
-      badgeColor={THEME.accent}
+      badgeColor={"var(--color-primary)"}
       loading={query.isLoading}
-      loadingColor={THEME.green}
+      loadingColor={"var(--color-bullish)"}
     >
       <div
         style={{
@@ -55,22 +54,22 @@ function TokenPage() {
           alignItems: "center",
           gap: "6px",
           padding: "6px 16px",
-          borderBottom: `1px solid ${THEME.border}`,
-          background: THEME.tabBarBg,
+          borderBottom: `1px solid ${"var(--color-border)"}`,
+          background: "var(--color-muted)",
           flexShrink: 0,
         }}
       >
         <Link
           to="/discover"
           style={{
-            color: THEME.accent,
+            color: "var(--color-primary)",
             fontSize: "11px",
             textDecoration: "none",
           }}
         >
           Discover
         </Link>
-        <span style={{ color: THEME.textMuted, fontSize: "11px" }}>/</span>
+        <span style={{ color: "var(--color-muted-foreground)", fontSize: "11px" }}>/</span>
       </div>
 
       <StatsRow
@@ -78,22 +77,22 @@ function TokenPage() {
           {
             label: "Your Trades",
             value: String(tokenTrades.length),
-            color: THEME.text,
+            color: "var(--color-foreground)",
           },
           {
             label: "Total PnL",
             value: `${totalPnl >= 0 ? "+" : ""}${totalPnl.toFixed(2)}`,
-            color: totalPnl >= 0 ? THEME.green : THEME.red,
+            color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
           },
           {
             label: "Win Rate",
             value: `${winRate}%`,
-            color: THEME.green,
+            color: "var(--color-bullish)",
           },
           {
             label: "Closed",
             value: String(closedTrades.length),
-            color: THEME.text,
+            color: "var(--color-foreground)",
           },
         ]}
       />
@@ -102,9 +101,9 @@ function TokenPage() {
       <div
         style={{
           height: "200px",
-          background: THEME.bg,
+          background: "var(--color-background)",
           position: "relative",
-          borderBottom: `1px solid ${THEME.border}`,
+          borderBottom: `1px solid ${"var(--color-border)"}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -114,10 +113,10 @@ function TokenPage() {
         }}
       >
         <span style={{ fontSize: "24px" }}>📈</span>
-        <span style={{ fontSize: "11px", color: THEME.textMuted }}>
+        <span style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
           Chart requires OHLCV data feed
         </span>
-        <Badge label="COMING SOON" color={THEME.amber} />
+        <Badge label="COMING SOON" color={"var(--color-neutral-wait)"} />
       </div>
 
       <SectionTitle title={`Your Trades for ${symbol.toUpperCase()}`} count={tokenTrades.length} />
@@ -159,17 +158,17 @@ const TokenTradeRow = memo(function TokenTradeRow({ trade }: { trade: any }) {
         <div style={{ width: "50px" }}>
           <Badge
             label={(trade.direction || "").toUpperCase()}
-            color={isLong ? THEME.green : THEME.red}
+            color={isLong ? "var(--color-bullish)" : "var(--color-bearish)"}
             small
           />
         </div>
-        <div style={{ width: "80px", textAlign: "right", color: THEME.text }}>
+        <div style={{ width: "80px", textAlign: "right", color: "var(--color-foreground)" }}>
           {fmtPrice(trade.entry_price)}
         </div>
-        <div style={{ width: "80px", textAlign: "right", color: THEME.textSecondary }}>
+        <div style={{ width: "80px", textAlign: "right", color: "var(--color-muted-foreground)" }}>
           {trade.exit_price ? fmtPrice(trade.exit_price) : "—"}
         </div>
-        <div style={{ width: "60px", textAlign: "right", color: THEME.textSecondary }}>
+        <div style={{ width: "60px", textAlign: "right", color: "var(--color-muted-foreground)" }}>
           {trade.quantity ?? "—"}
         </div>
         <div
@@ -177,7 +176,7 @@ const TokenTradeRow = memo(function TokenTradeRow({ trade }: { trade: any }) {
             width: "80px",
             textAlign: "right",
             fontWeight: 700,
-            color: isPos ? THEME.green : THEME.red,
+            color: isPos ? "var(--color-bullish)" : "var(--color-bearish)",
           }}
         >
           {trade.pnl != null ? (isPos ? "+" : "") + trade.pnl.toFixed(2) : "—"}
@@ -186,7 +185,7 @@ const TokenTradeRow = memo(function TokenTradeRow({ trade }: { trade: any }) {
           style={{
             width: "50px",
             textAlign: "right",
-            color: trade.r_multiple && trade.r_multiple > 0 ? THEME.green : THEME.textMuted,
+            color: trade.r_multiple && trade.r_multiple > 0 ? "var(--color-bullish)" : "var(--color-muted-foreground)",
           }}
         >
           {trade.r_multiple ? `${trade.r_multiple.toFixed(1)}R` : "—"}
@@ -195,7 +194,7 @@ const TokenTradeRow = memo(function TokenTradeRow({ trade }: { trade: any }) {
           style={{
             flex: 1,
             textAlign: "right",
-            color: THEME.textMuted,
+            color: "var(--color-muted-foreground)",
             fontSize: "10px",
           }}
         >

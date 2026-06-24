@@ -4,8 +4,7 @@ import { memo, useState } from "react";
 import { getWatchlistData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   TableHeader,
   DataRow,
   Badge,
@@ -39,7 +38,7 @@ function TrackersPage() {
     <PageLayout
       title="Trackers"
       badge="TRACKER"
-      badgeColor={THEME.amber}
+      badgeColor={"var(--color-neutral-wait)"}
       description={`${items.length} watchlist items · ${alerts.length} price alerts`}
       tabs={[...TABS]}
       activeTab={activeTab}
@@ -49,7 +48,7 @@ function TrackersPage() {
         "Price Alerts": alerts.length,
       }}
       loading={isLoading}
-      loadingColor={THEME.amber}
+      loadingColor={"var(--color-neutral-wait)"}
     >
       {activeTab === "Watchlist" ? (
         <ScrollArea>
@@ -65,8 +64,8 @@ function TrackersPage() {
                       alignItems: "center",
                       gap: "8px",
                       padding: "8px 16px 6px",
-                      borderBottom: `1px solid ${THEME.border}`,
-                      background: THEME.tabBarBg,
+                      borderBottom: `1px solid ${"var(--color-border)"}`,
+                      background: "var(--color-muted)",
                       flexShrink: 0,
                     }}
                   >
@@ -74,7 +73,7 @@ function TrackersPage() {
                       style={{
                         fontSize: "11px",
                         fontWeight: 600,
-                        color: THEME.text,
+                        color: "var(--color-foreground)",
                       }}
                     >
                       {wl.name}
@@ -83,12 +82,12 @@ function TrackersPage() {
                       style={{
                         fontSize: "10px",
                         fontWeight: 500,
-                        color: THEME.textMuted,
+                        color: "var(--color-muted-foreground)",
                       }}
                     >
                       ({wlItems.length})
                     </span>
-                    {wl.is_default && <Badge label="DEFAULT" color={THEME.accent} small />}
+                    {wl.is_default && <Badge label="DEFAULT" color={"var(--color-primary)"} small />}
                   </div>
 
                   {/* ── Table Header ── */}
@@ -114,8 +113,8 @@ function TrackersPage() {
                         padding: "20px 16px",
                         textAlign: "center",
                         fontSize: "11px",
-                        color: THEME.textMuted,
-                        background: THEME.surface,
+                        color: "var(--color-muted-foreground)",
+                        background: "var(--color-card)",
                       }}
                     >
                       Empty watchlist
@@ -173,7 +172,7 @@ const WatchlistItemRow = memo(function WatchlistItemRow({ item }: { item: any })
             width: "30%",
             fontWeight: 700,
             fontSize: "11px",
-            color: THEME.text,
+            color: "var(--color-foreground)",
           }}
         >
           {item.symbol || "—"}
@@ -183,7 +182,7 @@ const WatchlistItemRow = memo(function WatchlistItemRow({ item }: { item: any })
             width: "25%",
             textAlign: "right",
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-            color: THEME.textSecondary,
+            color: "var(--color-muted-foreground)",
             fontSize: "11px",
           }}
         >
@@ -194,7 +193,7 @@ const WatchlistItemRow = memo(function WatchlistItemRow({ item }: { item: any })
             width: "25%",
             textAlign: "right",
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-            color: THEME.green,
+            color: "var(--color-bullish)",
             fontSize: "11px",
           }}
         >
@@ -204,7 +203,7 @@ const WatchlistItemRow = memo(function WatchlistItemRow({ item }: { item: any })
           style={{
             width: "20%",
             textAlign: "right",
-            color: THEME.textMuted,
+            color: "var(--color-muted-foreground)",
             fontSize: "10px",
           }}
         >
@@ -223,12 +222,12 @@ const WatchlistItemRow = memo(function WatchlistItemRow({ item }: { item: any })
 const AlertRow = memo(function AlertRow({ alert }: { alert: any }) {
   const statusColor =
     alert.status === "active"
-      ? THEME.green
+      ? "var(--color-bullish)"
       : alert.status === "triggered"
-        ? THEME.amber
-        : THEME.textMuted;
+        ? "var(--color-neutral-wait)"
+        : "var(--color-muted-foreground)";
   const condColor =
-    alert.condition === "above" || alert.condition === "crosses_up" ? THEME.green : THEME.red;
+    alert.condition === "above" || alert.condition === "crosses_up" ? "var(--color-bullish)" : "var(--color-bearish)";
 
   return (
     <DataRow>
@@ -238,7 +237,7 @@ const AlertRow = memo(function AlertRow({ alert }: { alert: any }) {
             width: "25%",
             fontWeight: 700,
             fontSize: "11px",
-            color: THEME.text,
+            color: "var(--color-foreground)",
           }}
         >
           {alert.symbol}
@@ -252,7 +251,7 @@ const AlertRow = memo(function AlertRow({ alert }: { alert: any }) {
             textAlign: "right",
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             fontSize: "11px",
-            color: THEME.text,
+            color: "var(--color-foreground)",
           }}
         >
           ${alert.target_price}
@@ -271,7 +270,7 @@ const AlertRow = memo(function AlertRow({ alert }: { alert: any }) {
           style={{
             width: "20%",
             textAlign: "right",
-            color: THEME.textMuted,
+            color: "var(--color-muted-foreground)",
             fontSize: "10px",
           }}
         >

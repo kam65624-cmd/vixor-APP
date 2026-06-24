@@ -4,8 +4,7 @@ import { useState, memo } from "react";
 import { getNotifications, markNotificationRead } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout,
-  THEME,
+  PageLayout, 
   DataRow,
   Badge,
   EmptyState,
@@ -22,12 +21,12 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 // ── Type config using THEME semantic colors ──────────────────────────────
 
 const typeConfig: Record<string, { icon: string; color: string; label: string }> = {
-  trade:   { icon: "💰", color: THEME.green,         label: "TRADE" },
-  alert:   { icon: "🔔", color: THEME.amber,         label: "ALERT" },
-  whale:   { icon: "🐋", color: THEME.purple,        label: "WHALE" },
-  signal:  { icon: "⚡", color: THEME.green,         label: "SIGNAL" },
-  system:  { icon: "⚙️", color: THEME.textSecondary, label: "SYSTEM" },
-  default: { icon: "📌", color: THEME.textSecondary, label: "" },
+  trade:   { icon: "💰", color: "var(--color-bullish)",         label: "TRADE" },
+  alert:   { icon: "🔔", color: "var(--color-neutral-wait)",         label: "ALERT" },
+  whale:   { icon: "🐋", color: "var(--color-info)",        label: "WHALE" },
+  signal:  { icon: "⚡", color: "var(--color-bullish)",         label: "SIGNAL" },
+  system:  { icon: "⚙️", color: "var(--color-muted-foreground)", label: "SYSTEM" },
+  default: { icon: "📌", color: "var(--color-muted-foreground)", label: "" },
 };
 
 // ── Tab definitions (display label → internal filter value) ──────────────
@@ -70,7 +69,7 @@ const NotifItem = memo(function NotifItem({
   return (
     <DataRow
       onClick={() => !isRead && onRead(notif.id)}
-      leftAccent={isRead ? undefined : THEME.green}
+      leftAccent={isRead ? undefined : "var(--color-bullish)"}
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
         {/* Type icon */}
@@ -98,7 +97,7 @@ const NotifItem = memo(function NotifItem({
                 style={{
                   fontSize: 11,
                   fontWeight: isRead ? 500 : 700,
-                  color: THEME.text,
+                  color: "var(--color-foreground)",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -108,11 +107,11 @@ const NotifItem = memo(function NotifItem({
               </span>
               {cfg.label && <Badge label={cfg.label} color={cfg.color} small />}
             </div>
-            <span style={{ fontSize: 9, color: THEME.textMuted, flexShrink: 0 }}>
+            <span style={{ fontSize: 9, color: "var(--color-muted-foreground)", flexShrink: 0 }}>
               {timeAgo(notif.created_at)}
             </span>
           </div>
-          <p style={{ fontSize: 10, color: THEME.textSecondary, marginTop: 2, lineHeight: 1.4 }}>
+          <p style={{ fontSize: 10, color: "var(--color-muted-foreground)", marginTop: 2, lineHeight: 1.4 }}>
             {notif.body || "No details"}
           </p>
         </div>
@@ -182,7 +181,7 @@ function NotificationsPage() {
     <PageLayout
       title="Notifications"
       badge={unreadCount > 0 ? `${unreadCount} new` : undefined}
-      badgeColor={THEME.accent}
+      badgeColor={"var(--color-primary)"}
       tabs={tabLabels}
       activeTab={activeTabLabel}
       onTabChange={handleTabChange}

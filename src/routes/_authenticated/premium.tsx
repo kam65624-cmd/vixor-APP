@@ -6,7 +6,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
-import { PageLayout, THEME, Badge, ScrollArea, EmptyState } from "@/components/vixor/PageLayout";
+import { PageLayout,  Badge, ScrollArea, EmptyState } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/premium")({
   head: () => ({ meta: [{ title: "Premium — Vixor" }] }),
@@ -56,14 +56,14 @@ function PremiumPage() {
     <PageLayout
       title="Vixor Pro"
       badge="PREMIUM"
-      badgeColor={THEME.green}
+      badgeColor={"var(--color-bullish)"}
       description={
         subscription
           ? `You are on the ${currentPlanName} plan`
           : "Upgrade to unlock advanced features"
       }
       loading={isLoading}
-      loadingColor={THEME.green}
+      loadingColor={"var(--color-bullish)"}
     >
       <ScrollArea>
         {/* Active subscription banner */}
@@ -75,13 +75,13 @@ function PremiumPage() {
               justifyContent: "center",
               gap: "8px",
               padding: "12px 16px",
-              borderBottom: `1px solid ${THEME.border}`,
-              background: THEME.surface,
+              borderBottom: `1px solid ${"var(--color-border)"}`,
+              background: "var(--color-card)",
             }}
           >
             <Badge
               label={`ACTIVE · Renews ${new Date(subscription.current_period_end).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
-              color={THEME.green}
+              color={"var(--color-bullish)"}
             />
           </div>
         )}
@@ -106,9 +106,9 @@ function PremiumPage() {
                 <div
                   key={plan.id}
                   style={{
-                    background: isCurrent ? THEME.surface : THEME.surfaceAlt,
+                    background: isCurrent ? "var(--color-card)" : "var(--color-card-hover)",
                     borderRadius: "16px",
-                    border: `1px solid ${isCurrent ? `${THEME.green}4D` : THEME.border}`,
+                    border: `1px solid ${isCurrent ? `${"var(--color-bullish)"}4D` : "var(--color-border)"}`,
                     padding: "24px",
                     position: "relative",
                     overflow: "hidden",
@@ -122,7 +122,7 @@ function PremiumPage() {
                         right: "12px",
                       }}
                     >
-                      <Badge label="CURRENT" color={THEME.accent} />
+                      <Badge label="CURRENT" color={"var(--color-primary)"} />
                     </div>
                   )}
                   <div
@@ -130,7 +130,7 @@ function PremiumPage() {
                       fontSize: "16px",
                       fontWeight: 800,
                       marginBottom: "4px",
-                      color: THEME.text,
+                      color: "var(--color-foreground)",
                     }}
                   >
                     {plan.name}
@@ -141,7 +141,7 @@ function PremiumPage() {
                       fontWeight: 800,
                       fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                       marginBottom: "4px",
-                      color: THEME.text,
+                      color: "var(--color-foreground)",
                     }}
                   >
                     ${(plan.price_cents / 100).toFixed(0)}
@@ -149,13 +149,13 @@ function PremiumPage() {
                       style={{
                         fontSize: "13px",
                         fontWeight: 500,
-                        color: THEME.textSecondary,
+                        color: "var(--color-muted-foreground)",
                       }}
                     >
                       /mo
                     </span>
                   </div>
-                  {(plan as any).badge && <Badge label={(plan as any).badge} color={THEME.amber} />}
+                  {(plan as any).badge && <Badge label={(plan as any).badge} color={"var(--color-neutral-wait)"} />}
                   <div style={{ marginTop: "16px", marginBottom: "20px" }}>
                     {features.length > 0 ? (
                       features.map((f, i) => (
@@ -171,20 +171,20 @@ function PremiumPage() {
                         >
                           <span
                             style={{
-                              color: THEME.green,
+                              color: "var(--color-bullish)",
                               fontSize: "12px",
                             }}
                           >
                             ✓
                           </span>
-                          <span style={{ color: THEME.textSecondary }}>{f}</span>
+                          <span style={{ color: "var(--color-muted-foreground)" }}>{f}</span>
                         </div>
                       ))
                     ) : (
                       <div
                         style={{
                           fontSize: "12px",
-                          color: THEME.textMuted,
+                          color: "var(--color-muted-foreground)",
                         }}
                       >
                         {plan.price_cents > 0
@@ -200,9 +200,9 @@ function PremiumPage() {
                         width: "100%",
                         padding: "10px",
                         borderRadius: "8px",
-                        border: `1px solid ${THEME.green}33`,
-                        background: `${THEME.green}14`,
-                        color: THEME.accent,
+                        border: `1px solid ${"var(--color-bullish)"}33`,
+                        background: `${"var(--color-bullish)"}14`,
+                        color: "var(--color-primary)",
                         fontSize: "12px",
                         fontWeight: 700,
                         cursor: "default",
@@ -219,8 +219,8 @@ function PremiumPage() {
                         padding: "10px",
                         borderRadius: "8px",
                         border: "none",
-                        background: THEME.green,
-                        color: THEME.text,
+                        background: "var(--color-bullish)",
+                        color: "var(--color-foreground)",
                         fontSize: "12px",
                         fontWeight: 700,
                         cursor: subscribing === plan.id ? "wait" : "pointer",

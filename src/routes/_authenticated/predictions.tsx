@@ -12,8 +12,7 @@ import {
   DataRow,
   LabelValue,
   SectionTitle,
-  ProgressBar,
-  THEME,
+  ProgressBar, 
 } from "@/components/vixor/PageLayout";
 import {
   formatNumber,
@@ -26,9 +25,9 @@ export const Route = createFileRoute("/_authenticated/predictions")({
 });
 
 const riskConfig: Record<string, { color: string }> = {
-  low: { color: THEME.green },
-  medium: { color: THEME.amber },
-  high: { color: THEME.red },
+  low: { color: "var(--color-bullish)" },
+  medium: { color: "var(--color-neutral-wait)" },
+  high: { color: "var(--color-bearish)" },
 };
 
 const PredictionCard = memo(function PredictionCard({
@@ -55,13 +54,13 @@ const PredictionCard = memo(function PredictionCard({
   let statusColor: string;
   if (prediction.correct === true) {
     statusLabel = "CORRECT";
-    statusColor = THEME.green;
+    statusColor = "var(--color-bullish)";
   } else if (prediction.correct === false) {
     statusLabel = "WRONG";
-    statusColor = THEME.red;
+    statusColor = "var(--color-bearish)";
   } else {
     statusLabel = "PENDING";
-    statusColor = THEME.amber;
+    statusColor = "var(--color-neutral-wait)";
   }
 
   return (
@@ -82,31 +81,31 @@ const PredictionCard = memo(function PredictionCard({
             style={{
               fontSize: 14,
               fontWeight: 600,
-              color: THEME.text,
+              color: "var(--color-foreground)",
             }}
           >
             {prediction.pair}
           </span>
           <Badge
             label={prediction.predictedDirection}
-            color={isBuy ? THEME.green : THEME.red}
+            color={isBuy ? "var(--color-bullish)" : "var(--color-bearish)"}
           />
           <Badge
             label={formatPercentRaw(prediction.confidence)}
-            color={THEME.accent}
+            color={"var(--color-primary)"}
           />
           {prediction.pattern && (
-            <Badge label={prediction.pattern} color={THEME.purple} />
+            <Badge label={prediction.pattern} color={"var(--color-info)"} />
           )}
           {prediction.riskLevel && (
             <Badge
               label={prediction.riskLevel.toUpperCase()}
-              color={riskConfig[prediction.riskLevel]?.color ?? THEME.textSecondary}
+              color={riskConfig[prediction.riskLevel]?.color ?? "var(--color-muted-foreground)"}
             />
           )}
           <Badge
             label={prediction.source === "analysis" ? "AI" : "SIGNAL"}
-            color={prediction.source === "analysis" ? THEME.purple : THEME.amber}
+            color={prediction.source === "analysis" ? "var(--color-info)" : "var(--color-neutral-wait)"}
           />
         </div>
 
@@ -116,7 +115,7 @@ const PredictionCard = memo(function PredictionCard({
           <span
             style={{
               fontSize: 11,
-              color: THEME.textMuted,
+              color: "var(--color-muted-foreground)",
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
               whiteSpace: "nowrap",
             }}
@@ -131,7 +130,7 @@ const PredictionCard = memo(function PredictionCard({
         <div
           style={{
             fontSize: 10,
-            color: THEME.textMuted,
+            color: "var(--color-muted-foreground)",
             marginTop: 4,
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -165,22 +164,22 @@ function PredictionsPage() {
     {
       label: "Total Predictions",
       value: formatNumber(totalPredictions),
-      color: THEME.text,
+      color: "var(--color-foreground)",
     },
     {
       label: "BUY Predictions",
       value: formatNumber(buyPredictions),
-      color: THEME.green,
+      color: "var(--color-bullish)",
     },
     {
       label: "SELL Predictions",
       value: formatNumber(sellPredictions),
-      color: THEME.red,
+      color: "var(--color-bearish)",
     },
     {
       label: "Avg Confidence",
       value: formatPercentRaw(avgConfidence),
-      color: THEME.accent,
+      color: "var(--color-primary)",
     },
   ];
 
@@ -188,7 +187,7 @@ function PredictionsPage() {
     <PageLayout
       title="Predictions"
       badge="AI"
-      badgeColor={THEME.purple}
+      badgeColor={"var(--color-info)"}
       description="AI-powered market predictions and signal analysis"
       loading={isLoading}
     >
