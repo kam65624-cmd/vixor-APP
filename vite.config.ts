@@ -6,6 +6,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
 
 export default defineConfig({
+  envPrefix: "VITE_",
   plugins: [
     tailwindcss(),
     tsconfigPaths({ projects: ["./tsconfig.json"] }),
@@ -25,7 +26,6 @@ export default defineConfig({
       routeRules: {
         "/**": {
           headers: {
-            "X-Frame-Options": "DENY",
             "X-Content-Type-Options": "nosniff",
             "Referrer-Policy": "strict-origin-when-cross-origin",
             "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
@@ -36,7 +36,7 @@ export default defineConfig({
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https: https://s3.tradingview.com",
               "connect-src 'self' https://*.supabase.co https://api.twelvedata.com https://api.binance.com https://api.telegram.org https://finnhub.io https://api.finnhub.io wss://*.supabase.co https://s3.tradingview.com https://*.tradingview.com https://public-api.birdeye.so https://mainnet.helius-rpc.com https://api.twitter.com https://api.dexscreener.com https://lunarcrush.com https://api.lunarcrush.com",
-              "frame-ancestors 'none'",
+              "frame-ancestors 'self' https://web.telegram.org",
             ].join("; "),
           },
         },
