@@ -88,7 +88,6 @@ export const telegramSignIn = createServerFn({ method: "POST" })
     });
 
     if (createErr) {
-      // If user already exists, that's OK — they can still sign in
       if (
         createErr.message.includes("already registered") ||
         createErr.message.includes("already been registered") ||
@@ -96,9 +95,32 @@ export const telegramSignIn = createServerFn({ method: "POST" })
         createErr.status === 422 ||
         createErr.status === 409
       ) {
-        console.log("[Auth] Telegram user already exists, proceeding with sign-in:", email);
+        // ── User already exists — update their password to match current bot token ──
+        // This handles the case where TELEGRAM_BOT_TOKEN changed, making the
+        // old HMAC password invalid.
+        console.log("[Auth] Telegram user already exists, updating password:", email);
+        try {
+          const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers({
+            filter: `email eq "${email}"`,
+            perPage: 1,
+          });
+          const existingUser = existingUsers?.users?.[0];
+          if (existingUser) {
+            const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(
+              existingUser.id,
+              { password, email_confirm: true },
+            );
+            if (updateErr) {
+              console.error("[Auth] Failed to update password:", updateErr.message);
+              // Continue anyway — maybe the password still matches
+            } else {
+              console.log("[Auth] Password updated successfully for:", email);
+            }
+          }
+        } catch (listErr) {
+          console.error("[Auth] Failed to list/update user:", listErr);
+        }
       } else {
-        // Some other error — this is fatal
         throw new Error(`Failed to create user: ${createErr.message}`);
       }
     } else if (created.user) {
