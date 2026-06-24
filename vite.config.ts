@@ -42,7 +42,7 @@ export default defineConfig({
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https: https://s3.tradingview.com",
-              "connect-src 'self' https://*.supabase.co https://api.twelvedata.com https://api.binance.com https://api.telegram.org https://finnhub.io https://api.finnhub.io wss://*.supabase.co https://s3.tradingview.com https://*.tradingview.com https://public-api.birdeye.so https://mainnet.helius-rpc.com https://api.twitter.com https://api.dexscreener.com https://lunarcrush.com https://api.lunarcrush.com",
+              "connect-src 'self' https://*.supabase.co https://api.twelvedata.com https://api.binance.com https://api.telegram.org https://finnhub.io https://api.finnhub.io wss://*.supabase.co https://s3.tradingview.com https://*.tradingview.com https://public-api.birdeye.so https://mainnet.helius-rpc.com https://api.twitter.com https://api.dexscreener.com https://lunarcrush.com https://api.lunarcrush.com https://api.coingecko.com",
               "frame-ancestors 'self' https://web.telegram.org https://t.me",
             ].join("; "),
           },
