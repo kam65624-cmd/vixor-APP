@@ -180,4 +180,10 @@ export const Limiters = {
   telegram: new RateLimiter({ minInterval: 35, jitter: 10 }),
   /** Binance REST: 1200 calls/min → ~55ms interval, 10ms jitter. */
   binance: new RateLimiter({ minInterval: 55, jitter: 10 }),
+  /** DexScreener: 60 calls/min → ~1100ms interval, 100ms jitter. */
+  dexscreener: new RateLimiter({ minInterval: 1100, jitter: 100 }),
+  /** Helius RPC: conservative 50 calls/sec → ~25ms interval. */
+  helius: new RateLimiter({ minInterval: 25, jitter: 5 }),
+  /** Alchemy RPC: conservative 50 calls/sec → ~25ms interval. */
+  alchemy: new RateLimiter({ minInterval: 25, jitter: 5 }),
 } as const;
