@@ -333,7 +333,7 @@ export const StatsRow = memo(function StatsRow({
 });
 
 /** Section title with optional count — sits above a scrollable list */
-export function SectionTitle({
+export function PageSectionTitle({
   title,
   count,
   action,
@@ -478,7 +478,7 @@ export function ProgressBar({
 }
 
 /** Scrollable content area — consistent across all pages */
-export function ScrollArea({
+export function PageScrollArea({
   children,
   style,
 }: {
@@ -501,8 +501,8 @@ export function ScrollArea({
   );
 }
 
-/** Empty state placeholder */
-export function EmptyState({
+/** Empty state placeholder (legacy — use @/components/vixor/EmptyState for new code) */
+export function PageEmptyState({
   icon,
   title,
   message,
@@ -550,7 +550,7 @@ export function EmptyState({
 }
 
 /** Small colored badge */
-export const Badge = memo(function Badge({
+export const PageBadge = memo(function PageBadge({
   label,
   color,
   small = false,
@@ -898,3 +898,13 @@ function MiniStat({
     </div>
   );
 }
+
+// ── Backward-compatible aliases (deprecated — use Page* prefix or standalone components) ──
+/** @deprecated Use PageSectionTitle */
+export const SectionTitle = PageSectionTitle;
+/** @deprecated Use PageScrollArea or @/components/ui/scroll-area */
+export const ScrollArea = PageScrollArea;
+/** @deprecated Use PageEmptyState or @/components/vixor/EmptyState */
+export const EmptyState = PageEmptyState;
+/** @deprecated Use PageBadge or @/components/ui/badge */
+export const Badge = PageBadge;
