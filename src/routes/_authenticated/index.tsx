@@ -1,9 +1,31 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getDashboardData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { StatsRow, DataRow, ScrollArea, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
+
+// ── Market Overview Types ──────────────────────────────────────────────────
+interface MarketToken {
+  symbol: string;
+  price: number;
+  change24h: number;
+  volume24h: number;
+}
+interface MarketOverview {
+  success: boolean;
+  tokens: MarketToken[];
+  stats: {
+    totalVolume: number;
+    btcPrice: number;
+    btcChange: number;
+    solPrice: number;
+    solChange: number;
+    ethPrice: number;
+    ethChange: number;
+    marketSentiment: string;
+  };
+}
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Vixor — Solana Meme Coin Terminal" }] }),
@@ -159,6 +181,55 @@ function SignalRow({ s }: { s: { token: string; type: string; reason: string; co
   );
 }
 
+// ── Market Token Row ────────────────────────────────────────────────────
+function MarketTokenRow({ t }: { t: MarketToken }) {
+  const isUp = t.change24h >= 0;
+  const color = isUp ? "var(--color-bullish)" : "var(--color-bearish)";
+  const fmtPrice = (p: number) => {
+    if (p >= 1000) return `$${p.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+    if (p >= 1) return `$${p.toFixed(2)}`;
+    if (p >= 0.0001) return `$${p.toFixed(6)}`;
+    return `$${p.toFixed(8)}`;
+  };
+  const fmtVol = (v: number) => {
+    if (v >= 1_000_000_000) return `$${(v / 1_000_000_000).toFixed(1)}B`;
+    if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+    if (v >= 1_000) return `$${(v / 1_000).toFixed(1)}K`;
+    return `$${v.toFixed(0)}`;
+  };
+
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "7px 12px", borderBottom: "1px solid var(--color-border)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div style={{
+          width: "26px", height: "26px", borderRadius: "50%", flexShrink: 0,
+          background: `color-mix(in oklab, ${color} 10%, transparent)`,
+          border: `1px solid color-mix(in oklab, ${color} 20%, transparent)`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: "8px", fontWeight: 800, color,
+        }}>
+          {t.symbol.slice(0, 2)}
+        </div>
+        <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-foreground)" }}>{t.symbol}</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <span style={{ fontSize: "11px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: "var(--color-foreground)" }}>
+          {fmtPrice(t.price)}
+        </span>
+        <span style={{ fontSize: "10px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color, width: "48px", textAlign: "right" }}>
+          {t.change24h >= 0 ? "+" : ""}{t.change24h.toFixed(1)}%
+        </span>
+        <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)", width: "52px", textAlign: "right" }}>
+          {fmtVol(t.volume24h)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Page ──────────────────────────────────────────────────────────────
 function HomePage() {
   const navigate = useNavigate();
@@ -169,6 +240,19 @@ function HomePage() {
     queryFn: () => fetchDashboard({}),
     staleTime: 30_000,
   });
+
+  // ── Market Overview ──
+  const marketQuery = useQuery<MarketOverview>({
+    queryKey: ["market-overview"],
+    queryFn: async () => {
+      const res = await fetch("/api/market-overview");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    refetchInterval: 30_000,
+    staleTime: 15_000,
+  });
+  const marketData = marketQuery.data;
 
   const data = dashQuery.data;
   const isLoading = dashQuery.isLoading;
@@ -188,13 +272,32 @@ function HomePage() {
 
   return (
     <div style={{ background: "var(--color-background)", color: "var(--color-foreground)", minHeight: "100%", fontFamily: "'Inter', system-ui, sans-serif" }}>
-      {/* Stats Bar */}
+      {/* Stats Bar — show market data when portfolio is empty */}
       <StatsRow stats={[
-        { label: "Portfolio", value: fmt(totalValue), color: "var(--color-primary)", icon: "💰" },
-        { label: "PnL", value: isLoading ? "..." : pnlFmt(totalPnl), color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)", icon: "📈", sub: totalPnlPct > 0 ? `+${totalPnlPct.toFixed(1)}%` : `${totalPnlPct.toFixed(1)}%` },
-        { label: "Trades", value: isLoading ? "..." : String(tradeCount), color: "var(--color-primary)", icon: "📊" },
+        { label: tradeCount > 0 ? "Portfolio" : "BTC", value: tradeCount > 0 ? fmt(totalValue) : (marketData ? `$${marketData.stats.btcPrice.toLocaleString("en-US", { maximumFractionDigits: 0 })}` : "..."), color: "var(--color-primary)", icon: tradeCount > 0 ? "💰" : "₿", sub: tradeCount > 0 ? undefined : (marketData ? `${marketData.stats.btcChange >= 0 ? "+" : ""}${marketData.stats.btcChange.toFixed(1)}%` : undefined) },
+        { label: tradeCount > 0 ? "PnL" : "ETH", value: tradeCount > 0 ? (isLoading ? "..." : pnlFmt(totalPnl)) : (marketData ? `$${marketData.stats.ethPrice.toLocaleString("en-US", { maximumFractionDigits: 0 })}` : "..."), color: tradeCount > 0 ? (totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)") : (marketData?.stats.ethChange ?? 0 >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"), icon: "📈", sub: tradeCount > 0 ? (totalPnlPct > 0 ? `+${totalPnlPct.toFixed(1)}%` : `${totalPnlPct.toFixed(1)}%`) : (marketData ? `${marketData.stats.ethChange >= 0 ? "+" : ""}${marketData.stats.ethChange.toFixed(1)}%` : undefined) },
+        { label: tradeCount > 0 ? "Trades" : "SOL", value: tradeCount > 0 ? (isLoading ? "..." : String(tradeCount)) : (marketData ? `$${marketData.stats.solPrice.toFixed(2)}` : "..."), color: tradeCount > 0 ? "var(--color-primary)" : (marketData?.stats.solChange ?? 0 >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"), icon: "📊", sub: tradeCount > 0 ? undefined : (marketData ? `${marketData.stats.solChange >= 0 ? "+" : ""}${marketData.stats.solChange.toFixed(1)}%` : undefined) },
         { label: "Signals", value: isLoading ? "..." : String(liveSignals.length), color: "var(--color-neutral-wait)", icon: "⚡" },
       ]} />
+
+      {/* ── Market Overview Card (always visible) ── */}
+      <div style={{ padding: "0 6px" }}>
+        <Card>
+          <CardHeader title="Market Overview" icon="🌍" action={{ label: "Discover", onClick: () => nav("/discover") }} />
+          <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+            {marketQuery.isLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} style={{ padding: "6px 12px" }}><SkeletonRow /></div>
+                ))
+              : marketData?.tokens && marketData.tokens.length > 0
+                ? marketData.tokens.map((t) => <MarketTokenRow key={t.symbol} t={t} />)
+                : <div style={{ padding: "20px 12px", textAlign: "center" }}>
+                    <EmptyState icon="🌍" title="Market Unavailable" message="Unable to fetch market data. Pull down to retry." />
+                  </div>
+              }
+          </div>
+        </Card>
+      </div>
 
       {/* 3-Column Grid — responsive: 3 cols desktop, 1 col mobile */}
       <div style={{

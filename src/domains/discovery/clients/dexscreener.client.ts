@@ -77,78 +77,68 @@ export async function fetchLatestPairs(
   }
 
   try {
-    const url = `${apiUrl}/dex/tokens/new-pairs`;
-    const response = await fetch(url, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(15_000),
-    });
+    // DexScreener /dex/tokens/new-pairs is unreliable (often returns null).
+    // Use /dex/search with broad trending queries as a reliable alternative.
+    const queries = ["new", "trending", "pump", "meme"];
+    let allPairs: any[] = [];
 
-    if (!response.ok) {
+    for (const q of queries) {
+      try {
+        const url = `${apiUrl}/dex/search?q=${encodeURIComponent(q)}`;
+        const response = await fetch(url, {
+          headers: { Accept: "application/json" },
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (response.ok) {
+          const json = await response.json() as any;
+          if (json.pairs && Array.isArray(json.pairs)) {
+            allPairs.push(...json.pairs);
+          }
+        }
+      } catch {
+        // Continue with next query
+      }
+      if (allPairs.length >= limit * 2) break;
+    }
+
+    if (allPairs.length === 0) {
       return {
         success: false,
-        error: `DexScreener API error: ${response.status}`,
+        error: "DexScreener search returned no pairs",
         responseTimeMs: Date.now() - start,
       };
     }
 
-    const json = (await response.json()) as {
-      pairs?: Array<{
-        chainId: string;
-        dexId: string;
-        url: string;
-        pairAddress: string;
-        baseToken: {
-          address: string;
-          symbol: string;
-          name: string;
-        };
-        quoteToken: {
-          address: string;
-          symbol: string;
-        };
-        priceNative: string;
-        priceUsd: string;
-        txns: {
-          m5: { buys: number; sells: number };
-          h1: { buys: number; sells: number };
-          h6: { buys: number; sells: number };
-          h24: { buys: number; sells: number };
-        };
-        volume: {
-          m5: number;
-          h1: number;
-          h6: number;
-          h24: number;
-        };
-        liquidity: {
-          usd: number;
-          base: number;
-          quote: number;
-        };
-        fdv: number;
-        pairCreatedAt: number;
-        info?: { imageUrl?: string };
-      }>;
-    };
+    // Deduplicate by baseToken address
+    const seen = new Set<string>();
+    const dedupedPairs = allPairs.filter((p: any) => {
+      const key = `${p.chainId}:${p.baseToken?.address}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
-    const pairs = json.pairs ?? [];
     const results: RawTokenData[] = [];
 
-    for (const pair of pairs) {
+    for (const pair of dedupedPairs) {
       const chain = mapChain(pair.chainId);
 
       // Skip unknown chains or if chain filter doesn't match
       if (!chain) continue;
       if (chains && chains.length > 0 && !chains.includes(chain)) continue;
 
+      // Skip pairs with no liquidity (likely dead)
+      const liq = pair.liquidity?.usd ?? 0;
+      if (liq < 100) continue;
+
       results.push({
         address: pair.baseToken.address,
         symbol: pair.baseToken.symbol,
         name: pair.baseToken.name,
         price: parseFloat(pair.priceUsd) || 0,
-        change24h: 0, // DexScreener new pairs don't have 24h change
+        change24h: pair.priceChange?.h24 ?? 0,
         volume24h: pair.volume?.h24 ?? 0,
-        liquidity: pair.liquidity?.usd ?? 0,
+        liquidity: liq,
         marketCap: pair.fdv ?? 0,
         chain,
         createdAt: pair.pairCreatedAt || 0,

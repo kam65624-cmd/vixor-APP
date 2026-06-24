@@ -63,6 +63,7 @@ export default defineConfig({
         { route: "/api/discover/scan", handler: "./server/api/discover/scan.ts" },
         { route: "/api/sol-price", handler: "./server/api/sol-price.ts" },
         { route: "/api/dexscreener", handler: "./server/api/dexscreener.ts" },
+        { route: "/api/market-overview", handler: "./server/api/market-overview.ts" },
       ],
     }),
     viteReact(),
