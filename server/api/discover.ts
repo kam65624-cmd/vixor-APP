@@ -120,6 +120,7 @@ export default defineEventHandler(async (event) => {
       ageScore: t.ageScore,
       nftBadge: t.nftBadge,
       isHoneypot: t.isHoneypot ?? false,
+      logoUrl: t.logoUrl || undefined,
       socialMentions: t.socialMentions ?? 0,
       socialSentiment: t.socialSentiment ?? 0,
       topHolderPct: t.topHolderPct ?? 0,

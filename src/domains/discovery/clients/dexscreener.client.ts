@@ -79,7 +79,7 @@ export async function fetchLatestPairs(
   try {
     // DexScreener /dex/tokens/new-pairs is unreliable (often returns null).
     // Use /dex/search with broad trending queries as a reliable alternative.
-    const queries = ["new", "trending", "pump", "meme"];
+    const queries = ["solana", "trending", "meme", "pump", "ai", "depin", "gaming", "rwa", "defi", "new"];
     let allPairs: any[] = [];
 
     for (const q of queries) {
@@ -127,9 +127,9 @@ export async function fetchLatestPairs(
       if (!chain) continue;
       if (chains && chains.length > 0 && !chains.includes(chain)) continue;
 
-      // Skip pairs with no liquidity (likely dead)
+      // Skip pairs with no liquidity at all (likely dead or fake)
       const liq = pair.liquidity?.usd ?? 0;
-      if (liq < 100) continue;
+      if (liq < 1) continue;
 
       results.push({
         address: pair.baseToken.address,

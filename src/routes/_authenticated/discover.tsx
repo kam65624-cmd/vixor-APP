@@ -30,6 +30,7 @@ interface TokenItem {
   socialScore: number;
   liquidityScore: number;
   isHoneypot?: boolean;
+  logoUrl?: string;
 }
 
 interface DiscoverResponse {
@@ -83,6 +84,8 @@ function fmtPct(p: number | null): string {
 function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void }) {
   const isUp = (token.change24h ?? 0) >= 0;
   const color = isUp ? "var(--color-bullish)" : "var(--color-bearish)";
+  const [imgError, setImgError] = useState(false);
+  const hasLogo = token.logoUrl && !imgError;
 
   return (
     <div
@@ -103,10 +106,10 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
       <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
         <div
           style={{
-            width: "32px",
-            height: "32px",
+            width: "36px",
+            height: "36px",
             borderRadius: "50%",
-            background: `color-mix(in oklab, ${color} 12%, var(--color-card))`,
+            background: hasLogo ? "var(--color-card)" : `color-mix(in oklab, ${color} 12%, var(--color-card))`,
             border: `1px solid color-mix(in oklab, ${color} 20%, transparent)`,
             display: "flex",
             alignItems: "center",
@@ -116,9 +119,20 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
             color,
             flexShrink: 0,
             letterSpacing: "-0.02em",
+            overflow: "hidden",
           }}
         >
-          {token.symbol.slice(0, 3)}
+          {hasLogo ? (
+            <img
+              src={token.logoUrl}
+              alt={token.symbol}
+              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+              onError={() => setImgError(true)}
+              loading="lazy"
+            />
+          ) : (
+            token.symbol.slice(0, 2).toUpperCase()
+          )}
         </div>
         <div style={{ minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -167,7 +181,7 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
         </div>
       </div>
 
-      {/* Right: Price + Change */}
+      {/* Right: Price + Change + Volume + MCap */}
       <div style={{ textAlign: "right", flexShrink: 0 }}>
         <div
           style={{
@@ -179,7 +193,7 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
         >
           {fmtPrice(token.price)}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}>
           <span
             style={{
               fontSize: "10px",
@@ -190,14 +204,21 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
           >
             {fmtPct(token.change24h)}
           </span>
-          <span
-            style={{
-              fontSize: "9px",
-              color: "var(--color-muted-foreground)",
-            }}
-          >
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "flex-end", marginTop: "2px" }}>
+          <span style={{ fontSize: "8px", color: "var(--color-muted-foreground)" }}>
             Vol {fmtCompact(token.volume24h)}
           </span>
+          {token.marketCap > 0 && (
+            <span style={{ fontSize: "8px", color: "var(--color-muted-foreground)" }}>
+              MC {fmtCompact(token.marketCap)}
+            </span>
+          )}
+          {token.liquidity > 0 && (
+            <span style={{ fontSize: "8px", color: "var(--color-info)" }}>
+              Liq {fmtCompact(token.liquidity)}
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -227,7 +248,7 @@ function DiscoverPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     },
-    refetchInterval: 60_000, // Refresh every 60s
+    refetchInterval: 60_000,
     staleTime: 30_000,
   });
 
@@ -370,7 +391,7 @@ function DiscoverPage() {
         </div>
       </div>
 
-      {/* Refresh Button */}
+      {/* Error bar */}
       {error && (
         <div
           style={{
