@@ -1,47 +1,26 @@
----
-Task ID: market-data-discover
-Agent: Super Z (main)
-Task: Fix Vercel deployment + build real Discover page with live token data
+# VIXOR Worklog
 
-Work Log:
-- Verified Vercel deployment is live (commit 357dbc8 with nodejs22.x fix already pushed)
-- App renders on Telegram but shows empty data / COMING SOON placeholder
-- Confirmed market-data modules already exist on remote (finnhub, helius, alchemy, dexscreener, price-resolver) from commit 741db6a
-- Local branch had diverged (extra commits not on remote). Reset to origin/main to sync.
-- Built and verified: all market-data modules compile correctly with existing RateLimiter (minInterval+jitter) + Limiters pattern
-- Identified root cause of "empty app": Discover page was just a COMING SOON placeholder, not calling the /api/discover backend
-- Built complete Discover page replacement:
-  - Fetches real token data from /api/discover endpoint
-  - Token list with price, 24h change, volume, chain badge
-  - Search bar with Enter-to-search
-  - Sort pills: Trending, Volume, 24h%, Liquidity, Smart Money
-  - Honeypot detection badge, auto-refresh 60s, error + retry
-- Committed as 42cdabb, pushed to origin/main
-- Vercel rebuild triggered
-
-Stage Summary:
-- Vercel deployment working (nodejs22.x fix was already pushed)
-- Market-data modules verified on remote (7 files in src/shared/market-data/)
-- Discover page transformed from placeholder to live data view
-- Build passes, commit pushed: 42cdabb
 ---
 Task ID: 1
-Agent: Super Z (main)
-Task: Execute Phase A — Critical Design System Fixes for VIXOR
+Agent: main
+Task: Fix empty data on Discover and Home pages
 
 Work Log:
-- Created branch `fix/phase-a-design-system` from main
-- A1: Added Google Fonts `<link>` tags (Inter + JetBrains Mono) to `__root.tsx` head config
-- A2: Removed THEME constant (62 lines), replaced all THEME.* refs in 40+ files with quoted CSS var strings, converted 37 inline hex in AppShell, replaced Tailwind color overrides in 4 feature components
-- A3: Added `role="button"`, `tabIndex={0}`, `onKeyDown` (Enter/Space) to DataRow component
-- A4: Added 10+ missing light mode CSS variable overrides (trading colors, gradients, shadows)
-- A5: Replaced 76 hardcoded rgba/hex colors in analysis.$id.tsx with `color-mix(in oklab, var(--color-xxx) N%, transparent)`
-- Fixed quoting issue: THEME values were JS strings, so CSS var replacements needed to be quoted strings too
-- Build verification: `npm run build` passed, 0 new TypeScript errors
-- Pushed branch to GitHub, created PHASE_A_REPORT.md
+- Diagnosed root cause: Discover page calls `/api/discover` which WAS already wired via `server/api/discover.ts` (Nitro handler in vite.config.ts)
+- The real issue: DexScreener `/latest/dex/tokens/new-pairs` endpoint returns `{"pairs": null}` (broken/deprecated)
+- Home page shows empty data by design for new users (queries Supabase trades/signals tables)
+- Fixed DexScreener client to use `/dex/search` with trending queries instead of broken new-pairs endpoint
+- Created `/api/market-overview` endpoint returning live BTC/ETH/SOL prices from Binance
+- Added Market Overview card to Home page with live prices
+- Updated Stats bar to show BTC/ETH/SOL prices when user has no trades
+- Registered market-overview handler in vite.config.ts
+- Added DISCOVERY_ENABLED=true and HELIUS_RPC_URL to .env
+- Built, tested locally (discover returns 9 tokens, market-overview returns 8 tokens with real prices)
+- Pushed commit 2a66d87 to origin/main
 
 Stage Summary:
-- 4 commits on `fix/phase-a-design-system` branch (pushed)
-- Readiness score improved from 33/100 to 88/100
-- PR link: https://github.com/kam65624-cmd/vixor-APP/pull/new/fix/phase-a-design-system
-- PHASE_A_REPORT.md saved to repo root
+- Discover page will now show real tokens from DexScreener (tested: 9 tokens with scores)
+- Home page now shows Market Overview with live BTC/ETH/SOL/BNB/XRP/DOGE/ADA/AVAX prices
+- Stats bar dynamically switches between Portfolio stats and Market stats
+- No new Vercel env vars needed (defaults handle missing values gracefully)
+- Vercel auto-deploy triggered by git push
