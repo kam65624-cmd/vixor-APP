@@ -19,8 +19,11 @@ import { defineEventHandler, getQuery } from "h3";
 import { z } from "zod";
 import { scanDiscovery, searchTokens } from "@/domains/discovery/functions";
 import { getDiscoveryConfig } from "@/domains/discovery/config";
+import { cache } from "@/shared/cache";
 
 /** Query parameter schema for GET /api/discover. */
+const DISCOVER_CACHE_TTL = 60_000;
+
 const discoverQuerySchema = z.object({
   chain: z
     .string()
@@ -78,6 +81,11 @@ export default defineEventHandler(async (event) => {
       };
     }
 
+    // Check Redis cache
+    const cKey = `discover:${query.chain||"all"}:${query.sortBy||"trending"}:${query.limit||"50"}`;
+    const cached = await cache.get(cKey);
+    if (cached) return { ...cached, cached: true };
+
     // Full discovery scan
     const config = getDiscoveryConfig();
     if (!config.DISCOVERY_ENABLED) {
@@ -127,7 +135,7 @@ export default defineEventHandler(async (event) => {
       scannedAt: t.scannedAt,
     }));
 
-    return {
+    const response = {
       success: true,
       data: clientTokens,
       total: result.totalFound,
@@ -135,6 +143,8 @@ export default defineEventHandler(async (event) => {
       scanDurationMs: result.scanDurationMs,
       source: "discovery-pipeline",
     };
+    await cache.set(cKey, response, DISCOVER_CACHE_TTL);
+    return response;
   } catch (err) {
     // Log real error server-side, return generic message to client
     console.error("[discover] Error:", err instanceof Error ? err.message : err);

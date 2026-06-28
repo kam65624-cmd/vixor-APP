@@ -1,34 +1,23 @@
 import { defineEventHandler } from "h3";
+import { cache, CACHE_TTL } from "@/shared/cache";
 
-// Simple SOL price endpoint — fetches from Binance (free, no API key)
-const CACHE_TTL = 30_000; // 30 seconds
-let cachedPrice: { price: number; change24h: number; timestamp: number } | null = null;
+const CACHE_KEY = "sol-price";
 
-export default defineEventHandler(async (event) => {
-  const now = Date.now();
-
-  // Return cached if fresh
-  if (cachedPrice && now - cachedPrice.timestamp < CACHE_TTL) {
-    return cachedPrice;
-  }
+export default defineEventHandler(async () => {
+  const cached = await cache.get<{ price: number; change24h: number }>(CACHE_KEY);
+  if (cached) return { ...cached, cached: true };
 
   try {
-    // Fetch SOL/USDT from Binance
     const res = await fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=SOLUSDT", {
       signal: AbortSignal.timeout(8000),
     });
-
     if (!res.ok) throw new Error(`Binance ${res.status}`);
-
     const data = await res.json();
-    const price = parseFloat(data.lastPrice);
-    const change24h = parseFloat(data.priceChangePercent);
-
-    cachedPrice = { price, change24h, timestamp: now };
-    return cachedPrice;
+    const result = { price: parseFloat(data.lastPrice), change24h: parseFloat(data.priceChangePercent) };
+    await cache.set(CACHE_KEY, result, CACHE_TTL.PRICE);
+    return result;
   } catch {
-    // Return cached even if stale, or fallback
-    if (cachedPrice) return cachedPrice;
-    return { price: 0, change24h: 0, timestamp: now };
+    if (cached) return { ...cached, stale: true };
+    return { price: 0, change24h: 0 };
   }
 });

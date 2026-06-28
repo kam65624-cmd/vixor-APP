@@ -1,8 +1,7 @@
 import { defineEventHandler, getQuery } from "h3";
+import { cache, CACHE_TTL } from "@/shared/cache";
 
 // Fetches fresh Solana trending/new pairs from DexScreener (free, no API key)
-const CACHE_TTL = 60_000;
-let cachedTokens: { data: any[]; timestamp: number } | null = null;
 
 export default defineEventHandler(async (event) => {
   const now = Date.now();
@@ -12,14 +11,11 @@ export default defineEventHandler(async (event) => {
   const limit = parseInt((query.limit as string) || "50", 10);
   const search = (query.search as string) || "";
 
-  // Return cached if fresh
-  if (cachedTokens && now - cachedTokens.timestamp < CACHE_TTL && !search) {
-    return {
-      success: true,
-      data: cachedTokens.data.slice(0, limit),
-      total: cachedTokens.data.length,
-      source: "dexscreener-cache",
-    };
+  // Return cached if fresh (non-search only)
+  if (!search) {
+    const ck = `dexscreener:${chain}:${sortBy}`;
+    const cached = await cache.get(ck);
+    if (cached) return { success: true, data: cached.data.slice(0, limit), total: cached.total, source: "dexscreener-cache" };
   }
 
   try {
@@ -96,7 +92,7 @@ export default defineEventHandler(async (event) => {
     }
 
     if (!search) {
-      cachedTokens = { data: pairs, timestamp: now };
+      await cache.set(`dexscreener:${chain}:${sortBy}`, { data: pairs, total: pairs.length }, CACHE_TTL.NEWS);
     }
 
     return {

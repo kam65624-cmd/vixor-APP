@@ -7,6 +7,9 @@
  */
 
 import { defineEventHandler } from "h3";
+import { cache, CACHE_TTL } from "@/shared/cache";
+
+const CACHE_KEY = "market-overview";
 
 const FALLBACK_STATS = {
   totalVolume: 0, btcPrice: 0, btcChange: 0,
@@ -141,6 +144,7 @@ export default defineEventHandler(async () => {
   ] as const) {
     try {
       const result = await fetcher();
+      await cache.set(CACHE_KEY, result, CACHE_TTL.MARKET_PRICES);
       console.log(`[market-overview] Success via ${name} (${result.tokens.length} tokens)`);
       return result;
     } catch (err) {
