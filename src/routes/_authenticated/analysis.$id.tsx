@@ -26,7 +26,7 @@ import {
   Pin,
   Trash2,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { getAnalysis } from "@/domains/analysis/functions";
 import { getNotesByAnalysis, deleteNote } from "@/domains/notes/functions";
 import type { TradingNote, Mood } from "@/domains/notes/types";
@@ -34,6 +34,8 @@ import { NoteEditorDialog } from "@/components/vixor/NoteEditorDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { PageLayout,  ScrollArea, Badge, ProgressBar } from "@/components/vixor/PageLayout";
+import { shareOnX, shareOnTelegram } from "@/shared/share";
+import type { ShareableSignal } from "@/shared/share";
 
 // ── Local style constants ──────────────────────────────────────────────
 const GREEN_DEEP = "var(--color-bullish)";
@@ -173,6 +175,32 @@ function AnalysisResult() {
   const isBearish = a?.recommendation === "SELL";
   const isWait = a?.recommendation === "WAIT";
 
+  const [shareOpen, setShareOpen] = useState(false);
+
+  // Share handler — formats analysis data and opens X/Telegram share
+  const shareSignal: ShareableSignal = useMemo(() => ({
+    pair: a?.pair ?? "",
+    direction: (a?.recommendation ?? "WAIT") as "BUY" | "SELL" | "WAIT",
+    confidence: a?.confidence ?? undefined,
+    entry: typeof a?.entry === "number" ? a.entry : null,
+    stopLoss: typeof a?.stop_loss === "number" ? a.stop_loss : null,
+    takeProfit: Array.isArray(a?.take_profit) ? a.take_profit : null,
+    pattern: a?.pattern ?? null,
+    reasons: Array.isArray(a?.reasons) ? a.reasons : null,
+    timeframe: a?.timeframe ?? undefined,
+    source: "VIXOR AI",
+  }), [a]);
+
+  const handleShareX = useCallback(() => {
+    shareOnX(shareSignal);
+    setShareOpen(false);
+  }, [shareSignal]);
+
+  const handleShareTelegram = useCallback(() => {
+    shareOnTelegram(shareSignal);
+    setShareOpen(false);
+  }, [shareSignal]);
+
   const recColor = isBullish ? "var(--color-bullish)" : isBearish ? "var(--color-bearish)" : "var(--color-neutral-wait)";
 
   // PageLayout header props
@@ -203,7 +231,7 @@ function AnalysisResult() {
       {/* ── Failed State ── */}
       {isFailed && (
         <div style={{ padding: "16px" }}>
-          <BackHeader />
+          <BackHeader shareOpen={shareOpen} setShareOpen={setShareOpen} isComplete={isComplete} handleShareX={handleShareX} handleShareTelegram={handleShareTelegram} />
           <div
             style={{
               ...CARD,
@@ -258,7 +286,7 @@ function AnalysisResult() {
         <ScrollArea>
           <div style={{ padding: "0 0 24px" }}>
             {/* ── Back Header ── */}
-            <BackHeader />
+            <BackHeader shareOpen={shareOpen} setShareOpen={setShareOpen} isComplete={isComplete} handleShareX={handleShareX} handleShareTelegram={handleShareTelegram} />
 
             {/* ═══════════════════════════════════════
                 HERO SIGNAL CARD — THE MAIN EVENT
@@ -1895,7 +1923,13 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
 }
 
 // ═══ HELPERS ═══
-function BackHeader() {
+function BackHeader({ shareOpen, setShareOpen, isComplete, handleShareX, handleShareTelegram }: {
+  shareOpen: boolean;
+  setShareOpen: (v: boolean) => void;
+  isComplete: boolean;
+  handleShareX: () => void;
+  handleShareTelegram: () => void;
+}) {
   return (
     <div
       style={{
@@ -1939,22 +1973,80 @@ function BackHeader() {
         >
           <Bookmark size={16} />
         </button>
-        <button
-          style={{
-            width: "40px",
-            height: "40px",
-            borderRadius: "12px",
-            background: "var(--color-card)",
-            border: `1px solid ${"var(--color-border)"}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "var(--color-muted-foreground)",
-            cursor: "pointer",
-          }}
-        >
-          <Share2 size={16} />
-        </button>
+        <div style={{ position: "relative" }}>
+          <button
+            onClick={() => setShareOpen(!shareOpen)}
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "12px",
+              background: "var(--color-card)",
+              border: `1px solid ${"var(--color-border)"}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--color-muted-foreground)",
+              cursor: "pointer",
+            }}
+          >
+            <Share2 size={16} />
+          </button>
+          {shareOpen && isComplete && (
+            <div
+              style={{
+                position: "absolute",
+                top: "48px",
+                right: "0",
+                background: "var(--color-card)",
+                border: `1px solid var(--color-border)`,
+                borderRadius: "12px",
+                boxShadow: "0 8px 32px -8px oklch(0 0 0 / 0.5)",
+                padding: "6px",
+                zIndex: 50,
+                minWidth: "140px",
+              }}
+            >
+              <button
+                onClick={handleShareX}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: "none",
+                  borderRadius: "8px",
+                  background: "transparent",
+                  color: "var(--color-foreground)",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                }}
+              >
+                X (Twitter)
+              </button>
+              <button
+                onClick={handleShareTelegram}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: "none",
+                  borderRadius: "8px",
+                  background: "transparent",
+                  color: "var(--color-foreground)",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                }}
+              >
+                Telegram
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

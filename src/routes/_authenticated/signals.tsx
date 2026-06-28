@@ -1,8 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { memo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { memo, useState, useCallback } from "react";
 import { getDailySignals } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { createSignalTracking, getUserSignalTrackings } from "@/domains/signal-tracking";
+import { shareOnX, shareOnTelegram } from "@/shared/share";
+import type { ShareableSignal } from "@/shared/share";
+import type { SignalTracking } from "@/domains/signal-tracking";
+import { SIGNAL_STATUS_CONFIG, TERMINAL_STATUSES } from "@/domains/signal-tracking";
+import { useSignalMonitor } from "@/shared/hooks/use-signal-monitor";
 import {
   PageLayout, 
   StatsRow,
@@ -30,7 +36,71 @@ const TABS = ["All", "BUY", "SELL", "WAIT"] as const;
 
 function SignalsPage() {
   const fetchSignals = useStableServerFn(getDailySignals);
+  const createTracking = useStableServerFn(createSignalTracking);
+  const fetchTrackings = useStableServerFn(getUserSignalTrackings);
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>("All");
+  const [trackingIds, setTrackingIds] = useState<Record<string, string>>({});
+
+  // Fetch user's trackings on mount
+  useQuery({
+    queryKey: ["my-signal-trackings"],
+    queryFn: () => fetchTrackings({}),
+    staleTime: 30_000,
+  });
+
+  // Signal monitor for real-time TP/SL checking
+  const { isMonitoring, activeTrackings, notificationsSent } = useSignalMonitor(true);
+
+  // Track a signal
+  const handleTrack = useCallback(async (signal: Signal) => {
+    if (signal.recommendation === "WAIT") return;
+    const res = await createTracking({
+      data: {
+        signalId: signal.id,
+        pair: signal.pair,
+        direction: signal.recommendation,
+        entryPrice: signal.entry,
+        stopLoss: signal.stop_loss,
+        takeProfit: signal.take_profit,
+      },
+    });
+    if (res.ok && res.trackingId) {
+      setTrackingIds((prev) => ({ ...prev, [signal.id]: res.trackingId! }));
+      queryClient.invalidateQueries({ queryKey: ["my-signal-trackings"] });
+    }
+  }, [createTracking, queryClient]);
+
+  // Share a signal
+  const handleShareX = useCallback((signal: Signal) => {
+    shareOnX({
+      pair: signal.pair,
+      direction: signal.recommendation,
+      confidence: signal.confidence,
+      entry: signal.entry,
+      stopLoss: signal.stop_loss,
+      takeProfit: signal.take_profit,
+      pattern: signal.pattern,
+      reasons: signal.reasons,
+      timeframe: signal.timeframe,
+      source: "VIXOR AI",
+    });
+  }, []);
+
+  const handleShareTelegram = useCallback((signal: Signal) => {
+    shareOnTelegram({
+      pair: signal.pair,
+      direction: signal.recommendation,
+      confidence: signal.confidence,
+      entry: signal.entry,
+      stopLoss: signal.stop_loss,
+      takeProfit: signal.take_profit,
+      pattern: signal.pattern,
+      reasons: signal.reasons,
+      timeframe: signal.timeframe,
+      source: "VIXOR AI",
+    });
+  }, []);
 
   const query = useQuery({
     queryKey: ["daily-signals"],
@@ -67,6 +137,7 @@ function SignalsPage() {
           { label: "Buy Signals", value: String(buyCount), color: "var(--color-bullish)" },
           { label: "Sell Signals", value: String(sellCount), color: "var(--color-bearish)" },
           { label: "Avg Confidence", value: `${avgConfidence}%`, color: "var(--color-neutral-wait)" },
+          ...(isMonitoring ? [{ label: "Monitoring", value: String(activeTrackings.length), color: "var(--color-bullish)" }] : []),
         ]}
       />
 
@@ -75,7 +146,15 @@ function SignalsPage() {
       <ScrollArea style={{ padding: "0" }}>
         {filtered.length > 0 ? (
           filtered.map((sig) => (
-            <SignalRow key={sig.id} signal={sig} recColor={recColor} />
+            <SignalRow
+              key={sig.id}
+              signal={sig}
+              recColor={recColor}
+              isTracked={!!trackingIds[sig.id]}
+              onTrack={() => handleTrack(sig)}
+              onShareX={() => handleShareX(sig)}
+              onShareTelegram={() => handleShareTelegram(sig)}
+            />
           ))
         ) : (
           <EmptyState
@@ -96,9 +175,17 @@ function SignalsPage() {
 const SignalRow = memo(function SignalRow({
   signal,
   recColor,
+  isTracked,
+  onTrack,
+  onShareX,
+  onShareTelegram,
 }: {
   signal: Signal;
   recColor: (r: string) => string;
+  isTracked?: boolean;
+  onTrack?: () => void;
+  onShareX?: () => void;
+  onShareTelegram?: () => void;
 }) {
   const color = recColor(signal.recommendation);
 
@@ -170,6 +257,64 @@ const SignalRow = memo(function SignalRow({
         <span style={{ marginLeft: "auto" }}>
           {new Date(signal.signal_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
         </span>
+      </div>
+      {/* Action buttons */}
+      <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+        {signal.recommendation !== "WAIT" && (
+          <button
+            onClick={onTrack}
+            disabled={isTracked}
+            style={{
+              fontSize: "9px",
+              fontWeight: 700,
+              padding: "4px 10px",
+              borderRadius: "6px",
+              border: `1px solid ${isTracked ? "var(--color-bullish)" : "var(--color-border)"}`,
+              background: isTracked ? "color-mix(in oklab, var(--color-bullish) 15%, transparent)" : "transparent",
+              color: isTracked ? "var(--color-bullish)" : "var(--color-muted-foreground)",
+              cursor: isTracked ? "default" : "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {isTracked ? "TRACKING" : "TRACK"}
+          </button>
+        )}
+        {onShareX && (
+          <button
+            onClick={onShareX}
+            style={{
+              fontSize: "9px",
+              fontWeight: 700,
+              padding: "4px 10px",
+              borderRadius: "6px",
+              border: "1px solid var(--color-border)",
+              background: "transparent",
+              color: "var(--color-muted-foreground)",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            X
+          </button>
+        )}
+        {onShareTelegram && (
+          <button
+            onClick={onShareTelegram}
+            style={{
+              fontSize: "9px",
+              fontWeight: 700,
+              padding: "4px 10px",
+              borderRadius: "6px",
+              border: "1px solid var(--color-border)",
+              background: "transparent",
+              color: "var(--color-muted-foreground)",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            TG
+          </button>
+        )}
       </div>
     </DataRow>
   );

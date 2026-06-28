@@ -55,6 +55,30 @@ export interface VixorEventMap {
     pair: string;
     signalDate: string;
   };
+  "signal.tracking.created": {
+    trackingId: string;
+    userId: string;
+    pair: string;
+    direction: "BUY" | "SELL" | "WAIT";
+    entryPrice: number;
+    stopLoss: number;
+  };
+  "signal.tp_hit": {
+    trackingId: string;
+    userId: string;
+    pair: string;
+    direction: "BUY" | "SELL";
+    tpLevel: number;
+    hitTp: number;
+    currentPrice: number;
+  };
+  "signal.sl_hit": {
+    trackingId: string;
+    userId: string;
+    pair: string;
+    direction: "BUY" | "SELL";
+    currentPrice: number;
+  };
 
   // Alert events
   "alert.triggered": {

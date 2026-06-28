@@ -410,6 +410,90 @@ export type Database = {
         };
         Relationships: [];
       };
+      signal_tracking: {
+        Row: {
+          activated_at: string | null;
+          created_at: string;
+          current_price: number | null;
+          direction: string;
+          entry_price: number | null;
+          expires_at: string | null;
+          hit_tp: number;
+          id: string;
+          max_adverse_excursion: number;
+          max_favorable_excursion: number;
+          pair: string;
+          previous_price: number | null;
+          resolved_at: string | null;
+          signal_id: string | null;
+          source_type: string;
+          status: Database["public"]["Enums"]["signal_status"];
+          stop_loss: number | null;
+          take_profit: Json | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          activated_at?: string | null;
+          created_at?: string;
+          current_price?: number | null;
+          direction: string;
+          entry_price?: number | null;
+          expires_at?: string | null;
+          hit_tp?: number;
+          id?: string;
+          max_adverse_excursion?: number;
+          max_favorable_excursion?: number;
+          pair: string;
+          previous_price?: number | null;
+          resolved_at?: string | null;
+          signal_id?: string | null;
+          source_type?: string;
+          status?: Database["public"]["Enums"]["signal_status"];
+          stop_loss?: number | null;
+          take_profit?: Json | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          activated_at?: string | null;
+          created_at?: string;
+          current_price?: number | null;
+          direction?: string;
+          entry_price?: number | null;
+          expires_at?: string | null;
+          hit_tp?: number;
+          id?: string;
+          max_adverse_excursion?: number;
+          max_favorable_excursion?: number;
+          pair?: string;
+          previous_price?: number | null;
+          resolved_at?: string | null;
+          signal_id?: string | null;
+          source_type?: string;
+          status?: Database["public"]["Enums"]["signal_status"];
+          stop_loss?: number | null;
+          take_profit?: Json | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "signal_tracking_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "signal_tracking_signal_id_fkey";
+            columns: ["signal_id"];
+            isOneToOne: false;
+            referencedRelation: "daily_signals";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_strategies: {
         Row: {
           id: string;
@@ -1399,6 +1483,15 @@ export type Database = {
     };
     Enums: {
       analysis_status: "queued" | "processing" | "complete" | "failed";
+      signal_status:
+        | "pending"
+        | "active"
+        | "tp1_hit"
+        | "tp2_hit"
+        | "tp3_hit"
+        | "sl_hit"
+        | "expired"
+        | "cancelled";
       points_reason:
         | "signup_bonus"
         | "analysis_cost"
@@ -1546,6 +1639,16 @@ export const Constants = {
         "telegram_stars_purchase",
       ],
       recommendation_type: ["BUY", "SELL", "WAIT"],
+      signal_status: [
+        "pending",
+        "active",
+        "tp1_hit",
+        "tp2_hit",
+        "tp3_hit",
+        "sl_hit",
+        "expired",
+        "cancelled",
+      ],
     },
   },
 } as const;
