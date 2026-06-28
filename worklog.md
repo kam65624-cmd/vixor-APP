@@ -48,3 +48,31 @@ Stage Summary:
 - App will no longer crash with null btcPrice — shows "..." fallback gracefully
 - Market data resilient: Binance → CoinGecko → safe zero defaults
 - All 7 planned development steps verified complete
+---
+Task ID: 2a
+Agent: main
+Task: Phase 2 — Rate Limit Wrapper + Dead Code Cleanup + Security Fixes
+
+Work Log:
+- Created server/utils/with-rate-limit.ts — per-handler rate limiting wrapper that works on Vercel serverless
+- Applied withRateLimit to 5 API handlers: market-overview (120/min), sol-price (120/min), discover (60/min), telegram-webhook (30/min), stars-webhook (30/min)
+- Removed 8 dead npm packages: ccxt, pg, docx, html2canvas, canvas-confetti, react-hook-form, @hookform/resolvers, string-similarity (-768 transitive deps)
+- Deleted dead shared modules: crypto/, vault/, error-capture.ts
+- Deleted 8 unused shadcn/ui components: calendar, carousel, form, input-otp, resizable, menubar, aspect-ratio, navigation-menu
+- Fixed sol-price.ts dead code in catch block
+- Fixed copilot-stream.ts: no longer leaks err.message to client
+- Fixed stars-webhook.ts: removed userId from error logs (PII)
+- Fixed market-overview.ts: removed noisy success log
+- Fixed generate-signals.ts: per-pair warnings gated behind DEBUG_SIGNALS env
+- Verified client bundle leak is FALSE ALARM — lightweight-charts-indicators (1.7MB) only in server _libs/, NOT in client bundle
+- Full project architecture review: 17 domains, 36 routes (33 working, 3 placeholders), 14 API endpoints
+- Build: successful, deployed to Vercel production
+- Verified: x-ratelimit-limit/remaining/reset headers present on production
+
+Stage Summary:
+- -2046 lines deleted, +137 lines added
+- Rate limiting now functional on Vercel serverless (confirmed via production headers)
+- Server bundle: ~383KB
+- 8 npm packages removed (~8MB+ install size reduction)
+- 12 dead files deleted (modules + UI components)
+- 4 security/bug fixes applied
