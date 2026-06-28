@@ -67,7 +67,6 @@ export default defineConfig({
         { route: "/api/wallet/connect", handler: "./server/api/wallet/connect.ts" },
         { route: "/api/wallet/session", handler: "./server/api/wallet/session.ts" },
         { route: "/api/wallet/ip-fingerprint", handler: "./server/api/wallet/ip-fingerprint.ts" },
-        { route: "/api/token-image", handler: "./server/api/token-image.ts" },
         { route: "/api/arbitrage-scan", handler: "./server/api/arbitrage-scan.ts" },
         { route: "/api/stars-webhook", handler: "./server/api/stars-webhook.ts" },
         { route: "/api/vixor-ai/risk", handler: "./server/api/vixor-ai/risk.ts" },
