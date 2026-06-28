@@ -135,12 +135,16 @@ async function fetchFromCoinGecko() {
   };
 }
 
-// ── Main handler ───────────────────────────────────────────────────────
+// ── Main handler with Redis cache ────────────────────────────────────
 export default defineEventHandler(async () => {
-  // Try Binance first, then CoinGecko as fallback
+  // 1. Check Redis cache first
+  const cached = await cache.get(CACHE_KEY);
+  if (cached) return { ...cached, cached: true };
+
+  // 2. Try CoinGecko first (rich data), then Binance as fallback
   for (const [name, fetcher] of [
-    ["Binance", fetchFromBinance],
     ["CoinGecko", fetchFromCoinGecko],
+    ["Binance", fetchFromBinance],
   ] as const) {
     try {
       const result = await fetcher();
