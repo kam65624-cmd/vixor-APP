@@ -95,7 +95,7 @@ async function creditPackPurchase(userId: string, packId: string, chargeId: stri
   if (rpcError) {
     console.error(`[Stars Webhook] credit_points failed for user ${userId}:`, rpcError);
   } else {
-    console.log(`[Stars Webhook] Credited ${total} points to ${userId} for pack ${packId}`);
+    // Points credited successfully
   }
 }
 
@@ -141,7 +141,7 @@ async function creditPremiumSubscription(
   if (insertError) {
     console.error(`[Stars Webhook] Failed to activate premium for ${userId}:`, insertError);
   } else {
-    console.log(`[Stars Webhook] Activated premium (${planId}) for ${userId} until ${periodEnd}`);
+    // Premium activated successfully
   }
 }
 
@@ -174,10 +174,7 @@ export default defineEventHandler(async (event) => {
     // ── 1. Handle pre_checkout_query → auto-approve ──
     if (body.pre_checkout_query) {
       const query = body.pre_checkout_query as PreCheckoutQuery;
-      console.log(
-        `[Stars Webhook] pre_checkout_query from user ${query.from?.id}, ` +
-          `payload=${query.invoice_payload}, amount=${query.total_amount} ${query.currency}`,
-      );
+      // Pre-checkout approved
       await answerPreCheckout(query.id);
       return "OK";
     }
@@ -188,10 +185,7 @@ export default defineEventHandler(async (event) => {
       const payload = payment.invoice_payload;
       const chargeId = payment.telegram_payment_charge_id;
 
-      console.log(
-        `[Stars Webhook] successful_payment: payload=${payload}, ` +
-          `charge=${chargeId}, amount=${payment.total_amount} ${payment.currency}`,
-      );
+      // Processing successful payment
 
       if (!payload) {
         console.error("[Stars Webhook] Missing invoice_payload, skipping");
