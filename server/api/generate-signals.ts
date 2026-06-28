@@ -83,7 +83,7 @@ export default defineEventHandler(async (event) => {
             });
           }
         } catch (err) {
-          console.warn(
+          if (process.env.DEBUG_SIGNALS) console.warn(
             `[Signals API] Failed for ${pair}/${tf}:`,
             err instanceof Error ? err.message : String(err),
           );

@@ -113,7 +113,7 @@ export default defineEventHandler(async (event) => {
         sendSSE({ delta: "", done: true });
       } catch (err) {
         sendSSE({
-          delta: `Error: ${err instanceof Error ? err.message : "Streaming failed"}`,
+          delta: "Error: Streaming failed",
           done: true,
           error: true,
         });

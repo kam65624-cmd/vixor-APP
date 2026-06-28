@@ -1,7 +1,5 @@
-import "./shared/error-capture";
 import "./shared/p1-bootstrap";
 
-import { consumeLastCapturedError } from "./shared/error-capture";
 import { renderErrorPage } from "./shared/error-page";
 
 type ServerEntry = {
@@ -31,30 +29,17 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   // Log error details server-side only (never exposed to client in production)
   console.error("[Vixor] 500 JSON response body:", body.substring(0, 500));
 
-  const captured = consumeLastCapturedError() as Error | undefined;
-  if (captured) {
-    console.error("[Vixor] Captured SSR error:", captured.message);
-  }
-
   // For ANY 500 JSON response, show debug info
   try {
     const parsed = JSON.parse(body);
     const errorMsg = parsed.message || parsed.error || body;
-    const html = renderDebugErrorPage(errorMsg, captured?.stack ?? undefined);
+    const html = renderDebugErrorPage(errorMsg);
     return new Response(html, {
       status: 500,
       headers: { "content-type": "text/html; charset=utf-8" },
     });
   } catch {
     // Not valid JSON, fall through
-  }
-
-  if (captured) {
-    const html = renderDebugErrorPage(captured.message || String(captured), captured.stack);
-    return new Response(html, {
-      status: 500,
-      headers: { "content-type": "text/html; charset=utf-8" },
-    });
   }
 
   return new Response(renderErrorPage(), {

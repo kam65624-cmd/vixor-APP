@@ -1,5 +1,6 @@
 import { defineEventHandler, getMethod, getHeader, readBody, createError } from "h3";
 import { supabaseAdmin } from "@/shared/supabase/client.server";
+import { withRateLimit } from "../utils/with-rate-limit";
 
 // ============================================================================
 // Telegram Stars Payment Webhook
@@ -93,7 +94,7 @@ async function creditPackPurchase(userId: string, packId: string, chargeId: stri
   });
 
   if (rpcError) {
-    console.error(`[Stars Webhook] credit_points failed for user ${userId}:`, rpcError);
+    console.error("[Stars Webhook] credit_points failed:", rpcError);
   } else {
     // Points credited successfully
   }
@@ -145,7 +146,7 @@ async function creditPremiumSubscription(
   }
 }
 
-export default defineEventHandler(async (event) => {
+const handler = defineEventHandler(async (event) => {
   const method = getMethod(event);
 
   if (method !== "POST") {
@@ -226,3 +227,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: "Internal server error" });
   }
 });
+
+export default withRateLimit(handler, { webhook: true });

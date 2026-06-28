@@ -20,6 +20,7 @@ import { z } from "zod";
 import { scanDiscovery, searchTokens } from "@/domains/discovery/functions";
 import { getDiscoveryConfig } from "@/domains/discovery/config";
 import { cache } from "@/shared/cache";
+import { withRateLimit } from "../utils/with-rate-limit";
 
 /** Query parameter schema for GET /api/discover. */
 const DISCOVER_CACHE_TTL = 60_000;
@@ -65,7 +66,7 @@ const discoverQuerySchema = z.object({
   search: z.string().optional(),
 });
 
-export default defineEventHandler(async (event) => {
+const handler = defineEventHandler(async (event) => {
   try {
     const query = getQuery(event);
     const params = discoverQuerySchema.parse(query);
@@ -156,3 +157,5 @@ export default defineEventHandler(async (event) => {
     };
   }
 });
+
+export default withRateLimit(handler, { maxRequests: 60, windowSec: 60 });

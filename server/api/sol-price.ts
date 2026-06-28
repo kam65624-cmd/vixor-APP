@@ -1,9 +1,10 @@
 import { defineEventHandler } from "h3";
 import { cache, CACHE_TTL } from "@/shared/cache";
+import { withRateLimit } from "../utils/with-rate-limit";
 
 const CACHE_KEY = "sol-price";
 
-export default defineEventHandler(async () => {
+const handler = defineEventHandler(async () => {
   const cached = await cache.get<{ price: number; change24h: number }>(CACHE_KEY);
   if (cached) return { ...cached, cached: true };
 
@@ -17,7 +18,8 @@ export default defineEventHandler(async () => {
     await cache.set(CACHE_KEY, result, CACHE_TTL.PRICE);
     return result;
   } catch {
-    if (cached) return { ...cached, stale: true };
-    return { price: 0, change24h: 0 };
+    return { price: 0, change24h: 0, error: "Price data unavailable" };
   }
 });
+
+export default withRateLimit(handler, { maxRequests: 120, windowSec: 60 });

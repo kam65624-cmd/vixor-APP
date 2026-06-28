@@ -34,5 +34,4 @@ export type { MigrationStatus } from "./migrate.server";
 export { getTelegramInitData, isInsideTelegram, openTelegramInvoice } from "./telegram";
 
 // Error handling
-export { consumeLastCapturedError } from "./error-capture";
 export { renderErrorPage } from "./error-page";

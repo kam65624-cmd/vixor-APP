@@ -1,9 +1,8 @@
 import { defineEventHandler, getMethod, readBody, getHeader, createError } from "h3";
 import { supabaseAdmin } from "@/shared/supabase/client.server";
+import { withRateLimit } from "../utils/with-rate-limit";
 
-// Rate limiting is handled by server/middleware/rate-limit.ts
-
-export default defineEventHandler(async (event) => {
+const handler = defineEventHandler(async (event) => {
   const method = getMethod(event);
 
   if (method !== "POST") {
@@ -117,3 +116,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: "Internal server error" });
   }
 });
+
+export default withRateLimit(handler, { webhook: true });

@@ -8,6 +8,7 @@
 
 import { defineEventHandler } from "h3";
 import { cache, CACHE_TTL } from "@/shared/cache";
+import { withRateLimit } from "../utils/with-rate-limit";
 
 const CACHE_KEY = "market-overview";
 
@@ -136,7 +137,7 @@ async function fetchFromCoinGecko() {
 }
 
 // ── Main handler with Redis cache ────────────────────────────────────
-export default defineEventHandler(async () => {
+const handler = defineEventHandler(async () => {
   // 1. Check Redis cache first
   const cached = await cache.get(CACHE_KEY);
   if (cached) return { ...cached, cached: true };
@@ -149,7 +150,6 @@ export default defineEventHandler(async () => {
     try {
       const result = await fetcher();
       await cache.set(CACHE_KEY, result, CACHE_TTL.MARKET_PRICES);
-      console.log(`[market-overview] Success via ${name} (${result.tokens.length} tokens)`);
       return result;
     } catch (err) {
       console.warn(`[market-overview] ${name} failed:`, err instanceof Error ? err.message : err);
@@ -165,3 +165,5 @@ export default defineEventHandler(async () => {
     error: "All data sources unavailable",
   };
 });
+
+export default withRateLimit(handler, { maxRequests: 120, windowSec: 60 });
