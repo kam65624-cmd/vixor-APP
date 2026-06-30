@@ -10,7 +10,7 @@
 
 import type { ApiResponse } from "../types";
 import { CACHE_TTL_MS } from "../constants";
-import { getMobulaApiKey } from "@/shared/vault";
+import { getApiKey } from "@/shared/api-keys/vault";
 
 const MOBULA_BASE_URL = "https://api.mobula.io/api/1";
 
@@ -44,7 +44,7 @@ async function mobulaRequest<T>(
   ttlMs?: number,
 ): Promise<ApiResponse<T>> {
   const start = Date.now();
-  const apiKey = getMobulaApiKey();
+  const apiKey = getApiKey("MOBULA_API_KEY" as any);
 
   if (!apiKey) {
     return {
@@ -170,7 +170,7 @@ export async function fetchMarketData(
     },
   );
 
-  if (!resp.success || !resp.data) return resp as ApiResponse<MobulaMarketData[]>;
+  if (!resp.success || !resp.data) return resp as unknown as ApiResponse<MobulaMarketData[]>;
 
   return {
     ...resp,
@@ -195,7 +195,7 @@ export async function fetchQuotes(
     15_000, // slightly longer TTL for quotes
   );
 
-  if (!resp.success || !resp.data) return resp as ApiResponse<MobulaQuote[]>;
+  if (!resp.success || !resp.data) return resp as unknown as ApiResponse<MobulaQuote[]>;
 
   return {
     ...resp,
@@ -232,7 +232,7 @@ export async function fetchHistoricalData(
   );
 
   if (!resp.success || !resp.data)
-    return resp as ApiResponse<MobulaHistoricalPoint[]>;
+    return resp as unknown as ApiResponse<MobulaHistoricalPoint[]>;
 
   return {
     ...resp,
@@ -259,7 +259,7 @@ export async function fetchTrendingTokens(
     },
   );
 
-  if (!resp.success || !resp.data) return resp as ApiResponse<MobulaMarketData[]>;
+  if (!resp.success || !resp.data) return resp as unknown as ApiResponse<MobulaMarketData[]>;
 
   return {
     ...resp,

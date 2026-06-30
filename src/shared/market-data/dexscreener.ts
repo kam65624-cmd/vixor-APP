@@ -105,19 +105,20 @@ export async function getPair(chainId: string, pairAddress: string): Promise<Dex
 
 /** Get token pairs for a specific token. Rate limited + cached 30s. */
 export async function getTokenPairs(chainId: string, tokenAddress: string): Promise<DexScreenerPair[]> {
-  return dexFetch<DexScreenerPair[]>(
-    `/token-pairs/v1/${chainId}/${tokenAddress}`,
-  ) ?? [];
+  const result = await dexFetch<DexScreenerPair[]>(`/token-pairs/v1/${chainId}/${tokenAddress}`);
+  return result ?? [];
 }
 
 /** Get trending metas (memecoin categories). Rate limited. */
 export async function getTrendingMetas(): Promise<unknown[]> {
-  return dexFetch<unknown[]>("/metas/trending/v1") ?? [];
+  const result = await dexFetch<unknown[]>("/metas/trending/v1");
+  return result ?? [];
 }
 
 /** Get latest token profiles. Rate limited. */
 export async function getLatestTokenProfiles(): Promise<DexScreenerToken[]> {
-  return dexFetch<DexScreenerToken[]>("/token-profiles/latest/v1") ?? [];
+  const result = await dexFetch<DexScreenerToken[]>("/token-profiles/latest/v1");
+  return result ?? [];
 }
 
 /** Get boosted tokens (top traders signal). Rate limited. */
@@ -125,7 +126,8 @@ export async function getTopBoosts(chainId?: string): Promise<unknown[]> {
   const path = chainId
     ? `/token-boosts/top/v1/${chainId}`
     : "/token-boosts/latest/v1";
-  return dexFetch<unknown[]>(path) ?? [];
+  const result = await dexFetch<unknown[]>(path);
+  return result ?? [];
 }
 
 /**

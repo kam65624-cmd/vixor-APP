@@ -101,6 +101,7 @@ export const telegramSignIn = createServerFn({ method: "POST" })
         console.log("[Auth] Telegram user already exists, updating password:", email);
         try {
           const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers({
+            // @ts-expect-error Supabase Admin API `filter` is not typed in the SDK
             filter: `email eq "${email}"`,
             perPage: 1,
           });
