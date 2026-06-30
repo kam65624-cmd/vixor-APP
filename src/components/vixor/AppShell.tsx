@@ -413,7 +413,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
       className="fixed inset-x-0 z-50"
       style={{
         background: "var(--color-background)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        borderBottom: "1px solid var(--color-border)",
         height: "40px",
         top: isTg ? "env(safe-area-inset-top, 0px)" : "0px",
         display: "flex",
@@ -512,8 +512,8 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
               width: "26px",
               height: "26px",
               background:
-                "linear-gradient(135deg, rgba(16,185,129,0.3), rgba(5,150,105,0.2))",
-              border: "1px solid rgba(255,255,255,0.1)",
+                "linear-gradient(135deg, color-mix(in oklab, var(--color-bullish) 30%, transparent), color-mix(in oklab, var(--color-bullish) 20%, transparent))",
+              border: "1px solid var(--color-border)",
               textDecoration: "none",
             }}
           >
@@ -531,7 +531,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
             style={{
               width: "26px",
               height: "26px",
-              background: "rgba(255,255,255,0.05)",
+              background: "var(--color-muted)",
               textDecoration: "none",
             }}
           >
@@ -591,7 +591,7 @@ const BottomBar = memo(function BottomBar({
       className="fixed bottom-0 inset-x-0 z-50"
       style={{
         background: "var(--color-background)",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
+        borderTop: "1px solid var(--color-border)",
         height: isTg ? "calc(52px + env(safe-area-inset-bottom, 0px))" : "52px",
         display: "flex",
         alignItems: "center",
@@ -715,7 +715,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
         style={{
           position: "fixed",
           inset: 0,
-          background: "rgba(0,0,0,0.6)",
+          background: "color-mix(in oklab, var(--color-background) 60%, transparent)",
           backdropFilter: "blur(4px)",
           WebkitBackdropFilter: "blur(4px)",
           zIndex: 99,
@@ -733,7 +733,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
           background: "var(--color-card)",
           borderTopLeftRadius: "16px",
           borderTopRightRadius: "16px",
-          borderTop: "1px solid rgba(255,255,255,0.08)",
+          borderTop: "1px solid var(--color-border)",
           zIndex: 100,
           maxHeight: "75vh",
           overflowY: "auto",
@@ -755,7 +755,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
               width: "36px",
               height: "4px",
               borderRadius: "2px",
-              background: "rgba(255,255,255,0.15)",
+              background: "color-mix(in oklab, var(--color-foreground) 15%, transparent)",
             }}
           />
         </div>
@@ -767,7 +767,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "0 16px 10px",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            borderBottom: "1px solid var(--color-border)",
           }}
         >
           <span
@@ -782,7 +782,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
           <button
             onClick={onClose}
             style={{
-              background: "rgba(255,255,255,0.06)",
+              background: "var(--color-muted)",
               border: "none",
               borderRadius: "6px",
               padding: "4px 10px",
@@ -838,11 +838,11 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                         padding: "10px 10px",
                         borderRadius: "8px",
                         background: isActive
-                          ? "rgba(16,185,129,0.12)"
-                          : "rgba(255,255,255,0.03)",
+                          ? "color-mix(in oklab, var(--color-bullish) 12%, transparent)"
+                          : "var(--color-muted)",
                         border: isActive
-                          ? "1px solid rgba(16,185,129,0.2)"
-                          : "1px solid rgba(255,255,255,0.04)",
+                          ? "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)"
+                          : "1px solid var(--color-border)",
                         textDecoration: "none",
                         color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
                         fontSize: "12px",

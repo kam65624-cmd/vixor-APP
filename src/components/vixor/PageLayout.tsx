@@ -107,7 +107,7 @@ export function PageLayout({
           {badge && (
             <span
               style={{
-                fontSize: "9px",
+                fontSize: "10px",
                 fontWeight: 700,
                 padding: "2px 8px",
                 borderRadius: "4px",
@@ -123,7 +123,7 @@ export function PageLayout({
         {description && (
           <p
             style={{
-              fontSize: "11px",
+              fontSize: "13px",
               color: "var(--color-muted-foreground)",
               margin: "4px 0 0",
               lineHeight: 1.4,
@@ -157,7 +157,7 @@ export function PageLayout({
                 key={t}
                 onClick={() => onTabChange?.(t)}
                 style={{
-                  fontSize: "11px",
+                  fontSize: "12px",
                   fontWeight: isActive ? 600 : 500,
                   padding: "6px 12px",
                   borderRadius: "4px",
@@ -165,7 +165,7 @@ export function PageLayout({
                   cursor: "pointer",
                   color: isActive ? "var(--color-foreground)" : "var(--color-muted-foreground)",
                   background: isActive
-                    ? "rgba(255,255,255,0.08)"
+                    ? "color-mix(in oklab, var(--color-foreground) 8%, transparent)"
                     : "transparent",
                   whiteSpace: "nowrap",
                   transition: "all 0.15s ease",
@@ -180,7 +180,7 @@ export function PageLayout({
                   <span
                     style={{
                       marginLeft: "4px",
-                      fontSize: "10px",
+                      fontSize: "12px",
                       color: isActive ? "var(--color-muted-foreground)" : "var(--color-muted-foreground)",
                     }}
                   >
@@ -254,7 +254,7 @@ export const StatsRow = memo(function StatsRow({
         >
           <div
             style={{
-              fontSize: "9px",
+              fontSize: "12px",
               fontWeight: 600,
               color: "var(--color-muted-foreground)",
               textTransform: "uppercase" as const,
@@ -265,7 +265,7 @@ export const StatsRow = memo(function StatsRow({
               gap: "4px",
             }}
           >
-            {s.icon && <span style={{ fontSize: "10px" }}>{s.icon}</span>}
+            {s.icon && <span style={{ fontSize: "12px" }}>{s.icon}</span>}
             {s.label}
           </div>
           <div
@@ -285,7 +285,7 @@ export const StatsRow = memo(function StatsRow({
           {s.sub && (
             <div
               style={{
-                fontSize: "9px",
+                fontSize: "12px",
                 color: "var(--color-muted-foreground)",
                 marginTop: "2px",
                 overflow: "hidden",
@@ -327,7 +327,7 @@ export function PageSectionTitle({
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <span
           style={{
-            fontSize: "11px",
+            fontSize: "13px",
             fontWeight: 600,
             color: "var(--color-foreground)",
           }}
@@ -337,7 +337,7 @@ export function PageSectionTitle({
         {count != null && (
           <span
             style={{
-              fontSize: "10px",
+              fontSize: "12px",
               fontWeight: 500,
               color: "var(--color-muted-foreground)",
             }}
@@ -350,7 +350,7 @@ export function PageSectionTitle({
         <button
           onClick={action.onClick}
           style={{
-            fontSize: "10px",
+            fontSize: "12px",
             fontWeight: 600,
             color: "var(--color-primary)",
             background: "none",
@@ -400,7 +400,7 @@ export function ProgressBar({
       {label && (
         <span
           style={{
-            fontSize: "10px",
+            fontSize: "12px",
             fontWeight: 600,
             color: "var(--color-muted-foreground)",
             textTransform: "uppercase" as const,
@@ -506,7 +506,7 @@ export function PageEmptyState({
       </div>
       <div
         style={{
-          fontSize: "11px",
+          fontSize: "13px",
           color: "var(--color-muted-foreground)",
           textAlign: "center",
           maxWidth: "280px",
@@ -532,7 +532,7 @@ export const PageBadge = memo(function PageBadge({
   return (
     <span
       style={{
-        fontSize: small ? "8px" : "9px",
+        fontSize: "12px",
         fontWeight: 700,
         padding: small ? "1px 6px" : "2px 8px",
         borderRadius: "3px",
@@ -568,7 +568,7 @@ export const DataRow = memo(function DataRow({
   const handleMouseLeave = useCallback(() => setHovered(false), []);
 
   const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLDivElement>) => {
+    (e: KeyboardEvent<HTMLButtonElement>) => {
       if (onClick && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
         onClick();
@@ -578,7 +578,8 @@ export const DataRow = memo(function DataRow({
   );
 
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -591,12 +592,11 @@ export const DataRow = memo(function DataRow({
         background: hovered ? "color-mix(in oklab, var(--color-foreground) 3%, transparent)" : "var(--color-card)",
         borderLeft: leftAccent ? `2px solid ${leftAccent}` : undefined,
         transition: "background 0.1s ease",
-        cursor: onClick ? "pointer" : "default",
         ...customStyle,
       }}
     >
       {children}
-    </div>
+    </button>
   );
 });
 
@@ -654,7 +654,7 @@ export function LabelValue({
   return (
     <span
       style={{
-        fontSize: "10px",
+        fontSize: "12px",
         color: "var(--color-muted-foreground)",
         fontFamily: mono ? "'JetBrains Mono', ui-monospace, monospace" : undefined,
       }}
@@ -755,7 +755,7 @@ export function TableHeader({
           style={{
             width: col.width,
             minWidth: col.width,
-            fontSize: "9px",
+            fontSize: "12px",
             fontWeight: 700,
             color: "var(--color-muted-foreground)",
             textTransform: "uppercase" as const,
@@ -831,7 +831,7 @@ export function ProfileCard({
         </div>
         <div
           style={{
-            fontSize: "10px",
+            fontSize: "12px",
             color: "var(--color-muted-foreground)",
           }}
         >
@@ -860,7 +860,7 @@ function MiniStat({
     <div style={{ textAlign: "center" }}>
       <div
         style={{
-          fontSize: "9px",
+          fontSize: "12px",
           color: "var(--color-muted-foreground)",
           textTransform: "uppercase" as const,
           letterSpacing: "0.05em",

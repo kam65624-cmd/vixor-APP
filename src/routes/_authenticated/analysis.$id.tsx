@@ -51,7 +51,7 @@ const CARD: React.CSSProperties = {
 const MONO = { fontFamily: "'JetBrains Mono', ui-monospace, monospace" } as const;
 
 const LABEL: React.CSSProperties = {
-  fontSize: "9px",
+  fontSize: "12px",
   fontWeight: 700,
   textTransform: "uppercase",
   letterSpacing: "0.05em",
@@ -349,7 +349,7 @@ function AnalysisResult() {
                   >
                     <span
                       style={{
-                        fontSize: "10px",
+                        fontSize: "12px",
                         fontWeight: 700,
                         textTransform: "uppercase",
                         letterSpacing: "0.1em",
@@ -363,7 +363,7 @@ function AnalysisResult() {
                     >
                       {a.timeframe ?? "AUTO"}
                     </span>
-                    <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--color-muted-foreground)" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-muted-foreground)" }}>
                       {relTime(a.created_at)}
                     </span>
                   </div>
@@ -830,7 +830,7 @@ function AnalysisResult() {
                             </span>
                             <span
                               style={{
-                                fontSize: "10px",
+                                fontSize: "12px",
                                 fontWeight: 700,
                                 color: "var(--color-muted-foreground)",
                                 background: "var(--color-muted)",
@@ -1422,7 +1422,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
           </h3>
           <span
             style={{
-              fontSize: "10px",
+              fontSize: "12px",
               fontWeight: 700,
               padding: "4px 10px",
               borderRadius: "9999px",
@@ -1526,7 +1526,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
                 <div style={{ minWidth: 0 }}>
                   <span
                     style={{
-                      fontSize: "9px",
+                      fontSize: "12px",
                       fontWeight: 700,
                       color: "var(--color-muted-foreground)",
                       textTransform: "uppercase",
@@ -1551,7 +1551,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
                 </div>
                 <span
                   style={{
-                    fontSize: "9px",
+                    fontSize: "12px",
                     fontWeight: 700,
                     padding: "2px 8px",
                     borderRadius: "4px",
@@ -1578,7 +1578,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
               >
                 <strong
                   style={{
-                    fontSize: "9px",
+                    fontSize: "12px",
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     color: "var(--color-foreground)",
@@ -1670,7 +1670,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <h3
               style={{
-                fontSize: "11px",
+                fontSize: "13px",
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
@@ -1690,7 +1690,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                 borderRadius: "8px",
                 background: GREEN_GRAD,
                 color: "var(--color-foreground)",
-                fontSize: "11px",
+                fontSize: "13px",
                 fontWeight: 700,
                 display: "flex",
                 alignItems: "center",
@@ -1795,7 +1795,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                             style={{
                               padding: "2px 6px",
                               borderRadius: "4px",
-                              fontSize: "9px",
+                              fontSize: "12px",
                               fontWeight: 700,
                               background: "var(--color-muted)",
                               color: "var(--color-muted-foreground)",
@@ -1806,7 +1806,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                         ))}
                         <span
                           style={{
-                            fontSize: "10px",
+                            fontSize: "12px",
                             ...MONO,
                             color: "var(--color-muted-foreground)",
                             marginLeft: "auto",

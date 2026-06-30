@@ -29,16 +29,17 @@ import { I18nProvider } from "@/shared/i18n";
 
 function NotFoundComponent() {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", background: "#121212", padding: "16px" }}>
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: "72px", fontWeight: 800, color: "#10B981" }}>404</div>
-        <h2 style={{ marginTop: "16px", fontSize: "20px", fontWeight: 600, color: "#FFFFFF" }}>Page not found</h2>
-        <p style={{ marginTop: "8px", fontSize: "14px", color: "#9CA3AF" }}>
+    <div className="flex min-h-screen items-center justify-center p-4" style={{ background: "var(--color-background)" }}>
+      <div className="text-center">
+        <div className="text-7xl font-extrabold" style={{ color: "var(--color-primary)" }}>404</div>
+        <h2 className="mt-4 text-xl font-semibold" style={{ color: "var(--color-foreground)" }}>Page not found</h2>
+        <p className="mt-2 text-sm" style={{ color: "var(--color-muted-foreground)" }}>
           The page you're looking for doesn't exist.
         </p>
         <Link
           to="/"
-          style={{ marginTop: "24px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", background: "#10B981", padding: "10px 24px", fontSize: "14px", fontWeight: 600, color: "#fff", textDecoration: "none" }}
+          className="mt-6 inline-flex items-center justify-center rounded-lg px-6 py-2.5 text-sm font-semibold text-white no-underline"
+          style={{ background: "var(--color-primary)" }}
         >
           Back to dashboard
         </Link>
@@ -85,31 +86,33 @@ class GlobalErrorBoundary extends Component<
 
 function ErrorView({ error, onReset }: { error: Error | null; onReset: () => void }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", background: "#121212", padding: "16px" }}>
-      <div style={{ textAlign: "center", maxWidth: "400px" }}>
-        <div style={{ width: "64px", height: "64px", borderRadius: "16px", background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <div className="flex min-h-screen items-center justify-center p-4" style={{ background: "var(--color-background)" }}>
+      <div className="mx-auto max-w-sm text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: "color-mix(in oklab, var(--color-destructive) 12%, transparent)" }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-destructive)" }}>
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
         </div>
-        <h1 style={{ fontSize: "20px", fontWeight: 600, color: "#FFFFFF" }}>Something went wrong</h1>
-        <p style={{ marginTop: "8px", fontSize: "14px", color: "#9CA3AF" }}>
+        <h1 className="text-xl font-semibold" style={{ color: "var(--color-foreground)" }}>Something went wrong</h1>
+        <p className="mt-2 text-sm" style={{ color: "var(--color-muted-foreground)" }}>
           {error?.message?.includes("#310") || wasRenderLoopDetected()
             ? `A rendering loop was detected${wasRenderLoopDetected() ? ` in ${getRenderLoopComponent()}` : ""}. This has been automatically resolved.`
             : (error?.message ?? "An unexpected error occurred.")}
         </p>
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "24px" }}>
+        <div className="mt-6 flex justify-center gap-3">
           <button
             onClick={onReset}
-            style={{ padding: "10px 24px", borderRadius: "8px", border: "none", background: "#10B981", color: "#fff", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+            className="cursor-pointer rounded-lg border-none px-6 py-2.5 text-sm font-semibold text-white"
+            style={{ background: "var(--color-primary)" }}
           >
             Try again
           </button>
           <Link
             to="/"
-            style={{ padding: "10px 24px", borderRadius: "8px", background: "#1A1A1A", border: "1px solid rgba(255,255,255,0.06)", color: "#FFFFFF", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}
+            className="rounded-lg px-6 py-2.5 text-sm font-semibold no-underline"
+            style={{ background: "var(--color-card)", border: "1px solid var(--color-border)", color: "var(--color-foreground)" }}
           >
             Go Home
           </Link>

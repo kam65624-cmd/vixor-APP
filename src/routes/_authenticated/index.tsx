@@ -87,14 +87,14 @@ function CardHeader({
       padding: "8px 12px", borderBottom: `1px solid ${"var(--color-border)"}`,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-        {icon && <span style={{ fontSize: "11px" }}>{icon}</span>}
-        <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-foreground)" }}>{title}</span>
+        {icon && <span style={{ fontSize: "13px" }}>{icon}</span>}
+        <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-foreground)" }}>{title}</span>
       </div>
       {action && (
         <button
           onClick={action.onClick}
           style={{
-            fontSize: "9px", fontWeight: 600, color: "var(--color-primary)",
+            fontSize: "12px", fontWeight: 600, color: "var(--color-primary)",
             background: "none", border: "none", cursor: "pointer", padding: 0,
           }}
         >
@@ -119,23 +119,23 @@ function HoldingRow({ h, onClick }: { h: { symbol: string; value: number; pnlPct
             background: h.up ? `color-mix(in oklab, var(--color-bullish) 8%, transparent)` : `color-mix(in oklab, var(--color-bearish) 8%, transparent)`,
             border: `1px solid ${h.up ? `color-mix(in oklab, var(--color-bullish) 19%, transparent)` : `color-mix(in oklab, var(--color-bearish) 19%, transparent)`}`,
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "8px", fontWeight: 800, color: h.up ? "var(--color-bullish)" : "var(--color-bearish)",
+            fontSize: "12px", fontWeight: 800, color: h.up ? "var(--color-bullish)" : "var(--color-bearish)",
           }}>
             {h.symbol.slice(0, 2)}
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-foreground)" }}>{h.symbol}</div>
-            <div style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>
+            <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-foreground)" }}>{h.symbol}</div>
+            <div style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>
               {h.amount.toFixed(2)} tokens
             </div>
           </div>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "8px" }}>
-          <div style={{ fontSize: "11px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: "var(--color-foreground)" }}>
+          <div style={{ fontSize: "13px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: "var(--color-foreground)" }}>
             {fmt(h.value)}
           </div>
           <div style={{
-            fontSize: "10px", fontWeight: 600,
+            fontSize: "12px", fontWeight: 600,
             fontFamily: "'JetBrains Mono', monospace",
             color: h.up ? "var(--color-bullish)" : "var(--color-bearish)",
           }}>
@@ -164,15 +164,15 @@ function SignalRow({ s }: { s: { token: string; type: string; reason: string; co
     >
       <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, minWidth: 0 }}>
         <span style={{
-          fontSize: "8px", fontWeight: 800, padding: "2px 5px", borderRadius: "3px",
+          fontSize: "12px", fontWeight: 800, padding: "2px 5px", borderRadius: "3px",
           background: isBuy ? `${"var(--color-bullish)"}25` : `${"var(--color-bearish)"}25`,
           color: isBuy ? "var(--color-bullish)" : "var(--color-bearish)", flexShrink: 0,
         }}>{s.type}</span>
-        <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-foreground)", flexShrink: 0 }}>{s.token}</span>
-        <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.reason}</span>
+        <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-foreground)", flexShrink: 0 }}>{s.token}</span>
+        <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.reason}</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0, marginLeft: "8px" }}>
-        <span style={{ fontSize: "11px", fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", width: "28px", textAlign: "right", color: "var(--color-neutral-wait)" }}>
+        <span style={{ fontSize: "13px", fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", width: "28px", textAlign: "right", color: "var(--color-neutral-wait)" }}>
           {s.confidence}%
         </span>
         <MiniSpark up={isBuy} small />
@@ -209,20 +209,20 @@ function MarketTokenRow({ t }: { t: MarketToken }) {
           background: `color-mix(in oklab, ${color} 10%, transparent)`,
           border: `1px solid color-mix(in oklab, ${color} 20%, transparent)`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "8px", fontWeight: 800, color,
+          fontSize: "12px", fontWeight: 800, color,
         }}>
           {t.symbol.slice(0, 2)}
         </div>
-        <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-foreground)" }}>{t.symbol}</span>
+        <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-foreground)" }}>{t.symbol}</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <span style={{ fontSize: "11px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: "var(--color-foreground)" }}>
+        <span style={{ fontSize: "13px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: "var(--color-foreground)" }}>
           {fmtPrice(t.price)}
         </span>
-        <span style={{ fontSize: "10px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color, width: "48px", textAlign: "right" }}>
+        <span style={{ fontSize: "12px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color, width: "48px", textAlign: "right" }}>
           {t.change24h >= 0 ? "+" : ""}{t.change24h.toFixed(1)}%
         </span>
-        <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)", width: "52px", textAlign: "right" }}>
+        <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)", width: "52px", textAlign: "right" }}>
           {fmtVol(t.volume24h)}
         </span>
       </div>
@@ -310,7 +310,7 @@ function HomePage() {
           {/* Portfolio Summary */}
           <Card>
             <div style={{ padding: "14px 12px" }}>
-              <div style={{ fontSize: "10px", color: "var(--color-muted-foreground)", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <div style={{ fontSize: "12px", color: "var(--color-muted-foreground)", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 Total Portfolio Value
               </div>
               <div style={{ fontSize: "24px", fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1, color: "var(--color-foreground)" }}>
@@ -325,7 +325,7 @@ function HomePage() {
                   }}>
                     {pnlFmt(totalPnl)} ({totalPnlPct >= 0 ? "+" : ""}{totalPnlPct.toFixed(1)}%)
                   </span>
-                  <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>{tradeCount} trades</span>
+                  <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>{tradeCount} trades</span>
                 </div>
               )}
             </div>
@@ -357,22 +357,22 @@ function HomePage() {
                   <DataRow key={i}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: "10px", flexShrink: 0 }}>{a.type === "buy" ? "🟢" : "🔴"}</span>
-                        <span style={{ fontSize: "10px", color: "var(--color-muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: "12px", flexShrink: 0 }}>{a.type === "buy" ? "🟢" : "🔴"}</span>
+                        <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {a.msg}
                         </span>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
                         {a.pnl && (
                           <span style={{
-                            fontSize: "10px", fontWeight: 600,
+                            fontSize: "12px", fontWeight: 600,
                             fontFamily: "'JetBrains Mono', monospace",
                             color: a.type === "sell" ? "var(--color-bearish)" : "var(--color-bullish)",
                           }}>
                             {a.pnl}
                           </span>
                         )}
-                        <span style={{ fontSize: "8px", color: "var(--color-muted-foreground)" }}>{a.time}</span>
+                        <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>{a.time}</span>
                       </div>
                     </div>
                   </DataRow>
@@ -394,7 +394,7 @@ function HomePage() {
             />
             <div style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 12px 0" }}>
               <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--color-bullish)", animation: "pulse 2s infinite" }} />
-              <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>AI-Powered</span>
+              <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>AI-Powered</span>
             </div>
             <ScrollArea style={{ flex: 1, padding: "4px 0" }}>
               {isLoading
@@ -417,10 +417,10 @@ function HomePage() {
                     display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
                     padding: "10px 4px", borderRadius: "6px", cursor: "pointer",
                     background: "var(--color-card-hover)", border: `1px solid ${"var(--color-border)"}`,
-                    color: "var(--color-muted-foreground)", fontSize: "10px", fontWeight: 500,
+                    color: "var(--color-muted-foreground)", fontSize: "12px", fontWeight: 500,
                     transition: "all 0.15s",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "color-mix(in oklab, var(--color-foreground) 6%, transparent)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "color-mix(in oklab, var(--color-foreground) 6%, transparent)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "var(--color-card-hover)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
                 >
                   <span style={{ fontSize: "16px" }}>{a.icon}</span>
@@ -447,8 +447,8 @@ function HomePage() {
                   ? liveSignals.map((s, i) => (
                     <DataRow key={i} onClick={() => nav("/signals")}>
                       <div style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                        <span style={{ fontSize: "10px", marginTop: "1px", color: "var(--color-muted-foreground)", flexShrink: 0, width: "14px" }}>{i + 1}.</span>
-                        <span style={{ fontSize: "10px", color: "var(--color-muted-foreground)", lineHeight: 1.4 }}>
+                        <span style={{ fontSize: "12px", marginTop: "1px", color: "var(--color-muted-foreground)", flexShrink: 0, width: "14px" }}>{i + 1}.</span>
+                        <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)", lineHeight: 1.4 }}>
                           <span style={{ fontWeight: 700, color: s.type === "BUY" ? "var(--color-bullish)" : s.type === "SELL" ? "var(--color-bearish)" : "var(--color-neutral-wait)" }}>
                             {s.token}
                           </span>{" "}{s.reason}
@@ -474,7 +474,7 @@ function HomePage() {
                 <div key={s.label} style={{
                   padding: "10px 8px", background: "var(--color-card-hover)", borderRadius: "6px", textAlign: "center",
                 }}>
-                  <div style={{ fontSize: "8px", color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <div style={{ fontSize: "12px", color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     {s.label}
                   </div>
                   <div style={{
