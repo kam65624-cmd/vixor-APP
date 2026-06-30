@@ -98,6 +98,7 @@ function Analyze() {
     ),
   );
   const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
 
   const [stage, setStage] = useState<"upload" | "preview" | "analyzing">("upload");
   const [progress, setProgress] = useState(0);
@@ -211,7 +212,10 @@ function Analyze() {
   }, []);
 
   async function startAnalysis() {
-    if (!file || !preview) return;
+    if (!file || !preview) {
+      setErr("Please upload a chart image first.");
+      return;
+    }
     if (!isPremium && points < 10) {
       setErr("Need at least 10 points. Check your profile.");
       return;
@@ -288,6 +292,7 @@ function Analyze() {
 
         {stage === "upload" && (
           <>
+            {/* Hidden file inputs — one for gallery, one for camera */}
             <input
               id="chart-upload-input"
               type="file"
@@ -296,19 +301,29 @@ function Analyze() {
               accept="image/png, image/jpeg, image/webp"
               onChange={(e) => pickFile(e.target.files?.[0] || null)}
             />
+            <input
+              id="chart-camera-input"
+              type="file"
+              ref={cameraRef}
+              style={{ display: "none" }}
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => pickFile(e.target.files?.[0] || null)}
+            />
+            {/* Upload dropzone — uses htmlFor only (no onClick) to prevent double-trigger on mobile */}
             <label
               htmlFor="chart-upload-input"
-              onClick={() => fileRef.current?.click()}
               style={{
                 display: "block",
                 width: "100%",
                 aspectRatio: "4/3",
                 borderRadius: 8,
                 border: "2px dashed var(--color-border)",
-                background: "rgba(17,24,39,0.5)",
+                background: "color-mix(in oklab, var(--color-foreground) 3%, transparent)",
                 cursor: "pointer",
                 position: "relative",
                 overflow: "hidden",
+                transition: "border-color 0.15s, background 0.15s",
               }}
             >
               <div
@@ -327,7 +342,7 @@ function Analyze() {
                   style={{
                     width: 64,
                     height: 64,
-                    borderRadius: 8,
+                    borderRadius: 12,
                     background: "color-mix(in oklab, var(--color-bullish) 15%, transparent)",
                     display: "flex",
                     alignItems: "center",
@@ -345,9 +360,9 @@ function Analyze() {
                     marginBottom: 4,
                   }}
                 >
-                  {t("analyze.tapToUpload")}
+                  {t("analyze.tapToUpload") || "Tap to Upload Chart"}
                 </div>
-                <div style={{ fontSize: 12, color: "var(--color-muted-foreground)" }}>
+                <div style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>
                   PNG, JPG, WebP (Max 8MB)
                 </div>
               </div>
@@ -426,9 +441,10 @@ function Analyze() {
               )}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-              <button
-                onClick={() => fileRef.current?.click()}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+              {/* Gallery — uses label htmlFor instead of programmatic click for mobile compatibility */}
+              <label
+                htmlFor="chart-upload-input"
                 style={{
                   height: 56,
                   borderRadius: 8,
@@ -454,10 +470,43 @@ function Analyze() {
                     color: "var(--color-muted-foreground)",
                   }}
                 >
-                  {t("analyze.gallery")}
+                  {t("analyze.gallery") || "Gallery"}
                 </span>
-              </button>
+              </label>
+              {/* Camera — uses separate input with capture attribute */}
+              <label
+                htmlFor="chart-camera-input"
+                style={{
+                  height: 56,
+                  borderRadius: 8,
+                  ...cardStyle,
+                  border: `1px solid ${"var(--color-border)"}`,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                  cursor: "pointer",
+                }}
+              >
+                <Camera
+                  style={{ width: 20, height: 20, color: "var(--color-muted-foreground)" }}
+                />
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    color: "var(--color-muted-foreground)",
+                  }}
+                >
+                  Camera
+                </span>
+              </label>
+              {/* Paste from clipboard */}
               <button
+                type="button"
                 onClick={handlePaste}
                 style={{
                   height: 56,
@@ -484,7 +533,7 @@ function Analyze() {
                     color: "var(--color-muted-foreground)",
                   }}
                 >
-                  {t("analyze.paste")}
+                  {t("analyze.paste") || "Paste"}
                 </span>
               </button>
             </div>
@@ -500,7 +549,7 @@ function Analyze() {
                 overflow: "hidden",
                 border: `1px solid ${"var(--color-border)"}`,
                 aspectRatio: "4/3",
-                background: "#000",
+                background: "color-mix(in oklab, var(--color-foreground) 5%, transparent)",
               }}
             >
               <img
