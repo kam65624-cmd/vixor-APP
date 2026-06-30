@@ -62,7 +62,7 @@ const OnboardingModal = lazy(() =>
 
 // ── Navigation Data ─────────────────────────────────────────────────────────
 
-// Bottom nav: 5 core items (Home + 4 features)
+// Bottom nav: 4 core items
 const bottomNavItems = [
   {
     to: "/",
@@ -75,20 +75,25 @@ const bottomNavItems = [
     ),
   },
   {
-    to: "/discover",
-    label: "Discover",
+    to: "/analyze",
+    label: "Analyze",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
       </svg>
     ),
   },
   {
-    to: "/pulse",
-    label: "Pulse",
+    to: "/signals",
+    label: "Signals",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M19.5 12.572l-7.5 7.428-7.5-7.428A5 5 0 1 1 12 5.006a5 5 0 1 1 7.5 7.566z" />
+        <path d="M4.9 19.1C1.7 15.9 1.7 10.6 4.9 7.4" />
+        <path d="M7.8 16.2c-2-2-2-5.2 0-7.2" />
+        <circle cx="12" cy="12" r="2" />
+        <path d="M16.2 16.2c2-2 2-5.2 0-7.2" />
+        <path d="M19.1 19.1c3.2-3.2 3.2-8.5 0-11.7" />
       </svg>
     ),
   },
@@ -266,12 +271,11 @@ const moreNavCategories: MoreNavCategory[] = [
         ),
       },
       {
-        to: "/signals",
-        label: "Signals",
+        to: "/discover",
+        label: "Discover",
         icon: (
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
           </svg>
         ),
       },
