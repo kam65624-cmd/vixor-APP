@@ -1,0 +1,2674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIXOR App — Pages UI/UX Documentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0B0D10;
+    --surface: #101317;
+    --elevated: #16181C;
+    --border: #1E232A;
+    --border-subtle: #1A1D22;
+    --text: #FAFAFA;
+    --text-secondary: #9CA3AF;
+    --text-tertiary: #6B7280;
+    --primary: #7C9BC4;
+    --primary-dark: #232E3C;
+    --bullish: #0ECB81;
+    --bearish: #F6465D;
+    --neutral: #F59E0B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── Cover ── */
+  .cover {
+    text-align: center;
+    padding: 80px 20px 60px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 60px;
+  }
+  .cover h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #7C9BC4, #9FB6D6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .cover .subtitle {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 32px;
+  }
+  .cover .meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .cover .meta span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  /* ── Design System Section ── */
+  .ds-section {
+    margin-bottom: 60px;
+    padding: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .ds-section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--primary);
+  }
+  .ds-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .ds-item {
+    background: var(--elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .ds-item .label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+  }
+  .ds-item .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .ds-item .swatch {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    margin-right: 8px;
+    vertical-align: middle;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .ds-rules {
+    list-style: none;
+    padding: 0;
+  }
+  .ds-rules li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 10px;
+  }
+  .ds-rules li:last-child { border-bottom: none; }
+  .ds-rules .rule-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-dark);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  /* ── Table of Contents ── */
+  .toc {
+    margin-bottom: 60px;
+    padding: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .toc h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 6px;
+  }
+  .toc-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+  }
+  .toc-link:hover {
+    background: var(--elevated);
+    color: var(--text);
+  }
+  .toc-link .toc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--primary);
+    min-width: 28px;
+  }
+  .toc-link .toc-badge {
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-left: auto;
+  }
+  .toc-link .toc-badge.built { background: rgba(14,203,129,0.15); color: var(--bullish); }
+  .toc-link .toc-badge.placeholder { background: rgba(245,158,11,0.15); color: var(--neutral); }
+
+  /* ── Page Card ── */
+  .page-section {
+    margin-bottom: 40px;
+    animation: fadeUp 0.4s ease-out both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .page-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 24px 28px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .page-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--primary-dark);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .page-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+  .page-route {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    background: var(--elevated);
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-subtle);
+  }
+  .page-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .page-status.built { background: rgba(14,203,129,0.12); color: var(--bullish); }
+  .page-status.placeholder { background: rgba(245,158,11,0.12); color: var(--neutral); }
+
+  .page-body {
+    padding: 24px 28px 28px;
+  }
+
+  .page-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.7;
+  }
+
+  .page-subsection {
+    margin-bottom: 20px;
+  }
+  .page-subsection:last-child { margin-bottom: 0; }
+
+  .sub-heading {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sub-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-subtle);
+  }
+
+  .element-list {
+    list-style: none;
+    padding: 0;
+  }
+  .element-list li {
+    padding: 8px 0 8px 20px;
+    position: relative;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(30,35,42,0.5);
+  }
+  .element-list li:last-child { border-bottom: none; }
+  .element-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    width: 6px;
+    height: 6px;
+    border-radius: 2px;
+    background: var(--primary);
+    opacity: 0.6;
+  }
+
+  .state-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .state-tag.loading { background: rgba(124,155,196,0.15); color: var(--primary); }
+  .state-tag.empty { background: rgba(245,158,11,0.12); color: var(--neutral); }
+  .state-tag.error { background: rgba(246,70,93,0.12); color: var(--bearish); }
+  .state-tag.success { background: rgba(14,203,129,0.12); color: var(--bullish); }
+
+  .badge-pill {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--elevated);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    margin: 2px;
+  }
+
+  .note-box {
+    background: var(--elevated);
+    border-left: 3px solid var(--primary);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .note-box strong {
+    color: var(--text);
+  }
+
+  /* ── Section Dividers ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0 32px;
+  }
+  .section-divider h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary);
+    white-space: nowrap;
+  }
+  .section-divider .line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  @media (max-width: 640px) {
+    .cover h1 { font-size: 2rem; }
+    .container { padding: 20px 16px 60px; }
+    .page-header, .page-body { padding-left: 18px; padding-right: 18px; }
+    .ds-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ═══════════════ COVER ═══════════════ -->
+  <div class="cover">
+    <h1>VIXOR</h1>
+    <p class="subtitle">Complete Pages UI/UX Documentation — VIXOR Nocturne Design System. Every screen, every element, every state. For use with Google Stitch visual design workflow.</p>
+    <div class="meta">
+      <span>37 Pages</span>
+      <span>TanStack Start + React 19</span>
+      <span>Mobile-First</span>
+      <span>Dark Glass Theme</span>
+      <span>July 2026</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DESIGN SYSTEM ═══════════════ -->
+  <div class="ds-section">
+    <h2>VIXOR Nocturne Design System — Tokens</h2>
+
+    <div class="ds-grid">
+      <div class="ds-item">
+        <div class="label">Background</div>
+        <div class="value"><span class="swatch" style="background:#0B0D10"></span>#0B0D10</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Card (Glass)</div>
+        <div class="value"><span class="swatch" style="background:rgba(255,255,255,0.025); border:1px solid #333"></span>rgba(255,255,255,0.025)</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Elevated</div>
+        <div class="value"><span class="swatch" style="background:#16181C"></span>#16181C</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Solid Card</div>
+        <div class="value"><span class="swatch" style="background:#101317"></span>#101317</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Primary (Brand)</div>
+        <div class="value"><span class="swatch" style="background:#7C9BC4"></span>#7C9BC4</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Primary Dark</div>
+        <div class="value"><span class="swatch" style="background:#232E3C"></span>#232E3C</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Bullish (Profit Only)</div>
+        <div class="value"><span class="swatch" style="background:#0ECB81"></span>#0ECB81</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Bearish (Loss Only)</div>
+        <div class="value"><span class="swatch" style="background:#F6465D"></span>#F6465D</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Neutral / Wait</div>
+        <div class="value"><span class="swatch" style="background:#F59E0B"></span>#F59E0B</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Text Primary</div>
+        <div class="value" style="color:#FAFAFA">#FAFAFA</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Text Secondary</div>
+        <div class="value" style="color:#9CA3AF">#9CA3AF</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Text Tertiary</div>
+        <div class="value" style="color:#6B7280">#6B7280</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Border</div>
+        <div class="value"><span class="swatch" style="background:#1E232A"></span>#1E232A</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Border Subtle</div>
+        <div class="value"><span class="swatch" style="background:#1A1D22"></span>#1A1D22</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Buy Button Text</div>
+        <div class="value" style="color:#04150D">#04150D (dark on green)</div>
+      </div>
+      <div class="ds-item">
+        <div class="label">Chart Palette</div>
+        <div class="value">
+          <span class="swatch" style="background:#7C9BC4"></span>
+          <span class="swatch" style="background:#8C9EFF"></span>
+          <span class="swatch" style="background:#9FB6D6"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-heading">Radius Tokens</div>
+    <div class="ds-grid" style="margin-bottom:24px">
+      <div class="ds-item"><div class="label">Small</div><div class="value">7px</div></div>
+      <div class="ds-item"><div class="label">Medium</div><div class="value">10px</div></div>
+      <div class="ds-item"><div class="label">Large</div><div class="value">13px</div></div>
+      <div class="ds-item"><div class="label">Pill (ONLY for badges/pills)</div><div class="value">20px</div></div>
+    </div>
+
+    <div class="sub-heading">Typography</div>
+    <div class="ds-grid" style="margin-bottom:24px">
+      <div class="ds-item"><div class="label">Sans (UI Text)</div><div class="value">Inter</div></div>
+      <div class="ds-item"><div class="label">Mono (ALL Numbers)</div><div class="value">JetBrains Mono</div></div>
+    </div>
+
+    <div class="sub-heading">Motion</div>
+    <div class="ds-grid" style="margin-bottom:24px">
+      <div class="ds-item"><div class="label">Card Appear</div><div class="value">0.45s fade+translate</div></div>
+      <div class="ds-item"><div class="label">Button Press</div><div class="value">0.12s scale(0.95)</div></div>
+      <div class="ds-item"><div class="label">Buy Button Pulse</div><div class="value">2.2s loop</div></div>
+      <div class="ds-item"><div class="label">Live Dot Pulse</div><div class="value">1.6s loop</div></div>
+      <div class="ds-item"><div class="label">Graph Draw</div><div class="value">1.1s line-draw</div></div>
+    </div>
+
+    <div class="sub-heading">Strict Rules</div>
+    <ul class="ds-rules">
+      <li><span class="rule-icon">!</span>Brand accent (#7C9BC4) is the ONLY accent color allowed. No other accent colors.</li>
+      <li><span class="rule-icon">!</span>Bullish green (#0ECB81) is EXCLUSIVE for profit/positive PnL ONLY. Never use for success states, checkmarks, or generic positive feedback.</li>
+      <li><span class="rule-icon">!</span>Bearish red (#F6465D) is EXCLUSIVE for loss/negative PnL ONLY. Never use for error states, warnings, or delete actions.</li>
+      <li><span class="rule-icon">!</span>ALL financial numbers (prices, PnL, percentages, volumes) MUST use JetBrains Mono with tabular-nums.</li>
+      <li><span class="rule-icon">!</span>No emoji icons anywhere. Tabler-style outline icons ONLY.</li>
+      <li><span class="rule-icon">!</span>Maximum 2-3 gradient colors per screen. No rainbow or multi-color gradients.</li>
+      <li><span class="rule-icon">!</span>No large radii on rectangular cards (max 13px). Pill radius (20px) ONLY for badges and pill-shaped elements.</li>
+      <li><span class="rule-icon">!</span>Never use white text directly on colored buttons (buy green, sell red). Use darker shade instead: #04150D on green.</li>
+      <li><span class="rule-icon">!</span>Background treatment: radial gradient glows at 8-12% opacity with drift animation (9-11s) + subtle grid pattern at 4-5% opacity.</li>
+      <li><span class="rule-icon">!</span>Card style: glass-morphism with 6px backdrop-blur + 0.5px border at rgba(255,255,255,0.025) background.</li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════ TABLE OF CONTENTS ═══════════════ -->
+  <div class="toc">
+    <h2>All Pages Index</h2>
+    <div class="toc-grid">
+      <a href="#page-auth" class="toc-link"><span class="toc-num">01</span>Sign In / Auth<span class="toc-badge built">Built</span></a>
+      <a href="#page-home" class="toc-link"><span class="toc-num">02</span>Home / Dashboard<span class="toc-badge built">Built</span></a>
+      <a href="#page-analyze" class="toc-link"><span class="toc-num">03</span>Analyze Chart<span class="toc-badge built">Built</span></a>
+      <a href="#page-analysis-detail" class="toc-link"><span class="toc-num">04</span>Analysis Detail<span class="toc-badge built">Built</span></a>
+      <a href="#page-signals" class="toc-link"><span class="toc-num">05</span>AI Signals<span class="toc-badge built">Built</span></a>
+      <a href="#page-discover" class="toc-link"><span class="toc-num">06</span>Discover Tokens<span class="toc-badge built">Built</span></a>
+      <a href="#page-copilot" class="toc-link"><span class="toc-num">07</span>AI Copilot<span class="toc-badge built">Built</span></a>
+      <a href="#page-trade-desk" class="toc-link"><span class="toc-num">08</span>Trade Desk<span class="toc-badge built">Built</span></a>
+      <a href="#page-portfolio" class="toc-link"><span class="toc-num">09</span>Portfolio<span class="toc-badge built">Built</span></a>
+      <a href="#page-token-detail" class="toc-link"><span class="toc-num">10</span>Token Detail<span class="toc-badge built">Built</span></a>
+      <a href="#page-pnl" class="toc-link"><span class="toc-num">11</span>PnL Tracker<span class="toc-badge built">Built</span></a>
+      <a href="#page-bags" class="toc-link"><span class="toc-num">12</span>My Bags<span class="toc-badge built">Built</span></a>
+      <a href="#page-yield" class="toc-link"><span class="toc-num">13</span>Yield<span class="toc-badge built">Built</span></a>
+      <a href="#page-charts" class="toc-link"><span class="toc-num">14</span>Charts<span class="toc-badge placeholder">Placeholder</span></a>
+      <a href="#page-settings" class="toc-link"><span class="toc-num">15</span>Settings<span class="toc-badge built">Built</span></a>
+      <a href="#page-experiments" class="toc-link"><span class="toc-num">16</span>Experiments<span class="toc-badge built">Built</span></a>
+      <a href="#page-backtest" class="toc-link"><span class="toc-num">17</span>Backtest<span class="toc-badge built">Built</span></a>
+      <a href="#page-rewards" class="toc-link"><span class="toc-num">18</span>Rewards<span class="toc-badge built">Built</span></a>
+      <a href="#page-predictions" class="toc-link"><span class="toc-num">19</span>Predictions<span class="toc-badge built">Built</span></a>
+      <a href="#page-daily-loop" class="toc-link"><span class="toc-num">20</span>Daily Loop<span class="toc-badge built">Built</span></a>
+      <a href="#page-premium" class="toc-link"><span class="toc-num">21</span>Premium / Vixor Pro<span class="toc-badge built">Built</span></a>
+      <a href="#page-notifications" class="toc-link"><span class="toc-num">22</span>Notifications<span class="toc-badge built">Built</span></a>
+      <a href="#page-arbitrage" class="toc-link"><span class="toc-num">23</span>Arbitrage Scanner<span class="toc-badge placeholder">Placeholder</span></a>
+      <a href="#page-trackers" class="toc-link"><span class="toc-num">24</span>Trackers<span class="toc-badge built">Built</span></a>
+      <a href="#page-communities" class="toc-link"><span class="toc-num">25</span>Communities<span class="toc-badge built">Built</span></a>
+      <a href="#page-wallet" class="toc-link"><span class="toc-num">26</span>Wallet (Web3)<span class="toc-badge built">Built</span></a>
+      <a href="#page-activity-web3" class="toc-link"><span class="toc-num">27</span>On-Chain Activity<span class="toc-badge placeholder">Placeholder</span></a>
+      <a href="#page-referral" class="toc-link"><span class="toc-num">28</span>Referral Program<span class="toc-badge built">Built</span></a>
+      <a href="#page-vision" class="toc-link"><span class="toc-num">29</span>AI Vision<span class="toc-badge built">Built</span></a>
+      <a href="#page-pulse" class="toc-link"><span class="toc-num">30</span>Pulse<span class="toc-badge built">Built</span></a>
+      <a href="#page-curves" class="toc-link"><span class="toc-num">31</span>Bonding Curves<span class="toc-badge built">Built</span></a>
+      <a href="#page-whale" class="toc-link"><span class="toc-num">32</span>Whale Alerts<span class="toc-badge built">Built</span></a>
+      <a href="#page-journal" class="toc-link"><span class="toc-num">33</span>Trading Journal<span class="toc-badge built">Built</span></a>
+      <a href="#page-profile" class="toc-link"><span class="toc-num">34</span>Profile<span class="toc-badge built">Built</span></a>
+      <a href="#page-alpha" class="toc-link"><span class="toc-num">35</span>Alpha Feed<span class="toc-badge built">Built</span></a>
+      <a href="#page-perpetuals" class="toc-link"><span class="toc-num">36</span>Perpetuals / Futures<span class="toc-badge built">Built</span></a>
+      <a href="#page-admin" class="toc-link"><span class="toc-num">37</span>Admin: API Keys<span class="toc-badge built">Built</span></a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                    APP SHELL & NAVIGATION                        -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2>App Shell &amp; Navigation</h2>
+    <div class="line"></div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div class="page-section" id="shell">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">SHELL</span>
+          <span class="page-title">App Shell (AppShell)</span>
+        </div>
+        <span class="page-route">Layout Wrapper</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">The main application frame that wraps every authenticated page. Provides consistent top navigation, bottom tab bar, and the slide-up More panel. The auth page uses a raw layout without this shell.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Top Navigation Bar</div>
+          <ul class="element-list">
+            <li>Fixed at top, 40px height, glass-header blur effect (16px blur + saturate)</li>
+            <li>Left side: VIXOR logo (22x22px gradient box) + "VIXOR" text label (13px bold)</li>
+            <li>Center/right: SOL price ticker with monospace font, bullish/bearish color based on 24h change — hidden on mobile, visible on desktop</li>
+            <li>Right side actions: "Deposit" button (navy gradient, hidden on mobile), Wallet Connect button (lazy-loaded), User avatar circle (26x26px, navigates to /profile), Bell notification icon (26x26px, with green dot for unread count, navigates to /notifications)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Bottom Tab Bar</div>
+          <ul class="element-list">
+            <li>Fixed at bottom, 52px height, glass background with top border</li>
+            <li>5 items: Home (House icon), Analyze (Sun icon), Charts (Line chart icon), Signals (Signal icon), More (3-dots vertical icon)</li>
+            <li>Active tab: brand accent color (#7C9BC4) for icon + label, inactive: tertiary text color</li>
+            <li>Safe area padding respected for Telegram WebApp</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">More Panel (Slide-Up Sheet)</div>
+          <ul class="element-list">
+            <li>Full-height slide-up overlay triggered by the More button in bottom nav</li>
+            <li>Organized into 5 category groups, each with a section header:</li>
+            <li><strong>AI Tools:</strong> AI Copilot, Alpha Signals, Whale Alerts, Predictions, Vision, Trackers</li>
+            <li><strong>Trading:</strong> Trade Desk, Backtest, Journal, Daily Loop, Pulse</li>
+            <li><strong>DeFi &amp; Portfolio:</strong> Wallet, PnL Tracker, Bags, Portfolio, Perpetuals, Yield, Virtual Curve</li>
+            <li><strong>Tools &amp; Settings:</strong> Settings, Profile, Premium, Rewards, Referral, Notifications</li>
+            <li><strong>Social:</strong> Communities, Discover</li>
+            <li>2-column grid layout for items. Each item: icon + label text. Glass-card style rows.</li>
+            <li>Close button or tap-outside to dismiss</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Background Treatment</div>
+          <ul class="element-list">
+            <li>Main background: #0B0D10 with subtle grid pattern overlay (4-5% opacity, 40x40px grid lines)</li>
+            <li>Radial gradient glow from brand accent at top-left area (8-12% opacity), with slow drift animation (9-11s cycle)</li>
+          </ul>
+        </div>
+
+        <div class="note-box">
+          <strong>Onboarding Modal:</strong> Shown once to new users. 4-slide carousel with: (1) Welcome to VIXOR, (2) Drop a chart for AI analysis, (3) Trade with discipline, (4) Earn as you trade. "Get Started" button to dismiss. Glass-card slide containers, dot indicators, swipe navigation.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                         PUBLIC PAGES                             -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2>Public Pages</h2>
+    <div class="line"></div>
+  </div>
+
+  <!-- ══ PAGE 01: AUTH ══ -->
+  <div class="page-section" id="page-auth">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">01</span>
+          <span class="page-title">Sign In / Auth</span>
+        </div>
+        <span class="page-route">/auth</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Telegram-first authentication page. This is the ONLY page that renders WITHOUT the AppShell (no top nav, no bottom bar). Full-screen layout with centered content. Supports Telegram WebApp auto-signin, Telegram Login Widget, and email/password fallback.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Visual Elements</div>
+          <ul class="element-list">
+            <li>VIXOR logo and brand name at the top, centered</li>
+            <li>4 feature cards in a 2x2 grid: "AI Chart Analysis", "Trade Setups", "Risk Management", "200 Free Points" — each with an outline icon and short description</li>
+            <li>Telegram Login Widget (loads Telegram's JavaScript SDK) — primary auth method</li>
+            <li>"Open in Telegram" fallback button — shown if widget fails to load after 3 seconds</li>
+            <li>Collapsible email/password form: toggle between "Sign In" and "Create Account" modes</li>
+            <li>Email input, password input, submit button with loading state</li>
+            <li>Error banner (red-tinted) for auth failures, success banner for new accounts</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Detecting Telegram WebApp environment <span class="state-tag loading">Loading</span></li>
+            <li>Auto-signing in via Telegram <span class="state-tag loading">Loading</span></li>
+            <li>Widget mode — waiting for user interaction <span class="state-tag">Idle</span></li>
+            <li>Authentication error <span class="state-tag error">Error</span></li>
+            <li>Account created successfully <span class="state-tag success">Success</span></li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Design Notes</div>
+          <ul class="element-list">
+            <li>Background uses the same #0B0D10 with grid pattern and radial glow as the main app</li>
+            <li>No AppShell chrome — this is a standalone full-screen page</li>
+            <li>Feature cards use glass-card styling with subtle borders</li>
+            <li>Inputs use dark solid background (#101317) with border (#1A1D22), focus ring in brand accent</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                     MAIN TAB PAGES                              -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2>Main Tab Pages (Bottom Nav)</h2>
+    <div class="line"></div>
+  </div>
+
+  <!-- ══ PAGE 02: HOME ══ -->
+  <div class="page-section" id="page-home">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">02</span>
+          <span class="page-title">Home / Dashboard</span>
+        </div>
+        <span class="page-route">/</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">The main landing page after sign-in. Provides a personalized welcome, portfolio at-a-glance summary, quick actions, and recent activity. Designed for fast orientation — user should understand their standing within 3 seconds.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Sections (Top to Bottom)</div>
+          <ul class="element-list">
+            <li><strong>Welcome Banner:</strong> User avatar initial circle (left), "Welcome back, {display name}" heading, points badge (mono font), premium status indicator if active. Glass-card background.</li>
+            <li><strong>Portfolio Summary Card:</strong> Glass-card with 4 key metrics in a 2x2 grid layout — Total Value (mono), Total PnL with color (bullish green or bearish red, mono), PnL percentage (colored, mono), Trade Count (mono). Subtle left border accent in brand color.</li>
+            <li><strong>Quick Actions Grid:</strong> 6 action cards in a 3x2 grid. Each card: icon (Tabler outline), label text. Actions: Analyze Chart, Charts, Signals, Copilot, PnL Tracker, Settings. Cards have glass background, hover state with elevated color. Navigate to their respective routes.</li>
+            <li><strong>AI Chart Analysis CTA:</strong> Prominent card with brand accent gradient background, "Start Analyzing" button. Encourages user to use the core AI feature. Icon and short description text.</li>
+            <li><strong>Recent Activity List:</strong> Conditional — only shown if user has trade history. Each row: direction indicator dot (green for buy, red for sell), pair name, PnL amount (colored mono), time ago. Max 5-8 items.</li>
+            <li><strong>Account Stats Grid:</strong> 3 small stat items: Points balance, Total Trades, Account Status. Compact layout with label (secondary text) and value (mono, primary text).</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Loading portfolio data — metrics show placeholder dots/spinner <span class="state-tag loading">Loading</span></li>
+            <li>No portfolio data — summary shows zero values, activity section hidden <span class="state-tag">Empty</span></li>
+            <li>No recent activity — activity section not rendered <span class="state-tag">Conditional</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 03: ANALYZE ══ -->
+  <div class="page-section" id="page-analyze">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">03</span>
+          <span class="page-title">Analyze Chart</span>
+        </div>
+        <span class="page-route">/analyze</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Core AI feature page. User uploads a chart screenshot, selects a trading pair, and submits for SMC/ICT-based AI analysis. Supports drag-and-drop, file picker, camera capture, and clipboard paste. Costs points per analysis.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Visual Elements</div>
+          <ul class="element-list">
+            <li><strong>Image Upload Area:</strong> Large dashed-border dropzone (border in border-subtle color, dashed). Centered upload icon (Tabler outline), "Drop chart here or tap to upload" instruction text. Supports: click to open file picker, drag-and-drop, camera button (mobile), paste from clipboard.</li>
+            <li><strong>Camera Button:</strong> On mobile — hidden file input with capture="environment" attribute. Triggers native camera for photo capture.</li>
+            <li><strong>Image Preview:</strong> When image is uploaded — full-width preview with rounded corners. "Remove" button (X icon) positioned at top-right corner of preview.</li>
+            <li><strong>Pair Selector:</strong> Dropdown/Select component below the upload area. Options: BTC/USDT, ETH/USDT, SOL/USDT, XAU/USD, and other major pairs. Dark solid background, brand accent for selected state.</li>
+            <li><strong>Submit Button:</strong> "Analyze Chart" — full-width button with brand accent color. Shows point cost next to label (e.g., "Analyze Chart — 10 pts"). Disabled state when no image selected. Loading spinner during analysis.</li>
+            <li><strong>Points Balance:</strong> Small display showing current points balance. If insufficient points, show warning message.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No image uploaded — dropzone visible, submit disabled <span class="state-tag">Empty</span></li>
+            <li>Image uploaded — preview shown, submit enabled <span class="state-tag success">Ready</span></li>
+            <li>Analysis in progress — submit shows loading spinner, button disabled <span class="state-tag loading">Busy</span></li>
+            <li>Insufficient points — warning message shown, submit disabled <span class="state-tag error">Error</span></li>
+            <li>Analysis complete — navigates to /analysis/:id <span class="state-tag success">Success</span></li>
+          </ul>
+        </div>
+
+        <div class="note-box">
+          <strong>URL Parameters:</strong> Can receive ?screenshot= (base64 image) and ?pair= (pre-selected pair) from other pages. This allows deep-linking from Signals or Discover pages directly into analysis with pre-filled data.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 04: ANALYSIS DETAIL ══ -->
+  <div class="page-section" id="page-analysis-detail">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">04</span>
+          <span class="page-title">Analysis Detail</span>
+        </div>
+        <span class="page-route">/analysis/:id</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Detailed view of a completed AI chart analysis. Shows the original chart image, AI recommendation with confidence, key trading levels (Entry/SL/TP), order blocks, FVGs, liquidity zones, market structure analysis, and user notes. This is a rich, multi-section scrollable page.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Top Bar Actions</div>
+          <ul class="element-list">
+            <li>Back button (arrow-left icon) — navigates to previous page</li>
+            <li>Share button — share on X (Twitter) or Telegram (dropdown/two buttons)</li>
+            <li>Bookmark button — save analysis for later reference</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Key Sections</div>
+          <ul class="element-list">
+            <li><strong>Recommendation Badge:</strong> Large prominent badge showing BUY / SELL / WAIT. Color-coded: BUY in bullish green, SELL in bearish red, WAIT in neutral amber. Confidence percentage bar below it (brand accent fill, dark track).</li>
+            <li><strong>Original Chart Image:</strong> The uploaded chart screenshot, displayed full-width with rounded corners. Fullscreen toggle button (expand icon) to view at full resolution.</li>
+            <li><strong>Analyst Report — Key Levels:</strong> Entry Price, Stop Loss, Take Profit. Each in a labeled row with monospace price values. SL in bearish color, TP in bullish color, Entry in primary text color.</li>
+            <li><strong>Order Blocks:</strong> List of identified order block zones with price ranges. Glass-card rows.</li>
+            <li><strong>FVGs (Fair Value Gaps):</strong> List of identified fair value gaps with price ranges. Glass-card rows.</li>
+            <li><strong>Liquidity Zones:</strong> Identified liquidity pools with price levels. Glass-card rows.</li>
+            <li><strong>Market Structure:</strong> Trend direction, higher highs/lows analysis, key structure points.</li>
+            <li><strong>Bias &amp; Trend:</strong> Overall market bias summary with visual indicator.</li>
+            <li><strong>Trading Notes:</strong> User-added notes section. "Add Note" button opens NoteEditorDialog. Notes displayed as cards with pin indicator, mood badge, content preview, timestamp. Pinned notes appear first.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Loading analysis data — skeleton placeholders for each section <span class="state-tag loading">Loading</span></li>
+            <li>Analysis not found / error — error message with "Go Back" action <span class="state-tag error">Error</span></li>
+            <li>Notes empty — "No notes yet. Add your first trading note." with Add button <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 05: SIGNALS ══ -->
+  <div class="page-section" id="page-signals">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">05</span>
+          <span class="page-title">AI Signals</span>
+        </div>
+        <span class="page-route">/signals</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Daily AI-generated technical analysis signals. Each signal includes a recommendation (BUY/SELL/WAIT), confidence score, key price levels, and pattern identification. Users can track signals and share them on social media. Real-time monitoring via polling.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>4 metrics in a horizontal row: Total Signals (mono), Buy Signals (bullish colored, mono), Sell Signals (bearish colored, mono), Avg Confidence (percentage, mono), Monitoring count (with live dot indicator)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Filter Tabs</div>
+          <ul class="element-list">
+            <li>Horizontal scrollable tab bar: All | BUY | SELL | WAIT. Each tab shows count badge. Active tab uses brand accent color underline/background. Tabs filter the signal list below.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Signal Cards / Rows</div>
+          <ul class="element-list">
+            <li>Each signal is a card/row containing: Recommendation badge (BUY green pill / SELL red pill / WAIT amber pill), Trading pair name (bold), Timeframe badge (e.g., "4H", "1D"), Pattern name, Confidence percentage with progress bar, Bullet-point reasons list, Entry / SL / TP prices (monospace, colored), Date/time stamp</li>
+            <li>Action buttons per signal: TRACK (toggle button to follow/unfollow), X share button (Twitter), TG share button (Telegram)</li>
+            <li>Tracked signals should have a visual indicator (filled icon vs outline)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Loading — 6-8 skeleton rows with shimmer animation <span class="state-tag loading">Loading</span></li>
+            <li>No signals — "No signals available" empty state with icon <span class="state-tag">Empty</span></li>
+            <li>No matching filter — "No {BUY/SELL/WAIT} signals" empty state <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 14: CHARTS ══ -->
+  <div class="page-section" id="page-charts">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">14</span>
+          <span class="page-title">Charts</span>
+        </div>
+        <span class="page-route">/charts</span>
+        <span class="page-status placeholder">Placeholder</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Planned real-time candlestick chart page with technical indicators. Currently shows only a "Coming Soon" empty state. When built, this will be a major feature page with interactive TradingView-style charts.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Planned Features (Not Yet Built)</div>
+          <ul class="element-list">
+            <li>Interactive candlestick chart with pinch-to-zoom and pan</li>
+            <li>Technical indicator overlays (RSI, MACD, Bollinger Bands, EMA/SMA)</li>
+            <li>Multiple timeframe selector (1m, 5m, 15m, 1H, 4H, 1D, 1W)</li>
+            <li>Pair/ticker selector with search</li>
+            <li>Drawing tools (trendlines, horizontal levels, Fibonacci)</li>
+            <li>Volume bars below main chart</li>
+            <li>Chart palette uses: #7C9BC4 (primary), #8C9EFF, #9FB6D6 for multi-asset overlay</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Current State</div>
+          <ul class="element-list">
+            <li>Empty state with "COMING SOON" badge and icon <span class="state-tag">Placeholder</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                    AI & INTELLIGENCE PAGES                      -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2>AI &amp; Intelligence</h2>
+    <div class="line"></div>
+  </div>
+
+  <!-- ══ PAGE 07: COPILOT ══ -->
+  <div class="page-section" id="page-copilot">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">07</span>
+          <span class="page-title">AI Copilot</span>
+        </div>
+        <span class="page-route">/copilot</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Full-featured AI chat assistant for trading. Supports multiple conversations, pre-built quick prompts, markdown rendering in messages, and consensus data display. This is the largest and most complex page in the app (~88KB). Sidebar for conversation management, main area for chat.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Sidebar (Conversation List)</div>
+          <ul class="element-list">
+            <li>Slide-in sidebar from left, toggleable via hamburger button</li>
+            <li>"New Chat" button at the top — creates a new conversation</li>
+            <li>Conversation list: each item shows title (truncated), timestamp. Active conversation highlighted with brand accent background</li>
+            <li>Actions per conversation: rename (inline edit), delete (with confirmation)</li>
+            <li>Pagination at bottom if conversations exceed visible area</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Main Chat Area</div>
+          <ul class="element-list">
+            <li><strong>Quick Prompt Chips:</strong> Horizontal scrollable row of suggestion chips above the chat. Examples: "Analyze Pair", "Risk Assessment", "Market Outlook", "Portfolio Review", "Entry Points". Tap to pre-fill the input.</li>
+            <li><strong>Chat Messages:</strong> Scrollable message list. User messages aligned right with primary accent background. AI messages aligned left with elevated surface background. Markdown rendering support (bold, italic, lists, code blocks). Timestamp on each message.</li>
+            <li><strong>Message Input:</strong> Fixed at bottom. Text input field (auto-expanding textarea) + Send button (brand accent, icon). Send button disabled when input is empty.</li>
+            <li><strong>Consensus Indicator:</strong> When available, shows Bullish / Bearish / Neutral badge with confidence. Appears near the top of the conversation or as a floating indicator.</li>
+            <li><strong>Toggle Buttons:</strong> Coach, Consensus, and Tools toggle buttons — each reveals a supplementary panel when active.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No conversations — empty sidebar with "Start a conversation" prompt <span class="state-tag">Empty</span></li>
+            <li>Empty conversation — show quick prompt chips and welcome message <span class="state-tag">Empty</span></li>
+            <li>AI generating response — typing indicator (animated dots) in chat <span class="state-tag loading">Loading</span></li>
+            <li>Error sending message — inline error with retry option <span class="state-tag error">Error</span></li>
+          </ul>
+        </div>
+
+        <div class="note-box">
+          <strong>Deep Linking:</strong> Can receive ?chartPair=, ?chartTimeframe=, ?chartPrice=, ?chartSymbol= URL parameters to pre-populate a conversation context about a specific chart.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 29: VISION ══ -->
+  <div class="page-section" id="page-vision">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">29</span>
+          <span class="page-title">AI Vision</span>
+        </div>
+        <span class="page-route">/vision</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Overview dashboard for all AI chart analyses performed by the user. Table-based layout showing every analysis with its signal, confidence, pattern, and status. Complements the per-analysis detail page.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Total Analyses (mono), BUY Signals (bullish, mono), SELL Signals (bearish, mono), Avg Confidence (percentage, mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Table Columns</div>
+          <ul class="element-list">
+            <li>Pair name, Status badge, Signal badge (BUY/SELL/WAIT — colored), Confidence (percentage + mini progress bar), Pattern name, Trend direction, Reasons (truncated), Date</li>
+            <li>Horizontally scrollable on mobile. Monospace font for all numerical values.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Loading — skeleton table rows <span class="state-tag loading">Loading</span></li>
+            <li>No analyses — empty state with icon and "Analyze your first chart" message <span class="state-tag">Empty</span></li>
+            <li>Analyses in progress — "In Progress" status badge <span class="state-tag loading">Processing</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 35: ALPHA FEED ══ -->
+  <div class="page-section" id="page-alpha">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">35</span>
+          <span class="page-title">Alpha Feed</span>
+        </div>
+        <span class="page-route">/alpha</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">AI-generated alpha signals and pattern analyses aggregated across all traded pairs. Cards show signals vs. analyses with confidence, price levels, and reasoning. Filterable by source type.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Active Signals (mono), Avg Confidence (percentage, mono), Top Confidence pair name and value (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Filter Tabs</div>
+          <ul class="element-list">
+            <li>All | Signals | Analyses — each with count badge. Active tab in brand accent.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Alpha Cards</div>
+          <ul class="element-list">
+            <li>Type badge: SIGNAL or ANALYSIS (pill badges)</li>
+            <li>Trading pair name (bold), Timeframe badge (e.g., "4H"), Pattern badge</li>
+            <li>Confidence with horizontal progress bar (brand accent fill)</li>
+            <li>Entry / SL / TP price levels (monospace, colored)</li>
+            <li>Time ago stamp</li>
+            <li>Reason badges — small pills showing key reasons</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No alpha data — empty state <span class="state-tag">Empty</span></li>
+            <li>No signals (when filtered) — filtered empty state <span class="state-tag">Empty</span></li>
+            <li>No analyses (when filtered) — filtered empty state <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 19: PREDICTIONS ══ -->
+  <div class="page-section" id="page-predictions">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">19</span>
+          <span class="page-title">Predictions</span>
+        </div>
+        <span class="page-route">/predictions</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">AI market predictions with outcome tracking. Shows whether past predictions were CORRECT or WRONG, allowing users to assess AI accuracy over time.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Total Predictions (mono), BUY Predictions (bullish, mono), SELL Predictions (bearish, mono), Avg Confidence (percentage, mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Accuracy Bar</div>
+          <ul class="element-list">
+            <li>Horizontal progress bar showing overall prediction accuracy percentage. Brand accent fill on dark track. Label showing "X% Accuracy" in monospace.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Prediction Cards</div>
+          <ul class="element-list">
+            <li>Pair name, Direction badge (BUY green / SELL red), Confidence percentage, Pattern badge, Risk level badge (LOW/MED/HIGH), Source badge (AI / SIGNAL)</li>
+            <li>Status badge: CORRECT (bullish green), WRONG (bearish red), PENDING (neutral amber)</li>
+            <li>Date and reasons list</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No predictions — "No Predictions" empty state <span class="state-tag">Empty</span></li>
+            <li>Loading — skeleton cards <span class="state-tag loading">Loading</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                      TRADING PAGES                               -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2>Trading</h2>
+    <div class="line"></div>
+  </div>
+
+  <!-- ══ PAGE 08: TRADE DESK ══ -->
+  <div class="page-section" id="page-trade-desk">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">08</span>
+          <span class="page-title">Trade Desk</span>
+        </div>
+        <span class="page-route">/trade-desk</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Risk calculator combined with trade logging. User inputs trade parameters to calculate position sizing, then logs the trade. AI coaching overlay provides feedback on trade quality. Risk assessment panel evaluates risk level.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Risk Calculator Card</div>
+          <ul class="element-list">
+            <li>Trading Pair selector (dropdown), Balance input (monospace), Risk Percentage input (monospace), Stop Loss in pips input (monospace)</li>
+            <li>Calculated outputs: Recommended Lot Size (mono, bold), Risk Amount in dollar value (mono), Risk Level badge — LOW (bullish) / MEDIUM (neutral amber) / HIGH (bearish)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Save Trade Section</div>
+          <ul class="element-list">
+            <li>Direction toggle: Long (bullish green) / Short (bearish red) — pill-shaped toggle</li>
+            <li>Entry Price input (monospace)</li>
+            <li>"Save Trade" primary button</li>
+            <li>"Coach" button — opens AI coaching overlay</li>
+            <li>"Risk" button — opens risk assessment panel</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Active Positions List</div>
+          <ul class="element-list">
+            <li>Paginated list of open trades. Each row shows: pair, direction badge, entry, PnL (colored, mono)</li>
+            <li>Pagination bar at bottom</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Overlays</div>
+          <ul class="element-list">
+            <li><strong>Coach Overlay:</strong> Slide-in panel analyzing trade parameters. Shows AI feedback with sentiment. Like/Dislike buttons for feedback.</li>
+            <li><strong>Risk Assessment Panel:</strong> Evaluates trade risk. Shows approve (bullish) / warn (amber) / reject (bearish) decision with explanation.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No active positions — empty state <span class="state-tag">Empty</span></li>
+            <li>Saving trade — button shows spinner <span class="state-tag loading">Saving</span></li>
+            <li>Trade saved — brief success indicator <span class="state-tag success">Saved</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 11: PNL TRACKER ══ -->
+  <div class="page-section" id="page-pnl">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">11</span>
+          <span class="page-title">PnL Tracker</span>
+        </div>
+        <span class="page-route">/pnl</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Complete trade history with performance metrics. Table-based layout showing every closed trade with entry, exit, PnL, and R-multiple. Stats row at top for at-a-glance performance summary.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Total PnL (colored by positive/negative, mono, bold), Win Rate with W/L counts (mono), Profit Factor (mono), Best Trade (mono, bullish)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Trade Table</div>
+          <ul class="element-list">
+            <li>Columns: Pair, Side (BUY/SELL badge), Entry Price (mono), Exit Price (mono), Quantity (mono), PnL (colored, mono, bold), R-Multiple (mono), Duration</li>
+            <li>Horizontally scrollable on mobile. All numerical values in JetBrains Mono.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No trades — empty state with "Log a Trade" CTA button <span class="state-tag">Empty</span></li>
+            <li>Loading — skeleton rows <span class="state-tag loading">Loading</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 20: DAILY LOOP ══ -->
+  <div class="page-section" id="page-daily-loop">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">20</span>
+          <span class="page-title">Daily Loop</span>
+        </div>
+        <span class="page-route">/daily-loop</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Structured daily trading routine with three phases: Morning Prep, Session Tracking, and EOD Review. Each phase has specific inputs and checklists. Includes AI-generated weekly analyst report panel. The most complex workflow page in the app.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Phase Indicators</div>
+          <ul class="element-list">
+            <li>Three phase tabs at top: Morning Prep, Session Tracking, EOD Review</li>
+            <li>Each phase shows a completion checkmark when all sections are filled</li>
+            <li>Active phase highlighted with brand accent color</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Morning Prep Section</div>
+          <ul class="element-list">
+            <li>Market Bias input (Bullish/Bearish/Neutral selector)</li>
+            <li>Emotional State input (scale or selector)</li>
+            <li>Top Pairs to Watch (text input or tag-style entry)</li>
+            <li>Session Goals (textarea)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Session Tracking Section</div>
+          <ul class="element-list">
+            <li>Trade Log — quick-add trades during session</li>
+            <li>Emotional Check-ins — periodic mood tracking</li>
+            <li>Session Notes — free-form text area</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">EOD Review Section</div>
+          <ul class="element-list">
+            <li>Performance Review — summary of day's trades</li>
+            <li>Lessons Learned — textarea for reflection</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Analyst Report Panel</div>
+          <ul class="element-list">
+            <li>Expandable widget — tap to expand/collapse</li>
+            <li>AI-generated weekly report with tabbed sub-sections: Stats, Patterns, Recommendations, Learning</li>
+            <li>Glass-card styling, brand accent borders</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Loop History</div>
+          <ul class="element-list">
+            <li>Paginated list of past daily loops below the main sections</li>
+            <li>Pagination bar at bottom</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 36: PERPETUALS ══ -->
+  <div class="page-section" id="page-perpetuals">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">36</span>
+          <span class="page-title">Perpetuals / Futures</span>
+        </div>
+        <span class="page-route">/perpetuals</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Open perpetual/futures positions management and closed trade performance review. Two-tab layout separating active positions from historical trades.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Open Positions count (mono), Unrealized PnL (colored, mono), Realized PnL (colored, mono), Win Rate (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Tabs</div>
+          <ul class="element-list">
+            <li>Open Positions | Recent Closed — with count badges</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Open Positions Cards</div>
+          <ul class="element-list">
+            <li>Two-line card layout per position: Direction badge (LONG green / SHORT red), Pair name, OPEN badge, PnL (colored, mono, bold), Entry Price (mono), Quantity (mono), R-Multiple (mono), SL (mono, bearish), TP (mono, bullish)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Recent Closed Cards</div>
+          <ul class="element-list">
+            <li>Single-line card: Pair, Direction badge, Entry to Exit arrow with prices (mono), PnL (colored, mono), R-Multiple (mono), Status badge</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No open positions — empty state in Open tab <span class="state-tag">Empty</span></li>
+            <li>No closed trades — empty state in Closed tab <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 17: BACKTEST ══ -->
+  <div class="page-section" id="page-backtest">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">17</span>
+          <span class="page-title">Backtest</span>
+        </div>
+        <span class="page-route">/backtest</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Strategy backtesting engine. User configures a trading strategy with parameters, runs the backtest, and views results including equity curve, stats summary, and individual trade list.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Configuration Form</div>
+          <ul class="element-list">
+            <li>Trading Pair selector (dropdown)</li>
+            <li>Strategy selector (dropdown — list of available strategies)</li>
+            <li>Starting Capital input (mono)</li>
+            <li>Date Range — Start Date and End Date pickers</li>
+            <li>Stop Loss percentage input (mono)</li>
+            <li>Take Profit percentage input (mono)</li>
+            <li>"Run Backtest" primary button (brand accent)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Results Section (After Running)</div>
+          <ul class="element-list">
+            <li>Equity Curve — chart placeholder (planned: interactive line chart showing portfolio value over time)</li>
+            <li>Stats Summary — key metrics: Total Return, Max Drawdown, Win Rate, Profit Factor, Total Trades (all in mono)</li>
+            <li>Trade List — individual backtest trades with entry, exit, PnL (mono, colored)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Form validation errors — inline error messages per field <span class="state-tag error">Error</span></li>
+            <li>Backtest running — progress indicator, form disabled <span class="state-tag loading">Running</span></li>
+            <li>Results available — results section appears with animation <span class="state-tag success">Complete</span></li>
+            <li>No results — "Run a backtest to see results" message <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 16: EXPERIMENTS ══ -->
+  <div class="page-section" id="page-experiments">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">16</span>
+          <span class="page-title">Experiments</span>
+        </div>
+        <span class="page-route">/experiments</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">AI strategy experimentation lab. Create, run, and review backtesting experiments with different strategies and parameters. Similar to Backtest but focused on comparing multiple experiment runs.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Experiments count (mono), Best result (colored, mono), Win Rate (mono), Total ROI (colored, mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Create Experiment Form</div>
+          <ul class="element-list">
+            <li>Pair, Strategy, Timeframe, Capital, SL, TP, Duration inputs</li>
+            <li>"Create Experiment" button</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Experiment List Cards</div>
+          <ul class="element-list">
+            <li>Each card: Strategy name, status indicator (Running with spinner / Completed with check / Failed with X), results summary (ROI, win rate — mono)</li>
+            <li>Expandable — tap to reveal detailed results</li>
+            <li>Card appear animation (staggered fade+translate)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 33: JOURNAL ══ -->
+  <div class="page-section" id="page-journal">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">33</span>
+          <span class="page-title">Trading Journal</span>
+        </div>
+        <span class="page-route">/journal</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Trade journal with mood tracking, tags, and note creation. Combines structured data (pair, mood) with free-form content (notes, tags). Filterable by mood and tags.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">New Entry Toggle</div>
+          <ul class="element-list">
+            <li>"+ New Entry" button — toggles the form open. Form slides in at the top.</li>
+            <li>"Close" (X) button to dismiss the form.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">New Entry Form</div>
+          <ul class="element-list">
+            <li>Title input (text), Pair input (text), Content textarea (multi-line)</li>
+            <li>Mood selector: Neutral / Confident / Cautious / Anxious — pill-shaped toggle buttons</li>
+            <li>Tags input (comma-separated text)</li>
+            <li>"Save Entry" button</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Total Notes with pinned count, Pairs Covered, Top Mood, This Week count</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Filter Tabs</div>
+          <ul class="element-list">
+            <li>All | Confident | Cautious | Anxious | With Tags — each with count badge</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Journal Entry Rows</div>
+          <ul class="element-list">
+            <li>Date, Pair name, Mood badge (colored pill), Title/content (truncated), Pinned indicator (pin icon), Tag hashtags</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                     PORTFOLIO & DEFI PAGES                      -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2>Portfolio &amp; DeFi</h2>
+    <div class="line"></div>
+  </div>
+
+  <!-- ══ PAGE 09: PORTFOLIO ══ -->
+  <div class="page-section" id="page-portfolio">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">09</span>
+          <span class="page-title">Portfolio</span>
+        </div>
+        <span class="page-route">/portfolio</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Portfolio holdings derived from recorded trades. Shows total value, PnL, and allocation breakdown. Two tabs separate current holdings from trade history.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Total Value (mono, bold), Total PnL with percentage (colored, mono), Holdings count (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Allocation Bar</div>
+          <ul class="element-list">
+            <li>Horizontal stacked bar showing portfolio allocation per holding. Each segment colored using chart palette (#7C9BC4, #8C9EFF, #9FB6D6, etc.). Labels below showing pair and percentage (mono).</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Tabs</div>
+          <ul class="element-list">
+            <li>Holdings | History</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Holdings Rows</div>
+          <ul class="element-list">
+            <li>Two-line row per holding: Symbol (bold), Chain badge, PnL with percentage (colored, mono), Value (mono), Amount (mono), Entry Price (mono), Allocation % (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No holdings — "Start trading" empty state with link to Trade Desk <span class="state-tag">Empty</span></li>
+            <li>Loading — skeleton rows <span class="state-tag loading">Loading</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 10: TOKEN DETAIL ══ -->
+  <div class="page-section" id="page-token-detail">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">10</span>
+          <span class="page-title">Token Detail</span>
+        </div>
+        <span class="page-route">/token/:symbol</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Per-token drill-down page showing all trades for a specific token, performance stats, and trade history table. Accessed from Portfolio or Discover pages.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Breadcrumb</div>
+          <ul class="element-list">
+            <li>"Discover /" followed by token symbol (uppercase, bold)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Your Trades (mono), Total PnL (colored, mono), Win Rate (mono), Closed count (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Chart Area</div>
+          <ul class="element-list">
+            <li>Placeholder with "COMING SOON" badge — planned: token price chart with trade markers overlaid</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Trade Table</div>
+          <ul class="element-list">
+            <li>Direction badge (BUY/SELL), Entry (mono), Exit (mono), Quantity (mono), PnL (colored, mono), R-Multiple (mono), Date</li>
+            <li>Horizontally scrollable, monospace layout</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No trades for token — "No trades found" empty state <span class="state-tag">Empty</span></li>
+            <li>Loading — skeleton <span class="state-tag loading">Loading</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 12: BAGS ══ -->
+  <div class="page-section" id="page-bags">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">12</span>
+          <span class="page-title">My Bags</span>
+        </div>
+        <span class="page-route">/bags</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Alternative portfolio view showing holdings as "bags" — cards displaying each position with its performance. More visual/card-based compared to the table-focused Portfolio page.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Portfolio Value (mono), Total PnL (colored, mono), Total Return % (colored, mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Bag Cards</div>
+          <ul class="element-list">
+            <li>Each card: Token avatar (circle), Symbol (bold), Chain badge, Value (mono), Token amount (mono), Average Entry (mono), PnL (colored, mono, bold), PnL % (colored, mono)</li>
+            <li>Glass-card styling with hover state</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No bags — empty state with "Go to Trade Desk" CTA button <span class="state-tag">Empty</span></li>
+            <li>Loading — skeleton cards <span class="state-tag loading">Loading</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 13: YIELD ══ -->
+  <div class="page-section" id="page-yield">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">13</span>
+          <span class="page-title">Yield</span>
+        </div>
+        <span class="page-route">/yield</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Closed trade yield performance analysis. Shows return on each closed trade with yield percentage, duration, and R-multiple. Focused on profitability assessment.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Total Yield (colored, mono), Avg Yield/Trade (mono), Best Yield (bullish, mono), Yield Trades count (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Yield Cards</div>
+          <ul class="element-list">
+            <li>Pair name, Direction badge, Yield value (colored, mono, bold), Yield % (colored, mono), Duration, Entry (mono), Exit (mono), R-Multiple (mono), Quantity (mono), Date</li>
+            <li>Glass-card styling with card stagger animation</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No yield data — "No Yield Data" empty state <span class="state-tag">Empty</span></li>
+            <li>Loading — skeleton cards <span class="state-tag loading">Loading</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 26: WALLET ══ -->
+  <div class="page-section" id="page-wallet">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">26</span>
+          <span class="page-title">Wallet (Web3)</span>
+        </div>
+        <span class="page-route">/wallet-web3</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Multi-chain wallet connection page. Supports Phantom (Solana) and MetaMask (EVM) wallets. Shows native balance, token holdings, and transaction history.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Action Bar</div>
+          <ul class="element-list">
+            <li>Wallet Connect button (when disconnected — shows WalletProviderSelector: Phantom / MetaMask options)</li>
+            <li>Refresh button (when connected — reloads balances)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Warning Banner</div>
+          <ul class="element-list">
+            <li>Unverified tokens warning — amber-tinted banner shown when unverified tokens detected in wallet. Informational, not blocking.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Native Balance (mono, bold), Tokens count with verified count, Chain name (e.g., "Solana"), Portfolio Value (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Tabs</div>
+          <ul class="element-list">
+            <li>Holdings | Transactions</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Holdings Grid</div>
+          <ul class="element-list">
+            <li>Token cards in grid: Logo/avatar, Symbol (bold), Verified checkmark or Honeypot warning badge, Balance (mono), USD Value (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Wallet not connected — connect prompt with wallet provider options <span class="state-tag">Disconnected</span></li>
+            <li>Loading balances — shimmer skeleton <span class="state-tag loading">Loading</span></li>
+            <li>No tokens — empty holdings state <span class="state-tag">Empty</span></li>
+            <li>No transactions — "No Transactions" empty state <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 31: CURVES ══ -->
+  <div class="page-section" id="page-curves">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">31</span>
+          <span class="page-title">Bonding Curves</span>
+        </div>
+        <span class="page-route">/curves</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Trade distribution analysis for accumulation pattern detection. Shows which pairs have unusual buy/sell ratios suggesting smart money accumulation.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Accumulating pairs count (mono), Unique Pairs (mono), Most Traded pair with volume (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Filter Tabs</div>
+          <ul class="element-list">
+            <li>All Pairs | Accumulating — with count badges</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Curve Cards</div>
+          <ul class="element-list">
+            <li>Pair name, ACCUMULATING badge (bullish green pill, only on accumulating pairs)</li>
+            <li>Buy/Sell ratio (mono), MiniBar visualization (horizontal bar showing buy vs sell proportion — green vs red)</li>
+            <li>Buy count (mono, bullish), Sell count (mono, bearish), Total Volume (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No trade data — empty state <span class="state-tag">Empty</span></li>
+            <li>No accumulation signals — empty state in Accumulating tab <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                    MARKET DATA PAGES                            -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2>Market Data &amp; Discovery</h2>
+    <div class="line"></div>
+  </div>
+
+  <!-- ══ PAGE 06: DISCOVER ══ -->
+  <div class="page-section" id="page-discover">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">06</span>
+          <span class="page-title">Discover Tokens</span>
+        </div>
+        <span class="page-route">/discover</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Real-time token discovery from DEX screener data. Lists trending tokens with price, volume, market cap, and liquidity. Auto-refreshes every 60 seconds. Honeypot detection warnings.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Tokens count (mono), Bullish count (bullish, mono), Bearish count (bearish, mono), Total Volume (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Search</div>
+          <ul class="element-list">
+            <li>Full-text search input with clear (X) button. Filters token list in real-time. Dark solid background input field.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Sort Pills</div>
+          <ul class="element-list">
+            <li>Horizontal scrollable pills: Trending | Volume | 24h % | Liquidity | Smart Money. Active pill uses brand accent. Each pill is a sort/filter toggle.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Token Rows</div>
+          <ul class="element-list">
+            <li>Logo/avatar (circle), Symbol (bold), Chain badge (pill), Honeypot warning badge (if detected — amber/red), Price (mono), 24h Change (colored, mono), Volume (mono), Market Cap (mono), Liquidity (mono)</li>
+            <li>Rows have hover/press feedback. Tap navigates to /token/:symbol.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Footer</div>
+          <ul class="element-list">
+            <li>Scan stats: "Scanned X tokens in Ys" — informational footer text in tertiary color</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Loading — 8 skeleton rows with shimmer <span class="state-tag loading">Loading</span></li>
+            <li>Error — error bar with "Retry" button <span class="state-tag error">Error</span></li>
+            <li>No results (search) — empty state <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 30: PULSE ══ -->
+  <div class="page-section" id="page-pulse">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">30</span>
+          <span class="page-title">Pulse</span>
+        </div>
+        <span class="page-route">/pulse</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Real-time activity feed of trades and signals across the platform. Shows latest market activity in a timeline format. Designed for quick scanning of what's happening right now.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Trades Today (mono), Signals Today (mono), Most Active pair (bold), Total Trades (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Filter Tabs</div>
+          <ul class="element-list">
+            <li>All | Trades | Signals</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Pulse Rows</div>
+          <ul class="element-list">
+            <li>Type indicator dot (colored), TRADE or SIGNAL badge, Action + Pair name description</li>
+            <li>For trades: Price (mono), Quantity (mono), PnL (colored, mono)</li>
+            <li>For signals: Confidence (mono), Pattern name</li>
+            <li>Time ago stamp (tertiary text)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No activity — "No Activity" empty state <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 32: WHALE ALERTS ══ -->
+  <div class="page-section" id="page-whale">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">32</span>
+          <span class="page-title">Whale Alerts</span>
+        </div>
+        <span class="page-route">/whale</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Largest trades sorted by value for whale activity detection. Shows significant market movements that may indicate institutional or whale trading activity.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>24h Volume (mono), Large Trades count (mono), Biggest Trade with pair name (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Whale Cards</div>
+          <ul class="element-list">
+            <li>LONG (bullish) or SHORT (bearish) badge, Trading pair name</li>
+            <li>BIGGEST badge (brand accent pill) — only on the largest trade</li>
+            <li>Time ago stamp</li>
+            <li>Trade details: Size (mono), Price (mono), Trade Value (mono, bold)</li>
+            <li>Glass-card styling with left-border accent for biggest trade</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No whale activity — "No whale activity" empty state <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                      USER ACCOUNT PAGES                         -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2>User Account &amp; Rewards</h2>
+    <div class="line"></div>
+  </div>
+
+  <!-- ══ PAGE 34: PROFILE ══ -->
+  <div class="page-section" id="page-profile">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">34</span>
+          <span class="page-title">Profile</span>
+        </div>
+        <span class="page-route">/profile</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">User profile page with personal info, trading stats, achievements, connected accounts, and quick links to account settings. Central identity and settings hub.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Profile Card</div>
+          <ul class="element-list">
+            <li>Avatar (circular image, or initial letter fallback with brand accent background), Display name (bold), Join date (tertiary text)</li>
+            <li>Badges row: Points badge (mono), Streak badge, PRO badge (if premium — brand accent gradient)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Total Trades (mono), Win Rate (mono), Total PnL (colored, mono), Best Streak (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Achievements Grid</div>
+          <ul class="element-list">
+            <li>8 achievement badges in a 4x2 grid. Each: icon, title, locked/unlocked state</li>
+            <li>Achievements: First Trade, On Fire, Pro Trader, Connector, Big Winner, Analyst, Speed Demon, Legend</li>
+            <li>Unlocked: brand accent background. Locked: muted/elevated background with lower opacity</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Connected Accounts</div>
+          <ul class="element-list">
+            <li>List of 3 accounts: Telegram, Twitter, Discord</li>
+            <li>Each shows: platform name, "Connected" badge (bullish green) or "Connect" button (outline)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Account Settings Links</div>
+          <ul class="element-list">
+            <li>Settings, Notifications, Connected Wallets, Appearance, Privacy &amp; Security</li>
+            <li>Each row: icon + label + chevron-right. Navigate to respective pages.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 15: SETTINGS ══ -->
+  <div class="page-section" id="page-settings">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">15</span>
+          <span class="page-title">Settings</span>
+        </div>
+        <span class="page-route">/settings</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">App preferences organized into 6 sections. Covers trading preferences, notifications, AI provider selection, integrations, display options, and security/account management. Mixed server-side and local persistence.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Save Toolbar</div>
+          <ul class="element-list">
+            <li>Fixed "Save" button (brand accent) at top. Toast indicator "Saved!" on success. Error indicator bar on failure.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Settings Sections</div>
+          <ul class="element-list">
+            <li><strong>Trading:</strong> Default pair, default risk %, default timeframe — toggles and selects</li>
+            <li><strong>Notifications:</strong> Push notifications toggle, email notifications toggle, signal alerts toggle, whale alerts toggle</li>
+            <li><strong>AI Provider:</strong> Model selection (dropdown/pills), temperature slider</li>
+            <li><strong>Integrations:</strong> Telegram connected status, Twitter connected status, Discord connected status — each with Connect/Disconnect action</li>
+            <li><strong>Display:</strong> Theme toggle (dark/light), language selector, compact mode toggle, chart style selector</li>
+            <li><strong>Security &amp; Account:</strong> Change password button, 2FA toggle, delete account button (destructive styling), export data button</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Component Types Used</div>
+          <ul class="element-list">
+            <li>Toggle switches (custom styled, dark theme), Select dropdowns, Text inputs, Action buttons (outline + destructive), Pill-style selectors</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 18: REWARDS ══ -->
+  <div class="page-section" id="page-rewards">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">18</span>
+          <span class="page-title">Rewards</span>
+        </div>
+        <span class="page-route">/rewards</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Gamified rewards system with daily check-in streak, referral earnings, tier progression, and a reward shop. Vertical scrolling layout with multiple distinct sections.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Points Hero</div>
+          <ul class="element-list">
+            <li>Large points balance display (JetBrains Mono, extra bold, large font size)</li>
+            <li>Weekly earnings (smaller, mono), Current streak count</li>
+            <li>Possibly a radial glow or brand accent gradient background for emphasis</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Daily Check-In Streak</div>
+          <ul class="element-list">
+            <li>7-day grid (Mon through Sun). Each day cell shows one of: Done (bullish green checkmark), Missed (bearish red X), Today (brand accent ring, active), Upcoming (muted/empty)</li>
+            <li>Grid layout, 7 columns. Each cell is a small square or circle.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Referral Section</div>
+          <ul class="element-list">
+            <li>Referral link display (monospace, truncated) with "Copy" button</li>
+            <li>"Share via Telegram" button</li>
+            <li>Referral stats: Total Referred, Earned Points, Streak</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Rewards Tier Progress</div>
+          <ul class="element-list">
+            <li>Progress bar from Bronze to Silver to Gold to Platinum</li>
+            <li>Segment bar with tier labels below. Brand accent fill showing current progress. Current tier highlighted.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Recent Earnings</div>
+          <ul class="element-list">
+            <li>Scrollable list of recent point earning events: description, points amount (bullish colored, mono), timestamp</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Available Rewards Grid</div>
+          <ul class="element-list">
+            <li>6 reward items in a 2x3 or 3x2 grid. Each card: reward name, short description, point cost (mono), "Redeem" button (brand accent or outline)</li>
+            <li>Rewards: Trade Fee Discount, AI Analysis Report, Signal Access, Premium 1 Week, Mystery Box, Profile Badge</li>
+            <li>Redeemed items show "Redeemed" badge (muted) instead of button</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 21: PREMIUM ══ -->
+  <div class="page-section" id="page-premium">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">21</span>
+          <span class="page-title">Premium / Vixor Pro</span>
+        </div>
+        <span class="page-route">/premium</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Subscription plan selection and management. Shows available plans with pricing and features. Active subscription displayed at top.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Active Subscription Banner</div>
+          <ul class="element-list">
+            <li>If user has active subscription: banner showing plan name, renewal date. Brand accent background. Only shown when subscribed.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Plan Cards Grid</div>
+          <ul class="element-list">
+            <li>Each plan card: Plan name (bold), Price (large mono), Badge (e.g., "Popular", "Best Value"), Feature list with checkmark icons, "Upgrade" button (brand accent) or "Current Plan" (muted, disabled)</li>
+            <li>Cards have glass-card styling. Current plan card may have brand accent border.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No plans available — empty state <span class="state-tag">Empty</span></li>
+            <li>Subscribing — button shows loading spinner <span class="state-tag loading">Processing</span></li>
+            <li>Current plan indicator — disabled button, highlighted card <span class="state-tag success">Active</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 28: REFERRAL ══ -->
+  <div class="page-section" id="page-referral">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">28</span>
+          <span class="page-title">Referral Program</span>
+        </div>
+        <span class="page-route">/referral</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Referral code management with step-by-step guide. User shares their unique code, friends sign up, and both earn points.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Hero Card</div>
+          <ul class="element-list">
+            <li>Welcome message and reward description text. Glass-card with brand accent gradient background.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Referral Code</div>
+          <ul class="element-list">
+            <li>Code display (large monospace, bold) with "Copy Code" button</li>
+            <li>"Share via Telegram" button (full-width or prominent)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Total Referred (mono), Earned Points (mono, bullish), Streak (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">How It Works</div>
+          <ul class="element-list">
+            <li>3-step guide with numbered steps and icons: (1) Share your code, (2) Friends sign up, (3) Earn points</li>
+            <li>Each step: number circle + title + description. Vertical layout with connecting lines or spacing.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No referrals yet — empty state for referral list <span class="state-tag">Empty</span></li>
+            <li>Code copied — brief "Copied!" feedback on button <span class="state-tag success">Feedback</span></li>
+            <li>Loading — skeleton <span class="state-tag loading">Loading</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 22: NOTIFICATIONS ══ -->
+  <div class="page-section" id="page-notifications">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">22</span>
+          <span class="page-title">Notifications</span>
+        </div>
+        <span class="page-route">/notifications</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Notification center with type-based filtering. Shows trade alerts, signal notifications, whale alerts, and system messages. Unread indicator on rows.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Header Actions</div>
+          <ul class="element-list">
+            <li>"X new" badge in header showing unread count</li>
+            <li>"Mark all read" action button</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Filter Tabs</div>
+          <ul class="element-list">
+            <li>All | Unread | Trades | Alerts | Whale | Signals — each with unread count badge</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Notification Rows</div>
+          <ul class="element-list">
+            <li>Left accent border for unread notifications (brand accent color)</li>
+            <li>Icon (type-specific), Type badge, Title (bold), Body text (truncated, secondary), Time ago</li>
+            <li>Read notifications: no left border, slightly muted text</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>No notifications — empty state <span class="state-tag">Empty</span></li>
+            <li>No matching filter — filtered empty state <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                      TOOLS & SOCIAL PAGES                       -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2>Tools, Social &amp; Utilities</h2>
+    <div class="line"></div>
+  </div>
+
+  <!-- ══ PAGE 24: TRACKERS ══ -->
+  <div class="page-section" id="page-trackers">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">24</span>
+          <span class="page-title">Trackers</span>
+        </div>
+        <span class="page-route">/trackers</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Watchlists and price alerts management. Two-tab layout separating watchlist management from price alert configuration.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Tabs</div>
+          <ul class="element-list">
+            <li>Watchlist | Price Alerts — with item counts</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Watchlist Tab</div>
+          <ul class="element-list">
+            <li>Grouped by watchlist name (section headers)</li>
+            <li>Table rows: Symbol (bold), Entry Price (mono), Target Price (mono), Added date</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Price Alerts Tab</div>
+          <ul class="element-list">
+            <li>Table rows: Symbol (bold), Condition badge (Above/Below), Target Price (mono), Status badge (Active/Triggered), Created date</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Empty watchlist — empty state <span class="state-tag">Empty</span></li>
+            <li>Empty price alerts — empty state <span class="state-tag">Empty</span></li>
+            <li>Loading — skeleton table <span class="state-tag loading">Loading</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 25: COMMUNITIES ══ -->
+  <div class="page-section" id="page-communities">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">25</span>
+          <span class="page-title">Communities</span>
+        </div>
+        <span class="page-route">/communities</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Social trading community hub. Shared trading strategies and community activity posts. Two-tab layout for strategies and activity feed.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Stats Row</div>
+          <ul class="element-list">
+            <li>Shared Strategies (mono), Community Posts (mono), Active Traders (mono), Total Activity (mono)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Tabs</div>
+          <ul class="element-list">
+            <li>Strategies | Activity</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Strategies Tab</div>
+          <ul class="element-list">
+            <li>Strategy cards: Name (bold), Trading Style badge, Risk level badge (LOW/MED/HIGH), Pair badges (pills), Timeframe badges (pills), Date</li>
+            <li>Glass-card styling, potentially expandable</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Activity Tab</div>
+          <ul class="element-list">
+            <li>Post cards: Title (bold), Mood badge, Pinned indicator (pin icon), Pair name, Content (truncated, secondary text), Tag badges (pills), Date</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Empty strategies — empty state <span class="state-tag">Empty</span></li>
+            <li>Empty activity — empty state <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 23: ARBITRAGE ══ -->
+  <div class="page-section" id="page-arbitrage">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">23</span>
+          <span class="page-title">Arbitrage Scanner</span>
+        </div>
+        <span class="page-route">/arbitrage</span>
+        <span class="page-status placeholder">Placeholder</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Planned cross-DEX arbitrage detection tool. Will show price differences between DEXes for the same token, highlighting profitable arbitrage opportunities.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Planned Features (Not Yet Built)</div>
+          <ul class="element-list">
+            <li>Token pair selector, DEX comparison table, spread percentage (mono, colored), estimated profit (mono, bullish)</li>
+            <li>Auto-refresh monitoring, alert thresholds</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Current State</div>
+          <ul class="element-list">
+            <li>Empty state with "COMING SOON" badge <span class="state-tag">Placeholder</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 27: ACTIVITY WEB3 ══ -->
+  <div class="page-section" id="page-activity-web3">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">27</span>
+          <span class="page-title">On-Chain Activity</span>
+        </div>
+        <span class="page-route">/activity-web3</span>
+        <span class="page-status placeholder">Placeholder</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Planned on-chain transaction history with smart insights. Will show wallet transactions (swaps, transfers, approvals) with AI-powered analysis and categorization.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Planned Features (Not Yet Built)</div>
+          <ul class="element-list">
+            <li>Transaction list: Type badge (Swap/Transfer/Approve), Token pairs, Amounts (mono), Gas cost (mono), Timestamp, AI insight summary</li>
+            <li>Transaction detail view, filter by type</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Current State</div>
+          <ul class="element-list">
+            <li>Empty state with "COMING SOON" badge <span class="state-tag">Placeholder</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 37: ADMIN ══ -->
+  <div class="page-section" id="page-admin">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-num">37</span>
+          <span class="page-title">Admin: API Key Management</span>
+        </div>
+        <span class="page-route">/admin/api-keys</span>
+        <span class="page-status built">Built</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">Admin-only page for viewing and managing all platform API key configurations. Shows which API keys are configured and which are missing. Access restricted to admin users.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Config Status</div>
+          <ul class="element-list">
+            <li>Overall configuration progress bar (X of Y keys configured)</li>
+            <li>Stats showing active vs. missing keys</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Key Table</div>
+          <ul class="element-list">
+            <li>Grouped by category (section headers)</li>
+            <li>Columns: Key Label, Environment Variable name (monospace), Description, Status (Active green / Missing amber badge), Value (masked — shows only last 4 chars)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Info Note</div>
+          <ul class="element-list">
+            <li>Informational note explaining how to configure keys (environment variables, deployment settings). Muted styling with info icon.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">States</div>
+          <ul class="element-list">
+            <li>Access denied — error banner "You don't have permission" <span class="state-tag error">Forbidden</span></li>
+            <li>Loading — skeleton <span class="state-tag loading">Loading</span></li>
+            <li>Empty — no keys configured <span class="state-tag">Empty</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!--                 SHARED COMPONENT PATTERNS                       -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2>Shared Component Patterns</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="page-section" id="shared-components">
+    <div class="page-card">
+      <div class="page-header">
+        <div class="page-header-left">
+          <span class="page-title">Reusable UI Patterns</span>
+        </div>
+        <span class="page-route">Used across all pages</span>
+      </div>
+      <div class="page-body">
+        <p class="page-desc">These patterns appear consistently across multiple pages. When designing in Google Stitch, maintain visual consistency by reusing these patterns.</p>
+
+        <div class="page-subsection">
+          <div class="sub-heading">PageLayout (Standard Page Wrapper)</div>
+          <ul class="element-list">
+            <li>Consistent structure: Header (title + optional badge + optional description) then Tabs (if applicable) then Loading Skeleton (during data fetch) then Content Area</li>
+            <li>Header title: large bold text, left-aligned</li>
+            <li>Badge: pill-shaped, positioned next to or below the title. Examples: "AI SIGNALS", "LIVE", "PORTFOLIO", "FUTURES"</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">StatsRow (Metrics Bar)</div>
+          <ul class="element-list">
+            <li>Horizontal row of 3-5 key metrics. Used on almost every data page.</li>
+            <li>Each metric: Label (small, secondary text, above) + Value (mono font, primary text, below)</li>
+            <li>Values that represent PnL or change: colored bullish/bearish</li>
+            <li>Scrollable horizontally on small screens</li>
+            <li>Separated by subtle vertical dividers or spacing</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Glass Card</div>
+          <ul class="element-list">
+            <li>Background: rgba(255,255,255,0.025) with 6px backdrop-blur</li>
+            <li>Border: 0.5px solid rgba(255,255,255,0.06)</li>
+            <li>Border radius: 10-13px (medium to large, NOT pill)</li>
+            <li>Box shadow: 0 4px 24px -8px rgba(0,0,0,0.5)</li>
+            <li>Hover state: background transitions to #16181C (elevated)</li>
+            <li>Card enter animation: 0.45s fade + translate up</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Badge / Pill</div>
+          <ul class="element-list">
+            <li>Pill shape only (20px radius). Small text (0.65-0.7rem), font-weight 600.</li>
+            <li>BUY badge: bullish green background (low opacity), bullish text</li>
+            <li>SELL badge: bearish red background (low opacity), bearish text</li>
+            <li>WAIT badge: neutral amber background (low opacity), amber text</li>
+            <li>Category badges: elevated background, secondary text, subtle border</li>
+            <li>Status badges (LIVE, AI, etc.): brand accent dark background (#232E3C), brand accent text</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Empty State</div>
+          <ul class="element-list">
+            <li>Centered layout: large outline icon (Tabler style, tertiary color), Title text (secondary color), Description text (tertiary color), optional CTA button (outline or brand accent)</li>
+            <li>Generous vertical padding. No decorative elements beyond the icon.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Loading Skeleton</div>
+          <ul class="element-list">
+            <li>Shimmer animation (left-to-right gradient sweep)</li>
+            <li>Mimics the layout of real content (same dimensions, spacing)</li>
+            <li>Background: elevated color (#16181C). Rounded corners matching content cards.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Filter Tabs</div>
+          <ul class="element-list">
+            <li>Horizontal scrollable bar below the header/stats</li>
+            <li>Each tab: text label + optional count badge (small mono number)</li>
+            <li>Active tab: brand accent text color + bottom border or background highlight</li>
+            <li>Inactive tab: secondary text color, no decoration</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Data Table / List Rows</div>
+          <ul class="element-list">
+            <li>Two variants: DataRow (single line) and DataRowTwoLine (two lines per row)</li>
+            <li>Table Header: uppercase small text, tertiary color, monospace for columns</li>
+            <li>Rows: subtle bottom border (border-subtle), press feedback (scale 0.98 on tap, 0.12s)</li>
+            <li>Numerical data: ALWAYS JetBrains Mono with tabular-nums</li>
+            <li>Horizontally scrollable on mobile with hidden scrollbar</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Form Inputs</div>
+          <ul class="element-list">
+            <li>Background: solid card (#101317). Border: #1A1D22. Border radius: 7-10px.</li>
+            <li>Focus state: border color changes to brand accent (#7C9BC4), focus ring (#7C9BC466)</li>
+            <li>Text: primary color for input, secondary for placeholder</li>
+            <li>Labels: small, secondary color, above the input</li>
+            <li>Select/dropdown: same styling with chevron-down indicator</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Buttons</div>
+          <ul class="element-list">
+            <li>Primary: brand accent background (#7C9BC4), dark text (#0B0D10). Press: scale(0.95) in 0.12s.</li>
+            <li>Buy button: bullish green background (#0ECB81), dark text (#04150D). Pulse glow animation (2.2s loop). NEVER white text.</li>
+            <li>Sell button: ghost/border style with bearish red border and text. NEVER white on red.</li>
+            <li>Outline: transparent background, border in border color, primary text.</li>
+            <li>Destructive: bearish red background (low opacity), bearish text. Only for delete/danger actions.</li>
+            <li>All buttons: border-radius 7-10px (NOT pill). Transition on hover and press.</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Live Indicator</div>
+          <ul class="element-list">
+            <li>Small green dot (6px circle) with pulse animation (1.6s loop)</li>
+            <li>Used in "LIVE" badges, stats that update in real-time, monitoring indicators</li>
+            <li>Green color: #0ECB81 (but this is for live status, NOT for profit — acceptable use)</li>
+          </ul>
+        </div>
+
+        <div class="page-subsection">
+          <div class="sub-heading">Progress Bar</div>
+          <ul class="element-list">
+            <li>Track: elevated background (#16181C), full width, 4-6px height, border-radius 3px</li>
+            <li>Fill: brand accent color (#7C9BC4), same height, same border-radius</li>
+            <li>For bullish contexts (e.g., win rate): fill in bullish green</li>
+            <li>Label: percentage text, mono font, positioned to the right or above the bar</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
