@@ -8,7 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
-import { structuredLogger } from "@/shared/structured-logger";
+import { log } from "@/shared/structured-logger";
 
 // ---------- ME / PROFILE ----------
 export const getMe = createServerFn({ method: "GET" })
@@ -103,11 +103,7 @@ async function verifyStarsPayment(
     // No need for fallback API call — webhook confirmation is the source of truth
     return false;
   } catch {
-    structuredLogger("error", {
-      level: "error",
-      kind: "verification_failed",
-      chargeId,
-    });
+    log.error("verification_failed", { chargeId });
     return false;
   }
 }

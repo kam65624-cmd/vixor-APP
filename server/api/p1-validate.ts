@@ -9,7 +9,8 @@
 // Protected by CRON_SECRET — only accessible by admin/cron requests.
 // ============================================================================
 
-import { defineEventHandler, getQuery, getHeader, createError } from "h3";
+import { defineEventHandler, getQuery, getHeader, createError, setResponseStatus } from "h3";
+import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
 
 // Ensure P1 Intelligence Layer is active in this API handler context.
 // In Vercel serverless, API handlers run in separate contexts from SSR.
@@ -20,6 +21,9 @@ import { configureEventPersistence } from "../../src/shared/events/persist";
 configureEventPersistence();
 
 export default defineEventHandler(async (event) => {
+  if (handlePreflight(event)) return;
+  if (!rateLimit(event)) return;
+
   const query = getQuery(event) as Record<string, string>;
 
   // ═══ P1 BOOTSTRAP: Must run before any ToolRegistry operations ═══
@@ -39,22 +43,26 @@ export default defineEventHandler(async (event) => {
     bootstrapResult = `failed: ${err instanceof Error ? err.message : String(err)}`;
   }
 
-  // Auth: Same pattern as check-alerts.ts
-  // Accept: Vercel Cron header OR Bearer token with CRON_SECRET
-  const isVercelCron = getHeader(event, "x-vercel-cron") === "1";
-  const cronSecret = process.env.CRON_SECRET;
+  // Security: Admin key (fast path) OR Vercel Cron OR CRON_SECRET
+  if (validateAdminKey(event)) {
+    // Authenticated via admin key — proceed
+  } else {
+    const isVercelCron = getHeader(event, "x-vercel-cron") === "1";
+    const cronSecret = process.env.CRON_SECRET;
 
-  if (isVercelCron) {
-    // Vercel Cron requests are automatically authenticated
-  } else if (cronSecret) {
-    const authHeader = getHeader(event, "authorization");
-    const querySecret = query.secret;
-    if (authHeader !== `Bearer ${cronSecret}` && querySecret !== cronSecret) {
-      throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+    if (isVercelCron) {
+      // Vercel Cron requests are automatically authenticated
+    } else if (cronSecret) {
+      const authHeader = getHeader(event, "authorization");
+      const querySecret = query.secret;
+      if (authHeader !== `Bearer ${cronSecret}` && querySecret !== cronSecret) {
+        setResponseStatus(event, 401);
+        return { error: "Unauthorized" };
+      }
+    } else if (process.env.NODE_ENV === "production") {
+      // No CRON_SECRET set and not from Vercel Cron — allow with warning
+      console.warn("[P1 Validate] No CRON_SECRET set, allowing unauthenticated access");
     }
-  } else if (process.env.NODE_ENV === "production") {
-    // No CRON_SECRET set and not from Vercel Cron — allow with warning
-    console.warn("[P1 Validate] No CRON_SECRET set, allowing unauthenticated access");
   }
 
   const results: Record<string, any> = {};

@@ -1,33 +1,43 @@
-import { defineEventHandler, getMethod, getHeader, createError } from "h3";
+import { defineEventHandler, getMethod, getHeader, createError, setResponseStatus } from "h3";
 import { supabaseAdmin } from "@/shared/supabase/client.server";
+import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
 import { fetchBinanceKlines, fetchTwelveDataKlines } from "@/domains/market/server/price-fetcher";
 import { runLocalAnalysis } from "@/domains/analysis/engine/engine";
 import { AssetRegistry } from "@/shared/asset-registry";
 import { VixorEvents } from "@/shared/events";
 
 export default defineEventHandler(async (event) => {
+  if (handlePreflight(event)) return;
+  if (!rateLimit(event)) return;
+
   const method = getMethod(event);
 
   if (method !== "GET" && method !== "POST") {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
 
-  // Security: Verify this is a legitimate cron request
-  const isVercelCron = getHeader(event, "x-vercel-cron") === "1";
-  const cronSecret = process.env.CRON_SECRET;
+  // Security: Admin key (fast path) OR Vercel Cron OR Bearer CRON_SECRET
+  if (validateAdminKey(event)) {
+    // Authenticated via admin key — proceed
+  } else {
+    const isVercelCron = getHeader(event, "x-vercel-cron") === "1";
+    const cronSecret = process.env.CRON_SECRET;
 
-  if (isVercelCron) {
-    // Vercel Cron requests are automatically authenticated
-  } else if (cronSecret) {
-    const authHeader = getHeader(event, "authorization");
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+    if (isVercelCron) {
+      // Vercel Cron requests are automatically authenticated
+    } else if (cronSecret) {
+      const authHeader = getHeader(event, "authorization");
+      if (authHeader !== `Bearer ${cronSecret}`) {
+        setResponseStatus(event, 401);
+        return { error: "Unauthorized" };
+      }
+    } else if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[CRON SECURITY] Request is not from Vercel Cron and CRON_SECRET is not set. Refusing.",
+      );
+      setResponseStatus(event, 500);
+      return { error: "Cron not configured" };
     }
-  } else if (process.env.NODE_ENV === "production") {
-    console.error(
-      "[CRON SECURITY] Request is not from Vercel Cron and CRON_SECRET is not set. Refusing.",
-    );
-    throw createError({ statusCode: 500, statusMessage: "Cron not configured" });
   }
 
   try {

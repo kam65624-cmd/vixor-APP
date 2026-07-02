@@ -1,8 +1,12 @@
 import { defineEventHandler, getMethod, readBody, getHeader, createError } from "h3";
 import { supabaseAdmin } from "@/shared/supabase/client.server";
 import { withRateLimit } from "../utils/with-rate-limit";
+import { handlePreflight, rateLimit } from "./_security";
 
 const handler = defineEventHandler(async (event) => {
+  if (handlePreflight(event)) return;
+  if (!rateLimit(event)) return;
+
   const method = getMethod(event);
 
   if (method !== "POST") {

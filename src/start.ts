@@ -2,7 +2,7 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "@/shared/error-page";
 import { attachSupabaseAuth } from "@/shared/supabase/auth-attacher";
-import { structuredLogger } from "@/shared/structured-logger";
+import { log } from "@/shared/structured-logger";
 import { metrics } from "@/shared/metrics-store";
 
 // Structured request logging + metrics recording.
@@ -24,28 +24,14 @@ const loggingMiddleware = createMiddleware().server(async ({ next, request }) =>
     const status = res.response.status ?? 200;
     metrics.recordHttpRequest(method, route, status);
     metrics.recordDurationMs(durationMs);
-    structuredLogger("http", {
-      level: status >= 500 ? "error" : status >= 400 ? "warn" : "info",
-      method,
-      route,
-      status,
-      durationMs,
-      ip,
-      ua: userAgent.slice(0, 120),
-    });
+    const fn = status >= 500 ? log.error : status >= 400 ? log.warn : log.info;
+    fn("http", { method, route, status, durationMs, ip, ua: userAgent.slice(0, 120) });
     // Alert hooks (logged, not blocked — alerting consumes these lines)
     if (status === 404) {
-      structuredLogger("alert", { kind: "404", method, route, ip, ua: userAgent.slice(0, 80) });
+      log.warn("404", { method, route, ip, ua: userAgent.slice(0, 80) });
     }
     if (status >= 500) {
-      structuredLogger("alert", {
-        kind: "5xx",
-        status,
-        method,
-        route,
-        ip,
-        ua: userAgent.slice(0, 80),
-      });
+      log.error("5xx", { status, method, route, ip, ua: userAgent.slice(0, 80) });
       metrics.recordError(`http_${status}`);
     }
     return res;
@@ -54,8 +40,7 @@ const loggingMiddleware = createMiddleware().server(async ({ next, request }) =>
     metrics.recordHttpRequest(method, route, 500);
     metrics.recordDurationMs(durationMs);
     metrics.recordError("uncaught");
-    structuredLogger("http", {
-      level: "error",
+    log.error("http_uncaught", {
       method,
       route,
       status: 500,
@@ -63,8 +48,7 @@ const loggingMiddleware = createMiddleware().server(async ({ next, request }) =>
       ip,
       error: String(err?.message || err).slice(0, 500),
     });
-    structuredLogger("alert", {
-      kind: "500",
+    log.error("500_alert", {
       method,
       route,
       ip,
@@ -81,9 +65,7 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
     if (error != null && typeof error === "object" && "statusCode" in error) {
       throw error;
     }
-    structuredLogger("error", {
-      level: "error",
-      kind: "unhandled",
+    log.error("unhandled", {
       message: String((error as Error)?.message || error).slice(0, 500),
       stack: String((error as Error)?.stack || "").slice(0, 2000),
     });

@@ -1,4 +1,5 @@
 import { defineEventHandler, getMethod, getHeader, createError } from "h3";
+import { handlePreflight, rateLimit } from "./_security";
 
 /**
  * GET /api/health
@@ -11,6 +12,9 @@ import { defineEventHandler, getMethod, getHeader, createError } from "h3";
  * Auth: same gate as other /api routes — Vercel Cron header OR CRON_SECRET OR HEALTH_TOKEN.
  */
 export default defineEventHandler(async (event) => {
+  if (handlePreflight(event)) return;
+  if (!rateLimit(event)) return;
+
   const method = getMethod(event).toUpperCase();
   if (method !== "GET" && method !== "HEAD") {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });

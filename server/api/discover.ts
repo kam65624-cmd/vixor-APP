@@ -21,6 +21,7 @@ import { scanDiscovery, searchTokens } from "@/domains/discovery/functions";
 import { getDiscoveryConfig } from "@/domains/discovery/config";
 import { cache } from "@/shared/cache";
 import { withRateLimit } from "../utils/with-rate-limit";
+import { handlePreflight, rateLimit } from "./_security";
 
 /** Query parameter schema for GET /api/discover. */
 const DISCOVER_CACHE_TTL = 60_000;
@@ -67,6 +68,9 @@ const discoverQuerySchema = z.object({
 });
 
 const handler = defineEventHandler(async (event) => {
+  if (handlePreflight(event)) return;
+  if (!rateLimit(event)) return;
+
   try {
     const query = getQuery(event);
     const params = discoverQuerySchema.parse(query);

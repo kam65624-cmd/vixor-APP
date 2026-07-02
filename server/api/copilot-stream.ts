@@ -9,6 +9,7 @@ import {
 import { SlidingWindowLimiter } from "@/shared/resilience/rate-limiter";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/shared/supabase/types";
+import { handlePreflight, rateLimit, requireAuth } from "./_security";
 
 // Rate limit: max 20 streaming requests per user per minute
 const streamLimiter = new SlidingWindowLimiter({
@@ -43,6 +44,14 @@ async function authenticateRequest(
 }
 
 export default defineEventHandler(async (event) => {
+  if (handlePreflight(event)) return;
+  if (!rateLimit(event)) return;
+
+  if (!requireAuth(event)) {
+    setResponseStatus(event, 401);
+    return { error: "Unauthorized" };
+  }
+
   const method = getMethod(event);
   if (method !== "POST") {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });

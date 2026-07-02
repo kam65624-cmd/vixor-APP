@@ -1,5 +1,6 @@
-import { defineEventHandler, getMethod, getHeader, setHeader, createError } from "h3";
+import { defineEventHandler, getMethod, getHeader, setHeader, createError, setResponseStatus } from "h3";
 import { getMetricsStore } from "../_metrics-store";
+import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
 
 /**
  * GET /api/metrics
@@ -8,20 +9,29 @@ import { getMetricsStore } from "../_metrics-store";
  * Auth: CRON_SECRET or HEALTH_TOKEN (Bearer).
  */
 export default defineEventHandler((event) => {
+  if (handlePreflight(event)) return;
+  if (!rateLimit(event)) return;
+
   const method = getMethod(event).toUpperCase();
   if (method !== "GET") {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
 
-  const authHeader = getHeader(event, "authorization");
-  const cronSecret = process.env.CRON_SECRET;
-  const healthToken = process.env.HEALTH_TOKEN;
-  const authorized =
-    (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-    (healthToken && authHeader === `Bearer ${healthToken}`) ||
-    process.env.NODE_ENV !== "production";
-  if (!authorized) {
-    throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+  // Security: Admin key (fast path) OR CRON_SECRET/HEALTH_TOKEN
+  if (validateAdminKey(event)) {
+    // Authenticated via admin key — proceed
+  } else {
+    const authHeader = getHeader(event, "authorization");
+    const cronSecret = process.env.CRON_SECRET;
+    const healthToken = process.env.HEALTH_TOKEN;
+    const authorized =
+      (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
+      (healthToken && authHeader === `Bearer ${healthToken}`) ||
+      process.env.NODE_ENV !== "production";
+    if (!authorized) {
+      setResponseStatus(event, 401);
+      return { error: "Unauthorized" };
+    }
   }
 
   const s = getMetricsStore();

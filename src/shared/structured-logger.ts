@@ -1,54 +1,22 @@
 /**
- * Structured logger — emits single-line JSON for downstream ingestion
- * (Vercel logs / Loki / ELK / Datadog / OpenTelemetry collectors).
- *
- * Channels:
- *   - "http"     — every HTTP request (level: info|warn|error)
- *   - "alert"    — 404 / 5xx / uncaught errors (alertable)
- *   - "error"    — application-level errors
- *   - "info"     — general info
- *   - "warn"     — warnings
- *   - "debug"    — debug (only when DEBUG=1)
- *
- * Output is a single JSON line per call, prefixed with "[VIXOR]" so it can
- * be grepped out of stdout in serverless logs.
+ * Structured logger — single-line JSON for log ingestion pipelines.
  */
 
-export type LogChannel = "http" | "alert" | "error" | "info" | "warn" | "debug";
+type LogLevel = "info" | "warn" | "error" | "debug";
 
-const ISO = () => new Date().toISOString();
+type LogFn = (msg: string, ctx?: Record<string, unknown>) => void;
 
-export function structuredLogger(channel: LogChannel, payload: Record<string, any>): void {
-  const line = JSON.stringify({
-    ts: ISO(),
-    channel,
-    ...payload,
-  });
-  // Use the appropriate console method based on level
-  const level = (payload.level as string) || "info";
-  if (level === "error") {
-    console.error(`[VIXOR] ${line}`);
-  } else if (level === "warn") {
-    console.warn(`[VIXOR] ${line}`);
-  } else if (level === "debug" && process.env.DEBUG !== "1") {
-    // skip debug unless DEBUG=1
-    return;
-  } else {
-    console.log(`[VIXOR] ${line}`);
-  }
+function emit(level: LogLevel, msg: string, ctx: Record<string, unknown> = {}): void {
+  console.log(JSON.stringify({ ts: new Date().toISOString(), level, msg, ctx }));
 }
 
-/** Convenience helpers */
-export const log = {
-  info: (msg: string, ctx: Record<string, any> = {}) =>
-    structuredLogger("info", { level: "info", msg, ...ctx }),
-  warn: (msg: string, ctx: Record<string, any> = {}) =>
-    structuredLogger("warn", { level: "warn", msg, ...ctx }),
-  error: (msg: string, ctx: Record<string, any> = {}) =>
-    structuredLogger("error", { level: "error", msg, ...ctx }),
-  debug: (msg: string, ctx: Record<string, any> = {}) =>
-    structuredLogger("debug", { level: "debug", msg, ...ctx }),
-  alert: (kind: string, ctx: Record<string, any> = {}) =>
-    structuredLogger("alert", { level: "error", kind, ...ctx }),
-  http: (ctx: Record<string, any>) => structuredLogger("http", ctx),
+const debugEnabled = process.env.DEBUG === "1";
+
+export const log: Record<LogLevel, LogFn> = {
+  info:  (msg, ctx) => emit("info",  msg, ctx),
+  warn:  (msg, ctx) => emit("warn",  msg, ctx),
+  error: (msg, ctx) => emit("error", msg, ctx),
+  debug: debugEnabled
+    ? (msg, ctx) => emit("debug", msg, ctx)
+    : () => {},
 };

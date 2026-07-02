@@ -2,6 +2,7 @@ import { defineEventHandler, getMethod, getHeader, createError, readBody } from 
 import { connectWallet, generateNonce, generateChallengeMessage } from "@/domains/wallet/server";
 import { isValidWalletAddress } from "@/domains/wallet";
 import { getSupabaseOrNull } from "@/shared/supabase/client";
+import { handlePreflight, rateLimit } from "../_security";
 
 // ============================================================================
 // POST /api/wallet/connect
@@ -19,6 +20,9 @@ import { getSupabaseOrNull } from "@/shared/supabase/client";
 // ============================================================================
 
 export default defineEventHandler(async (event) => {
+  if (handlePreflight(event)) return;
+  if (!rateLimit(event)) return;
+
   const method = getMethod(event);
   if (method === "GET") {
     return handleChallenge(event);

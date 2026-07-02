@@ -26,6 +26,15 @@ import {
   clearRenderLoopFlag,
 } from "@/shared/hooks/use-render-guard";
 import { I18nProvider } from "@/shared/i18n";
+import { initSentry, captureException } from "@/shared/sentry";
+import { initAnalytics } from "@/shared/analytics";
+import type { ErrorRouteComponent } from "@tanstack/react-router";
+import RouteErrorBoundaryClass from "@/components/vixor/RouteErrorBoundary";
+
+const RouteErrorBoundary: ErrorRouteComponent = (props) => (
+  <RouteErrorBoundaryClass {...(props as unknown as React.ComponentProps<typeof RouteErrorBoundaryClass>)} />
+);
+import RouteLoading from "@/components/vixor/RouteLoading";
 
 function NotFoundComponent() {
   return (
@@ -141,7 +150,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "AI-powered Solana meme coin trading terminal. Discover tokens, track whales, and trade with confidence.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "VIXOR" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:site", content: "@vixor_app" },
+      { name: "robots", content: "index, follow" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -174,7 +186,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
-  errorComponent: undefined,
+  errorComponent: RouteErrorBoundary,
+  pendingComponent: RouteLoading,
 });
 
 function RootShell({ children }: { children: ReactNode }) {
@@ -222,6 +235,9 @@ function RootComponent() {
   // It does NOT call router.invalidate() which causes cascading re-renders.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // ── Init Sentry & Analytics ──
+    initSentry();
+    initAnalytics();
     // Boot Telegram WebApp if present
     const tg = (
       window as unknown as {

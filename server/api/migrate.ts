@@ -1,21 +1,26 @@
-import { defineEventHandler, getMethod, getHeader, createError } from "h3";
+import { defineEventHandler, getMethod, getHeader, createError, setResponseStatus } from "h3";
 import { checkMigrations, getPendingMigrationsSQL } from "@/shared/migrate.server";
+import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
 
 export default defineEventHandler(async (event) => {
+  if (handlePreflight(event)) return;
+  if (!rateLimit(event)) return;
+
   const method = getMethod(event);
 
-  // SECURITY: Require CRON_SECRET or admin access for migration endpoints
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const authHeader = getHeader(event, "authorization");
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+  // SECURITY: Admin key (fast path) OR CRON_SECRET
+  if (!validateAdminKey(event)) {
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret) {
+      const authHeader = getHeader(event, "authorization");
+      if (authHeader !== `Bearer ${cronSecret}`) {
+        setResponseStatus(event, 401);
+        return { error: "Unauthorized" };
+      }
+    } else if (process.env.NODE_ENV === "production") {
+      setResponseStatus(event, 403);
+      return { error: "Migrations not accessible in production without CRON_SECRET" };
     }
-  } else if (process.env.NODE_ENV === "production") {
-    throw createError({
-      statusCode: 403,
-      statusMessage: "Migrations not accessible in production without CRON_SECRET",
-    });
   }
 
   if (method === "GET") {

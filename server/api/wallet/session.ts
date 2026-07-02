@@ -1,6 +1,7 @@
 import { defineEventHandler, getMethod, createError, readBody } from "h3";
 import { disconnectWallet, getWalletSessions } from "@/domains/wallet/server";
 import { getSupabaseOrNull } from "@/shared/supabase/client";
+import { handlePreflight, rateLimit } from "../_security";
 
 // ============================================================================
 // /api/wallet/session
@@ -12,6 +13,9 @@ import { getSupabaseOrNull } from "@/shared/supabase/client";
 // ============================================================================
 
 export default defineEventHandler(async (event) => {
+  if (handlePreflight(event)) return;
+  if (!rateLimit(event)) return;
+
   const method = getMethod(event);
 
   const supabase = getSupabaseOrNull();
