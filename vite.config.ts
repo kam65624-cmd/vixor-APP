@@ -65,8 +65,6 @@ export default defineConfig({
         { route: "/api/wallet/connect", handler: "./server/api/wallet/connect.ts" },
         { route: "/api/wallet/session", handler: "./server/api/wallet/session.ts" },
         { route: "/api/stars-webhook", handler: "./server/api/stars-webhook.ts" },
-        { route: "/api/admin/credit-all", handler: "./server/api/admin/credit-all.ts" },
-        { route: "/api/admin/credit-batch", handler: "./server/api/admin/credit-batch.ts" },
       ],
     }),
     viteReact(),
