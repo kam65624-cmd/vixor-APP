@@ -1,8 +1,9 @@
 import { memo, useMemo, useState, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserPoints, getReferralData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { claimDailyCheckin } from "@/domains/user/functions";
 import {
   PageLayout, 
   StatsRow,
@@ -185,8 +186,17 @@ function RewardsPage() {
   const [copied, setCopied] = useState(false);
 
   // ── Queries ──
+  const queryClient = useQueryClient();
   const fetchPoints = useStableServerFn(getUserPoints);
   const fetchRef = useStableServerFn(getReferralData);
+  const claimFn = useStableServerFn(claimDailyCheckin);
+
+  const claimMutation = useMutation({
+    mutationFn: () => claimFn({}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-points"] });
+    },
+  });
 
   const pointsQuery = useQuery({
     queryKey: ["user-points"],
@@ -361,6 +371,49 @@ function RewardsPage() {
             <StreakDayItem key={d.day} item={d} />
           ))}
         </div>
+
+        {/* Check-in Button */}
+        {streakDays.some((d) => d.current && !d.checked) && (
+          <div style={{ padding: "12px 16px", background: "var(--color-card)", borderBottom: `1px solid var(--color-border)` }}>
+            <button
+              onClick={() => claimMutation.mutate()}
+              disabled={claimMutation.isPending}
+              style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: 10,
+                border: "none",
+                cursor: claimMutation.isPending ? "wait" : "pointer",
+                background: claimMutation.isSuccess
+                  ? "var(--color-bullish)"
+                  : "linear-gradient(135deg, var(--color-bullish) 0%, var(--color-primary) 100%)",
+                color: "#0B0D10",
+                fontSize: 15,
+                fontWeight: 800,
+                fontFamily: "'Inter', system-ui, sans-serif",
+                transition: "all 0.2s",
+                opacity: claimMutation.isPending ? 0.7 : 1,
+              }}
+            >
+              {claimMutation.isPending
+                ? "Claiming..."
+                : claimMutation.isSuccess
+                  ? `✅ +${claimMutation.data?.points ?? 0} Points Claimed!`
+                  : `⭐ Claim +${WEEK_POINTS[streakDays.findIndex((d) => d.current)]} Daily Points`}
+            </button>
+            {claimMutation.isSuccess && (
+              <div style={{ textAlign: "center", marginTop: 8, fontSize: 11, color: "var(--color-muted-foreground)" }}>
+                Streak: {claimMutation.data?.streak} days 🔥
+              </div>
+            )}
+          </div>
+        )}
+        {streakDays.some((d) => d.current && d.checked) && (
+          <div style={{ padding: "12px 16px", background: "var(--color-card)", borderBottom: `1px solid var(--color-border)`, textAlign: "center" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-bullish)" }}>✅ Today's reward claimed!</div>
+            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)", marginTop: 4 }}>Come back tomorrow for more points</div>
+          </div>
+        )}
 
         {/* ── Referral Earnings ── */}
         <SectionTitle title="Referral Earnings" />

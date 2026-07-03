@@ -10,9 +10,11 @@ import {
   memo,
   type CSSProperties,
 } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { getTelegramInitData } from "@/shared/telegram";
 import { useRenderGuard } from "@/shared/hooks/use-render-guard";
+import { getUserPoints } from "@/shared/data";
 
 // ── SOL Price Hook ──────────────────────────────────────────────────────────
 
@@ -508,6 +510,31 @@ export function AppShell({ children }: { children: ReactNode }) {
 // TOP NAV — Minimal: Logo, Discover CTA, SOL price, Deposit, Wallet, User, Bell
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Points Badge ───────────────────────────────────────────────────────────
+
+const PointsBadge = memo(function PointsBadge() {
+  const { data } = useQuery({
+    queryKey: ["user-points-nav"],
+    queryFn: () => getUserPoints({}),
+    staleTime: 60_000,
+  });
+  const balance = data?.balance ?? 0;
+
+  return (
+    <Link
+      to="/rewards"
+      className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold"
+      style={{
+        color: "var(--color-primary)",
+        textDecoration: "none",
+      }}
+    >
+      <span style={{ fontSize: "12px" }}>⚡</span>
+      {balance}
+    </Link>
+  );
+});
+
 interface TopNavProps {
   solPrice?: number | null;
   solChange?: number | null;
@@ -593,6 +620,9 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
+          {/* Points */}
+          <PointsBadge />
+
           {/* Deposit */}
           <Link
             to="/wallet-web3"

@@ -371,3 +371,88 @@ export const createStarsInvoice = createServerFn({ method: "POST" })
 
     return { invoiceUrl: result.result };
   });
+
+// ---------- DAILY CHECK-IN ----------
+const CHECKIN_DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const CHECKIN_WEEK_POINTS = [50, 50, 75, 75, 100, 100, 150];
+
+export const claimDailyCheckin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const userId = context.userId;
+    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+    // 1. Get current streak info
+    const { data: streakRow } = await supabaseAdmin
+      .from("user_streaks")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const lastDate = streakRow?.last_completed_date
+      ? new Date(new Date(streakRow.last_completed_date).setHours(0, 0, 0, 0))
+      : null;
+
+    // 2. Already checked in today?
+    if (lastDate && lastDate.getTime() === today.getTime()) {
+      return { ok: false as const, error: "Already checked in today" };
+    }
+
+    // 3. Calculate streak
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const isConsecutive = lastDate && lastDate.getTime() === yesterday.getTime();
+
+    let newStreak: number;
+    if (isConsecutive) {
+      newStreak = (streakRow?.current_streak ?? 0) + 1;
+    } else {
+      newStreak = 1; // Reset streak
+    }
+
+    // 4. Determine points based on day of week (0=Sun, 1=Mon, ..., 6=Sat)
+    // Map to our CHECKIN_WEEK_POINTS array which is Mon-Sun (index 0-6)
+    const jsDay = today.getDay(); // 0=Sun
+    const weekIndex = jsDay === 0 ? 6 : jsDay - 1; // Convert to Mon=0...Sun=6
+    const pointsToCredit = CHECKIN_WEEK_POINTS[weekIndex];
+
+    // 5. Credit points
+    const { error: creditErr } = await supabaseAdmin.rpc("credit_points", {
+      _user: userId,
+      _amount: pointsToCredit,
+      _reason: "daily_streak",
+      _meta: { day_of_week: CHECKIN_DAY_LABELS[weekIndex], streak: newStreak },
+    });
+    if (creditErr) {
+      return { ok: false as const, error: creditErr.message };
+    }
+
+    // 6. Update streak
+    const longest = Math.max(newStreak, streakRow?.longest_streak ?? 0);
+    if (streakRow) {
+      await supabaseAdmin
+        .from("user_streaks")
+        .update({
+          current_streak: newStreak,
+          longest_streak: longest,
+          last_completed_date: today.toISOString(),
+        })
+        .eq("user_id", userId);
+    } else {
+      await supabaseAdmin.from("user_streaks").insert({
+        user_id: userId,
+        current_streak: newStreak,
+        longest_streak: longest,
+        last_completed_date: today.toISOString(),
+      });
+    }
+
+    return {
+      ok: true as const,
+      points: pointsToCredit,
+      streak: newStreak,
+      day: CHECKIN_DAY_LABELS[weekIndex],
+    };
+  });

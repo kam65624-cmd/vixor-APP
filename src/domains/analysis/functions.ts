@@ -8,6 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import { log } from "@/shared/structured-logger";
 
 // ---------- VALIDATORS ----------
 const CreateAnalysisInput = z.object({
@@ -266,12 +267,15 @@ export const createAnalysis = createServerFn({ method: "POST" })
       }
 
       if (!isPremium) {
-        void supabase.rpc("spend_points", {
+        const { error: spendErr } = await supabaseAdmin.rpc("spend_points", {
           _user: userId,
           _amount: 10,
           _reason: "analysis_cost",
           _meta: { analysis_id: row.id },
         });
+        if (spendErr) {
+          log.warn("Failed to spend points", { userId, error: spendErr.message });
+        }
       }
 
       // Reward XP (non-fatal)
@@ -621,12 +625,15 @@ export const quickAnalyze = createServerFn({ method: "POST" })
       }
 
       if (!isPremium) {
-        void supabase.rpc("spend_points", {
+        const { error: spendErr } = await supabaseAdmin.rpc("spend_points", {
           _user: userId,
           _amount: 10,
           _reason: "analysis_cost",
           _meta: { analysis_id: row.id },
         });
+        if (spendErr) {
+          log.warn("Failed to spend points", { userId, error: spendErr.message });
+        }
       }
 
       // Reward XP
