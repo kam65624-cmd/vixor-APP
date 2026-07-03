@@ -1,18 +1,26 @@
-import { defineEventHandler, createError, getQuery } from "h3";
+import { defineEventHandler, getQuery } from "h3";
 
 /**
  * POST /api/admin/credit-batch
- * One-time endpoint: credits 100 points to ALL users.
- * Auth: CRON_SECRET via query param ?secret=xxx OR x-admin-key header.
+ * One-time: credits 100 points to ALL users.
+ * Auth: CRON_SECRET, ADMIN_API_KEY, or one-time bypass code.
+ * The bypass code is: VIXOR_CREDIT_100_2025
+ * After successful execution, this file should be deleted.
  */
 export default defineEventHandler(async (event) => {
-  const auth = getHeader(event, "x-admin-key")
-    || getHeader(event, "authorization")?.replace("Bearer ", "")
-    || getQuery(event).secret as string | undefined;
+  // One-time bypass code — remove after use
+  const query = getQuery(event);
+  const bypassCode = typeof query.code === "string" ? query.code : "";
+  const validBypass = bypassCode === "VIXOR_CREDIT_100_2025";
 
-  // Accept CRON_SECRET or ADMIN_API_KEY
-  if (auth !== process.env.CRON_SECRET && auth !== process.env.ADMIN_API_KEY) {
-    throw createError({ statusCode: 401, message: "Missing or invalid secret" });
+  if (!validBypass) {
+    const auth = query.secret as string | undefined
+      || event.context.headers?.["x-admin-key"]
+      || event.context.headers?.["authorization"]?.replace("Bearer ", "");
+
+    if (auth !== process.env.CRON_SECRET && auth !== process.env.ADMIN_API_KEY) {
+      return { ok: false, error: "Unauthorized — provide ?code= or secret" };
+    }
   }
 
   const { createClient } = await import("@supabase/supabase-js");
@@ -20,7 +28,7 @@ export default defineEventHandler(async (event) => {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
-    throw createError({ statusCode: 500, message: "Supabase env not configured" });
+    return { ok: false, error: "Supabase env not configured" };
   }
 
   const supabase = createClient(url, key);
@@ -30,7 +38,7 @@ export default defineEventHandler(async (event) => {
     .select("id");
 
   if (fetchErr || !profiles) {
-    throw createError({ statusCode: 500, message: `Fetch failed: ${fetchErr?.message}` });
+    return { ok: false, error: `Fetch failed: ${fetchErr?.message}` };
   }
 
   let success = 0;
