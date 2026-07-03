@@ -1,16 +1,18 @@
-import { defineEventHandler, createError } from "h3";
-import { handlePreflight, rateLimit, validateAdminKey } from "../_security";
+import { defineEventHandler, createError, getQuery } from "h3";
 
 /**
- * POST /api/admin/credit-all
- * Admin endpoint: credit 100 points to all users.
- * Requires X-Admin-Key header or admin_key query param.
+ * POST /api/admin/credit-batch
+ * One-time endpoint: credits 100 points to ALL users.
+ * Auth: CRON_SECRET via query param ?secret=xxx OR x-admin-key header.
  */
 export default defineEventHandler(async (event) => {
-  if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
-  if (!validateAdminKey(event)) {
-    throw createError({ statusCode: 401, message: "Unauthorized" });
+  const auth = getHeader(event, "x-admin-key")
+    || getHeader(event, "authorization")?.replace("Bearer ", "")
+    || getQuery(event).secret as string | undefined;
+
+  // Accept CRON_SECRET or ADMIN_API_KEY
+  if (auth !== process.env.CRON_SECRET && auth !== process.env.ADMIN_API_KEY) {
+    throw createError({ statusCode: 401, message: "Missing or invalid secret" });
   }
 
   const { createClient } = await import("@supabase/supabase-js");
@@ -23,7 +25,6 @@ export default defineEventHandler(async (event) => {
 
   const supabase = createClient(url, key);
 
-  // 1. Get all profiles
   const { data: profiles, error: fetchErr } = await supabase
     .from("profiles")
     .select("id");
@@ -45,7 +46,7 @@ export default defineEventHandler(async (event) => {
     });
     if (error) {
       failed++;
-      errors.push(`${profile.id}: ${error.message}`);
+      errors.push(`${profile.id.slice(0, 8)}...: ${error.message}`);
     } else {
       success++;
     }
