@@ -39,14 +39,23 @@ function PremiumPage() {
   const queryClient = useQueryClient();
   const fetchPremium = useStableServerFn(getPremiumData);
   const [subscribing, setSubscribing] = useState<string | null>(null);
+  const [subscribeError, setSubscribeError] = useState<string | null>(null);
+  const [subscribeSuccess, setSubscribeSuccess] = useState<string | null>(null);
 
   const subscribeMutation = useMutation({
     mutationFn: (planId: string) => subscribeToPlan({ data: { planId } }),
     onMutate: (planId) => {
       setSubscribing(planId);
     },
-    onSuccess: () => {
+    onSuccess: (_data, planId) => {
       queryClient.invalidateQueries({ queryKey: ["premium-data"] });
+      setSubscribeSuccess(planId);
+      setSubscribeError(null);
+      setTimeout(() => setSubscribeSuccess(null), 3000);
+    },
+    onError: (err: Error) => {
+      setSubscribeError(err.message || "Subscription failed. Please try again.");
+      setTimeout(() => setSubscribeError(null), 4000);
     },
     onSettled: () => {
       setSubscribing(null);
@@ -80,6 +89,25 @@ function PremiumPage() {
       loadingColor={"var(--color-bullish)"}
     >
       <ScrollArea>
+        {/* Error banner */}
+        {subscribeError && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              padding: "10px 16px",
+              background: `${"var(--color-bearish)"}14`,
+              borderBottom: `1px solid ${"var(--color-bearish)"}33`,
+              color: "var(--color-bearish)",
+              fontSize: "12px",
+              fontWeight: 600,
+            }}
+          >
+            ⚠ {subscribeError}
+          </div>
+        )}
         {/* Active subscription banner */}
         {subscription && (
           <div
@@ -207,7 +235,25 @@ function PremiumPage() {
                       </div>
                     )}
                   </div>
-                  {isCurrent ? (
+                  {subscribeSuccess === plan.id ? (
+                    <button
+                      disabled
+                      style={{
+                        width: "100%",
+                        padding: "10px",
+                        borderRadius: "8px",
+                        border: `1px solid ${"var(--color-bullish)"}33`,
+                        background: `${"var(--color-bullish)"}14`,
+                        color: "var(--color-bullish)",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        cursor: "default",
+                        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+                      }}
+                    >
+                      ✓ Subscribed!
+                    </button>
+                  ) : isCurrent ? (
                     <button
                       disabled
                       style={{

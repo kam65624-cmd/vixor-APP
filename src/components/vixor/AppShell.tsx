@@ -667,7 +667,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
               width: "26px",
               height: "26px",
               background:
-                "linear-gradient(135deg, color-mix(in oklab, var(--color-bullish) 30%, transparent), color-mix(in oklab, var(--color-bullish) 20%, transparent))",
+                "linear-gradient(135deg, rgba(14,203,129,0.30), rgba(14,203,129,0.20))",
               border: "1px solid var(--color-border)",
               textDecoration: "none",
             }}
@@ -870,7 +870,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
         style={{
           position: "fixed",
           inset: 0,
-          background: "color-mix(in oklab, var(--color-background) 60%, transparent)",
+          background: "rgba(11,13,16,0.60)",
           backdropFilter: "blur(4px)",
           WebkitBackdropFilter: "blur(4px)",
           zIndex: 99,
@@ -910,7 +910,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
               width: "36px",
               height: "4px",
               borderRadius: "2px",
-              background: "color-mix(in oklab, var(--color-foreground) 15%, transparent)",
+              background: "rgba(124,155,196,0.15)",
             }}
           />
         </div>
@@ -993,10 +993,10 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                         padding: "10px 10px",
                         borderRadius: "8px",
                         background: isActive
-                          ? "color-mix(in oklab, var(--color-bullish) 12%, transparent)"
+                          ? "rgba(14,203,129,0.12)"
                           : "var(--color-muted)",
                         border: isActive
-                          ? "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)"
+                          ? "1px solid rgba(14,203,129,0.20)"
                           : "1px solid var(--color-border)",
                         textDecoration: "none",
                         color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",

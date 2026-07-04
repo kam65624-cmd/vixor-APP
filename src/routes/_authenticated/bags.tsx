@@ -142,7 +142,7 @@ function ActionButton({
         cursor: "pointer",
         background: hovered
           ? `${"var(--color-bullish)"}28`
-          : `color-mix(in oklab, var(--color-bullish) 10%, transparent)`,
+          : `rgba(14,203,129,0.10)`,
         color: "var(--color-primary)",
         fontSize: "11px",
         fontWeight: 700,
@@ -203,7 +203,7 @@ const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
                 width: "32px",
                 height: "32px",
                 borderRadius: "50%",
-                background: `color-mix(in oklab, var(--color-bullish) 10%, transparent)`,
+                background: `rgba(14,203,129,0.10)`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

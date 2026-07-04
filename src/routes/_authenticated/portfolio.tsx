@@ -207,7 +207,7 @@ const HoldingRow = memo(function HoldingRow({
                 width: 26,
                 height: 26,
                 borderRadius: "50%",
-                background: isPos ? `color-mix(in oklab, var(--color-bullish) 10%, transparent)` : `color-mix(in oklab, var(--color-bearish) 10%, transparent)`,
+                background: isPos ? `rgba(14,203,129,0.10)` : `rgba(246,70,93,0.10)`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

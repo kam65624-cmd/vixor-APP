@@ -120,8 +120,8 @@ function PnLPage() {
 
       <SectionTitle title="Recent Trades" count={trades.length} />
 
+      <TableHeader columns={COLUMNS} />
       <ScrollArea>
-        <TableHeader columns={COLUMNS} />
         {trades.length > 0 ? (
           trades.map((trade) => (
             <TradeRow

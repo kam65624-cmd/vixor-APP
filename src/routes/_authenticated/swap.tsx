@@ -385,7 +385,7 @@ function TokenSelectorModal({
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.background =
-                  "color-mix(in oklab, var(--color-foreground) 4%, transparent)";
+                  "rgba(124,155,196,0.04)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -566,8 +566,27 @@ function SwapPage() {
     <PageLayout
       title="DEX Swap"
       badge="DEMO"
-      badgeColor="var(--color-primary)"
+      badgeColor="var(--color-bearish)"
       description="Swap tokens on Solana and EVM chains"
+      banner={
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            padding: "8px 16px",
+            background: `${"var(--color-bearish)"}14`,
+            borderBottom: `1px solid ${"var(--color-bearish)"}26`,
+            color: "var(--color-bearish)",
+            fontSize: "11px",
+            fontWeight: 600,
+            letterSpacing: "0.03em",
+          }}
+        >
+          ⚠ DEMO MODE — No real transactions are executed. Prices are simulated.
+        </div>
+      }
     >
       <PageScrollArea>
         <div
@@ -590,7 +609,7 @@ function SwapPage() {
                 padding: "12px",
                 borderRadius: "12px",
                 border: "1px dashed var(--color-primary)",
-                background: "color-mix(in oklab, var(--color-primary) 8%, transparent)",
+                background: "rgba(124,155,196,0.08)",
                 color: "var(--color-primary)",
                 fontSize: "14px",
                 fontWeight: 600,
@@ -679,7 +698,7 @@ function SwapPage() {
                   const el = e.currentTarget as HTMLElement;
                   el.style.borderColor = "var(--color-primary)";
                   el.style.color = "var(--color-primary)";
-                  el.style.background = "color-mix(in oklab, var(--color-primary) 8%, transparent)";
+                  el.style.background = "rgba(124,155,196,0.08)";
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement;
@@ -808,7 +827,7 @@ function SwapPage() {
                       right: "0",
                       top: "50%",
                       transform: "translateY(-50%)",
-                      background: "color-mix(in oklab, var(--color-primary) 15%, transparent)",
+                      background: "rgba(124,155,196,0.15)",
                       color: "var(--color-primary)",
                       border: "none",
                       borderRadius: "4px",
@@ -1106,7 +1125,7 @@ function SwapPage() {
                               : "1px solid var(--color-border)",
                           background:
                             slippage === s
-                              ? "color-mix(in oklab, var(--color-primary) 15%, transparent)"
+                              ? "rgba(124,155,196,0.15)"
                               : "transparent",
                           color:
                             slippage === s
@@ -1179,14 +1198,14 @@ function SwapPage() {
                     width: "100%",
                     height: "48px",
                     borderRadius: "10px",
-                    background: "color-mix(in oklab, var(--color-bearish) 20%, transparent)",
+                    background: "rgba(246,70,93,0.20)",
                     color: "var(--color-bearish)",
                     fontSize: "15px",
                     fontWeight: 700,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: "1px solid color-mix(in oklab, var(--color-bearish) 30%, transparent)",
+                    border: "1px solid rgba(246,70,93,0.30)",
                   }}
                 >
                   Insufficient Balance
@@ -1201,7 +1220,7 @@ function SwapPage() {
                     borderRadius: "10px",
                     background:
                       isSwapping || !fromAmount || swapResult.output <= 0
-                        ? "color-mix(in oklab, var(--color-bullish) 40%, transparent)"
+                        ? "rgba(14,203,129,0.40)"
                         : "var(--color-bullish)",
                     color: isSwapping
                       ? "var(--color-muted-foreground)"
@@ -1237,7 +1256,7 @@ function SwapPage() {
                       Swapping...
                     </>
                   ) : (
-                    `Swap ${fromToken.symbol} → ${toToken.symbol}`
+                    `[Demo] Swap ${fromToken.symbol} → ${toToken.symbol}`
                   )}
                 </button>
               )}

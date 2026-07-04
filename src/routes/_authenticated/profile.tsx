@@ -96,7 +96,7 @@ const BadgeItem = memo(function BadgeItem({ item }: { item: (typeof badges)[0] }
         padding: "14px 8px",
         borderRadius: 12,
         background: "var(--color-card)",
-        border: `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}`,
+        border: "1px solid rgba(124,155,196,0.04)",
         opacity: item.unlocked ? 1 : 0.35,
       }}
     >
@@ -324,7 +324,7 @@ function ProfilePage() {
               borderRadius: 16,
               objectFit: "cover" as const,
               flexShrink: 0,
-              border: `2px solid ${"color-mix(in oklab, var(--color-primary) 15%, transparent)"}`,
+              border: "2px solid rgba(124,155,196,0.15)",
             }}
           />
         ) : (
@@ -341,7 +341,7 @@ function ProfilePage() {
               fontWeight: 800,
               color: "var(--color-foreground)",
               flexShrink: 0,
-              border: `2px solid ${"color-mix(in oklab, var(--color-primary) 15%, transparent)"}`,
+              border: "2px solid rgba(124,155,196,0.15)",
             }}
           >
             {initial}

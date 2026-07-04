@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserPoints, getReferralData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { claimDailyCheckin } from "@/domains/user/functions";
+import { claimDailyCheckin, redeemReward } from "@/domains/user/functions";
 import {
   PageLayout, 
   StatsRow,
@@ -33,12 +33,12 @@ const WEEK_POINTS = [50, 50, 75, 75, 100, 100, 150];
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const rewards = [
-  { icon: "⚡", name: "Trade Fee Discount", cost: "500 pts" },
-  { icon: "📊", name: "AI Analysis Report", cost: "1,000 pts" },
-  { icon: "🎯", name: "Signal Access", cost: "2,000 pts" },
-  { icon: "👑", name: "Premium 1 Week", cost: "3,500 pts" },
-  { icon: "🎁", name: "Mystery Box", cost: "750 pts" },
-  { icon: "🏆", name: "Profile Badge", cost: "1,500 pts" },
+  { icon: "⚡", name: "Trade Fee Discount", cost: "500 pts", costNum: 500 },
+  { icon: "📊", name: "AI Analysis Report", cost: "1,000 pts", costNum: 1000 },
+  { icon: "🎯", name: "Signal Access", cost: "2,000 pts", costNum: 2000 },
+  { icon: "👑", name: "Premium 1 Week", cost: "3,500 pts", costNum: 3500 },
+  { icon: "🎁", name: "Mystery Box", cost: "750 pts", costNum: 750 },
+  { icon: "🏆", name: "Profile Badge", cost: "1,500 pts", costNum: 1500 },
 ];
 
 /* ── Helpers ──────────────────────────────────────── */
@@ -89,7 +89,7 @@ const StreakDayItem = memo(function StreakDayItem({ item }: { item: StreakDayDat
       ? { background: `${"var(--color-bearish)"}0F`, border: `1px solid ${"var(--color-bearish)"}1F` }
       : item.current
         ? { background: `${"var(--color-bullish)"}1F`, border: `1px solid ${"var(--color-bullish)"}4D` }
-        : { background: "var(--color-card)", border: `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}` };
+        : { background: "var(--color-card)", border: "1px solid rgba(124,155,196,0.04)" };
 
   const statusColor = item.checked
     ? "var(--color-primary)"
@@ -127,7 +127,19 @@ const StreakDayItem = memo(function StreakDayItem({ item }: { item: StreakDayDat
   );
 });
 
-const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0] }) {
+const RewardItem = memo(function RewardItem({
+  item,
+  onRedeem,
+  redeeming,
+  canAfford,
+  error,
+}: {
+  item: (typeof rewards)[0];
+  onRedeem: () => void;
+  redeeming: boolean;
+  canAfford: boolean;
+  error: string | null;
+}) {
   return (
     <div
       style={{
@@ -136,11 +148,10 @@ const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0
         border: `1px solid ${"var(--color-border)"}`,
         padding: 16,
         textAlign: "center",
-        cursor: "pointer",
         transition: "background 0.15s",
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.background = "color-mix(in oklab, var(--color-foreground) 3%, transparent)";
+        (e.currentTarget as HTMLDivElement).style.background = `${"var(--color-bullish)"}08`;
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLDivElement).style.background = "var(--color-card)";
@@ -155,13 +166,19 @@ const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0
           fontSize: 11,
           fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
           fontWeight: 600,
-          color: "var(--color-neutral-wait)",
+          color: canAfford ? "var(--color-neutral-wait)" : "var(--color-bearish)",
         }}
       >
         {item.cost}
       </div>
+      {error && (
+        <div style={{ fontSize: 9, color: "var(--color-bearish)", marginTop: 6, lineHeight: 1.3 }}>
+          {error}
+        </div>
+      )}
       <button
-        disabled
+        disabled={redeeming || !canAfford}
+        onClick={onRedeem}
         style={{
           marginTop: 10,
           fontSize: 10,
@@ -169,13 +186,23 @@ const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0
           padding: "6px 12px",
           borderRadius: 6,
           border: "none",
-          cursor: "not-allowed",
-          background: `${"var(--color-muted-foreground)"}1A`,
-          color: "var(--color-muted-foreground)",
+          cursor: redeeming ? "wait" : canAfford ? "pointer" : "not-allowed",
+          background: redeeming
+            ? `${"var(--color-primary)"}26`
+            : canAfford
+              ? `${"var(--color-bullish)"}26`
+              : `${"var(--color-muted-foreground)"}1A`,
+          color: redeeming
+            ? "var(--color-primary)"
+            : canAfford
+              ? "var(--color-bullish)"
+              : "var(--color-muted-foreground)",
           fontFamily: "'Inter', system-ui, sans-serif",
+          opacity: redeeming ? 0.7 : 1,
+          transition: "all 0.15s",
         }}
       >
-        Redeem (Coming Soon)
+        {redeeming ? "Redeeming..." : canAfford ? "Redeem" : "Not Enough Pts"}
       </button>
     </div>
   );
@@ -185,6 +212,8 @@ const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0
 
 function RewardsPage() {
   const [copied, setCopied] = useState(false);
+  const [redeemingName, setRedeemingName] = useState<string | null>(null);
+  const [redeemErrors, setRedeemErrors] = useState<Record<string, string>>({});
 
   // ── Queries ──
   const queryClient = useQueryClient();
@@ -196,6 +225,30 @@ function RewardsPage() {
     mutationFn: () => claimFn({}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-points"] });
+    },
+  });
+
+  const redeemFn = useStableServerFn(redeemReward);
+
+  const redeemMutation = useMutation({
+    mutationFn: (params: { rewardName: string; cost: number }) =>
+      redeemFn({ data: params }),
+    onMutate: (params) => {
+      setRedeemingName(params.rewardName);
+      setRedeemErrors((prev) => {
+        const next = { ...prev };
+        delete next[params.rewardName];
+        return next;
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-points"] });
+    },
+    onError: (err: Error, params) => {
+      setRedeemErrors((prev) => ({ ...prev, [params.rewardName]: err.message }));
+    },
+    onSettled: (params) => {
+      if (params) setRedeemingName(null);
     },
   });
 
@@ -319,7 +372,7 @@ function RewardsPage() {
         style={{
           background: `linear-gradient(135deg, ${"var(--color-bullish)"}1F 0%, ${"var(--color-neutral-wait)"}0F 100%)`,
           borderRadius: 0,
-          border: `1px solid ${"color-mix(in oklab, var(--color-primary) 15%, transparent)"}`,
+          border: "1px solid rgba(124,155,196,0.15)",
           borderLeft: 0,
           borderRight: 0,
           padding: "24px 16px",
@@ -629,7 +682,14 @@ function RewardsPage() {
           }}
         >
           {rewards.map((r) => (
-            <RewardItem key={r.name} item={r} />
+            <RewardItem
+              key={r.name}
+              item={r}
+              onRedeem={() => redeemMutation.mutate({ rewardName: r.name, cost: r.costNum })}
+              redeeming={redeemingName === r.name}
+              canAfford={balance >= r.costNum}
+              error={redeemErrors[r.name] ?? null}
+            />
           ))}
         </div>
       </ScrollArea>

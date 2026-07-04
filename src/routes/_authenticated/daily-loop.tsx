@@ -55,7 +55,7 @@ const CSS_VARS: React.CSSProperties = {
   "--color-muted": "rgba(255,255,255,0.05)",
   "--color-muted-foreground": "var(--color-muted-foreground)",
   "--color-card": "var(--color-card)",
-  "--color-card-hover": "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+  "--color-card-hover": "rgba(124,155,196,0.06)",
   "--color-border": "var(--color-border)",
   "--color-bullish": "var(--color-bullish)",
   "--color-bearish": "var(--color-bearish)",

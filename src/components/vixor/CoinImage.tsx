@@ -34,7 +34,7 @@ export function CoinImage({
           flexShrink: 0,
           overflow: "hidden",
           border:
-            "1px solid color-mix(in oklab, var(--color-foreground) 10%, transparent)",
+            "1px solid rgba(124,155,196,0.10)",
         }}
       >
         <img

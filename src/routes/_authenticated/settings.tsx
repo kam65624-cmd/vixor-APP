@@ -192,7 +192,7 @@ function ExchangeCard({
     padding: "5px 8px",
     borderRadius: "4px",
     border: "1px solid var(--color-border)",
-    background: "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
+    background: "rgba(124,155,196,0.04)",
     color: "var(--color-foreground)",
     width: "100%",
     outline: "none",
@@ -240,7 +240,7 @@ function ExchangeCard({
                 fontWeight: 700,
                 padding: "1px 5px",
                 borderRadius: "3px",
-                background: "color-mix(in oklab, var(--color-primary) 15%, transparent)",
+                background: "rgba(124,155,196,0.15)",
                 color: "var(--color-primary)",
               }}
             >
@@ -425,7 +425,7 @@ function ExchangeCard({
                     background:
                       form.mtType === mt
                         ? `${"var(--color-bullish)"}26`
-                        : "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
+                        : "rgba(124,155,196,0.04)",
                   }}
                 >
                   {mt.toUpperCase()}
@@ -873,7 +873,7 @@ function SettingsPage() {
     padding: "4px 8px",
     borderRadius: "4px",
     border: `1px solid ${"var(--color-border)"}`,
-    background: "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
+    background: "rgba(124,155,196,0.04)",
     color: "var(--color-foreground)",
     width: "160px",
     outline: "none",
@@ -915,7 +915,7 @@ function SettingsPage() {
                   background:
                     oi === item.current
                       ? `${"var(--color-bullish)"}26`
-                      : "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
+                      : "rgba(124,155,196,0.04)",
                 }}
               >
                 {opt}
@@ -1165,7 +1165,7 @@ function SettingsPage() {
                   style={{
                     borderBottom:
                       i < section.items.length - 1
-                        ? `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}`
+                        ? `1px solid ${"rgba(124,155,196,0.04)"}`
                         : "none",
                   }}
                 >

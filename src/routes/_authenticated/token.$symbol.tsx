@@ -613,7 +613,7 @@ function TokenPage() {
                   borderRadius: "8px",
                   border: `1px solid var(--color-border)`,
                   background: isWatched
-                    ? "color-mix(in oklab, var(--color-bullish) 12%, transparent)"
+                    ? "rgba(14,203,129,0.12)"
                     : "var(--color-card)",
                   color: isWatched
                     ? "var(--color-bullish)"
@@ -831,7 +831,7 @@ function TokenPage() {
                     }`,
                     background:
                       leverage === lev
-                        ? "color-mix(in oklab, var(--color-primary) 15%, transparent)"
+                        ? "rgba(124,155,196,0.15)"
                         : "var(--color-card)",
                     color:
                       leverage === lev
@@ -1268,7 +1268,7 @@ function TokenPage() {
               fontSize: "13px",
               letterSpacing: "0.04em",
               background:
-                "color-mix(in oklab, var(--color-primary) 10%, transparent)",
+                "rgba(124,155,196,0.10)",
               color: "var(--color-primary)",
               transition: "all 0.15s",
               display: "flex",
@@ -1278,11 +1278,11 @@ function TokenPage() {
             }}
             onMouseEnter={(e) => {
               (e.target as HTMLElement).style.background =
-                "color-mix(in oklab, var(--color-primary) 18%, transparent)";
+                "rgba(124,155,196,0.18)";
             }}
             onMouseLeave={(e) => {
               (e.target as HTMLElement).style.background =
-                "color-mix(in oklab, var(--color-primary) 10%, transparent)";
+                "rgba(124,155,196,0.10)";
             }}
           >
             <span style={{ fontSize: "16px" }}>⚡</span>
@@ -1550,8 +1550,8 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
                 gap: "8px",
                 padding: "10px 12px",
                 borderRadius: "8px",
-                background: "color-mix(in oklab, var(--color-bearish) 12%, transparent)",
-                border: `1px solid color-mix(in oklab, var(--color-bearish) 25%, transparent)`,
+                background: "rgba(246,70,93,0.12)",
+                border: `1px solid rgba(246,70,93,0.25)`,
               }}
             >
               <span style={{ fontSize: "14px" }}>🚫</span>
@@ -1570,8 +1570,8 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
                 gap: "8px",
                 padding: "10px 12px",
                 borderRadius: "8px",
-                background: "color-mix(in oklab, #F0B90B 12%, transparent)",
-                border: `1px solid color-mix(in oklab, #F0B90B 25%, transparent)`,
+                background: "rgba(240,185,11,0.12)",
+                border: `1px solid rgba(240,185,11,0.25)`,
               }}
             >
               <span style={{ fontSize: "14px" }}>💧</span>
@@ -1592,8 +1592,8 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
                 gap: "8px",
                 padding: "10px 12px",
                 borderRadius: "8px",
-                background: "color-mix(in oklab, var(--color-bullish) 8%, transparent)",
-                border: `1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)`,
+                background: "rgba(14,203,129,0.08)",
+                border: `1px solid rgba(14,203,129,0.20)`,
               }}
             >
               <span style={{ fontSize: "14px" }}>✓</span>
@@ -1786,9 +1786,9 @@ function ForexSections({ symbol }: { symbol: string }) {
 
   const impactStyle = (impact: "high" | "medium" | "low") => {
     switch (impact) {
-      case "high": return { bg: "color-mix(in oklab, var(--color-bearish) 15%, transparent)", border: "var(--color-bearish)", color: "var(--color-bearish)" };
-      case "medium": return { bg: "color-mix(in oklab, #F0B90B 15%, transparent)", border: "#F0B90B", color: "#F0B90B" };
-      default: return { bg: "color-mix(in oklab, var(--color-bullish) 15%, transparent)", border: "var(--color-bullish)", color: "var(--color-bullish)" };
+      case "high": return { bg: "rgba(246,70,93,0.15)", border: "var(--color-bearish)", color: "var(--color-bearish)" };
+      case "medium": return { bg: "rgba(240,185,11,0.15)", border: "#F0B90B", color: "#F0B90B" };
+      default: return { bg: "rgba(14,203,129,0.15)", border: "var(--color-bullish)", color: "var(--color-bullish)" };
     }
   };
 
@@ -1946,7 +1946,7 @@ function ForexSections({ symbol }: { symbol: string }) {
                     gap: "8px",
                     padding: isRelevant ? "6px 8px" : "4px 8px",
                     borderRadius: "6px",
-                    background: isRelevant ? "color-mix(in oklab, var(--color-primary) 10%, transparent)" : "transparent",
+                    background: isRelevant ? "rgba(124,155,196,0.10)" : "transparent",
                   }}
                 >
                   <span
@@ -2229,7 +2229,7 @@ function QuickCalcRow({
         justifyContent: "space-between",
         alignItems: "center",
         padding: "4px 0",
-        borderBottom: `1px solid color-mix(in oklab, var(--color-foreground) 4%, transparent)`,
+        borderBottom: `1px solid rgba(124,155,196,0.04)`,
       }}
     >
       <span

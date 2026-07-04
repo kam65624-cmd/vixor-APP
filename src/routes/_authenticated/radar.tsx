@@ -406,7 +406,7 @@ function BlipCard({ blip }: { blip: RadarBlip }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         background: hovered
-          ? "color-mix(in oklab, var(--color-foreground) 4%, var(--color-card))"
+          ? "rgba(124,155,196,0.04)"
           : "var(--color-card)",
         border: `1px solid ${hovered ? blip.color + "40" : "var(--color-border)"}`,
         borderLeft: `3px solid ${blip.color}`,
@@ -644,11 +644,11 @@ function AlertsLogEntry({ blip, index }: { blip: RadarBlip; index: number }) {
         alignItems: "center",
         gap: 10,
         padding: "10px 16px",
-        borderBottom: "1px solid color-mix(in oklab, var(--color-foreground) 4%, transparent)",
+        borderBottom: "1px solid rgba(124,155,196,0.04)",
         background:
           index % 2 === 0
             ? "var(--color-card)"
-            : "color-mix(in oklab, var(--color-foreground) 2%, var(--color-card))",
+            : "rgba(124,155,196,0.02)",
         transition: "background 0.1s ease",
       }}
     >
@@ -719,8 +719,8 @@ function DemoNotice() {
         alignItems: "center",
         gap: 8,
         padding: "8px 16px",
-        background: "color-mix(in oklab, #F0B90B 10%, var(--color-card))",
-        borderBottom: "1px solid color-mix(in oklab, #F0B90B 20%, transparent)",
+        background: "rgba(240,185,11,0.10)",
+        borderBottom: "1px solid rgba(240,185,11,0.20)",
         flexShrink: 0,
       }}
     >

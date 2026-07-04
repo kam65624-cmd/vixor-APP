@@ -97,7 +97,7 @@ function ErrorView({ error, onReset }: { error: Error | null; onReset: () => voi
   return (
     <div className="flex min-h-screen items-center justify-center p-4" style={{ background: "var(--color-background)" }}>
       <div className="mx-auto max-w-sm text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: "color-mix(in oklab, var(--color-destructive) 12%, transparent)" }}>
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: "rgba(246,70,93,0.12)" }}>
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-destructive)" }}>
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />

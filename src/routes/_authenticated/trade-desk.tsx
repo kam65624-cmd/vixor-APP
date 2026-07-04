@@ -71,7 +71,7 @@ const labelStyle = {
   color: "var(--color-muted-foreground)",
 };
 const inputStyle = {
-  background: "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+  background: "rgba(124,155,196,0.06)",
   border: `1px solid ${"var(--color-border)"}`,
   color: "var(--color-foreground)",
   outline: "none",
@@ -313,7 +313,7 @@ function TradeDesk() {
               padding: "4px 10px",
               borderRadius: "20px",
               border: `1px solid ${isExchangeConnected ? `${"var(--color-bullish)"}44` : "var(--color-border)"}`,
-              background: isExchangeConnected ? `color-mix(in oklab, var(--color-bullish) 8%, transparent)` : "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
+              background: isExchangeConnected ? `rgba(14,203,129,0.08)` : "rgba(124,155,196,0.04)",
               cursor: "pointer",
               fontSize: "11px",
               fontWeight: 600,
@@ -438,7 +438,7 @@ function TradeDesk() {
               padding: "16px",
               borderRadius: "12px",
               textAlign: "center",
-              background: "color-mix(in oklab, var(--color-foreground) 3%, transparent)",
+              background: "rgba(124,155,196,0.03)",
               border: `1px solid ${"var(--color-border)"}`,
             }}
           >
@@ -525,7 +525,7 @@ function TradeDesk() {
                     onClick={() => setDirection("long")}
                     className="h-10 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-1 transition-colors"
                     style={{
-                      background: direction === "long" ? `${"var(--color-bullish)"}20` : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                      background: direction === "long" ? `${"var(--color-bullish)"}20` : "rgba(124,155,196,0.06)",
                       border: `1px solid ${
                         direction === "long" ? `${"var(--color-bullish)"}66` : "var(--color-border)"
                       }`,
@@ -539,7 +539,7 @@ function TradeDesk() {
                     onClick={() => setDirection("short")}
                     className="h-10 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-1 transition-colors"
                     style={{
-                      background: direction === "short" ? `${"var(--color-bearish)"}20` : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                      background: direction === "short" ? `${"var(--color-bearish)"}20` : "rgba(124,155,196,0.06)",
                       border: `1px solid ${
                         direction === "short" ? `${"var(--color-bearish)"}66` : "var(--color-border)"
                       }`,
@@ -578,9 +578,9 @@ function TradeDesk() {
                   background:
                     entryPrice && !saveMutation.isPending
                       ? saveSuccess
-                        ? `color-mix(in oklab, var(--color-bullish) 19%, transparent)`
+                        ? `rgba(14,203,129,0.19)`
                         : "var(--color-bullish)"
-                      : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                      : "rgba(124,155,196,0.06)",
                   color: saveSuccess
                     ? "var(--color-bullish)"
                     : entryPrice && !saveMutation.isPending
@@ -612,11 +612,11 @@ function TradeDesk() {
                 className="flex items-center justify-center gap-1.5 h-10 rounded-lg text-xs font-extrabold uppercase tracking-wider transition-all"
                 style={{
                   background: entryPrice
-                    ? "linear-gradient(135deg, var(--color-bullish), color-mix(in oklab, var(--color-bullish) 70%, var(--color-foreground)))"
-                    : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                    ? "linear-gradient(135deg, var(--color-bullish), rgba(14,203,129,0.70))"
+                    : "rgba(124,155,196,0.06)",
                   color: entryPrice ? "var(--color-foreground)" : "var(--color-muted-foreground)",
                   boxShadow: entryPrice
-                    ? "0 2px 12px color-mix(in oklab, var(--color-bullish) 30%, transparent)"
+                    ? "0 2px 12px rgba(14,203,129,0.30)"
                     : "none",
                   opacity: !entryPrice ? 0.5 : 1,
                   border: "none",
@@ -637,7 +637,7 @@ function TradeDesk() {
                 disabled={!entryPrice}
                 className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all flex-1"
                 style={{
-                  background: showCoach ? `${"var(--color-info)"}20` : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                  background: showCoach ? `${"var(--color-info)"}20` : "rgba(124,155,196,0.06)",
                   border: `1px solid ${showCoach ? `${"var(--color-info)"}66` : "var(--color-border)"}`,
                   color: showCoach ? "var(--color-info)" : "var(--color-muted-foreground)",
                   opacity: !entryPrice ? 0.5 : 1,
@@ -655,7 +655,7 @@ function TradeDesk() {
                 disabled={!entryPrice}
                 className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all flex-1"
                 style={{
-                  background: showGovernor ? `${"var(--color-neutral-wait)"}20` : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                  background: showGovernor ? `${"var(--color-neutral-wait)"}20` : "rgba(124,155,196,0.06)",
                   border: `1px solid ${showGovernor ? `${"var(--color-neutral-wait)"}66` : "var(--color-border)"}`,
                   color: showGovernor ? "var(--color-neutral-wait)" : "var(--color-muted-foreground)",
                   opacity: !entryPrice ? 0.5 : 1,
@@ -700,7 +700,7 @@ function TradeDesk() {
                       justifyContent: "center",
                       flexShrink: 0,
                       background:
-                        trade.direction === "long" ? `color-mix(in oklab, var(--color-bullish) 10%, transparent)` : `color-mix(in oklab, var(--color-bearish) 10%, transparent)`,
+                        trade.direction === "long" ? `rgba(14,203,129,0.10)` : `rgba(246,70,93,0.10)`,
                     }}
                   >
                     {trade.direction === "long" ? (
@@ -843,8 +843,8 @@ function TradeDesk() {
                     alignItems: "center",
                     justifyContent: "center",
                     background: isPaperMode
-                      ? `color-mix(in oklab, var(--color-neutral-wait) 15%, transparent)`
-                      : `color-mix(in oklab, var(--color-bullish) 15%, transparent)`,
+                      ? `rgba(245,158,11,0.15)`
+                      : `rgba(14,203,129,0.15)`,
                   }}
                 >
                   <Zap
@@ -869,7 +869,7 @@ function TradeDesk() {
                     height: "28px",
                     borderRadius: "8px",
                     border: "none",
-                    background: "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                    background: "rgba(124,155,196,0.06)",
                     color: "var(--color-muted-foreground)",
                     cursor: "pointer",
                     display: "flex",
@@ -891,7 +891,7 @@ function TradeDesk() {
                     style={{
                       padding: "12px",
                       borderRadius: "10px",
-                      background: "color-mix(in oklab, var(--color-foreground) 3%, transparent)",
+                      background: "rgba(124,155,196,0.03)",
                       border: `1px solid ${"var(--color-border)"}`,
                       marginBottom: "16px",
                     }}
@@ -977,8 +977,8 @@ function TradeDesk() {
                       padding: "8px 10px",
                       borderRadius: "8px",
                       background: isPaperMode
-                        ? `color-mix(in oklab, var(--color-neutral-wait) 8%, transparent)`
-                        : `color-mix(in oklab, var(--color-bullish) 8%, transparent)`,
+                        ? `rgba(245,158,11,0.08)`
+                        : `rgba(14,203,129,0.08)`,
                       marginBottom: "16px",
                     }}
                   >
@@ -1041,7 +1041,7 @@ function TradeDesk() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          background: `color-mix(in oklab, var(--color-bullish) 15%, transparent)`,
+                          background: `rgba(14,203,129,0.15)`,
                         }}
                       >
                         <CheckCircle className="size-6" style={{ color: "var(--color-bullish)" }} />
@@ -1054,7 +1054,7 @@ function TradeDesk() {
                           style={{
                             padding: "10px 14px",
                             borderRadius: "8px",
-                            background: "color-mix(in oklab, var(--color-foreground) 3%, transparent)",
+                            background: "rgba(124,155,196,0.03)",
                             border: `1px solid ${"var(--color-border)"}`,
                             width: "100%",
                           }}
@@ -1096,7 +1096,7 @@ function TradeDesk() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          background: `color-mix(in oklab, var(--color-bearish) 15%, transparent)`,
+                          background: `rgba(246,70,93,0.15)`,
                         }}
                       >
                         <AlertCircle className="size-6" style={{ color: "var(--color-bearish)" }} />
@@ -1135,7 +1135,7 @@ function TradeDesk() {
                   onClick={handleCloseDialog}
                   className="flex-1 h-11 rounded-xl text-xs font-bold transition-all"
                   style={{
-                    background: "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                    background: "rgba(124,155,196,0.06)",
                     border: `1px solid ${"var(--color-border)"}`,
                     color: "var(--color-muted-foreground)",
                   }}
@@ -1147,8 +1147,8 @@ function TradeDesk() {
                   className="flex-1 h-11 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
                   style={{
                     background: isPaperMode
-                      ? "linear-gradient(135deg, var(--color-neutral-wait), color-mix(in oklab, var(--color-neutral-wait) 70%, var(--color-foreground)))"
-                      : "linear-gradient(135deg, var(--color-bullish), color-mix(in oklab, var(--color-bullish) 70%, var(--color-foreground)))",
+                      ? "linear-gradient(135deg, var(--color-neutral-wait), rgba(245,158,11,0.70))"
+                      : "linear-gradient(135deg, var(--color-bullish), rgba(14,203,129,0.70))",
                     color: "var(--color-foreground)",
                     boxShadow: `0 2px 12px color-mix(in oklab, ${isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)"} 30%, transparent)`,
                     border: "none",

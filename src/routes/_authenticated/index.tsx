@@ -134,9 +134,9 @@ function HomePage() {
       <div
         style={{
           padding: "16px 16px 14px",
-          background: "linear-gradient(135deg, color-mix(in oklab, var(--color-bullish) 12%, transparent), color-mix(in oklab, var(--color-primary) 8%, transparent))",
+          background: "linear-gradient(135deg, rgba(14,203,129,0.12), rgba(124,155,196,0.08))",
           borderRadius: "12px",
-          border: "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)",
+          border: "1px solid rgba(14,203,129,0.20)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -153,8 +153,8 @@ function HomePage() {
               width: 40,
               height: 40,
               borderRadius: "50%",
-              background: "color-mix(in oklab, var(--color-primary) 12%, transparent)",
-              border: "1px solid color-mix(in oklab, var(--color-primary) 20%, transparent)",
+              background: "rgba(124,155,196,0.12)",
+              border: "1px solid rgba(124,155,196,0.20)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -293,8 +293,8 @@ function HomePage() {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background =
-                  "color-mix(in oklab, var(--color-foreground) 6%, transparent)";
-                e.currentTarget.style.borderColor = "color-mix(in oklab, var(--color-foreground) 10%, transparent)";
+                  "rgba(124,155,196,0.06)";
+                e.currentTarget.style.borderColor = "rgba(124,155,196,0.10)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "var(--color-card-hover)";
@@ -327,7 +327,7 @@ function HomePage() {
                 width: 44,
                 height: 44,
                 borderRadius: 10,
-                background: "color-mix(in oklab, var(--color-bullish) 15%, transparent)",
+                background: "rgba(14,203,129,0.15)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -418,7 +418,7 @@ function HomePage() {
                   padding: "10px 14px",
                   borderBottom:
                     i < recentActivity.slice(0, 4).length - 1
-                      ? "1px solid color-mix(in oklab, var(--color-foreground) 4%, transparent)"
+                      ? "1px solid rgba(124,155,196,0.04)"
                       : "none",
                 }}
               >

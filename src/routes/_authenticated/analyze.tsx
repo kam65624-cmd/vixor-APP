@@ -287,8 +287,8 @@ function Analyze() {
           <div
             style={{
               padding: 12,
-              background: "color-mix(in oklab, var(--color-bearish) 10%, transparent)",
-              border: "1px solid color-mix(in oklab, var(--color-bearish) 30%, transparent)",
+              background: "rgba(246,70,93,0.10)",
+              border: "1px solid rgba(246,70,93,0.30)",
               color: "var(--color-bearish)",
               fontSize: 12,
               fontWeight: 700,
@@ -328,7 +328,7 @@ function Analyze() {
                 aspectRatio: "4/3",
                 borderRadius: 8,
                 border: "2px dashed var(--color-border)",
-                background: "color-mix(in oklab, var(--color-foreground) 3%, transparent)",
+                background: "rgba(124,155,196,0.03)",
                 cursor: "pointer",
                 position: "relative",
                 overflow: "hidden",
@@ -352,7 +352,7 @@ function Analyze() {
                     width: 64,
                     height: 64,
                     borderRadius: 12,
-                    background: "color-mix(in oklab, var(--color-bullish) 15%, transparent)",
+                    background: "rgba(14,203,129,0.15)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -438,8 +438,8 @@ function Analyze() {
                     gap: 6,
                     padding: "8px 12px",
                     borderRadius: 6,
-                    background: "color-mix(in oklab, var(--color-bullish) 10%, transparent)",
-                    border: "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)",
+                    background: "rgba(14,203,129,0.10)",
+                    border: "1px solid rgba(14,203,129,0.20)",
                   }}
                 >
                   <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
@@ -558,7 +558,7 @@ function Analyze() {
                 overflow: "hidden",
                 border: `1px solid ${"var(--color-border)"}`,
                 aspectRatio: "4/3",
-                background: "color-mix(in oklab, var(--color-foreground) 5%, transparent)",
+                background: "rgba(124,155,196,0.05)",
               }}
             >
               <img
@@ -668,9 +668,9 @@ function Analyze() {
                       gap: 6,
                       padding: "8px 12px",
                       borderRadius: 6,
-                      background: "color-mix(in oklab, var(--color-bullish) 10%, transparent)",
+                      background: "rgba(14,203,129,0.10)",
                       border:
-                        "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)",
+                        "1px solid rgba(14,203,129,0.20)",
                     }}
                   >
                     <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
@@ -712,11 +712,11 @@ function Analyze() {
                         cursor: "pointer",
                         background:
                           tradingStyle === s.id
-                            ? "color-mix(in oklab, var(--color-bullish) 15%, transparent)"
+                            ? "rgba(14,203,129,0.15)"
                             : "var(--color-card)",
                         borderColor:
                           tradingStyle === s.id
-                            ? "color-mix(in oklab, var(--color-bullish) 30%, transparent)"
+                            ? "rgba(14,203,129,0.30)"
                             : "var(--color-border)",
                         color:
                           tradingStyle === s.id
@@ -762,7 +762,7 @@ function Analyze() {
                         padding: "10px 12px",
                         background:
                           analysisTechnique === t.id
-                            ? "color-mix(in oklab, var(--color-primary) 15%, transparent)"
+                            ? "rgba(124,155,196,0.15)"
                             : "var(--color-card)",
                         borderColor:
                           analysisTechnique === t.id
@@ -802,8 +802,8 @@ function Analyze() {
                   gap: 8,
                   padding: 12,
                   borderRadius: 8,
-                  background: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
-                  border: "1px solid color-mix(in oklab, var(--color-bullish) 15%, transparent)",
+                  background: "rgba(14,203,129,0.05)",
+                  border: "1px solid rgba(14,203,129,0.15)",
                 }}
               >
                 <Info
@@ -888,7 +888,7 @@ function Analyze() {
                   position: "absolute",
                   inset: 0,
                   borderRadius: 12,
-                  background: "color-mix(in oklab, var(--color-bullish) 20%, transparent)",
+                  background: "rgba(14,203,129,0.20)",
                   animation: "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite",
                 }}
               />

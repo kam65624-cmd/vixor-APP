@@ -327,7 +327,7 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
                 fontWeight: 600,
                 padding: "1px 5px",
                 borderRadius: "3px",
-                background: "color-mix(in oklab, var(--color-muted-foreground) 15%, transparent)",
+                background: "rgba(163,163,163,0.15)",
                 color: "var(--color-muted-foreground)",
               }}
             >
@@ -1110,7 +1110,7 @@ function DiscoverPage() {
                   borderRadius: "8px",
                   background: isActive
                     ? "rgba(0,0,0,0.2)"
-                    : "color-mix(in oklab, var(--color-muted-foreground) 12%, transparent)",
+                    : "rgba(163,163,163,0.12)",
                   color: isActive ? "rgba(0,0,0,0.7)" : "var(--color-muted-foreground)",
                   fontFamily: "'JetBrains Mono', monospace",
                   lineHeight: "14px",
@@ -1304,7 +1304,7 @@ function DiscoverPage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            background: "color-mix(in oklab, var(--color-bearish) 8%, transparent)",
+            background: "rgba(246,70,93,0.08)",
             borderRadius: "6px",
             margin: "0 8px",
           }}

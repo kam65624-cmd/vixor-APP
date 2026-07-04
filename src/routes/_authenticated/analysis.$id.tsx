@@ -110,7 +110,7 @@ function highlightSMC(text: string): React.ReactNode[] {
           style={{
             color: "var(--color-bullish)",
             fontWeight: 700,
-            background: `color-mix(in oklab, var(--color-bullish) 10%, transparent)`,
+            background: `rgba(14,203,129,0.10)`,
             padding: "0 2px",
             borderRadius: "2px",
           }}
@@ -237,7 +237,7 @@ function AnalysisResult() {
               ...CARD,
               padding: "32px",
               textAlign: "center",
-              borderColor: "color-mix(in oklab, var(--color-bearish) 30%, transparent)",
+              borderColor: "rgba(246,70,93,0.30)",
             }}
           >
             <div
@@ -245,7 +245,7 @@ function AnalysisResult() {
                 width: "64px",
                 height: "64px",
                 borderRadius: "50%",
-                background: "color-mix(in oklab, var(--color-bearish) 10%, transparent)",
+                background: "rgba(246,70,93,0.10)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -300,20 +300,20 @@ function AnalysisResult() {
                 overflow: "hidden",
                 margin: "0 16px 16px",
                 borderColor: isBullish
-                  ? "color-mix(in oklab, var(--color-bullish) 50%, transparent)"
+                  ? "rgba(14,203,129,0.50)"
                   : isBearish
-                    ? "color-mix(in oklab, var(--color-bearish) 50%, transparent)"
-                    : "color-mix(in oklab, var(--color-neutral-wait) 40%, transparent)",
+                    ? "rgba(246,70,93,0.50)"
+                    : "rgba(245,158,11,0.40)",
                 boxShadow: isBullish
-                  ? "0 0 40px color-mix(in oklab, var(--color-bullish) 20%, transparent)"
+                  ? "0 0 40px rgba(14,203,129,0.20)"
                   : isBearish
-                    ? "0 0 40px color-mix(in oklab, var(--color-bearish) 20%, transparent)"
-                    : "0 0 30px color-mix(in oklab, var(--color-neutral-wait) 15%, transparent)",
+                    ? "0 0 40px rgba(246,70,93,0.20)"
+                    : "0 0 30px rgba(245,158,11,0.15)",
                 background: isBullish
-                  ? `linear-gradient(to bottom right, color-mix(in oklab, var(--color-bullish) 8%, transparent), ${"var(--color-card)"}, ${"var(--color-card)"})`
+                  ? `linear-gradient(to bottom right, rgba(14,203,129,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`
                   : isBearish
-                    ? `linear-gradient(to bottom right, color-mix(in oklab, var(--color-bearish) 8%, transparent), ${"var(--color-card)"}, ${"var(--color-card)"})`
-                    : `linear-gradient(to bottom right, color-mix(in oklab, var(--color-neutral-wait) 8%, transparent), ${"var(--color-card)"}, ${"var(--color-card)"})`,
+                    ? `linear-gradient(to bottom right, rgba(246,70,93,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`
+                    : `linear-gradient(to bottom right, rgba(245,158,11,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`,
               }}
             >
               {/* Animated top bar */}
@@ -354,7 +354,7 @@ function AnalysisResult() {
                         textTransform: "uppercase",
                         letterSpacing: "0.1em",
                         color: "var(--color-muted-foreground)",
-                        background: "color-mix(in oklab, var(--color-card) 80%, oklch(0 0 0))",
+                        background: "rgba(11,13,16,0.80)",
                         backdropFilter: "blur(8px)",
                         padding: "2px 8px",
                         borderRadius: "4px",
@@ -403,19 +403,19 @@ function AnalysisResult() {
                     ...MONO,
                     letterSpacing: "0.05em",
                     background: isBullish
-                      ? "color-mix(in oklab, var(--color-bullish) 6%, transparent)"
+                      ? "rgba(14,203,129,0.06)"
                       : isBearish
-                        ? "color-mix(in oklab, var(--color-bearish) 6%, transparent)"
-                        : "color-mix(in oklab, var(--color-neutral-wait) 6%, transparent)",
+                        ? "rgba(246,70,93,0.06)"
+                        : "rgba(245,158,11,0.06)",
                     borderColor: isBullish
-                      ? "color-mix(in oklab, var(--color-bullish) 30%, transparent)"
+                      ? "rgba(14,203,129,0.30)"
                       : isBearish
-                        ? "color-mix(in oklab, var(--color-bearish) 30%, transparent)"
-                        : "color-mix(in oklab, var(--color-neutral-wait) 30%, transparent)",
+                        ? "rgba(246,70,93,0.30)"
+                        : "rgba(245,158,11,0.30)",
                     boxShadow: isBullish
-                      ? "0 0 20px color-mix(in oklab, var(--color-bullish) 30%, transparent)"
+                      ? "0 0 20px rgba(14,203,129,0.30)"
                       : isBearish
-                        ? "0 0 20px color-mix(in oklab, var(--color-bearish) 30%, transparent)"
+                        ? "0 0 20px rgba(246,70,93,0.30)"
                         : "none",
                   }}
                 >
@@ -436,7 +436,7 @@ function AnalysisResult() {
                   {/* Entry */}
                   <div
                     style={{
-                      background: "color-mix(in oklab, var(--color-card) 70%, oklch(0 0 0))",
+                      background: "rgba(11,13,16,0.70)",
                       backdropFilter: "blur(8px)",
                       padding: "12px",
                       borderRadius: "12px",
@@ -452,10 +452,10 @@ function AnalysisResult() {
                   {/* Stop Loss */}
                   <div
                     style={{
-                      background: "color-mix(in oklab, var(--color-bearish) 5%, transparent)",
+                      background: "rgba(246,70,93,0.05)",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: "1px solid color-mix(in oklab, var(--color-bearish) 30%, transparent)",
+                      border: "1px solid rgba(246,70,93,0.30)",
                       textAlign: "center",
                     }}
                   >
@@ -467,10 +467,10 @@ function AnalysisResult() {
                   {/* Target */}
                   <div
                     style={{
-                      background: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
+                      background: "rgba(14,203,129,0.05)",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: "1px solid color-mix(in oklab, var(--color-bullish) 30%, transparent)",
+                      border: "1px solid rgba(14,203,129,0.30)",
                       textAlign: "center",
                     }}
                   >
@@ -496,15 +496,15 @@ function AnalysisResult() {
                       fontSize: "14px",
                       color: recColor,
                       background: isBullish
-                        ? "color-mix(in oklab, var(--color-bullish) 6%, transparent)"
+                        ? "rgba(14,203,129,0.06)"
                         : isBearish
-                          ? "color-mix(in oklab, var(--color-bearish) 6%, transparent)"
-                          : "color-mix(in oklab, var(--color-neutral-wait) 6%, transparent)",
+                          ? "rgba(246,70,93,0.06)"
+                          : "rgba(245,158,11,0.06)",
                       borderColor: isBullish
-                        ? "color-mix(in oklab, var(--color-bullish) 30%, transparent)"
+                        ? "rgba(14,203,129,0.30)"
                         : isBearish
-                          ? "color-mix(in oklab, var(--color-bearish) 30%, transparent)"
-                          : "color-mix(in oklab, var(--color-neutral-wait) 30%, transparent)",
+                          ? "rgba(246,70,93,0.30)"
+                          : "rgba(245,158,11,0.30)",
                     }}
                   >
                     R:R {signalBadge.rr}
@@ -569,7 +569,7 @@ function AnalysisResult() {
                     fontSize: "14px",
                     fontWeight: 500,
                     lineHeight: 1.6,
-                    color: "color-mix(in oklab, var(--color-foreground) 90%, transparent)",
+                    color: "rgba(124,155,196,0.90)",
                   }}
                 >
                   {highlightSMC(vixorMsg)}
@@ -645,8 +645,8 @@ function AnalysisResult() {
                     width: "40px",
                     height: "40px",
                     borderRadius: "50%",
-                    background: "color-mix(in oklab, var(--color-foreground) 10%, transparent)",
-                    border: "1px solid color-mix(in oklab, var(--color-foreground) 20%, transparent)",
+                    background: "rgba(124,155,196,0.10)",
+                    border: "1px solid rgba(124,155,196,0.20)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -780,14 +780,14 @@ function AnalysisResult() {
                         s: scenarios.conservative,
                         color: "var(--color-info)",
                         border: "var(--color-info)",
-                        bg: "color-mix(in oklab, var(--color-info) 5%, transparent)",
+                        bg: "rgba(59,130,246,0.05)",
                       },
                       {
                         label: "Balanced ✦",
                         s: scenarios.balanced,
                         color: "var(--color-bullish)",
                         border: "var(--color-bullish)",
-                        bg: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
+                        bg: "rgba(14,203,129,0.05)",
                         glow: true,
                       },
                       {
@@ -795,7 +795,7 @@ function AnalysisResult() {
                         s: scenarios.aggressive,
                         color: "var(--color-neutral-wait)",
                         border: "var(--color-neutral-wait)",
-                        bg: "color-mix(in oklab, var(--color-neutral-wait) 5%, transparent)",
+                        bg: "rgba(245,158,11,0.05)",
                       },
                     ].map(({ label, s, color, border, bg, glow }) => (
                       <div
@@ -805,7 +805,7 @@ function AnalysisResult() {
                           padding: "16px",
                           borderLeft: `4px solid ${border}`,
                           background: bg,
-                          boxShadow: glow ? "0 0 20px color-mix(in oklab, var(--color-bullish) 12%, transparent)" : undefined,
+                          boxShadow: glow ? "0 0 20px rgba(14,203,129,0.12)" : undefined,
                         }}
                       >
                         <div
@@ -887,10 +887,10 @@ function AnalysisResult() {
                           {/* SL */}
                           <div
                             style={{
-                              background: "color-mix(in oklab, var(--color-bearish) 5%, transparent)",
+                              background: "rgba(246,70,93,0.05)",
                               padding: "10px",
                               borderRadius: "12px",
-                              border: "1px solid color-mix(in oklab, var(--color-bearish) 20%, transparent)",
+                              border: "1px solid rgba(246,70,93,0.20)",
                             }}
                           >
                             <div style={{ ...LABEL, color: "var(--color-bearish)", marginBottom: "4px" }}>
@@ -910,10 +910,10 @@ function AnalysisResult() {
                           {/* TP */}
                           <div
                             style={{
-                              background: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
+                              background: "rgba(14,203,129,0.05)",
                               padding: "10px",
                               borderRadius: "12px",
-                              border: "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)",
+                              border: "1px solid rgba(14,203,129,0.20)",
                             }}
                           >
                             <div style={{ ...LABEL, color: "var(--color-bullish)", marginBottom: "4px" }}>
@@ -979,14 +979,14 @@ function AnalysisResult() {
                           <div
                             key={i}
                             style={{
-                              background: "color-mix(in oklab, var(--color-bearish) 5%, transparent)",
-                              border: "1px solid color-mix(in oklab, var(--color-bearish) 20%, transparent)",
+                              background: "rgba(246,70,93,0.05)",
+                              border: "1px solid rgba(246,70,93,0.20)",
                               padding: "8px 12px",
                               borderRadius: "8px",
                               ...MONO,
                               fontSize: "14px",
                               fontWeight: 700,
-                              color: "color-mix(in oklab, var(--color-bearish) 90%, transparent)",
+                              color: "rgba(246,70,93,0.90)",
                             }}
                           >
                             {l.toLocaleString()}
@@ -1010,14 +1010,14 @@ function AnalysisResult() {
                           <div
                             key={i}
                             style={{
-                              background: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
-                              border: "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)",
+                              background: "rgba(14,203,129,0.05)",
+                              border: "1px solid rgba(14,203,129,0.20)",
                               padding: "8px 12px",
                               borderRadius: "8px",
                               ...MONO,
                               fontSize: "14px",
                               fontWeight: 700,
-                              color: "color-mix(in oklab, var(--color-bullish) 90%, transparent)",
+                              color: "rgba(14,203,129,0.90)",
                             }}
                           >
                             {l.toLocaleString()}
@@ -1055,8 +1055,8 @@ function AnalysisResult() {
                             justifyContent: "space-between",
                             padding: "12px",
                             borderRadius: "12px",
-                            background: "color-mix(in oklab, var(--color-bullish) 5%, transparent)",
-                            border: "1px solid color-mix(in oklab, var(--color-bullish) 20%, transparent)",
+                            background: "rgba(14,203,129,0.05)",
+                            border: "1px solid rgba(14,203,129,0.20)",
                           }}
                         >
                           <span
@@ -1083,8 +1083,8 @@ function AnalysisResult() {
                             justifyContent: "space-between",
                             padding: "12px",
                             borderRadius: "12px",
-                            background: "color-mix(in oklab, var(--color-bearish) 5%, transparent)",
-                            border: "1px solid color-mix(in oklab, var(--color-bearish) 20%, transparent)",
+                            background: "rgba(246,70,93,0.05)",
+                            border: "1px solid rgba(246,70,93,0.20)",
                           }}
                         >
                           <span
@@ -1154,8 +1154,8 @@ function AnalysisResult() {
                             padding: "12px",
                             borderRadius: "12px",
                             border: "1px solid",
-                            background: danger ? "color-mix(in oklab, var(--color-bearish) 10%, transparent)" : "var(--color-card)",
-                            borderColor: danger ? "color-mix(in oklab, var(--color-bearish) 30%, transparent)" : "var(--color-border)",
+                            background: danger ? "rgba(246,70,93,0.10)" : "var(--color-card)",
+                            borderColor: danger ? "rgba(246,70,93,0.30)" : "var(--color-border)",
                           }}
                         >
                           <span
@@ -1266,7 +1266,7 @@ function AnalysisResult() {
                       ...CARD,
                       padding: "20px",
                       marginBottom: "16px",
-                      borderColor: "color-mix(in oklab, var(--color-bearish) 20%, transparent)",
+                      borderColor: "rgba(246,70,93,0.20)",
                     }}
                   >
                     <h3
@@ -1313,8 +1313,8 @@ function AnalysisResult() {
                     gap: "12px",
                     padding: "16px",
                     borderRadius: "12px",
-                    background: "color-mix(in oklab, var(--color-neutral-wait) 10%, transparent)",
-                    border: "1px solid color-mix(in oklab, var(--color-neutral-wait) 20%, transparent)",
+                    background: "rgba(245,158,11,0.10)",
+                    border: "1px solid rgba(245,158,11,0.20)",
                   }}
                 >
                   <AlertTriangle
@@ -1431,15 +1431,15 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
               border: "1px solid",
               color: sentColor,
               background: isBullish
-                ? "color-mix(in oklab, var(--color-bullish) 6%, transparent)"
+                ? "rgba(14,203,129,0.06)"
                 : isBearish
-                  ? "color-mix(in oklab, var(--color-bearish) 6%, transparent)"
-                  : "color-mix(in oklab, var(--color-neutral-wait) 6%, transparent)",
+                  ? "rgba(246,70,93,0.06)"
+                  : "rgba(245,158,11,0.06)",
               borderColor: isBullish
-                ? "color-mix(in oklab, var(--color-bullish) 30%, transparent)"
+                ? "rgba(14,203,129,0.30)"
                 : isBearish
-                  ? "color-mix(in oklab, var(--color-bearish) 30%, transparent)"
-                  : "color-mix(in oklab, var(--color-neutral-wait) 30%, transparent)",
+                  ? "rgba(246,70,93,0.30)"
+                  : "rgba(245,158,11,0.30)",
             }}
           >
             {overall_sentiment}
@@ -1452,10 +1452,10 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
             borderRadius: "12px",
             borderLeft: `4px solid ${sentColor}`,
             background: isBullish
-              ? "color-mix(in oklab, var(--color-bullish) 5%, transparent)"
+              ? "rgba(14,203,129,0.05)"
               : isBearish
-                ? "color-mix(in oklab, var(--color-bearish) 5%, transparent)"
-                : "color-mix(in oklab, var(--color-neutral-wait) 5%, transparent)",
+                ? "rgba(246,70,93,0.05)"
+                : "rgba(245,158,11,0.05)",
           }}
         >
           <span style={{ ...LABEL, letterSpacing: "0.1em", display: "block", marginBottom: "4px" }}>
@@ -1568,7 +1568,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
                 style={{
                   padding: "12px",
                   borderRadius: "8px",
-                  background: "color-mix(in oklab, var(--color-card) 60%, oklch(0 0 0))",
+                  background: "rgba(11,13,16,0.60)",
                   border: `1px solid ${"var(--color-border)"}`,
                   fontSize: "12px",
                   color: "var(--color-muted-foreground)",
@@ -1862,8 +1862,8 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                borderColor: "color-mix(in oklab, var(--color-bearish) 30%, transparent)",
-                background: "color-mix(in oklab, var(--color-bearish) 5%, transparent)",
+                borderColor: "rgba(246,70,93,0.30)",
+                background: "rgba(246,70,93,0.05)",
               }}
             >
               <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>

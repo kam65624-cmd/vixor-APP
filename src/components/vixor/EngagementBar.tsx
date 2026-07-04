@@ -189,7 +189,7 @@ export function EngagementBar() {
           </span>
           <span style={{
             fontSize: "8px", fontWeight: 700, padding: "1px 4px", borderRadius: "3px",
-            background: "color-mix(in oklab, var(--color-primary) 15%, transparent)",
+            background: "rgba(124,155,196,0.15)",
             color: "var(--color-primary)", marginLeft: "2px",
           }}>
             Lv.{state.level}
@@ -256,9 +256,9 @@ function TaskPill({ task, allDone }: { task: DailyTask; allDone: boolean }) {
   }, [task.id, task.completed, allDone]);
 
   const bg = task.completed
-    ? "color-mix(in oklab, var(--color-bullish) 12%, transparent)"
+    ? "rgba(14,203,129,0.12)"
     : allDone
-      ? "color-mix(in oklab, var(--color-foreground) 3%, transparent)"
+      ? "rgba(124,155,196,0.03)"
       : "var(--color-card-hover)";
 
   const color = task.completed

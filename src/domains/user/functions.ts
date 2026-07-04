@@ -372,6 +372,45 @@ export const createStarsInvoice = createServerFn({ method: "POST" })
     return { invoiceUrl: result.result };
   });
 
+// ---------- REWARDS REDEMPTION ----------
+export const redeemReward = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) =>
+    z
+      .object({
+        rewardName: z.string().min(1).max(64),
+        cost: z.number().int().positive(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+    // 1. Check current balance
+    const { data: bal } = await supabaseAdmin
+      .from("points_balances")
+      .select("balance")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const currentBalance = bal?.balance ?? 0;
+    if (currentBalance < data.cost) {
+      throw new Error(`Insufficient points. You need ${data.cost} pts but have ${currentBalance} pts.`);
+    }
+
+    // 2. Deduct points via RPC
+    const { error: debitErr } = await supabaseAdmin.rpc("credit_points", {
+      _user: userId,
+      _amount: -data.cost,
+      _reason: "admin_adjust" as const,
+      _meta: { reward_name: data.rewardName, cost: data.cost, type: "reward_redemption" },
+    });
+    if (debitErr) throw new Error(debitErr.message);
+
+    return { ok: true, newBalance: currentBalance - data.cost };
+  });
+
 // ---------- DAILY CHECK-IN ----------
 const CHECKIN_DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const CHECKIN_WEEK_POINTS = [50, 50, 75, 75, 100, 100, 150];

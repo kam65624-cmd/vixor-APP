@@ -50,21 +50,24 @@ function ReferralPage() {
   const username = refQuery.data?.username ?? "Trader";
   const streakDays = refQuery.data?.streakDays ?? 0;
 
+  const referralUrl = `https://vixor-app.vercel.app/ref/${referralCode}`;
+
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(referralCode);
+      await navigator.clipboard.writeText(referralUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for environments where clipboard API is unavailable
-      const ta = document.createElement("textarea");
-      ta.value = referralCode;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }
+  }, [referralUrl]);
+
+  const handleCopyCode = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(referralCode);
+    } catch {
+      // Silent fail — code is visible on screen
     }
   }, [referralCode]);
 
@@ -183,7 +186,7 @@ function ReferralPage() {
                 transition: "background 0.15s ease",
               }}
             >
-              {copied ? "✓ Copied" : "Copy Code"}
+              {copied ? "✓ Copied Link" : "Copy Link"}
             </button>
           </div>
           <button

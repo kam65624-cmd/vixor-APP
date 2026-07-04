@@ -7,7 +7,8 @@ import { EVM_CHAINS } from "@/domains/wallet/types";
 import type { TokenBalance } from "@/domains/wallet/types";
 import { getPhantomSolBalance, getPhantomTokenBalances } from "@/domains/wallet/adapters/phantom-adapter";
 import { getEvmNativeBalance } from "@/domains/wallet/adapters/metamask-adapter";
-import { PageLayout, StatsRow, ScrollArea, PageBadge as Badge, SectionTitle, EmptyState } from "@/components/vixor/PageLayout";
+import { PageLayout, StatsRow, ScrollArea, PageBadge as Badge, SectionTitle } from "@/components/vixor/PageLayout";
+import { EmptyState } from "@/components/vixor/EmptyState";
 import { formatCurrency, formatNumber } from "@/shared/utils/formatters";
 import { LiveDot } from "@/components/vixor/LiveDot";
 import { MiniSparkline } from "@/components/vixor/MiniSparkline";
@@ -209,7 +210,7 @@ function WalletWeb3Page() {
             <EmptyState
               icon="💳"
               title="No wallet connected"
-              message="Connect Phantom (Solana) or MetaMask (ETH, Polygon, Avalanche) to view your portfolio across chains."
+              description="Connect Phantom (Solana) or MetaMask (ETH, Polygon, Avalanche) to view your portfolio across chains."
             />
           ) : tokensLoading ? (
             <div className="flex items-center justify-center py-12">
@@ -220,7 +221,7 @@ function WalletWeb3Page() {
             <EmptyState
               icon="💎"
               title="No tokens found"
-              message={`This ${chainLabel} wallet has no SPL/ERC-20 token balances.`}
+              description={`This ${chainLabel} wallet has no SPL/ERC-20 token balances.`}
             />
           ) : (
             <>
@@ -241,7 +242,7 @@ function WalletWeb3Page() {
           <EmptyState
             icon="📋"
             title="No Transactions"
-            message="Transaction history will appear here after swaps, transfers, or trades."
+            description="Transaction history will appear here after swaps, transfers, or trades."
           />
         </>
       )}

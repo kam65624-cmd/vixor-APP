@@ -290,7 +290,7 @@ const SignalRow = memo(function SignalRow({
               padding: "4px 10px",
               borderRadius: "6px",
               border: `1px solid ${isTracked ? "var(--color-bullish)" : "var(--color-border)"}`,
-              background: isTracked ? "color-mix(in oklab, var(--color-bullish) 15%, transparent)" : "transparent",
+              background: isTracked ? "rgba(14,203,129,0.15)" : "transparent",
               color: isTracked ? "var(--color-bullish)" : "var(--color-muted-foreground)",
               cursor: isTracked ? "default" : "pointer",
               whiteSpace: "nowrap",

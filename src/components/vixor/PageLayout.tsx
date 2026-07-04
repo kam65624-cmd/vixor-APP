@@ -165,7 +165,7 @@ export function PageLayout({
                   cursor: "pointer",
                   color: isActive ? "var(--color-foreground)" : "var(--color-muted-foreground)",
                   background: isActive
-                    ? "color-mix(in oklab, var(--color-foreground) 8%, transparent)"
+                    ? "rgba(124,155,196,0.08)"
                     : "transparent",
                   whiteSpace: "nowrap",
                   transition: "all 0.15s ease",
@@ -217,7 +217,10 @@ export function PageLayout({
             />
           </div>
         ) : (
-          children
+          <>
+            {banner}
+            {children}
+          </>
         )}
       </div>
     </div>
@@ -588,8 +591,8 @@ export const DataRow = memo(function DataRow({
       tabIndex={onClick ? 0 : undefined}
       style={{
         padding: "10px 16px",
-        borderBottom: `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}`,
-        background: hovered ? "color-mix(in oklab, var(--color-foreground) 3%, transparent)" : "var(--color-card)",
+        borderBottom: "1px solid rgba(124,155,196,0.04)",
+        background: hovered ? "rgba(124,155,196,0.03)" : "var(--color-card)",
         borderLeft: leftAccent ? `2px solid ${leftAccent}` : undefined,
         transition: "background 0.1s ease",
         ...customStyle,
@@ -719,7 +722,7 @@ export function SkeletonRow() {
     <div
       style={{
         padding: "10px 16px",
-        borderBottom: `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}`,
+        borderBottom: "1px solid rgba(124,155,196,0.04)",
         background: "var(--color-card)",
       }}
     >
@@ -804,7 +807,7 @@ export function ProfileCard({
           width: "38px",
           height: "38px",
           borderRadius: "50%",
-          background: `color-mix(in oklab, var(--color-primary) 8%, transparent)`,
+          background: "rgba(124,155,196,0.08)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

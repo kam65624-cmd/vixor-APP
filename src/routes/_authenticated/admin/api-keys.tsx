@@ -101,8 +101,8 @@ function AdminApiKeysPage() {
         <div
           style={{
             padding: "16px",
-            background: `color-mix(in oklab, var(--color-bearish) 10%, transparent)`,
-            borderBottom: `1px solid color-mix(in oklab, var(--color-bearish) 19%, transparent)`,
+            background: `rgba(246,70,93,0.10)`,
+            borderBottom: `1px solid rgba(246,70,93,0.19)`,
           }}
         >
           <p
@@ -264,8 +264,8 @@ function AdminApiKeysPage() {
             <div
               style={{
                 padding: "12px 16px",
-                background: `color-mix(in oklab, var(--color-bullish) 6%, transparent)`,
-                borderTop: `1px solid color-mix(in oklab, var(--color-bullish) 10%, transparent)`,
+                background: `rgba(14,203,129,0.06)`,
+                borderTop: `1px solid rgba(14,203,129,0.10)`,
               }}
             >
               <div
