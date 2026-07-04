@@ -2,17 +2,19 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
   Target,
   Shield,
   Calculator,
-  Activity,
   ArrowUpRight,
   ArrowDownRight,
-  TrendingUp,
   Save,
   Loader2,
   MessageSquare,
+  Zap,
+  X,
+  CheckCircle,
+  AlertCircle,
+  ExternalLink,
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,7 +22,6 @@ import { useI18n } from "@/shared/i18n";
 import { createTrade, listTrades } from "@/domains/trades/functions";
 import type { Trade, TradeDirection } from "@/domains/trades/types";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { cn } from "@/shared/utils";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
 import { CoachOverlay } from "@/components/vixor/CoachOverlay";
 import { GovernorRiskPanel } from "@/components/vixor/GovernorRiskPanel";
@@ -31,6 +32,8 @@ import {
   EmptyState,
   SectionTitle,
 } from "@/components/vixor/PageLayout";
+import { getExchangeStatus, executeTrade } from "@/domains/trading/gateway/functions";
+import type { ExchangeStatus, ExecuteTradeResult } from "@/domains/trading/gateway/functions";
 
 export const Route = createFileRoute("/_authenticated/trade-desk")({
   head: () => ({ meta: [{ title: "Trade Desk — Vixor" }] }),
@@ -88,8 +91,23 @@ function TradeDesk() {
   const [showCoach, setShowCoach] = useState(false);
   const [showGovernor, setShowGovernor] = useState(false);
 
+  // ── Execution state ──
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [execResult, setExecResult] = useState<ExecuteTradeResult | null>(null);
+
   const createTradeFn = useStableServerFn(createTrade);
   const fetchOpenTrades = useStableServerFn(listTrades);
+  const fetchExchangeStatus = useStableServerFn(getExchangeStatus);
+  const executeTradeFn = useStableServerFn(executeTrade);
+
+  // ── Exchange status query ──
+  const exchangeQuery = useQuery({
+    queryKey: ["exchange-status"],
+    queryFn: () => fetchExchangeStatus({}),
+    staleTime: 60_000,
+  });
+
+  const exchangeStatus = exchangeQuery.data as ExchangeStatus | undefined;
 
   // Pagination state for open positions
   const [tradesPage, setTradesPage] = useState(1);
@@ -135,6 +153,38 @@ function TradeDesk() {
     },
   });
 
+  // ── Execute trade mutation ──
+  const executeMutation = useMutation({
+    mutationFn: (data: {
+      exchangeId: string;
+      symbol: string;
+      side: "buy" | "sell";
+      quantity: number;
+      price?: number;
+      orderType: "market" | "limit" | "stop_loss" | "take_profit";
+      stopLoss?: number | null;
+      takeProfit?: number | null;
+      pair: string;
+      direction: "long" | "short";
+      notes?: string | null;
+      strategy?: string | null;
+    }) => executeTradeFn({ data }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["open-trades-desk"] });
+      queryClient.invalidateQueries({ queryKey: ["open-trades"] });
+      queryClient.invalidateQueries({ queryKey: ["trade-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["equity-curve"] });
+      setExecResult(result);
+    },
+    onError: (error: Error) => {
+      setExecResult({
+        success: false,
+        error: error.message,
+        isPaperTrade: !exchangeStatus?.connected,
+      });
+    },
+  });
+
   const result = useMemo(() => {
     const bal = parseFloat(balance) || 0;
     const risk = parseFloat(riskPct) || 0;
@@ -176,12 +226,114 @@ function TradeDesk() {
     });
   }, [entryPrice, pair, slPips, direction, result, riskPct, saveMutation]);
 
+  // ── Execution helpers ──
+  const isExchangeConnected = exchangeStatus?.connected ?? false;
+  const exchangeName = exchangeStatus?.exchangeName ?? "";
+  const isPaperMode = !isExchangeConnected;
+
+  const handleOpenExecuteDialog = useCallback(() => {
+    if (!entryPrice || !pair) return;
+    setExecResult(null);
+    setShowConfirmDialog(true);
+  }, [entryPrice, pair]);
+
+  const handleConfirmExecution = useCallback(() => {
+    if (!entryPrice || !pair) return;
+
+    const sl = parseFloat(slPips) || 0;
+    const pipSize = PIP_SIZES[pair] || 0.0001;
+    const entry = parseFloat(entryPrice);
+    const slPrice = sl > 0
+      ? (direction === "long" ? entry - sl * pipSize : entry + sl * pipSize)
+      : null;
+    const tpPrice = sl > 0
+      ? (direction === "long" ? entry + sl * 2 * pipSize * sl / sl : null) // No TP calc needed — use SL mirror
+      : null;
+
+    // Map symbol format for exchange (XAUUSD → XAUUSDT, EURUSD → EURUSDT, etc.)
+    const exchangeSymbol = pair.replace("USD", "USDT");
+
+    executeMutation.mutate({
+      exchangeId: exchangeStatus?.exchangeId ?? "",
+      symbol: exchangeSymbol,
+      side: direction === "long" ? "buy" : "sell",
+      quantity: result ? parseFloat(result.lots) : 0.01,
+      price: entry,
+      orderType: "market",
+      stopLoss: slPrice,
+      takeProfit: null,
+      pair,
+      direction,
+      notes: `Risk: ${riskPct}% · SL: ${slPips} pips`,
+      strategy: "Trade Desk",
+    });
+  }, [entryPrice, pair, slPips, direction, result, riskPct, executeMutation, exchangeStatus]);
+
+  const handleCloseDialog = useCallback(() => {
+    if (executeMutation.isPending) return; // Don't close while executing
+    setShowConfirmDialog(false);
+    // Clear result after a short delay so user sees it before dialog closes
+    setTimeout(() => setExecResult(null), 300);
+  }, [executeMutation.isPending]);
+
+  // Computed order summary for the dialog
+  const orderSummary = useMemo(() => {
+    if (!entryPrice) return null;
+    const entry = parseFloat(entryPrice);
+    const sl = parseFloat(slPips) || 0;
+    const pipSize = PIP_SIZES[pair] || 0.0001;
+    const slPrice = sl > 0 ? (direction === "long" ? entry - sl * pipSize : entry + sl * pipSize) : null;
+    const estimatedCost = result ? parseFloat(result.lots) * entry : 0;
+    return {
+      entry,
+      slPrice: slPrice ? Math.round(slPrice * 100000) / 100000 : null,
+      quantity: result?.lots ?? "—",
+      estimatedCost: estimatedCost > 0 ? `$${estimatedCost.toLocaleString("en-US", { maximumFractionDigits: 2 })}` : "—",
+    };
+  }, [entryPrice, pair, direction, slPips, result]);
+
   return (
     <PageLayout
       title={t("tradeDesk.tradeDesk")}
       badge="TRADE DESK"
       badgeColor={"var(--color-bullish)"}
       description={t("tradeDesk.institutionalExecution")}
+      banner={
+        /* Exchange Status Pill */
+        <div style={{ padding: "6px 16px" }}>
+          <button
+            onClick={() => { window.location.href = "/settings#exchanges"; }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "4px 10px",
+              borderRadius: "20px",
+              border: `1px solid ${isExchangeConnected ? `${"var(--color-bullish)"}44` : "var(--color-border)"}`,
+              background: isExchangeConnected ? `color-mix(in oklab, var(--color-bullish) 8%, transparent)` : "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
+              cursor: "pointer",
+              fontSize: "11px",
+              fontWeight: 600,
+              color: isExchangeConnected ? "var(--color-bullish)" : "var(--color-muted-foreground)",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <span
+              style={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                background: isExchangeConnected ? "var(--color-bullish)" : "var(--color-muted-foreground)",
+                flexShrink: 0,
+              }}
+            />
+            {isExchangeConnected
+              ? `${exchangeName} Connected`
+              : "No Exchange"}
+            <ExternalLink className="size-3" style={{ opacity: 0.5 }} />
+          </button>
+        </div>
+      }
     >
       {/* AI Coach Overlay */}
       {showCoach && entryPrice && (
@@ -341,7 +493,7 @@ function TradeDesk() {
             </div>
           </div>
 
-          {/* ── SAVE AS TRADE ── */}
+          {/* ── SAVE AS TRADE + EXECUTE ── */}
           <div
             style={{
               marginTop: "16px",
@@ -412,11 +564,13 @@ function TradeDesk() {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "8px" }}>
+            {/* ── Action Buttons ── */}
+            <div className="grid grid-cols-2 gap-2">
+              {/* Save Trade (left half) */}
               <button
                 onClick={handleSaveAsTrade}
                 disabled={!entryPrice || saveMutation.isPending}
-                className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-lg text-xs font-bold transition-all"
+                className="flex items-center justify-center gap-1.5 h-10 rounded-lg text-xs font-bold transition-all"
                 style={{
                   background:
                     entryPrice && !saveMutation.isPending
@@ -447,13 +601,38 @@ function TradeDesk() {
                   </>
                 )}
               </button>
+
+              {/* Execute on Exchange (right half) — more prominent */}
+              <button
+                onClick={handleOpenExecuteDialog}
+                disabled={!entryPrice}
+                className="flex items-center justify-center gap-1.5 h-10 rounded-lg text-xs font-extrabold uppercase tracking-wider transition-all"
+                style={{
+                  background: entryPrice
+                    ? "linear-gradient(135deg, var(--color-bullish), color-mix(in oklab, var(--color-bullish) 70%, var(--color-foreground)))"
+                    : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                  color: entryPrice ? "var(--color-foreground)" : "var(--color-muted-foreground)",
+                  boxShadow: entryPrice
+                    ? "0 2px 12px color-mix(in oklab, var(--color-bullish) 30%, transparent)"
+                    : "none",
+                  opacity: !entryPrice ? 0.5 : 1,
+                  border: "none",
+                }}
+              >
+                <Zap className="size-3.5" />
+                {isPaperMode ? "Paper Trade" : `Execute via ${exchangeName}`}
+              </button>
+            </div>
+
+            {/* Coach + Risk buttons (underneath) */}
+            <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
               <button
                 onClick={() => {
                   setShowCoach(!showCoach);
                   setShowGovernor(false);
                 }}
                 disabled={!entryPrice}
-                className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all"
+                className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all flex-1"
                 style={{
                   background: showCoach ? `${"var(--color-info)"}20` : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
                   border: `1px solid ${showCoach ? `${"var(--color-info)"}66` : "var(--color-border)"}`,
@@ -471,7 +650,7 @@ function TradeDesk() {
                   setShowCoach(false);
                 }}
                 disabled={!entryPrice}
-                className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all"
+                className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all flex-1"
                 style={{
                   background: showGovernor ? `${"var(--color-neutral-wait)"}20` : "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
                   border: `1px solid ${showGovernor ? `${"var(--color-neutral-wait)"}66` : "var(--color-border)"}`,
@@ -495,7 +674,7 @@ function TradeDesk() {
             <EmptyState
               icon="📊"
               title={t("tradeDesk.noPositions")}
-              message='Use "Save as Trade" above to log your first position.'
+              message='Use "Save as Trade" or "Execute" above to log your first position.'
             />
           ) : (
             <div
@@ -601,6 +780,402 @@ function TradeDesk() {
           )}
         </div>
       </ScrollArea>
+
+      {/* ═══ EXECUTION CONFIRMATION DIALOG ═══ */}
+      {showConfirmDialog && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseDialog();
+          }}
+        >
+          {/* Dark overlay */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "rgba(0, 0, 0, 0.7)",
+              backdropFilter: "blur(4px)",
+            }}
+          />
+
+          {/* Dialog card */}
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              maxWidth: "380px",
+              background: "var(--color-card)",
+              border: `1px solid ${"var(--color-border)"}`,
+              borderRadius: "16px",
+              overflow: "hidden",
+              boxShadow: "0 24px 48px rgba(0, 0, 0, 0.5)",
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                padding: "16px 16px 12px",
+                borderBottom: `1px solid ${"var(--color-border)"}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: isPaperMode
+                      ? `color-mix(in oklab, var(--color-neutral-wait) 15%, transparent)`
+                      : `color-mix(in oklab, var(--color-bullish) 15%, transparent)`,
+                  }}
+                >
+                  <Zap
+                    className="size-4"
+                    style={{ color: isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)" }}
+                  />
+                </div>
+                <div>
+                  <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--color-foreground)" }}>
+                    {execResult ? "Execution Result" : "Confirm Execution"}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "var(--color-muted-foreground)", marginTop: "1px" }}>
+                    {isPaperMode ? "Paper Trading Mode" : `via ${exchangeName}`}
+                  </div>
+                </div>
+              </div>
+              {!executeMutation.isPending && (
+                <button
+                  onClick={handleCloseDialog}
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "8px",
+                    border: "none",
+                    background: "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                    color: "var(--color-muted-foreground)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <X className="size-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: "16px" }}>
+              {!execResult && !executeMutation.isPending && (
+                <>
+                  {/* Order Summary */}
+                  <div
+                    style={{
+                      padding: "12px",
+                      borderRadius: "10px",
+                      background: "color-mix(in oklab, var(--color-foreground) 3%, transparent)",
+                      border: `1px solid ${"var(--color-border)"}`,
+                      marginBottom: "16px",
+                    }}
+                  >
+                    {/* Direction row */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Direction</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        {direction === "long" ? (
+                          <ArrowUpRight className="size-3" style={{ color: "var(--color-bullish)" }} />
+                        ) : (
+                          <ArrowDownRight className="size-3" style={{ color: "var(--color-bearish)" }} />
+                        )}
+                        <span
+                          style={{
+                            fontSize: "13px",
+                            fontWeight: 800,
+                            ...mono,
+                            color: direction === "long" ? "var(--color-bullish)" : "var(--color-bearish)",
+                          }}
+                        >
+                          {direction.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Pair */}
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Pair</span>
+                      <span style={{ fontSize: "13px", fontWeight: 700, ...mono, color: "var(--color-foreground)" }}>
+                        {pair}
+                      </span>
+                    </div>
+
+                    {/* Entry */}
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Entry Price</span>
+                      <span style={{ fontSize: "13px", fontWeight: 700, ...mono, color: "var(--color-foreground)" }}>
+                        {orderSummary?.entry ?? "—"}
+                      </span>
+                    </div>
+
+                    {/* Quantity */}
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Quantity</span>
+                      <span style={{ fontSize: "13px", fontWeight: 700, ...mono, color: "var(--color-foreground)" }}>
+                        {orderSummary?.quantity ?? "—"} lots
+                      </span>
+                    </div>
+
+                    {/* SL */}
+                    {orderSummary?.slPrice && (
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                        <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Stop Loss</span>
+                        <span style={{ fontSize: "13px", fontWeight: 700, ...mono, color: "var(--color-bearish)" }}>
+                          {orderSummary.slPrice}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Estimated Cost */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        paddingTop: "8px",
+                        borderTop: `1px solid ${"var(--color-border)"}`,
+                      }}
+                    >
+                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Est. Cost</span>
+                      <span style={{ fontSize: "13px", fontWeight: 800, ...mono, color: "var(--color-foreground)" }}>
+                        {orderSummary?.estimatedCost ?? "—"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Exchange info */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "8px 10px",
+                      borderRadius: "8px",
+                      background: isPaperMode
+                        ? `color-mix(in oklab, var(--color-neutral-wait) 8%, transparent)`
+                        : `color-mix(in oklab, var(--color-bullish) 8%, transparent)`,
+                      marginBottom: "16px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: "6px",
+                        height: "6px",
+                        borderRadius: "50%",
+                        background: isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)",
+                      }}
+                    />
+                    <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}>
+                      {isPaperMode
+                        ? "No exchange connected — will use Paper Trading (DummyAdapter)"
+                        : `Order will be sent to ${exchangeName}${exchangeStatus?.maskedKey ? ` (${exchangeStatus.maskedKey})` : ""}`}
+                    </span>
+                  </div>
+                </>
+              )}
+
+              {/* Loading state */}
+              {executeMutation.isPending && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "24px 0",
+                  }}
+                >
+                  <Loader2 className="size-8 animate-spin" style={{ color: "var(--color-bullish)" }} />
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-foreground)" }}>
+                    {isPaperMode ? "Simulating paper trade..." : `Submitting to ${exchangeName}...`}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
+                    This may take a few seconds
+                  </div>
+                </div>
+              )}
+
+              {/* Success / Error result */}
+              {execResult && !executeMutation.isPending && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "16px 0",
+                  }}
+                >
+                  {execResult.success ? (
+                    <>
+                      <div
+                        style={{
+                          width: "48px",
+                          height: "48px",
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: `color-mix(in oklab, var(--color-bullish) 15%, transparent)`,
+                        }}
+                      >
+                        <CheckCircle className="size-6" style={{ color: "var(--color-bullish)" }} />
+                      </div>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--color-foreground)" }}>
+                        {execResult.isPaperTrade ? "Paper Trade Executed" : "Order Submitted"}
+                      </div>
+                      {execResult.orderResult && (
+                        <div
+                          style={{
+                            padding: "10px 14px",
+                            borderRadius: "8px",
+                            background: "color-mix(in oklab, var(--color-foreground) 3%, transparent)",
+                            border: `1px solid ${"var(--color-border)"}`,
+                            width: "100%",
+                          }}
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                            <span style={{ ...labelStyle }}>Order ID</span>
+                            <span style={{ fontSize: "11px", ...mono, color: "var(--color-foreground)" }}>
+                              {execResult.orderResult.id}
+                            </span>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                            <span style={{ ...labelStyle }}>Status</span>
+                            <Badge
+                              label={execResult.orderResult.status.toUpperCase()}
+                              color={
+                                execResult.orderResult.status === "filled"
+                                  ? "var(--color-bullish)"
+                                  : "var(--color-neutral-wait)"
+                              }
+                              small
+                            />
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ ...labelStyle }}>Filled @</span>
+                            <span style={{ fontSize: "11px", ...mono, color: "var(--color-foreground)" }}>
+                              {execResult.orderResult.price}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        style={{
+                          width: "48px",
+                          height: "48px",
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: `color-mix(in oklab, var(--color-bearish) 15%, transparent)`,
+                        }}
+                      >
+                        <AlertCircle className="size-6" style={{ color: "var(--color-bearish)" }} />
+                      </div>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--color-foreground)" }}>
+                        Execution Failed
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--color-bearish)",
+                          textAlign: "center",
+                          lineHeight: 1.4,
+                          padding: "0 8px",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {execResult.error}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Footer buttons */}
+            {!execResult && !executeMutation.isPending && (
+              <div
+                style={{
+                  padding: "0 16px 16px",
+                  display: "flex",
+                  gap: "8px",
+                }}
+              >
+                <button
+                  onClick={handleCloseDialog}
+                  className="flex-1 h-11 rounded-xl text-xs font-bold transition-all"
+                  style={{
+                    background: "color-mix(in oklab, var(--color-foreground) 6%, transparent)",
+                    border: `1px solid ${"var(--color-border)"}`,
+                    color: "var(--color-muted-foreground)",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmExecution}
+                  className="flex-1 h-11 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+                  style={{
+                    background: isPaperMode
+                      ? "linear-gradient(135deg, var(--color-neutral-wait), color-mix(in oklab, var(--color-neutral-wait) 70%, var(--color-foreground)))"
+                      : "linear-gradient(135deg, var(--color-bullish), color-mix(in oklab, var(--color-bullish) 70%, var(--color-foreground)))",
+                    color: "var(--color-foreground)",
+                    boxShadow: `0 2px 12px color-mix(in oklab, ${isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)"} 30%, transparent)`,
+                    border: "none",
+                  }}
+                >
+                  <Zap className="size-3.5" />
+                  {isPaperMode ? "Confirm Paper Trade" : "Confirm Execution"}
+                </button>
+              </div>
+            )}
+
+            {/* Post-result close button */}
+            {execResult && !executeMutation.isPending && (
+              <div style={{ padding: "0 16px 16px" }}>
+                <button
+                  onClick={handleCloseDialog}
+                  className="w-full h-11 rounded-xl text-xs font-bold transition-all"
+                  style={{
+                    background: "var(--color-foreground)",
+                    border: "none",
+                    color: "var(--color-background)",
+                  }}
+                >
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </PageLayout>
   );
 }

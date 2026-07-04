@@ -1024,6 +1024,7 @@ export type Database = {
           notification_channels: Json;
           preferred_llm_provider: string;
           llm_api_keys: Json;
+          exchange_credentials: Json;
           telegram_chat_id: string | null;
           webhook_url: string | null;
           webhook_secret: string | null;
@@ -1035,6 +1036,7 @@ export type Database = {
           notification_channels?: Json;
           preferred_llm_provider?: string;
           llm_api_keys?: Json;
+          exchange_credentials?: Json;
           telegram_chat_id?: string | null;
           webhook_url?: string | null;
           webhook_secret?: string | null;
@@ -1046,6 +1048,7 @@ export type Database = {
           notification_channels?: Json;
           preferred_llm_provider?: string;
           llm_api_keys?: Json;
+          exchange_credentials?: Json;
           telegram_chat_id?: string | null;
           webhook_url?: string | null;
           webhook_secret?: string | null;

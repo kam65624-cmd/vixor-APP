@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+"""VIXOR Report Generator v2 - outputs JSON data + HTML template separately"""
+import os, json, sys
+
+OUT_DIR = "/home/z/my-project/download"
+DATA_FILE = os.path.join(OUT_DIR, "report_data.json")
+TMPL_FILE = os.path.join(OUT_DIR, "report_template.html")
+
+def h(s):
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+tasks = {
+    "p1": [
+        {"id": "1.1", "tar": "إصلاح خطأ التقسيم على صفر في ATR", "ten": "Fix division by zero in ATR",
+         "dar": "في engine.ts سطر 726، القسمة على currentPrice بدون فحص إذا كان صفراً. هذا ينتج Infinity ويفجر assessRisk دائماً HIGH.",
+         "ten": "At line 726, dividing ATR by currentPrice without zero-check. This produces Infinity and breaks assessRisk.",
+         "file": "src/domains/analysis/engine/engine.ts", "steps": ["Add: if (currentPrice === 0) return safe default", "Test with pair that has zero-price bars"]},
+        {"id": "1.2", "tar": "إصلاح قيم NaN في نقاط TP/SL", "ten": "Fix NaN in TP/SL points",
+         "dar": "القيم rr.takeProfits[0] و[1] و[2] يمكن أن تكون undefined. الخطأ 798 يمرر undefined لـ formatPrice فيظهر NaN.",
+         "ten": "tps[0], tps[1], tps[2] can be undefined. Line 798 passes undefined to formatPrice, displaying NaN.",
+         "file": "src/domains/analysis/engine/engine.ts", "steps": ["Guard all takeProfits access with ?? fallback", "Verify all 3 scenarios display valid prices"]},
+        {"id": "1.3", "tar": "إصلاح PAIR_CONFIGS non-null assertion", "ten": "Fix PAIR_CONFIGS non-null assertion",
+         "dar": "عند تمرير زوج عملات غير معروف، PAIR_CONFIGS[pair] يرجع undefined والمؤشرسة ! لا تفعل شيئاً. config.decimals يفجر TypeError.",
+         "ten": "For unknown pairs, PAIR_CONFIGS[pair] returns undefined. The ! assertion does nothing. config.decimals throws TypeError.",
+         "file": "src/domains/analysis/engine/engine.ts", "steps": ["Replace: const config = PAIR_CONFIGS[pair] ?? PAIR_CONFIGS['EUR/USD']", "Test with unknown pair symbol"]},
+        {"id": "1.4", "tar": "إزالة console.log من الإنتاج", "ten": "Remove console.log from production",
+         "dar": "وجود console.log في auth.tsx و __root.tsx و route.tsx. هذه تسرّب بيانات ويجب إزالتها أو استبدالها ببيئة logging حقيقية.",
+         "ten": "console.log found in auth.tsx, __root.tsx, route.tsx. These leak data and should be removed or replaced with proper logging.",
+         "file": "src/routes/auth.tsx, src/routes/__root.tsx", "steps": ["Remove all console.log/debugger calls", "Verify no console output in production build"]},
+        {"id": "1.5", "tar": "إصلاح .env الفارغ", "ten": "Fix empty .env file",
+         "dar": "الملف يحتوي سطر واحد فقط (DATABASE_URL). كل مفاتيح Supabase وAPI والـ Telegram مفقودة. التطبيق لن يعمل بدونها.",
+         "ten": "File contains only one line (DATABASE_URL). All Supabase, API, and Telegram keys are missing. App will fail without them.",
+         "file": ".env", "steps": ["Copy from .env.example and fill in all values", "Verify app starts with real keys"]},
+    ],
+    "p2": [
+        {"id": "2.1", "tar": "إصلاح دالة كشف الزوج من الصورة", "ten": "Fix detectPairFromImage stub",
+         "dar": "الدالة ترجع دائماً undefined مما يعني كل صورة شارت يتم تحليلها كـ EUR/USD. المستخدمين اللي بيحملوا صور BTC/USD هيحصلوا تحليل خاطئ.",
+         "ten": "Function always returns undefined. Every uploaded chart image gets analyzed as EUR/USD. BTC/USD chart uploads get wrong analysis.",
+         "file": "src/domains/analysis/engine/engine.ts", "steps": ["Implement pair detection from image metadata or dropdown", "Test with BTC/USD chart upload"]},
+        {"id": "2.2", "tar": "إصلاح فرع confluence الميت", "ten": "Fix confluence dead code",
+         "dar": "سطر 684: الفرعين BUY و SELL متطابقان تماماً (كلاهما يأخذ confluence.signals). هذا خطأ واضح في إعادة هيكلة.",
+         "ten": "Line 684: BUY and SELL branches are identical (both take confluence.signals). Obvious refactoring bug.",
+         "file": "src/domains/analysis/engine/engine.ts", "steps": ["Differentiate BUY/SELL signal filtering", "Verify BUY produces different results than SELL"]},
+        {"id": "2.3", "tar": "إصلاح حساب الثقة", "ten": "Fix confidence magic numbers",
+         "dar": "الصيغة 35 + confluence.score * 7 تستخدم أرقام سحرية. يجب استخراجها كثوابت مسماة.",
+         "ten": "Formula 35 + confluence.score * 7 uses magic numbers. Must extract to named constants.",
+         "file": "src/domains/analysis/engine.ts", "steps": ["Extract MIN_CONFIDENCE_BASE and CONFIDENCE_MULTIPLIER", "Test confidence range 35-91%"]},
+        {"id": "2.4", "tar": "حماية المصفوفات الفارغة", "ten": "Guard empty array sub-modules",
+         "dar": "analyzeMarketStructure و detectOrderBlocks لا تتحقق إذا كانت المصفوفات فارغة بعد الفترة. يمكن أن تنتج نتائج غير صحيحة بصمت.",
+         "ten": "analyzeMarketStructure and detectOrderBlocks don't check for empty arrays after filtering. Can silently produce garbage results.",
+         "file": "src/domains/analysis/engine/engine.ts", "steps": ["Add early return if bars.length < minimum", "Test with exactly 20 bars"]}),
+    ],
+    "p3": [
+        {"id": "3.1", "tar": "إنشاء نظام ألوان جديد", "ten": "Create new color system",
+         "dar": "استبدال نظام oklch الحالي بنظام CSS متوافق مع Tailwind v4 تحديد لوحة ألوان احترافية من 4-5 ألوان فقط (أزرق بورقستريم/ثيم داكن مع إبرازات خضراء وصفراء) مع فروق أوضح بين الوضع الفاتح والداكن.",
+         "ten": "Replace oklch system with Tailwind v4-compatible CSS. Define professional 4-5 color palette (Bloomberg terminal dark with blue/green accents) with clear light/dark mode differentiation.",
+         "file": "src/styles.css", "steps": ["Define CSS variables for theme", "Create light/dark mode preview", "Apply to all pages"]},
+        {"id": "3.2", "tar": "تحويل inline styles لـ Tailwind", "ten": "Convert inline styles to Tailwind",
+         "dar": "أغلب الصفحات (auth, index, analyze, discover, trade-desk, portfolio, settings, profile) تستخدم style={{}} بدلاً من className. هذا يمنع hover/focus/active وتجعل التبديل بين الوضعين مستحيل. يجب تحويل كل صفحة تدريجياً.",
+         "ten": "Most pages use style={{}} instead of className. This prevents hover/focus/active states and makes dark/light toggle impossible. Convert each page incrementally.",
+         "file": "src/routes/_authenticated/*.tsx (10 files)", "steps": ["Start with index.tsx as reference", "Create shared utility classes", "Convert page by page"]},
+        {"id": "3.3", "tar": "تصميم صفحات Empty State", "ten": "Design empty state pages",
+         "dar": "الصفحات الفارغة (charts, activity-web3, arbitrage) تعرض فقط 'COMING SOON'. يجب تصميم empty state احترافي مع أيقونة ورسالة واضحة بدلاً من صفحة بيضاء.",
+         "ten": "Empty pages show only 'COMING SOON'. Design professional empty state with icon, message, and CTA button instead of blank page.",
+         "file": "src/routes/_authenticated/charts.tsx, activity-web3.tsx, arbitrage.tsx", "steps": ["Use existing EmptyState component", "Add relevant illustration", "Add navigation CTA"]}),
+        {"id": "3.4", "tar": "إصلاح مشاكل الـ typography", "ten": "Fix typography hierarchy",
+         "dar": "حجم الخطوط غير متناسق بين الصفحات. العناوين من 18-24px والنص من 14-16px. يجب إنشاء نظام typography موحد مع heading scale وbody text consistent.",
+         "ten": "Font sizes inconsistent across pages. Headings 18-24px, body 14-16px. Need unified typography system with consistent heading scale.",
+         "file": "src/styles.css + all route files", "steps": ["Define heading scale (h1-h6)", "Set consistent body font size", "Apply spacing system"]}),
+        {"id": "3.5", "tar": "إعادة تصميم الـ Sidebar", "ten": "Redesign sidebar navigation",
+         "dar": "الشريط الجانبي يحتاج تحسين: فصل واضح بين الأقسام، أيقونات تفاعلية، وتحسين المظهر على الموبايل مع حفظ المساحة.",
+         "ten": "Sidebar needs improvement: clear section separation, interactive icons, and improved mobile appearance while saving space.",
+         "file": "src/components/vixor/AppShell.tsx", "steps": ["Redesign nav item layout", "Add active state indicators", "Test mobile responsive"]}),
+        {"id": "3.6", "tar": "إصلاح as any type casts", "ten": "Fix all as any type casts",
+         "dar": "6 ملفات على الأقل تستخدم as any لتجاوز فحص TypeScript. يجب إنشاء واجهات TypeScript مناسبة (Holding, Trade, Plan, Analysis).",
+         "ten": "6+ files use as any to bypass TypeScript. Must create proper interfaces (Holding, Trade, Plan, Analysis).",
+         "file": "portfolio.tsx, whale.tsx, premium.tsx, signals.tsx, trackers.tsx, vision.tsx", "steps": ["Create proper interfaces for each entity", "Replace all as any with typed access", "Verify no TypeScript errors"]}),
+    ],
+    "p4": [
+        {"id": "4.1", "tar": "إضافة rate limiting موزع", "ten": "Add distributed rate limiting",
+         "dar": "التطبيق لا يملك wrapper rate limiting رغم وجود Upstash Redis. يجب إضافة rate limiter على كل API route لحماية من الإساءة.",
+         "ten": "App has no rate limiting wrapper despite Upstash Redis being a dependency. Must add rate limiter on all API routes to prevent abuse.",
+         "file": "src/shared/middleware/", "steps": ["Create rate limit wrapper with Redis", "Apply to all server functions", "Test with load simulation"]}),
+        {"id": "4.2", "tar": "إزالة الاعتماديات الميتة", "ten": "Remove unused dependencies",
+         "dar": "12+ حزمة غير مستخدمة (sentiment, oakscriptjs, embla-carousel-react, decimal.js, dequal, numbro, إلخ). هذه تزيد حجم الحزمة بدون فائدة.",
+         "ten": "12+ unused packages (sentiment, oakscriptjs, embla-carousel-react, decimal.js, dequal, numbro, etc.). These bloat bundle size.",
+         "file": "package.json", "steps": ["Audit each package with npx depcheck", "Remove confirmed unused deps", "Verify build succeeds"]}),
+        {"id": "4.3", "tar": "إصلاح تسرب client bundle", "ten": "Fix client bundle leak",
+         "dar": "بعض server-only imports قد تتسرب للـ client bundle. يجب فحص vite.config.ts import protection.",
+         "ten": "Some server-only imports may leak to client bundle. Verify vite.config.ts import protection.",
+         "file": "vite.config.ts", "steps": ["Audit import protection rules", "Check client bundle size", "Compare before/after"]}),
+        {"id": "4.4", "tar": "إصلاح sol-price bug", "ten": "Fix sol-price calculation bug",
+         "dar": "سعر SOL محسوب بطريقة خاطئة. يجب مراجعة حساب السعر في صفحة المحفظة.",
+         "ten": "SOL price calculated incorrectly. Must review price calculation in portfolio page.",
+         "file": "src/routes/_authenticated/portfolio.tsx", "steps": ["Review SOL price source", "Fix calculation formula", "Compare with actual price"]}),
+        {"id": "4.5", "tar": "إصلاح stars-webhook PII", "ten": "Fix stars-webhook PII leak",
+         "dar": "الـ webhook الخاص بالنجوم قد يعرض بيانات شخصية غير مشفرة في الـ logs. يجب تنظيف البيانات قبل التسجيل.",
+         "ten": "Stars webhook may expose unencrypted PII in logs. Must sanitize data before logging.",
+         "file": "API handler for stars webhook", "steps": ["Add PII sanitization", "Audit all logged fields", "Test with webhook payload"]}),
+    ],
+    "p5": [
+        {"id": "5.1", "tar": "إصلاح 9 أنواع any متبقية", "ten": "Fix remaining 9 any types",
+         "dar": "بعد إصلاح الـ 6 الرئيسية في المرحلة 3، لا تزال 9 مواقع أخرى تستخدم any. يجب فحص المشروع بالكامل وإصلاحها.",
+         "ten": "After fixing the 6 main ones in Phase 3, 9 more any locations remain. Full project scan needed.",
+         "file": "Project-wide", "steps": ["Run ts-nocheck --noEmit", "Fix each occurrence", "Verify zero any errors"]}),
+        {"id": "5.2", "tar": "تقليل console.log المتبقية", "ten": "Reduce remaining console.log",
+         "dar": "بعد إزالة الـ console.log من الملفات الحرجة، لا تزال بعض الـ logs في ملفات أخرى. يجب إزالتها أو تحويلها لبيئة conditioned logging.",
+         "ten": "After removing critical console.logs, some remain in other files. Remove or convert to conditional logging.",
+         "file": "Project-wide", "steps": ["Grep for console.log in src/", "Remove or guard with IS_DEV", "Verify production build clean"]}),
+        {"id": "5.3", "tar": "مراجعة Zod v4 breaking changes", "ten": "Review Zod v4 breaking changes",
+         "dar": "المشروع يستخدم zod ^4.4.3 وهو ترقية كبيرة. يجب مراجعة تغييرات v4 وتأثيرها على الكود.",
+         "ten": "Project uses zod ^4.4.3, a major version jump. Must review v4 breaking changes and their impact.",
+         "file": "package.json + all zod usage files", "steps": ["Check Zod v4 migration guide", "Test all z.parse() calls", "Verify form validations work"]}),
+        {"id": "5.4", "tar": "إضافة error handler موحد", "ten": "لا يوجد error handler موحد. الأخطاء تُعرض بطريقة مختلفة في كل صفحة. يجب إنشاء ErrorBoundary موحد ومكون Toast موحد.",
+         "ten": "No unified error handler exists. Errors display differently per page. Create global ErrorBoundary and unified Toast component.",
+         "file": "src/components/vixor/", "steps": ["Create GlobalErrorBoundary", "Integrate with AppShell", "Test error display"]}),
+    ],
+    "timeline": [
+        {"week": "Week 1", "phase": "p0", "pct": 50, "label": "Phase 1: Critical Bug Fixes (P0) - .env, ATR zero, NaN fixes, console.log"},
+        {"week": "Week 1-2", "phase": "p0", "pct": 70, "label": "Phase 2: Analysis Engine Fixes (P0) - detectPairFromImage, confluence dead code, confidence formula, empty array guards"},
+        {"week": "Week 2-3", "phase": "p1", "pct": 100, "label": "Phase 3: UI/UX Overhaul (STARTS HERE) - Color system, inline styles conversion, empty states, typography"},
+        {"week": "Week 3-4", "phase": "p1", "pct": 100, "label": "Phase 3 continued - Sidebar redesign, as any fixes, responsive improvements"},
+        {"week": "Week 4-5", "phase": "p2", "pct": 60, "label": "Phase 4: Production Hardening - Rate limiting, deps cleanup, bundle optimization, PII fixes"},
+        {"week": "Week 5-6", "phase": "p3", "pct": 40, "label": "Phase 5: Code Quality - Remaining any fixes, logging, Zod v4, error handler"},
+    ],
+}
+
+# Write JSON data
+with open(DATA_FILE, 'w', encoding='utf-8') as f:
+    json.dump(tasks, f, ensure_ascii=False, indent=2)
+
+print(f'JSON data written to {DATA_FILE} ({os.path.getsize(DATA_FILE)/1024:.1f} KB)')

@@ -17,3 +17,5 @@ export type {
 } from "./types";
 
 export { AgentGateway } from "./agent-gateway";
+export { getExchangeStatus, executeTrade } from "./functions";
+export type { ExchangeStatus, ExecuteTradeResult } from "./functions";
