@@ -231,6 +231,15 @@ const moreNavCategories: MoreNavCategory[] = [
           </svg>
         ),
       },
+      {
+        to: "/radar",
+        label: "Trade Radar",
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="2" /><path d="M12 2v4" /><path d="M12 18v4" /><path d="M2 12h4" /><path d="M18 12h4" />
+          </svg>
+        ),
+      },
     ],
   },
   {
@@ -288,6 +297,15 @@ const moreNavCategories: MoreNavCategory[] = [
         icon: (
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 20h18" /><path d="M7 16V4" /><path d="M12 16V8" /><path d="M17 16v-4" />
+          </svg>
+        ),
+      },
+      {
+        to: "/swap",
+        label: "DEX Swap",
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" />
           </svg>
         ),
       },

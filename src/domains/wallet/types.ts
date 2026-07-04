@@ -7,7 +7,7 @@
 // ============================================================================
 
 /** Supported blockchain networks */
-export type WalletChain = "solana" | "evm";
+export type WalletChain = "solana" | "evm" | "ton";
 
 /** Specific EVM chain IDs */
 export type EvmChainId = "0x1" | "0x89" | "0xa86a";
@@ -55,7 +55,7 @@ export const EVM_CHAINS: Record<EvmChainId, EvmChainInfo> = {
 } as const;
 
 /** Wallet provider identifiers */
-export type WalletProvider = "PHANTOM" | "METAMASK" | "WALLETCONNECT";
+export type WalletProvider = "PHANTOM" | "METAMASK" | "WALLETCONNECT" | "TELEGRAM";
 
 /** Wallet provider info for UI display */
 export interface WalletProviderInfo {

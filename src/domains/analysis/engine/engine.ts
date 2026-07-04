@@ -52,6 +52,7 @@ export interface AnalysisInput {
   pair?: string;
   timeframe?: string;
   tradingStyle?: string;
+  analysisStyle?: string;
   /** Optional: if the caller has real OHLCV data, pass it here */
   bars?: OHLCVBar[];
   /** Optional: image bytes for future OCR extraction */

@@ -14,12 +14,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
-import { encryptCredential, decryptCredential, maskApiKey } from "@/shared/crypto/credential-crypto";
+import {
+  encryptCredential,
+  decryptCredential,
+  maskApiKey,
+} from "@/shared/crypto/credential-crypto";
 import { AgentGateway } from "./agent-gateway";
 import { createBinanceAdapter } from "./adapters/binance-adapter";
 import { createBybitAdapter } from "./adapters/bybit-adapter";
 import { createOkxAdapter } from "./adapters/okx-adapter";
 import { createDummyAdapter } from "./adapters/dummy-adapter";
+import { createExnessAdapter } from "./adapters/exness-adapter";
 import type { OrderResult } from "./types";
 
 // ── Types ──
@@ -55,6 +60,8 @@ function createAdapterById(exchangeId: string) {
       return createBybitAdapter();
     case "okx":
       return createOkxAdapter();
+    case "exness":
+      return createExnessAdapter();
     default:
       return createDummyAdapter();
   }
@@ -65,6 +72,7 @@ const EXCHANGE_NAMES: Record<string, string> = {
   binance: "Binance",
   bybit: "Bybit",
   okx: "OKX",
+  exness: "Exness",
   dummy: "Dummy (Paper)",
 };
 
@@ -90,7 +98,8 @@ export const getExchangeStatus = createServerFn({ method: "GET" })
       if (entry?.encrypted) {
         try {
           const creds = decryptCredential(entry.encrypted);
-          const maskedKey = creds.apiKey || creds.api_key ? maskApiKey(creds.apiKey || creds.api_key) : null;
+          const maskedKey =
+            creds.apiKey || creds.api_key ? maskApiKey(creds.apiKey || creds.api_key) : null;
           return {
             connected: true,
             exchangeId: id,
@@ -205,7 +214,11 @@ export const executeTrade = createServerFn({ method: "POST" })
       exchangeName = EXCHANGE_NAMES[targetExchange!] ?? targetExchange!;
 
       // Disconnect
-      try { await adapter.disconnect(); } catch { /* best-effort */ }
+      try {
+        await adapter.disconnect();
+      } catch {
+        /* best-effort */
+      }
     }
 
     // ── 2. Save to trades table as journal entry ──
@@ -279,6 +292,12 @@ export const EXCHANGES = [
   { id: "binance", name: "Binance", fields: ["apiKey", "apiSecret"] as const, icon: "🟡" },
   { id: "bybit", name: "Bybit", fields: ["apiKey", "apiSecret"] as const, icon: "🟠" },
   { id: "okx", name: "OKX", fields: ["apiKey", "apiSecret", "passphrase"] as const, icon: "⬛" },
+  {
+    id: "exness",
+    name: "Exness",
+    fields: ["apiKey", "apiSecret", "passphrase"] as const,
+    icon: "🏦",
+  },
 ] as const;
 
 export type ExchangeId = (typeof EXCHANGES)[number]["id"];
@@ -337,18 +356,17 @@ async function persistCredentials(
 
 export const saveExchangeCredentials = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(
-    (d: unknown) =>
-      z
-        .object({
-          exchangeId: z.string().min(1),
-          apiKey: z.string().min(1),
-          apiSecret: z.string().min(1),
-          passphrase: z.string().optional(),
-          label: z.string().optional(),
-          isTestnet: z.boolean().optional().default(false),
-        })
-        .parse(d),
+  .validator((d: unknown) =>
+    z
+      .object({
+        exchangeId: z.string().min(1),
+        apiKey: z.string().min(1),
+        apiSecret: z.string().min(1),
+        passphrase: z.string().optional(),
+        label: z.string().optional(),
+        isTestnet: z.boolean().optional().default(false),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -386,7 +404,7 @@ export const getExchangeCredentials = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .maybeSingle();
 
-    const raw = ((row?.exchange_credentials ?? {}) as unknown) as Record<string, StoredExchangeEntry>;
+    const raw = (row?.exchange_credentials ?? {}) as unknown as Record<string, StoredExchangeEntry>;
 
     const views: ExchangeCredentialView[] = EXCHANGES.map((ex) => {
       const entry = raw[ex.id];
@@ -437,17 +455,23 @@ export const testExchangeConnection = createServerFn({ method: "POST" })
       .eq("user_id", userId)
       .maybeSingle();
 
-    const raw = ((row?.exchange_credentials ?? {}) as unknown) as Record<string, StoredExchangeEntry>;
+    const raw = (row?.exchange_credentials ?? {}) as unknown as Record<string, StoredExchangeEntry>;
     const entry = raw[exchangeId];
     if (!entry) {
-      return { success: false, error: "No credentials found for this exchange" } satisfies TestConnectionResult;
+      return {
+        success: false,
+        error: "No credentials found for this exchange",
+      } satisfies TestConnectionResult;
     }
 
     let credentials: Record<string, string>;
     try {
       credentials = decryptCredential(entry.encrypted);
     } catch {
-      return { success: false, error: "Failed to decrypt credentials" } satisfies TestConnectionResult;
+      return {
+        success: false,
+        error: "Failed to decrypt credentials",
+      } satisfies TestConnectionResult;
     }
 
     credentials.testnet = String(entry.isTestnet);
@@ -458,7 +482,11 @@ export const testExchangeConnection = createServerFn({ method: "POST" })
       await adapter.connect(credentials);
       const acct = await adapter.getBalance();
       balance = acct.totalBalance;
-      try { await adapter.disconnect(); } catch { /* best-effort */ }
+      try {
+        await adapter.disconnect();
+      } catch {
+        /* best-effort */
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       return { success: false, error: msg } satisfies TestConnectionResult;

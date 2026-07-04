@@ -18,10 +18,12 @@ import { Route as AuthenticatedWalletWeb3RouteImport } from './routes/_authentic
 import { Route as AuthenticatedVisionRouteImport } from './routes/_authenticated/vision'
 import { Route as AuthenticatedTradeDeskRouteImport } from './routes/_authenticated/trade-desk'
 import { Route as AuthenticatedTrackersRouteImport } from './routes/_authenticated/trackers'
+import { Route as AuthenticatedSwapRouteImport } from './routes/_authenticated/swap'
 import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
 import { Route as AuthenticatedReferralRouteImport } from './routes/_authenticated/referral'
+import { Route as AuthenticatedRadarRouteImport } from './routes/_authenticated/radar'
 import { Route as AuthenticatedPulseRouteImport } from './routes/_authenticated/pulse'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
@@ -92,6 +94,11 @@ const AuthenticatedTrackersRoute = AuthenticatedTrackersRouteImport.update({
   path: '/trackers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSwapRoute = AuthenticatedSwapRouteImport.update({
+  id: '/swap',
+  path: '/swap',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSignalsRoute = AuthenticatedSignalsRouteImport.update({
   id: '/signals',
   path: '/signals',
@@ -110,6 +117,11 @@ const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
 const AuthenticatedReferralRoute = AuthenticatedReferralRouteImport.update({
   id: '/referral',
   path: '/referral',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRadarRoute = AuthenticatedRadarRouteImport.update({
+  id: '/radar',
+  path: '/radar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPulseRoute = AuthenticatedPulseRouteImport.update({
@@ -270,10 +282,12 @@ export interface FileRoutesByFullPath {
   '/premium': typeof AuthenticatedPremiumRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/pulse': typeof AuthenticatedPulseRoute
+  '/radar': typeof AuthenticatedRadarRoute
   '/referral': typeof AuthenticatedReferralRoute
   '/rewards': typeof AuthenticatedRewardsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/signals': typeof AuthenticatedSignalsRoute
+  '/swap': typeof AuthenticatedSwapRoute
   '/trackers': typeof AuthenticatedTrackersRoute
   '/trade-desk': typeof AuthenticatedTradeDeskRoute
   '/vision': typeof AuthenticatedVisionRoute
@@ -308,10 +322,12 @@ export interface FileRoutesByTo {
   '/premium': typeof AuthenticatedPremiumRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/pulse': typeof AuthenticatedPulseRoute
+  '/radar': typeof AuthenticatedRadarRoute
   '/referral': typeof AuthenticatedReferralRoute
   '/rewards': typeof AuthenticatedRewardsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/signals': typeof AuthenticatedSignalsRoute
+  '/swap': typeof AuthenticatedSwapRoute
   '/trackers': typeof AuthenticatedTrackersRoute
   '/trade-desk': typeof AuthenticatedTradeDeskRoute
   '/vision': typeof AuthenticatedVisionRoute
@@ -349,10 +365,12 @@ export interface FileRoutesById {
   '/_authenticated/premium': typeof AuthenticatedPremiumRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/pulse': typeof AuthenticatedPulseRoute
+  '/_authenticated/radar': typeof AuthenticatedRadarRoute
   '/_authenticated/referral': typeof AuthenticatedReferralRoute
   '/_authenticated/rewards': typeof AuthenticatedRewardsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/signals': typeof AuthenticatedSignalsRoute
+  '/_authenticated/swap': typeof AuthenticatedSwapRoute
   '/_authenticated/trackers': typeof AuthenticatedTrackersRoute
   '/_authenticated/trade-desk': typeof AuthenticatedTradeDeskRoute
   '/_authenticated/vision': typeof AuthenticatedVisionRoute
@@ -391,10 +409,12 @@ export interface FileRouteTypes {
     | '/premium'
     | '/profile'
     | '/pulse'
+    | '/radar'
     | '/referral'
     | '/rewards'
     | '/settings'
     | '/signals'
+    | '/swap'
     | '/trackers'
     | '/trade-desk'
     | '/vision'
@@ -429,10 +449,12 @@ export interface FileRouteTypes {
     | '/premium'
     | '/profile'
     | '/pulse'
+    | '/radar'
     | '/referral'
     | '/rewards'
     | '/settings'
     | '/signals'
+    | '/swap'
     | '/trackers'
     | '/trade-desk'
     | '/vision'
@@ -469,10 +491,12 @@ export interface FileRouteTypes {
     | '/_authenticated/premium'
     | '/_authenticated/profile'
     | '/_authenticated/pulse'
+    | '/_authenticated/radar'
     | '/_authenticated/referral'
     | '/_authenticated/rewards'
     | '/_authenticated/settings'
     | '/_authenticated/signals'
+    | '/_authenticated/swap'
     | '/_authenticated/trackers'
     | '/_authenticated/trade-desk'
     | '/_authenticated/vision'
@@ -555,6 +579,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTrackersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/swap': {
+      id: '/_authenticated/swap'
+      path: '/swap'
+      fullPath: '/swap'
+      preLoaderRoute: typeof AuthenticatedSwapRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/signals': {
       id: '/_authenticated/signals'
       path: '/signals'
@@ -581,6 +612,13 @@ declare module '@tanstack/react-router' {
       path: '/referral'
       fullPath: '/referral'
       preLoaderRoute: typeof AuthenticatedReferralRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/radar': {
+      id: '/_authenticated/radar'
+      path: '/radar'
+      fullPath: '/radar'
+      preLoaderRoute: typeof AuthenticatedRadarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pulse': {
@@ -784,10 +822,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPremiumRoute: typeof AuthenticatedPremiumRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedPulseRoute: typeof AuthenticatedPulseRoute
+  AuthenticatedRadarRoute: typeof AuthenticatedRadarRoute
   AuthenticatedReferralRoute: typeof AuthenticatedReferralRoute
   AuthenticatedRewardsRoute: typeof AuthenticatedRewardsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRoute
+  AuthenticatedSwapRoute: typeof AuthenticatedSwapRoute
   AuthenticatedTrackersRoute: typeof AuthenticatedTrackersRoute
   AuthenticatedTradeDeskRoute: typeof AuthenticatedTradeDeskRoute
   AuthenticatedVisionRoute: typeof AuthenticatedVisionRoute
@@ -823,10 +863,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPremiumRoute: AuthenticatedPremiumRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedPulseRoute: AuthenticatedPulseRoute,
+  AuthenticatedRadarRoute: AuthenticatedRadarRoute,
   AuthenticatedReferralRoute: AuthenticatedReferralRoute,
   AuthenticatedRewardsRoute: AuthenticatedRewardsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSignalsRoute: AuthenticatedSignalsRoute,
+  AuthenticatedSwapRoute: AuthenticatedSwapRoute,
   AuthenticatedTrackersRoute: AuthenticatedTrackersRoute,
   AuthenticatedTradeDeskRoute: AuthenticatedTradeDeskRoute,
   AuthenticatedVisionRoute: AuthenticatedVisionRoute,

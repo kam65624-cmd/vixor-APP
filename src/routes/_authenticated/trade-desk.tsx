@@ -22,6 +22,7 @@ import { useI18n } from "@/shared/i18n";
 import { createTrade, listTrades } from "@/domains/trades/functions";
 import type { Trade, TradeDirection } from "@/domains/trades/types";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { useSound } from "@/shared/hooks/use-sound";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
 import { CoachOverlay } from "@/components/vixor/CoachOverlay";
 import { GovernorRiskPanel } from "@/components/vixor/GovernorRiskPanel";
@@ -80,6 +81,7 @@ const inputStyle = {
 
 function TradeDesk() {
   const { t } = useI18n();
+  const { play } = useSound();
   const queryClient = useQueryClient();
   const [balance, setBalance] = useState("10000");
   const [riskPct, setRiskPct] = useState("1");
@@ -149,6 +151,7 @@ function TradeDesk() {
       queryClient.invalidateQueries({ queryKey: ["equity-curve"] });
       queryClient.invalidateQueries({ queryKey: ["recent-closed-trades"] });
       setSaveSuccess(true);
+      play("success");
       setTimeout(() => setSaveSuccess(false), 2000);
     },
   });
@@ -175,6 +178,7 @@ function TradeDesk() {
       queryClient.invalidateQueries({ queryKey: ["trade-stats"] });
       queryClient.invalidateQueries({ queryKey: ["equity-curve"] });
       setExecResult(result);
+      play("trade");
     },
     onError: (error: Error) => {
       setExecResult({
@@ -182,6 +186,7 @@ function TradeDesk() {
         error: error.message,
         isPaperTrade: !exchangeStatus?.connected,
       });
+      play("error");
     },
   });
 

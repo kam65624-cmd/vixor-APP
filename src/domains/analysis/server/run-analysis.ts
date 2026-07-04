@@ -173,6 +173,7 @@ export async function runChartAnalysis(
   selectedPair?: string,
   trading_style?: string,
   realBars?: import("@/domains/analysis/engine/core/types").OHLCVBar[],
+  analysis_style?: string,
 ): Promise<AnalysisResult> {
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 1: CHART VISION — Extract context from the image FIRST
@@ -270,6 +271,7 @@ export async function runChartAnalysis(
       pair,
       timeframe,
       tradingStyle: trading_style,
+      analysisStyle: analysis_style,
       imageBytes,
       bars: realBars,
     });

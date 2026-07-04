@@ -17,12 +17,14 @@ const CreateAnalysisInput = z.object({
   fileName: z.string().optional(),
   selectedPair: z.string().optional(),
   tradingStyle: z.string().optional(),
+  analysisStyle: z.string().optional(),
 });
 
 const QuickAnalyzeInput = z.object({
   pair: z.string().min(1),
   timeframe: z.string().default("1H"),
   tradingStyle: z.string().default("Day Trading"),
+  analysisStyle: z.string().optional(),
 });
 
 // ---------- CREATE ANALYSIS (image-based) ----------
@@ -215,6 +217,7 @@ export const createAnalysis = createServerFn({ method: "POST" })
         data.selectedPair,
         data.tradingStyle,
         realBars || undefined,
+        data.analysisStyle,
       );
 
       const updateData = {
@@ -572,6 +575,7 @@ export const quickAnalyze = createServerFn({ method: "POST" })
         pair,
         timeframe,
         tradingStyle,
+        analysisStyle: data.analysisStyle,
         bars: realBars || undefined,
       });
 

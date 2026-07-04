@@ -26,6 +26,14 @@ export const CHAIN_CONFIGS: Record<WalletChain, ChainConfig> = {
     explorerUrl: "https://etherscan.io/address/",
     rpcUrls: [process.env.WALLET_EVM_RPC_URL || "https://eth.llamarpc.com"],
   },
+  ton: {
+    chain: "ton",
+    label: "TON",
+    nativeSymbol: "TON",
+    nativeDecimals: 9,
+    explorerUrl: "https://tonviewer.com/",
+    rpcUrls: ["https://toncenter.com/api/v2/"],
+  },
 } as const;
 
 /** Wallet session TTL in seconds (default: 7 days) */
@@ -67,6 +75,12 @@ export function isValidWalletAddress(address: string, chain: WalletChain): boole
   if (chain === "solana") {
     // Solana addresses are base58 encoded, 32-44 characters
     return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(trimmed);
+  }
+  if (chain === "ton") {
+    // TON addresses: raw (48 hex chars) or bounceable/non-bounceable user-friendly
+    // User-friendly: EQ... or UQ... (base64url, 48 chars)
+    // Raw: 0: followed by 64 hex chars
+    return /^(EQ[A-Za-z0-9_-]{46}|UQ[A-Za-z0-9_-]{46}|0:[0-9a-fA-F]{64})$/.test(trimmed);
   }
   // EVM addresses are hex, 0x-prefixed, 42 characters
   return /^0x[0-9a-fA-F]{40}$/.test(trimmed);

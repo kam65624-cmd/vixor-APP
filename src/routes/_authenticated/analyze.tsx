@@ -64,6 +64,13 @@ const TRADING_STYLES = [
   { id: "Swing Trading", icon: "🌊", label: "Swing Trading" },
 ];
 
+const ANALYSIS_TECHNIQUES = [
+  { id: "SMC", icon: "🏗️", label: "SMC", desc: "Smart Money Concepts — full BOS, ChoCH, OB, FVG, Liquidity" },
+  { id: "ICT", icon: "🎯", label: "ICT", desc: "Inner Circle Trader — Optimal Trade Entry, Killzones" },
+  { id: "OB_FVG", icon: "🧱", label: "OB + FVG", desc: "Order Blocks & Fair Value Gaps focus" },
+  { id: "CLASSIC", icon: "📊", label: "Classic TA", desc: "Traditional indicators: RSI, MACD, Support/Resistance" },
+];
+
 const POPULAR_PAIRS = [
   { value: "auto", label: "Auto-detect", icon: "🔍" },
   { value: "XAU/USD", label: "XAU/USD", icon: "🥇" },
@@ -107,6 +114,7 @@ function Analyze() {
   const [err, setErr] = useState<string | null>(null);
   const [selectedPair, setSelectedPair] = useState<string>("auto");
   const [tradingStyle, setTradingStyle] = useState<string>("Day Trading");
+  const [analysisTechnique, setAnalysisTechnique] = useState<string>("SMC");
   const [screenshotProcessed, setScreenshotProcessed] = useState(false);
 
   const points = me.data?.balance.balance ?? 0;
@@ -237,6 +245,7 @@ function Analyze() {
           fileName: file.name,
           selectedPair: selectedPair === "auto" ? undefined : selectedPair,
           tradingStyle: tradingStyle,
+          analysisStyle: analysisTechnique,
         },
       });
       clearInterval(ticker);
@@ -717,6 +726,69 @@ function Analyze() {
                     >
                       <span style={{ fontSize: 16 }}>{s.icon}</span>{" "}
                       <span className="hidden sm:inline">{s.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    fontSize: 12,
+                    textTransform: "uppercase",
+                    fontWeight: 700,
+                    color: "var(--color-muted-foreground)",
+                    marginBottom: 6,
+                    display: "block",
+                  }}
+                >
+                  Analysis Method
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {ANALYSIS_TECHNIQUES.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setAnalysisTechnique(t.id)}
+                      style={{
+                        borderRadius: 8,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        border: "1px solid",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-start",
+                        gap: 4,
+                        cursor: "pointer",
+                        padding: "10px 12px",
+                        background:
+                          analysisTechnique === t.id
+                            ? "color-mix(in oklab, var(--color-primary) 15%, transparent)"
+                            : "var(--color-card)",
+                        borderColor:
+                          analysisTechnique === t.id
+                            ? "var(--color-primary)"
+                            : "var(--color-border)",
+                        color:
+                          analysisTechnique === t.id
+                            ? "var(--color-primary)"
+                            : "var(--color-muted-foreground)",
+                        textAlign: "left" as const,
+                      }}
+                    >
+                      <span style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>{t.icon}</span>{" "}
+                        {t.label}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 400,
+                          color: "var(--color-muted-foreground)",
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {t.desc}
+                      </span>
                     </button>
                   ))}
                 </div>

@@ -1,16 +1,31 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import {
-  PageLayout,
-  StatsRow,
-  EmptyState,
-  SkeletonRow,
-} from "@/components/vixor/PageLayout";
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+  type TouchEvent as ReactTouchEvent,
+  type CSSProperties,
+} from "react";
+import { useQuery } from "@tanstack/react-query";
+import { PageLayout, StatsRow, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
+import { RefreshCw, SlidersHorizontal, ChevronUp, X } from "lucide-react";
+
+// ── Route definition with typed search params ───────────────────────────────
 
 export const Route = createFileRoute("/_authenticated/discover")({
   head: () => ({ meta: [{ title: "Discover — Vixor" }] }),
   component: DiscoverPage,
+  validateSearch: (search) => ({
+    category: (search.category as string) || "ALL",
+    sortBy: (search.sortBy as string) || "trending",
+    search: (search.search as string) || "",
+    minLiquidity: search.minLiquidity as string | undefined,
+    minVolume: search.minVolume as string | undefined,
+    honeypotOnly: search.honeypotOnly === "true",
+    smartMoneyMin: search.smartMoneyMin as string | undefined,
+  }),
 });
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -31,6 +46,8 @@ interface TokenItem {
   liquidityScore: number;
   isHoneypot?: boolean;
   logoUrl?: string;
+  sparkline?: number[];
+  category?: string;
 }
 
 interface DiscoverResponse {
@@ -42,9 +59,17 @@ interface DiscoverResponse {
   source?: string;
   message?: string;
   error?: string;
+  categoryCounts?: Record<string, number>;
 }
 
-// ── Sort options ─────────────────────────────────────────────────────────────
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const CATEGORY_TABS = [
+  { key: "ALL", label: "All" },
+  { key: "MEME", label: "Meme" },
+  { key: "CRYPTO", label: "Crypto" },
+  { key: "FOREX", label: "Forex" },
+] as const;
 
 const SORT_OPTIONS = [
   { key: "trending", label: "Trending" },
@@ -55,6 +80,9 @@ const SORT_OPTIONS = [
 ] as const;
 
 type SortKey = (typeof SORT_OPTIONS)[number]["key"];
+type CategoryKey = (typeof CATEGORY_TABS)[number]["key"];
+
+const PULL_THRESHOLD = 60;
 
 // ── Formatters ───────────────────────────────────────────────────────────────
 
@@ -79,6 +107,141 @@ function fmtPct(p: number | null): string {
   return `${sign}${p.toFixed(1)}%`;
 }
 
+function fmtTimeAgo(seconds: number): string {
+  if (seconds < 5) return "just now";
+  if (seconds < 60) return `${Math.floor(seconds)}s ago`;
+  return `${Math.floor(seconds / 60)}m ago`;
+}
+
+// ── Inline SVG Sparkline ────────────────────────────────────────────────────
+
+function SparklineSVG({
+  data,
+  width = 56,
+  height = 20,
+  color,
+}: {
+  data: number[];
+  width?: number;
+  height?: number;
+  color?: string;
+}) {
+  const isUp = data.length >= 2 && data[data.length - 1] >= data[0];
+  const strokeColor = color || (isUp ? "var(--color-bullish)" : "var(--color-bearish)");
+
+  if (!data || data.length < 2) return null;
+
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const points = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * width;
+    const y = height - ((v - min) / range) * (height - 2) - 1;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ overflow: "visible" }}
+    >
+      <defs>
+        <linearGradient id={`spark-grad-${isUp ? "up" : "dn"}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={strokeColor} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={strokeColor} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {/* Area fill */}
+      <polygon
+        points={`0,${height} ${points.join(" ")} ${width},${height}`}
+        fill={`url(#spark-grad-${isUp ? "up" : "dn"})`}
+      />
+      {/* Line */}
+      <polyline
+        points={points.join(" ")}
+        fill="none"
+        stroke={strokeColor}
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ── Smart Money Bar ──────────────────────────────────────────────────────────
+
+function SmartMoneyBar({ pct }: { pct?: number }) {
+  if (pct === undefined || pct === null) return null;
+  const clamped = Math.min(100, Math.max(0, pct));
+  const color =
+    clamped >= 50
+      ? "var(--color-bullish)"
+      : clamped >= 25
+        ? "var(--color-neutral-wait)"
+        : "var(--color-bearish)";
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "1px" }}>
+      <div
+        style={{
+          width: "40px",
+          height: "2.5px",
+          borderRadius: "2px",
+          background: "var(--color-border)",
+          overflow: "hidden",
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            width: `${clamped}%`,
+            height: "100%",
+            background: color,
+            borderRadius: "2px",
+            transition: "width 0.4s ease",
+          }}
+        />
+      </div>
+      <span
+        style={{
+          fontSize: "7px",
+          fontWeight: 600,
+          fontFamily: "'JetBrains Mono', monospace",
+          color,
+          lineHeight: 1,
+        }}
+      >
+        {clamped.toFixed(0)}%
+      </span>
+    </div>
+  );
+}
+
+// ── NEW Badge ─────────────────────────────────────────────────────────────────
+
+function NewBadge() {
+  return (
+    <span
+      style={{
+        fontSize: "7px",
+        fontWeight: 800,
+        padding: "1px 4px",
+        borderRadius: "3px",
+        background: "var(--color-bullish)",
+        color: "#04150D",
+        letterSpacing: "0.04em",
+        lineHeight: 1,
+        animation: "pulse-dot 2s ease-in-out infinite",
+      }}
+    >
+      NEW
+    </span>
+  );
+}
+
 // ── Token Row Component ──────────────────────────────────────────────────────
 
 function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void }) {
@@ -86,10 +249,20 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
   const color = isUp ? "var(--color-bullish)" : "var(--color-bearish)";
   const [imgError, setImgError] = useState(false);
   const hasLogo = token.logoUrl && !imgError;
+  const isNew = token.discoveryScore > 80;
+  const hasSparkline = token.sparkline && token.sparkline.length >= 2;
 
   return (
     <div
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       style={{
         display: "flex",
         alignItems: "center",
@@ -109,7 +282,9 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
             width: "36px",
             height: "36px",
             borderRadius: "50%",
-            background: hasLogo ? "var(--color-card)" : `color-mix(in oklab, ${color} 12%, var(--color-card))`,
+            background: hasLogo
+              ? "var(--color-card)"
+              : `color-mix(in oklab, ${color} 12%, var(--color-card))`,
             border: `1px solid color-mix(in oklab, ${color} 20%, transparent)`,
             display: "flex",
             alignItems: "center",
@@ -135,8 +310,15 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
           )}
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-foreground)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                color: "var(--color-foreground)",
+                fontFamily: "'Inter', system-ui, sans-serif",
+              }}
+            >
               {token.symbol}
             </span>
             <span
@@ -165,6 +347,7 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
                 HONEYPOT
               </span>
             )}
+            {isNew && <NewBadge />}
           </div>
           <div
             style={{
@@ -174,12 +357,24 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
               maxWidth: "140px",
+              marginTop: "1px",
             }}
           >
             {token.name}
           </div>
+          {/* Smart Money Bar */}
+          {token.smartMoneyPct !== undefined && token.smartMoneyPct !== null && (
+            <SmartMoneyBar pct={token.smartMoneyPct} />
+          )}
         </div>
       </div>
+
+      {/* Center: Sparkline */}
+      {hasSparkline && (
+        <div style={{ flexShrink: 0, margin: "0 12px", opacity: 0.85 }}>
+          <SparklineSVG data={token.sparkline!} />
+        </div>
+      )}
 
       {/* Right: Price + Change + Volume + MCap */}
       <div style={{ textAlign: "right", flexShrink: 0 }}>
@@ -193,7 +388,9 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
         >
           {fmtPrice(token.price)}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}>
+        <div
+          style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}
+        >
           <span
             style={{
               fontSize: "10px",
@@ -205,7 +402,15 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
             {fmtPct(token.change24h)}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "flex-end", marginTop: "2px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            justifyContent: "flex-end",
+            marginTop: "2px",
+          }}
+        >
           <span style={{ fontSize: "8px", color: "var(--color-muted-foreground)" }}>
             Vol {fmtCompact(token.volume24h)}
           </span>
@@ -225,32 +430,469 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
   );
 }
 
+// ── Pull-to-Refresh Hook ─────────────────────────────────────────────────────
+
+function usePullToRefresh(onRefresh: () => void) {
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const startY = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const currentY = useRef(0);
+
+  const onTouchStart = useCallback((e: ReactTouchEvent<HTMLDivElement>) => {
+    const scrollTop = containerRef.current?.scrollTop ?? 0;
+    if (scrollTop <= 0) {
+      startY.current = e.touches[0].clientY;
+      currentY.current = 0;
+    }
+  }, []);
+
+  const onTouchMove = useCallback((e: ReactTouchEvent<HTMLDivElement>) => {
+    const scrollTop = containerRef.current?.scrollTop ?? 0;
+    if (scrollTop <= 0 && startY.current > 0) {
+      const diff = e.touches[0].clientY - startY.current;
+      // Apply resistance: 0.3 factor so it feels natural
+      const damped = Math.min(diff * 0.3, 80);
+      currentY.current = damped;
+      if (damped > 0) {
+        setPullDistance(damped);
+      }
+    }
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    if (currentY.current >= PULL_THRESHOLD && !isRefreshing) {
+      setIsRefreshing(true);
+      onRefresh();
+      setTimeout(() => {
+        setIsRefreshing(false);
+        setPullDistance(0);
+      }, 800);
+    } else {
+      setPullDistance(0);
+    }
+    startY.current = 0;
+    currentY.current = 0;
+  }, [onRefresh, isRefreshing]);
+
+  const pullIndicatorStyle: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    height: `${pullDistance}px`,
+    overflow: "hidden",
+    transition: pullDistance === 0 && !isRefreshing ? "height 0.3s ease" : undefined,
+  };
+
+  return {
+    pullIndicatorStyle,
+    pullDistance,
+    isRefreshing,
+    pullHandlers: {
+      onTouchStart,
+      onTouchMove,
+      onTouchEnd,
+    },
+    containerRef,
+  };
+}
+
+// ── Pull Indicator ───────────────────────────────────────────────────────────
+
+function PullIndicator({ distance, isRefreshing }: { distance: number; isRefreshing: boolean }) {
+  if (distance === 0 && !isRefreshing) return null;
+
+  const rotation = Math.min((distance / PULL_THRESHOLD) * 180, 180);
+  const isThresholdMet = distance >= PULL_THRESHOLD;
+
+  return (
+    <div style={{ display: "flex", justifyContent: "center", padding: "8px 0" }}>
+      <div
+        style={{
+          width: "24px",
+          height: "24px",
+          borderRadius: "50%",
+          border: `1.5px solid ${isThresholdMet || isRefreshing ? "var(--color-bullish)" : "var(--color-muted-foreground)"}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: Math.min(distance / 30, 1),
+          transition: isRefreshing ? "none" : undefined,
+        }}
+      >
+        <RefreshCw
+          size={12}
+          style={{
+            color:
+              isThresholdMet || isRefreshing
+                ? "var(--color-bullish)"
+                : "var(--color-muted-foreground)",
+            transform: isRefreshing ? "rotate(360deg)" : `rotate(${rotation}deg)`,
+            transition: isRefreshing ? "transform 0.6s ease" : "transform 0.1s ease",
+            animation: isRefreshing ? "spin 0.7s linear infinite" : undefined,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── Filter Panel ──────────────────────────────────────────────────────────────
+
+function FilterPanel({
+  filters,
+  onChange,
+  onApply,
+  onReset,
+  isOpen,
+  onToggle,
+}: {
+  filters: {
+    minLiquidity: string;
+    minVolume: string;
+    honeypotOnly: boolean;
+    smartMoneyMin: number;
+  };
+  onChange: (key: string, value: string | number | boolean) => void;
+  onApply: () => void;
+  onReset: () => void;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  const inputStyle: CSSProperties = {
+    flex: 1,
+    background: "var(--color-card)",
+    border: "1px solid var(--color-border)",
+    borderRadius: "6px",
+    padding: "7px 10px",
+    fontSize: "11px",
+    fontFamily: "'JetBrains Mono', monospace",
+    color: "var(--color-foreground)",
+    outline: "none",
+    minWidth: 0,
+  };
+
+  return (
+    <div style={{ padding: "0 8px" }}>
+      {/* Filter toggle button */}
+      <button
+        onClick={onToggle}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          fontSize: "10px",
+          fontWeight: 600,
+          padding: "5px 10px",
+          borderRadius: "5px",
+          border: "1px solid var(--color-border)",
+          cursor: "pointer",
+          background: isOpen ? "var(--color-primary)" : "var(--color-card)",
+          color: isOpen ? "#000" : "var(--color-muted-foreground)",
+          transition: "all 0.15s ease",
+          fontFamily: "'Inter', system-ui, sans-serif",
+        }}
+      >
+        <SlidersHorizontal size={11} />
+        Filters
+        <ChevronUp
+          size={11}
+          style={{
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.2s ease",
+          }}
+        />
+        {(filters.minLiquidity ||
+          filters.minVolume ||
+          filters.honeypotOnly ||
+          filters.smartMoneyMin > 0) && (
+          <span
+            style={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: isOpen ? "#000" : "var(--color-bullish)",
+            }}
+          />
+        )}
+      </button>
+
+      {/* Expandable panel */}
+      {isOpen && (
+        <div
+          style={{
+            marginTop: "6px",
+            padding: "10px 12px",
+            background: "var(--color-card)",
+            border: "1px solid var(--color-border)",
+            borderRadius: "8px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+          }}
+        >
+          {/* Row 1: Min Liquidity + Min Volume */}
+          <div style={{ display: "flex", gap: "8px" }}>
+            <div style={{ flex: 1 }}>
+              <label
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 600,
+                  color: "var(--color-muted-foreground)",
+                  display: "block",
+                  marginBottom: "4px",
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                Min Liquidity ($)
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 10000"
+                value={filters.minLiquidity}
+                onChange={(e) => onChange("minLiquidity", e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 600,
+                  color: "var(--color-muted-foreground)",
+                  display: "block",
+                  marginBottom: "4px",
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                Min Volume ($)
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 50000"
+                value={filters.minVolume}
+                onChange={(e) => onChange("minVolume", e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          {/* Row 2: Honeypot toggle + Smart Money slider */}
+          <div style={{ display: "flex", gap: "8px", alignItems: "flex-end" }}>
+            {/* Honeypot Only toggle */}
+            <div style={{ flex: 1 }}>
+              <label
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 600,
+                  color: "var(--color-muted-foreground)",
+                  display: "block",
+                  marginBottom: "4px",
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                Honeypot Only
+              </label>
+              <button
+                onClick={() => onChange("honeypotOnly", !filters.honeypotOnly)}
+                style={{
+                  width: "100%",
+                  padding: "7px 10px",
+                  borderRadius: "6px",
+                  border: `1px solid ${filters.honeypotOnly ? "var(--color-bearish)" : "var(--color-border)"}`,
+                  background: filters.honeypotOnly
+                    ? "rgba(246, 70, 93, 0.15)"
+                    : "var(--color-card)",
+                  color: filters.honeypotOnly
+                    ? "var(--color-bearish)"
+                    : "var(--color-muted-foreground)",
+                  fontSize: "10px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                {filters.honeypotOnly ? "ON" : "OFF"}
+              </button>
+            </div>
+
+            {/* Smart Money slider */}
+            <div style={{ flex: 2 }}>
+              <label
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 600,
+                  color: "var(--color-muted-foreground)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "4px",
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                <span>Smart Money &gt;</span>
+                <span
+                  style={{
+                    color: "var(--color-foreground)",
+                    fontFamily: "'JetBrains Mono', monospace",
+                  }}
+                >
+                  {filters.smartMoneyMin}%
+                </span>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={filters.smartMoneyMin}
+                onChange={(e) => onChange("smartMoneyMin", parseInt(e.target.value, 10))}
+                style={{
+                  width: "100%",
+                  height: "4px",
+                  WebkitAppearance: "none",
+                  appearance: "none",
+                  background: `linear-gradient(to right, var(--color-bullish) 0%, var(--color-bullish) ${filters.smartMoneyMin}%, var(--color-border) ${filters.smartMoneyMin}%, var(--color-border) 100%)`,
+                  borderRadius: "2px",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div style={{ display: "flex", gap: "6px", justifyContent: "flex-end" }}>
+            <button
+              onClick={onReset}
+              style={{
+                fontSize: "10px",
+                fontWeight: 600,
+                padding: "6px 14px",
+                borderRadius: "5px",
+                border: "1px solid var(--color-border)",
+                cursor: "pointer",
+                background: "transparent",
+                color: "var(--color-muted-foreground)",
+                fontFamily: "'Inter', system-ui, sans-serif",
+                transition: "all 0.12s ease",
+              }}
+            >
+              Reset
+            </button>
+            <button
+              onClick={onApply}
+              style={{
+                fontSize: "10px",
+                fontWeight: 700,
+                padding: "6px 18px",
+                borderRadius: "5px",
+                border: "none",
+                cursor: "pointer",
+                background: "var(--color-primary)",
+                color: "#000",
+                fontFamily: "'Inter', system-ui, sans-serif",
+                transition: "all 0.12s ease",
+              }}
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 function DiscoverPage() {
-  const [sortBy, setSortBy] = useState<SortKey>("trending");
-  const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const navigate = useNavigate();
+  const search = useSearch({ from: "/_authenticated/discover" });
+
+  // Local filter state (for the filter panel UI — before applying)
+  const [filterState, setFilterState] = useState({
+    minLiquidity: search.minLiquidity || "",
+    minVolume: search.minVolume || "",
+    honeypotOnly: search.honeypotOnly || false,
+    smartMoneyMin: search.smartMoneyMin ? parseInt(search.smartMoneyMin, 10) : 0,
+  });
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Search state
+  const [searchInput, setSearchInput] = useState(search.search || "");
+  const [sortBy, setSortBy] = useState<SortKey>(search.sortBy as SortKey);
+  const [category, setCategory] = useState<CategoryKey>(search.category as CategoryKey);
+
+  // "Updated Xs ago" timer
+  const [lastFetchTime, setLastFetchTime] = useState<number>(Date.now());
+  const [elapsedSec, setElapsedSec] = useState<number>(0);
+
+  // Count up elapsed time since last fetch
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedSec(Math.floor((Date.now() - lastFetchTime) / 1000));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lastFetchTime]);
 
   const queryParams = useMemo(() => {
     const params = new URLSearchParams();
     params.set("sortBy", sortBy);
     params.set("sortOrder", "desc");
     params.set("limit", "50");
-    if (search.trim()) params.set("search", search.trim());
+    if (category && category !== "ALL") params.set("category", category);
+    if (search.search?.trim()) params.set("search", search.search.trim());
+    if (search.minLiquidity) params.set("minLiquidity", search.minLiquidity);
+    if (search.minVolume) params.set("minVolume24h", search.minVolume);
+    if (search.honeypotOnly) params.set("honeypotOnly", "true");
+    if (search.smartMoneyMin) params.set("smartMoneyMin", search.smartMoneyMin);
     return params.toString();
-  }, [sortBy, search]);
+  }, [sortBy, category, search]);
 
-  const { data: resp, isLoading, error, refetch } = useQuery<DiscoverResponse>({
-    queryKey: ["discover", sortBy, search],
+  const {
+    data: resp,
+    isLoading,
+    isRefetching,
+    error,
+    refetch,
+  } = useQuery<DiscoverResponse>({
+    queryKey: [
+      "discover",
+      sortBy,
+      search.search,
+      category,
+      search.minLiquidity,
+      search.minVolume,
+      search.honeypotOnly,
+      search.smartMoneyMin,
+    ],
     queryFn: async () => {
       const res = await fetch(`/api/discover?${queryParams}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     },
-    refetchInterval: 60_000,
-    staleTime: 30_000,
+    refetchInterval: 15_000,
+    staleTime: 10_000,
   });
+
+  // Update last fetch time on data change
+  const lastFetchKey = resp ? `${resp.source}-${resp.total}` : "";
+  useEffect(() => {
+    if (resp) {
+      setLastFetchTime(Date.now());
+      setElapsedSec(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastFetchKey]);
 
   const tokens = useMemo(() => {
     if (!resp?.data) return [];
@@ -262,16 +904,66 @@ function DiscoverPage() {
     const bearish = tokens.filter((t) => (t.change24h ?? 0) < 0).length;
     const totalVol = tokens.reduce((sum, t) => sum + t.volume24h, 0);
     return [
-      { label: "Tokens", value: String(resp?.total ?? tokens.length), color: "var(--color-primary)", icon: "🔍" },
-      { label: "Bullish", value: String(bullish), color: "var(--color-bullish)", icon: "🟢" },
-      { label: "Bearish", value: String(bearish), color: "var(--color-bearish)", icon: "🔴" },
-      { label: "Total Vol", value: fmtCompact(totalVol), color: "var(--color-info)", icon: "📊" },
+      {
+        label: "Tokens",
+        value: String(resp?.total ?? tokens.length),
+        color: "var(--color-primary)",
+        icon: "🔍",
+      },
+      {
+        label: "Bullish",
+        value: String(bullish),
+        color: "var(--color-bullish)",
+        icon: "🟢",
+      },
+      {
+        label: "Bearish",
+        value: String(bearish),
+        color: "var(--color-bearish)",
+        icon: "🔴",
+      },
+      {
+        label: "Total Vol",
+        value: fmtCompact(totalVol),
+        color: "var(--color-info)",
+        icon: "📊",
+      },
     ];
   }, [tokens, resp]);
 
+  // Category counts
+  const categoryCounts = useMemo(() => {
+    const base = resp?.categoryCounts || {};
+    return {
+      ALL: resp?.total ?? tokens.length,
+      MEME:
+        base.MEME ??
+        tokens.filter((t) => t.category === "MEME" || t.chain === "sol" || t.chain === "eth")
+          .length,
+      CRYPTO:
+        base.CRYPTO ??
+        tokens.filter(
+          (t) =>
+            t.category === "CRYPTO" ||
+            ["eth", "btc", "sol", "bnb"].includes(t.symbol.toLowerCase()),
+        ).length,
+      FOREX: base.FOREX ?? base.FX ?? 0,
+    };
+  }, [resp, tokens]);
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
   const handleSearch = useCallback(() => {
-    setSearch(searchInput);
-  }, [searchInput]);
+    navigate({
+      to: "/discover",
+      search: (prev: any) => ({
+        ...prev,
+        search: searchInput,
+        sortBy,
+        category,
+      }),
+    });
+  }, [searchInput, sortBy, category, navigate]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -279,6 +971,86 @@ function DiscoverPage() {
     },
     [handleSearch],
   );
+
+  const handleSortBy = useCallback(
+    (key: SortKey) => {
+      setSortBy(key);
+      navigate({
+        to: "/discover",
+        search: (prev: any) => ({ ...prev, sortBy: key }),
+      });
+    },
+    [navigate],
+  );
+
+  const handleCategoryChange = useCallback(
+    (cat: CategoryKey) => {
+      setCategory(cat);
+      navigate({
+        to: "/discover",
+        search: (prev: any) => ({ ...prev, category: cat }),
+      });
+    },
+    [navigate],
+  );
+
+  const handleFilterChange = useCallback((key: string, value: string | number | boolean) => {
+    setFilterState((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleApplyFilters = useCallback(() => {
+    navigate({
+      to: "/discover",
+      search: {
+        ...search,
+        sortBy: search.sortBy as any,
+        category: search.category as any,
+        minLiquidity: filterState.minLiquidity || undefined,
+        minVolume: filterState.minVolume || undefined,
+        honeypotOnly: filterState.honeypotOnly,
+        smartMoneyMin:
+          filterState.smartMoneyMin > 0 ? String(filterState.smartMoneyMin) : undefined,
+      } as any,
+    });
+    setFiltersOpen(false);
+  }, [filterState, search, navigate]);
+
+  const handleResetFilters = useCallback(() => {
+    setFilterState({
+      minLiquidity: "",
+      minVolume: "",
+      honeypotOnly: false,
+      smartMoneyMin: 0,
+    });
+    navigate({
+      to: "/discover",
+      search: {
+        ...search,
+        sortBy: search.sortBy as any,
+        category: search.category as any,
+        minLiquidity: undefined,
+        minVolume: undefined,
+        honeypotOnly: false,
+        smartMoneyMin: undefined,
+      } as any,
+    });
+  }, [search, navigate]);
+
+  const handleTokenClick = useCallback(
+    (symbol: string) => {
+      navigate({ to: "/token/$symbol", params: { symbol } });
+    },
+    [navigate],
+  );
+
+  const handleManualRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  // Pull-to-refresh
+  const pullToRefresh = usePullToRefresh(() => refetch());
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <PageLayout
@@ -292,6 +1064,126 @@ function DiscoverPage() {
       {/* Stats */}
       <StatsRow stats={stats} />
 
+      {/* Category Tabs */}
+      <div
+        className="scrollbar-hide"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "3px",
+          padding: "8px 10px",
+          overflowX: "auto",
+          flexShrink: 0,
+          borderBottom: "1px solid var(--color-border)",
+        }}
+      >
+        {CATEGORY_TABS.map((tab) => {
+          const isActive = category === tab.key;
+          const count = categoryCounts[tab.key];
+          return (
+            <button
+              key={tab.key}
+              onClick={() => handleCategoryChange(tab.key)}
+              style={{
+                fontSize: "10px",
+                fontWeight: isActive ? 700 : 500,
+                padding: "5px 10px",
+                borderRadius: "5px",
+                border: "none",
+                cursor: "pointer",
+                background: isActive ? "var(--color-primary)" : "var(--color-card)",
+                color: isActive ? "#000" : "var(--color-muted-foreground)",
+                transition: "all 0.15s ease",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                fontFamily: "'Inter', system-ui, sans-serif",
+              }}
+            >
+              {tab.label}
+              <span
+                style={{
+                  fontSize: "8px",
+                  fontWeight: 700,
+                  padding: "0px 4px",
+                  borderRadius: "8px",
+                  background: isActive
+                    ? "rgba(0,0,0,0.2)"
+                    : "color-mix(in oklab, var(--color-muted-foreground) 12%, transparent)",
+                  color: isActive ? "rgba(0,0,0,0.7)" : "var(--color-muted-foreground)",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  lineHeight: "14px",
+                }}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Live indicator + last updated */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+          {/* Pulsing green dot */}
+          <span
+            style={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: "var(--color-bullish)",
+              display: "inline-block",
+              animation: "vixor-pulse 1.8s ease-in-out infinite",
+              boxShadow: "0 0 6px var(--color-bullish)",
+              flexShrink: 0,
+            }}
+            aria-label="Live data"
+          />
+          <span
+            style={{
+              fontSize: "9px",
+              color: "var(--color-muted-foreground)",
+              fontFamily: "'JetBrains Mono', monospace",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Updated {fmtTimeAgo(elapsedSec)}
+          </span>
+
+          {/* Manual refresh button */}
+          <button
+            onClick={handleManualRefresh}
+            disabled={isRefetching}
+            aria-label="Refresh data"
+            style={{
+              width: "26px",
+              height: "26px",
+              borderRadius: "6px",
+              border: "1px solid var(--color-border)",
+              background: "var(--color-card)",
+              color: "var(--color-muted-foreground)",
+              cursor: isRefetching ? "wait" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+              transition: "all 0.15s ease",
+              flexShrink: 0,
+            }}
+          >
+            <RefreshCw
+              size={12}
+              style={{
+                animation: isRefetching ? "spin 0.7s linear infinite" : undefined,
+                transition: "transform 0.2s ease",
+              }}
+            />
+          </button>
+        </div>
+      </div>
+
       {/* Search + Sort Bar */}
       <div
         style={{
@@ -299,6 +1191,7 @@ function DiscoverPage() {
           gap: "6px",
           padding: "6px 8px",
           alignItems: "center",
+          flexShrink: 0,
         }}
       >
         {/* Search */}
@@ -313,7 +1206,9 @@ function DiscoverPage() {
             padding: "0 8px",
           }}
         >
-          <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)", marginRight: "6px" }}>
+          <span
+            style={{ fontSize: "12px", color: "var(--color-muted-foreground)", marginRight: "6px" }}
+          >
             🔍
           </span>
           <input
@@ -333,11 +1228,14 @@ function DiscoverPage() {
               fontFamily: "'Inter', system-ui, sans-serif",
             }}
           />
-          {search && (
+          {search.search && (
             <button
               onClick={() => {
-                setSearch("");
                 setSearchInput("");
+                navigate({
+                  to: "/discover",
+                  search: (prev: any) => ({ ...prev, search: "" }),
+                });
               }}
               style={{
                 background: "none",
@@ -348,14 +1246,16 @@ function DiscoverPage() {
                 padding: "0 2px",
                 lineHeight: 1,
               }}
+              aria-label="Clear search"
             >
-              ×
+              <X size={14} />
             </button>
           )}
         </div>
 
         {/* Sort Pills */}
         <div
+          className="scrollbar-hide"
           style={{
             display: "flex",
             gap: "3px",
@@ -365,7 +1265,7 @@ function DiscoverPage() {
           {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.key}
-              onClick={() => setSortBy(opt.key)}
+              onClick={() => handleSortBy(opt.key)}
               style={{
                 fontSize: "9px",
                 fontWeight: sortBy === opt.key ? 700 : 500,
@@ -373,16 +1273,11 @@ function DiscoverPage() {
                 borderRadius: "4px",
                 border: "none",
                 cursor: "pointer",
-                background:
-                  sortBy === opt.key
-                    ? "var(--color-primary)"
-                    : "var(--color-card)",
-                color:
-                  sortBy === opt.key
-                    ? "#000"
-                    : "var(--color-muted-foreground)",
+                background: sortBy === opt.key ? "var(--color-primary)" : "var(--color-card)",
+                color: sortBy === opt.key ? "#000" : "var(--color-muted-foreground)",
                 transition: "all 0.12s",
                 whiteSpace: "nowrap",
+                fontFamily: "'Inter', system-ui, sans-serif",
               }}
             >
               {opt.label}
@@ -390,6 +1285,16 @@ function DiscoverPage() {
           ))}
         </div>
       </div>
+
+      {/* Filter Panel */}
+      <FilterPanel
+        filters={filterState}
+        onChange={handleFilterChange}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+        isOpen={filtersOpen}
+        onToggle={() => setFiltersOpen((v) => !v)}
+      />
 
       {/* Error bar */}
       {error && (
@@ -418,6 +1323,7 @@ function DiscoverPage() {
               borderRadius: "4px",
               padding: "3px 10px",
               cursor: "pointer",
+              fontFamily: "'Inter', system-ui, sans-serif",
             }}
           >
             Retry
@@ -425,53 +1331,75 @@ function DiscoverPage() {
         </div>
       )}
 
-      {/* Token List */}
-      <div style={{ padding: "4px 0" }}>
-        {isLoading
-          ? Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} style={{ padding: "6px 12px" }}>
-                <SkeletonRow />
-              </div>
-            ))
-          : tokens.length > 0
-            ? tokens.map((token) => (
-                <TokenRow
-                  key={token.symbol + token.chain}
-                  token={token}
-                  onClick={() => {}}
-                />
-              ))
-            : !error && (
-                <EmptyState
-                  icon="🔍"
-                  title="No Tokens Found"
-                  message={
-                    search
-                      ? `No results for "${search}". Try a different search term.`
-                      : "Token scan is in progress. Check back in a moment."
-                  }
-                />
-              )}
-      </div>
-
-      {/* Footer info */}
-      {resp?.scanDurationMs && tokens.length > 0 && (
-        <div
-          style={{
-            padding: "8px 12px",
-            textAlign: "center",
-            fontSize: "9px",
-            color: "var(--color-muted-foreground)",
-            borderTop: "1px solid var(--color-border)",
-          }}
-        >
-          Scanned {resp.total} tokens in {(resp.scanDurationMs / 1000).toFixed(1)}s
-          {resp.filteredOut !== undefined && resp.filteredOut > 0 && (
-            <span> · {resp.filteredOut} filtered out</span>
-          )}
-          {resp.source && <span> · via {resp.source}</span>}
+      {/* Token List with pull-to-refresh */}
+      <div
+        ref={pullToRefresh.containerRef}
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          overflowX: "hidden",
+          minHeight: 0,
+        }}
+        className="scrollbar-hide"
+        {...pullToRefresh.pullHandlers}
+      >
+        {/* Pull-to-refresh indicator */}
+        <div style={pullToRefresh.pullIndicatorStyle}>
+          <PullIndicator
+            distance={pullToRefresh.pullDistance}
+            isRefreshing={pullToRefresh.isRefreshing}
+          />
         </div>
-      )}
+
+        {/* Token rows */}
+        <div style={{ padding: "4px 0" }}>
+          {isLoading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} style={{ padding: "6px 12px" }}>
+                  <SkeletonRow />
+                </div>
+              ))
+            : tokens.length > 0
+              ? tokens.map((token) => (
+                  <TokenRow
+                    key={token.symbol + token.chain}
+                    token={token}
+                    onClick={() => handleTokenClick(token.symbol)}
+                  />
+                ))
+              : !error && (
+                  <EmptyState
+                    icon="🔍"
+                    title="No Tokens Found"
+                    message={
+                      search.search
+                        ? `No results for "${search.search}". Try a different search term.`
+                        : "Token scan is in progress. Check back in a moment."
+                    }
+                  />
+                )}
+        </div>
+
+        {/* Footer info */}
+        {resp?.scanDurationMs && tokens.length > 0 && (
+          <div
+            style={{
+              padding: "8px 12px",
+              textAlign: "center",
+              fontSize: "9px",
+              color: "var(--color-muted-foreground)",
+              borderTop: "1px solid var(--color-border)",
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            Scanned {resp.total} tokens in {(resp.scanDurationMs / 1000).toFixed(1)}s
+            {resp.filteredOut !== undefined && resp.filteredOut > 0 && (
+              <span> · {resp.filteredOut} filtered out</span>
+            )}
+            {resp.source && <span> · via {resp.source}</span>}
+          </div>
+        )}
+      </div>
     </PageLayout>
   );
 }

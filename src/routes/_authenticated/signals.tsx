@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { getDailySignals } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { createSignalTracking, getUserSignalTrackings } from "@/domains/signal-tracking";
@@ -9,6 +9,7 @@ import type { ShareableSignal } from "@/shared/share";
 import type { SignalTracking } from "@/domains/signal-tracking";
 import { SIGNAL_STATUS_CONFIG, TERMINAL_STATUSES } from "@/domains/signal-tracking";
 import { useSignalMonitor } from "@/shared/hooks/use-signal-monitor";
+import { useSound } from "@/shared/hooks/use-sound";
 import {
   PageLayout, 
   StatsRow,
@@ -35,12 +36,14 @@ type Signal = {
 const TABS = ["All", "BUY", "SELL", "WAIT"] as const;
 
 function SignalsPage() {
+  const { play } = useSound();
   const fetchSignals = useStableServerFn(getDailySignals);
   const createTracking = useStableServerFn(createSignalTracking);
   const fetchTrackings = useStableServerFn(getUserSignalTrackings);
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>("All");
   const [trackingIds, setTrackingIds] = useState<Record<string, string>>({});
+  const prevSignalIds = useRef<Set<string>>(new Set());
 
   // Fetch user's trackings on mount
   useQuery({
@@ -110,6 +113,23 @@ function SignalsPage() {
 
   const signals: Signal[] = query.data?.signals ?? [];
   const isLoading = query.isLoading;
+
+  // Play sound for newly appeared signals
+  useEffect(() => {
+    if (isLoading || signals.length === 0) return;
+    const currentIds = new Set(signals.map((s) => s.id));
+    let hasNew = false;
+    for (const id of currentIds) {
+      if (!prevSignalIds.current.has(id)) {
+        hasNew = true;
+        break;
+      }
+    }
+    if (hasNew && prevSignalIds.current.size > 0) {
+      play("signal");
+    }
+    prevSignalIds.current = currentIds;
+  }, [signals, isLoading, play]);
 
   const filtered = activeTab === "All" ? signals : signals.filter((s) => s.recommendation === activeTab);
 

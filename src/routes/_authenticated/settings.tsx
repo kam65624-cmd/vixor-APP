@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserSettings, updateUserSettings } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { PageLayout,  ScrollArea } from "@/components/vixor/PageLayout";
+import { soundManager } from "@/shared/sound-manager";
+import { PageLayout, ScrollArea } from "@/components/vixor/PageLayout";
 import {
   getExchangeCredentials,
   saveExchangeCredentials,
@@ -58,11 +59,39 @@ function saveLocalSettings(settings: Partial<UserSettings>) {
 }
 
 type SettingItem =
-  | { type: "toggle-server"; id: string; label: string; desc: string; key: keyof NotificationChannels }
+  | {
+      type: "toggle-server";
+      id: string;
+      label: string;
+      desc: string;
+      key: keyof NotificationChannels;
+    }
   | { type: "toggle-local"; id: string; label: string; desc: string }
-  | { type: "select"; label: string; desc: string; options: string[]; current: number; onChange: (i: number) => void }
-  | { type: "input"; id: string; label: string; desc: string; value: string; onChange: (v: string) => void; placeholder: string }
-  | { type: "button"; label: string; desc: string; btnText: string; btnColor: string };
+  | {
+      type: "select";
+      label: string;
+      desc: string;
+      options: string[];
+      current: number;
+      onChange: (i: number) => void;
+    }
+  | {
+      type: "input";
+      id: string;
+      label: string;
+      desc: string;
+      value: string;
+      onChange: (v: string) => void;
+      placeholder: string;
+    }
+  | {
+      type: "button";
+      label: string;
+      desc: string;
+      btnText: string;
+      btnColor: string;
+      onClick?: () => void;
+    };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
 function ToggleSwitch({ enabled, onClick }: { enabled: boolean; onClick: () => void }) {
@@ -109,7 +138,9 @@ function SettingRow({ item, children }: { item: SettingItem; children?: React.Re
     >
       <div>
         <div style={{ fontSize: "11px", fontWeight: 600 }}>{item.label}</div>
-        <div style={{ fontSize: "9px", color: "var(--color-muted-foreground)", marginTop: "2px" }}>{item.desc}</div>
+        <div style={{ fontSize: "9px", color: "var(--color-muted-foreground)", marginTop: "2px" }}>
+          {item.desc}
+        </div>
       </div>
       {children}
     </div>
@@ -125,6 +156,7 @@ interface ExchangeFormState {
   label: string;
   isTestnet: boolean;
   showSecret: boolean;
+  mtType: "mt4" | "mt5";
 }
 
 function ExchangeCard({
@@ -185,12 +217,21 @@ function ExchangeCard({
       }}
     >
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isConnected ? "4px" : "8px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: isConnected ? "4px" : "8px",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <span style={{ fontSize: "14px" }}>{exchange.icon}</span>
           <span style={{ fontSize: "11px", fontWeight: 700 }}>{exchange.name}</span>
           {isConnected ? (
-            <span style={{ fontSize: "10px", color: "var(--color-bullish)", fontWeight: 600 }}>✓</span>
+            <span style={{ fontSize: "10px", color: "var(--color-bullish)", fontWeight: 600 }}>
+              ✓
+            </span>
           ) : null}
           {form.isTestnet && (
             <span
@@ -221,7 +262,11 @@ function ExchangeCard({
             </span>
           </div>
         ) : (
-          <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)", fontWeight: 500 }}>Not configured</span>
+          <span
+            style={{ fontSize: "9px", color: "var(--color-muted-foreground)", fontWeight: 500 }}
+          >
+            Not configured
+          </span>
         )}
       </div>
 
@@ -263,7 +308,13 @@ function ExchangeCard({
             {isDeleting ? "Removing…" : "Disconnect"}
           </button>
           {view?.lastConnectedAt && (
-            <span style={{ fontSize: "8px", color: "var(--color-muted-foreground)", marginLeft: "auto" }}>
+            <span
+              style={{
+                fontSize: "8px",
+                color: "var(--color-muted-foreground)",
+                marginLeft: "auto",
+              }}
+            >
               Last: {new Date(view.lastConnectedAt).toLocaleDateString()}
             </span>
           )}
@@ -316,7 +367,7 @@ function ExchangeCard({
               type={form.showSecret ? "text" : "password"}
               value={form.apiSecret}
               onChange={(e) => onFormChange({ ...form, apiSecret: e.target.value })}
-              placeholder="API Secret"
+              placeholder={exchange.id === "exness" ? "Account ID" : "API Secret"}
               style={{ ...monoInputStyle, paddingRight: "28px" }}
             />
             <button
@@ -340,15 +391,47 @@ function ExchangeCard({
               {form.showSecret ? "◉" : "○"}
             </button>
           </div>
-          {/* Passphrase (OKX only) */}
-          {(exchange.fields as readonly string[]).includes("passphrase") && (
-            <input
-              type={form.showSecret ? "text" : "password"}
-              value={form.passphrase}
-              onChange={(e) => onFormChange({ ...form, passphrase: e.target.value })}
-              placeholder="Passphrase"
-              style={monoInputStyle}
-            />
+          {/* Passphrase (OKX only — Exness uses MT Type toggle instead) */}
+          {(exchange.fields as readonly string[]).includes("passphrase") &&
+            exchange.id !== "exness" && (
+              <input
+                type={form.showSecret ? "text" : "password"}
+                value={form.passphrase}
+                onChange={(e) => onFormChange({ ...form, passphrase: e.target.value })}
+                placeholder="Passphrase"
+                style={monoInputStyle}
+              />
+            )}
+          {/* MT Type selector (Exness only) */}
+          {exchange.id === "exness" && (
+            <div style={{ display: "flex", gap: "4px" }}>
+              {(["mt4", "mt5"] as const).map((mt) => (
+                <button
+                  key={mt}
+                  type="button"
+                  onClick={() => onFormChange({ ...form, mtType: mt })}
+                  style={{
+                    flex: 1,
+                    fontSize: "9px",
+                    fontWeight: 600,
+                    padding: "4px 0",
+                    borderRadius: "4px",
+                    border: "none",
+                    cursor: "pointer",
+                    color:
+                      form.mtType === mt
+                        ? "var(--color-foreground)"
+                        : "var(--color-muted-foreground)",
+                    background:
+                      form.mtType === mt
+                        ? `${"var(--color-bullish)"}26`
+                        : "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
+                  }}
+                >
+                  {mt.toUpperCase()}
+                </button>
+              ))}
+            </div>
           )}
           {/* Testnet toggle + Save */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -384,7 +467,9 @@ function ExchangeCard({
                   }}
                 />
               </div>
-              <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>Testnet</span>
+              <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>
+                Testnet
+              </span>
             </div>
             <button
               onClick={onSave}
@@ -451,6 +536,7 @@ function SettingsPage() {
 
   const [slippageIdx, setSlippageIdx] = useState(stored.slippageIdx ?? 1);
   const [chainIdx, setChainIdx] = useState(stored.chainIdx ?? 0);
+  const [testSoundPlaying, setTestSoundPlaying] = useState(false);
 
   const toggleLocal = (id: string) => {
     setLocalToggles((prev) => {
@@ -472,6 +558,12 @@ function SettingsPage() {
     saveLocalSettings({ ...loadLocalSettings(), ...localToggles, slippageIdx, chainIdx: i });
     showSavedToast();
   };
+
+  const handleTestSound = useCallback(() => {
+    soundManager.test("notification");
+    setTestSoundPlaying(true);
+    setTimeout(() => setTestSoundPlaying(false), 1000);
+  }, []);
 
   // ── Server-side editable state ─────────────────────────────────────────────
   const [notificationChannels, setNotificationChannels] = useState<NotificationChannels>({
@@ -586,7 +678,15 @@ function SettingsPage() {
   const [exchForms, setExchForms] = useState<Record<string, ExchangeFormState>>(() => {
     const init: Record<string, ExchangeFormState> = {};
     for (const ex of EXCHANGES) {
-      init[ex.id] = { apiKey: "", apiSecret: "", passphrase: "", label: "", isTestnet: true, showSecret: false };
+      init[ex.id] = {
+        apiKey: "",
+        apiSecret: "",
+        passphrase: "",
+        label: "",
+        isTestnet: true,
+        showSecret: false,
+        mtType: "mt5",
+      };
     }
     return init;
   });
@@ -603,49 +703,165 @@ function SettingsPage() {
     {
       title: "Trading",
       items: [
-        { type: "select", label: "Default Slippage", desc: "Maximum slippage tolerance for trades", options: ["0.5%", "1.0%", "2.0%", "3.0%"], current: slippageIdx, onChange: handleSlippageChange },
-        { type: "select", label: "Default Chain", desc: "Blockchain for trading", options: ["Solana", "Ethereum", "Base", "Arbitrum"], current: chainIdx, onChange: handleChainChange },
-        { type: "toggle-local", id: "tradeConfirmations", label: "Trade Confirmations", desc: "Show confirmation dialog before executing trades" },
-        { type: "toggle-local", id: "autoRefresh", label: "Auto Refresh Data", desc: "Automatically refresh token prices and data" },
+        {
+          type: "select",
+          label: "Default Slippage",
+          desc: "Maximum slippage tolerance for trades",
+          options: ["0.5%", "1.0%", "2.0%", "3.0%"],
+          current: slippageIdx,
+          onChange: handleSlippageChange,
+        },
+        {
+          type: "select",
+          label: "Default Chain",
+          desc: "Blockchain for trading",
+          options: ["Solana", "Ethereum", "Base", "Arbitrum"],
+          current: chainIdx,
+          onChange: handleChainChange,
+        },
+        {
+          type: "toggle-local",
+          id: "tradeConfirmations",
+          label: "Trade Confirmations",
+          desc: "Show confirmation dialog before executing trades",
+        },
+        {
+          type: "toggle-local",
+          id: "autoRefresh",
+          label: "Auto Refresh Data",
+          desc: "Automatically refresh token prices and data",
+        },
       ],
     },
     {
       title: "Notifications",
       items: [
-        { type: "toggle-server", id: "priceAlerts", label: "Price Alerts", desc: "Get notified when tokens hit your price targets", key: "price_alerts" },
-        { type: "toggle-server", id: "whaleAlerts", label: "Whale Alerts", desc: "Large transaction notifications", key: "whale_alerts" },
-        { type: "toggle-server", id: "signalNotifications", label: "AI Signal Alerts", desc: "New AI trading signal notifications", key: "signal_notifications" },
-        { type: "toggle-local", id: "soundEnabled", label: "Sound Effects", desc: "Play sounds for notifications and alerts" },
+        {
+          type: "toggle-server",
+          id: "priceAlerts",
+          label: "Price Alerts",
+          desc: "Get notified when tokens hit your price targets",
+          key: "price_alerts",
+        },
+        {
+          type: "toggle-server",
+          id: "whaleAlerts",
+          label: "Whale Alerts",
+          desc: "Large transaction notifications",
+          key: "whale_alerts",
+        },
+        {
+          type: "toggle-server",
+          id: "signalNotifications",
+          label: "AI Signal Alerts",
+          desc: "New AI trading signal notifications",
+          key: "signal_notifications",
+        },
+        {
+          type: "toggle-local",
+          id: "soundEnabled",
+          label: "Sound Effects",
+          desc: "Play sounds for notifications and alerts",
+        },
+        {
+          type: "button",
+          label: "Test Sound",
+          desc: testSoundPlaying ? "🔊 Playing..." : "Preview the notification sound",
+          btnText: testSoundPlaying ? "🔊 Playing..." : "Play",
+          btnColor: "var(--color-bullish)",
+          onClick: handleTestSound,
+        },
       ],
     },
     {
       title: "AI Provider",
       items: [
-        { type: "select", label: "LLM Provider", desc: "Preferred large language model provider", options: llmOptions, current: llmOptions.indexOf(llmProvider) >= 0 ? llmOptions.indexOf(llmProvider) : 0, onChange: (i) => setLlmProvider(llmOptions[i]) },
+        {
+          type: "select",
+          label: "LLM Provider",
+          desc: "Preferred large language model provider",
+          options: llmOptions,
+          current: llmOptions.indexOf(llmProvider) >= 0 ? llmOptions.indexOf(llmProvider) : 0,
+          onChange: (i) => setLlmProvider(llmOptions[i]),
+        },
       ],
     },
     {
       title: "Integrations",
       items: [
-        { type: "input", id: "telegramChatId", label: "Telegram Chat ID", desc: "Your Telegram chat ID for bot notifications", value: telegramChatId, onChange: setTelegramChatId, placeholder: "e.g. 123456789" },
-        { type: "input", id: "webhookUrl", label: "Webhook URL", desc: "Custom webhook endpoint for notifications", value: webhookUrl, onChange: setWebhookUrl, placeholder: "https://..." },
+        {
+          type: "input",
+          id: "telegramChatId",
+          label: "Telegram Chat ID",
+          desc: "Your Telegram chat ID for bot notifications",
+          value: telegramChatId,
+          onChange: setTelegramChatId,
+          placeholder: "e.g. 123456789",
+        },
+        {
+          type: "input",
+          id: "webhookUrl",
+          label: "Webhook URL",
+          desc: "Custom webhook endpoint for notifications",
+          value: webhookUrl,
+          onChange: setWebhookUrl,
+          placeholder: "https://...",
+        },
       ],
     },
     {
       title: "Display",
       items: [
-        { type: "toggle-local", id: "darkMode", label: "Dark Mode", desc: "Use dark theme (recommended for trading)" },
-        { type: "toggle-local", id: "compactMode", label: "Compact Mode", desc: "Reduce spacing for more data density" },
-        { type: "toggle-local", id: "showChartOnHover", label: "Chart on Hover", desc: "Show mini chart when hovering over tokens" },
+        {
+          type: "toggle-local",
+          id: "darkMode",
+          label: "Dark Mode",
+          desc: "Use dark theme (recommended for trading)",
+        },
+        {
+          type: "toggle-local",
+          id: "compactMode",
+          label: "Compact Mode",
+          desc: "Reduce spacing for more data density",
+        },
+        {
+          type: "toggle-local",
+          id: "showChartOnHover",
+          label: "Chart on Hover",
+          desc: "Show mini chart when hovering over tokens",
+        },
       ],
     },
     {
       title: "Security & Account",
       items: [
-        { type: "toggle-local", id: "twoFactor", label: "Two-Factor Auth", desc: "Add an extra layer of security to your account" },
-        { type: "button", label: "Change Password", desc: "Update your account password", btnText: "Change", btnColor: "var(--color-bullish)" },
-        { type: "button", label: "Export Data", desc: "Download your trading history and portfolio data", btnText: "Export", btnColor: "var(--color-primary)" },
-        { type: "button", label: "Delete Account", desc: "Permanently delete your account and all data", btnText: "Delete", btnColor: "var(--color-bearish)" },
+        {
+          type: "toggle-local",
+          id: "twoFactor",
+          label: "Two-Factor Auth",
+          desc: "Add an extra layer of security to your account",
+        },
+        {
+          type: "button",
+          label: "Change Password",
+          desc: "Update your account password",
+          btnText: "Change",
+          btnColor: "var(--color-bullish)",
+        },
+        {
+          type: "button",
+          label: "Export Data",
+          desc: "Download your trading history and portfolio data",
+          btnText: "Export",
+          btnColor: "var(--color-primary)",
+        },
+        {
+          type: "button",
+          label: "Delete Account",
+          desc: "Permanently delete your account and all data",
+          btnText: "Delete",
+          btnColor: "var(--color-bearish)",
+        },
       ],
     },
   ];
@@ -668,9 +884,16 @@ function SettingsPage() {
   const renderItemControl = (item: SettingItem) => {
     switch (item.type) {
       case "toggle-server":
-        return <ToggleSwitch enabled={!!notificationChannels[item.key]} onClick={() => toggleNotification(item.key)} />;
+        return (
+          <ToggleSwitch
+            enabled={!!notificationChannels[item.key]}
+            onClick={() => toggleNotification(item.key)}
+          />
+        );
       case "toggle-local":
-        return <ToggleSwitch enabled={!!localToggles[item.id]} onClick={() => toggleLocal(item.id)} />;
+        return (
+          <ToggleSwitch enabled={!!localToggles[item.id]} onClick={() => toggleLocal(item.id)} />
+        );
       case "select":
         return (
           <div style={{ display: "flex", gap: "2px", flexShrink: 0 }}>
@@ -685,8 +908,14 @@ function SettingsPage() {
                   borderRadius: "4px",
                   border: "none",
                   cursor: "pointer",
-                  color: oi === item.current ? "var(--color-foreground)" : "var(--color-muted-foreground)",
-                  background: oi === item.current ? `${"var(--color-bullish)"}26` : "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
+                  color:
+                    oi === item.current
+                      ? "var(--color-foreground)"
+                      : "var(--color-muted-foreground)",
+                  background:
+                    oi === item.current
+                      ? `${"var(--color-bullish)"}26`
+                      : "color-mix(in oklab, var(--color-foreground) 4%, transparent)",
                 }}
               >
                 {opt}
@@ -707,6 +936,7 @@ function SettingsPage() {
       case "button":
         return (
           <button
+            onClick={item.onClick}
             style={{
               fontSize: "10px",
               fontWeight: 600,
@@ -715,7 +945,7 @@ function SettingsPage() {
               border: "none",
               background: `${item.btnColor}20`,
               color: item.btnColor,
-              cursor: "pointer",
+              cursor: item.onClick ? "pointer" : "default",
             }}
           >
             {item.btnText}
@@ -725,7 +955,11 @@ function SettingsPage() {
   };
 
   return (
-    <PageLayout title="⚙ Settings" loading={settingsQuery.isLoading} loadingColor={"var(--color-bullish)"}>
+    <PageLayout
+      title="⚙ Settings"
+      loading={settingsQuery.isLoading}
+      loadingColor={"var(--color-bullish)"}
+    >
       {/* Toast indicator */}
       {showToast && (
         <div
@@ -794,7 +1028,9 @@ function SettingsPage() {
             borderRadius: "6px",
             border: "none",
             cursor: updateMutation.isPending ? "wait" : "pointer",
-            background: updateMutation.isPending ? `${"var(--color-bullish)"}66` : "var(--color-bullish)",
+            background: updateMutation.isPending
+              ? `${"var(--color-bullish)"}66`
+              : "var(--color-bullish)",
             color: "var(--color-foreground)",
             transition: "background 0.2s, opacity 0.2s",
             opacity: updateMutation.isPending ? 0.7 : 1,
@@ -838,7 +1074,11 @@ function SettingsPage() {
                     exchangeId: ex.id,
                     apiKey: f.apiKey,
                     apiSecret: f.apiSecret,
-                    ...(f.passphrase ? { passphrase: f.passphrase } : {}),
+                    ...(ex.id === "exness"
+                      ? { passphrase: f.mtType }
+                      : f.passphrase
+                        ? { passphrase: f.passphrase }
+                        : {}),
                     ...(f.label ? { label: f.label } : {}),
                     isTestnet: f.isTestnet,
                   },
@@ -847,7 +1087,15 @@ function SettingsPage() {
                       // Reset form
                       setExchForms((prev) => ({
                         ...prev,
-                        [ex.id]: { apiKey: "", apiSecret: "", passphrase: "", label: "", isTestnet: true, showSecret: false },
+                        [ex.id]: {
+                          apiKey: "",
+                          apiSecret: "",
+                          passphrase: "",
+                          label: "",
+                          isTestnet: true,
+                          showSecret: false,
+                          mtType: "mt5",
+                        },
                       }));
                     },
                   },
@@ -859,12 +1107,18 @@ function SettingsPage() {
                   { exchangeId: ex.id },
                   {
                     onSuccess: (result: unknown) => {
-                      setTestResults((prev) => ({ ...prev, [ex.id]: result as TestConnectionResult }));
+                      setTestResults((prev) => ({
+                        ...prev,
+                        [ex.id]: result as TestConnectionResult,
+                      }));
                     },
                     onError: (err) => {
                       setTestResults((prev) => ({
                         ...prev,
-                        [ex.id]: { success: false, error: err instanceof Error ? err.message : String(err) },
+                        [ex.id]: {
+                          success: false,
+                          error: err instanceof Error ? err.message : String(err),
+                        },
                       }));
                     },
                   },
@@ -901,9 +1155,18 @@ function SettingsPage() {
             >
               {section.items.map((item, i) => (
                 <div
-                  key={item.type === "input" ? item.id : item.type === "toggle-local" || item.type === "toggle-server" ? item.id : i}
+                  key={
+                    item.type === "input"
+                      ? item.id
+                      : item.type === "toggle-local" || item.type === "toggle-server"
+                        ? item.id
+                        : i
+                  }
                   style={{
-                    borderBottom: i < section.items.length - 1 ? `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}` : "none",
+                    borderBottom:
+                      i < section.items.length - 1
+                        ? `1px solid ${"color-mix(in oklab, var(--color-foreground) 4%, transparent)"}`
+                        : "none",
                   }}
                 >
                   <SettingRow item={item}>{renderItemControl(item)}</SettingRow>
