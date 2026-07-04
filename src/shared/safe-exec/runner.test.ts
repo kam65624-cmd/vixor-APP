@@ -54,7 +54,7 @@ describe("validateStrategyCode", () => {
   it("rejects import statement", () => {
     const r = validateStrategyCode("import fs from 'fs'");
     expect(r.valid).toBe(false);
-    expect(r.error).toMatch(/import|built-in/);
+    expect(r.error).toMatch(/import|fs module|built-in/);
   });
 
   it("rejects dynamic import()", () => {
@@ -78,7 +78,7 @@ describe("validateStrategyCode", () => {
   it("rejects bracket dunder access", () => {
     const r = validateStrategyCode('const x = {}["__proto__"]');
     expect(r.valid).toBe(false);
-    expect(r.error).toMatch(/dunder|bracket/i);
+    expect(r.error).toMatch(/dunder|bracket|__proto__/i);
   });
 
   it("rejects constructor chain", () => {

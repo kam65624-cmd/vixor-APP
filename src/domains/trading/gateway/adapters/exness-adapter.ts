@@ -276,8 +276,10 @@ export class ExnessAdapter implements ExchangeAdapter {
       // MT5 supports 6-digit precision; MT4 typically 5-digit
       // We send the price as-is and let the server handle rounding
       ...(request.price ? { price: request.price } : {}),
-      ...(request.stopPrice ? { sl: request.stopPrice } : {}),
+      // stopPrice is the trigger price for pending orders; stopLoss is attached SL
+      // If both are set, stopPrice goes to 'price' (already above), stopLoss goes to 'sl'
       ...(request.stopLoss ? { sl: request.stopLoss } : {}),
+      ...(request.stopPrice && !request.price ? { price: request.stopPrice } : {}),
       ...(request.takeProfit ? { tp: request.takeProfit } : {}),
       ...(request.clientOrderId ? { clientOrderId: request.clientOrderId } : {}),
       mtType: this.mtType,
@@ -457,6 +459,19 @@ export class ExnessAdapter implements ExchangeAdapter {
   async closePosition(symbol: string, quantity?: number): Promise<OrderResult> {
     this.requireConnected();
 
+    // Determine closing side: find the position to know its direction
+    let closeSide: "buy" | "sell" = "sell"; // default fallback
+    try {
+      const positions = await this.getOpenPositions();
+      const pos = positions.find((p) => p.symbol === symbol);
+      if (pos) {
+        // Closing a long = sell, closing a short = buy
+        closeSide = pos.side === "long" ? "sell" : "buy";
+      }
+    } catch {
+      // If we can't determine direction, keep default
+    }
+
     interface ExnessCloseResponse {
       positionId: number;
       symbol: string;
@@ -477,7 +492,7 @@ export class ExnessAdapter implements ExchangeAdapter {
       return {
         id: `close-${result.positionId}-${Date.now()}`,
         symbol: result.symbol,
-        side: "sell",
+        side: closeSide,
         type: "market",
         quantity: result.volume ?? quantity ?? 0,
         price: result.price,

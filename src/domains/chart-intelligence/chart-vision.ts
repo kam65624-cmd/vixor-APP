@@ -241,7 +241,7 @@ function normalizeTimeframe(tf: string | null): string | null {
 }
 
 // ── Calculate overall confidence from individual confidences ──
-function calculateOverallConfidence(extraction: any): number {
+export function calculateOverallConfidence(extraction: any): number {
   // Weight: symbol is most important (50%), timeframe (25%), price (25%)
   const symbolWeight = 0.5;
   const timeframeWeight = 0.25;
