@@ -565,7 +565,7 @@ function SwapPage() {
   return (
     <PageLayout
       title="DEX Swap"
-      badge="DEX"
+      badge="DEMO"
       badgeColor="var(--color-primary)"
       description="Swap tokens on Solana and EVM chains"
     >
@@ -1355,6 +1355,21 @@ function SwapPage() {
           )}
 
           {/* Bottom Spacer */}
+          <div style={{ height: "12px" }} />
+          <div
+            style={{
+              textAlign: "center",
+              padding: "10px 16px",
+              borderRadius: "8px",
+              background: "var(--color-bearish)14",
+              border: "1px solid var(--color-bearish)26",
+            }}
+          >
+            <span style={{ fontSize: "11px", color: "var(--color-bearish)", fontWeight: 600 }}>⚠ DEMO MODE</span>
+            <p style={{ fontSize: "10px", color: "var(--color-muted-foreground)", marginTop: "4px", lineHeight: 1.4 }}>
+              This is a simulated swap for demonstration. No real funds are exchanged.
+            </p>
+          </div>
           <div style={{ height: "24px" }} />
         </div>
       </PageScrollArea>

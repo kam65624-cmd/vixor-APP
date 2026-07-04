@@ -70,7 +70,7 @@ function ReferralPage() {
 
   const handleShare = useCallback(() => {
     const text = `Join me on Vixor! Use my referral code: ${referralCode}`;
-    const url = `https://t.me/share/url?url=https://vixor.app&text=${encodeURIComponent(text)}`;
+    const url = `https://t.me/share/url?url=https://vixor-app.vercel.app&text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   }, [referralCode]);
 

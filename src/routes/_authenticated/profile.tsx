@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile, getUserPoints, getTradeHistory } from "@/shared/data";
@@ -234,7 +234,9 @@ function ProfilePage() {
   const longestStreak = streak?.longest_streak ?? profile?.streak_days ?? 0;
   const currentStreak = streak?.current_streak ?? profile?.streak_days ?? 0;
 
-  const hasAvatar = Boolean(profile?.avatar_url || profile?.telegram_photo_url);
+  const [imgError, setImgError] = useState(false);
+
+  const hasAvatar = Boolean((profile?.avatar_url || profile?.telegram_photo_url) && !imgError);
   const avatarSrc = profile?.avatar_url || profile?.telegram_photo_url || "";
 
   // Build connected accounts list from real profile data
@@ -315,6 +317,7 @@ function ProfilePage() {
           <img
             src={avatarSrc}
             alt={displayName}
+            onError={() => setImgError(true)}
             style={{
               width: 64,
               height: 64,
@@ -322,18 +325,6 @@ function ProfilePage() {
               objectFit: "cover" as const,
               flexShrink: 0,
               border: `2px solid ${"color-mix(in oklab, var(--color-primary) 15%, transparent)"}`,
-            }}
-            onError={(e) => {
-              const img = e.target as HTMLImageElement;
-              img.style.display = "none";
-              const parent = img.parentElement;
-              if (parent && !parent.querySelector("[data-initials]")) {
-                const fallback = document.createElement("div");
-                fallback.setAttribute("data-initials", "true");
-                fallback.textContent = initial;
-                fallback.style.cssText = `width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,${"var(--color-primary)"},${"var(--color-bullish)"});display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:${"var(--color-foreground)"};flex-shrink:0;border:2px solid ${"color-mix(in oklab, var(--color-primary) 15%, transparent)"}`;
-                parent.insertBefore(fallback, img);
-              }
             }}
           />
         ) : (

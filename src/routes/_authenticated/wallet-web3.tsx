@@ -7,8 +7,7 @@ import { EVM_CHAINS } from "@/domains/wallet/types";
 import type { TokenBalance } from "@/domains/wallet/types";
 import { getPhantomSolBalance, getPhantomTokenBalances } from "@/domains/wallet/adapters/phantom-adapter";
 import { getEvmNativeBalance } from "@/domains/wallet/adapters/metamask-adapter";
-import { PageLayout, StatsRow, ScrollArea, PageBadge as Badge, SectionTitle } from "@/components/vixor/PageLayout";
-import { EmptyState } from "@/components/vixor/EmptyState";
+import { PageLayout, StatsRow, ScrollArea, PageBadge as Badge, SectionTitle, EmptyState } from "@/components/vixor/PageLayout";
 import { formatCurrency, formatNumber } from "@/shared/utils/formatters";
 import { LiveDot } from "@/components/vixor/LiveDot";
 import { MiniSparkline } from "@/components/vixor/MiniSparkline";
@@ -208,15 +207,9 @@ function WalletWeb3Page() {
         <>
           {!isConnected ? (
             <EmptyState
-              icon={
-                <svg className="size-12 text-[var(--text-tertiary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-                  <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-                  <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
-                </svg>
-              }
+              icon="💳"
               title="No wallet connected"
-              description="Connect Phantom (Solana) or MetaMask (ETH, Polygon, Avalanche) to view your portfolio across chains."
+              message="Connect Phantom (Solana) or MetaMask (ETH, Polygon, Avalanche) to view your portfolio across chains."
             />
           ) : tokensLoading ? (
             <div className="flex items-center justify-center py-12">
@@ -227,7 +220,7 @@ function WalletWeb3Page() {
             <EmptyState
               icon="💎"
               title="No tokens found"
-              description={`This ${chainLabel} wallet has no SPL/ERC-20 token balances.`}
+              message={`This ${chainLabel} wallet has no SPL/ERC-20 token balances.`}
             />
           ) : (
             <>
@@ -248,7 +241,7 @@ function WalletWeb3Page() {
           <EmptyState
             icon="📋"
             title="No Transactions"
-            description="Transaction history will appear here after swaps, transfers, or trades."
+            message="Transaction history will appear here after swaps, transfers, or trades."
           />
         </>
       )}

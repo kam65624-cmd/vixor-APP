@@ -161,6 +161,7 @@ const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0
         {item.cost}
       </div>
       <button
+        disabled
         style={{
           marginTop: 10,
           fontSize: 10,
@@ -168,13 +169,13 @@ const RewardItem = memo(function RewardItem({ item }: { item: (typeof rewards)[0
           padding: "6px 12px",
           borderRadius: 6,
           border: "none",
-          cursor: "pointer",
-          background: `${"var(--color-bullish)"}26`,
-          color: "var(--color-primary)",
+          cursor: "not-allowed",
+          background: `${"var(--color-muted-foreground)"}1A`,
+          color: "var(--color-muted-foreground)",
           fontFamily: "'Inter', system-ui, sans-serif",
         }}
       >
-        Redeem
+        Redeem (Coming Soon)
       </button>
     </div>
   );
@@ -287,7 +288,7 @@ function RewardsPage() {
   }, [lifetimeEarned]);
 
   // Referral URL
-  const referralUrl = referralCode ? `https://vixor.io/ref/${referralCode}` : "";
+  const referralUrl = referralCode ? `https://vixor-app.vercel.app/ref/${referralCode}` : "";
 
   // Copy handler
   const handleCopy = useCallback(() => {

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { getPremiumData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
@@ -36,8 +36,22 @@ export const subscribeToPlan = createServerFn({ method: "POST" })
   });
 
 function PremiumPage() {
+  const queryClient = useQueryClient();
   const fetchPremium = useStableServerFn(getPremiumData);
   const [subscribing, setSubscribing] = useState<string | null>(null);
+
+  const subscribeMutation = useMutation({
+    mutationFn: (planId: string) => subscribeToPlan({ data: { planId } }),
+    onMutate: (planId) => {
+      setSubscribing(planId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["premium-data"] });
+    },
+    onSettled: () => {
+      setSubscribing(null);
+    },
+  });
 
   const query = useQuery({
     queryKey: ["premium-data"],
@@ -214,6 +228,7 @@ function PremiumPage() {
                   ) : (
                     <button
                       disabled={subscribing === plan.id}
+                      onClick={() => subscribeMutation.mutate(plan.id)}
                       style={{
                         width: "100%",
                         padding: "10px",
