@@ -222,10 +222,17 @@ function RewardsPage() {
   const fetchRef = useStableServerFn(getReferralData);
   const claimFn = useStableServerFn(claimDailyCheckin);
 
+  const [claimError, setClaimError] = useState<string | null>(null);
+
   const claimMutation = useMutation({
     mutationFn: () => claimFn({}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-points"] });
+      setClaimError(null);
+    },
+    onError: (err: Error) => {
+      setClaimError(err.message || "Failed to claim. Try again.");
+      setTimeout(() => setClaimError(null), 4000);
     },
   });
 
@@ -478,6 +485,11 @@ function RewardsPage() {
             {claimMutation.isSuccess && (
               <div style={{ textAlign: "center", marginTop: 8, fontSize: 11, color: "var(--color-muted-foreground)" }}>
                 Streak: {claimMutation.data?.streak} days 🔥
+              </div>
+            )}
+            {claimError && (
+              <div style={{ textAlign: "center", marginTop: 8, fontSize: 11, color: "var(--color-bearish)" }}>
+                {claimError}
               </div>
             )}
           </div>

@@ -14,7 +14,8 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getTelegramInitData } from "@/shared/telegram";
 import { useRenderGuard } from "@/shared/hooks/use-render-guard";
-import { getUserPoints } from "@/shared/data";
+import { getUserPoints, getUserProfile } from "@/shared/data";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 
 // ── SOL Price Hook ──────────────────────────────────────────────────────────
 
@@ -51,12 +52,6 @@ function useSolPrice() {
 }
 
 // ── Lazy Imports ────────────────────────────────────────────────────────────
-
-const WalletConnectButton = lazy(() =>
-  import("@/domains/wallet/adapter").then((m) => ({
-    default: m.WalletConnectButton,
-  })),
-);
 
 const OnboardingModal = lazy(() =>
   import("./OnboardingModal").then((m) => ({ default: m.OnboardingModal })),
@@ -270,15 +265,6 @@ const moreNavCategories: MoreNavCategory[] = [
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="7" width="20" height="14" rx="2" />
             <path d="M16 3h-8l-2 4h12l-2-4z" />
-          </svg>
-        ),
-      },
-      {
-        to: "/portfolio",
-        label: "Portfolio",
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 3h-8l-2 4h12l-2-4z" /><path d="M12 11v6" /><path d="M9 14h6" />
           </svg>
         ),
       },
@@ -559,6 +545,48 @@ interface TopNavProps {
   isTg?: boolean;
 }
 
+// ── Top Nav Avatar — shows real user photo ──────────────────────────────
+
+const TopNavAvatar = memo(function TopNavAvatar() {
+  const fetchProfile = useStableServerFn(getUserProfile);
+  const { data } = useQuery({
+    queryKey: ["topnav-profile"],
+    queryFn: () => fetchProfile({}),
+    staleTime: 60_000,
+  });
+  const profile = data?.profile;
+  const photoUrl = profile?.avatar_url || profile?.telegram_photo_url;
+  const displayName = profile?.display_name || profile?.username || "";
+  const initial = (displayName || "U").charAt(0).toUpperCase();
+  const [imgErr, setImgErr] = useState(false);
+
+  return (
+    <Link
+      to="/profile"
+      className="flex items-center justify-center rounded-full overflow-hidden"
+      style={{
+        width: "26px",
+        height: "26px",
+        border: "1px solid var(--color-border)",
+        textDecoration: "none",
+        background: photoUrl && !imgErr ? "none" : "var(--gradient-primary)",
+        flexShrink: 0,
+      }}
+    >
+      {photoUrl && !imgErr ? (
+        <img
+          src={photoUrl}
+          alt={displayName}
+          onError={() => setImgErr(true)}
+          style={{ width: "100%", height: "100%", objectFit: "cover" as const }}
+        />
+      ) : (
+        <span style={{ fontSize: "10px", fontWeight: 800, color: "white" }}>{initial}</span>
+      )}
+    </Link>
+  );
+});
+
 const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) {
   return (
     <header
@@ -577,18 +605,18 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
         className="flex items-center justify-between w-full"
         style={{ maxWidth: "100%" }}
       >
-        {/* Left: Logo */}
+        {/* Left: Logo (icon only) */}
         <div className="flex items-center">
           <Link
             to="/"
-            className="flex items-center gap-1.5 mr-4"
+            className="flex items-center mr-4"
             style={{ textDecoration: "none" }}
           >
             <div
               style={{
-                width: "22px",
-                height: "22px",
-                borderRadius: "6px",
+                width: "28px",
+                height: "28px",
+                borderRadius: "8px",
                 background: "var(--gradient-primary)",
                 display: "flex",
                 alignItems: "center",
@@ -596,8 +624,8 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
               }}
             >
               <svg
-                width="12"
-                height="12"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="white"
@@ -609,16 +637,6 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
                 <path d="M7 14l4-4 4 4 5-5" />
               </svg>
             </div>
-            <span
-              style={{
-                fontSize: "13px",
-                fontWeight: 700,
-                color: "var(--color-foreground)",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              VIXOR
-            </span>
           </Link>
 
           {/* SOL Global Price — compact */}
@@ -641,7 +659,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
           {/* Points */}
           <PointsBadge />
 
-          {/* Deposit */}
+          {/* Wallet — navigates to wallet page */}
           <Link
             to="/wallet-web3"
             className="hidden sm:flex items-center gap-1 px-3 py-1 rounded text-[11px] font-bold"
@@ -651,35 +669,13 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
               textDecoration: "none",
             }}
           >
-            Deposit
+            Connect
           </Link>
 
-          {/* Wallet Connect */}
-          <Suspense fallback={null}>
-            <WalletConnectButton />
-          </Suspense>
+          {/* User Avatar — real photo from profile */}
+          <TopNavAvatar />
 
-          {/* User Avatar */}
-          <Link
-            to="/profile"
-            className="flex items-center justify-center rounded-full"
-            style={{
-              width: "26px",
-              height: "26px",
-              background:
-                "linear-gradient(135deg, rgba(14,203,129,0.30), rgba(14,203,129,0.20))",
-              border: "1px solid var(--color-border)",
-              textDecoration: "none",
-            }}
-          >
-            <span
-              style={{ fontSize: "9px", fontWeight: 800, color: "var(--color-foreground)" }}
-            >
-              ME
-            </span>
-          </Link>
-
-          {/* Notifications */}
+          {/* Notifications — no hardcoded badge */}
           <Link
             to="/notifications"
             className="relative flex items-center justify-center rounded-full"
@@ -703,17 +699,6 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
               <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
               <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
             </svg>
-            <span
-              className="absolute"
-              style={{
-                top: "2px",
-                right: "2px",
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                background: "var(--color-bullish)",
-              }}
-            />
           </Link>
         </div>
       </div>

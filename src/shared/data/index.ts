@@ -583,7 +583,7 @@ export const getWalletData = createServerFn({ method: "GET" })
         .order("created_at", { ascending: false }),
       supabase
         .from("profiles")
-        .select("id, username, display_name, xp, streak_days, avatar_url, referral_code")
+        .select("id, username, display_name, xp, streak_days, avatar_url, telegram_photo_url, referral_code")
         .eq("id", userId)
         .single(),
     ]);
