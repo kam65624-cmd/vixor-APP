@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getTelegramInitData } from "@/shared/telegram";
 import { useRenderGuard } from "@/shared/hooks/use-render-guard";
-import { getUserPoints, getUserProfile } from "@/shared/data";
+import { getUserPoints, getUserProfile, getUnreadNotificationCount } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 
 // ── SOL Price Hook ──────────────────────────────────────────────────────────
@@ -524,6 +524,69 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
+// ── Notification Bell with unread badge ──────────────────────────────────
+
+const NotificationBell = memo(function NotificationBell() {
+  const fetchUnread = useStableServerFn(getUnreadNotificationCount);
+  const { data } = useQuery({
+    queryKey: ["unread-notif-count"],
+    queryFn: () => fetchUnread({}),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+  const unread = data?.unreadCount ?? 0;
+
+  return (
+    <Link
+      to="/notifications"
+      className="relative flex items-center justify-center rounded-full"
+      style={{
+        width: "26px",
+        height: "26px",
+        background: "var(--color-muted)",
+        textDecoration: "none",
+      }}
+    >
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="var(--color-muted-foreground)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+      </svg>
+      {unread > 0 && (
+        <span
+          style={{
+            position: "absolute",
+            top: "-3px",
+            right: "-3px",
+            minWidth: "14px",
+            height: "14px",
+            borderRadius: "7px",
+            background: "var(--color-bearish)",
+            color: "white",
+            fontSize: "8px",
+            fontWeight: 800,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0 3px",
+            lineHeight: 1,
+          }}
+        >
+          {unread > 99 ? "99+" : unread}
+        </span>
+      )}
+    </Link>
+  );
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // TOP NAV — Minimal: Logo, Discover CTA, SOL price, Deposit, Wallet, User, Bell
 // ─────────────────────────────────────────────────────────────────────────────
@@ -579,6 +642,19 @@ function useTelegramPhoto(): string | null {
 const TopNavAvatar = memo(function TopNavAvatar() {
   const fetchProfile = useStableServerFn(getUserProfile);
   const tgPhoto = useTelegramPhoto();
+
+  // Also get Telegram name client-side for the initial fallback
+  const [tgName, setTgName] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const tg = (window as unknown as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { first_name?: string; username?: string } } } } }).Telegram?.WebApp;
+      const user = tg?.initDataUnsafe?.user;
+      if (user?.first_name) setTgName(user.first_name);
+      else if (user?.username) setTgName(user.username);
+    } catch { /* noop */ }
+  }, []);
+
   const { data } = useQuery({
     queryKey: ["topnav-profile"],
     queryFn: () => fetchProfile({}),
@@ -587,7 +663,7 @@ const TopNavAvatar = memo(function TopNavAvatar() {
   const profile = data?.profile;
   // Priority: Telegram client-side photo > server telegram_photo_url > avatar_url
   const photoUrl = tgPhoto || profile?.telegram_photo_url || profile?.avatar_url;
-  const displayName = profile?.display_name || profile?.username || "";
+  const displayName = tgName || profile?.display_name || profile?.username || "";
   const initial = (displayName || "U").charAt(0).toUpperCase();
   const [imgErr, setImgErr] = useState(false);
 
@@ -690,47 +766,29 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
           {/* Points */}
           <PointsBadge />
 
-          {/* Wallet — navigates to wallet page */}
+          {/* Wallet — navigates to wallet page (always visible, compact on mobile) */}
           <Link
             to="/wallet-web3"
-            className="hidden sm:flex items-center gap-1 px-3 py-1 rounded text-[11px] font-bold"
+            className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded text-[10px] sm:text-[11px] font-bold"
             style={{
               background: "var(--gradient-primary)",
               color: "white",
               textDecoration: "none",
             }}
           >
-            Connect
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+              <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
+            </svg>
+            <span className="hidden sm:inline">Connect</span>
           </Link>
 
           {/* User Avatar — real photo from profile */}
           <TopNavAvatar />
 
-          {/* Notifications — no hardcoded badge */}
-          <Link
-            to="/notifications"
-            className="relative flex items-center justify-center rounded-full"
-            style={{
-              width: "26px",
-              height: "26px",
-              background: "var(--color-muted)",
-              textDecoration: "none",
-            }}
-          >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--color-muted-foreground)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-            </svg>
-          </Link>
+          {/* Notifications — with unread badge */}
+          <NotificationBell />
         </div>
       </div>
     </header>

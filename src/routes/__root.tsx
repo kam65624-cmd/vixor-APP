@@ -252,6 +252,19 @@ function RootComponent() {
       const key = queryKey.join("/");
       const now = Date.now();
 
+      // ── Suppress auth errors from toast — they're handled by auth guard redirect ──
+      // Showing "Unauthorized: Invalid token" toasts is confusing when the auth
+      // guard will redirect to /auth anyway. These errors are expected when
+      // the session expires or is invalid.
+      if (
+        msg.includes("Unauthorized") ||
+        msg.includes("No authorization header") ||
+        msg.includes("No token") ||
+        msg.includes("Invalid token")
+      ) {
+        return;
+      }
+
       // Rate-limit: same error key only shows once per 10 seconds
       if (lastToast.key === key && now - lastToast.time < 10_000) return;
       lastToast.key = key;

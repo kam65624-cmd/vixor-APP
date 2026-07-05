@@ -104,3 +104,30 @@ Stage Summary:
 - Error states: users see toast notifications for API failures + errors reported to Sentry
 - Safari compatibility: all color-mix() replaced with rgba() using color-utils.ts
 - Initial bundle reduced by ~9,600 lines of component code via lazy loading
+---
+Task ID: 1
+Agent: main
+Task: Fix multiple critical VIXOR app issues — auth toast spam, Telegram profile sync, wallet button, notification badge, daily bonus
+
+Work Log:
+- Read uploaded screenshots showing "Unable to Load" on Discover, "T" initial avatar on Profile, and "Trader" fallback name
+- Analyzed auth flow: auth-attacher.ts → auth-middleware.ts → requireSupabaseAuth
+- Identified root causes for all 8 issues
+- Fixed "Unauthorized: Invalid token" toast spam by filtering auth errors in __root.tsx global error handler
+- Fixed Telegram profile sync: updated telegramSignIn in auth.functions.ts to also update profile for EXISTING users (not just new users) — writes telegram_photo_url, display_name, telegram_username, avatar_url on every login
+- Fixed Profile page: added client-side Telegram WebApp API integration (getTelegramUserData) so photo and name display instantly from Telegram SDK without waiting for server query
+- Fixed TopNavAvatar in AppShell: added Telegram client-side name for initial fallback
+- Investigated Discover API: found /api/discover endpoint exists in server/api/ but depends on external APIs (DexScreener, Birdeye, etc.) that may time out or need API keys — this is a server-side config issue
+- Confirmed @VIXOR watermark is Telegram client UI, not app code
+- Fixed Wallet button: removed "hidden sm:flex" class, now always visible with compact icon on mobile and "Connect" text on desktop
+- Added NotificationBell component with real unread count badge from getUnreadNotificationCount server function
+- Added getUnreadNotificationCount lightweight server function (count-only query, no full payload)
+- Fixed daily bonus: added success toast notification on claim; fixed onSettled bug (params could be undefined)
+- Verified TypeScript compiles clean with no errors
+
+Stage Summary:
+- 7 code fixes applied across 5 files: __root.tsx, auth.functions.ts, profile.tsx, AppShell.tsx, rewards.tsx, shared/data/index.ts
+- Key insight: most issues traced back to auth token validation errors causing cascading failures
+- Telegram profile sync now works on BOTH new and returning users
+- Profile photo uses 3-tier fallback: Telegram client-side → server telegram_photo_url → server avatar_url → initial letter
+

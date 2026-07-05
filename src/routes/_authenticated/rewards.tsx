@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserPoints, getReferralData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { claimDailyCheckin, redeemReward } from "@/domains/user/functions";
+import { toast } from "sonner";
 import {
   PageLayout, 
   StatsRow,
@@ -226,9 +227,10 @@ function RewardsPage() {
 
   const claimMutation = useMutation({
     mutationFn: () => claimFn({}),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["user-points"] });
       setClaimError(null);
+      toast.success(`+${data.points} points claimed! Streak: ${data.streak} days`);
     },
     onError: (err: Error) => {
       setClaimError(err.message || "Failed to claim. Try again.");
@@ -252,13 +254,14 @@ function RewardsPage() {
     onSuccess: (_data, params) => {
       queryClient.invalidateQueries({ queryKey: ["user-points"] });
       setRedeemSuccess(`${params.rewardName} redeemed!`);
+      toast.success(`${params.rewardName} redeemed successfully!`);
       setTimeout(() => setRedeemSuccess(null), 3000);
     },
     onError: (err: Error, params) => {
       setRedeemErrors((prev) => ({ ...prev, [params.rewardName]: err.message }));
     },
-    onSettled: (params) => {
-      if (params) setRedeemingName(null);
+    onSettled: () => {
+      setRedeemingName(null);
     },
   });
 

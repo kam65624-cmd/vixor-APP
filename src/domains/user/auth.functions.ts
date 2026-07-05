@@ -117,6 +117,25 @@ export const telegramSignIn = createServerFn({ method: "POST" })
             } else {
               console.log("[Auth] Password updated successfully for:", email);
             }
+
+            // ── ALSO update profile with latest Telegram data for returning users ──
+            // This ensures the user's photo, name, and username stay in sync
+            // with their Telegram account on every login.
+            try {
+              await supabaseAdmin
+                .from("profiles")
+                .update({
+                  telegram_id: String(tgUser.id),
+                  telegram_username: tgUser.username || null,
+                  telegram_photo_url: tgUser.photo_url || null,
+                  display_name: displayName,
+                  avatar_url: tgUser.photo_url || undefined,
+                })
+                .eq("id", existingUser.id);
+              console.log("[Auth] Profile updated with Telegram data for:", email);
+            } catch (profileErr) {
+              console.error("[Auth] Failed to update profile for existing user:", profileErr);
+            }
           }
         } catch (listErr) {
           console.error("[Auth] Failed to list/update user:", listErr);
@@ -134,6 +153,7 @@ export const telegramSignIn = createServerFn({ method: "POST" })
             telegram_username: tgUser.username,
             telegram_photo_url: tgUser.photo_url,
             display_name: displayName,
+            avatar_url: tgUser.photo_url,
           })
           .eq("id", created.user.id);
       } catch {

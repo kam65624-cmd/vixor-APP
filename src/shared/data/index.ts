@@ -191,6 +191,19 @@ export const getNotifications = createServerFn({ method: "GET" })
     return { notifications: notifs || [] };
   });
 
+// ── Unread Notification Count (lightweight, no full payload) ──────────
+export const getUnreadNotificationCount = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { count } = await supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .is("read_at", null);
+    return { unreadCount: count ?? 0 };
+  });
+
 // ── User Settings ────────────────────────
 export const getUserSettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

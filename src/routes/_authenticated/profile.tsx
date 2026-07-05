@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo, useState, useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile, getUserPoints, getTradeHistory, getPortfolioData } from "@/shared/data";
@@ -13,6 +13,28 @@ import {
   LabelValue,
   ScrollArea,
 } from "@/components/vixor/PageLayout";
+
+// ── Telegram WebApp client-side data (instant, no server round-trip) ──
+interface TelegramUserData {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  language_code?: string;
+}
+
+function getTelegramUserData(): TelegramUserData | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const tg = (window as unknown as {
+      Telegram?: { WebApp?: { initDataUnsafe?: { user?: TelegramUserData } } };
+    }).Telegram?.WebApp;
+    return tg?.initDataUnsafe?.user ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — Vixor" }] }),
@@ -197,6 +219,15 @@ const SettingItem = memo(function SettingItem({
 function ProfilePage() {
   const navigate = useNavigate();
 
+  // ── Telegram client-side data (instant, no server round-trip) ──
+  // This gives us the user's real photo and name directly from the
+  // Telegram WebApp API, without waiting for the server query.
+  const tgUser = useMemo(() => getTelegramUserData(), []);
+  const tgDisplayName = tgUser
+    ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") || tgUser.username || "Trader"
+    : null;
+  const tgPhotoUrl = tgUser?.photo_url || null;
+
   // Server function stabilizers
   const fetchProfile = useStableServerFn(getUserProfile);
   const fetchPoints = useStableServerFn(getUserPoints);
@@ -236,8 +267,9 @@ function ProfilePage() {
 
   const { totalTrades, winRate, totalPnl } = useMemo(() => computeStats(trades), [trades]);
 
-  const displayName = profile?.display_name || profile?.username || "Trader";
-  const initial = (profile?.display_name?.[0] || profile?.username?.[0] || "T").toUpperCase();
+  // ── Name: Telegram client-side > server profile > fallback ──
+  const displayName = tgDisplayName || profile?.display_name || profile?.username || "Trader";
+  const initial = (tgDisplayName || profile?.display_name || profile?.username || "T").charAt(0).toUpperCase();
   const joinedText = useMemo(() => formatJoinDate(profile?.created_at), [profile?.created_at]);
 
   const longestStreak = streak?.longest_streak ?? profile?.streak_days ?? 0;
@@ -245,17 +277,20 @@ function ProfilePage() {
 
   const [imgError, setImgError] = useState(false);
 
-  const hasAvatar = Boolean((profile?.avatar_url || profile?.telegram_photo_url) && !imgError);
-  const avatarSrc = profile?.avatar_url || profile?.telegram_photo_url || "";
+  // ── Avatar: Telegram client-side photo > server profile photo > fallback initial ──
+  // The Telegram WebApp API provides the photo URL instantly without any
+  // server round-trip. This is the most reliable source for the profile photo.
+  const avatarSrc = tgPhotoUrl || profile?.avatar_url || profile?.telegram_photo_url || "";
+  const hasAvatar = Boolean(avatarSrc && !imgError);
 
   // Build connected accounts list from real profile data
   const connectedAccounts: AccountEntry[] = useMemo(() => {
     const list: AccountEntry[] = [];
 
-    if (profile?.telegram_username) {
+    if (profile?.telegram_username || tgUser?.username) {
       list.push({
         name: "Telegram",
-        handle: `@${profile.telegram_username}`,
+        handle: `@${profile?.telegram_username || tgUser?.username || ""}`,
         icon: "✈️",
         bgColor: `${"var(--color-primary)"}26`,
         iconColor: "var(--color-primary)",
@@ -264,11 +299,11 @@ function ProfilePage() {
     } else {
       list.push({
         name: "Telegram",
-        handle: "Not connected",
+        handle: tgUser ? `ID: ${tgUser.id}` : "Not connected",
         icon: "✈️",
         bgColor: `${"var(--color-primary)"}26`,
         iconColor: "var(--color-primary)",
-        linked: false,
+        linked: !!tgUser,
       });
     }
 
