@@ -18,7 +18,10 @@ const handler = defineEventHandler(async (event) => {
     });
     if (!res.ok) throw new Error(`Binance ${res.status}`);
     const data = await res.json();
-    const result = { price: parseFloat(data.lastPrice), change24h: parseFloat(data.priceChangePercent) };
+    const result = {
+      price: parseFloat(data.lastPrice),
+      change24h: parseFloat(data.priceChangePercent),
+    };
     await cache.set(CACHE_KEY, result, CACHE_TTL.PRICE);
     return result;
   } catch {

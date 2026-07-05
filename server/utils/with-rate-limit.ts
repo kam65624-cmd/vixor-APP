@@ -60,9 +60,7 @@ export function withRateLimit<T extends EventHandlerRequest>(
     await ensureInit();
 
     // Select limiter
-    const limiter = config.limiter ?? config.webhook
-      ? webhookRateLimiter
-      : globalApiRateLimiter;
+    const limiter = (config.limiter ?? config.webhook) ? webhookRateLimiter : globalApiRateLimiter;
 
     // Use custom limits if specified (create a temporary limiter)
     let effectiveLimiter = limiter;

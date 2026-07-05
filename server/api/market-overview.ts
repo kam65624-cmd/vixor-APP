@@ -14,8 +14,13 @@ import { handlePreflight, rateLimit } from "./_security";
 const CACHE_KEY = "market-overview";
 
 const FALLBACK_STATS = {
-  totalVolume: 0, btcPrice: 0, btcChange: 0,
-  solPrice: 0, solChange: 0, ethPrice: 0, ethChange: 0,
+  totalVolume: 0,
+  btcPrice: 0,
+  btcChange: 0,
+  solPrice: 0,
+  solChange: 0,
+  ethPrice: 0,
+  ethChange: 0,
   marketSentiment: "neutral" as const,
 };
 
@@ -71,7 +76,8 @@ async function fetchFromBinance() {
       solChange: sol?.change24h ?? 0,
       ethPrice: eth?.price ?? 0,
       ethChange: eth?.change24h ?? 0,
-      marketSentiment: btc && btc.change24h > 0 ? "bullish" : btc && btc.change24h < -1 ? "bearish" : "neutral",
+      marketSentiment:
+        btc && btc.change24h > 0 ? "bullish" : btc && btc.change24h < -1 ? "bearish" : "neutral",
     },
   };
 }
@@ -101,7 +107,9 @@ async function fetchFromCoinGecko() {
   const coins = (await response.json()) as CoinGeckoCoin[];
 
   const symbolMap: Record<string, string> = {
-    binancecoin: "BNB", ripple: "XRP", "avalanche-2": "AVAX",
+    binancecoin: "BNB",
+    ripple: "XRP",
+    "avalanche-2": "AVAX",
   };
 
   const tokens = coins.map((c) => ({
@@ -132,7 +140,8 @@ async function fetchFromCoinGecko() {
       solChange: sol?.change24h ?? 0,
       ethPrice: eth?.price ?? 0,
       ethChange: eth?.change24h ?? 0,
-      marketSentiment: btc && btc.change24h > 0 ? "bullish" : btc && btc.change24h < -1 ? "bearish" : "neutral",
+      marketSentiment:
+        btc && btc.change24h > 0 ? "bullish" : btc && btc.change24h < -1 ? "bearish" : "neutral",
     },
   };
 }

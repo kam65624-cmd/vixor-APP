@@ -23,7 +23,11 @@ export function setCorsHeaders(event: H3Event) {
   if (isAllowedOrigin(origin)) {
     setResponseHeader(event, "Access-Control-Allow-Origin", origin);
     setResponseHeader(event, "Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    setResponseHeader(event, "Access-Control-Allow-Headers", "Content-Type, Authorization, X-Admin-Key");
+    setResponseHeader(
+      event,
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Admin-Key",
+    );
     setResponseHeader(event, "Vary", "Origin");
   }
 }
@@ -73,7 +77,7 @@ export function rateLimit(event: H3Event): boolean {
 
 // --- Auth ---
 export function validateAdminKey(event: H3Event): boolean {
-  const key = getHeader(event, "x-admin-key") || getQuery(event).admin_key as string | undefined;
+  const key = getHeader(event, "x-admin-key") || (getQuery(event).admin_key as string | undefined);
   if (!key) return false;
   // Accept the key if it matches ADMIN_API_KEY env or CRON_SECRET
   if (key === process.env.ADMIN_API_KEY || key === process.env.CRON_SECRET) return true;

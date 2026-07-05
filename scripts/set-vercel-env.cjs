@@ -26,8 +26,12 @@ const TEAM_ID = process.env.TEAM_ID;
 if (!VERCEL_TOKEN || !PROJECT_ID || !TEAM_ID) {
   console.error("Missing required env vars. Set VERCEL_TOKEN, PROJECT_ID, TEAM_ID.");
   console.error("\nUsage:");
-  console.error("  VERCEL_TOKEN=xxx PROJECT_ID=prj_xxx TEAM_ID=team_xxx node scripts/set-vercel-env.cjs");
-  console.error("  VERCEL_TOKEN=xxx PROJECT_ID=prj_xxx TEAM_ID=team_xxx UPSTASH_REDIS_REST_URL=... UPSTASH_REDIS_REST_TOKEN=... node scripts/set-vercel-env.cjs --redis");
+  console.error(
+    "  VERCEL_TOKEN=xxx PROJECT_ID=prj_xxx TEAM_ID=team_xxx node scripts/set-vercel-env.cjs",
+  );
+  console.error(
+    "  VERCEL_TOKEN=xxx PROJECT_ID=prj_xxx TEAM_ID=team_xxx UPSTASH_REDIS_REST_URL=... UPSTASH_REDIS_REST_TOKEN=... node scripts/set-vercel-env.cjs --redis",
+  );
   process.exit(1);
 }
 
@@ -77,7 +81,9 @@ async function setEnv(key, value) {
     const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
     if (!redisUrl || !redisToken) {
-      console.error("\n[ERROR] --redis flag requires UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN");
+      console.error(
+        "\n[ERROR] --redis flag requires UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN",
+      );
       process.exit(1);
     }
 

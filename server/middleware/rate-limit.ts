@@ -39,7 +39,11 @@ export default defineEventHandler(async (event) => {
   setResponseHeader(event, "X-RateLimit-Reset", String(result.resetAt));
 
   if (!result.allowed) {
-    setResponseHeader(event, "Retry-After", String(Math.ceil((result.retryAfterMs ?? 60000) / 1000)));
+    setResponseHeader(
+      event,
+      "Retry-After",
+      String(Math.ceil((result.retryAfterMs ?? 60000) / 1000)),
+    );
     throw createError({
       statusCode: 429,
       statusMessage: JSON.stringify({

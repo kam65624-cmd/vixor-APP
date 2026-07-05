@@ -87,7 +87,7 @@ const handler = defineEventHandler(async (event) => {
     }
 
     // Check Redis cache
-    const cKey = `discover:${query.chain||"all"}:${query.sortBy||"trending"}:${query.limit||"50"}`;
+    const cKey = `discover:${query.chain || "all"}:${query.sortBy || "trending"}:${query.limit || "50"}`;
     const cached = await cache.get(cKey);
     if (cached) return { ...cached, cached: true };
 

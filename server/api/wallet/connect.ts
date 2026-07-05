@@ -124,7 +124,9 @@ async function handleConnect(event: Parameters<typeof defineEventHandler>[0]) {
     // If Redis is unavailable, allow the request to proceed
     // (signature verification still proves wallet ownership)
     if (err && typeof err === "object" && "statusCode" in err) throw err;
-    console.error("[Wallet] Redis nonce verification unavailable, proceeding with sig-only verification");
+    console.error(
+      "[Wallet] Redis nonce verification unavailable, proceeding with sig-only verification",
+    );
   }
 
   // Get client IP for fingerprinting

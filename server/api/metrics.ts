@@ -1,4 +1,11 @@
-import { defineEventHandler, getMethod, getHeader, setHeader, createError, setResponseStatus } from "h3";
+import {
+  defineEventHandler,
+  getMethod,
+  getHeader,
+  setHeader,
+  createError,
+  setResponseStatus,
+} from "h3";
 import { getMetricsStore } from "../_metrics-store";
 import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
 
@@ -56,7 +63,7 @@ export default defineEventHandler((event) => {
   lines.push("# TYPE vixor_http_requests_total counter");
   for (const [key, val] of s.httpRequests.entries()) {
     const [m, r, st] = key.split("|");
-    const routeLabel = r.replace(/[^a-zA-Z0-9_/\-]/g, "_").slice(0, 80) || "root";
+    const routeLabel = r.replace(/[^a-zA-Z0-9_/-]/g, "_").slice(0, 80) || "root";
     lines.push(
       `vixor_http_requests_total{method="${m}",route="${routeLabel}",status="${st}"} ${val}`,
     );
