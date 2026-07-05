@@ -7,23 +7,31 @@ import type { Database } from "./types";
 export const requireSupabaseAuth = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
     // ── Resolve Supabase credentials ──
-    // On Vercel, env vars are available as process.env.* at runtime.
-    // Users often set VITE_SUPABASE_* (for the client), so we also check
-    // process.env.VITE_* as fallback for the server.
-    const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
+    // Check which env var source actually has a value
+    const envSources: Record<string, string | undefined> = {
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY: process.env.SUPABASE_PUBLISHABLE_KEY,
+      SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+      VITE_SUPABASE_PUBLISHABLE_KEY: process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+    };
+    // Mask keys for logging (show first 8 + last 4 chars)
+    const mask = (v: string | undefined) => (v ? `${v.slice(0, 8)}...${v.slice(-4)}` : "(empty)");
+
+    const SUPABASE_URL = envSources["SUPABASE_URL"] || envSources["VITE_SUPABASE_URL"] || "";
     const SUPABASE_PUBLISHABLE_KEY =
-      process.env.SUPABASE_PUBLISHABLE_KEY ||
-      process.env.SUPABASE_ANON_KEY ||
-      process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-      process.env.VITE_SUPABASE_ANON_KEY ||
+      envSources["SUPABASE_PUBLISHABLE_KEY"] ||
+      envSources["SUPABASE_ANON_KEY"] ||
+      envSources["VITE_SUPABASE_PUBLISHABLE_KEY"] ||
+      envSources["VITE_SUPABASE_ANON_KEY"] ||
       "";
 
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-      const missing = [
-        ...(!SUPABASE_URL ? ["SUPABASE_URL"] : []),
-        ...(!SUPABASE_PUBLISHABLE_KEY ? ["SUPABASE_PUBLISHABLE_KEY / SUPABASE_ANON_KEY"] : []),
-      ];
-      const message = `Missing Supabase environment variable(s): ${missing.join(", ")}.`;
+      const diag = Object.entries(envSources)
+        .map(([k, v]) => `${k}=${mask(v)}`)
+        .join("|");
+      const message = `Missing Supabase env vars [${diag}]`;
       console.error(`[Supabase Auth] ${message}`);
       throw new Error(message);
     }
@@ -66,11 +74,21 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
     // getClaims() was added in supabase-js v2.149.0 but may not be available in all versions
     const { data, error } = await supabase.auth.getUser(token);
     if (error || !data?.user) {
-      // Include the actual Supabase error and masked URL for diagnostics
       const supabaseHost = SUPABASE_URL!.replace(/https?:\/\/(.*?)\.supabase\.co.*/, "$1");
-      const detail = error
-        ? `supabase:${error.message}|status:${error.status}|url:${supabaseHost}`
-        : `no_user|url:${supabaseHost}`;
+      // Show which env var provided the key, and its masked value
+      const keySource = envSources["SUPABASE_PUBLISHABLE_KEY"]
+        ? "SUPABASE_PUBLISHABLE_KEY"
+        : envSources["SUPABASE_ANON_KEY"]
+          ? "SUPABASE_ANON_KEY"
+          : envSources["VITE_SUPABASE_PUBLISHABLE_KEY"]
+            ? "VITE_SUPABASE_PUBLISHABLE_KEY"
+            : "VITE_SUPABASE_ANON_KEY";
+      const detail = [
+        `key_src:${keySource}`,
+        `key_val:${mask(SUPABASE_PUBLISHABLE_KEY)}`,
+        `url:${SUPABASE_URL}`,
+        `err:${error?.message}|${error?.status}`,
+      ].join("|");
       throw new Error(`Unauthorized: Invalid token [${detail}]`);
     }
 
