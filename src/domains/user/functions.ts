@@ -426,7 +426,7 @@ export const claimDailyCheckin = createServerFn({ method: "POST" })
       .from("user_streaks")
       .select("*")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -436,7 +436,7 @@ export const claimDailyCheckin = createServerFn({ method: "POST" })
 
     // 2. Already checked in today?
     if (lastDate && lastDate.getTime() === today.getTime()) {
-      return { ok: false as const, error: "Already checked in today" };
+      throw new Error("Already checked in today");
     }
 
     // 3. Calculate streak
@@ -465,7 +465,7 @@ export const claimDailyCheckin = createServerFn({ method: "POST" })
       _meta: { day_of_week: CHECKIN_DAY_LABELS[weekIndex], streak: newStreak },
     });
     if (creditErr) {
-      return { ok: false as const, error: creditErr.message };
+      throw new Error(creditErr.message);
     }
 
     // 6. Update streak

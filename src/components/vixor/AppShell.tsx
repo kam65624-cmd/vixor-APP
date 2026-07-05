@@ -438,17 +438,31 @@ export function AppShell({ children }: { children: ReactNode }) {
       telegramLinkedRef.current = true;
       return;
     }
-    const initData = getTelegramInitData();
-    if (initData) {
-      telegramLinkedRef.current = true;
-      import("@/domains/user/functions").then(({ linkTelegramAccount }) =>
-        linkTelegramAccount({ data: { initData } })
-          .then(() => {
-            localStorage.setItem("vixor-tg-linked", "1");
-          })
-          .catch((err) => console.error("Failed to link Telegram:", err)),
-      );
-    }
+
+    // Try up to 3 times with delay (SDK may not be ready on first render)
+    let attempts = 0;
+    const maxAttempts = 3;
+    const tryLink = () => {
+      attempts++;
+      const initData = getTelegramInitData();
+      if (initData) {
+        telegramLinkedRef.current = true;
+        import("@/domains/user/functions").then(({ linkTelegramAccount }) =>
+          linkTelegramAccount({ data: { initData } })
+            .then(() => {
+              localStorage.setItem("vixor-tg-linked", "1");
+            })
+            .catch((err) => {
+              console.error("Failed to link Telegram:", err);
+              // Allow retry on next session by NOT setting vixor-tg-linked
+              telegramLinkedRef.current = false;
+            }),
+        );
+      } else if (attempts < maxAttempts) {
+        setTimeout(tryLink, 500);
+      }
+    };
+    tryLink();
   }, [signedIn]);
 
   const closeOnboarding = useCallback(() => {
@@ -547,15 +561,32 @@ interface TopNavProps {
 
 // ── Top Nav Avatar — shows real user photo ──────────────────────────────
 
+/** Read Telegram user photo directly from the WebApp API (instant, no server round-trip). */
+function useTelegramPhoto(): string | null {
+  const [photo, setPhoto] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const tg = (window as unknown as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { photo_url?: string } } } } }).Telegram?.WebApp;
+      const url = tg?.initDataUnsafe?.user?.photo_url;
+      if (url) setPhoto(url);
+    } catch {
+      /* noop */ }
+  }, []);
+  return photo;
+}
+
 const TopNavAvatar = memo(function TopNavAvatar() {
   const fetchProfile = useStableServerFn(getUserProfile);
+  const tgPhoto = useTelegramPhoto();
   const { data } = useQuery({
     queryKey: ["topnav-profile"],
     queryFn: () => fetchProfile({}),
     staleTime: 60_000,
   });
   const profile = data?.profile;
-  const photoUrl = profile?.avatar_url || profile?.telegram_photo_url;
+  // Priority: Telegram client-side photo > server telegram_photo_url > avatar_url
+  const photoUrl = tgPhoto || profile?.telegram_photo_url || profile?.avatar_url;
   const displayName = profile?.display_name || profile?.username || "";
   const initial = (displayName || "U").charAt(0).toUpperCase();
   const [imgErr, setImgErr] = useState(false);
