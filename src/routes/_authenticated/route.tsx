@@ -10,19 +10,35 @@ export const Route = createFileRoute("/_authenticated")({
       console.warn("[Auth Guard] Supabase not configured — redirecting to /auth");
       throw redirect({ to: "/auth" });
     }
+
     try {
-      const { data, error } = await client.auth.getSession();
-      if (!error && data.session) {
-        return { user: data.session.user };
+      // ── Step 1: Validate the current session with getUser() ──
+      // Unlike getSession() which only reads from localStorage,
+      // getUser() actually validates the JWT with the server and
+      // auto-refreshes if expired (since autoRefreshToken: true).
+      const {
+        data: { user: validatedUser },
+        error: getUserError,
+      } = await client.auth.getUser();
+
+      if (!getUserError && validatedUser) {
+        return { user: validatedUser };
       }
 
-      // ── No session — try Telegram auto-signin if inside Telegram WebApp ──
+      // ── Step 2: Session invalid or expired — try Telegram auto-signin ──
       // This makes the auth page invisible to Telegram users: they land on
       // any authenticated route, the guard signs them in silently, and they
       // see the dashboard immediately.
+      console.log(
+        "[Auth Guard] Session invalid, trying Telegram auto-signin. Error:",
+        getUserError?.message,
+      );
+
       const initData = getTelegramInitData();
       if (initData && initData.length > 10) {
-        console.log("[Auth Guard] No session but Telegram initData found — attempting auto-signin");
+        console.log(
+          "[Auth Guard] No valid session but Telegram initData found — attempting auto-signin",
+        );
         try {
           const { telegramSignIn } = await import("@/domains/user/auth.functions");
           const { email, password } = await telegramSignIn({ data: { initData } });
@@ -40,19 +56,9 @@ export const Route = createFileRoute("/_authenticated")({
         }
       }
 
-      // ── No session and no Telegram auto-signin — redirect to /auth ──
-      if (error) {
-        const msg = error instanceof Error ? error.message : String(error);
-        const isAuthError =
-          msg.includes("Invalid token") ||
-          msg.includes("session_not_found") ||
-          msg.includes("AuthSession") ||
-          msg.includes("JWT") ||
-          msg.includes("refresh_token") ||
-          msg.includes("not_authenticated");
-        if (isAuthError) {
-          console.warn("[Auth Guard] Auth session error — redirecting to /auth:", msg);
-        }
+      // ── Step 3: Nothing worked — redirect to /auth ──
+      if (getUserError) {
+        console.warn("[Auth Guard] Auth session invalid — redirecting to /auth");
       }
       throw redirect({ to: "/auth" });
     } catch (err) {

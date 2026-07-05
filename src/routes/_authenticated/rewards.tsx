@@ -248,7 +248,18 @@ function RewardsPage() {
       toast.success(`+${data.points} points claimed! Streak: ${data.streak} days`);
     },
     onError: (err: Error) => {
-      setClaimError(err.message || "Failed to claim. Try again.");
+      const msg = err.message || "Failed to claim. Try again.";
+      // ── Auth errors: redirect to /auth instead of showing raw error ──
+      if (
+        msg.includes("Unauthorized") ||
+        msg.includes("Invalid token") ||
+        msg.includes("No authorization")
+      ) {
+        setClaimError("Session expired. Redirecting to login...");
+        setTimeout(() => window.location.assign("/auth"), 1000);
+        return;
+      }
+      setClaimError(msg);
       setTimeout(() => setClaimError(null), 4000);
     },
   });
