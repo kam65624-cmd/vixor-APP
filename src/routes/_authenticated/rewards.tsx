@@ -258,8 +258,10 @@ function RewardsPage() {
         msg.includes("Invalid token") ||
         msg.includes("No authorization")
       ) {
-        setClaimError("Session issue. Please try again.");
-        setTimeout(() => setClaimError(null), 3000);
+        // Show the full error detail for diagnostics (includes Supabase error + URL)
+        console.error("[Claim Auth Error]", msg);
+        setClaimError(msg.length > 120 ? msg.slice(0, 120) + "..." : msg);
+        setTimeout(() => setClaimError(null), 8000);
         return;
       }
       setClaimError(msg);

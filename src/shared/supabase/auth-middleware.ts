@@ -59,7 +59,12 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
     // getClaims() was added in supabase-js v2.149.0 but may not be available in all versions
     const { data, error } = await supabase.auth.getUser(token);
     if (error || !data?.user) {
-      throw new Error("Unauthorized: Invalid token");
+      // Include the actual Supabase error and masked URL for diagnostics
+      const supabaseHost = SUPABASE_URL!.replace(/https?:\/\/(.*?)\.supabase\.co.*/, "$1");
+      const detail = error
+        ? `supabase:${error.message}|status:${error.status}|url:${supabaseHost}`
+        : `no_user|url:${supabaseHost}`;
+      throw new Error(`Unauthorized: Invalid token [${detail}]`);
     }
 
     const userId = data.user.id;
