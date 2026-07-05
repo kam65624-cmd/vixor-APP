@@ -2,65 +2,60 @@
 // Auth Attacher — Client middleware that attaches Bearer token to server Fns
 // ============================================================================
 //
-// PROBLEM: getSession() returns the cached JWT from localStorage without
-// checking if it's expired. When the 1-hour JWT expires, every server
-// function call sends a dead token → "Unauthorized: Invalid token".
+// PROBLEM: getSession() returns the cached JWT from localStorage. The token
+// may look valid locally (exp in the future) but be rejected by the Supabase
+// server (key rotation, user disabled, etc.). Sending a dead token causes
+// "Unauthorized: Invalid token" on every server function call.
 //
-// SOLUTION: Decode the JWT locally (zero network cost) to check expiry.
-// If expired, call refreshSession() to get a fresh token. Only send
-// valid, non-expired tokens. Never send expired tokens to the server.
+// SOLUTION: Call getUser() first — this validates the JWT with the Supabase
+// server AND auto-refreshes it if expired (since autoRefreshToken: true in
+// client.ts). After getUser() succeeds, getSession() returns the fresh token.
+// This costs one extra API call per server function but guarantees we NEVER
+// send a rejected token.
+//
+// WHY NOT just check JWT expiry locally? Because a token can be "not expired"
+// by clock but still rejected by the server. Local checks are insufficient.
 // ============================================================================
 
 import { createMiddleware } from "@tanstack/react-start";
 import { supabase } from "./client";
-
-/** Check if a JWT is expired by decoding the `exp` claim (no network call). */
-function isJwtExpired(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    // exp is in seconds, Date.now() is in ms — add 30s buffer
-    return payload.exp * 1000 < Date.now() + 30_000;
-  } catch {
-    return true; // If we can't parse it, treat as expired
-  }
-}
 
 // Must be registered as a global `functionMiddleware` in `src/start.ts`; otherwise
 // the browser never attaches the bearer token to serverFn RPCs.
 export const attachSupabaseAuth = createMiddleware({ type: "function" }).client(
   async ({ next }) => {
     try {
-      const { data } = await supabase.auth.getSession();
-      let token = data.session?.access_token;
+      // ── Step 1: Validate session with server ──
+      // getUser() makes an API call to Supabase to validate the JWT.
+      // With autoRefreshToken: true, it also auto-refreshes if expired.
+      // This is the ONLY reliable way to know the token is valid.
+      const {
+        data: { user },
+        error: getUserError,
+      } = await supabase.auth.getUser();
 
-      if (token && isJwtExpired(token)) {
-        // ── Token expired — try to refresh it ──
-        // Supabase will use the refresh_token (valid for 30 days by default)
-        // to get a new access_token. This is ONE network call, only when needed.
-        console.log("[Auth Attacher] Token expired, refreshing...");
-        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-        if (!refreshError && refreshData.session?.access_token) {
-          token = refreshData.session.access_token;
-          console.log("[Auth Attacher] Token refreshed successfully");
-        } else {
-          // Refresh failed (refresh_token also expired) — don't send any token.
-          // The server will return an auth error, which the calling code can
-          // handle (e.g., redirect to /auth). Sending an expired token would
-          // just waste a server round-trip with the same error.
-          console.warn(
-            "[Auth Attacher] Token refresh failed:",
-            refreshError?.message || "unknown error",
-          );
-          return next({ headers: {} });
+      if (!getUserError && user) {
+        // ── Step 2: Get the (possibly refreshed) token ──
+        // After getUser() succeeds, the session in localStorage is updated
+        // with the fresh token (if a refresh happened). getSession() is a
+        // local call that reads from localStorage — no network needed here.
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session?.access_token) {
+          return next({ headers: { Authorization: `Bearer ${session.access_token}` } });
         }
       }
 
-      return next({
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      // ── No valid session — proceed without auth header ──
+      // The server middleware (requireSupabaseAuth) will return 401.
+      // The calling code (mutation onError, query onError) handles this.
+      console.warn("[Auth Attacher] No valid session:", getUserError?.message || "no user");
+      return next({ headers: {} });
     } catch (error) {
       console.warn(
-        "[Supabase Auth Attacher] Failed to get session:",
+        "[Auth Attacher] Unexpected error:",
         error instanceof Error ? error.message : String(error),
       );
       return next({ headers: {} });

@@ -249,14 +249,17 @@ function RewardsPage() {
     },
     onError: (err: Error) => {
       const msg = err.message || "Failed to claim. Try again.";
-      // ── Auth errors: redirect to /auth instead of showing raw error ──
+      // ── Auth errors: try to refresh session instead of redirecting ──
+      // Redirecting to /auth causes a loop because auth.tsx checks getUser()
+      // → succeeds (auto-refresh) → redirects back to /.
+      // Instead, try refreshing here and let the user retry manually.
       if (
         msg.includes("Unauthorized") ||
         msg.includes("Invalid token") ||
         msg.includes("No authorization")
       ) {
-        setClaimError("Session expired. Redirecting to login...");
-        setTimeout(() => window.location.assign("/auth"), 1000);
+        setClaimError("Session issue. Please try again.");
+        setTimeout(() => setClaimError(null), 3000);
         return;
       }
       setClaimError(msg);
