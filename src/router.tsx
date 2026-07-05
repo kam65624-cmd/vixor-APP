@@ -21,6 +21,9 @@ export const getRouter = () => {
         retry: 1,
         structuralSharing: true,
       },
+      mutations: {
+        retry: 0,
+      },
     },
   });
 
@@ -34,5 +37,5 @@ export const getRouter = () => {
     defaultPreload: false,
   });
 
-  return router;
+  return { router, queryClient };
 };

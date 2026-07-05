@@ -7,6 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
   useEffect,
   useRef,
@@ -35,6 +36,7 @@ const RouteErrorBoundary: ErrorRouteComponent = (props) => (
   <RouteErrorBoundaryClass {...(props as unknown as React.ComponentProps<typeof RouteErrorBoundaryClass>)} />
 );
 import RouteLoading from "@/components/vixor/RouteLoading";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -77,6 +79,7 @@ class GlobalErrorBoundary extends Component<
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[Vixor] Uncaught error:", error, info.componentStack);
+    try { captureException(error); } catch { /* noop */ }
   }
 
   handleReset = () => {
@@ -230,6 +233,36 @@ function RootComponent() {
   const queryClientRef = useRef(queryClient);
   queryClientRef.current = queryClient;
 
+  // ── Global React Query error handler ──
+  // Subscribes to query cache updates and shows toast errors for failed queries.
+  // Rate-limited to prevent toast spam on cascading failures.
+  useEffect(() => {
+    const queryCache = queryClientRef.current.getQueryCache();
+    const lastToast = { key: "", time: 0 };
+
+    const unsub = queryCache.subscribe((event: { type: string; query?: { queryKey: readonly unknown[]; state: { status: string; error?: Error; fetchStatus: string } } }) => {
+      // Only handle query state updates
+      if (event.type !== "updated" || !event.query) return;
+      const { queryKey, state } = event.query;
+
+      // Only show toast for actively-fetched queries that errored (skip background/stale errors)
+      if (state.status !== "error" || state.fetchStatus !== "idle" || !state.error) return;
+
+      const msg = state.error?.message || "Something went wrong";
+      const key = queryKey.join("/");
+      const now = Date.now();
+
+      // Rate-limit: same error key only shows once per 10 seconds
+      if (lastToast.key === key && now - lastToast.time < 10_000) return;
+      lastToast.key = key;
+      lastToast.time = now;
+
+      toast.error(msg);
+    });
+
+    return unsub;
+  }, []);
+
   // ── Auth state change handler ──
   // This is the SINGLE source of truth for auth-triggered query invalidation.
   // It does NOT call router.invalidate() which causes cascading re-renders.
@@ -341,6 +374,16 @@ function RootComponent() {
               <Outlet />
             </AppShell>
           </GlobalErrorBoundary>
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              style: {
+                background: "#1A1D24",
+                border: "1px solid #2A2D37",
+                color: "#E4E5E9",
+              },
+            }}
+          />
         </WalletProvider>
       </I18nProvider>
     </QueryClientProvider>

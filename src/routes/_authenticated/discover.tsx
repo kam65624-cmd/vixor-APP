@@ -11,6 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { PageLayout, StatsRow, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
 import { RefreshCw, SlidersHorizontal, ChevronUp, X } from "lucide-react";
+import { withAlpha, blendWithCard } from "@/shared/color-utils";
 
 // ── Route definition with typed search params ───────────────────────────────
 
@@ -284,8 +285,8 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
             borderRadius: "50%",
             background: hasLogo
               ? "var(--color-card)"
-              : `color-mix(in oklab, ${color} 12%, var(--color-card))`,
-            border: `1px solid color-mix(in oklab, ${color} 20%, transparent)`,
+              : blendWithCard(color, 0.12),
+            border: `1px solid ${withAlpha(color, 0.20)}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

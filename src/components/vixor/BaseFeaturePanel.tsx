@@ -1,5 +1,6 @@
 import { cn } from "@/shared/utils";
 import React from "react";
+import { withAlpha } from "@/shared/color-utils";
 
 interface FeatureMetric {
   label: string;
@@ -48,7 +49,7 @@ export function BaseFeaturePanel({
           <div
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
             style={{
-              background: `color-mix(in srgb, ${statusColor} 12%, transparent)`,
+              background: withAlpha(statusColor, 0.12),
               color: statusColor,
             }}
           >

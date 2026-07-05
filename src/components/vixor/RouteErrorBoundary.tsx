@@ -1,6 +1,7 @@
 import React from "react";
 import { useRouter } from "@tanstack/react-router";
 import { log } from "@/shared/structured-logger";
+import { captureException } from "@/shared/sentry";
 
 /* ------------------------------------------------------------------ */
 /*  Props & State                                                      */
@@ -45,6 +46,7 @@ class RouteErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
     log.error("Route error", { error, componentStack: info.componentStack });
+    try { captureException(error); } catch { /* noop */ }
   }
 
   /* ---- reset ---- */

@@ -1,4 +1,5 @@
 import { cn } from "@/shared/utils";
+import { withAlpha } from "@/shared/color-utils";
 
 export type SignalKind =
   | "BUY"
@@ -88,7 +89,7 @@ export function SignalBadge({
       style={{
         background: c.bg,
         color: c.color,
-        border: `1px solid color-mix(in srgb, ${c.color} 20%, transparent)`,
+        border: `1px solid ${withAlpha(c.color, 0.20)}`,
       }}
       role="status"
       aria-label={`Signal: ${c.label}`}

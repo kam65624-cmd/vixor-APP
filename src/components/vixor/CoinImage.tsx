@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { withAlpha, blendWithCard } from "@/shared/color-utils";
 
 // ── Coin Image Component ──────────────────────────────────────────────────
 // Shared component for rendering a token image or a styled letter abbreviation
@@ -57,9 +58,9 @@ export function CoinImage({
         flexShrink: 0,
         background:
           up !== undefined
-            ? `color-mix(in oklab, ${color} 10%, transparent)`
-            : `color-mix(in oklab, var(--color-foreground) 6%, var(--color-card))`,
-        border: `1px solid color-mix(in oklab, ${color} 20%, transparent)`,
+            ? withAlpha(color, 0.10)
+            : blendWithCard("var(--color-foreground)", 0.06),
+        border: `1px solid ${withAlpha(color, 0.20)}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

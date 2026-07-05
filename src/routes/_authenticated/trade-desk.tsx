@@ -17,6 +17,7 @@ import {
 import { useState, useMemo, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useI18n } from "@/shared/i18n";
+import { withAlpha } from "@/shared/color-utils";
 import { createTrade, listTrades } from "@/domains/trades/functions";
 import type { Trade, TradeDirection } from "@/domains/trades/types";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
@@ -1150,7 +1151,7 @@ function TradeDesk() {
                       ? "linear-gradient(135deg, var(--color-neutral-wait), rgba(245,158,11,0.70))"
                       : "linear-gradient(135deg, var(--color-bullish), rgba(14,203,129,0.70))",
                     color: "var(--color-foreground)",
-                    boxShadow: `0 2px 12px color-mix(in oklab, ${isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)"} 30%, transparent)`,
+                    boxShadow: `0 2px 12px ${withAlpha(isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)", 0.30)}`,
                     border: "none",
                   }}
                 >

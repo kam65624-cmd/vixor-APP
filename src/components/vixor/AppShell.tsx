@@ -59,7 +59,7 @@ const OnboardingModal = lazy(() =>
 
 // ── Navigation Data ─────────────────────────────────────────────────────────
 
-// Bottom nav: 4 core items (Charts replaces Copilot for better discoverability)
+// Bottom nav: 4 core items
 const bottomNavItems = [
   {
     to: "/",
@@ -82,11 +82,11 @@ const bottomNavItems = [
     ),
   },
   {
-    to: "/charts",
-    label: "Charts",
+    to: "/copilot",
+    label: "Copilot",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" />
+        <path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M15 13v2" /><path d="M9 13v2" />
       </svg>
     ),
   },
@@ -121,15 +121,6 @@ const moreNavCategories: MoreNavCategory[] = [
   {
     title: "AI Tools",
     items: [
-      {
-        to: "/copilot",
-        label: "AI Copilot",
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M15 13v2" /><path d="M9 13v2" />
-          </svg>
-        ),
-      },
       {
         to: "/alpha",
         label: "Alpha Signals",
@@ -181,6 +172,15 @@ const moreNavCategories: MoreNavCategory[] = [
   {
     title: "Trading",
     items: [
+      {
+        to: "/charts",
+        label: "Charts",
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" />
+          </svg>
+        ),
+      },
       {
         to: "/trade-desk",
         label: "Trade Desk",
