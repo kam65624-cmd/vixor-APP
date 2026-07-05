@@ -14,7 +14,7 @@ import {
   Badge,
   DataRow,
   DataRowTwoLine,
-  LabelValue, 
+  LabelValue,
 } from "@/components/vixor/PageLayout";
 import {
   formatCurrency,
@@ -30,11 +30,7 @@ import { getPerpetualsData } from "@/shared/data";
 const TABS = ["Open Positions", "Recent Closed"] as const;
 type Tab = (typeof TABS)[number];
 
-const OpenPositionCard = memo(function OpenPositionCard({
-  position,
-}: {
-  position: any;
-}) {
+const OpenPositionCard = memo(function OpenPositionCard({ position }: { position: any }) {
   const isLong = position.direction === "LONG";
   const dirColor = isLong ? "var(--color-bullish)" : "var(--color-bearish)";
   const pnl = position.pnl || 0;
@@ -43,7 +39,14 @@ const OpenPositionCard = memo(function OpenPositionCard({
   return (
     <DataRowTwoLine
       topContent={
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <Badge label={position.direction} color={dirColor} small />
             <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-foreground)" }}>
@@ -51,8 +54,16 @@ const OpenPositionCard = memo(function OpenPositionCard({
             </span>
             <Badge label="OPEN" color={"var(--color-primary)"} small />
           </div>
-          <span style={{ fontSize: "12px", fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: pnlColor }}>
-            {pnl >= 0 ? "+" : ""}{pnl.toFixed(2)}
+          <span
+            style={{
+              fontSize: "12px",
+              fontWeight: 700,
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              color: pnlColor,
+            }}
+          >
+            {pnl >= 0 ? "+" : ""}
+            {pnl.toFixed(2)}
           </span>
         </div>
       }
@@ -61,19 +72,19 @@ const OpenPositionCard = memo(function OpenPositionCard({
           <LabelValue label="Entry" value={formatPrice(position.entryPrice)} />
           <LabelValue label="Qty" value={formatQuantity(position.quantity)} />
           <LabelValue label="R" value={formatRMultiple(position.rMultiple || 0)} />
-          {position.stopLoss != null && <LabelValue label="SL" value={formatPrice(position.stopLoss)} />}
-          {position.takeProfit != null && <LabelValue label="TP" value={formatPrice(position.takeProfit)} />}
+          {position.stopLoss != null && (
+            <LabelValue label="SL" value={formatPrice(position.stopLoss)} />
+          )}
+          {position.takeProfit != null && (
+            <LabelValue label="TP" value={formatPrice(position.takeProfit)} />
+          )}
         </div>
       }
     />
   );
 });
 
-const ClosedTradeCard = memo(function ClosedTradeCard({
-  trade,
-}: {
-  trade: any;
-}) {
+const ClosedTradeCard = memo(function ClosedTradeCard({ trade }: { trade: any }) {
   const isLong = trade.direction === "LONG";
   const dirColor = isLong ? "var(--color-bullish)" : "var(--color-bearish)";
   const pnl = trade.pnl || 0;
@@ -146,11 +157,7 @@ const ClosedTradeCard = memo(function ClosedTradeCard({
           >
             {formatRMultiple(rMult)}
           </span>
-          <Badge
-            label={(trade.status || "closed").toUpperCase()}
-            color={statusColor}
-            small
-          />
+          <Badge label={(trade.status || "closed").toUpperCase()} color={statusColor} small />
         </div>
       </div>
     </DataRow>
@@ -222,13 +229,9 @@ function PerpetualsPage() {
             }
           />
         ) : isOpen ? (
-          items.map((pos: any) => (
-            <OpenPositionCard key={pos.id} position={pos} />
-          ))
+          items.map((pos: any) => <OpenPositionCard key={pos.id} position={pos} />)
         ) : (
-          items.map((trade: any) => (
-            <ClosedTradeCard key={trade.id} trade={trade} />
-          ))
+          items.map((trade: any) => <ClosedTradeCard key={trade.id} trade={trade} />)
         )}
       </ScrollArea>
     </PageLayout>

@@ -126,16 +126,10 @@ describe("Hunter Agent", () => {
     });
 
     it("clamps score to 0-100", () => {
-      const result = parseHunterResponse(
-        JSON.stringify({ score: -10 }),
-        "test-id",
-      );
+      const result = parseHunterResponse(JSON.stringify({ score: -10 }), "test-id");
       expect(result.score).toBe(0);
 
-      const result2 = parseHunterResponse(
-        JSON.stringify({ score: 200 }),
-        "test-id",
-      );
+      const result2 = parseHunterResponse(JSON.stringify({ score: 200 }), "test-id");
       expect(result2.score).toBe(100);
     });
 

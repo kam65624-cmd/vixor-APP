@@ -4,7 +4,7 @@ import { memo, useState } from "react";
 import { getWatchlistData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout, 
+  PageLayout,
   TableHeader,
   DataRow,
   Badge,
@@ -87,7 +87,9 @@ function TrackersPage() {
                     >
                       ({wlItems.length})
                     </span>
-                    {wl.is_default && <Badge label="DEFAULT" color={"var(--color-primary)"} small />}
+                    {wl.is_default && (
+                      <Badge label="DEFAULT" color={"var(--color-primary)"} small />
+                    )}
                   </div>
 
                   {/* ── Table Header ── */}
@@ -227,7 +229,9 @@ const AlertRow = memo(function AlertRow({ alert }: { alert: any }) {
         ? "var(--color-neutral-wait)"
         : "var(--color-muted-foreground)";
   const condColor =
-    alert.condition === "above" || alert.condition === "crosses_up" ? "var(--color-bullish)" : "var(--color-bearish)";
+    alert.condition === "above" || alert.condition === "crosses_up"
+      ? "var(--color-bullish)"
+      : "var(--color-bearish)";
 
   return (
     <DataRow>

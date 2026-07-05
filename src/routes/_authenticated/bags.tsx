@@ -4,7 +4,7 @@ import { memo, useCallback, useState } from "react";
 import { getPortfolioData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout, 
+  PageLayout,
   StatsRow,
   SectionTitle,
   DataRowTwoLine,
@@ -46,8 +46,7 @@ function BagsPage() {
       : n >= 1_000
         ? `$${(n / 1_000).toFixed(2)}K`
         : `$${n.toFixed(2)}`;
-  const pnlFmt = (n: number) =>
-    n >= 0 ? `+$${n.toFixed(2)}` : `-$${Math.abs(n).toFixed(2)}`;
+  const pnlFmt = (n: number) => (n >= 0 ? `+$${n.toFixed(2)}` : `-$${Math.abs(n).toFixed(2)}`);
 
   const pnlColor = totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)";
   const pnlPctColor = totalPnlPct >= 0 ? "var(--color-bullish)" : "var(--color-bearish)";
@@ -106,10 +105,7 @@ function BagsPage() {
             title="No bags yet"
             message="Start trading to see your portfolio holdings here."
           />
-          <ActionButton
-            label="Go to Trade Desk"
-            onClick={() => navigate({ to: "/trade-desk" })}
-          />
+          <ActionButton label="Go to Trade Desk" onClick={() => navigate({ to: "/trade-desk" })} />
         </div>
       )}
     </PageLayout>
@@ -118,13 +114,7 @@ function BagsPage() {
 
 /* ── Small action button for empty state ─────────────────────────────────── */
 
-function ActionButton({
-  label,
-  onClick,
-}: {
-  label: string;
-  onClick: () => void;
-}) {
+function ActionButton({ label, onClick }: { label: string; onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
 
   const onMouseEnter = useCallback(() => setHovered(true), []);
@@ -140,9 +130,7 @@ function ActionButton({
         borderRadius: "8px",
         border: "none",
         cursor: "pointer",
-        background: hovered
-          ? `${"var(--color-bullish)"}28`
-          : `rgba(14,203,129,0.10)`,
+        background: hovered ? `${"var(--color-bullish)"}28` : `rgba(14,203,129,0.10)`,
         color: "var(--color-primary)",
         fontSize: "11px",
         fontWeight: 700,
@@ -173,8 +161,7 @@ const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
   const isPos = bag.pnlPct >= 0;
   const color = isPos ? "var(--color-bullish)" : "var(--color-bearish)";
 
-  const fmtPrice = (n: number) =>
-    n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2);
+  const fmtPrice = (n: number) => (n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2));
 
   return (
     <DataRowTwoLine
@@ -232,9 +219,7 @@ const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
                 >
                   {bag.symbol}
                 </span>
-                <span
-                  style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}
-                >
+                <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>
                   {bag.chain}
                 </span>
               </div>
@@ -266,16 +251,8 @@ const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
               flexWrap: "wrap",
             }}
           >
-            <LabelValue
-              label="Tokens"
-              value={bag.amount.toFixed(4)}
-              mono
-            />
-            <LabelValue
-              label="Avg"
-              value={fmtPrice(bag.avgEntry)}
-              mono
-            />
+            <LabelValue label="Tokens" value={bag.amount.toFixed(4)} mono />
+            <LabelValue label="Avg" value={fmtPrice(bag.avgEntry)} mono />
           </div>
           <span
             style={{

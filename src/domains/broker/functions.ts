@@ -37,7 +37,12 @@ export const getConnectedBrokers = createServerFn({ method: "GET" })
         console.warn("[Broker] getConnectedBrokers error:", error.message);
         return [];
       }
-      return (data ?? []) as Array<{ id: string; broker_name: string; status: string; connected_at: string }>;
+      return (data ?? []) as Array<{
+        id: string;
+        broker_name: string;
+        status: string;
+        connected_at: string;
+      }>;
     } catch {
       return [];
     }
@@ -45,9 +50,7 @@ export const getConnectedBrokers = createServerFn({ method: "GET" })
 
 export const connectBroker = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
-    z.object({ brokerName: z.string().min(1).max(50) }).parse(d),
-  )
+  .validator((d: unknown) => z.object({ brokerName: z.string().min(1).max(50) }).parse(d))
   .handler(async ({ data, context }) => {
     const db = getRawAdmin();
     const { userId } = context;
@@ -80,9 +83,7 @@ export const connectBroker = createServerFn({ method: "POST" })
 
 export const disconnectBroker = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
-    z.object({ brokerName: z.string().min(1).max(50) }).parse(d),
-  )
+  .validator((d: unknown) => z.object({ brokerName: z.string().min(1).max(50) }).parse(d))
   .handler(async ({ data, context }) => {
     const db = getRawAdmin();
     const { error } = await db

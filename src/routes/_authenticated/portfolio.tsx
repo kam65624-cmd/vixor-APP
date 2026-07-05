@@ -36,9 +36,7 @@ const ALLOC_COLORS = [
 function PortfolioPage() {
   const navigate = useNavigate();
   const fetchPortfolio = useStableServerFn(getPortfolioData);
-  const [activeTab, setActiveTab] = useState<"holdings" | "history">(
-    "holdings",
-  );
+  const [activeTab, setActiveTab] = useState<"holdings" | "history">("holdings");
 
   const query = useQuery({
     queryKey: ["portfolio-data-page"],
@@ -134,13 +132,7 @@ function PortfolioPage() {
 
           <ScrollArea>
             {holdings.length > 0 ? (
-              holdings.map((h) => (
-                <HoldingRow
-                  key={h.symbol}
-                  holding={h}
-                  totalValue={totalValue}
-                />
-              ))
+              holdings.map((h) => <HoldingRow key={h.symbol} holding={h} totalValue={totalValue} />)
             ) : (
               <LinkedEmptyState
                 icon="📭"
@@ -179,13 +171,9 @@ const HoldingRow = memo(function HoldingRow({
 }) {
   const isPos = holding.pnlPct >= 0;
   const pnlColor = isPos ? "var(--color-bullish)" : "var(--color-bearish)";
-  const alloc =
-    totalValue > 0
-      ? ((holding.value / totalValue) * 100).toFixed(1)
-      : "0";
+  const alloc = totalValue > 0 ? ((holding.value / totalValue) * 100).toFixed(1) : "0";
 
-  const fmtPrice = (n: number) =>
-    n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2);
+  const fmtPrice = (n: number) => (n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2));
 
   return (
     <DataRowTwoLine
@@ -268,16 +256,8 @@ const HoldingRow = memo(function HoldingRow({
       }
       bottomContent={
         <>
-          <LabelValue
-            label="Value"
-            value={`$${holding.value.toFixed(2)}`}
-            mono
-          />
-          <LabelValue
-            label="Amt"
-            value={holding.amount.toFixed(4)}
-            mono
-          />
+          <LabelValue label="Value" value={`$${holding.value.toFixed(2)}`} mono />
+          <LabelValue label="Amt" value={holding.amount.toFixed(4)} mono />
           <LabelValue
             label="Entry"
             value={`$${fmtPrice(holding.avgEntry)}`}
@@ -345,10 +325,7 @@ function LinkedEmptyState({
         }}
       >
         {message}{" "}
-        <span
-          style={{ color: actionColor, cursor: "pointer" }}
-          onClick={onAction}
-        >
+        <span style={{ color: actionColor, cursor: "pointer" }} onClick={onAction}>
           {actionLabel}
         </span>
       </div>

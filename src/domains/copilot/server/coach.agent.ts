@@ -10,12 +10,7 @@
 import { llmRouter } from "@/shared/llm";
 import { MemoryStore } from "@/shared/memory";
 import { storeDecision } from "./decision-store";
-import type {
-  CoachInput,
-  CoachResponse,
-  CoachSentiment,
-  RiskLevel,
-} from "../types";
+import type { CoachInput, CoachResponse, CoachSentiment, RiskLevel } from "../types";
 
 /** Coerced JSON output from the LLM. */
 interface CoachLLMOutput {
@@ -61,10 +56,7 @@ You MUST respond with ONLY valid JSON (no markdown, no code fences). Example:
 /**
  * Builds the user message for the Coach LLM call.
  */
-export function buildCoachUserMessage(
-  input: CoachInput,
-  memoryContext: string,
-): string {
+export function buildCoachUserMessage(input: CoachInput, memoryContext: string): string {
   const { token, action, amount, chain, currentPrice } = input;
 
   return `## TRADE PREVIEW
@@ -85,10 +77,7 @@ Based on this trade preview and the user's history, provide your coaching feedba
  * Parses the LLM response into a typed CoachResponse.
  * Falls back to safe defaults if the JSON is malformed.
  */
-export function parseCoachResponse(
-  raw: string,
-  decisionId: string,
-): CoachResponse {
+export function parseCoachResponse(raw: string, decisionId: string): CoachResponse {
   try {
     // Strip markdown code fences if present
     const cleaned = raw
@@ -102,16 +91,16 @@ export function parseCoachResponse(
 
     return {
       decisionId,
-      comment: typeof parsed.comment === "string" ? parsed.comment : "No coaching comment available.",
+      comment:
+        typeof parsed.comment === "string" ? parsed.comment : "No coaching comment available.",
       sentiment: validSentiments.includes(parsed.sentiment as CoachSentiment)
         ? (parsed.sentiment as CoachSentiment)
         : "neutral",
       riskLevel: validRiskLevels.includes(parsed.riskLevel as RiskLevel)
-        ? parsed.riskLevel as RiskLevel
+        ? (parsed.riskLevel as RiskLevel)
         : "medium",
-      suggestion: typeof parsed.suggestion === "string"
-        ? parsed.suggestion
-        : "Proceed with caution.",
+      suggestion:
+        typeof parsed.suggestion === "string" ? parsed.suggestion : "Proceed with caution.",
       confidence: 0.7,
     };
   } catch {

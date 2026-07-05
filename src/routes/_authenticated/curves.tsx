@@ -11,7 +11,7 @@ import {
   Badge,
   DataRow,
   LabelValue,
-  MiniBar, 
+  MiniBar,
 } from "@/components/vixor/PageLayout";
 import { formatCompact } from "@/shared/utils/formatters";
 
@@ -44,8 +44,7 @@ function CurvesPage() {
     mostTradedVolume: 0,
   };
 
-  const displayPairs =
-    activeTab === "Accumulating" ? accumulating : pairs;
+  const displayPairs = activeTab === "Accumulating" ? accumulating : pairs;
 
   return (
     <PageLayout
@@ -84,17 +83,11 @@ function CurvesPage() {
       />
       <ScrollArea>
         {displayPairs.length > 0 ? (
-          displayPairs.map((pair: any) => (
-            <CurveCard key={pair.pair} pair={pair} />
-          ))
+          displayPairs.map((pair: any) => <CurveCard key={pair.pair} pair={pair} />)
         ) : (
           <EmptyState
             icon="📈"
-            title={
-              pairs.length === 0
-                ? "No trade data yet"
-                : "No accumulation signals"
-            }
+            title={pairs.length === 0 ? "No trade data yet" : "No accumulation signals"}
             message={
               pairs.length === 0
                 ? "Start trading to see accumulation patterns."
@@ -110,8 +103,7 @@ function CurvesPage() {
 const CurveCard = memo(function CurveCard({ pair }: { pair: any }) {
   const isAccumulating = pair.buyCount > pair.sellCount;
   const totalTrades = pair.buyCount + pair.sellCount;
-  const buyPct =
-    totalTrades > 0 ? (pair.buyCount / totalTrades) * 100 : 50;
+  const buyPct = totalTrades > 0 ? (pair.buyCount / totalTrades) * 100 : 50;
 
   return (
     <DataRow leftAccent={isAccumulating ? "var(--color-bullish)" : undefined}>
@@ -142,9 +134,7 @@ const CurveCard = memo(function CurveCard({ pair }: { pair: any }) {
           >
             {pair.pair}
           </span>
-          {isAccumulating && (
-            <Badge label="ACCUMULATING" color={"var(--color-bullish)"} small />
-          )}
+          {isAccumulating && <Badge label="ACCUMULATING" color={"var(--color-bullish)"} small />}
         </div>
         <span
           style={{
@@ -168,21 +158,13 @@ const CurveCard = memo(function CurveCard({ pair }: { pair: any }) {
           marginTop: "6px",
         }}
       >
-        <LabelValue
-          label="Buy"
-          value={String(pair.buyCount)}
-          valueColor={"var(--color-bullish)"}
-        />
+        <LabelValue label="Buy" value={String(pair.buyCount)} valueColor={"var(--color-bullish)"} />
         <LabelValue
           label="Sell"
           value={String(pair.sellCount)}
           valueColor={"var(--color-bearish)"}
         />
-        <LabelValue
-          label="Vol"
-          value={formatCompact(pair.totalVolume)}
-          mono
-        />
+        <LabelValue label="Vol" value={formatCompact(pair.totalVolume)} mono />
       </div>
     </DataRow>
   );

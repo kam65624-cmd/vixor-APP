@@ -32,7 +32,6 @@ const ZAI_CONFIG: ProviderConfig = {
 
 // ── Lazy singleton ──────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyZAI = any;
 let zaiInstance: AnyZAI | null = null;
 

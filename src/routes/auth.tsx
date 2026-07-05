@@ -96,8 +96,11 @@ function AuthPage() {
 
       console.log("[Auth] Waiting for Telegram WebApp initData...");
       const tg = await waitForTelegram();
-      console.log("[Auth] Telegram WebApp result:", tg ? "found" : "not found",
-        tg?.initData ? `initData length=${tg.initData.length}` : "no initData");
+      console.log(
+        "[Auth] Telegram WebApp result:",
+        tg ? "found" : "not found",
+        tg?.initData ? `initData length=${tg.initData.length}` : "no initData",
+      );
 
       const initData: string | undefined = tg?.initData;
 
@@ -222,7 +225,10 @@ function AuthPage() {
           if (error) {
             if (error.message.includes("Email not confirmed")) {
               setErr("Email not confirmed. Please check your inbox or use Telegram sign-in.");
-            } else if (error.message.includes("Invalid login") || error.message.includes("Invalid credentials")) {
+            } else if (
+              error.message.includes("Invalid login") ||
+              error.message.includes("Invalid credentials")
+            ) {
               setErr("Wrong email or password. Please try again.");
             } else if (
               error.status === 400 ||

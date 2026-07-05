@@ -4,7 +4,7 @@ import { useState, memo } from "react";
 import { getNotifications, markNotificationRead } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout, 
+  PageLayout,
   DataRow,
   Badge,
   EmptyState,
@@ -21,22 +21,22 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 // ── Type config using THEME semantic colors ──────────────────────────────
 
 const typeConfig: Record<string, { icon: string; color: string; label: string }> = {
-  trade:   { icon: "💰", color: "var(--color-bullish)",         label: "TRADE" },
-  alert:   { icon: "🔔", color: "var(--color-neutral-wait)",         label: "ALERT" },
-  whale:   { icon: "🐋", color: "var(--color-info)",        label: "WHALE" },
-  signal:  { icon: "⚡", color: "var(--color-bullish)",         label: "SIGNAL" },
-  system:  { icon: "⚙️", color: "var(--color-muted-foreground)", label: "SYSTEM" },
+  trade: { icon: "💰", color: "var(--color-bullish)", label: "TRADE" },
+  alert: { icon: "🔔", color: "var(--color-neutral-wait)", label: "ALERT" },
+  whale: { icon: "🐋", color: "var(--color-info)", label: "WHALE" },
+  signal: { icon: "⚡", color: "var(--color-bullish)", label: "SIGNAL" },
+  system: { icon: "⚙️", color: "var(--color-muted-foreground)", label: "SYSTEM" },
   default: { icon: "📌", color: "var(--color-muted-foreground)", label: "" },
 };
 
 // ── Tab definitions (display label → internal filter value) ──────────────
 
 const TAB_ITEMS = [
-  { filter: "All",    label: "All" },
+  { filter: "All", label: "All" },
   { filter: "Unread", label: "Unread" },
-  { filter: "trade",  label: "Trades" },
-  { filter: "alert",  label: "Alerts" },
-  { filter: "whale",  label: "Whale" },
+  { filter: "trade", label: "Trades" },
+  { filter: "alert", label: "Alerts" },
+  { filter: "whale", label: "Whale" },
   { filter: "signal", label: "Signals" },
 ] as const;
 
@@ -60,7 +60,14 @@ const NotifItem = memo(function NotifItem({
   notif,
   onRead,
 }: {
-  notif: { id: string; title: string; body: string | null; type: string; created_at: string; read_at: string | null };
+  notif: {
+    id: string;
+    title: string;
+    body: string | null;
+    type: string;
+    created_at: string;
+    read_at: string | null;
+  };
   onRead: (id: string) => void;
 }) {
   const isRead = notif.read_at !== null;
@@ -91,7 +98,14 @@ const NotifItem = memo(function NotifItem({
 
         {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
               <span
                 style={{
@@ -111,7 +125,14 @@ const NotifItem = memo(function NotifItem({
               {timeAgo(notif.created_at)}
             </span>
           </div>
-          <p style={{ fontSize: 10, color: "var(--color-muted-foreground)", marginTop: 2, lineHeight: 1.4 }}>
+          <p
+            style={{
+              fontSize: 10,
+              color: "var(--color-muted-foreground)",
+              marginTop: 2,
+              lineHeight: 1.4,
+            }}
+          >
             {notif.body || "No details"}
           </p>
         </div>
@@ -141,11 +162,12 @@ function NotificationsPage() {
   const notifications = notifsQuery.data?.notifications ?? [];
   const unreadCount = notifications.filter((n) => !n.read_at).length;
 
-  const filtered = filter === "Unread"
-    ? notifications.filter((n) => !n.read_at)
-    : filter === "All"
-      ? notifications
-      : notifications.filter((n) => n.type === filter);
+  const filtered =
+    filter === "Unread"
+      ? notifications.filter((n) => !n.read_at)
+      : filter === "All"
+        ? notifications
+        : notifications.filter((n) => n.type === filter);
 
   const handleMarkAllRead = () => {
     const unread = notifications.filter((n) => !n.read_at);

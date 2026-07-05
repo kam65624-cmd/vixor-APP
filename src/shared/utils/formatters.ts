@@ -15,16 +15,25 @@ numbro.setDefaults({
 
 /** Format as currency: $1,234.56 */
 export function formatCurrency(value: number | string | Decimal, decimals?: number): string {
-  const n = typeof value === "string" ? parseFloat(value) : value instanceof Decimal ? value.toNumber() : value;
+  const n =
+    typeof value === "string"
+      ? parseFloat(value)
+      : value instanceof Decimal
+        ? value.toNumber()
+        : value;
   if (!isFinite(n) || isNaN(n)) return "\u2014";
   const abs = Math.abs(n);
   const prefix = n < 0 ? "-$" : "$";
 
-  if (abs >= 1_000_000_000) return `${prefix}${numbro(abs).format({ average: true, totalLength: 4 })}B`;
+  if (abs >= 1_000_000_000)
+    return `${prefix}${numbro(abs).format({ average: true, totalLength: 4 })}B`;
   if (abs >= 1_000_000) return `${prefix}${numbro(abs).format({ average: true, totalLength: 4 })}M`;
-  if (abs >= 10_000) return `${prefix}${numbro(abs).format({ thousandSeparated: true, mantissa: 0 })}`;
-  if (abs >= 1) return `${prefix}${numbro(abs).format({ mantissa: decimals ?? 2, trimMantissa: true })}`;
-  if (abs >= 0.01) return `${prefix}${numbro(abs).format({ mantissa: decimals ?? 4, trimMantissa: true })}`;
+  if (abs >= 10_000)
+    return `${prefix}${numbro(abs).format({ thousandSeparated: true, mantissa: 0 })}`;
+  if (abs >= 1)
+    return `${prefix}${numbro(abs).format({ mantissa: decimals ?? 2, trimMantissa: true })}`;
+  if (abs >= 0.01)
+    return `${prefix}${numbro(abs).format({ mantissa: decimals ?? 4, trimMantissa: true })}`;
   return `${prefix}${numbro(abs).format({ mantissa: decimals ?? 6, trimMantissa: true })}`;
 }
 

@@ -8,11 +8,7 @@
 
 import { llmRouter } from "@/shared/llm";
 import { storeDecision } from "./decision-store";
-import type {
-  HunterInput,
-  HunterScore,
-  HunterSignal,
-} from "../types";
+import type { HunterInput, HunterScore, HunterSignal } from "../types";
 
 /** Coerced JSON output from the LLM. */
 interface HunterLLMOutput {
@@ -103,10 +99,7 @@ Score this opportunity and respond with JSON.`;
  * Parses the LLM response into a typed HunterScore.
  * Falls back to safe defaults if the JSON is malformed.
  */
-export function parseHunterResponse(
-  raw: string,
-  decisionId: string,
-): HunterScore {
+export function parseHunterResponse(raw: string, decisionId: string): HunterScore {
   try {
     const cleaned = raw
       .replace(/^```json?\s*/i, "")
@@ -114,9 +107,7 @@ export function parseHunterResponse(
       .trim();
     const parsed = JSON.parse(cleaned) as HunterLLMOutput;
 
-    const score = typeof parsed.score === "number"
-      ? Math.max(0, Math.min(100, parsed.score))
-      : 50;
+    const score = typeof parsed.score === "number" ? Math.max(0, Math.min(100, parsed.score)) : 50;
 
     const validSignals: HunterSignal[] = ["strong_buy", "buy", "hold", "sell"];
     const signal = validSignals.includes(parsed.signal as HunterSignal)
@@ -127,9 +118,10 @@ export function parseHunterResponse(
       decisionId,
       score,
       signal,
-      reasoning: typeof parsed.reasoning === "string"
-        ? parsed.reasoning
-        : `Score: ${score}/100 based on available data.`,
+      reasoning:
+        typeof parsed.reasoning === "string"
+          ? parsed.reasoning
+          : `Score: ${score}/100 based on available data.`,
       wallets: Array.isArray(parsed.wallets)
         ? parsed.wallets.filter((w): w is string => typeof w === "string")
         : [],

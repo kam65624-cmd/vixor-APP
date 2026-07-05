@@ -128,19 +128,19 @@ describe("safeExecStrategy", () => {
   });
 
   it("exposes caller-provided context (close, open, high, low, volume)", async () => {
-    const r = await safeExecStrategy(
-      "return close + open + high + low + volume;",
-      { close: 10, open: 20, high: 30, low: 40, volume: 50 },
-    );
+    const r = await safeExecStrategy("return close + open + high + low + volume;", {
+      close: 10,
+      open: 20,
+      high: 30,
+      low: 40,
+      volume: 50,
+    });
     expect(r.success).toBe(true);
     expect(r.result).toBe(150);
   });
 
   it("exposes params in context", async () => {
-    const r = await safeExecStrategy(
-      "return params.threshold * 2;",
-      { params: { threshold: 25 } },
-    );
+    const r = await safeExecStrategy("return params.threshold * 2;", { params: { threshold: 25 } });
     expect(r.success).toBe(true);
     expect(r.result).toBe(50);
   });

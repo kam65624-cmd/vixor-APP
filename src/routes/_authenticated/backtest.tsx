@@ -183,20 +183,38 @@ function BacktestPage() {
       <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 24 }}>
         {/* Points Balance */}
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 6,
-            fontSize: 12, fontWeight: 700,
-            background: hasEnoughPoints ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.1)",
-            color: hasEnoughPoints ? "var(--color-primary)" : "var(--color-bearish)",
-          }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 12px",
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 700,
+              background: hasEnoughPoints ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.1)",
+              color: hasEnoughPoints ? "var(--color-primary)" : "var(--color-bearish)",
+            }}
+          >
             <Coins style={{ width: 14, height: 14 }} />
             <span>{pointsBalance}</span>
-            <span style={{ color: "var(--color-muted-foreground)", fontWeight: 400 }}>{t("common.points") || "pts"}</span>
+            <span style={{ color: "var(--color-muted-foreground)", fontWeight: 400 }}>
+              {t("common.points") || "pts"}
+            </span>
           </div>
         </div>
 
         {/* Configuration Card */}
-        <div style={{ ...cardStyle, border: `1px solid ${"var(--color-border)"}`, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+        <div
+          style={{
+            ...cardStyle,
+            border: `1px solid ${"var(--color-border)"}`,
+            padding: 16,
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
             <FlaskConical style={{ width: 16, height: 16, color: "var(--color-bullish)" }} />
             <span style={{ fontSize: 14, fontWeight: 700, color: "var(--color-foreground)" }}>
@@ -214,10 +232,22 @@ function BacktestPage() {
                     key={pair}
                     onClick={() => setForm((f) => ({ ...f, pair }))}
                     style={{
-                      padding: "0 10px", height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
-                      background: form.pair === pair ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
-                      color: form.pair === pair ? "var(--color-primary)" : "var(--color-muted-foreground)",
-                      border: form.pair === pair ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                      padding: "0 10px",
+                      height: 28,
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      background:
+                        form.pair === pair ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
+                      color:
+                        form.pair === pair
+                          ? "var(--color-primary)"
+                          : "var(--color-muted-foreground)",
+                      border:
+                        form.pair === pair
+                          ? "1px solid rgba(16,185,129,0.3)"
+                          : "1px solid rgba(255,255,255,0.06)",
                     }}
                   >
                     {pair}
@@ -230,10 +260,22 @@ function BacktestPage() {
                     key={pair}
                     onClick={() => setForm((f) => ({ ...f, pair }))}
                     style={{
-                      padding: "0 10px", height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
-                      background: form.pair === pair ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
-                      color: form.pair === pair ? "var(--color-primary)" : "var(--color-muted-foreground)",
-                      border: form.pair === pair ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                      padding: "0 10px",
+                      height: 28,
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      background:
+                        form.pair === pair ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
+                      color:
+                        form.pair === pair
+                          ? "var(--color-primary)"
+                          : "var(--color-muted-foreground)",
+                      border:
+                        form.pair === pair
+                          ? "1px solid rgba(16,185,129,0.3)"
+                          : "1px solid rgba(255,255,255,0.06)",
                     }}
                   >
                     {pair}
@@ -251,11 +293,24 @@ function BacktestPage() {
                     key={tf}
                     onClick={() => setForm((f) => ({ ...f, timeframe: tf }))}
                     style={{
-                      flex: 1, height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700,
-                      border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                      background: form.timeframe === tf ? "rgba(16,185,129,0.15)" : "var(--color-card)",
-                      borderColor: form.timeframe === tf ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
-                      color: form.timeframe === tf ? "var(--color-primary)" : "var(--color-muted-foreground)",
+                      flex: 1,
+                      height: 28,
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      border: "1px solid",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      background:
+                        form.timeframe === tf ? "rgba(16,185,129,0.15)" : "var(--color-card)",
+                      borderColor:
+                        form.timeframe === tf ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
+                      color:
+                        form.timeframe === tf
+                          ? "var(--color-primary)"
+                          : "var(--color-muted-foreground)",
                     }}
                   >
                     {tf}
@@ -273,11 +328,21 @@ function BacktestPage() {
                     key={s.id}
                     onClick={() => setForm((f) => ({ ...f, strategy: s.id }))}
                     style={{
-                      padding: "0 10px", height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700,
-                      border: "1px solid", cursor: "pointer",
-                      background: form.strategy === s.id ? "rgba(16,185,129,0.15)" : "var(--color-card)",
-                      borderColor: form.strategy === s.id ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
-                      color: form.strategy === s.id ? "var(--color-primary)" : "var(--color-muted-foreground)",
+                      padding: "0 10px",
+                      height: 28,
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      border: "1px solid",
+                      cursor: "pointer",
+                      background:
+                        form.strategy === s.id ? "rgba(16,185,129,0.15)" : "var(--color-card)",
+                      borderColor:
+                        form.strategy === s.id ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
+                      color:
+                        form.strategy === s.id
+                          ? "var(--color-primary)"
+                          : "var(--color-muted-foreground)",
                     }}
                   >
                     {s.label}
@@ -289,11 +354,15 @@ function BacktestPage() {
             {/* Capital + Risk */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
               <div>
-                <label style={labelStyle}>{t("backtest.initialCapital") || "Initial Capital ($)"}</label>
+                <label style={labelStyle}>
+                  {t("backtest.initialCapital") || "Initial Capital ($)"}
+                </label>
                 <input
                   type="number"
                   value={form.initialCapital}
-                  onChange={(e) => setForm((f) => ({ ...f, initialCapital: Number(e.target.value) }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, initialCapital: Number(e.target.value) }))
+                  }
                   style={inputStyle}
                 />
               </div>
@@ -312,7 +381,14 @@ function BacktestPage() {
             </div>
 
             {/* Date range */}
-            <div style={{ gridColumn: "span 2", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+            <div
+              style={{
+                gridColumn: "span 2",
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 8,
+              }}
+            >
               <div>
                 <label style={labelStyle}>{t("backtest.startDate") || "Start Date"}</label>
                 <input
@@ -336,15 +412,34 @@ function BacktestPage() {
 
           {/* Cost warning if low balance */}
           {!hasEnoughPoints && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, borderRadius: 6, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}>
-              <AlertTriangle style={{ width: 16, height: 16, color: "var(--color-bearish)", flexShrink: 0 }} />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: 12,
+                borderRadius: 6,
+                background: "rgba(239,68,68,0.05)",
+                border: "1px solid rgba(239,68,68,0.2)",
+              }}
+            >
+              <AlertTriangle
+                style={{ width: 16, height: 16, color: "var(--color-bearish)", flexShrink: 0 }}
+              />
               <span style={{ fontSize: 12, color: "var(--color-bearish)" }}>
                 {t("backtest.needMorePoints") ||
                   `You need ${BACKTEST_COST} points. You have ${pointsBalance}.`}
               </span>
               <a
                 href="/premium"
-                style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: "var(--color-bullish)", whiteSpace: "nowrap", textDecoration: "none" }}
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "var(--color-bullish)",
+                  whiteSpace: "nowrap",
+                  textDecoration: "none",
+                }}
               >
                 {t("premium.getPoints") || "Get Points"}
               </a>
@@ -356,10 +451,20 @@ function BacktestPage() {
             onClick={handleRun}
             disabled={running || !hasEnoughPoints}
             style={{
-              width: "100%", height: 44, borderRadius: 8, fontWeight: 700,
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              border: "none", cursor: "pointer", opacity: (running || !hasEnoughPoints) ? 0.5 : 1,
-              background: hasEnoughPoints ? "var(--color-bullish)" : "var(--color-muted-foreground)",
+              width: "100%",
+              height: 44,
+              borderRadius: 8,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              border: "none",
+              cursor: "pointer",
+              opacity: running || !hasEnoughPoints ? 0.5 : 1,
+              background: hasEnoughPoints
+                ? "var(--color-bullish)"
+                : "var(--color-muted-foreground)",
               color: hasEnoughPoints ? "#fff" : "var(--color-muted-foreground)",
               fontSize: 14,
             }}
@@ -381,7 +486,9 @@ function BacktestPage() {
 
         {/* Error */}
         {error && (
-          <div style={{ ...cardStyle, borderLeft: "4px solid " + "var(--color-bearish)", padding: 12 }}>
+          <div
+            style={{ ...cardStyle, borderLeft: "4px solid " + "var(--color-bearish)", padding: 12 }}
+          >
             <div style={{ fontSize: 12, color: "var(--color-bearish)" }}>{error}</div>
           </div>
         )}
@@ -390,8 +497,25 @@ function BacktestPage() {
         {result && (
           <>
             {/* Points spent feedback */}
-            <div style={{ ...cardStyle, border: `1px solid ${"var(--color-border)"}`, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--color-muted-foreground)" }}>
+            <div
+              style={{
+                ...cardStyle,
+                border: `1px solid ${"var(--color-border)"}`,
+                padding: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 12,
+                  color: "var(--color-muted-foreground)",
+                }}
+              >
                 <Coins style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
                 <span>
                   -{BACKTEST_COST} {t("common.points") || "pts"}
@@ -404,11 +528,32 @@ function BacktestPage() {
             </div>
 
             {/* Metrics Grid */}
-            <div style={{ ...cardStyle, border: `1px solid ${"var(--color-border)"}`, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div
+              style={{
+                ...cardStyle,
+                border: `1px solid ${"var(--color-border)"}`,
+                padding: 16,
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <BarChart3 style={{ width: 16, height: 16, color: "var(--color-bullish)" }} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--color-foreground)" }}>{t("backtest.results") || "Results"}</span>
-                <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-muted-foreground)", marginLeft: "auto", fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--color-foreground)" }}>
+                  {t("backtest.results") || "Results"}
+                </span>
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    color: "var(--color-muted-foreground)",
+                    marginLeft: "auto",
+                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  }}
+                >
                   {form.pair} · {form.timeframe}
                 </span>
               </div>
@@ -416,7 +561,9 @@ function BacktestPage() {
               {/* Key metrics */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
                 <MetricCard
-                  icon={<TrendingUp style={{ width: 16, height: 16, color: "var(--color-bullish)" }} />}
+                  icon={
+                    <TrendingUp style={{ width: 16, height: 16, color: "var(--color-bullish)" }} />
+                  }
                   label={t("backtest.totalPnl") || "Total P&L"}
                   value={`$${result.finalEquity.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
                   sub={`${result.metrics.totalReturn > 0 ? "+" : ""}${result.metrics.totalReturn}%`}
@@ -437,7 +584,9 @@ function BacktestPage() {
                   positive={false}
                 />
                 <MetricCard
-                  icon={<Activity style={{ width: 16, height: 16, color: "var(--color-bullish)" }} />}
+                  icon={
+                    <Activity style={{ width: 16, height: 16, color: "var(--color-bullish)" }} />
+                  }
                   label={t("backtest.sharpeRatio") || "Sharpe Ratio"}
                   value={result.metrics.sharpe.toFixed(2)}
                   sub={`Sortino: ${result.metrics.sortino.toFixed(2)}`}
@@ -446,34 +595,103 @@ function BacktestPage() {
               </div>
 
               {/* Additional stats */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginTop: 8 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: 12,
+                  marginTop: 8,
+                }}
+              >
                 {[
-                  { label: t("backtest.profitFactor") || "Profit Factor", value: String(result.metrics.profitFactor), color: "var(--color-foreground)" },
-                  { label: t("backtest.totalTrades") || "Total Trades", value: String(result.metrics.totalTrades), color: "var(--color-foreground)" },
-                  { label: t("backtest.expectancy") || "Expectancy", value: `$${result.metrics.expectancy}`, color: "var(--color-foreground)" },
-                  { label: t("backtest.avgWin") || "Avg Win", value: `$${result.metrics.avgWin}`, color: "var(--color-bullish)" },
-                  { label: t("backtest.avgLoss") || "Avg Loss", value: `$${result.metrics.avgLoss}`, color: "var(--color-bearish)" },
-                  { label: t("backtest.cagr") || "CAGR", value: `${result.metrics.cagr}%`, color: "var(--color-foreground)" },
+                  {
+                    label: t("backtest.profitFactor") || "Profit Factor",
+                    value: String(result.metrics.profitFactor),
+                    color: "var(--color-foreground)",
+                  },
+                  {
+                    label: t("backtest.totalTrades") || "Total Trades",
+                    value: String(result.metrics.totalTrades),
+                    color: "var(--color-foreground)",
+                  },
+                  {
+                    label: t("backtest.expectancy") || "Expectancy",
+                    value: `$${result.metrics.expectancy}`,
+                    color: "var(--color-foreground)",
+                  },
+                  {
+                    label: t("backtest.avgWin") || "Avg Win",
+                    value: `$${result.metrics.avgWin}`,
+                    color: "var(--color-bullish)",
+                  },
+                  {
+                    label: t("backtest.avgLoss") || "Avg Loss",
+                    value: `$${result.metrics.avgLoss}`,
+                    color: "var(--color-bearish)",
+                  },
+                  {
+                    label: t("backtest.cagr") || "CAGR",
+                    value: `${result.metrics.cagr}%`,
+                    color: "var(--color-foreground)",
+                  },
                 ].map((stat) => (
-                  <div key={stat.label} style={{ padding: 8, borderRadius: 6, background: "var(--color-background)" }}>
-                    <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+                  <div
+                    key={stat.label}
+                    style={{ padding: 8, borderRadius: 6, background: "var(--color-background)" }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 9,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        color: "var(--color-muted-foreground)",
+                        fontWeight: 700,
+                      }}
+                    >
                       {stat.label}
                     </div>
-                    <div style={{ fontSize: 14, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: stat.color }}>{stat.value}</div>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                        color: stat.color,
+                      }}
+                    >
+                      {stat.value}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Equity Curve (simplified SVG) */}
-            <div style={{ ...cardStyle, border: `1px solid ${"var(--color-border)"}`, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div
+              style={{
+                ...cardStyle,
+                border: `1px solid ${"var(--color-border)"}`,
+                padding: 16,
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <TrendingUp style={{ width: 16, height: 16, color: "var(--color-bullish)" }} />
                 <span style={{ fontSize: 14, fontWeight: 700, color: "var(--color-foreground)" }}>
                   {t("backtest.equityCurve") || "Equity Curve"}
                 </span>
               </div>
-              <div style={{ width: "100%", height: 192, borderRadius: 8, background: "var(--color-background)", overflow: "hidden", position: "relative" }}>
+              <div
+                style={{
+                  width: "100%",
+                  height: 192,
+                  borderRadius: 8,
+                  background: "var(--color-background)",
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
                 <svg
                   viewBox={`0 0 ${result.equityCurve.length * 4} 192`}
                   style={{ width: "100%", height: "100%" }}
@@ -510,24 +728,55 @@ function BacktestPage() {
                       <>
                         <defs>
                           <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={"var(--color-bullish)"} stopOpacity={0.3} />
-                            <stop offset="100%" stopColor={"var(--color-bullish)"} stopOpacity={0} />
+                            <stop
+                              offset="0%"
+                              stopColor={"var(--color-bullish)"}
+                              stopOpacity={0.3}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor={"var(--color-bullish)"}
+                              stopOpacity={0}
+                            />
                           </linearGradient>
                         </defs>
                         <path d={`${pathD} L${w},192 L0,192 Z`} fill="url(#eqGrad)" />
-                        <path d={pathD} fill="none" stroke={"var(--color-bullish)"} strokeWidth={2} />
+                        <path
+                          d={pathD}
+                          fill="none"
+                          stroke={"var(--color-bullish)"}
+                          strokeWidth={2}
+                        />
                       </>
                     );
                   })()}
                 </svg>
                 {/* Y-axis labels */}
-                <div style={{ position: "absolute", top: 8, left: 8, fontSize: 9, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-muted-foreground)" }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 8,
+                    left: 8,
+                    fontSize: 9,
+                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    color: "var(--color-muted-foreground)",
+                  }}
+                >
                   $
                   {Math.max(...result.equityCurve.map((p) => p.equity)).toLocaleString(undefined, {
                     maximumFractionDigits: 0,
                   })}
                 </div>
-                <div style={{ position: "absolute", bottom: 8, left: 8, fontSize: 9, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-muted-foreground)" }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 8,
+                    left: 8,
+                    fontSize: 9,
+                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    color: "var(--color-muted-foreground)",
+                  }}
+                >
                   $
                   {Math.min(...result.equityCurve.map((p) => p.equity)).toLocaleString(undefined, {
                     maximumFractionDigits: 0,
@@ -538,11 +787,32 @@ function BacktestPage() {
 
             {/* Trade List */}
             {result.trades.length > 0 && (
-              <div style={{ ...cardStyle, border: `1px solid ${"var(--color-border)"}`, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div
+                style={{
+                  ...cardStyle,
+                  border: `1px solid ${"var(--color-border)"}`,
+                  padding: 16,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 12,
+                }}
+              >
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <ShoppingBag style={{ width: 16, height: 16, color: "var(--color-bullish)" }} />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--color-foreground)" }}>{t("backtest.tradeList") || "Trade List"}</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-muted-foreground)", marginLeft: "auto", fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--color-foreground)" }}>
+                    {t("backtest.tradeList") || "Trade List"}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                      color: "var(--color-muted-foreground)",
+                      marginLeft: "auto",
+                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    }}
+                  >
                     {result.trades.length} trades
                   </span>
                 </div>
@@ -551,27 +821,67 @@ function BacktestPage() {
                     <div
                       key={i}
                       style={{
-                        display: "flex", alignItems: "center", gap: 8, padding: "8px 12px",
-                        borderRadius: 6, background: "var(--color-background)", fontSize: 12,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "8px 12px",
+                        borderRadius: 6,
+                        background: "var(--color-background)",
+                        fontSize: 12,
                       }}
                     >
-                      <span style={{ fontWeight: 700, width: 20, textAlign: "center", color: trade.netPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)", fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          width: 20,
+                          textAlign: "center",
+                          color:
+                            trade.netPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                        }}
+                      >
                         {trade.netPnl >= 0 ? "+" : ""}
                       </span>
-                      <span style={{ fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", width: 56, textAlign: "right", color: "var(--color-foreground)" }}>
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          width: 56,
+                          textAlign: "right",
+                          color: "var(--color-foreground)",
+                        }}
+                      >
                         ${Math.abs(trade.netPnl).toFixed(0)}
                       </span>
-                      <span style={{ color: "var(--color-muted-foreground)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span
+                        style={{
+                          color: "var(--color-muted-foreground)",
+                          flex: 1,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {trade.tag || trade.exitReason || `#${i + 1}`}
                       </span>
-                      <span style={{ fontSize: 10, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-muted-foreground)" }}>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          color: "var(--color-muted-foreground)",
+                        }}
+                      >
                         {trade.durationBars}bars
                       </span>
-                      <span style={{
-                        fontSize: 10, fontWeight: 700,
-                        color: trade.netPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
-                        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                      }}>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color:
+                            trade.netPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                        }}
+                      >
                         {trade.rMultiple?.toFixed(1) || "—"}R
                       </span>
                     </div>
@@ -604,14 +914,36 @@ function MetricCard({
   positive: boolean;
 }) {
   return (
-    <div style={{ padding: 12, borderRadius: 8, background: "var(--color-background)", border: `1px solid ${"var(--color-border)"}` }}>
+    <div
+      style={{
+        padding: 12,
+        borderRadius: 8,
+        background: "var(--color-background)",
+        border: `1px solid ${"var(--color-border)"}`,
+      }}
+    >
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
         {icon}
-        <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+        <span
+          style={{
+            fontSize: 10,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: "var(--color-muted-foreground)",
+            fontWeight: 700,
+          }}
+        >
           {label}
         </span>
       </div>
-      <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: positive ? "var(--color-bullish)" : "var(--color-bearish)" }}>
+      <div
+        style={{
+          fontSize: 18,
+          fontWeight: 700,
+          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          color: positive ? "var(--color-bullish)" : "var(--color-bearish)",
+        }}
+      >
         {value}
       </div>
       <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>{sub}</div>

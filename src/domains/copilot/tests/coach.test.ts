@@ -47,14 +47,16 @@ const SAMPLE_INPUT: CoachInput = {
 };
 
 const VALID_LLM_RESPONSE = JSON.stringify({
-  comment: "Buying SOL at current resistance level. Volume is declining — not ideal for entry. Consider waiting for pullback to $168 support.",
+  comment:
+    "Buying SOL at current resistance level. Volume is declining — not ideal for entry. Consider waiting for pullback to $168 support.",
   sentiment: "bearish",
   riskLevel: "medium",
   suggestion: "Wait for a pullback to the $168 support level before entering with a limit order.",
 });
 
 const VALID_BULLISH_RESPONSE = JSON.stringify({
-  comment: "Good entry point. SOL is bouncing off the 200 EMA with strong volume. RSI is at 42 — room to run.",
+  comment:
+    "Good entry point. SOL is bouncing off the 200 EMA with strong volume. RSI is at 42 — room to run.",
   sentiment: "bullish",
   riskLevel: "low",
   suggestion: "Enter with a stop loss at $168 and target $185 for a 1:1.5 R:R.",
@@ -62,7 +64,8 @@ const VALID_BULLISH_RESPONSE = JSON.stringify({
 
 const MALFORMED_RESPONSE = "This is not JSON at all!";
 
-const MARKDOWN_WRAPPED_RESPONSE = '```json\n{"comment": "Solid entry.", "sentiment": "bullish", "riskLevel": "low", "suggestion": "Go for it."}\n```';
+const MARKDOWN_WRAPPED_RESPONSE =
+  '```json\n{"comment": "Solid entry.", "sentiment": "bullish", "riskLevel": "low", "suggestion": "Go for it."}\n```';
 
 // ── System Prompt Tests ────────────────────────────────────────────────────
 
@@ -201,7 +204,12 @@ describe("Coach Agent — parseCoachResponse", () => {
 
   it("handles JSON with invalid sentiment value", () => {
     const result = parseCoachResponse(
-      JSON.stringify({ comment: "Test", sentiment: "very_bullish", riskLevel: "low", suggestion: "Ok" }),
+      JSON.stringify({
+        comment: "Test",
+        sentiment: "very_bullish",
+        riskLevel: "low",
+        suggestion: "Ok",
+      }),
       testDecisionId,
     );
     // Should default to neutral for invalid sentiment
@@ -210,7 +218,12 @@ describe("Coach Agent — parseCoachResponse", () => {
 
   it("handles JSON with invalid risk level value", () => {
     const result = parseCoachResponse(
-      JSON.stringify({ comment: "Test", sentiment: "bullish", riskLevel: "extreme", suggestion: "Ok" }),
+      JSON.stringify({
+        comment: "Test",
+        sentiment: "bullish",
+        riskLevel: "extreme",
+        suggestion: "Ok",
+      }),
       testDecisionId,
     );
     expect(result.riskLevel).toBe("medium");

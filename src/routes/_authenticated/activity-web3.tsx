@@ -8,7 +8,11 @@ export const Route = createFileRoute("/_authenticated/activity-web3")({
 
 function ActivityPage() {
   return (
-    <PageLayout title="On-Chain Activity" badge="COMING SOON" badgeColor={"var(--color-neutral-wait)"}>
+    <PageLayout
+      title="On-Chain Activity"
+      badge="COMING SOON"
+      badgeColor={"var(--color-neutral-wait)"}
+    >
       <EmptyState
         icon="🔄"
         title="On-Chain Activity"

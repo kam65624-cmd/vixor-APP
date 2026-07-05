@@ -385,7 +385,7 @@ export async function runChartAnalysis(
       const debateResult = await debate.run(result);
       console.log("[Vixor] Debate result:", debateResult.summary);
       // Attach to result for downstream use (non-breaking, invisible to frontend)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (result as any)._debate = debateResult;
     } catch (e) {
       console.warn(

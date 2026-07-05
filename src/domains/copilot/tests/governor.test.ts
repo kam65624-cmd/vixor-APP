@@ -180,7 +180,8 @@ describe("Governor Agent", () => {
     });
 
     it("parses JSON with code fences", () => {
-      const raw = '```json\n{"riskScore": 20, "reason": "Low risk", "suggestion": "Go ahead."}\n```';
+      const raw =
+        '```json\n{"riskScore": 20, "reason": "Low risk", "suggestion": "Go ahead."}\n```';
 
       const result = parseGovernorResponse(raw, "test-id", buildRiskProfile("No memories"), "ETH");
       expect(result.riskScore).toBe(20);
@@ -188,7 +189,12 @@ describe("Governor Agent", () => {
     });
 
     it("falls back for invalid JSON", () => {
-      const result = parseGovernorResponse("not json", "test-id", buildRiskProfile("No memories"), "BTC");
+      const result = parseGovernorResponse(
+        "not json",
+        "test-id",
+        buildRiskProfile("No memories"),
+        "BTC",
+      );
       expect(result.decision).toBe("warn");
       expect(result.riskScore).toBe(50);
       expect(result.confidence).toBe(0.3);

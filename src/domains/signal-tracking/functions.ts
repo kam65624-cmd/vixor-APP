@@ -6,19 +6,19 @@
 // Notifications are sent server-side when status changes to TP/SL hit.
 // ============================================================================
 
-import { createServerFn } from '@tanstack/react-start';
-import { requireSupabaseAuth } from '@/shared/supabase/auth-middleware';
-import type { SignalTracking, SignalStatus, CreateSignalTrackingInput } from './types';
-import { TERMINAL_STATUSES } from './types';
-import { notificationRouter } from '@/shared/notifications';
+import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import type { SignalTracking, SignalStatus, CreateSignalTrackingInput } from "./types";
+import { TERMINAL_STATUSES } from "./types";
+import { notificationRouter } from "@/shared/notifications";
 
 // ── Create Tracking ────────────────────────────────────────────────────────
 
-export const createSignalTracking = createServerFn({ method: 'POST' })
+export const createSignalTracking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => {
     const data = d as CreateSignalTrackingInput;
-    if (!data.pair || !data.direction) throw new Error('pair and direction are required');
+    if (!data.pair || !data.direction) throw new Error("pair and direction are required");
     return data;
   })
   .handler(async ({ data, context }) => {
@@ -27,15 +27,15 @@ export const createSignalTracking = createServerFn({ method: 'POST' })
     // Prevent duplicate: same user + signal_id
     if (data.signalId) {
       const { data: existing } = await supabase
-        .from('signal_tracking')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('signal_id', data.signalId)
-        .eq('status', 'pending')
+        .from("signal_tracking")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("signal_id", data.signalId)
+        .eq("status", "pending")
         .maybeSingle();
 
       if (existing) {
-        return { ok: false as const, error: 'ALREADY_TRACKING' as const, trackingId: existing.id };
+        return { ok: false as const, error: "ALREADY_TRACKING" as const, trackingId: existing.id };
       }
     }
 
@@ -43,11 +43,11 @@ export const createSignalTracking = createServerFn({ method: 'POST' })
     const expiresAt = data.expiresAt ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
     const { data: row, error } = await supabase
-      .from('signal_tracking')
+      .from("signal_tracking")
       .insert({
         user_id: userId,
         signal_id: data.signalId ?? null,
-        source_type: data.sourceType ?? 'daily_signal',
+        source_type: data.sourceType ?? "daily_signal",
         pair: data.pair,
         direction: data.direction,
         entry_price: data.entryPrice ?? null,
@@ -59,7 +59,7 @@ export const createSignalTracking = createServerFn({ method: 'POST' })
       .single();
 
     if (error || !row) {
-      return { ok: false, error: (error?.message ?? 'insert_failed'), trackingId: null };
+      return { ok: false, error: error?.message ?? "insert_failed", trackingId: null };
     }
 
     return { ok: true, error: null, trackingId: row.id };
@@ -67,16 +67,16 @@ export const createSignalTracking = createServerFn({ method: 'POST' })
 
 // ── Get User's Trackings ───────────────────────────────────────────────────
 
-export const getUserSignalTrackings = createServerFn({ method: 'GET' })
+export const getUserSignalTrackings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { userId, supabase } = context;
 
     const { data, error } = await supabase
-      .from('signal_tracking')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+      .from("signal_tracking")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
       .limit(100);
 
     if (error) {
@@ -88,11 +88,16 @@ export const getUserSignalTrackings = createServerFn({ method: 'GET' })
 
 // ── Update Tracking Status ─────────────────────────────────────────────────
 
-export const updateSignalTracking = createServerFn({ method: 'POST' })
+export const updateSignalTracking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => {
-    const data = d as { trackingId: string; status: SignalStatus; currentPrice?: number; hitTp?: number };
-    if (!data.trackingId || !data.status) throw new Error('trackingId and status are required');
+    const data = d as {
+      trackingId: string;
+      status: SignalStatus;
+      currentPrice?: number;
+      hitTp?: number;
+    };
+    if (!data.trackingId || !data.status) throw new Error("trackingId and status are required");
     return data;
   })
   .handler(async ({ data, context }) => {
@@ -112,55 +117,64 @@ export const updateSignalTracking = createServerFn({ method: 'POST' })
       updates.resolved_at = new Date().toISOString();
     }
     // Set activated_at when moving to active
-    if (status === 'active') {
+    if (status === "active") {
       updates.activated_at = new Date().toISOString();
     }
 
     const { error } = await supabase
-      .from('signal_tracking')
+      .from("signal_tracking")
       .update(updates as any)
-      .eq('id', trackingId)
-      .eq('user_id', userId);
+      .eq("id", trackingId)
+      .eq("user_id", userId);
 
     if (error) {
       return { ok: false, error: error.message };
     }
 
     // ── Send notification for TP/SL/entry status changes ──
-    if (TERMINAL_STATUSES.includes(status) || status === 'active') {
+    if (TERMINAL_STATUSES.includes(status) || status === "active") {
       // Fetch the tracking to get pair/direction for notification
       const { data: tracking } = await supabase
-        .from('signal_tracking')
-        .select('pair, direction, entry_price, stop_loss, take_profit')
-        .eq('id', trackingId)
+        .from("signal_tracking")
+        .select("pair, direction, entry_price, stop_loss, take_profit")
+        .eq("id", trackingId)
         .single();
 
       if (tracking) {
-        const dir = tracking.direction === 'BUY' ? 'Long' : 'Short';
-        let title = '';
-        let body = '';
-        let severity: 'info' | 'warning' = 'info';
+        const dir = tracking.direction === "BUY" ? "Long" : "Short";
+        let title = "";
+        let body = "";
+        let severity: "info" | "warning" = "info";
 
-        if (status === 'active') {
-          title = 'Entry Reached on {{pair}}';
-          body = `${dir} ${tracking.pair} — Entry at $${tracking.entry_price?.toFixed(2) ?? '?'} reached. Now monitoring TP/SL.`;
-        } else if (status.startsWith('tp')) {
-          title = 'TP Hit on {{pair}}!';
-          body = `${dir} ${tracking.pair} — Take Profit hit at $${currentPrice?.toFixed(2) ?? '?'}! Signal: ${status}.`;
-        } else if (status === 'sl_hit') {
-          title = 'SL Hit on {{pair}}';
-          body = `${dir} ${tracking.pair} — Stop Loss hit at $${currentPrice?.toFixed(2) ?? '?'}! Signal closed.`;
-          severity = 'warning';
+        if (status === "active") {
+          title = "Entry Reached on {{pair}}";
+          body = `${dir} ${tracking.pair} — Entry at $${tracking.entry_price?.toFixed(2) ?? "?"} reached. Now monitoring TP/SL.`;
+        } else if (status.startsWith("tp")) {
+          title = "TP Hit on {{pair}}!";
+          body = `${dir} ${tracking.pair} — Take Profit hit at $${currentPrice?.toFixed(2) ?? "?"}! Signal: ${status}.`;
+        } else if (status === "sl_hit") {
+          title = "SL Hit on {{pair}}";
+          body = `${dir} ${tracking.pair} — Stop Loss hit at $${currentPrice?.toFixed(2) ?? "?"}! Signal closed.`;
+          severity = "warning";
         }
 
         if (title) {
-          void notificationRouter.send({
-            userId,
-            title,
-            body,
-            severity,
-            payload: { pair: tracking.pair, direction: tracking.direction, price: currentPrice, status },
-          }).catch(() => { /* non-blocking */ });
+          void notificationRouter
+            .send({
+              userId,
+              title,
+              body,
+              severity,
+              payload: {
+                pair: tracking.pair,
+                direction: tracking.direction,
+                price: currentPrice,
+                status,
+              },
+            })
+            .catch(() => {
+              /* non-blocking */
+            });
         }
       }
     }
@@ -170,11 +184,11 @@ export const updateSignalTracking = createServerFn({ method: 'POST' })
 
 // ── Cancel Tracking ────────────────────────────────────────────────────────
 
-export const cancelSignalTracking = createServerFn({ method: 'POST' })
+export const cancelSignalTracking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => {
     const data = d as { trackingId: string };
-    if (!data.trackingId) throw new Error('trackingId is required');
+    if (!data.trackingId) throw new Error("trackingId is required");
     return data;
   })
   .handler(async ({ data, context }) => {
@@ -182,14 +196,14 @@ export const cancelSignalTracking = createServerFn({ method: 'POST' })
     const { userId, supabase } = context;
 
     const { error } = await supabase
-      .from('signal_tracking')
+      .from("signal_tracking")
       .update({
-        status: 'cancelled',
+        status: "cancelled",
         resolved_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq('id', trackingId)
-      .eq('user_id', userId);
+      .eq("id", trackingId)
+      .eq("user_id", userId);
 
     if (error) {
       return { ok: false, error: error.message };
@@ -204,58 +218,62 @@ export const cancelSignalTracking = createServerFn({ method: 'POST' })
 export function evaluateTrackingPrice(
   tracking: SignalTracking,
   currentPrice: number,
-): { hitType: 'entry_reached' | 'tp_hit' | 'sl_hit' | 'none'; tpLevel?: number; newStatus?: SignalStatus } {
-  if (tracking.direction === 'WAIT') {
-    return { hitType: 'none' };
+): {
+  hitType: "entry_reached" | "tp_hit" | "sl_hit" | "none";
+  tpLevel?: number;
+  newStatus?: SignalStatus;
+} {
+  if (tracking.direction === "WAIT") {
+    return { hitType: "none" };
   }
 
   if (!tracking.entry_price && !tracking.stop_loss) {
-    return { hitType: 'none' };
+    return { hitType: "none" };
   }
 
   // PENDING: Check if entry price is reached
-  if (tracking.status === 'pending' && tracking.entry_price) {
+  if (tracking.status === "pending" && tracking.entry_price) {
     const entry = tracking.entry_price;
-    if (tracking.direction === 'BUY') {
+    if (tracking.direction === "BUY") {
       if (currentPrice <= entry) {
-        return { hitType: 'entry_reached', newStatus: 'active' };
+        return { hitType: "entry_reached", newStatus: "active" };
       }
     } else {
       if (currentPrice >= entry) {
-        return { hitType: 'entry_reached', newStatus: 'active' };
+        return { hitType: "entry_reached", newStatus: "active" };
       }
     }
-    return { hitType: 'none' };
+    return { hitType: "none" };
   }
 
   // ACTIVE: Monitor TP/SL
-  if (tracking.status === 'active') {
+  if (tracking.status === "active") {
     const tps: number[] = Array.isArray(tracking.take_profit) ? tracking.take_profit : [];
 
-    if (tracking.direction === 'BUY') {
+    if (tracking.direction === "BUY") {
       if (tracking.stop_loss && currentPrice <= tracking.stop_loss) {
-        return { hitType: 'sl_hit', newStatus: 'sl_hit' };
+        return { hitType: "sl_hit", newStatus: "sl_hit" };
       }
       for (let i = tracking.hit_tp; i < tps.length; i++) {
         if (currentPrice >= tps[i]) {
           const nextStatus = `tp${i + 1}_hit` as SignalStatus;
-          return { hitType: 'tp_hit', tpLevel: tps[i], newStatus: nextStatus };
+          return { hitType: "tp_hit", tpLevel: tps[i], newStatus: nextStatus };
         }
       }
     } else {
       if (tracking.stop_loss && currentPrice >= tracking.stop_loss) {
-        return { hitType: 'sl_hit', newStatus: 'sl_hit' };
+        return { hitType: "sl_hit", newStatus: "sl_hit" };
       }
       for (let i = tracking.hit_tp; i < tps.length; i++) {
         if (currentPrice <= tps[i]) {
           const nextStatus = `tp${i + 1}_hit` as SignalStatus;
-          return { hitType: 'tp_hit', tpLevel: tps[i], newStatus: nextStatus };
+          return { hitType: "tp_hit", tpLevel: tps[i], newStatus: nextStatus };
         }
       }
     }
   }
 
-  return { hitType: 'none' };
+  return { hitType: "none" };
 }
 
 // ── Update MFE/MAE (client-side) ──────────────────────────────────────────
@@ -264,15 +282,18 @@ export function updateExcursions(
   tracking: SignalTracking,
   currentPrice: number,
 ): { maxFavorable: number; maxAdverse: number } {
-  if (tracking.direction === 'WAIT' || !tracking.entry_price) {
-    return { maxFavorable: tracking.max_favorable_excursion, maxAdverse: tracking.max_adverse_excursion };
+  if (tracking.direction === "WAIT" || !tracking.entry_price) {
+    return {
+      maxFavorable: tracking.max_favorable_excursion,
+      maxAdverse: tracking.max_adverse_excursion,
+    };
   }
 
   let mfe = tracking.max_favorable_excursion;
   let mae = tracking.max_adverse_excursion;
   const entry = tracking.entry_price;
 
-  if (tracking.direction === 'BUY') {
+  if (tracking.direction === "BUY") {
     const favorable = currentPrice - entry;
     const adverse = entry - currentPrice;
     if (favorable > mfe) mfe = favorable;

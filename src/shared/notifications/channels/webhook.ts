@@ -39,7 +39,6 @@ async function resolveWebhookUrl(
       .eq("user_id", userId)
       .maybeSingle();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const row = data as any;
     if (row?.webhook_url) {
       return {

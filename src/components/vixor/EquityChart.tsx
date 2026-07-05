@@ -23,12 +23,7 @@ interface EquityChartProps {
   className?: string;
 }
 
-export function EquityChart({
-  data,
-  height = 240,
-  showAxis = true,
-  className,
-}: EquityChartProps) {
+export function EquityChart({ data, height = 240, showAxis = true, className }: EquityChartProps) {
   if (!data || data.length === 0) return null;
 
   const isUp = (data.at(-1)?.equity ?? 0) >= (data[0]?.equity ?? 0);

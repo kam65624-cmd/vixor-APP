@@ -82,7 +82,9 @@ export const FullPage: StoryObj = {
 export const LoadingState: StoryObj = {
   render: () => (
     <div className="w-[390px] h-[400px] rounded-lg overflow-hidden border border-border">
-      <PageLayout title="Signals" loading>{null as any}</PageLayout>
+      <PageLayout title="Signals" loading>
+        {null as any}
+      </PageLayout>
     </div>
   ),
 };
@@ -94,7 +96,12 @@ export const StatsRowShowcase: StoryObj = {
     <div className="w-[390px]">
       <StatsRow
         stats={[
-          { label: "Total P&L", value: "+$12,480", color: "var(--color-bullish)", sub: "+8.4% this week" },
+          {
+            label: "Total P&L",
+            value: "+$12,480",
+            color: "var(--color-bullish)",
+            sub: "+8.4% this week",
+          },
           { label: "Win Rate", value: "72.3%", color: "var(--color-info)" },
           { label: "Trades", value: "148", sub: "32 this week" },
         ]}
@@ -193,19 +200,89 @@ export const DataRowShowcase: StoryObj = {
         ]}
       />
       <DataRow leftAccent="var(--color-bullish)">
-        <div style={{ display: "flex", width: "100%", justifyContent: "space-between", fontSize: "13px" }}>
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            justifyContent: "space-between",
+            fontSize: "13px",
+          }}
+        >
           <span style={{ width: 80, fontWeight: 700 }}>SOL/USDT</span>
-          <span style={{ width: 50, textAlign: "center", color: "var(--color-bullish)", fontWeight: 700 }}>BUY</span>
-          <span style={{ width: 70, textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: "var(--color-bullish)" }}>+$1,240</span>
-          <span style={{ width: 60, textAlign: "right", color: "var(--color-muted-foreground)", fontSize: "12px" }}>2m</span>
+          <span
+            style={{
+              width: 50,
+              textAlign: "center",
+              color: "var(--color-bullish)",
+              fontWeight: 700,
+            }}
+          >
+            BUY
+          </span>
+          <span
+            style={{
+              width: 70,
+              textAlign: "right",
+              fontFamily: "monospace",
+              fontWeight: 700,
+              color: "var(--color-bullish)",
+            }}
+          >
+            +$1,240
+          </span>
+          <span
+            style={{
+              width: 60,
+              textAlign: "right",
+              color: "var(--color-muted-foreground)",
+              fontSize: "12px",
+            }}
+          >
+            2m
+          </span>
         </div>
       </DataRow>
       <DataRow leftAccent="var(--color-bearish)">
-        <div style={{ display: "flex", width: "100%", justifyContent: "space-between", fontSize: "13px" }}>
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            justifyContent: "space-between",
+            fontSize: "13px",
+          }}
+        >
           <span style={{ width: 80, fontWeight: 700 }}>ETH/USDT</span>
-          <span style={{ width: 50, textAlign: "center", color: "var(--color-bearish)", fontWeight: 700 }}>SELL</span>
-          <span style={{ width: 70, textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: "var(--color-bearish)" }}>-$320</span>
-          <span style={{ width: 60, textAlign: "right", color: "var(--color-muted-foreground)", fontSize: "12px" }}>15m</span>
+          <span
+            style={{
+              width: 50,
+              textAlign: "center",
+              color: "var(--color-bearish)",
+              fontWeight: 700,
+            }}
+          >
+            SELL
+          </span>
+          <span
+            style={{
+              width: 70,
+              textAlign: "right",
+              fontFamily: "monospace",
+              fontWeight: 700,
+              color: "var(--color-bearish)",
+            }}
+          >
+            -$320
+          </span>
+          <span
+            style={{
+              width: 60,
+              textAlign: "right",
+              color: "var(--color-muted-foreground)",
+              fontSize: "12px",
+            }}
+          >
+            15m
+          </span>
         </div>
       </DataRow>
     </div>

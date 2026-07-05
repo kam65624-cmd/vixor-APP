@@ -69,14 +69,10 @@ function getTones(type: SoundType): Tone[] {
       ];
     case "whale":
       // Deep rumble: 100Hz, 300ms
-      return [
-        { freq: 100, start: 0, dur: 0.3, gain: 0.9 },
-      ];
+      return [{ freq: 100, start: 0, dur: 0.3, gain: 0.9 }];
     case "notification":
       // Single pleasant chime: 660Hz, 100ms
-      return [
-        { freq: 660, start: 0, dur: 0.1 },
-      ];
+      return [{ freq: 660, start: 0, dur: 0.1 }];
     case "success":
       // Ascending arpeggio: C5-E5-G5-C6
       return [
@@ -93,9 +89,7 @@ function getTones(type: SoundType): Tone[] {
       ];
     case "click":
       // Very short tap: 1000Hz, 30ms
-      return [
-        { freq: 1000, start: 0, dur: 0.03, gain: 0.4 },
-      ];
+      return [{ freq: 1000, start: 0, dur: 0.03, gain: 0.4 }];
   }
 }
 
@@ -138,7 +132,14 @@ class SoundManager {
   }
 
   /** Play a single tone. */
-  private playTone(ctx: AudioContext, freq: number, startTime: number, dur: number, gain: number, masterVolume: number) {
+  private playTone(
+    ctx: AudioContext,
+    freq: number,
+    startTime: number,
+    dur: number,
+    gain: number,
+    masterVolume: number,
+  ) {
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
 

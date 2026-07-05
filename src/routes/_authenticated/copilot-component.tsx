@@ -13,7 +13,7 @@ import {
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
-import { PageLayout,  ScrollArea, Badge, EmptyState } from "@/components/vixor/PageLayout";
+import { PageLayout, ScrollArea, Badge, EmptyState } from "@/components/vixor/PageLayout";
 import {
   Bot,
   Send,
@@ -835,7 +835,10 @@ export function CopilotPage() {
                     }}
                   >
                     {sidebarOpen ? (
-                      <PanelLeftClose size={16} style={{ color: "var(--color-muted-foreground)" }} />
+                      <PanelLeftClose
+                        size={16}
+                        style={{ color: "var(--color-muted-foreground)" }}
+                      />
                     ) : (
                       <PanelLeftOpen size={16} style={{ color: "var(--color-muted-foreground)" }} />
                     )}
@@ -900,7 +903,10 @@ export function CopilotPage() {
                       size={16}
                       style={{ color: currentAgentConfig.color }}
                     />
-                    <span className="text-xs font-bold" style={{ color: "var(--color-foreground)" }}>
+                    <span
+                      className="text-xs font-bold"
+                      style={{ color: "var(--color-foreground)" }}
+                    >
                       {currentAgentConfig.label}
                     </span>
                     <ChevronDown
@@ -930,7 +936,8 @@ export function CopilotPage() {
                           }
                     }
                     onMouseEnter={(e) => {
-                      if (!consensusMode) e.currentTarget.style.background = "var(--color-card-hover)";
+                      if (!consensusMode)
+                        e.currentTarget.style.background = "var(--color-card-hover)";
                     }}
                     onMouseLeave={(e) => {
                       if (!consensusMode) e.currentTarget.style.background = "var(--color-card)";
@@ -959,7 +966,10 @@ export function CopilotPage() {
                       <Users size={14} />
                       {t("copilot.consensusMode") || "Multi-Agent Consensus"}
                     </div>
-                    <p className="text-[10px] mt-0.5" style={{ color: "var(--color-muted-foreground)" }}>
+                    <p
+                      className="text-[10px] mt-0.5"
+                      style={{ color: "var(--color-muted-foreground)" }}
+                    >
                       {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
                     </p>
                   </div>
@@ -991,7 +1001,8 @@ export function CopilotPage() {
                                 }
                           }
                           onMouseEnter={(e) => {
-                            if (!isActive) e.currentTarget.style.background = "var(--color-card-hover)";
+                            if (!isActive)
+                              e.currentTarget.style.background = "var(--color-card-hover)";
                           }}
                           onMouseLeave={(e) => {
                             if (!isActive) e.currentTarget.style.background = "var(--color-card)";
@@ -1086,7 +1097,11 @@ export function CopilotPage() {
                   </div>
                   <div className="vixor-card p-4 flex-1">
                     <div className="flex items-center gap-2">
-                      <Loader2 size={16} className="animate-spin" style={{ color: "var(--color-bullish)" }} />
+                      <Loader2
+                        size={16}
+                        className="animate-spin"
+                        style={{ color: "var(--color-bullish)" }}
+                      />
                       <span className="text-xs" style={{ color: "var(--color-muted-foreground)" }}>
                         {consensusMode
                           ? "Getting consensus from all agents..."
@@ -1110,7 +1125,11 @@ export function CopilotPage() {
                   </div>
                   <div className="vixor-card p-4 flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Loader2 size={16} className="animate-spin" style={{ color: "var(--color-bullish)" }} />
+                      <Loader2
+                        size={16}
+                        className="animate-spin"
+                        style={{ color: "var(--color-bullish)" }}
+                      />
                       <span className="text-xs" style={{ color: "var(--color-muted-foreground)" }}>
                         Consulting all 4 agents...
                       </span>
@@ -1120,7 +1139,10 @@ export function CopilotPage() {
                         <div
                           key={agent.id}
                           className="flex items-center gap-1.5 text-[10px] animate-pulse"
-                          style={{ color: "var(--color-muted-foreground)", animationDelay: `${i * 300}ms` }}
+                          style={{
+                            color: "var(--color-muted-foreground)",
+                            animationDelay: `${i * 300}ms`,
+                          }}
                         >
                           <agent.icon size={12} style={{ color: agent.color }} />
                           {agent.label}
@@ -1135,7 +1157,10 @@ export function CopilotPage() {
             </ScrollArea>
 
             {/* ─── Input Area ─── */}
-            <div className="flex-shrink-0 pt-3" style={{ borderTop: `1px solid ${"var(--color-border)"}` }}>
+            <div
+              className="flex-shrink-0 pt-3"
+              style={{ borderTop: `1px solid ${"var(--color-border)"}` }}
+            >
               <form onSubmit={handleSubmit} className="flex items-end gap-2">
                 <div className="flex-1 relative">
                   <textarea
@@ -1199,7 +1224,10 @@ export function CopilotPage() {
                 </button>
               </form>
               <div className="mt-1.5 text-center">
-                <span className="text-[9px]" style={{ color: alpha("var(--color-muted-foreground)", 50) }}>
+                <span
+                  className="text-[9px]"
+                  style={{ color: alpha("var(--color-muted-foreground)", 50) }}
+                >
                   AI responses may not always be accurate. Always verify with your own analysis.
                 </span>
               </div>
@@ -1270,7 +1298,9 @@ function ConversationSidebar({
         <button
           onClick={onNewChat}
           className="w-full flex items-center gap-2 px-3 h-9 rounded-xl text-white text-xs font-bold transition-opacity"
-          style={{ background: `linear-gradient(to right, ${"var(--color-bullish)"}, ${"var(--color-bullish)"})` }}
+          style={{
+            background: `linear-gradient(to right, ${"var(--color-bullish)"}, ${"var(--color-bullish)"})`,
+          }}
           onMouseEnter={(e) => {
             e.currentTarget.style.opacity = "0.9";
           }}
@@ -1287,7 +1317,11 @@ function ConversationSidebar({
       <ScrollArea style={{ padding: "8px", gap: "4px", display: "flex", flexDirection: "column" }}>
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 size={20} className="animate-spin" style={{ color: "var(--color-muted-foreground)" }} />
+            <Loader2
+              size={20}
+              className="animate-spin"
+              style={{ color: "var(--color-muted-foreground)" }}
+            />
           </div>
         ) : conversations.length === 0 ? (
           <EmptyState icon="💬" title="No conversations yet" message="Start a new chat to begin!" />
@@ -1425,12 +1459,17 @@ function ConversationSidebar({
                       <div
                         className="size-6 rounded-lg flex items-center justify-center shrink-0"
                         style={{
-                          background: isActive ? alpha("var(--color-bullish)", 15) : "var(--color-card)",
+                          background: isActive
+                            ? alpha("var(--color-bullish)", 15)
+                            : "var(--color-card)",
                           border: `1px solid ${"var(--color-border)"}`,
                         }}
                       >
                         {conv.is_consensus ? (
-                          <Users size={12} style={{ color: isActive ? "var(--color-bullish)" : agentColor }} />
+                          <Users
+                            size={12}
+                            style={{ color: isActive ? "var(--color-bullish)" : agentColor }}
+                          />
                         ) : (
                           <AgentIcon
                             size={12}
@@ -1441,11 +1480,16 @@ function ConversationSidebar({
                       <div className="min-w-0 flex-1">
                         <div
                           className="text-xs font-medium truncate"
-                          style={{ color: isActive ? "var(--color-bullish)" : "var(--color-foreground)" }}
+                          style={{
+                            color: isActive ? "var(--color-bullish)" : "var(--color-foreground)",
+                          }}
                         >
                           {conv.title}
                         </div>
-                        <div className="text-[9px]" style={{ color: "var(--color-muted-foreground)" }}>
+                        <div
+                          className="text-[9px]"
+                          style={{ color: "var(--color-muted-foreground)" }}
+                        >
                           {formatRelativeTime(conv.updated_at)}
                         </div>
                       </div>
@@ -1573,7 +1617,10 @@ function ChatWelcome({
       <h2 className="text-lg font-bold mb-1" style={{ color: "var(--color-foreground)" }}>
         {t("copilot.welcomeTitle") || "How can I help you today?"}
       </h2>
-      <p className="text-sm text-center max-w-xs mb-4" style={{ color: "var(--color-muted-foreground)" }}>
+      <p
+        className="text-sm text-center max-w-xs mb-4"
+        style={{ color: "var(--color-muted-foreground)" }}
+      >
         {t("copilot.welcomeDesc") ||
           "I'm your context-aware AI trading assistant. I know your recent analyses, signals, and alerts."}
       </p>
@@ -1599,7 +1646,10 @@ function ChatWelcome({
             {t("copilot.getConsensus") || "Get Multi-Agent Consensus"}
           </span>
         </div>
-        <p className="text-[10px] mt-1 text-center" style={{ color: "var(--color-muted-foreground)" }}>
+        <p
+          className="text-[10px] mt-1 text-center"
+          style={{ color: "var(--color-muted-foreground)" }}
+        >
           {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
         </p>
       </button>
@@ -1694,7 +1744,11 @@ function MessageBubble({
               ? alpha("var(--color-bearish)", 10)
               : alpha("var(--color-bullish)", 10),
           border: `1px solid ${
-            isUser ? "var(--color-border)" : isError ? alpha("var(--color-bearish)", 20) : alpha("var(--color-bullish)", 20)
+            isUser
+              ? "var(--color-border)"
+              : isError
+                ? alpha("var(--color-bearish)", 20)
+                : alpha("var(--color-bullish)", 20)
           }`,
         }}
       >
@@ -1766,7 +1820,10 @@ function MessageBubble({
 
         <div
           className="text-[9px] mt-2"
-          style={{ color: alpha("var(--color-muted-foreground)", 50), textAlign: isUser ? "right" : "left" }}
+          style={{
+            color: alpha("var(--color-muted-foreground)", 50),
+            textAlign: isUser ? "right" : "left",
+          }}
         >
           {new Date(message.timestamp).toLocaleTimeString([], {
             hour: "2-digit",
@@ -1805,10 +1862,17 @@ function ConsensusBubble({
         >
           <Users size={16} style={{ color: "var(--color-bullish)" }} />
         </div>
-        <div className="vixor-card p-4 flex-1" style={{ borderColor: alpha("var(--color-bullish)", 15) }}>
+        <div
+          className="vixor-card p-4 flex-1"
+          style={{ borderColor: alpha("var(--color-bullish)", 15) }}
+        >
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles size={12} style={{ color: "var(--color-bullish)" }} />
-            <Badge label={t("copilot.synthesis") || "AI Synthesis"} color={"var(--color-bullish)"} small />
+            <Badge
+              label={t("copilot.synthesis") || "AI Synthesis"}
+              color={"var(--color-bullish)"}
+              small
+            />
           </div>
           <div className="text-sm leading-relaxed prose-sm">
             <FormattedContent content={data.synthesis} />
@@ -1890,7 +1954,10 @@ function ConsensusBubble({
         })}
       </div>
 
-      <div className="text-[9px] mt-2 ml-11" style={{ color: alpha("var(--color-muted-foreground)", 50) }}>
+      <div
+        className="text-[9px] mt-2 ml-11"
+        style={{ color: alpha("var(--color-muted-foreground)", 50) }}
+      >
         {new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
       </div>
     </div>

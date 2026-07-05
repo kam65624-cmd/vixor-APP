@@ -8,11 +8,7 @@
 
 import { supabaseAdmin } from "@/shared/supabase/client.server";
 import type { Json } from "@/shared/supabase/types";
-import type {
-  VixorAgentId,
-  DecisionType,
-  DecisionSeverity,
-} from "../types";
+import type { VixorAgentId, DecisionType, DecisionSeverity } from "../types";
 
 /** Parameters for storing a decision. */
 export interface StoreDecisionParams {
@@ -40,9 +36,7 @@ export interface StoredDecision {
  * Stores an agent decision in the vixor_decisions table.
  * Uses service role key for server-side writes (bypasses RLS).
  */
-export async function storeDecision(
-  params: StoreDecisionParams,
-): Promise<StoredDecision> {
+export async function storeDecision(params: StoreDecisionParams): Promise<StoredDecision> {
   const {
     userId,
     agentId,

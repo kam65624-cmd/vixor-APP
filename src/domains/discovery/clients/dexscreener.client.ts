@@ -79,8 +79,19 @@ export async function fetchLatestPairs(
   try {
     // DexScreener /dex/tokens/new-pairs is unreliable (often returns null).
     // Use /dex/search with broad trending queries as a reliable alternative.
-    const queries = ["solana", "trending", "meme", "pump", "ai", "depin", "gaming", "rwa", "defi", "new"];
-    let allPairs: any[] = [];
+    const queries = [
+      "solana",
+      "trending",
+      "meme",
+      "pump",
+      "ai",
+      "depin",
+      "gaming",
+      "rwa",
+      "defi",
+      "new",
+    ];
+    const allPairs: any[] = [];
 
     for (const q of queries) {
       try {
@@ -90,7 +101,7 @@ export async function fetchLatestPairs(
           signal: AbortSignal.timeout(10_000),
         });
         if (response.ok) {
-          const json = await response.json() as any;
+          const json = (await response.json()) as any;
           if (json.pairs && Array.isArray(json.pairs)) {
             allPairs.push(...json.pairs);
           }

@@ -67,7 +67,16 @@ const bottomNavItems = [
     to: "/",
     label: "Home",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
         <polyline points="9,22 9,12 15,12 15,22" />
       </svg>
@@ -77,7 +86,16 @@ const bottomNavItems = [
     to: "/analyze",
     label: "Analyze",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="12" cy="12" r="3" />
         <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
       </svg>
@@ -87,8 +105,20 @@ const bottomNavItems = [
     to: "/copilot",
     label: "Copilot",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M15 13v2" /><path d="M9 13v2" />
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 8V4H8" />
+        <rect width="16" height="12" x="4" y="8" rx="2" />
+        <path d="M15 13v2" />
+        <path d="M9 13v2" />
       </svg>
     ),
   },
@@ -96,7 +126,16 @@ const bottomNavItems = [
     to: "/signals",
     label: "Signals",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M4.9 19.1C1.7 15.9 1.7 10.6 4.9 7.4" />
         <path d="M7.8 16.2c-2-2-2-5.2 0-7.2" />
         <circle cx="12" cy="12" r="2" />
@@ -127,7 +166,16 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/alpha",
         label: "Alpha Signals",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>
         ),
@@ -136,7 +184,16 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/whale",
         label: "Whale Alerts",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M2 20c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1s1.2 1 2.5 1c2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
             <path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76" />
           </svg>
@@ -146,8 +203,19 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/predictions",
         label: "Predictions",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="6" />
+            <circle cx="12" cy="12" r="2" />
           </svg>
         ),
       },
@@ -155,8 +223,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/vision",
         label: "Vision",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" />
           </svg>
         ),
       },
@@ -164,8 +242,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/trackers",
         label: "Trackers",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 3v18h18" />
+            <path d="m19 9-5 5-4-4-3 3" />
           </svg>
         ),
       },
@@ -178,8 +266,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/charts",
         label: "Charts",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 3v18h18" />
+            <path d="m19 9-5 5-4-4-3 3" />
           </svg>
         ),
       },
@@ -187,8 +285,19 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/trade-desk",
         label: "Trade Desk",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8" /><path d="M12 17v4" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <path d="M8 21h8" />
+            <path d="M12 17v4" />
           </svg>
         ),
       },
@@ -196,8 +305,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/backtest",
         label: "Backtest",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
           </svg>
         ),
       },
@@ -205,7 +324,16 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/journal",
         label: "Journal",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
           </svg>
         ),
@@ -214,8 +342,20 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/daily-loop",
         label: "Daily Loop",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" /><path d="M16 16h5v5" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+            <path d="M16 16h5v5" />
           </svg>
         ),
       },
@@ -223,7 +363,16 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/pulse",
         label: "Pulse",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M2 12h4l3-9 4 18 3-9h4" />
           </svg>
         ),
@@ -232,8 +381,22 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/radar",
         label: "Trade Radar",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="2" /><path d="M12 2v4" /><path d="M12 18v4" /><path d="M2 12h4" /><path d="M18 12h4" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="2" />
+            <path d="M12 2v4" />
+            <path d="M12 18v4" />
+            <path d="M2 12h4" />
+            <path d="M18 12h4" />
           </svg>
         ),
       },
@@ -241,8 +404,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/brokers",
         label: "Brokers",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
           </svg>
         ),
       },
@@ -255,8 +428,19 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/wallet-web3",
         label: "Wallet",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" /><path d="M3 5v14a2 2 0 0 0 2 2h16v-5" /><path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+            <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
           </svg>
         ),
       },
@@ -264,8 +448,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/pnl",
         label: "PnL Tracker",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" x2="12" y1="2" y2="22" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="12" x2="12" y1="2" y2="22" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
           </svg>
         ),
       },
@@ -273,7 +467,16 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/bags",
         label: "Bags",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <rect x="2" y="7" width="20" height="14" rx="2" />
             <path d="M16 3h-8l-2 4h12l-2-4z" />
           </svg>
@@ -283,8 +486,19 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/perpetuals",
         label: "Perpetuals",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M7 12h10" /><path d="M7 5v14" /><path d="M17 5v14" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M7 12h10" />
+            <path d="M7 5v14" />
+            <path d="M17 5v14" />
           </svg>
         ),
       },
@@ -292,8 +506,20 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/yield",
         label: "Yield",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 20h18" /><path d="M7 16V4" /><path d="M12 16V8" /><path d="M17 16v-4" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 20h18" />
+            <path d="M7 16V4" />
+            <path d="M12 16V8" />
+            <path d="M17 16v-4" />
           </svg>
         ),
       },
@@ -301,8 +527,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/swap",
         label: "DEX Swap",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m7 15 5 5 5-5" />
+            <path d="m7 9 5-5 5 5" />
           </svg>
         ),
       },
@@ -310,8 +546,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/curves",
         label: "Virtual Curve",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 3v18h18" /><path d="m7 17 4-8 4 4 5-9" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 3v18h18" />
+            <path d="m7 17 4-8 4 4 5-9" />
           </svg>
         ),
       },
@@ -324,7 +570,16 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/settings",
         label: "Settings",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
             <circle cx="12" cy="12" r="3" />
           </svg>
@@ -334,8 +589,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/profile",
         label: "Profile",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
           </svg>
         ),
       },
@@ -343,7 +608,16 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/premium",
         label: "Premium",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
           </svg>
         ),
@@ -352,8 +626,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/rewards",
         label: "Rewards",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="8" r="6" /><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="8" r="6" />
+            <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
           </svg>
         ),
       },
@@ -361,8 +645,20 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/referral",
         label: "Referral",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" x2="19" y1="8" y2="14" /><line x1="22" x2="16" y1="11" y2="11" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="19" x2="19" y1="8" y2="14" />
+            <line x1="22" x2="16" y1="11" y2="11" />
           </svg>
         ),
       },
@@ -370,7 +666,16 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/notifications",
         label: "Notifications",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
             <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
           </svg>
@@ -385,8 +690,20 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/communities",
         label: "Communities",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
         ),
       },
@@ -394,8 +711,18 @@ const moreNavCategories: MoreNavCategory[] = [
         to: "/discover",
         label: "Discover",
         icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
           </svg>
         ),
       },
@@ -454,9 +781,23 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!signedIn || tgSyncRef.current) return;
     tgSyncRef.current = true;
 
-    const tg = (window as unknown as {
-      Telegram?: { WebApp?: { initDataUnsafe?: { user?: { id: number; first_name: string; last_name?: string; username?: string; photo_url?: string } } } };
-    }).Telegram?.WebApp;
+    const tg = (
+      window as unknown as {
+        Telegram?: {
+          WebApp?: {
+            initDataUnsafe?: {
+              user?: {
+                id: number;
+                first_name: string;
+                last_name?: string;
+                username?: string;
+                photo_url?: string;
+              };
+            };
+          };
+        };
+      }
+    ).Telegram?.WebApp;
     const tgUser = tg?.initDataUnsafe?.user;
     if (!tgUser?.id) return;
 
@@ -533,21 +874,24 @@ export function AppShell({ children }: { children: ReactNode }) {
       style={{ background: "var(--color-background)", color: "var(--color-foreground)" }}
     >
       {/* ── Top Bar: Logo + SOL Price + Actions ── */}
-      <TopNav solPrice={sol.price} solChange={sol.change} isTg={isTg} onWalletClick={() => {
-        if (wallet?.status === "connected") {
-          navigate({ to: "/wallet-web3" });
-        } else {
-          setShowWalletModal(true);
-        }
-      }} />
+      <TopNav
+        solPrice={sol.price}
+        solChange={sol.change}
+        isTg={isTg}
+        onWalletClick={() => {
+          if (wallet?.status === "connected") {
+            navigate({ to: "/wallet-web3" });
+          } else {
+            setShowWalletModal(true);
+          }
+        }}
+      />
 
       {/* ── Main Content ── */}
       <main
         className="flex-1 overflow-auto"
         style={{
-          paddingTop: isTg
-            ? "calc(40px + env(safe-area-inset-top, 0px))"
-            : "40px",
+          paddingTop: isTg ? "calc(40px + env(safe-area-inset-top, 0px))" : "40px",
           paddingBottom: "calc(52px + env(safe-area-inset-bottom, 0px))",
         }}
       >
@@ -563,12 +907,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       />
 
       {/* ── More Panel (Slide-up) ── */}
-      {showMore && (
-        <MorePanel
-          currentPath={path}
-          onClose={() => setShowMore(false)}
-        />
-      )}
+      {showMore && <MorePanel currentPath={path} onClose={() => setShowMore(false)} />}
 
       {showOnboarding && (
         <Suspense fallback={null}>
@@ -609,13 +948,51 @@ export function AppShell({ children }: { children: ReactNode }) {
             }}
           >
             {/* Handle */}
-            <div style={{ display: "flex", justifyContent: "center", paddingTop: "10px", paddingBottom: "6px" }}>
-              <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(124,155,196,0.15)" }} />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                paddingTop: "10px",
+                paddingBottom: "6px",
+              }}
+            >
+              <div
+                style={{
+                  width: "36px",
+                  height: "4px",
+                  borderRadius: "2px",
+                  background: "rgba(124,155,196,0.15)",
+                }}
+              />
             </div>
             {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px 12px", borderBottom: "1px solid var(--color-border)" }}>
-              <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--color-foreground)" }}>Connect Wallet</span>
-              <button onClick={() => setShowWalletModal(false)} style={{ background: "var(--color-muted)", border: "none", borderRadius: "6px", padding: "4px 10px", color: "var(--color-muted-foreground)", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}>Close</button>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "0 16px 12px",
+                borderBottom: "1px solid var(--color-border)",
+              }}
+            >
+              <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--color-foreground)" }}>
+                Connect Wallet
+              </span>
+              <button
+                onClick={() => setShowWalletModal(false)}
+                style={{
+                  background: "var(--color-muted)",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "4px 10px",
+                  color: "var(--color-muted-foreground)",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
             </div>
             {/* Provider selector */}
             <div style={{ padding: "12px 16px 16px" }}>
@@ -720,21 +1097,42 @@ const PointsBadge = memo(function PointsBadge() {
   );
 });
 
-// ── Wallet Nav Label — shows address when connected, "Connect" when not ──
+// ── Wallet Nav Label — shows balance + address when connected, "Connect" when not ──
 
 const WalletNavLabel = memo(function WalletNavLabel() {
   const { wallet } = useWallet();
   const isConnected = wallet?.status === "connected";
+  const addr = wallet?.address || "";
+  const isSolana = wallet?.chain === "solana";
+
+  // Fetch SOL balance when connected on Solana
+  const { data: solBalance } = useQuery({
+    queryKey: ["wallet-sol-balance", addr],
+    queryFn: async () => {
+      if (!addr || !isSolana) return null;
+      try {
+        const { getPhantomSolBalance } = await import("@/domains/wallet/adapters/phantom-adapter");
+        return await getPhantomSolBalance(addr);
+      } catch {
+        return null;
+      }
+    },
+    enabled: isConnected && isSolana && !!addr,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
 
   if (!isConnected) {
     return <span className="hidden sm:inline">Connect</span>;
   }
 
-  const addr = wallet.address || "";
   const short = addr.length > 10 ? `${addr.slice(0, 4)}...${addr.slice(-3)}` : addr;
+  const balanceStr =
+    solBalance != null ? `${solBalance.toFixed(solBalance < 1 ? 3 : 2)} SOL` : null;
 
   return (
     <span className="hidden sm:inline" style={{ opacity: 0.9 }}>
+      {balanceStr ? `${balanceStr} · ` : ""}
       {short}
     </span>
   );
@@ -755,11 +1153,16 @@ function useTelegramPhoto(): string | null {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const tg = (window as unknown as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { photo_url?: string } } } } }).Telegram?.WebApp;
+      const tg = (
+        window as unknown as {
+          Telegram?: { WebApp?: { initDataUnsafe?: { user?: { photo_url?: string } } } };
+        }
+      ).Telegram?.WebApp;
       const url = tg?.initDataUnsafe?.user?.photo_url;
       if (url) setPhoto(url);
     } catch {
-      /* noop */ }
+      /* noop */
+    }
   }, []);
   return photo;
 }
@@ -773,11 +1176,19 @@ const TopNavAvatar = memo(function TopNavAvatar() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const tg = (window as unknown as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { first_name?: string; username?: string } } } } }).Telegram?.WebApp;
+      const tg = (
+        window as unknown as {
+          Telegram?: {
+            WebApp?: { initDataUnsafe?: { user?: { first_name?: string; username?: string } } };
+          };
+        }
+      ).Telegram?.WebApp;
       const user = tg?.initDataUnsafe?.user;
       if (user?.first_name) setTgName(user.first_name);
       else if (user?.username) setTgName(user.username);
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }, []);
 
   const { data } = useQuery({
@@ -833,17 +1244,10 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
         padding: "0 12px",
       }}
     >
-      <div
-        className="flex items-center justify-between w-full"
-        style={{ maxWidth: "100%" }}
-      >
+      <div className="flex items-center justify-between w-full" style={{ maxWidth: "100%" }}>
         {/* Left: Logo (icon only) */}
         <div className="flex items-center">
-          <Link
-            to="/"
-            className="flex items-center mr-4"
-            style={{ textDecoration: "none" }}
-          >
+          <Link to="/" className="flex items-center mr-4" style={{ textDecoration: "none" }}>
             <div
               style={{
                 width: "28px",
@@ -878,11 +1282,8 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
               color: (solChange ?? 0) >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
             }}
           >
-            SOL{" "}
-            {solPrice ? `$${solPrice.toFixed(2)}` : "..."}
-            {solChange != null
-              ? ` ${(solChange >= 0 ? "+" : "")}${solChange.toFixed(1)}%`
-              : ""}
+            SOL {solPrice ? `$${solPrice.toFixed(2)}` : "..."}
+            {solChange != null ? ` ${solChange >= 0 ? "+" : ""}${solChange.toFixed(1)}%` : ""}
           </div>
         </div>
 
@@ -904,7 +1305,16 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
               fontFamily: "'Inter', system-ui, sans-serif",
             }}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
               <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
               <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
@@ -1180,9 +1590,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                 }}
               >
                 {category.items.map((item) => {
-                  const isActive =
-                    currentPath === item.to ||
-                    currentPath.startsWith(item.to + "/");
+                  const isActive = currentPath === item.to || currentPath.startsWith(item.to + "/");
                   return (
                     <Link
                       key={item.to}
@@ -1194,9 +1602,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                         gap: "8px",
                         padding: "10px 10px",
                         borderRadius: "8px",
-                        background: isActive
-                          ? "rgba(14,203,129,0.12)"
-                          : "var(--color-muted)",
+                        background: isActive ? "rgba(14,203,129,0.12)" : "var(--color-muted)",
                         border: isActive
                           ? "1px solid rgba(14,203,129,0.20)"
                           : "1px solid var(--color-border)",
@@ -1209,7 +1615,9 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                     >
                       <span
                         style={{
-                          color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
+                          color: isActive
+                            ? "var(--color-primary)"
+                            : "var(--color-muted-foreground)",
                           display: "flex",
                           flexShrink: 0,
                         }}

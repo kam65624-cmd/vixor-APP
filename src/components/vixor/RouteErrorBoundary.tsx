@@ -27,10 +27,7 @@ interface RouteErrorBoundaryState {
  * - **Development**: surfaces the full error message and component stack.
  * - All errors are reported via the structured logger (`log.error`).
  */
-class RouteErrorBoundary extends React.Component<
-  RouteErrorBoundaryProps,
-  RouteErrorBoundaryState
-> {
+class RouteErrorBoundary extends React.Component<RouteErrorBoundaryProps, RouteErrorBoundaryState> {
   constructor(props: RouteErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -46,7 +43,11 @@ class RouteErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
     log.error("Route error", { error, componentStack: info.componentStack });
-    try { captureException(error); } catch { /* noop */ }
+    try {
+      captureException(error);
+    } catch {
+      /* noop */
+    }
   }
 
   /* ---- reset ---- */
@@ -70,8 +71,7 @@ class RouteErrorBoundary extends React.Component<
           // so we stash it on the instance. If it's missing (e.g. triggered
           // from getDerivedStateFromError without a re-render cycle),
           // dev users will still see the error message.
-          (this as unknown as { _componentStack?: string })._componentStack ??
-          ""
+          (this as unknown as { _componentStack?: string })._componentStack ?? ""
         }
         onReset={this.handleReset}
       />
@@ -129,8 +129,8 @@ function ErrorScreen({
         {/* Production message */}
         {!isDev && (
           <p style={styles.message}>
-            An unexpected error occurred while loading this page. You can try
-            going back, refreshing, or returning to the dashboard.
+            An unexpected error occurred while loading this page. You can try going back,
+            refreshing, or returning to the dashboard.
           </p>
         )}
 
@@ -142,9 +142,7 @@ function ErrorScreen({
               {"\n\n"}
               {error.stack}
             </pre>
-            {componentStack && (
-              <pre style={styles.stackText}>{componentStack}</pre>
-            )}
+            {componentStack && <pre style={styles.stackText}>{componentStack}</pre>}
           </div>
         )}
 
@@ -180,8 +178,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "center",
     backgroundColor: "#0B0D10",
     color: "#E4E5E9",
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif',
     overflow: "auto",
   },
   accentBar: {

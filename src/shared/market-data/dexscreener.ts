@@ -64,12 +64,9 @@ async function dexFetch<T>(path: string): Promise<T | null> {
   try {
     const res = await fetch(`${BASE_URL}${path}`, { signal: AbortSignal.timeout(12_000) });
     if (!res.ok) return null;
-    return await res.json() as T;
+    return (await res.json()) as T;
   } catch (err) {
-    console.warn(
-      `[DexScreener] ${path} failed:`,
-      err instanceof Error ? err.message : String(err),
-    );
+    console.warn(`[DexScreener] ${path} failed:`, err instanceof Error ? err.message : String(err));
     return null;
   }
 }
@@ -90,7 +87,10 @@ export async function searchPairs(query: string): Promise<DexScreenerPair[]> {
 }
 
 /** Get a specific pair by chain + address. Rate limited + cached 30s. */
-export async function getPair(chainId: string, pairAddress: string): Promise<DexScreenerPair | null> {
+export async function getPair(
+  chainId: string,
+  pairAddress: string,
+): Promise<DexScreenerPair | null> {
   const key = `${chainId}:${pairAddress}`;
   const cached = pairCache.get(key);
   if (cached !== undefined) return cached;
@@ -104,7 +104,10 @@ export async function getPair(chainId: string, pairAddress: string): Promise<Dex
 }
 
 /** Get token pairs for a specific token. Rate limited + cached 30s. */
-export async function getTokenPairs(chainId: string, tokenAddress: string): Promise<DexScreenerPair[]> {
+export async function getTokenPairs(
+  chainId: string,
+  tokenAddress: string,
+): Promise<DexScreenerPair[]> {
   const result = await dexFetch<DexScreenerPair[]>(`/token-pairs/v1/${chainId}/${tokenAddress}`);
   return result ?? [];
 }
@@ -123,9 +126,7 @@ export async function getLatestTokenProfiles(): Promise<DexScreenerToken[]> {
 
 /** Get boosted tokens (top traders signal). Rate limited. */
 export async function getTopBoosts(chainId?: string): Promise<unknown[]> {
-  const path = chainId
-    ? `/token-boosts/top/v1/${chainId}`
-    : "/token-boosts/latest/v1";
+  const path = chainId ? `/token-boosts/top/v1/${chainId}` : "/token-boosts/latest/v1";
   const result = await dexFetch<unknown[]>(path);
   return result ?? [];
 }
@@ -142,7 +143,8 @@ export async function getTokenPrice(
   if (pairs.length === 0) return null;
 
   // Sort by liquidity (highest first) and pick the best
-  const sorted = pairs.filter((p) => p.liquidity?.usd && p.priceUsd)
+  const sorted = pairs
+    .filter((p) => p.liquidity?.usd && p.priceUsd)
     .sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0));
 
   if (sorted.length === 0) return null;

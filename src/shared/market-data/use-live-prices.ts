@@ -5,11 +5,11 @@
 // Falls back to REST polling via getMarketPrices for non-crypto pairs.
 // ============================================================================
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { BinanceWS, type LivePrice } from './binance-ws';
-import { AssetRegistry } from '@/shared/asset-registry';
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { BinanceWS, type LivePrice } from "./binance-ws";
+import { AssetRegistry } from "@/shared/asset-registry";
 
-export type FeedStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error' | 'polling';
+export type FeedStatus = "idle" | "connecting" | "connected" | "disconnected" | "error" | "polling";
 
 export interface UseLivePricesOptions {
   /** Which pairs to track. Defaults to all popular crypto assets. */
@@ -60,7 +60,10 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
   const pairs = useMemo(() => {
     if (requestedPairs) return requestedPairs;
     return AssetRegistry.popular()
-      .filter((a: { active: boolean; category: string; symbols: { binance?: string } }) => a.active && a.category === 'crypto' && a.symbols.binance)
+      .filter(
+        (a: { active: boolean; category: string; symbols: { binance?: string } }) =>
+          a.active && a.category === "crypto" && a.symbols.binance,
+      )
       .map((a: { pair: string }) => a.pair);
   }, [requestedPairs]);
 
@@ -72,7 +75,7 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
 
     for (const pair of pairs) {
       const asset = AssetRegistry.get(pair);
-      if (asset?.symbols.binance && asset.category === 'crypto') {
+      if (asset?.symbols.binance && asset.category === "crypto") {
         wsSymbols.push(asset.symbols.binance);
         wsPairMap.set(asset.symbols.binance, pair);
       } else {
@@ -84,7 +87,7 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
   }, [pairs]);
 
   const [prices, setPrices] = useState<Map<string, LivePrice>>(new Map());
-  const [status, setStatus] = useState<FeedStatus>('idle');
+  const [status, setStatus] = useState<FeedStatus>("idle");
   const [lastUpdate, setLastUpdate] = useState(0);
   const pricesRef = useRef(prices);
   pricesRef.current = prices;
@@ -103,19 +106,27 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
       },
       (wsStatus) => {
         switch (wsStatus) {
-          case 'connecting': setStatus('connecting'); break;
-          case 'connected': setStatus('connected'); break;
-          case 'disconnected': setStatus('disconnected'); break;
-          case 'error': setStatus('error'); break;
+          case "connecting":
+            setStatus("connecting");
+            break;
+          case "connected":
+            setStatus("connected");
+            break;
+          case "disconnected":
+            setStatus("disconnected");
+            break;
+          case "error":
+            setStatus("error");
+            break;
         }
-      }
+      },
     );
 
     return () => {
       unsubPrices();
       // Don't destroy singleton — other components might be using it
     };
-  }, [enabled, wsSymbols.join(',')]);
+  }, [enabled, wsSymbols.join(",")]);
 
   // REST polling for non-crypto pairs (forex, gold, etc.)
   useEffect(() => {
@@ -125,17 +136,23 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
     const fetchPrices = async () => {
       try {
         // Use existing server function for non-crypto prices
-        const { getMarketPrices } = await import('@/domains/market/functions');
+        const { getMarketPrices } = await import("@/domains/market/functions");
         const result = await getMarketPrices();
         if (!active || !result) return;
 
-        setPrices(prev => {
+        setPrices((prev) => {
           const next = new Map(prev);
           for (const [pair, data] of Object.entries(result)) {
-            if (typeof data === 'object' && data !== null && 'price' in data) {
-              const d = data as { price: number; change24h?: number; high24h?: number; low24h?: number; volume24h?: number };
+            if (typeof data === "object" && data !== null && "price" in data) {
+              const d = data as {
+                price: number;
+                change24h?: number;
+                high24h?: number;
+                low24h?: number;
+                volume24h?: number;
+              };
               const asset = AssetRegistry.get(pair);
-              const symbol = asset?.symbols.binance || pair.replace('/', '');
+              const symbol = asset?.symbols.binance || pair.replace("/", "");
               next.set(symbol, {
                 pair,
                 symbol,
@@ -153,7 +170,7 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
           return next;
         });
         setLastUpdate(Date.now());
-        if (status === 'idle') setStatus('polling');
+        if (status === "idle") setStatus("polling");
       } catch {
         // Silently fail — REST polls are best-effort
       }
@@ -166,11 +183,11 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
       active = false;
       clearInterval(interval);
     };
-  }, [enabled, nonCryptoPairs.join(','), pollInterval, status]);
+  }, [enabled, nonCryptoPairs.join(","), pollInterval, status]);
 
   const getPrice = useCallback((pair: string): LivePrice | undefined => {
     const asset = AssetRegistry.get(pair);
-    const symbol = asset?.symbols.binance || pair.replace('/', '');
+    const symbol = asset?.symbols.binance || pair.replace("/", "");
     return pricesRef.current.get(symbol);
   }, []);
 
@@ -180,4 +197,4 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
   return { prices, priceList, status, getPrice, lastUpdate, streamCount };
 }
 
-export { type LivePrice } from './binance-ws';
+export { type LivePrice } from "./binance-ws";

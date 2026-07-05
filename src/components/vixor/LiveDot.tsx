@@ -16,28 +16,26 @@ const COLOR_MAP = {
   info: "var(--info)",
 };
 
-export const LiveDot = React.forwardRef<HTMLSpanElement, LiveDotProps>(
-  function LiveDot(
-    { color = "bull", size = 6, pulse = true, label, className },
-    ref,
-  ) {
-    const colorValue = COLOR_MAP[color];
-    return (
-      <span
-        ref={ref}
-        className={cn("inline-block rounded-full", className)}
-        style={{
-          width: size,
-          height: size,
-          background: colorValue,
-          animation: pulse ? "vixor-pulse 2s ease-in-out infinite" : undefined,
-          boxShadow: `0 0 ${size}px ${colorValue}`,
-        }}
-        role="status"
-        aria-label={label || `Live: ${color}`}
-      />
-    );
-  },
-);
+export const LiveDot = React.forwardRef<HTMLSpanElement, LiveDotProps>(function LiveDot(
+  { color = "bull", size = 6, pulse = true, label, className },
+  ref,
+) {
+  const colorValue = COLOR_MAP[color];
+  return (
+    <span
+      ref={ref}
+      className={cn("inline-block rounded-full", className)}
+      style={{
+        width: size,
+        height: size,
+        background: colorValue,
+        animation: pulse ? "vixor-pulse 2s ease-in-out infinite" : undefined,
+        boxShadow: `0 0 ${size}px ${colorValue}`,
+      }}
+      role="status"
+      aria-label={label || `Live: ${color}`}
+    />
+  );
+});
 
 export default LiveDot;

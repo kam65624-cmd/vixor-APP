@@ -6,13 +6,18 @@
 // When hit, updates the tracking status via server function and sends notification.
 // ============================================================================
 
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { useLivePrices } from '@/shared/market-data/use-live-prices';
-import { getUserSignalTrackings, updateSignalTracking, evaluateTrackingPrice, updateExcursions } from '@/domains/signal-tracking';
-import { useStableServerFn } from '@/shared/hooks/use-stable-server-fn';
-import type { SignalTracking, SignalStatus } from '@/domains/signal-tracking';
-import { TERMINAL_STATUSES } from '@/domains/signal-tracking';
-import { AssetRegistry } from '@/shared/asset-registry';
+import { useEffect, useRef, useCallback, useState } from "react";
+import { useLivePrices } from "@/shared/market-data/use-live-prices";
+import {
+  getUserSignalTrackings,
+  updateSignalTracking,
+  evaluateTrackingPrice,
+  updateExcursions,
+} from "@/domains/signal-tracking";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import type { SignalTracking, SignalStatus } from "@/domains/signal-tracking";
+import { TERMINAL_STATUSES } from "@/domains/signal-tracking";
+import { AssetRegistry } from "@/shared/asset-registry";
 
 export interface SignalMonitorState {
   /** All user trackings (fetched once on mount) */
@@ -40,12 +45,10 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
 
   // Filter active/pending trackings and extract unique pairs
   const activeTrackings = trackings.filter(
-    (t) => !TERMINAL_STATUSES.includes(t.status) && t.direction !== 'WAIT',
+    (t) => !TERMINAL_STATUSES.includes(t.status) && t.direction !== "WAIT",
   );
 
-  const monitoredPairs = Array.from(
-    new Set(activeTrackings.map((t) => t.pair)),
-  );
+  const monitoredPairs = Array.from(new Set(activeTrackings.map((t) => t.pair)));
 
   // Fetch trackings on mount
   useEffect(() => {
@@ -57,7 +60,11 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
   }, [enabled, fetchTrackings]);
 
   // Get live prices for monitored pairs
-  const { prices, status: wsStatus, getPrice } = useLivePrices({
+  const {
+    prices,
+    status: wsStatus,
+    getPrice,
+  } = useLivePrices({
     pairs: enabled ? monitoredPairs : [],
     enabled: enabled && monitoredPairs.length > 0,
   });
@@ -85,14 +92,14 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
       // Evaluate price against tracking
       const result = evaluateTrackingPrice(tracking, currentPrice);
 
-      if (result.hitType !== 'none' && result.newStatus) {
+      if (result.hitType !== "none" && result.newStatus) {
         // Update tracking status via server function
         updateTracking({
           data: {
             trackingId: tracking.id,
             status: result.newStatus,
             currentPrice,
-            hitTp: result.hitType === 'tp_hit' ? (tracking.hit_tp + 1) : tracking.hit_tp,
+            hitTp: result.hitType === "tp_hit" ? tracking.hit_tp + 1 : tracking.hit_tp,
           },
         }).then((res: { ok: boolean }) => {
           if (res.ok) {
@@ -100,7 +107,12 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
             setTrackings((prev) =>
               prev.map((t) =>
                 t.id === tracking.id
-                  ? { ...t, status: result.newStatus!, current_price: currentPrice, updated_at: new Date().toISOString() }
+                  ? {
+                      ...t,
+                      status: result.newStatus!,
+                      current_price: currentPrice,
+                      updated_at: new Date().toISOString(),
+                    }
                   : t,
               ),
             );
@@ -124,7 +136,7 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
 
   // Run price checks whenever prices update
   useEffect(() => {
-    if (wsStatus !== 'connected' && wsStatus !== 'polling') return;
+    if (wsStatus !== "connected" && wsStatus !== "polling") return;
     checkPrices();
   }, [prices, wsStatus, checkPrices]);
 
@@ -138,9 +150,17 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
 
       setTrackings((prev) => {
         const next = prev.map((t) => {
-          if (t.expires_at && new Date(t.expires_at).getTime() < now && !TERMINAL_STATUSES.includes(t.status)) {
+          if (
+            t.expires_at &&
+            new Date(t.expires_at).getTime() < now &&
+            !TERMINAL_STATUSES.includes(t.status)
+          ) {
             anyExpired = true;
-            return { ...t, status: 'expired' as SignalStatus, resolved_at: new Date().toISOString() };
+            return {
+              ...t,
+              status: "expired" as SignalStatus,
+              resolved_at: new Date().toISOString(),
+            };
           }
           return t;
         });
@@ -150,8 +170,12 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
       if (anyExpired) {
         // Update expired in DB
         for (const t of trackings) {
-          if (t.expires_at && new Date(t.expires_at).getTime() < now && !TERMINAL_STATUSES.includes(t.status)) {
-            void updateTracking({ data: { trackingId: t.id, status: 'expired' } });
+          if (
+            t.expires_at &&
+            new Date(t.expires_at).getTime() < now &&
+            !TERMINAL_STATUSES.includes(t.status)
+          ) {
+            void updateTracking({ data: { trackingId: t.id, status: "expired" } });
           }
         }
       }
@@ -164,7 +188,7 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
     trackings,
     activeTrackings,
     monitoredPairs,
-    isMonitoring: enabled && wsStatus === 'connected' && activeTrackings.length > 0,
+    isMonitoring: enabled && wsStatus === "connected" && activeTrackings.length > 0,
     lastCheckAt,
     notificationsSent,
   };

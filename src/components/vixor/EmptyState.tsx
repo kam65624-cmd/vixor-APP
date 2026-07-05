@@ -15,19 +15,10 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-  className,
-}: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
   return (
     <div
-      className={cn(
-        "flex flex-col items-center justify-center px-6 py-12 text-center",
-        className,
-      )}
+      className={cn("flex flex-col items-center justify-center px-6 py-12 text-center", className)}
       role="status"
       aria-live="polite"
     >
@@ -43,10 +34,7 @@ export function EmptyState({
           {icon}
         </div>
       )}
-      <p
-        className="mb-1.5 text-sm font-medium"
-        style={{ color: "var(--text-primary)" }}
-      >
+      <p className="mb-1.5 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
         {title}
       </p>
       {description && (
@@ -66,14 +54,8 @@ export function EmptyState({
             "min-h-[44px]",
           )}
           style={{
-            background:
-              action.variant === "primary"
-                ? "var(--info)"
-                : "var(--surface)",
-            color:
-              action.variant === "primary"
-                ? "var(--surface)"
-                : "var(--text-primary)",
+            background: action.variant === "primary" ? "var(--info)" : "var(--surface)",
+            color: action.variant === "primary" ? "var(--surface)" : "var(--text-primary)",
             borderColor: "var(--border)",
           }}
         >

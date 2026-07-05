@@ -11,7 +11,7 @@ import { SIGNAL_STATUS_CONFIG, TERMINAL_STATUSES } from "@/domains/signal-tracki
 import { useSignalMonitor } from "@/shared/hooks/use-signal-monitor";
 import { useSound } from "@/shared/hooks/use-sound";
 import {
-  PageLayout, 
+  PageLayout,
   StatsRow,
   SectionTitle,
   DataRow,
@@ -27,10 +27,18 @@ export const Route = createFileRoute("/_authenticated/signals")({
 });
 
 type Signal = {
-  id: string; pair: string; timeframe: string; recommendation: "BUY" | "SELL" | "WAIT";
-  confidence: number; entry: number | null; stop_loss: number | null;
-  take_profit: number[] | null; reasons: string[] | null; pattern: string | null;
-  signal_date: string; created_at: string;
+  id: string;
+  pair: string;
+  timeframe: string;
+  recommendation: "BUY" | "SELL" | "WAIT";
+  confidence: number;
+  entry: number | null;
+  stop_loss: number | null;
+  take_profit: number[] | null;
+  reasons: string[] | null;
+  pattern: string | null;
+  signal_date: string;
+  created_at: string;
 };
 
 const TABS = ["All", "BUY", "SELL", "WAIT"] as const;
@@ -56,23 +64,26 @@ function SignalsPage() {
   const { isMonitoring, activeTrackings, notificationsSent } = useSignalMonitor(true);
 
   // Track a signal
-  const handleTrack = useCallback(async (signal: Signal) => {
-    if (signal.recommendation === "WAIT") return;
-    const res = await createTracking({
-      data: {
-        signalId: signal.id,
-        pair: signal.pair,
-        direction: signal.recommendation,
-        entryPrice: signal.entry,
-        stopLoss: signal.stop_loss,
-        takeProfit: signal.take_profit,
-      },
-    });
-    if (res.ok && res.trackingId) {
-      setTrackingIds((prev) => ({ ...prev, [signal.id]: res.trackingId! }));
-      queryClient.invalidateQueries({ queryKey: ["my-signal-trackings"] });
-    }
-  }, [createTracking, queryClient]);
+  const handleTrack = useCallback(
+    async (signal: Signal) => {
+      if (signal.recommendation === "WAIT") return;
+      const res = await createTracking({
+        data: {
+          signalId: signal.id,
+          pair: signal.pair,
+          direction: signal.recommendation,
+          entryPrice: signal.entry,
+          stopLoss: signal.stop_loss,
+          takeProfit: signal.take_profit,
+        },
+      });
+      if (res.ok && res.trackingId) {
+        setTrackingIds((prev) => ({ ...prev, [signal.id]: res.trackingId! }));
+        queryClient.invalidateQueries({ queryKey: ["my-signal-trackings"] });
+      }
+    },
+    [createTracking, queryClient],
+  );
 
   // Share a signal
   const handleShareX = useCallback((signal: Signal) => {
@@ -131,14 +142,22 @@ function SignalsPage() {
     prevSignalIds.current = currentIds;
   }, [signals, isLoading, play]);
 
-  const filtered = activeTab === "All" ? signals : signals.filter((s) => s.recommendation === activeTab);
+  const filtered =
+    activeTab === "All" ? signals : signals.filter((s) => s.recommendation === activeTab);
 
   const buyCount = signals.filter((s) => s.recommendation === "BUY").length;
   const sellCount = signals.filter((s) => s.recommendation === "SELL").length;
-  const avgConfidence = signals.length > 0 ? Math.round(signals.reduce((s, sig) => s + sig.confidence, 0) / signals.length) : 0;
+  const avgConfidence =
+    signals.length > 0
+      ? Math.round(signals.reduce((s, sig) => s + sig.confidence, 0) / signals.length)
+      : 0;
 
   const recColor = (rec: string) =>
-    rec === "BUY" ? "var(--color-bullish)" : rec === "SELL" ? "var(--color-bearish)" : "var(--color-neutral-wait)";
+    rec === "BUY"
+      ? "var(--color-bullish)"
+      : rec === "SELL"
+        ? "var(--color-bearish)"
+        : "var(--color-neutral-wait)";
 
   return (
     <PageLayout
@@ -155,8 +174,20 @@ function SignalsPage() {
           { label: "Total Signals", value: String(signals.length), color: "var(--color-bullish)" },
           { label: "Buy Signals", value: String(buyCount), color: "var(--color-bullish)" },
           { label: "Sell Signals", value: String(sellCount), color: "var(--color-bearish)" },
-          { label: "Avg Confidence", value: `${avgConfidence}%`, color: "var(--color-neutral-wait)" },
-          ...(isMonitoring ? [{ label: "Monitoring", value: String(activeTrackings.length), color: "var(--color-bullish)" }] : []),
+          {
+            label: "Avg Confidence",
+            value: `${avgConfidence}%`,
+            color: "var(--color-neutral-wait)",
+          },
+          ...(isMonitoring
+            ? [
+                {
+                  label: "Monitoring",
+                  value: String(activeTrackings.length),
+                  color: "var(--color-bullish)",
+                },
+              ]
+            : []),
         ]}
       />
 
@@ -211,17 +242,37 @@ const SignalRow = memo(function SignalRow({
   return (
     <DataRow leftAccent={color}>
       {/* Top line — pair info, pattern, confidence */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: signal.reasons && signal.reasons.length > 0 ? "6px" : "0" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: signal.reasons && signal.reasons.length > 0 ? "6px" : "0",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
           <Badge label={signal.recommendation} color={color} />
-          <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span
+            style={{
+              fontSize: "13px",
+              fontWeight: 700,
+              color: "var(--color-foreground)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {signal.pair}
           </span>
-          <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)", flexShrink: 0 }}>{signal.timeframe}</span>
+          <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)", flexShrink: 0 }}>
+            {signal.timeframe}
+          </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
           {signal.pattern && (
-            <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>{signal.pattern}</span>
+            <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>
+              {signal.pattern}
+            </span>
           )}
           <span
             style={{
@@ -238,7 +289,14 @@ const SignalRow = memo(function SignalRow({
 
       {/* Reasons */}
       {signal.reasons && signal.reasons.length > 0 && (
-        <div style={{ fontSize: "10px", color: "var(--color-muted-foreground)", lineHeight: 1.5, marginBottom: "6px" }}>
+        <div
+          style={{
+            fontSize: "10px",
+            color: "var(--color-muted-foreground)",
+            lineHeight: 1.5,
+            marginBottom: "6px",
+          }}
+        >
           {signal.reasons.join(" · ")}
         </div>
       )}
@@ -274,7 +332,10 @@ const SignalRow = memo(function SignalRow({
           </span>
         )}
         <span style={{ marginLeft: "auto" }}>
-          {new Date(signal.signal_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+          {new Date(signal.signal_date).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
         </span>
       </div>
       {/* Action buttons */}

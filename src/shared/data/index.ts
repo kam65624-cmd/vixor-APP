@@ -225,11 +225,7 @@ export const getUserProfile = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
+    const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).single();
 
     return { profile };
   });
@@ -367,20 +363,37 @@ export const getDashboardData = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [
-      { data: trades },
-      { data: signals },
-      { data: analyses },
-      { data: profile },
-    ] = await Promise.all([
-      supabase.from("trades").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
-      supabase.from("daily_signals").select("*").order("created_at", { ascending: false }).limit(5),
-      supabase.from("analyses").select("id, pair, recommendation, confidence, created_at, status").eq("user_id", userId).order("created_at", { ascending: false }).limit(5),
-      supabase.from("profiles").select("username, display_name, xp, streak_days").eq("id", userId).single(),
-    ]);
+    const [{ data: trades }, { data: signals }, { data: analyses }, { data: profile }] =
+      await Promise.all([
+        supabase
+          .from("trades")
+          .select("*")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supabase
+          .from("daily_signals")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("analyses")
+          .select("id, pair, recommendation, confidence, created_at, status")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("profiles")
+          .select("username, display_name, xp, streak_days")
+          .eq("id", userId)
+          .single(),
+      ]);
 
     // Compute portfolio from trades
-    const holdingMap = new Map<string, { symbol: string; amount: number; value: number; pnl: number; pnlPct: number; up: boolean }>();
+    const holdingMap = new Map<
+      string,
+      { symbol: string; amount: number; value: number; pnl: number; pnlPct: number; up: boolean }
+    >();
     for (const t of trades || []) {
       const sym = t.pair || "UNKNOWN";
       const pnl = (t.exit_price || 0) - t.entry_price;
@@ -409,7 +422,12 @@ export const getDashboardData = createServerFn({ method: "GET" })
       msg: `${t.direction === "long" ? "Bought" : "Shorted"} ${t.quantity || 0} ${t.pair} at $${t.entry_price}`,
       time: formatRelativeTime(t.created_at),
       type: t.direction as "buy" | "sell",
-      pnl: t.pnl != null ? (t.pnl >= 0 ? `+$${t.pnl.toFixed(2)}` : `-$${Math.abs(t.pnl).toFixed(2)}`) : "",
+      pnl:
+        t.pnl != null
+          ? t.pnl >= 0
+            ? `+$${t.pnl.toFixed(2)}`
+            : `-$${Math.abs(t.pnl).toFixed(2)}`
+          : "",
     }));
 
     // Signals from daily_signals
@@ -451,9 +469,7 @@ export const getYieldData = createServerFn({ method: "GET" })
 
     const totalYield = profitable.reduce((s, t) => s + (t.pnl ?? 0), 0);
     const avgYield = profitable.length > 0 ? totalYield / profitable.length : 0;
-    const bestYield = profitable.length > 0
-      ? Math.max(...profitable.map((t) => t.pnl ?? 0))
-      : 0;
+    const bestYield = profitable.length > 0 ? Math.max(...profitable.map((t) => t.pnl ?? 0)) : 0;
     const bestTrade = profitable.find((t) => t.pnl === bestYield) || null;
 
     // Build yield positions from profitable trades
@@ -462,7 +478,8 @@ export const getYieldData = createServerFn({ method: "GET" })
       const exitDate = new Date(t.exit_date || t.created_at);
       const durationMs = exitDate.getTime() - entryDate.getTime();
       const durationDays = Math.max(1, Math.ceil(durationMs / (1000 * 60 * 60 * 24)));
-      const yieldPct = t.entry_price > 0 ? ((t.pnl ?? 0) / (t.entry_price * (t.quantity || 1))) * 100 : 0;
+      const yieldPct =
+        t.entry_price > 0 ? ((t.pnl ?? 0) / (t.entry_price * (t.quantity || 1))) * 100 : 0;
 
       return {
         id: t.id,
@@ -484,11 +501,13 @@ export const getYieldData = createServerFn({ method: "GET" })
       totalYield,
       avgYield,
       bestYield,
-      bestTrade: bestTrade ? {
-        pair: bestTrade.pair,
-        yield: bestTrade.pnl ?? 0,
-        direction: bestTrade.direction,
-      } : null,
+      bestTrade: bestTrade
+        ? {
+            pair: bestTrade.pair,
+            yield: bestTrade.pnl ?? 0,
+            direction: bestTrade.direction,
+          }
+        : null,
       yieldCount: profitable.length,
       totalClosed: allClosed.length,
       positions: yieldPositions,
@@ -504,7 +523,9 @@ export const getPredictionsData = createServerFn({ method: "GET" })
     const [{ data: analyses }, { data: signals }] = await Promise.all([
       supabase
         .from("analyses")
-        .select("id, pair, recommendation, confidence, pattern, trend, status, entry, stop_loss, take_profit, created_at, timeframe, reasons, risk_level")
+        .select(
+          "id, pair, recommendation, confidence, pattern, trend, status, entry, stop_loss, take_profit, created_at, timeframe, reasons, risk_level",
+        )
         .eq("user_id", userId)
         .eq("status", "complete")
         .order("created_at", { ascending: false })
@@ -558,19 +579,26 @@ export const getPredictionsData = createServerFn({ method: "GET" })
     }));
 
     // Merge and sort by date
-    const allPredictions = [...analysisPredictions, ...signalPredictions]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const allPredictions = [...analysisPredictions, ...signalPredictions].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
 
     const totalPredictions = allPredictions.length;
     const buyPredictions = allPredictions.filter((p) => p.predictedDirection === "BUY").length;
     const sellPredictions = allPredictions.filter((p) => p.predictedDirection === "SELL").length;
-    const avgConfidence = totalPredictions > 0
-      ? Math.round(allPredictions.reduce((s, p) => s + p.confidence, 0) / totalPredictions)
-      : 0;
+    const avgConfidence =
+      totalPredictions > 0
+        ? Math.round(allPredictions.reduce((s, p) => s + p.confidence, 0) / totalPredictions)
+        : 0;
     const predictionsWithOutcome = allPredictions.filter((p) => p.correct !== null);
-    const accuracy = predictionsWithOutcome.length > 0
-      ? Math.round((predictionsWithOutcome.filter((p) => p.correct).length / predictionsWithOutcome.length) * 100)
-      : 0;
+    const accuracy =
+      predictionsWithOutcome.length > 0
+        ? Math.round(
+            (predictionsWithOutcome.filter((p) => p.correct).length /
+              predictionsWithOutcome.length) *
+              100,
+          )
+        : 0;
 
     return {
       predictions: allPredictions,
@@ -596,22 +624,27 @@ export const getWalletData = createServerFn({ method: "GET" })
         .order("created_at", { ascending: false }),
       supabase
         .from("profiles")
-        .select("id, username, display_name, xp, streak_days, avatar_url, telegram_photo_url, referral_code")
+        .select(
+          "id, username, display_name, xp, streak_days, avatar_url, telegram_photo_url, referral_code",
+        )
         .eq("id", userId)
         .single(),
     ]);
 
     // Build token balances from trades (aggregated by pair)
-    const tokenMap = new Map<string, {
-      symbol: string;
-      amount: number;
-      totalEntry: number;
-      totalValue: number;
-      pnl: number;
-      tradeCount: number;
-      lastPrice: number;
-      direction: string;
-    }>();
+    const tokenMap = new Map<
+      string,
+      {
+        symbol: string;
+        amount: number;
+        totalEntry: number;
+        totalValue: number;
+        pnl: number;
+        tradeCount: number;
+        lastPrice: number;
+        direction: string;
+      }
+    >();
 
     for (const t of trades || []) {
       const sym = t.pair || "UNKNOWN";
@@ -679,7 +712,9 @@ export const getCommunitiesData = createServerFn({ method: "GET" })
     const [{ data: strategies }, { data: notes }] = await Promise.all([
       supabase
         .from("user_strategies")
-        .select("id, user_id, name, pairs, trading_style, risk_tolerance, preferred_timeframes, is_active, created_at")
+        .select(
+          "id, user_id, name, pairs, trading_style, risk_tolerance, preferred_timeframes, is_active, created_at",
+        )
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
       supabase
@@ -753,7 +788,10 @@ export const getWhaleData = createServerFn({ method: "GET" })
     const now = Date.now();
     const dayAgo = now - 24 * 60 * 60 * 1000;
     const recentTrades = allTrades.filter((t) => new Date(t.created_at).getTime() > dayAgo);
-    const volume24h = recentTrades.reduce((sum, t) => sum + (t.quantity || 1) * (t.entry_price || 0), 0);
+    const volume24h = recentTrades.reduce(
+      (sum, t) => sum + (t.quantity || 1) * (t.entry_price || 0),
+      0,
+    );
 
     // Biggest trade
     const biggest = topWhales[0] || null;
@@ -834,11 +872,12 @@ export const getBondingCurveData = createServerFn({ method: "GET" })
     const pairs = [...pairMap.values()]
       .map((p) => ({
         ...p,
-        ratio: p.buyCount > 0 && p.sellCount > 0
-          ? p.buyCount / p.sellCount
-          : p.buyCount > 0
-            ? p.buyCount
-            : 0,
+        ratio:
+          p.buyCount > 0 && p.sellCount > 0
+            ? p.buyCount / p.sellCount
+            : p.buyCount > 0
+              ? p.buyCount
+              : 0,
       }))
       .sort((a, b) => b.ratio - a.ratio);
 
@@ -846,9 +885,8 @@ export const getBondingCurveData = createServerFn({ method: "GET" })
     const accumulating = pairs.filter((p) => p.buyCount > p.sellCount);
 
     // Most traded pair
-    const mostTraded = pairs.length > 0
-      ? pairs.reduce((a, b) => (a.totalVolume > b.totalVolume ? a : b))
-      : null;
+    const mostTraded =
+      pairs.length > 0 ? pairs.reduce((a, b) => (a.totalVolume > b.totalVolume ? a : b)) : null;
 
     return {
       pairs,
@@ -919,9 +957,10 @@ export const getAlphaData = createServerFn({ method: "GET" })
       })),
     ].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
 
-    const avgConfidence = alphaFeed.length > 0
-      ? Math.round(alphaFeed.reduce((s, a) => s + (a.confidence ?? 0), 0) / alphaFeed.length)
-      : 0;
+    const avgConfidence =
+      alphaFeed.length > 0
+        ? Math.round(alphaFeed.reduce((s, a) => s + (a.confidence ?? 0), 0) / alphaFeed.length)
+        : 0;
     const highestConf = alphaFeed.length > 0 ? (alphaFeed[0].confidence ?? 0) : 0;
     const highestPair = alphaFeed.length > 0 ? alphaFeed[0].pair : "—";
 

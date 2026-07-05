@@ -26,7 +26,7 @@ import { PaginationBar } from "@/components/vixor/PaginationBar";
 import { CoachOverlay } from "@/components/vixor/CoachOverlay";
 import { GovernorRiskPanel } from "@/components/vixor/GovernorRiskPanel";
 import {
-  PageLayout, 
+  PageLayout,
   ScrollArea,
   Badge,
   EmptyState,
@@ -247,12 +247,14 @@ function TradeDesk() {
     const sl = parseFloat(slPips) || 0;
     const pipSize = PIP_SIZES[pair] || 0.0001;
     const entry = parseFloat(entryPrice);
-    const slPrice = sl > 0
-      ? (direction === "long" ? entry - sl * pipSize : entry + sl * pipSize)
-      : null;
-    const tpPrice = sl > 0
-      ? (direction === "long" ? entry + sl * 2 * pipSize * sl / sl : null) // No TP calc needed — use SL mirror
-      : null;
+    const slPrice =
+      sl > 0 ? (direction === "long" ? entry - sl * pipSize : entry + sl * pipSize) : null;
+    const tpPrice =
+      sl > 0
+        ? direction === "long"
+          ? entry + (sl * 2 * pipSize * sl) / sl
+          : null // No TP calc needed — use SL mirror
+        : null;
 
     // Map symbol format for exchange (XAUUSD → XAUUSDT, EURUSD → EURUSDT, etc.)
     const exchangeSymbol = pair.replace("USD", "USDT");
@@ -286,13 +288,17 @@ function TradeDesk() {
     const entry = parseFloat(entryPrice);
     const sl = parseFloat(slPips) || 0;
     const pipSize = PIP_SIZES[pair] || 0.0001;
-    const slPrice = sl > 0 ? (direction === "long" ? entry - sl * pipSize : entry + sl * pipSize) : null;
+    const slPrice =
+      sl > 0 ? (direction === "long" ? entry - sl * pipSize : entry + sl * pipSize) : null;
     const estimatedCost = result ? parseFloat(result.lots) * entry : 0;
     return {
       entry,
       slPrice: slPrice ? Math.round(slPrice * 100000) / 100000 : null,
       quantity: result?.lots ?? "—",
-      estimatedCost: estimatedCost > 0 ? `$${estimatedCost.toLocaleString("en-US", { maximumFractionDigits: 2 })}` : "—",
+      estimatedCost:
+        estimatedCost > 0
+          ? `$${estimatedCost.toLocaleString("en-US", { maximumFractionDigits: 2 })}`
+          : "—",
     };
   }, [entryPrice, pair, direction, slPips, result]);
 
@@ -306,7 +312,9 @@ function TradeDesk() {
         /* Exchange Status Pill */
         <div style={{ padding: "6px 16px" }}>
           <button
-            onClick={() => { window.location.href = "/settings#exchanges"; }}
+            onClick={() => {
+              window.location.href = "/settings#exchanges";
+            }}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -327,13 +335,13 @@ function TradeDesk() {
                 width: "6px",
                 height: "6px",
                 borderRadius: "50%",
-                background: isExchangeConnected ? "var(--color-bullish)" : "var(--color-muted-foreground)",
+                background: isExchangeConnected
+                  ? "var(--color-bullish)"
+                  : "var(--color-muted-foreground)",
                 flexShrink: 0,
               }}
             />
-            {isExchangeConnected
-              ? `${exchangeName} Connected`
-              : "No Exchange"}
+            {isExchangeConnected ? `${exchangeName} Connected` : "No Exchange"}
             <ExternalLink className="size-3" style={{ opacity: 0.5 }} />
           </button>
         </div>
@@ -526,11 +534,17 @@ function TradeDesk() {
                     onClick={() => setDirection("long")}
                     className="h-10 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-1 transition-colors"
                     style={{
-                      background: direction === "long" ? `${"var(--color-bullish)"}20` : "rgba(124,155,196,0.06)",
+                      background:
+                        direction === "long"
+                          ? `${"var(--color-bullish)"}20`
+                          : "rgba(124,155,196,0.06)",
                       border: `1px solid ${
                         direction === "long" ? `${"var(--color-bullish)"}66` : "var(--color-border)"
                       }`,
-                      color: direction === "long" ? "var(--color-bullish)" : "var(--color-muted-foreground)",
+                      color:
+                        direction === "long"
+                          ? "var(--color-bullish)"
+                          : "var(--color-muted-foreground)",
                     }}
                   >
                     <ArrowUpRight className="size-3" />
@@ -540,11 +554,19 @@ function TradeDesk() {
                     onClick={() => setDirection("short")}
                     className="h-10 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-1 transition-colors"
                     style={{
-                      background: direction === "short" ? `${"var(--color-bearish)"}20` : "rgba(124,155,196,0.06)",
+                      background:
+                        direction === "short"
+                          ? `${"var(--color-bearish)"}20`
+                          : "rgba(124,155,196,0.06)",
                       border: `1px solid ${
-                        direction === "short" ? `${"var(--color-bearish)"}66` : "var(--color-border)"
+                        direction === "short"
+                          ? `${"var(--color-bearish)"}66`
+                          : "var(--color-border)"
                       }`,
-                      color: direction === "short" ? "var(--color-bearish)" : "var(--color-muted-foreground)",
+                      color:
+                        direction === "short"
+                          ? "var(--color-bearish)"
+                          : "var(--color-muted-foreground)",
                     }}
                   >
                     <ArrowDownRight className="size-3" />
@@ -616,9 +638,7 @@ function TradeDesk() {
                     ? "linear-gradient(135deg, var(--color-bullish), rgba(14,203,129,0.70))"
                     : "rgba(124,155,196,0.06)",
                   color: entryPrice ? "var(--color-foreground)" : "var(--color-muted-foreground)",
-                  boxShadow: entryPrice
-                    ? "0 2px 12px rgba(14,203,129,0.30)"
-                    : "none",
+                  boxShadow: entryPrice ? "0 2px 12px rgba(14,203,129,0.30)" : "none",
                   opacity: !entryPrice ? 0.5 : 1,
                   border: "none",
                 }}
@@ -656,9 +676,13 @@ function TradeDesk() {
                 disabled={!entryPrice}
                 className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all flex-1"
                 style={{
-                  background: showGovernor ? `${"var(--color-neutral-wait)"}20` : "rgba(124,155,196,0.06)",
+                  background: showGovernor
+                    ? `${"var(--color-neutral-wait)"}20`
+                    : "rgba(124,155,196,0.06)",
                   border: `1px solid ${showGovernor ? `${"var(--color-neutral-wait)"}66` : "var(--color-border)"}`,
-                  color: showGovernor ? "var(--color-neutral-wait)" : "var(--color-muted-foreground)",
+                  color: showGovernor
+                    ? "var(--color-neutral-wait)"
+                    : "var(--color-muted-foreground)",
                   opacity: !entryPrice ? 0.5 : 1,
                 }}
                 title="Risk Governor — Assess trade risk"
@@ -701,13 +725,18 @@ function TradeDesk() {
                       justifyContent: "center",
                       flexShrink: 0,
                       background:
-                        trade.direction === "long" ? `rgba(14,203,129,0.10)` : `rgba(246,70,93,0.10)`,
+                        trade.direction === "long"
+                          ? `rgba(14,203,129,0.10)`
+                          : `rgba(246,70,93,0.10)`,
                     }}
                   >
                     {trade.direction === "long" ? (
                       <ArrowUpRight className="size-4" style={{ color: "var(--color-bullish)" }} />
                     ) : (
-                      <ArrowDownRight className="size-4" style={{ color: "var(--color-bearish)" }} />
+                      <ArrowDownRight
+                        className="size-4"
+                        style={{ color: "var(--color-bearish)" }}
+                      />
                     )}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -723,7 +752,11 @@ function TradeDesk() {
                       </span>
                       <Badge
                         label={trade.direction.toUpperCase()}
-                        color={trade.direction === "long" ? "var(--color-bullish)" : "var(--color-bearish)"}
+                        color={
+                          trade.direction === "long"
+                            ? "var(--color-bullish)"
+                            : "var(--color-bearish)"
+                        }
                         small
                       />
                     </div>
@@ -843,21 +876,29 @@ function TradeDesk() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: isPaperMode
-                      ? `rgba(245,158,11,0.15)`
-                      : `rgba(14,203,129,0.15)`,
+                    background: isPaperMode ? `rgba(245,158,11,0.15)` : `rgba(14,203,129,0.15)`,
                   }}
                 >
                   <Zap
                     className="size-4"
-                    style={{ color: isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)" }}
+                    style={{
+                      color: isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)",
+                    }}
                   />
                 </div>
                 <div>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--color-foreground)" }}>
+                  <div
+                    style={{ fontSize: "14px", fontWeight: 700, color: "var(--color-foreground)" }}
+                  >
                     {execResult ? "Execution Result" : "Confirm Execution"}
                   </div>
-                  <div style={{ fontSize: "11px", color: "var(--color-muted-foreground)", marginTop: "1px" }}>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--color-muted-foreground)",
+                      marginTop: "1px",
+                    }}
+                  >
                     {isPaperMode ? "Paper Trading Mode" : `via ${exchangeName}`}
                   </div>
                 </div>
@@ -898,20 +939,38 @@ function TradeDesk() {
                     }}
                   >
                     {/* Direction row */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Direction</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>
+                        Direction
+                      </span>
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                         {direction === "long" ? (
-                          <ArrowUpRight className="size-3" style={{ color: "var(--color-bullish)" }} />
+                          <ArrowUpRight
+                            className="size-3"
+                            style={{ color: "var(--color-bullish)" }}
+                          />
                         ) : (
-                          <ArrowDownRight className="size-3" style={{ color: "var(--color-bearish)" }} />
+                          <ArrowDownRight
+                            className="size-3"
+                            style={{ color: "var(--color-bearish)" }}
+                          />
                         )}
                         <span
                           style={{
                             fontSize: "13px",
                             fontWeight: 800,
                             ...mono,
-                            color: direction === "long" ? "var(--color-bullish)" : "var(--color-bearish)",
+                            color:
+                              direction === "long"
+                                ? "var(--color-bullish)"
+                                : "var(--color-bearish)",
                           }}
                         >
                           {direction.toUpperCase()}
@@ -920,34 +979,94 @@ function TradeDesk() {
                     </div>
 
                     {/* Pair */}
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Pair</span>
-                      <span style={{ fontSize: "13px", fontWeight: 700, ...mono, color: "var(--color-foreground)" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>
+                        Pair
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 700,
+                          ...mono,
+                          color: "var(--color-foreground)",
+                        }}
+                      >
                         {pair}
                       </span>
                     </div>
 
                     {/* Entry */}
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Entry Price</span>
-                      <span style={{ fontSize: "13px", fontWeight: 700, ...mono, color: "var(--color-foreground)" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>
+                        Entry Price
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 700,
+                          ...mono,
+                          color: "var(--color-foreground)",
+                        }}
+                      >
                         {orderSummary?.entry ?? "—"}
                       </span>
                     </div>
 
                     {/* Quantity */}
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Quantity</span>
-                      <span style={{ fontSize: "13px", fontWeight: 700, ...mono, color: "var(--color-foreground)" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>
+                        Quantity
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 700,
+                          ...mono,
+                          color: "var(--color-foreground)",
+                        }}
+                      >
                         {orderSummary?.quantity ?? "—"} lots
                       </span>
                     </div>
 
                     {/* SL */}
                     {orderSummary?.slPrice && (
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                        <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Stop Loss</span>
-                        <span style={{ fontSize: "13px", fontWeight: 700, ...mono, color: "var(--color-bearish)" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>
+                          Stop Loss
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "13px",
+                            fontWeight: 700,
+                            ...mono,
+                            color: "var(--color-bearish)",
+                          }}
+                        >
                           {orderSummary.slPrice}
                         </span>
                       </div>
@@ -962,8 +1081,17 @@ function TradeDesk() {
                         borderTop: `1px solid ${"var(--color-border)"}`,
                       }}
                     >
-                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>Est. Cost</span>
-                      <span style={{ fontSize: "13px", fontWeight: 800, ...mono, color: "var(--color-foreground)" }}>
+                      <span style={{ ...labelStyle, color: "var(--color-muted-foreground)" }}>
+                        Est. Cost
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 800,
+                          ...mono,
+                          color: "var(--color-foreground)",
+                        }}
+                      >
                         {orderSummary?.estimatedCost ?? "—"}
                       </span>
                     </div>
@@ -977,9 +1105,7 @@ function TradeDesk() {
                       gap: "6px",
                       padding: "8px 10px",
                       borderRadius: "8px",
-                      background: isPaperMode
-                        ? `rgba(245,158,11,0.08)`
-                        : `rgba(14,203,129,0.08)`,
+                      background: isPaperMode ? `rgba(245,158,11,0.08)` : `rgba(14,203,129,0.08)`,
                       marginBottom: "16px",
                     }}
                   >
@@ -988,10 +1114,18 @@ function TradeDesk() {
                         width: "6px",
                         height: "6px",
                         borderRadius: "50%",
-                        background: isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)",
+                        background: isPaperMode
+                          ? "var(--color-neutral-wait)"
+                          : "var(--color-bullish)",
                       }}
                     />
-                    <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color: "var(--color-muted-foreground)",
+                      }}
+                    >
                       {isPaperMode
                         ? "No exchange connected — will use Paper Trading (DummyAdapter)"
                         : `Order will be sent to ${exchangeName}${exchangeStatus?.maskedKey ? ` (${exchangeStatus.maskedKey})` : ""}`}
@@ -1011,8 +1145,13 @@ function TradeDesk() {
                     padding: "24px 0",
                   }}
                 >
-                  <Loader2 className="size-8 animate-spin" style={{ color: "var(--color-bullish)" }} />
-                  <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-foreground)" }}>
+                  <Loader2
+                    className="size-8 animate-spin"
+                    style={{ color: "var(--color-bullish)" }}
+                  />
+                  <div
+                    style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-foreground)" }}
+                  >
                     {isPaperMode ? "Simulating paper trade..." : `Submitting to ${exchangeName}...`}
                   </div>
                   <div style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
@@ -1047,7 +1186,13 @@ function TradeDesk() {
                       >
                         <CheckCircle className="size-6" style={{ color: "var(--color-bullish)" }} />
                       </div>
-                      <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--color-foreground)" }}>
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 700,
+                          color: "var(--color-foreground)",
+                        }}
+                      >
                         {execResult.isPaperTrade ? "Paper Trade Executed" : "Order Submitted"}
                       </div>
                       {execResult.orderResult && (
@@ -1060,13 +1205,31 @@ function TradeDesk() {
                             width: "100%",
                           }}
                         >
-                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              marginBottom: "4px",
+                            }}
+                          >
                             <span style={{ ...labelStyle }}>Order ID</span>
-                            <span style={{ fontSize: "11px", ...mono, color: "var(--color-foreground)" }}>
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                ...mono,
+                                color: "var(--color-foreground)",
+                              }}
+                            >
                               {execResult.orderResult.id}
                             </span>
                           </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              marginBottom: "4px",
+                            }}
+                          >
                             <span style={{ ...labelStyle }}>Status</span>
                             <Badge
                               label={execResult.orderResult.status.toUpperCase()}
@@ -1080,7 +1243,13 @@ function TradeDesk() {
                           </div>
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <span style={{ ...labelStyle }}>Filled @</span>
-                            <span style={{ fontSize: "11px", ...mono, color: "var(--color-foreground)" }}>
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                ...mono,
+                                color: "var(--color-foreground)",
+                              }}
+                            >
                               {execResult.orderResult.price}
                             </span>
                           </div>
@@ -1102,7 +1271,13 @@ function TradeDesk() {
                       >
                         <AlertCircle className="size-6" style={{ color: "var(--color-bearish)" }} />
                       </div>
-                      <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--color-foreground)" }}>
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 700,
+                          color: "var(--color-foreground)",
+                        }}
+                      >
                         Execution Failed
                       </div>
                       <div
@@ -1151,7 +1326,7 @@ function TradeDesk() {
                       ? "linear-gradient(135deg, var(--color-neutral-wait), rgba(245,158,11,0.70))"
                       : "linear-gradient(135deg, var(--color-bullish), rgba(14,203,129,0.70))",
                     color: "var(--color-foreground)",
-                    boxShadow: `0 2px 12px ${withAlpha(isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)", 0.30)}`,
+                    boxShadow: `0 2px 12px ${withAlpha(isPaperMode ? "var(--color-neutral-wait)" : "var(--color-bullish)", 0.3)}`,
                     border: "none",
                   }}
                 >

@@ -2,11 +2,7 @@ import { memo, useState, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import {
-  getConnectedBrokers,
-  connectBroker,
-  disconnectBroker,
-} from "@/domains/broker/functions";
+import { getConnectedBrokers, connectBroker, disconnectBroker } from "@/domains/broker/functions";
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/brokers")({
@@ -29,60 +25,56 @@ const BROKERS: BrokerInfo[] = [
     rating: 4.8,
     badge: "FEATURED",
     color: "#F7A600",
-    affiliateUrl: "#",
+    affiliateUrl: "https://www.bybit.com/en/register?affiliate_id=VIXOR",
   },
   {
     name: "Binance",
     rating: 4.9,
     badge: "FEATURED",
     color: "#F0B90B",
-    affiliateUrl: "#",
+    affiliateUrl: "https://www.binance.com/en/register?ref=VIXOR",
   },
   {
     name: "OKX",
     rating: 4.7,
     color: "#FFFFFF",
-    affiliateUrl: "#",
+    affiliateUrl: "https://www.okx.com/join/VIXOR",
   },
   {
     name: "Pepperstone",
     rating: 4.6,
     color: "#00C087",
-    affiliateUrl: "#",
+    affiliateUrl: "https://pepperstone.com/en/open-account/?a_aid=VIXOR",
   },
   {
     name: "IC Markets",
     rating: 4.7,
     color: "#2EAAE1",
-    affiliateUrl: "#",
+    affiliateUrl: "https://www.icmarkets.com/en/?camp=VIXOR",
   },
   {
     name: "Exness",
     rating: 4.5,
     color: "#00A651",
-    affiliateUrl: "#",
+    affiliateUrl: "https://www.exness.com/a/VIXOR",
   },
   {
     name: "XM",
     rating: 4.4,
     color: "#3B82F6",
-    affiliateUrl: "#",
+    affiliateUrl: "https://www.xm.com/en/register?a=VIXOR",
   },
   {
     name: "FBS",
     rating: 4.3,
     color: "#FF6600",
-    affiliateUrl: "#",
+    affiliateUrl: "https://fbs.com/en/register?a=VIXOR",
   },
 ];
 
 // ── Star Rating Component ────────────────────────────────────────────────────
 
-const StarRating = memo(function StarRating({
-  rating,
-}: {
-  rating: number;
-}) {
+const StarRating = memo(function StarRating({ rating }: { rating: number }) {
   const fullStars = Math.floor(rating);
   const hasHalf = rating - fullStars >= 0.3;
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
@@ -102,14 +94,7 @@ const StarRating = memo(function StarRating({
         </svg>
       ))}
       {hasHalf && (
-        <svg
-          key="half"
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="none"
-        >
+        <svg key="half" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="none">
           <defs>
             <linearGradient id={`half-star-${rating}`}>
               <stop offset="50%" stopColor="#F7A600" />
@@ -208,9 +193,7 @@ const BrokerCard = memo(function BrokerCard({
     <div
       style={{
         background: "var(--color-card)",
-        border: isConnected
-          ? "1px solid var(--color-bullish)"
-          : "1px solid var(--color-border)",
+        border: isConnected ? "1px solid var(--color-bullish)" : "1px solid var(--color-border)",
         borderRadius: "12px",
         padding: "16px",
         display: "flex",
@@ -627,8 +610,8 @@ const BrokerModal = memo(function BrokerModal({
             margin: 0,
           }}
         >
-          By connecting, you agree to {broker.name}&apos;s terms of service.
-          VIXOR is not responsible for any trading losses.
+          By connecting, you agree to {broker.name}&apos;s terms of service. VIXOR is not
+          responsible for any trading losses.
         </p>
       </div>
     </div>
@@ -644,9 +627,7 @@ const ConnectedStrip = memo(function ConnectedStrip({
 }) {
   if (connectedNames.length === 0) return null;
 
-  const connectedBrokers = BROKERS.filter((b) =>
-    connectedNames.includes(b.name),
-  );
+  const connectedBrokers = BROKERS.filter((b) => connectedNames.includes(b.name));
 
   return (
     <div
@@ -685,11 +666,7 @@ const ConnectedStrip = memo(function ConnectedStrip({
               flexShrink: 0,
             }}
           />
-          <BrokerLogo
-            name={broker.name}
-            color={broker.color}
-            size={22}
-          />
+          <BrokerLogo name={broker.name} color={broker.color} size={22} />
           <span
             style={{
               fontSize: "12px",
@@ -741,8 +718,7 @@ function BrokersPage() {
   });
 
   const disconnectMutation = useMutation({
-    mutationFn: (brokerName: string) =>
-      disconnectFn({ data: { brokerName } }),
+    mutationFn: (brokerName: string) => disconnectFn({ data: { brokerName } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brokerConnections"] });
     },
@@ -818,9 +794,7 @@ function BrokersPage() {
               broker={broker}
               isConnected={connectedNames.includes(broker.name)}
               onConnect={() => handleConnectClick(broker)}
-              onOpenAccount={() =>
-                window.open(broker.affiliateUrl, "_blank", "noopener")
-              }
+              onOpenAccount={() => window.open(broker.affiliateUrl, "_blank", "noopener")}
             />
           ))}
         </div>

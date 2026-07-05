@@ -1,9 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  ExpandableWidget,
-  MiniWidget,
-  WidgetGroup,
-} from "./ExpandableWidget";
+import { ExpandableWidget, MiniWidget, WidgetGroup } from "./ExpandableWidget";
 import { TrendingUp, TrendingDown, Activity, AlertTriangle } from "lucide-react";
 
 const meta: Meta<typeof ExpandableWidget> = {
@@ -26,9 +22,15 @@ export const Bullish: EWStory = {
     metricLabel: "R:R",
     children: (
       <div className="text-xs text-muted-foreground space-y-1">
-        <p>Entry: <span className="text-bullish font-mono">$62,450</span></p>
-        <p>Stop: <span className="text-bearish font-mono">$61,200</span></p>
-        <p>TP: <span className="text-bullish font-mono">$66,240</span></p>
+        <p>
+          Entry: <span className="text-bullish font-mono">$62,450</span>
+        </p>
+        <p>
+          Stop: <span className="text-bearish font-mono">$61,200</span>
+        </p>
+        <p>
+          TP: <span className="text-bullish font-mono">$66,240</span>
+        </p>
       </div>
     ),
   },
@@ -87,24 +89,9 @@ export const Aggressive: EWStory = {
 export const MiniWidgetShowcase: StoryObj = {
   render: () => (
     <div className="w-72 space-y-2">
-      <MiniWidget
-        title="Win Rate"
-        value="72.3%"
-        variant="bullish"
-        icon={TrendingUp}
-      />
-      <MiniWidget
-        title="Avg Loss"
-        value="-1.8%"
-        variant="bearish"
-        icon={TrendingDown}
-      />
-      <MiniWidget
-        title="Signals Today"
-        value="14"
-        variant="info"
-        icon={Activity}
-      />
+      <MiniWidget title="Win Rate" value="72.3%" variant="bullish" icon={TrendingUp} />
+      <MiniWidget title="Avg Loss" value="-1.8%" variant="bearish" icon={TrendingDown} />
+      <MiniWidget title="Signals Today" value="14" variant="info" icon={Activity} />
     </div>
   ),
 };
@@ -117,11 +104,7 @@ export const WidgetGroupShowcase: StoryObj = {
       <WidgetGroup
         title="Performance"
         icon={Activity}
-        action={
-          <button className="text-[11px] text-primary hover:underline">
-            Details
-          </button>
-        }
+        action={<button className="text-[11px] text-primary hover:underline">Details</button>}
       >
         <MiniWidget title="Sharpe" value="1.84" variant="bullish" />
         <MiniWidget title="Max DD" value="-6.2%" variant="bearish" />

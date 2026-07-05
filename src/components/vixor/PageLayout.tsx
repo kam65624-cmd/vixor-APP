@@ -153,9 +153,7 @@ export function PageLayout({
                   border: "none",
                   cursor: "pointer",
                   color: isActive ? "var(--color-foreground)" : "var(--color-muted-foreground)",
-                  background: isActive
-                    ? "rgba(124,155,196,0.08)"
-                    : "transparent",
+                  background: isActive ? "rgba(124,155,196,0.08)" : "transparent",
                   whiteSpace: "nowrap",
                   transition: "all 0.15s ease",
                   borderBottom: isActive
@@ -170,7 +168,9 @@ export function PageLayout({
                     style={{
                       marginLeft: "4px",
                       fontSize: "12px",
-                      color: isActive ? "var(--color-muted-foreground)" : "var(--color-muted-foreground)",
+                      color: isActive
+                        ? "var(--color-muted-foreground)"
+                        : "var(--color-muted-foreground)",
                     }}
                   >
                     {tabCounts[t]}
@@ -183,7 +183,15 @@ export function PageLayout({
       )}
 
       {/* ── Content ── */}
-      <div style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <div
+        style={{
+          flex: 1,
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+        }}
+      >
         {loading ? (
           <div
             style={{
@@ -219,11 +227,7 @@ export function PageLayout({
 // ── Reusable Sub-components ────────────────────────────────────────────────
 
 /** Compact stats row — sits between tabs and content */
-export const StatsRow = memo(function StatsRow({
-  stats,
-}: {
-  stats: StatItem[];
-}) {
+export const StatsRow = memo(function StatsRow({ stats }: { stats: StatItem[] }) {
   return (
     <div
       style={{
@@ -566,7 +570,7 @@ export const DataRow = memo(function DataRow({
         onClick();
       }
     },
-    [onClick]
+    [onClick],
   );
 
   return (
@@ -715,7 +719,10 @@ export function SkeletonRow() {
         background: "var(--color-card)",
       }}
     >
-      <div className="shimmer" style={{ height: "14px", borderRadius: "4px", width: "60%", marginBottom: "6px" }} />
+      <div
+        className="shimmer"
+        style={{ height: "14px", borderRadius: "4px", width: "60%", marginBottom: "6px" }}
+      />
       <div className="shimmer" style={{ height: "10px", borderRadius: "3px", width: "85%" }} />
     </div>
   );
@@ -839,15 +846,7 @@ export function ProfileCard({
   );
 }
 
-function MiniStat({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string;
-  color: string;
-}) {
+function MiniStat({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div style={{ textAlign: "center" }}>
       <div

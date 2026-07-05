@@ -65,13 +65,13 @@ interface CandidatePrice {
 // ── Source Confidence Map ───────────────────────────────────────────────────
 
 const SOURCE_CONFIDENCE: Record<PriceSource, number> = {
-  "binance-ws": 1.00,
+  "binance-ws": 1.0,
   "binance-rest": 0.95,
   dexscreener: 0.85,
-  twelvedata: 0.80,
+  twelvedata: 0.8,
   finnhub: 0.75,
-  "exchangerate-api": 0.60,
-  cache: 0.50,
+  "exchangerate-api": 0.6,
+  cache: 0.5,
 };
 
 // ── Price Resolver ──────────────────────────────────────────────────────────
@@ -224,7 +224,13 @@ export function serverPriceToCandidate(
   pair: string,
   price: number,
   source: PriceSource,
-  extra: { change24h?: number; high24h?: number; low24h?: number; volume24h?: number; timestamp?: number },
+  extra: {
+    change24h?: number;
+    high24h?: number;
+    low24h?: number;
+    volume24h?: number;
+    timestamp?: number;
+  },
 ): CandidatePrice {
   return {
     pair,

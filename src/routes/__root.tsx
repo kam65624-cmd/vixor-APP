@@ -33,17 +33,26 @@ import type { ErrorRouteComponent } from "@tanstack/react-router";
 import RouteErrorBoundaryClass from "@/components/vixor/RouteErrorBoundary";
 
 const RouteErrorBoundary: ErrorRouteComponent = (props) => (
-  <RouteErrorBoundaryClass {...(props as unknown as React.ComponentProps<typeof RouteErrorBoundaryClass>)} />
+  <RouteErrorBoundaryClass
+    {...(props as unknown as React.ComponentProps<typeof RouteErrorBoundaryClass>)}
+  />
 );
 import RouteLoading from "@/components/vixor/RouteLoading";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4" style={{ background: "var(--color-background)" }}>
+    <div
+      className="flex min-h-screen items-center justify-center p-4"
+      style={{ background: "var(--color-background)" }}
+    >
       <div className="text-center">
-        <div className="text-7xl font-extrabold" style={{ color: "var(--color-primary)" }}>404</div>
-        <h2 className="mt-4 text-xl font-semibold" style={{ color: "var(--color-foreground)" }}>Page not found</h2>
+        <div className="text-7xl font-extrabold" style={{ color: "var(--color-primary)" }}>
+          404
+        </div>
+        <h2 className="mt-4 text-xl font-semibold" style={{ color: "var(--color-foreground)" }}>
+          Page not found
+        </h2>
         <p className="mt-2 text-sm" style={{ color: "var(--color-muted-foreground)" }}>
           The page you're looking for doesn't exist.
         </p>
@@ -79,7 +88,11 @@ class GlobalErrorBoundary extends Component<
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[Vixor] Uncaught error:", error, info.componentStack);
-    try { captureException(error); } catch { /* noop */ }
+    try {
+      captureException(error);
+    } catch {
+      /* noop */
+    }
   }
 
   handleReset = () => {
@@ -98,16 +111,34 @@ class GlobalErrorBoundary extends Component<
 
 function ErrorView({ error, onReset }: { error: Error | null; onReset: () => void }) {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4" style={{ background: "var(--color-background)" }}>
+    <div
+      className="flex min-h-screen items-center justify-center p-4"
+      style={{ background: "var(--color-background)" }}
+    >
       <div className="mx-auto max-w-sm text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: "rgba(246,70,93,0.12)" }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-destructive)" }}>
+        <div
+          className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
+          style={{ background: "rgba(246,70,93,0.12)" }}
+        >
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ color: "var(--color-destructive)" }}
+          >
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
         </div>
-        <h1 className="text-xl font-semibold" style={{ color: "var(--color-foreground)" }}>Something went wrong</h1>
+        <h1 className="text-xl font-semibold" style={{ color: "var(--color-foreground)" }}>
+          Something went wrong
+        </h1>
         <p className="mt-2 text-sm" style={{ color: "var(--color-muted-foreground)" }}>
           {error?.message?.includes("#310") || wasRenderLoopDetected()
             ? `A rendering loop was detected${wasRenderLoopDetected() ? ` in ${getRenderLoopComponent()}` : ""}. This has been automatically resolved.`
@@ -124,7 +155,11 @@ function ErrorView({ error, onReset }: { error: Error | null; onReset: () => voi
           <Link
             to="/"
             className="rounded-lg px-6 py-2.5 text-sm font-semibold no-underline"
-            style={{ background: "var(--color-card)", border: "1px solid var(--color-border)", color: "var(--color-foreground)" }}
+            style={{
+              background: "var(--color-card)",
+              border: "1px solid var(--color-border)",
+              color: "var(--color-foreground)",
+            }}
           >
             Go Home
           </Link>
@@ -240,38 +275,46 @@ function RootComponent() {
     const queryCache = queryClientRef.current.getQueryCache();
     const lastToast = { key: "", time: 0 };
 
-    const unsub = queryCache.subscribe((event: { type: string; query?: { queryKey: readonly unknown[]; state: { status: string; error?: Error; fetchStatus: string } } }) => {
-      // Only handle query state updates
-      if (event.type !== "updated" || !event.query) return;
-      const { queryKey, state } = event.query;
+    const unsub = queryCache.subscribe(
+      (event: {
+        type: string;
+        query?: {
+          queryKey: readonly unknown[];
+          state: { status: string; error?: Error; fetchStatus: string };
+        };
+      }) => {
+        // Only handle query state updates
+        if (event.type !== "updated" || !event.query) return;
+        const { queryKey, state } = event.query;
 
-      // Only show toast for actively-fetched queries that errored (skip background/stale errors)
-      if (state.status !== "error" || state.fetchStatus !== "idle" || !state.error) return;
+        // Only show toast for actively-fetched queries that errored (skip background/stale errors)
+        if (state.status !== "error" || state.fetchStatus !== "idle" || !state.error) return;
 
-      const msg = state.error?.message || "Something went wrong";
-      const key = queryKey.join("/");
-      const now = Date.now();
+        const msg = state.error?.message || "Something went wrong";
+        const key = queryKey.join("/");
+        const now = Date.now();
 
-      // ── Suppress auth errors from toast — they're handled by auth guard redirect ──
-      // Showing "Unauthorized: Invalid token" toasts is confusing when the auth
-      // guard will redirect to /auth anyway. These errors are expected when
-      // the session expires or is invalid.
-      if (
-        msg.includes("Unauthorized") ||
-        msg.includes("No authorization header") ||
-        msg.includes("No token") ||
-        msg.includes("Invalid token")
-      ) {
-        return;
-      }
+        // ── Suppress auth errors from toast — they're handled by auth guard redirect ──
+        // Showing "Unauthorized: Invalid token" toasts is confusing when the auth
+        // guard will redirect to /auth anyway. These errors are expected when
+        // the session expires or is invalid.
+        if (
+          msg.includes("Unauthorized") ||
+          msg.includes("No authorization header") ||
+          msg.includes("No token") ||
+          msg.includes("Invalid token")
+        ) {
+          return;
+        }
 
-      // Rate-limit: same error key only shows once per 10 seconds
-      if (lastToast.key === key && now - lastToast.time < 10_000) return;
-      lastToast.key = key;
-      lastToast.time = now;
+        // Rate-limit: same error key only shows once per 10 seconds
+        if (lastToast.key === key && now - lastToast.time < 10_000) return;
+        lastToast.key = key;
+        lastToast.time = now;
 
-      toast.error(msg);
-    });
+        toast.error(msg);
+      },
+    );
 
     return unsub;
   }, []);

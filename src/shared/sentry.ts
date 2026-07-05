@@ -22,7 +22,12 @@ export function initSentry() {
       if (event.request?.url?.includes("localhost")) return null;
       // Filter noise
       const msg = event.exception?.values?.[0]?.value || "";
-      const noise = ["ResizeObserver loop", "Non-Error promise rejection", "SecurityError", "Script error"];
+      const noise = [
+        "ResizeObserver loop",
+        "Non-Error promise rejection",
+        "SecurityError",
+        "Script error",
+      ];
       if (noise.some((n) => msg.includes(n))) return null;
       return event;
     },

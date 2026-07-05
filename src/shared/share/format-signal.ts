@@ -7,7 +7,7 @@
 
 export interface ShareableSignal {
   pair: string;
-  direction: 'BUY' | 'SELL' | 'WAIT';
+  direction: "BUY" | "SELL" | "WAIT";
   confidence?: number;
   entry?: number | null;
   stopLoss?: number | null;
@@ -23,18 +23,30 @@ export interface ShareableSignal {
  * Supports both English and structured layouts.
  */
 export function formatSignalText(signal: ShareableSignal): string {
-  const { pair, direction, confidence, entry, stopLoss, takeProfit, pattern, reasons, timeframe, source } = signal;
+  const {
+    pair,
+    direction,
+    confidence,
+    entry,
+    stopLoss,
+    takeProfit,
+    pattern,
+    reasons,
+    timeframe,
+    source,
+  } = signal;
 
   const lines: string[] = [];
 
   // Header
-  const dirEmoji = direction === 'BUY' ? '🟢' : direction === 'SELL' ? '🔴' : '⏸️';
-  lines.push(`${dirEmoji} ${direction} ${pair}${timeframe ? ` | ${timeframe}` : ''}`);
-  lines.push('');
+  const dirEmoji = direction === "BUY" ? "🟢" : direction === "SELL" ? "🔴" : "⏸️";
+  lines.push(`${dirEmoji} ${direction} ${pair}${timeframe ? ` | ${timeframe}` : ""}`);
+  lines.push("");
 
   // Confidence
   if (confidence !== undefined) {
-    const bar = '█'.repeat(Math.round(confidence / 10)) + '░'.repeat(10 - Math.round(confidence / 10));
+    const bar =
+      "█".repeat(Math.round(confidence / 10)) + "░".repeat(10 - Math.round(confidence / 10));
     lines.push(`Confidence: ${bar} ${confidence}%`);
   }
 
@@ -47,7 +59,7 @@ export function formatSignalText(signal: ShareableSignal): string {
   if (entry) lines.push(`Entry: $${formatPrice(entry)}`);
   if (stopLoss) lines.push(`SL: $${formatPrice(stopLoss)}`);
   if (takeProfit && takeProfit.length > 0) {
-    lines.push(`TP: ${takeProfit.map((tp, i) => `$${formatPrice(tp)}`).join(' → ')}`);
+    lines.push(`TP: ${takeProfit.map((tp, i) => `$${formatPrice(tp)}`).join(" → ")}`);
   }
 
   // R:R calculation
@@ -61,29 +73,40 @@ export function formatSignalText(signal: ShareableSignal): string {
 
   // Reasons (first 3 max to keep it concise)
   if (reasons && reasons.length > 0) {
-    lines.push('');
+    lines.push("");
     const displayReasons = reasons.slice(0, 3);
-    lines.push(displayReasons.map((r) => `• ${r}`).join('\n'));
+    lines.push(displayReasons.map((r) => `• ${r}`).join("\n"));
   }
 
   // Footer / branding
-  lines.push('');
-  lines.push(`via ${source ?? 'VIXOR AI'} — Trade Intelligence`);
+  lines.push("");
+  lines.push(`via ${source ?? "VIXOR AI"} — Trade Intelligence`);
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
  * Format a signal as HTML for Telegram (supports bold/italic).
  */
 export function formatSignalTelegramHtml(signal: ShareableSignal): string {
-  const { pair, direction, confidence, entry, stopLoss, takeProfit, pattern, reasons, timeframe, source } = signal;
+  const {
+    pair,
+    direction,
+    confidence,
+    entry,
+    stopLoss,
+    takeProfit,
+    pattern,
+    reasons,
+    timeframe,
+    source,
+  } = signal;
 
-  const dirEmoji = direction === 'BUY' ? '🟢' : direction === 'SELL' ? '🔴' : '⏸️';
+  const dirEmoji = direction === "BUY" ? "🟢" : direction === "SELL" ? "🔴" : "⏸️";
   const lines: string[] = [];
 
-  lines.push(`<b>${dirEmoji} ${direction} ${pair}</b>${timeframe ? ` | ${timeframe}` : ''}`);
-  lines.push('');
+  lines.push(`<b>${dirEmoji} ${direction} ${pair}</b>${timeframe ? ` | ${timeframe}` : ""}`);
+  lines.push("");
 
   if (confidence !== undefined) {
     lines.push(`<b>Confidence:</b> ${confidence}%`);
@@ -94,7 +117,7 @@ export function formatSignalTelegramHtml(signal: ShareableSignal): string {
   if (entry) lines.push(`<b>Entry:</b> $${formatPrice(entry)}`);
   if (stopLoss) lines.push(`<b>SL:</b> $${formatPrice(stopLoss)}`);
   if (takeProfit && takeProfit.length > 0) {
-    lines.push(`<b>TP:</b> ${takeProfit.map((tp) => `$${formatPrice(tp)}`).join(' → ')}`);
+    lines.push(`<b>TP:</b> ${takeProfit.map((tp) => `$${formatPrice(tp)}`).join(" → ")}`);
   }
 
   // R:R
@@ -107,16 +130,16 @@ export function formatSignalTelegramHtml(signal: ShareableSignal): string {
   }
 
   if (reasons && reasons.length > 0) {
-    lines.push('');
+    lines.push("");
     reasons.slice(0, 3).forEach((r) => {
       lines.push(`• ${r}`);
     });
   }
 
-  lines.push('');
-  lines.push(`<i>via ${source ?? 'VIXOR AI'} — Trade Intelligence</i>`);
+  lines.push("");
+  lines.push(`<i>via ${source ?? "VIXOR AI"} — Trade Intelligence</i>`);
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /** Format price with appropriate decimal places */
@@ -140,7 +163,7 @@ export function buildXShareUrl(signal: ShareableSignal): string {
     const signalNoReasons = { ...signal, reasons: undefined };
     text = formatSignalText(signalNoReasons);
     if (text.length > 280) {
-      text = text.slice(0, 277) + '...';
+      text = text.slice(0, 277) + "...";
     }
   }
 
@@ -155,5 +178,5 @@ export function buildTelegramShareUrl(signal: ShareableSignal): string {
   // Telegram uses plain text in URL sharing (HTML only works via Bot API)
   const text = formatSignalText(signal);
   const encoded = encodeURIComponent(text);
-  return `https://t.me/share/url?url=${encodeURIComponent('https://vixor-app.vercel.app')}&text=${encoded}`;
+  return `https://t.me/share/url?url=${encodeURIComponent("https://vixor-app.vercel.app")}&text=${encoded}`;
 }

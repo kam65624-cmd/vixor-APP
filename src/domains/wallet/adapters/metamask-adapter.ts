@@ -83,13 +83,15 @@ export async function switchChain(chainId: EvmChainId): Promise<void> {
     if (err.code === 4902) {
       await provider.request({
         method: "wallet_addEthereumChain",
-        params: [{
-          chainId: `0x${chainIdNum.toString(16)}`,
-          chainName: chain.label,
-          nativeCurrency: { name: chain.nativeSymbol, symbol: chain.nativeSymbol, decimals: 18 },
-          rpcUrls: [chain.rpcUrl],
-          blockExplorerUrls: [chain.explorerUrl],
-        }],
+        params: [
+          {
+            chainId: `0x${chainIdNum.toString(16)}`,
+            chainName: chain.label,
+            nativeCurrency: { name: chain.nativeSymbol, symbol: chain.nativeSymbol, decimals: 18 },
+            rpcUrls: [chain.rpcUrl],
+            blockExplorerUrls: [chain.explorerUrl],
+          },
+        ],
       });
     } else {
       throw switchError;
@@ -136,10 +138,10 @@ export async function connectMetaMask(chainId: EvmChainId = "0x1"): Promise<{
     getAddress: async () => address,
     signMessage: async (message: string) => {
       // eth_sign + personal_sign both work; personal_sign is more user-friendly
-      const signature = await provider.request({
+      const signature = (await provider.request({
         method: "personal_sign",
         params: [message, address],
-      }) as string;
+      })) as string;
       return signature;
     },
     getChainId: async () => {

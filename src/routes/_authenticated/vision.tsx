@@ -4,7 +4,7 @@ import { memo } from "react";
 import { getRecentAnalyses } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout, 
+  PageLayout,
   StatsRow,
   DataRow,
   Badge,
@@ -47,10 +47,22 @@ function VisionPage() {
     >
       <StatsRow
         stats={[
-          { label: "Total Analyses", value: String(analyses.length), color: "var(--color-bullish)" },
+          {
+            label: "Total Analyses",
+            value: String(analyses.length),
+            color: "var(--color-bullish)",
+          },
           { label: "BUY Signals", value: String(buySignals.length), color: "var(--color-bullish)" },
-          { label: "SELL Signals", value: String(sellSignals.length), color: "var(--color-bearish)" },
-          { label: "Avg Confidence", value: `${avgConfidence}%`, color: "var(--color-neutral-wait)" },
+          {
+            label: "SELL Signals",
+            value: String(sellSignals.length),
+            color: "var(--color-bearish)",
+          },
+          {
+            label: "Avg Confidence",
+            value: `${avgConfidence}%`,
+            color: "var(--color-neutral-wait)",
+          },
         ]}
       />
 
@@ -157,8 +169,12 @@ const AnalysisRow = memo(function AnalysisRow({ analysis }: { analysis: any }) {
         >
           {analysis.confidence ?? 0}%
         </div>
-        <div style={{ width: "12%", color: "var(--color-muted-foreground)" }}>{analysis.pattern || "—"}</div>
-        <div style={{ width: "12%", color: "var(--color-muted-foreground)" }}>{analysis.trend || "—"}</div>
+        <div style={{ width: "12%", color: "var(--color-muted-foreground)" }}>
+          {analysis.pattern || "—"}
+        </div>
+        <div style={{ width: "12%", color: "var(--color-muted-foreground)" }}>
+          {analysis.trend || "—"}
+        </div>
         <div
           style={{
             flex: 1,

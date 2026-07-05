@@ -359,7 +359,6 @@ import type {
   AnalystReport,
 } from "./types";
 
-
 // ---------- COACH: Real-time Trade Coaching ----------
 export const coachTrade = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -432,9 +431,7 @@ export const scoreOpportunity = createServerFn({ method: "POST" })
 // ---------- ANALYST: Weekly Behavioral Report ----------
 export const generateWeeklyReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
-    z.object({}).parse(d),
-  )
+  .validator((d: unknown) => z.object({}).parse(d))
   .handler(async ({ context }): Promise<AnalystReport> => {
     const { userId } = context;
     const { generateWeeklyReport: runAnalyst } = await import("./server/analyst.agent");
@@ -465,9 +462,7 @@ export const getRecentDecisions = createServerFn({ method: "GET" })
     z
       .object({
         limit: z.number().min(1).max(50).default(20),
-        agentId: z
-          .enum(["coach", "analyst", "governor", "hunter"])
-          .optional(),
+        agentId: z.enum(["coach", "analyst", "governor", "hunter"]).optional(),
       })
       .parse(d),
   )
@@ -477,7 +472,9 @@ export const getRecentDecisions = createServerFn({ method: "GET" })
 
     let query = supabaseAdmin
       .from("vixor_decisions")
-      .select("id, agent_id, decision_type, title, description, data, confidence, severity, token_symbol, feedback, created_at")
+      .select(
+        "id, agent_id, decision_type, title, description, data, confidence, severity, token_symbol, feedback, created_at",
+      )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 

@@ -11,12 +11,9 @@ import {
   Badge,
   DataRow,
   LabelValue,
-  SectionTitle, 
+  SectionTitle,
 } from "@/components/vixor/PageLayout";
-import {
-  formatNumber,
-  formatRelative,
-} from "@/shared/utils/formatters";
+import { formatNumber, formatRelative } from "@/shared/utils/formatters";
 
 export const Route = createFileRoute("/_authenticated/communities")({
   component: CommunitiesPage,
@@ -84,13 +81,8 @@ const StrategyCard = memo(function StrategyCard({
           >
             {strategy.tradingStyle}
           </span>
-          {strategy.isActive && (
-            <Badge label="ACTIVE" color={"var(--color-bullish)"} />
-          )}
-          <Badge
-            label={strategy.riskTolerance.toUpperCase()}
-            color={riskColor}
-          />
+          {strategy.isActive && <Badge label="ACTIVE" color={"var(--color-bullish)"} />}
+          <Badge label={strategy.riskTolerance.toUpperCase()} color={riskColor} />
         </div>
       </div>
 
@@ -148,9 +140,7 @@ const PostCard = memo(function PostCard({
 }) {
   const mood = moodConfig[post.mood] ?? moodConfig.neutral;
   const truncatedContent =
-    post.content.length > 140
-      ? post.content.slice(0, 140) + "…"
-      : post.content;
+    post.content.length > 140 ? post.content.slice(0, 140) + "…" : post.content;
 
   return (
     <DataRow>
@@ -174,13 +164,8 @@ const PostCard = memo(function PostCard({
           >
             {post.title}
           </span>
-          <Badge
-            label={`${mood.emoji} ${mood.label}`}
-            color={mood.color}
-          />
-          {post.isPinned && (
-            <Badge label="PINNED" color={"var(--color-neutral-wait)"} />
-          )}
+          <Badge label={`${mood.emoji} ${mood.label}`} color={mood.color} />
+          {post.isPinned && <Badge label="PINNED" color={"var(--color-neutral-wait)"} />}
         </div>
       </div>
 
@@ -290,7 +275,11 @@ function CommunitiesPage() {
           <SectionTitle title="Strategies" count={strategies.length} />
           <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
             {strategies.length === 0 ? (
-              <EmptyState icon="🎯" title="No Strategies" message="No strategies have been shared yet. Be the first to share your trading approach." />
+              <EmptyState
+                icon="🎯"
+                title="No Strategies"
+                message="No strategies have been shared yet. Be the first to share your trading approach."
+              />
             ) : (
               strategies.map((s) => <StrategyCard key={s.id} strategy={s} />)
             )}
@@ -303,7 +292,11 @@ function CommunitiesPage() {
           <SectionTitle title="Activity" count={posts.length} />
           <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
             {posts.length === 0 ? (
-              <EmptyState icon="💬" title="No Activity" message="No community posts yet. Share your thoughts and trading ideas." />
+              <EmptyState
+                icon="💬"
+                title="No Activity"
+                message="No community posts yet. Share your thoughts and trading ideas."
+              />
             ) : (
               posts.map((p: any) => <PostCard key={p.id} post={p} />)
             )}

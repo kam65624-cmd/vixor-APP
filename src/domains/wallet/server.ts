@@ -15,8 +15,5 @@ export {
   verifyWalletJwt,
   signWalletJwt,
 } from "./functions";
-export {
-  generateNonce,
-  generateChallengeMessage,
-} from "./config";
+export { generateNonce, generateChallengeMessage } from "./config";
 export { isValidWalletAddress } from "./index";

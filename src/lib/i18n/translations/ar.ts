@@ -107,7 +107,8 @@ const ar: Translations = {
     watchlistItems: "{count} أزواج",
     economicCalendar: "التقويم الاقتصادي",
     calendarPreview: "التقويم الاقتصادي",
-    calendarComingSoon: "تتبع FOMC, NFP, CPI وأكثر من 50 حدث اقتصادي يحرك أسواق الفوركس والكريبتو والسلع.",
+    calendarComingSoon:
+      "تتبع FOMC, NFP, CPI وأكثر من 50 حدث اقتصادي يحرك أسواق الفوركس والكريبتو والسلع.",
     comingSoon: "قريباً",
     calendarTitle: "التقويم الاقتصادي",
     calendarSubtitle: "أحداث عالية التأثير هذا الأسبوع",
@@ -118,7 +119,8 @@ const ar: Translations = {
     aiFeed: "تغذية AI",
     whatShouldIDo: "ماذا أفعل الآن؟",
     suggestedActions: "أفعال مقترحة",
-    noSignalsYet: "لم يتم توليد إشارات اليوم بعد. ولّد إشارات من صفحة الإشارات أو عيّن تنبيهات من الشموع.",
+    noSignalsYet:
+      "لم يتم توليد إشارات اليوم بعد. ولّد إشارات من صفحة الإشارات أو عيّن تنبيهات من الشموع.",
     noSignalsTitle: "لا إشارات اليوم بعد",
     noSignalsDesc: "ولّد الإشارات اليومية للحصول على خطة أفعال مخصصة",
     generateSignals: "توليد الإشارات",
@@ -287,7 +289,8 @@ const ar: Translations = {
     stepByStep: "إدارة خطوة بخطوة",
     riskFactors: "عوامل المخاطرة",
     riskDisclaimer: "إخلاء مسؤولية",
-    disclaimerText: "هذا التحليل مولّد بواسطة Vixor AI بناءً على الأنماط الفنية والبيانات الأساسية. إنه ليس نصيحة مالية. طبّق إدارة المخاطر وحكمتك قبل تنفيذ أي صفقة.",
+    disclaimerText:
+      "هذا التحليل مولّد بواسطة Vixor AI بناءً على الأنماط الفنية والبيانات الأساسية. إنه ليس نصيحة مالية. طبّق إدارة المخاطر وحكمتك قبل تنفيذ أي صفقة.",
     fundamentalSentiment: "المشاعر الأساسية",
     keyNewsDrivers: "محررات الأخبار الرئيسية",
     useInCalculator: "استخدم في الحاسبة",
@@ -394,7 +397,8 @@ const ar: Translations = {
     example3: "ماذا اتجاه BTC؟",
     example4: "راجع صفقاتي الأخيرة",
     thinking: "يفكّر...",
-    noContext: "أحتاج بيانات أكثر لإعطائك إجابات دقيقة. جرّب تحليل شارت أو أضف صفقات لليومية أولاً.",
+    noContext:
+      "أحتاج بيانات أكثر لإعطائك إجابات دقيقة. جرّب تحليل شارت أو أضف صفقات لليومية أولاً.",
     marketAnalyst: "محلل السوق",
     riskManager: "مدير المخاطر",
     newsAnalyst: "محلل الأخبار",

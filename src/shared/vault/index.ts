@@ -23,10 +23,7 @@ const VAULT_SCHEMA = z.object({
   OPENAI_BASE_URL: z.string().optional().default("https://api.openai.com/v1"),
   ANTHROPIC_API_KEY: z.string().optional().default(""),
   GROQ_API_KEY: z.string().optional().default(""),
-  LLM_PROVIDER: z
-    .enum(["zai", "openai", "anthropic", "groq"])
-    .optional()
-    .default("zai"),
+  LLM_PROVIDER: z.enum(["zai", "openai", "anthropic", "groq"]).optional().default("zai"),
 
   // ── Market Data ──
   MOBULA_API_KEY: z.string().optional().default(""),
@@ -43,14 +40,8 @@ const VAULT_SCHEMA = z.object({
   WALLET_SOLANA_RPC_URL: z.string().optional().default(""),
 
   // ── DEX & Trading ──
-  DEXSCREENER_API_URL: z
-    .string()
-    .optional()
-    .default("https://api.dexscreener.com/latest"),
-  JUPITER_QUOTE_URL: z
-    .string()
-    .optional()
-    .default("https://quote-api.jup.ag/v6"),
+  DEXSCREENER_API_URL: z.string().optional().default("https://api.dexscreener.com/latest"),
+  JUPITER_QUOTE_URL: z.string().optional().default("https://quote-api.jup.ag/v6"),
   ARBITRAGE_SOLANA_RPC_URL: z.string().optional().default(""),
 
   // ── Social ──

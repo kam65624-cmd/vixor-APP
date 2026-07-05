@@ -23,8 +23,7 @@ export const WithPrimaryAction: Story = {
   args: {
     icon: <Search className="size-5" />,
     title: "No trade journal entries",
-    description:
-      "Start logging your trades to build a performance track record.",
+    description: "Start logging your trades to build a performance track record.",
     action: {
       label: "Create First Entry",
       onClick: () => {},

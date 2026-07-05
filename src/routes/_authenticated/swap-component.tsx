@@ -381,8 +381,7 @@ function TokenSelectorModal({
                 textAlign: "left",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background =
-                  "rgba(124,155,196,0.04)";
+                (e.currentTarget as HTMLElement).style.background = "rgba(124,155,196,0.04)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -1119,10 +1118,7 @@ export function SwapPage() {
                             slippage === s
                               ? "1px solid var(--color-primary)"
                               : "1px solid var(--color-border)",
-                          background:
-                            slippage === s
-                              ? "rgba(124,155,196,0.15)"
-                              : "transparent",
+                          background: slippage === s ? "rgba(124,155,196,0.15)" : "transparent",
                           color:
                             slippage === s
                               ? "var(--color-primary)"
@@ -1380,8 +1376,17 @@ export function SwapPage() {
               border: "1px solid var(--color-bearish)26",
             }}
           >
-            <span style={{ fontSize: "11px", color: "var(--color-bearish)", fontWeight: 600 }}>⚠ DEMO MODE</span>
-            <p style={{ fontSize: "10px", color: "var(--color-muted-foreground)", marginTop: "4px", lineHeight: 1.4 }}>
+            <span style={{ fontSize: "11px", color: "var(--color-bearish)", fontWeight: 600 }}>
+              ⚠ DEMO MODE
+            </span>
+            <p
+              style={{
+                fontSize: "10px",
+                color: "var(--color-muted-foreground)",
+                marginTop: "4px",
+                lineHeight: 1.4,
+              }}
+            >
               This is a simulated swap for demonstration. No real funds are exchanged.
             </p>
           </div>

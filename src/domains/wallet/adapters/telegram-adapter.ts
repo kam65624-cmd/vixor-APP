@@ -72,7 +72,7 @@ export async function connectTelegramWallet(): Promise<TelegramWalletResult> {
   if (!isTelegramWebApp()) {
     throw new Error(
       "Telegram Wallet requires the Telegram app. " +
-      "Please open this page inside Telegram to connect your TON wallet."
+        "Please open this page inside Telegram to connect your TON wallet.",
     );
   }
 
@@ -86,8 +86,7 @@ export async function connectTelegramWallet(): Promise<TelegramWalletResult> {
   //
   // For now we open the TON Connect universal link so the user can
   // connect their wallet and return the address via sessionStorage.
-  const tonConnectUrl =
-    "https://app.tonkeeper.com/ton-connect";
+  const tonConnectUrl = "https://app.tonkeeper.com/ton-connect";
 
   webApp.openTelegramLink(tonConnectUrl);
 

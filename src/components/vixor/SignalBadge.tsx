@@ -1,12 +1,7 @@
 import { cn } from "@/shared/utils";
 import { withAlpha } from "@/shared/color-utils";
 
-export type SignalKind =
-  | "BUY"
-  | "SELL"
-  | "WAIT"
-  | "STRONG_BUY"
-  | "STRONG_SELL";
+export type SignalKind = "BUY" | "SELL" | "WAIT" | "STRONG_BUY" | "STRONG_SELL";
 
 interface SignalConfig {
   label: string;
@@ -76,8 +71,7 @@ export function SignalBadge({
   className,
 }: SignalBadgeProps) {
   const c = SIGNAL_CONFIG[signal];
-  const label =
-    variant === "short" ? c.short : variant === "icon-only" ? "" : c.label;
+  const label = variant === "short" ? c.short : variant === "icon-only" ? "" : c.label;
 
   return (
     <span
@@ -89,7 +83,7 @@ export function SignalBadge({
       style={{
         background: c.bg,
         color: c.color,
-        border: `1px solid ${withAlpha(c.color, 0.20)}`,
+        border: `1px solid ${withAlpha(c.color, 0.2)}`,
       }}
       role="status"
       aria-label={`Signal: ${c.label}`}

@@ -6,7 +6,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
-import { PageLayout,  Badge, ScrollArea, EmptyState } from "@/components/vixor/PageLayout";
+import { PageLayout, Badge, ScrollArea, EmptyState } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/premium")({
   head: () => ({ meta: [{ title: "Premium — Vixor" }] }),
@@ -73,10 +73,34 @@ function PremiumPage() {
   const isLoading = query.isLoading;
 
   // Fallback plans when DB is empty
-  const visiblePlans = plans.length > 0 ? plans : [
-    { id: "pro-monthly", name: "Pro", price_cents: 2900, features: ["AI Copilot access", "Advanced signals", "Priority alerts", "Extended history"] },
-    { id: "pro-yearly", name: "Pro Annual", price_cents: 24900, badge: "SAVE 28%", features: ["Everything in Pro", "Annual billing", "Dedicated support", "Early access to features"] },
-  ] as any[];
+  const visiblePlans =
+    plans.length > 0
+      ? plans
+      : ([
+          {
+            id: "pro-monthly",
+            name: "Pro",
+            price_cents: 2900,
+            features: [
+              "AI Copilot access",
+              "Advanced signals",
+              "Priority alerts",
+              "Extended history",
+            ],
+          },
+          {
+            id: "pro-yearly",
+            name: "Pro Annual",
+            price_cents: 24900,
+            badge: "SAVE 28%",
+            features: [
+              "Everything in Pro",
+              "Annual billing",
+              "Dedicated support",
+              "Early access to features",
+            ],
+          },
+        ] as any[]);
 
   const currentPlanId = subscription?.plan_id;
   const currentPlanName = plans.find((p) => p.id === currentPlanId)?.name || "Pro";
@@ -198,7 +222,9 @@ function PremiumPage() {
                       /mo
                     </span>
                   </div>
-                  {(plan as any).badge && <Badge label={(plan as any).badge} color={"var(--color-neutral-wait)"} />}
+                  {(plan as any).badge && (
+                    <Badge label={(plan as any).badge} color={"var(--color-neutral-wait)"} />
+                  )}
                   <div style={{ marginTop: "16px", marginBottom: "20px" }}>
                     {features.length > 0 ? (
                       features.map((f, i) => (

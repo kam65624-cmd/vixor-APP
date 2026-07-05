@@ -83,7 +83,10 @@ export const CompactRow: StoryObj = {
         >
           <span className="text-xs font-semibold w-24">{item.sym}</span>
           <MiniSparkline data={item.data} color={item.color} width={100} height={24} />
-          <span className="text-xs font-mono font-bold w-16 text-right" style={{ color: item.color }}>
+          <span
+            className="text-xs font-mono font-bold w-16 text-right"
+            style={{ color: item.color }}
+          >
             {item.pct}
           </span>
         </div>

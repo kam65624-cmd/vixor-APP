@@ -423,9 +423,7 @@ function ExchangeCard({
                         ? "var(--color-foreground)"
                         : "var(--color-muted-foreground)",
                     background:
-                      form.mtType === mt
-                        ? `${"var(--color-bullish)"}26`
-                        : "rgba(124,155,196,0.04)",
+                      form.mtType === mt ? `${"var(--color-bullish)"}26` : "rgba(124,155,196,0.04)",
                   }}
                 >
                   {mt.toUpperCase()}
@@ -513,7 +511,6 @@ function SettingsPage() {
     staleTime: 30_000,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateMutation = useMutation({
     mutationFn: (payload: any) => (updateSettings as any)(payload),
     onSuccess: () => {
@@ -644,7 +641,6 @@ function SettingsPage() {
   });
 
   const saveExchMutation = useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: (payload: any) => (saveExchCreds as any)(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["exchange-credentials"] });
@@ -653,7 +649,6 @@ function SettingsPage() {
   });
 
   const testExchMutation = useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: (payload: any) => (testExchConn as any)(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["exchange-credentials"] });
@@ -661,7 +656,6 @@ function SettingsPage() {
   });
 
   const deleteExchMutation = useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: (payload: any) => (deleteExchCreds as any)(payload),
     onSuccess: (_data: unknown, variables: { exchangeId: string }) => {
       queryClient.invalidateQueries({ queryKey: ["exchange-credentials"] });
@@ -913,9 +907,7 @@ function SettingsPage() {
                       ? "var(--color-foreground)"
                       : "var(--color-muted-foreground)",
                   background:
-                    oi === item.current
-                      ? `${"var(--color-bullish)"}26`
-                      : "rgba(124,155,196,0.04)",
+                    oi === item.current ? `${"var(--color-bullish)"}26` : "rgba(124,155,196,0.04)",
                 }}
               >
                 {opt}

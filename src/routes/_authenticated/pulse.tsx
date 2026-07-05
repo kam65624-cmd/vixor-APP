@@ -12,13 +12,9 @@ import {
   ScrollArea,
   EmptyState,
   Badge,
-  DataRow, 
+  DataRow,
 } from "@/components/vixor/PageLayout";
-import {
-  formatTimeAgo,
-  formatPrice,
-  formatQuantity,
-} from "@/shared/utils/formatters";
+import { formatTimeAgo, formatPrice, formatQuantity } from "@/shared/utils/formatters";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getPulseData } from "@/shared/data";
 
@@ -100,8 +96,7 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
               {item.pnl != null && (
                 <span
                   style={{
-                    color:
-                      item.pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
+                    color: item.pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                     marginLeft: 8,
                     fontWeight: 700,
                   }}
@@ -114,9 +109,7 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
           ) : (
             <>
               {item.confidence != null && (
-                <span style={{ color: "var(--color-neutral-wait)" }}>
-                  {item.confidence}%
-                </span>
+                <span style={{ color: "var(--color-neutral-wait)" }}>{item.confidence}%</span>
               )}
               {item.pattern && (
                 <span
@@ -199,11 +192,13 @@ function PulsePage() {
 
       <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
         {filtered.length === 0 ? (
-          <EmptyState icon="📡" title="No Activity" message="No trades or signals detected yet. Activity will appear here in real-time." />
+          <EmptyState
+            icon="📡"
+            title="No Activity"
+            message="No trades or signals detected yet. Activity will appear here in real-time."
+          />
         ) : (
-          filtered.map((item: any) => (
-            <PulseRow key={item.id} item={item} />
-          ))
+          filtered.map((item: any) => <PulseRow key={item.id} item={item} />)
         )}
       </ScrollArea>
     </PageLayout>

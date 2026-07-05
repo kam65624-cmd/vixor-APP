@@ -67,10 +67,7 @@ async function rpcCall<T>(method: string, params: unknown[] = []): Promise<T | n
     }
     return data.result as T;
   } catch (err) {
-    console.warn(
-      `[Helius] ${method} failed:`,
-      err instanceof Error ? err.message : String(err),
-    );
+    console.warn(`[Helius] ${method} failed:`, err instanceof Error ? err.message : String(err));
     return null;
   }
 }
@@ -79,10 +76,9 @@ async function rpcCall<T>(method: string, params: unknown[] = []): Promise<T | n
 
 /** Get SOL native balance for a wallet address */
 export async function getSolanaBalance(address: string): Promise<SolanaBalance | null> {
-  const result = await rpcCall<{ value: number; context: { slot: number } }>(
-    "getBalance",
-    [address],
-  );
+  const result = await rpcCall<{ value: number; context: { slot: number } }>("getBalance", [
+    address,
+  ]);
   if (!result) return null;
   const lamports = result.value;
   return { lamports, sol: lamports / 1e9 };
@@ -102,19 +98,19 @@ export async function getTokenAccounts(address: string): Promise<SplTokenBalance
     if (!res.ok) return [];
     const data = await res.json();
 
-  if (!data.tokens || !Array.isArray(data.tokens)) return [];
+    if (!data.tokens || !Array.isArray(data.tokens)) return [];
 
-  return data.tokens
-    .filter((t: any) => t.amount !== "0" && t.mint)
-    .map((t: any) => ({
-      mint: t.mint,
-      symbol: t.symbol || "UNKNOWN",
-      name: t.name || t.symbol || "Unknown Token",
-      decimals: t.decimals ?? 9,
-      balance: BigInt(t.amount || "0"),
-      uiAmount: t.nativeBalance?.balance ? parseFloat(t.nativeBalance.balance) : 0,
-      logoUrl: t.logoURI,
-    }));
+    return data.tokens
+      .filter((t: any) => t.amount !== "0" && t.mint)
+      .map((t: any) => ({
+        mint: t.mint,
+        symbol: t.symbol || "UNKNOWN",
+        name: t.name || t.symbol || "Unknown Token",
+        decimals: t.decimals ?? 9,
+        balance: BigInt(t.amount || "0"),
+        uiAmount: t.nativeBalance?.balance ? parseFloat(t.nativeBalance.balance) : 0,
+        logoUrl: t.logoURI,
+      }));
   } catch (err) {
     console.warn(
       `[Helius] getTokenAccounts failed:`,

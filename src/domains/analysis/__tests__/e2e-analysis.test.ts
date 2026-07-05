@@ -37,8 +37,7 @@ function validateResultShape(r: LocalAnalysisResult, pair: string): string[] {
     errors.push("Invalid recommendation: " + r.recommendation);
   if (typeof r.confidence !== "number" || r.confidence < 0 || r.confidence > 100)
     errors.push("Invalid confidence: " + r.confidence);
-  if (typeof r.entry !== "number")
-    errors.push("entry is not a number: " + typeof r.entry);
+  if (typeof r.entry !== "number") errors.push("entry is not a number: " + typeof r.entry);
   if (typeof r.stop_loss !== "number")
     errors.push("stop_loss is not a number: " + typeof r.stop_loss);
   if (!Array.isArray(r.take_profit) || r.take_profit.length !== 3)
@@ -46,8 +45,7 @@ function validateResultShape(r: LocalAnalysisResult, pair: string): string[] {
   if (typeof r.rr !== "string") errors.push("rr is not a string");
 
   // Relaxed: synthetic test data may produce fewer reasons (min 1 instead of 3)
-  if (!Array.isArray(r.reasons) || r.reasons.length < 1)
-    errors.push("reasons must have 1+ items");
+  if (!Array.isArray(r.reasons) || r.reasons.length < 1) errors.push("reasons must have 1+ items");
   if (!Array.isArray(r.management) || r.management.length < 3)
     errors.push("management must have 3+ items");
   if (typeof r.pattern !== "string") errors.push("pattern is not a string");
@@ -172,7 +170,17 @@ describe("E2E: Analysis Pipeline", () => {
   });
 
   describe("PAIR_CONFIGS", () => {
-    ["BTC/USDT", "ETH/USDT", "SOL/USDT", "EUR/USD", "XAU/USD", "GBP/USD", "GBP/JPY", "AAPL", "NASDAQ"].forEach((pair) => {
+    [
+      "BTC/USDT",
+      "ETH/USDT",
+      "SOL/USDT",
+      "EUR/USD",
+      "XAU/USD",
+      "GBP/USD",
+      "GBP/JPY",
+      "AAPL",
+      "NASDAQ",
+    ].forEach((pair) => {
       it(pair + " has valid config", () => {
         const cfg = PAIR_CONFIGS[pair];
         expect(cfg).toBeDefined();

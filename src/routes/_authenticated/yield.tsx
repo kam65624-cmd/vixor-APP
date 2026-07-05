@@ -11,7 +11,7 @@ import {
   Badge,
   DataRow,
   LabelValue,
-  SectionTitle, 
+  SectionTitle,
 } from "@/components/vixor/PageLayout";
 import {
   formatCurrency,
@@ -99,27 +99,15 @@ const YieldCard = memo(function YieldCard({
           value={formatPercentRaw(position.yieldPct)}
           valueColor={position.yieldPct >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"}
         />
-        <LabelValue
-          label="Dur"
-          value={`${position.duration}d`}
-        />
-        <LabelValue
-          label="Entry"
-          value={formatPrice(position.entryPrice)}
-        />
-        <LabelValue
-          label="Exit"
-          value={formatPrice(position.exitPrice)}
-        />
+        <LabelValue label="Dur" value={`${position.duration}d`} />
+        <LabelValue label="Entry" value={formatPrice(position.entryPrice)} />
+        <LabelValue label="Exit" value={formatPrice(position.exitPrice)} />
         <LabelValue
           label="R"
           value={formatRMultiple(position.rMultiple)}
           valueColor={position.rMultiple >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"}
         />
-        <LabelValue
-          label="Qty"
-          value={formatQuantity(position.quantity)}
-        />
+        <LabelValue label="Qty" value={formatQuantity(position.quantity)} />
       </div>
 
       {/* Bottom: date */}
@@ -177,19 +165,18 @@ function YieldPage() {
   ];
 
   return (
-    <PageLayout
-      title="Yield"
-      badge="YIELD"
-      badgeColor={"var(--color-bullish)"}
-      loading={isLoading}
-    >
+    <PageLayout title="Yield" badge="YIELD" badgeColor={"var(--color-bullish)"} loading={isLoading}>
       <StatsRow stats={stats} />
 
       <SectionTitle title="Yield Positions" count={positions.length} />
 
       <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
         {positions.length === 0 ? (
-          <EmptyState icon="📊" title="No Yield Data" message="No yield positions yet. Start trading to see your yield performance." />
+          <EmptyState
+            icon="📊"
+            title="No Yield Data"
+            message="No yield positions yet. Start trading to see your yield performance."
+          />
         ) : (
           positions.map((p: any) => <YieldCard key={p.id} position={p} />)
         )}

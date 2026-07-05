@@ -34,8 +34,7 @@ export function CoinImage({
           borderRadius: "50%",
           flexShrink: 0,
           overflow: "hidden",
-          border:
-            "1px solid rgba(124,155,196,0.10)",
+          border: "1px solid rgba(124,155,196,0.10)",
         }}
       >
         <img
@@ -57,10 +56,8 @@ export function CoinImage({
         borderRadius: "50%",
         flexShrink: 0,
         background:
-          up !== undefined
-            ? withAlpha(color, 0.10)
-            : blendWithCard("var(--color-foreground)", 0.06),
-        border: `1px solid ${withAlpha(color, 0.20)}`,
+          up !== undefined ? withAlpha(color, 0.1) : blendWithCard("var(--color-foreground)", 0.06),
+        border: `1px solid ${withAlpha(color, 0.2)}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

@@ -405,9 +405,7 @@ function BlipCard({ blip }: { blip: RadarBlip }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: hovered
-          ? "rgba(124,155,196,0.04)"
-          : "var(--color-card)",
+        background: hovered ? "rgba(124,155,196,0.04)" : "var(--color-card)",
         border: `1px solid ${hovered ? blip.color + "40" : "var(--color-border)"}`,
         borderLeft: `3px solid ${blip.color}`,
         borderRadius: 8,
@@ -645,10 +643,7 @@ function AlertsLogEntry({ blip, index }: { blip: RadarBlip; index: number }) {
         gap: 10,
         padding: "10px 16px",
         borderBottom: "1px solid rgba(124,155,196,0.04)",
-        background:
-          index % 2 === 0
-            ? "var(--color-card)"
-            : "rgba(124,155,196,0.02)",
+        background: index % 2 === 0 ? "var(--color-card)" : "rgba(124,155,196,0.02)",
         transition: "background 0.1s ease",
       }}
     >

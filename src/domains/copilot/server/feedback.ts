@@ -104,10 +104,7 @@ export async function recordFeedback(
  * @param decisionId - The ID of the decision to accept
  * @param userId - The user ID (for ownership verification)
  */
-export async function acceptDecision(
-  decisionId: string,
-  userId: string,
-): Promise<void> {
+export async function acceptDecision(decisionId: string, userId: string): Promise<void> {
   const result = await recordFeedback(decisionId, userId, "accepted");
   if (!result.success) {
     throw new Error(result.error || "Failed to accept decision.");
@@ -120,10 +117,7 @@ export async function acceptDecision(
  * @param decisionId - The ID of the decision to reject
  * @param userId - The user ID (for ownership verification)
  */
-export async function rejectDecision(
-  decisionId: string,
-  userId: string,
-): Promise<void> {
+export async function rejectDecision(decisionId: string, userId: string): Promise<void> {
   const result = await recordFeedback(decisionId, userId, "rejected");
   if (!result.success) {
     throw new Error(result.error || "Failed to reject decision.");

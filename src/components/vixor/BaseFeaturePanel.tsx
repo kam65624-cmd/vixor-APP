@@ -69,10 +69,7 @@ export function BaseFeaturePanel({
             />
           </div>
           {subtitle && (
-            <p
-              className="mt-0.5 truncate text-[11px]"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <p className="mt-0.5 truncate text-[11px]" style={{ color: "var(--text-secondary)" }}>
               {subtitle}
             </p>
           )}

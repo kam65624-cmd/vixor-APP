@@ -2,12 +2,26 @@ import { memo, useState, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useWallet } from "@/domains/wallet/adapter/WalletProvider";
 import { WalletProviderSelector } from "@/domains/wallet/adapter/WalletProviderSelector";
-import { WalletConnectButton, WalletIcon, truncateAddress } from "@/domains/wallet/adapter/WalletConnectButton";
+import {
+  WalletConnectButton,
+  WalletIcon,
+  truncateAddress,
+} from "@/domains/wallet/adapter/WalletConnectButton";
 import { EVM_CHAINS } from "@/domains/wallet/types";
 import type { TokenBalance } from "@/domains/wallet/types";
-import { getPhantomSolBalance, getPhantomTokenBalances } from "@/domains/wallet/adapters/phantom-adapter";
+import {
+  getPhantomSolBalance,
+  getPhantomTokenBalances,
+} from "@/domains/wallet/adapters/phantom-adapter";
 import { getEvmNativeBalance } from "@/domains/wallet/adapters/metamask-adapter";
-import { PageLayout, StatsRow, ScrollArea, PageBadge as Badge, SectionTitle, PageEmptyState as EmptyState } from "@/components/vixor/PageLayout";
+import {
+  PageLayout,
+  StatsRow,
+  ScrollArea,
+  PageBadge as Badge,
+  SectionTitle,
+  PageEmptyState as EmptyState,
+} from "@/components/vixor/PageLayout";
 import { formatCurrency, formatNumber } from "@/shared/utils/formatters";
 import { LiveDot } from "@/components/vixor/LiveDot";
 import { MiniSparkline } from "@/components/vixor/MiniSparkline";
@@ -26,9 +40,13 @@ const TokenCard = memo(function TokenCard({
   chainLabel: string;
 }) {
   const verifiedIcon = token.isVerified ? (
-    <span className="text-[var(--info)] text-xs" title="Verified token" aria-label="Verified">✓</span>
+    <span className="text-[var(--info)] text-xs" title="Verified token" aria-label="Verified">
+      ✓
+    </span>
   ) : token.isHoneypot ? (
-    <span className="text-[var(--bearish)] text-xs" title="Potential honeypot" aria-label="Warning">⚠</span>
+    <span className="text-[var(--bearish)] text-xs" title="Potential honeypot" aria-label="Warning">
+      ⚠
+    </span>
   ) : null;
 
   return (
@@ -119,25 +137,34 @@ function WalletWeb3Page() {
   }, [refreshBalances]);
 
   // Native token symbol
-  const nativeSymbol = wallet?.chain === "solana"
-    ? "SOL"
-    : wallet?.evmChainId
-      ? EVM_CHAINS[wallet.evmChainId]?.nativeSymbol ?? "ETH"
-      : "ETH";
+  const nativeSymbol =
+    wallet?.chain === "solana"
+      ? "SOL"
+      : wallet?.evmChainId
+        ? (EVM_CHAINS[wallet.evmChainId]?.nativeSymbol ?? "ETH")
+        : "ETH";
 
-  const chainLabel = wallet?.chain === "solana"
-    ? "Solana"
-    : wallet?.evmChainId
-      ? EVM_CHAINS[wallet.evmChainId]?.label ?? "Ethereum"
-      : "Ethereum";
+  const chainLabel =
+    wallet?.chain === "solana"
+      ? "Solana"
+      : wallet?.evmChainId
+        ? (EVM_CHAINS[wallet.evmChainId]?.label ?? "Ethereum")
+        : "Ethereum";
 
   const totalValue = tokens.reduce((sum, t) => sum + (t.valueUsd ?? 0), 0);
-  const unverifiedCount = tokens.filter(t => !t.isVerified).length;
+  const unverifiedCount = tokens.filter((t) => !t.isVerified).length;
 
   const stats = isConnected
     ? [
-        { label: nativeSymbol + " Balance", value: nativeBalance !== null ? nativeBalance.toFixed(4) : "—" },
-        { label: "Tokens", value: String(tokens.length), sub: `${tokens.filter(t => t.isVerified).length} verified` },
+        {
+          label: nativeSymbol + " Balance",
+          value: nativeBalance !== null ? nativeBalance.toFixed(4) : "—",
+        },
+        {
+          label: "Tokens",
+          value: String(tokens.length),
+          sub: `${tokens.filter((t) => t.isVerified).length} verified`,
+        },
         { label: "Chain", value: chainLabel },
         { label: "Portfolio", value: totalValue > 0 ? formatCurrency(totalValue) : "—" },
       ]
@@ -163,7 +190,16 @@ function WalletWeb3Page() {
             {tokensLoading ? (
               <div className="size-3.5 rounded-full border-2 border-[var(--text-tertiary)] border-t-transparent animate-spin" />
             ) : (
-              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+              <svg
+                className="size-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M1 4v6h6M23 20v-6h-6" />
+                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+              </svg>
             )}
           </button>
         </>
@@ -185,67 +221,69 @@ function WalletWeb3Page() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         loading={false}
-    >
-      {/* Unverified tokens warning */}
-      {isConnected && unverifiedCount > 0 && (
-        <div className="mx-4 mt-2 rounded-lg border border-[var(--neutral-wait)]/40 bg-[var(--neutral-wait)]/10 p-3">
-          <div className="flex items-center gap-2 text-[var(--neutral-wait)]">
-            <span className="text-sm">⚠</span>
-            <span className="text-xs font-semibold">
-              {unverifiedCount} unverified token{unverifiedCount > 1 ? "s" : ""} detected
-            </span>
-          </div>
-          <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
-            Always DYOR. Unverified tokens may be honeypots or scams. Verify before trading.
-          </p>
-        </div>
-      )}
-
-      <StatsRow stats={stats} />
-
-      {activeTab === "Holdings" && (
-        <>
-          {!isConnected ? (
-            <EmptyState
-              icon="💳"
-              title="No Wallet Connected"
-              message="Connect Phantom (Solana) or MetaMask (ETH, Polygon, Avalanche) to view your portfolio."
-            />
-          ) : tokensLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="size-6 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" />
-              <span className="ml-3 text-sm text-[var(--text-secondary)]">Loading balances...</span>
+      >
+        {/* Unverified tokens warning */}
+        {isConnected && unverifiedCount > 0 && (
+          <div className="mx-4 mt-2 rounded-lg border border-[var(--neutral-wait)]/40 bg-[var(--neutral-wait)]/10 p-3">
+            <div className="flex items-center gap-2 text-[var(--neutral-wait)]">
+              <span className="text-sm">⚠</span>
+              <span className="text-xs font-semibold">
+                {unverifiedCount} unverified token{unverifiedCount > 1 ? "s" : ""} detected
+              </span>
             </div>
-          ) : tokens.length === 0 ? (
-            <EmptyState
-              icon="💎"
-              title="No Tokens Found"
-              message={`This ${chainLabel} wallet has no SPL/ERC-20 token balances.`}
-            />
-          ) : (
-            <>
-              <SectionTitle title="Token Holdings" count={tokens.length} />
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
-                {tokens.map((token) => (
-                  <TokenCard key={token.mint} token={token} chainLabel={chainLabel} />
-                ))}
-              </div>
-            </>
-          )}
-        </>
-      )}
+            <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+              Always DYOR. Unverified tokens may be honeypots or scams. Verify before trading.
+            </p>
+          </div>
+        )}
 
-      {activeTab === "Transactions" && (
-        <>
-          <SectionTitle title="Recent Transactions" count={0} />
-          <EmptyState
-            icon="📋"
-            title="No Transactions"
-            message="Transaction history will appear here after swaps, transfers, or trades."
-          />
-        </>
-      )}
-    </PageLayout>
+        <StatsRow stats={stats} />
+
+        {activeTab === "Holdings" && (
+          <>
+            {!isConnected ? (
+              <EmptyState
+                icon="💳"
+                title="No Wallet Connected"
+                message="Connect Phantom (Solana) or MetaMask (ETH, Polygon, Avalanche) to view your portfolio."
+              />
+            ) : tokensLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="size-6 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" />
+                <span className="ml-3 text-sm text-[var(--text-secondary)]">
+                  Loading balances...
+                </span>
+              </div>
+            ) : tokens.length === 0 ? (
+              <EmptyState
+                icon="💎"
+                title="No Tokens Found"
+                message={`This ${chainLabel} wallet has no SPL/ERC-20 token balances.`}
+              />
+            ) : (
+              <>
+                <SectionTitle title="Token Holdings" count={tokens.length} />
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
+                  {tokens.map((token) => (
+                    <TokenCard key={token.mint} token={token} chainLabel={chainLabel} />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {activeTab === "Transactions" && (
+          <>
+            <SectionTitle title="Recent Transactions" count={0} />
+            <EmptyState
+              icon="📋"
+              title="No Transactions"
+              message="Transaction history will appear here after swaps, transfers, or trades."
+            />
+          </>
+        )}
+      </PageLayout>
     </>
   );
 }

@@ -91,7 +91,6 @@ async function resolveChannels(
       .eq("user_id", userId)
       .maybeSingle();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const row = data as any;
     const fromSettings = row?.notification_channels;
     if (Array.isArray(fromSettings) && fromSettings.length > 0) {

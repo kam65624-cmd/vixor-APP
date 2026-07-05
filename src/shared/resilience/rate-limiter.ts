@@ -69,9 +69,8 @@ export class RateLimiter {
     }
 
     // Apply jitter
-    const jitterMs = this.jitter > 0
-      ? Math.floor(Math.random() * 2 * this.jitter) - this.jitter
-      : 0;
+    const jitterMs =
+      this.jitter > 0 ? Math.floor(Math.random() * 2 * this.jitter) - this.jitter : 0;
     const waitMs = Math.max(0, this.minInterval - elapsed + jitterMs);
 
     await sleep(waitMs);

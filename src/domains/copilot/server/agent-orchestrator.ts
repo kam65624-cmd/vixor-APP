@@ -176,7 +176,7 @@ export async function* streamAgent(params: {
   const { agent: agentId, message, history, context } = params;
 
   let selectedAgentId: AgentId = agentId;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   if (agentId === ("auto" as any)) {
     selectedAgentId = autoSelectAgent(message);
   }
@@ -207,7 +207,7 @@ export async function runAgent(params: {
 
   // If "auto" mode, select the best agent
   let selectedAgentId: AgentId = agentId;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   if (agentId === ("auto" as any)) {
     selectedAgentId = autoSelectAgent(message);
   }

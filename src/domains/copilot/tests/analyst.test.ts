@@ -8,7 +8,9 @@ import {
 // ── Mock Memory Store ──
 vi.mock("@/shared/memory", () => ({
   MemoryStore: {
-    contextForPrompt: vi.fn().mockResolvedValue("User prefers scalping, tends to overtrade after losses."),
+    contextForPrompt: vi
+      .fn()
+      .mockResolvedValue("User prefers scalping, tends to overtrade after losses."),
   },
 }));
 
@@ -88,8 +90,10 @@ describe("Analyst Agent", () => {
     it("parses valid JSON response", () => {
       const raw = JSON.stringify({
         statsSummary: "Win rate of 62% with 8 trades. Average profit of $150 per trade.",
-        behavioralPatterns: "- Good discipline on stop losses\n- Tends to overtrade after losses\n- Strong analysis on BTC setups",
-        recommendations: "1. Set max 3 trades per day\n2. Wait 30 min after a loss before re-entering",
+        behavioralPatterns:
+          "- Good discipline on stop losses\n- Tends to overtrade after losses\n- Strong analysis on BTC setups",
+        recommendations:
+          "1. Set max 3 trades per day\n2. Wait 30 min after a loss before re-entering",
         learningResources: "Study risk-reward optimization and position sizing.",
       });
 
@@ -104,7 +108,8 @@ describe("Analyst Agent", () => {
     });
 
     it("parses JSON with code fences", () => {
-      const raw = '```json\n{"statsSummary": "Good week", "behavioralPatterns": "Disciplined", "recommendations": "Keep it up", "learningResources": "None"}\n```';
+      const raw =
+        '```json\n{"statsSummary": "Good week", "behavioralPatterns": "Disciplined", "recommendations": "Keep it up", "learningResources": "None"}\n```';
 
       const result = parseAnalystResponse(raw, "test-id");
       expect(result.statsSummary).toBe("Good week");

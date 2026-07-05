@@ -27,9 +27,11 @@ interface TelegramUserData {
 function getTelegramUserData(): TelegramUserData | null {
   if (typeof window === "undefined") return null;
   try {
-    const tg = (window as unknown as {
-      Telegram?: { WebApp?: { initDataUnsafe?: { user?: TelegramUserData } } };
-    }).Telegram?.WebApp;
+    const tg = (
+      window as unknown as {
+        Telegram?: { WebApp?: { initDataUnsafe?: { user?: TelegramUserData } } };
+      }
+    ).Telegram?.WebApp;
     return tg?.initDataUnsafe?.user ?? null;
   } catch {
     return null;
@@ -73,7 +75,12 @@ const settings = [
     desc: "Manage wallet connections",
     bgColor: `${"var(--color-primary)"}1A`,
   },
-  { icon: "🎨", name: "Appearance", desc: "Theme & display settings", bgColor: `${"var(--color-neutral-wait)"}1A` },
+  {
+    icon: "🎨",
+    name: "Appearance",
+    desc: "Theme & display settings",
+    bgColor: `${"var(--color-neutral-wait)"}1A`,
+  },
   {
     icon: "🔒",
     name: "Privacy & Security",
@@ -125,8 +132,12 @@ const BadgeItem = memo(function BadgeItem({ item }: { item: (typeof badges)[0] }
       }}
     >
       <div style={{ fontSize: 28, marginBottom: 6 }}>{item.icon}</div>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--color-foreground)" }}>{item.name}</div>
-      <div style={{ fontSize: 9, color: "var(--color-muted-foreground)", marginTop: 2 }}>{item.desc}</div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--color-foreground)" }}>
+        {item.name}
+      </div>
+      <div style={{ fontSize: 9, color: "var(--color-muted-foreground)", marginTop: 2 }}>
+        {item.desc}
+      </div>
     </div>
   );
 });
@@ -162,7 +173,9 @@ const AccountItem = memo(function AccountItem({ item }: { item: AccountEntry }) 
             {item.icon}
           </div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-foreground)" }}>{item.name}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-foreground)" }}>
+              {item.name}
+            </div>
             <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>
               {item.linked ? item.handle : "Not connected"}
             </div>
@@ -204,7 +217,9 @@ const SettingItem = memo(function SettingItem({
             {item.icon}
           </div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-foreground)" }}>{item.name}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-foreground)" }}>
+              {item.name}
+            </div>
             <div style={{ fontSize: 10, color: "var(--color-muted-foreground)" }}>{item.desc}</div>
           </div>
         </div>
@@ -269,7 +284,9 @@ function ProfilePage() {
 
   // ── Name: Telegram client-side > server profile > fallback ──
   const displayName = tgDisplayName || profile?.display_name || profile?.username || "Trader";
-  const initial = (tgDisplayName || profile?.display_name || profile?.username || "T").charAt(0).toUpperCase();
+  const initial = (tgDisplayName || profile?.display_name || profile?.username || "T")
+    .charAt(0)
+    .toUpperCase();
   const joinedText = useMemo(() => formatJoinDate(profile?.created_at), [profile?.created_at]);
 
   const longestStreak = streak?.longest_streak ?? profile?.streak_days ?? 0;
@@ -346,16 +363,18 @@ function ProfilePage() {
   const portfolioPnlPct = portfolioQuery.data?.totalPnlPct ?? 0;
 
   const ALLOC_COLORS = [
-    "var(--color-bullish)", "var(--color-info)", "var(--color-bearish)",
-    "var(--color-neutral-wait)", "var(--color-primary)", "var(--color-bearish)",
-    "var(--color-info)", "var(--color-neutral-wait)",
+    "var(--color-bullish)",
+    "var(--color-info)",
+    "var(--color-bearish)",
+    "var(--color-neutral-wait)",
+    "var(--color-primary)",
+    "var(--color-bearish)",
+    "var(--color-info)",
+    "var(--color-neutral-wait)",
   ];
 
   return (
-    <PageLayout
-      title="Profile"
-      loading={isLoading}
-    >
+    <PageLayout title="Profile" loading={isLoading}>
       {/* Profile Card */}
       <div
         style={{
@@ -403,14 +422,24 @@ function ProfilePage() {
           </div>
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--color-foreground)", marginBottom: 2 }}>
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: "var(--color-foreground)",
+              marginBottom: 2,
+            }}
+          >
             {isLoading ? <span style={{ opacity: 0.4 }}>Loading…</span> : displayName}
           </div>
           <div style={{ fontSize: 11, color: "var(--color-muted-foreground)", marginBottom: 8 }}>
             {joinedText}
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
-            <Badge label={`⚡ ${pointsBalance.toLocaleString()} pts`} color={"var(--color-primary)"} />
+            <Badge
+              label={`⚡ ${pointsBalance.toLocaleString()} pts`}
+              color={"var(--color-primary)"}
+            />
             {currentStreak > 0 && (
               <Badge label={`🔥 ${currentStreak}-day streak`} color={"var(--color-neutral-wait)"} />
             )}
@@ -444,15 +473,39 @@ function ProfilePage() {
       {/* Scrollable Content */}
       <ScrollArea>
         {/* Portfolio Holdings */}
-        <SectionTitle title="Portfolio" action={holdings.length > 0 ? { label: "PnL Tracker", onClick: () => navigate({ to: "/pnl" }) } : undefined} />
+        <SectionTitle
+          title="Portfolio"
+          action={
+            holdings.length > 0
+              ? { label: "PnL Tracker", onClick: () => navigate({ to: "/pnl" }) }
+              : undefined
+          }
+        />
         {holdings.length > 0 ? (
           <>
             {/* Allocation bar */}
-            <div style={{ display: "flex", height: "4px", borderRadius: "2px", overflow: "hidden", background: "var(--color-border)" }}>
+            <div
+              style={{
+                display: "flex",
+                height: "4px",
+                borderRadius: "2px",
+                overflow: "hidden",
+                background: "var(--color-border)",
+              }}
+            >
               {holdings.map((h: any, i: number) => {
                 const pct = portfolioValue > 0 ? (h.value / portfolioValue) * 100 : 0;
                 if (pct < 1) return null;
-                return <div key={h.symbol} style={{ width: `${pct}%`, background: ALLOC_COLORS[i % ALLOC_COLORS.length], transition: "width 0.3s" }} />;
+                return (
+                  <div
+                    key={h.symbol}
+                    style={{
+                      width: `${pct}%`,
+                      background: ALLOC_COLORS[i % ALLOC_COLORS.length],
+                      transition: "width 0.3s",
+                    }}
+                  />
+                );
               })}
             </div>
             {holdings.slice(0, 5).map((h: any) => {
@@ -464,20 +517,62 @@ function ProfilePage() {
                   leftAccent={c}
                   topContent={
                     <>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flex: 1 }}>
-                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: isPos ? "rgba(14,203,129,0.10)" : "rgba(246,70,93,0.10)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px", fontWeight: 800, color: c, flexShrink: 0 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          minWidth: 0,
+                          flex: 1,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: "50%",
+                            background: isPos ? "rgba(14,203,129,0.10)" : "rgba(246,70,93,0.10)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "8px",
+                            fontWeight: 800,
+                            color: c,
+                            flexShrink: 0,
+                          }}
+                        >
                           {h.symbol.slice(0, 2)}
                         </div>
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-foreground)" }}>{h.symbol}</div>
+                          <div
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              color: "var(--color-foreground)",
+                            }}
+                          >
+                            {h.symbol}
+                          </div>
                           <Badge label={h.chain} color={"var(--color-muted-foreground)"} small />
                         </div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        <span style={{ fontSize: "11px", fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", color: c }}>
-                          {h.pnl >= 0 ? "+" : ""}{h.pnl.toFixed(2)}
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            color: c,
+                          }}
+                        >
+                          {h.pnl >= 0 ? "+" : ""}
+                          {h.pnl.toFixed(2)}
                         </span>
-                        <Badge label={`${isPos ? "+" : ""}${h.pnlPct.toFixed(1)}%`} color={c} small />
+                        <Badge
+                          label={`${isPos ? "+" : ""}${h.pnlPct.toFixed(1)}%`}
+                          color={c}
+                          small
+                        />
                       </div>
                     </>
                   }
@@ -492,17 +587,45 @@ function ProfilePage() {
             })}
             {holdings.length > 5 && (
               <div style={{ padding: "8px 16px", textAlign: "center" }}>
-                <span style={{ fontSize: "11px", color: "var(--color-primary)", cursor: "pointer" }} onClick={() => navigate({ to: "/pnl" })}>
+                <span
+                  style={{ fontSize: "11px", color: "var(--color-primary)", cursor: "pointer" }}
+                  onClick={() => navigate({ to: "/pnl" })}
+                >
                   +{holdings.length - 5} more holdings →
                 </span>
               </div>
             )}
           </>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "32px 20px", background: "var(--color-card)" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              padding: "32px 20px",
+              background: "var(--color-card)",
+            }}
+          >
             <span style={{ fontSize: "24px", opacity: 0.4 }}>📭</span>
-            <div style={{ fontSize: "12px", fontWeight: 600, color: "var(--color-muted-foreground)", marginTop: 8 }}>No trades yet</div>
-            <span style={{ fontSize: "11px", color: "var(--color-primary)", cursor: "pointer", marginTop: 4 }} onClick={() => navigate({ to: "/trade-desk" })}>
+            <div
+              style={{
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "var(--color-muted-foreground)",
+                marginTop: 8,
+              }}
+            >
+              No trades yet
+            </div>
+            <span
+              style={{
+                fontSize: "11px",
+                color: "var(--color-primary)",
+                cursor: "pointer",
+                marginTop: 4,
+              }}
+              onClick={() => navigate({ to: "/trade-desk" })}
+            >
               Start trading →
             </span>
           </div>

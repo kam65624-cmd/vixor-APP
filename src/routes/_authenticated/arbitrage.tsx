@@ -7,7 +7,11 @@ export const Route = createFileRoute("/_authenticated/arbitrage")({
 
 function ArbDashboard() {
   return (
-    <PageLayout title="Arbitrage Scanner" badge="COMING SOON" badgeColor={"var(--color-neutral-wait)"}>
+    <PageLayout
+      title="Arbitrage Scanner"
+      badge="COMING SOON"
+      badgeColor={"var(--color-neutral-wait)"}
+    >
       <EmptyState
         icon="⚡"
         title="Arbitrage Scanner"

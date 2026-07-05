@@ -33,7 +33,7 @@ import type { TradingNote, Mood } from "@/domains/notes/types";
 import { NoteEditorDialog } from "@/components/vixor/NoteEditorDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { PageLayout,  ScrollArea, Badge, ProgressBar } from "@/components/vixor/PageLayout";
+import { PageLayout, ScrollArea, Badge, ProgressBar } from "@/components/vixor/PageLayout";
 import { shareOnX, shareOnTelegram } from "@/shared/share";
 import type { ShareableSignal } from "@/shared/share";
 
@@ -57,7 +57,6 @@ const LABEL: React.CSSProperties = {
   letterSpacing: "0.05em",
   color: "var(--color-muted-foreground)",
 };
-
 
 const TABS = ["Trade Setup", "Market Context", "News Impact", "Management"] as const;
 interface Scenario {
@@ -174,18 +173,21 @@ export function AnalysisResult() {
   const [shareOpen, setShareOpen] = useState(false);
 
   // Share handler — formats analysis data and opens X/Telegram share
-  const shareSignal: ShareableSignal = useMemo(() => ({
-    pair: a?.pair ?? "",
-    direction: (a?.recommendation ?? "WAIT") as "BUY" | "SELL" | "WAIT",
-    confidence: a?.confidence ?? undefined,
-    entry: typeof a?.entry === "number" ? a.entry : null,
-    stopLoss: typeof a?.stop_loss === "number" ? a.stop_loss : null,
-    takeProfit: Array.isArray(a?.take_profit) ? a.take_profit : null,
-    pattern: a?.pattern ?? null,
-    reasons: Array.isArray(a?.reasons) ? a.reasons : null,
-    timeframe: a?.timeframe ?? undefined,
-    source: "VIXOR AI",
-  }), [a]);
+  const shareSignal: ShareableSignal = useMemo(
+    () => ({
+      pair: a?.pair ?? "",
+      direction: (a?.recommendation ?? "WAIT") as "BUY" | "SELL" | "WAIT",
+      confidence: a?.confidence ?? undefined,
+      entry: typeof a?.entry === "number" ? a.entry : null,
+      stopLoss: typeof a?.stop_loss === "number" ? a.stop_loss : null,
+      takeProfit: Array.isArray(a?.take_profit) ? a.take_profit : null,
+      pattern: a?.pattern ?? null,
+      reasons: Array.isArray(a?.reasons) ? a.reasons : null,
+      timeframe: a?.timeframe ?? undefined,
+      source: "VIXOR AI",
+    }),
+    [a],
+  );
 
   const handleShareX = useCallback(() => {
     shareOnX(shareSignal);
@@ -197,12 +199,20 @@ export function AnalysisResult() {
     setShareOpen(false);
   }, [shareSignal]);
 
-  const recColor = isBullish ? "var(--color-bullish)" : isBearish ? "var(--color-bearish)" : "var(--color-neutral-wait)";
+  const recColor = isBullish
+    ? "var(--color-bullish)"
+    : isBearish
+      ? "var(--color-bearish)"
+      : "var(--color-neutral-wait)";
 
   // PageLayout header props
   const pageTitle = a?.pair ?? "Analysis";
   const pageBadge = isComplete ? (a.recommendation ?? undefined) : undefined;
-  const pageBadgeColor = isBullish ? "var(--color-bullish)" : isBearish ? "var(--color-bearish)" : "var(--color-neutral-wait)";
+  const pageBadgeColor = isBullish
+    ? "var(--color-bullish)"
+    : isBearish
+      ? "var(--color-bearish)"
+      : "var(--color-neutral-wait)";
   const pageDescription = isComplete ? (a.pattern ?? "Signal Analysis") : undefined;
 
   return (
@@ -227,7 +237,13 @@ export function AnalysisResult() {
       {/* ── Failed State ── */}
       {isFailed && (
         <div style={{ padding: "16px" }}>
-          <BackHeader shareOpen={shareOpen} setShareOpen={setShareOpen} isComplete={isComplete} handleShareX={handleShareX} handleShareTelegram={handleShareTelegram} />
+          <BackHeader
+            shareOpen={shareOpen}
+            setShareOpen={setShareOpen}
+            isComplete={isComplete}
+            handleShareX={handleShareX}
+            handleShareTelegram={handleShareTelegram}
+          />
           <div
             style={{
               ...CARD,
@@ -251,7 +267,9 @@ export function AnalysisResult() {
               <AlertTriangle size={32} style={{ color: "var(--color-bearish)" }} />
             </div>
             <div style={{ fontSize: "18px", fontWeight: 700 }}>Analysis Failed</div>
-            <div style={{ fontSize: "14px", color: "var(--color-muted-foreground)", marginTop: "8px" }}>
+            <div
+              style={{ fontSize: "14px", color: "var(--color-muted-foreground)", marginTop: "8px" }}
+            >
               {a.error_message ?? "The AI encountered an issue reading this chart."}
             </div>
             <Link
@@ -282,7 +300,13 @@ export function AnalysisResult() {
         <ScrollArea>
           <div style={{ padding: "0 0 24px" }}>
             {/* ── Back Header ── */}
-            <BackHeader shareOpen={shareOpen} setShareOpen={setShareOpen} isComplete={isComplete} handleShareX={handleShareX} handleShareTelegram={handleShareTelegram} />
+            <BackHeader
+              shareOpen={shareOpen}
+              setShareOpen={setShareOpen}
+              isComplete={isComplete}
+              handleShareX={handleShareX}
+              handleShareTelegram={handleShareTelegram}
+            />
 
             {/* ═══════════════════════════════════════
                 HERO SIGNAL CARD — THE MAIN EVENT
@@ -321,7 +345,11 @@ export function AnalysisResult() {
                   left: 0,
                   right: 0,
                   height: "2px",
-                  background: isBullish ? "var(--color-bullish)" : isBearish ? "var(--color-bearish)" : "var(--color-neutral-wait)",
+                  background: isBullish
+                    ? "var(--color-bullish)"
+                    : isBearish
+                      ? "var(--color-bearish)"
+                      : "var(--color-neutral-wait)",
                 }}
               />
 
@@ -359,7 +387,13 @@ export function AnalysisResult() {
                     >
                       {a.timeframe ?? "AUTO"}
                     </span>
-                    <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-muted-foreground)" }}>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        color: "var(--color-muted-foreground)",
+                      }}
+                    >
                       {relTime(a.created_at)}
                     </span>
                   </div>
@@ -441,7 +475,14 @@ export function AnalysisResult() {
                     }}
                   >
                     <div style={{ ...LABEL, marginBottom: "6px" }}>Entry</div>
-                    <div style={{ ...MONO, fontWeight: 700, fontSize: "16px", color: "var(--color-foreground)" }}>
+                    <div
+                      style={{
+                        ...MONO,
+                        fontWeight: 700,
+                        fontSize: "16px",
+                        color: "var(--color-foreground)",
+                      }}
+                    >
                       {signalBadge.entry}
                     </div>
                   </div>
@@ -455,8 +496,17 @@ export function AnalysisResult() {
                       textAlign: "center",
                     }}
                   >
-                    <div style={{ ...LABEL, color: "var(--color-bearish)", marginBottom: "6px" }}>Stop Loss</div>
-                    <div style={{ ...MONO, fontWeight: 700, fontSize: "16px", color: "var(--color-bearish)" }}>
+                    <div style={{ ...LABEL, color: "var(--color-bearish)", marginBottom: "6px" }}>
+                      Stop Loss
+                    </div>
+                    <div
+                      style={{
+                        ...MONO,
+                        fontWeight: 700,
+                        fontSize: "16px",
+                        color: "var(--color-bearish)",
+                      }}
+                    >
                       {signalBadge.stop_loss}
                     </div>
                   </div>
@@ -470,8 +520,17 @@ export function AnalysisResult() {
                       textAlign: "center",
                     }}
                   >
-                    <div style={{ ...LABEL, color: "var(--color-bullish)", marginBottom: "6px" }}>Target</div>
-                    <div style={{ ...MONO, fontWeight: 700, fontSize: "16px", color: "var(--color-bullish)" }}>
+                    <div style={{ ...LABEL, color: "var(--color-bullish)", marginBottom: "6px" }}>
+                      Target
+                    </div>
+                    <div
+                      style={{
+                        ...MONO,
+                        fontWeight: 700,
+                        fontSize: "16px",
+                        color: "var(--color-bullish)",
+                      }}
+                    >
                       {signalBadge.take_profit}
                     </div>
                   </div>
@@ -889,7 +948,13 @@ export function AnalysisResult() {
                               border: "1px solid rgba(246,70,93,0.20)",
                             }}
                           >
-                            <div style={{ ...LABEL, color: "var(--color-bearish)", marginBottom: "4px" }}>
+                            <div
+                              style={{
+                                ...LABEL,
+                                color: "var(--color-bearish)",
+                                marginBottom: "4px",
+                              }}
+                            >
                               SL
                             </div>
                             <div
@@ -912,7 +977,13 @@ export function AnalysisResult() {
                               border: "1px solid rgba(14,203,129,0.20)",
                             }}
                           >
-                            <div style={{ ...LABEL, color: "var(--color-bullish)", marginBottom: "4px" }}>
+                            <div
+                              style={{
+                                ...LABEL,
+                                color: "var(--color-bullish)",
+                                marginBottom: "4px",
+                              }}
+                            >
                               TP
                             </div>
                             <div
@@ -955,7 +1026,8 @@ export function AnalysisResult() {
                         marginBottom: "16px",
                       }}
                     >
-                      <BarChart2 size={16} style={{ color: "var(--color-bullish)" }} /> Key SMC Levels
+                      <BarChart2 size={16} style={{ color: "var(--color-bullish)" }} /> Key SMC
+                      Levels
                     </h3>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                       {/* Resistance / BSL */}
@@ -1039,7 +1111,8 @@ export function AnalysisResult() {
                         marginBottom: "16px",
                       }}
                     >
-                      <Activity size={16} style={{ color: "var(--color-bullish)" }} /> Liquidity Pools
+                      <Activity size={16} style={{ color: "var(--color-bullish)" }} /> Liquidity
+                      Pools
                     </h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       {((a.liquidity_zones as any).buySide || []).map((l: number, i: number) => (
@@ -1117,7 +1190,8 @@ export function AnalysisResult() {
                         marginBottom: "16px",
                       }}
                     >
-                      <TrendingUp size={16} style={{ color: "var(--color-bullish)" }} /> Market Structure (SMC)
+                      <TrendingUp size={16} style={{ color: "var(--color-bullish)" }} /> Market
+                      Structure (SMC)
                     </h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       {[
@@ -1159,7 +1233,9 @@ export function AnalysisResult() {
                               fontSize: "12px",
                               fontWeight: 700,
                               textTransform: "uppercase",
-                              color: danger ? "var(--color-bearish)" : "var(--color-muted-foreground)",
+                              color: danger
+                                ? "var(--color-bearish)"
+                                : "var(--color-muted-foreground)",
                             }}
                           >
                             {label}
@@ -1208,7 +1284,8 @@ export function AnalysisResult() {
                       marginBottom: "16px",
                     }}
                   >
-                    <Layers size={16} style={{ color: "var(--color-bullish)" }} /> Step-by-Step Management
+                    <Layers size={16} style={{ color: "var(--color-bullish)" }} /> Step-by-Step
+                    Management
                   </h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {management.map((m, i) => (
@@ -1236,7 +1313,8 @@ export function AnalysisResult() {
                             fontSize: "12px",
                             fontWeight: 700,
                             background: i === 0 ? GREEN_GRAD : "var(--color-muted)",
-                            color: i === 0 ? "var(--color-foreground)" : "var(--color-muted-foreground)",
+                            color:
+                              i === 0 ? "var(--color-foreground)" : "var(--color-muted-foreground)",
                           }}
                         >
                           {i + 1}
@@ -1278,7 +1356,8 @@ export function AnalysisResult() {
                         marginBottom: "16px",
                       }}
                     >
-                      <ShieldCheck size={16} style={{ color: "var(--color-bearish)" }} /> Risk Factors
+                      <ShieldCheck size={16} style={{ color: "var(--color-bearish)" }} /> Risk
+                      Factors
                     </h3>
                     <ul
                       style={{
@@ -1292,10 +1371,18 @@ export function AnalysisResult() {
                     >
                       {a.risk_reasons.map((r: string, i: number) => (
                         <li key={i} style={{ display: "flex", gap: "8px", fontSize: "14px" }}>
-                          <span style={{ color: "var(--color-bearish)", marginTop: "2px", flexShrink: 0 }}>
+                          <span
+                            style={{
+                              color: "var(--color-bearish)",
+                              marginTop: "2px",
+                              flexShrink: 0,
+                            }}
+                          >
                             •
                           </span>
-                          <span style={{ fontWeight: 500, color: "var(--color-muted-foreground)" }}>{r}</span>
+                          <span style={{ fontWeight: 500, color: "var(--color-muted-foreground)" }}>
+                            {r}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -1325,13 +1412,21 @@ export function AnalysisResult() {
                       lineHeight: 1.6,
                     }}
                   >
-                    <strong style={{ color: "var(--color-foreground)", display: "block", marginBottom: "4px" }}>
+                    <strong
+                      style={{
+                        color: "var(--color-foreground)",
+                        display: "block",
+                        marginBottom: "4px",
+                      }}
+                    >
                       Risk Disclaimer
                     </strong>
                     This analysis is generated by Vixor AI based on technical patterns and
                     fundamental data. It is{" "}
-                    <strong style={{ color: "var(--color-foreground)" }}>not financial advice</strong>. Always
-                    apply your own risk management and judgment before executing any trade.
+                    <strong style={{ color: "var(--color-foreground)" }}>
+                      not financial advice
+                    </strong>
+                    . Always apply your own risk management and judgment before executing any trade.
                   </div>
                 </div>
               </div>
@@ -1370,7 +1465,10 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
             alignItems: "center",
           }}
         >
-          <Newspaper size={40} style={{ color: "var(--color-muted-foreground)", margin: "0 auto" }} />
+          <Newspaper
+            size={40}
+            style={{ color: "var(--color-muted-foreground)", margin: "0 auto" }}
+          />
           <p style={{ fontSize: "14px", color: "var(--color-muted-foreground)" }}>
             No fundamental news analysis for this session.
           </p>
@@ -1383,7 +1481,11 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
   const isBullish = overall_sentiment === "BULLISH";
   const isBearish = overall_sentiment === "BEARISH";
 
-  const sentColor = isBullish ? "var(--color-bullish)" : isBearish ? "var(--color-bearish)" : "var(--color-neutral-wait)";
+  const sentColor = isBullish
+    ? "var(--color-bullish)"
+    : isBearish
+      ? "var(--color-bearish)"
+      : "var(--color-neutral-wait)";
 
   return (
     <div
@@ -1457,7 +1559,14 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
           <span style={{ ...LABEL, letterSpacing: "0.1em", display: "block", marginBottom: "4px" }}>
             AI Confluence Verdict
           </span>
-          <p style={{ fontSize: "14px", fontWeight: 500, lineHeight: 1.6, color: "var(--color-foreground)" }}>
+          <p
+            style={{
+              fontSize: "14px",
+              fontWeight: 500,
+              lineHeight: 1.6,
+              color: "var(--color-foreground)",
+            }}
+          >
             {highlightSMC(verdict)}
           </p>
         </div>
@@ -1919,7 +2028,13 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
 }
 
 // ═══ HELPERS ═══
-function BackHeader({ shareOpen, setShareOpen, isComplete, handleShareX, handleShareTelegram }: {
+function BackHeader({
+  shareOpen,
+  setShareOpen,
+  isComplete,
+  handleShareX,
+  handleShareTelegram,
+}: {
   shareOpen: boolean;
   setShareOpen: (v: boolean) => void;
   isComplete: boolean;

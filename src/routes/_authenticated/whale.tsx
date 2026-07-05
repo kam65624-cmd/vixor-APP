@@ -10,7 +10,7 @@ import {
   EmptyState,
   Badge,
   DataRowTwoLine,
-  LabelValue, 
+  LabelValue,
 } from "@/components/vixor/PageLayout";
 import {
   formatCompact,
@@ -88,17 +88,10 @@ function WhalePage() {
   );
 }
 
-const WhaleCard = memo(function WhaleCard({
-  trade,
-  index,
-}: {
-  trade: any;
-  index: number;
-}) {
+const WhaleCard = memo(function WhaleCard({ trade, index }: { trade: any; index: number }) {
   const isLong = trade.direction === "long";
   const dirColor = isLong ? "var(--color-bullish)" : "var(--color-bearish)";
-  const value =
-    trade.tradeValue || (trade.quantity || 1) * (trade.entry_price || 0);
+  const value = trade.tradeValue || (trade.quantity || 1) * (trade.entry_price || 0);
 
   return (
     <DataRowTwoLine
@@ -140,16 +133,8 @@ const WhaleCard = memo(function WhaleCard({
       }
       bottomContent={
         <>
-          <LabelValue
-            label="Size"
-            value={formatQuantity(trade.quantity || 0)}
-            mono
-          />
-          <LabelValue
-            label="Price"
-            value={formatPrice(trade.entry_price || 0)}
-            mono
-          />
+          <LabelValue label="Size" value={formatQuantity(trade.quantity || 0)} mono />
+          <LabelValue label="Price" value={formatPrice(trade.entry_price || 0)} mono />
           <span
             style={{
               fontSize: "12px",

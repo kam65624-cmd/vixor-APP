@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getReferralData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  PageLayout, 
+  PageLayout,
   StatsRow,
   SectionTitle,
   EmptyState,

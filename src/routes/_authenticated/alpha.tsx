@@ -11,7 +11,7 @@ import {
   Badge,
   DataRow,
   LabelValue,
-  ProgressBar, 
+  ProgressBar,
 } from "@/components/vixor/PageLayout";
 import {
   formatCompact,
@@ -94,9 +94,7 @@ function AlphaPage() {
       />
       <ScrollArea>
         {filteredFeed.length > 0 ? (
-          filteredFeed.map((item: any) => (
-            <AlphaCard key={item.id} item={item} />
-          ))
+          filteredFeed.map((item: any) => <AlphaCard key={item.id} item={item} />)
         ) : (
           <EmptyState
             icon="🧠"
@@ -158,10 +156,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
             flex: 1,
           }}
         >
-          <Badge
-            label={isSignal ? "SIGNAL" : "ANALYSIS"}
-            color={badgeColor}
-          />
+          <Badge label={isSignal ? "SIGNAL" : "ANALYSIS"} color={badgeColor} />
           <span
             style={{
               fontSize: "12px",
@@ -174,9 +169,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
           {item.timeframe && (
             <Badge label={item.timeframe} color={"var(--color-muted-foreground)"} small />
           )}
-          {item.pattern && (
-            <Badge label={item.pattern} color={"var(--color-neutral-wait)"} small />
-          )}
+          {item.pattern && <Badge label={item.pattern} color={"var(--color-neutral-wait)"} small />}
         </div>
         <div
           style={{
@@ -201,10 +194,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
       </div>
 
       {/* Confidence progress bar */}
-      <ProgressBar
-        value={confidencePct}
-        color={confidenceColor}
-      />
+      <ProgressBar value={confidencePct} color={confidenceColor} />
 
       {/* Bottom row: entry, SL, TP */}
       <div
@@ -215,11 +205,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
         }}
       >
         {item.entry !== undefined && item.entry !== null && (
-          <LabelValue
-            label="Entry"
-            value={formatPrice(item.entry)}
-            mono
-          />
+          <LabelValue label="Entry" value={formatPrice(item.entry)} mono />
         )}
         {item.stopLoss !== undefined && item.stopLoss !== null && (
           <LabelValue
@@ -264,13 +250,8 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
           {item.reasons.map(
             (reason: string, i: number) =>
               reason && (
-                <Badge
-                  key={i}
-                  label={reason}
-                  color={"var(--color-muted-foreground)"}
-                  small
-                />
-              )
+                <Badge key={i} label={reason} color={"var(--color-muted-foreground)"} small />
+              ),
           )}
         </div>
       )}

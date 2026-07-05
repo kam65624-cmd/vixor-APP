@@ -219,7 +219,15 @@ function ForexSectionHeader({ title, count }: { title: string; count: number }) 
         gap: "6px",
       }}
     >
-      <span style={{ width: "2px", height: "10px", borderRadius: "1px", background: "var(--color-primary)", display: "inline-block" }} />
+      <span
+        style={{
+          width: "2px",
+          height: "10px",
+          borderRadius: "1px",
+          background: "var(--color-primary)",
+          display: "inline-block",
+        }}
+      />
       {title}
       <span style={{ fontSize: "8px", color: "var(--color-muted-foreground)", opacity: 0.7 }}>
         ({count})
@@ -283,7 +291,7 @@ function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void 
             height: "36px",
             borderRadius: isGold ? "10px" : "50%",
             background: isGold ? GOLD_BG : blendWithCard(accentColor, 0.12),
-            border: `1px solid ${isGold ? GOLD_BORDER : withAlpha(accentColor, 0.20)}`,
+            border: `1px solid ${isGold ? GOLD_BORDER : withAlpha(accentColor, 0.2)}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -340,10 +348,7 @@ function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void 
       {/* Center: Sparkline */}
       {hasSparkline && (
         <div style={{ flexShrink: 0, margin: "0 12px", opacity: 0.85 }}>
-          <SparklineSVG
-            data={item.sparkline!}
-            color={isGold ? GOLD_COLOR : undefined}
-          />
+          <SparklineSVG data={item.sparkline!} color={isGold ? GOLD_COLOR : undefined} />
         </div>
       )}
 
@@ -492,10 +497,8 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
             width: "36px",
             height: "36px",
             borderRadius: "50%",
-            background: hasLogo
-              ? "var(--color-card)"
-              : blendWithCard(color, 0.12),
-            border: `1px solid ${withAlpha(color, 0.20)}`,
+            background: hasLogo ? "var(--color-card)" : blendWithCard(color, 0.12),
+            border: `1px solid ${withAlpha(color, 0.2)}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -1291,15 +1294,12 @@ function DiscoverPage() {
   const [brokerToast, setBrokerToast] = useState<string | null>(null);
   const brokerToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleForexClick = useCallback(
-    (pair: ForexPair) => {
-      // Show a brief inline toast indicating broker connection is needed
-      setBrokerToast(pair.pair);
-      if (brokerToastTimer.current) clearTimeout(brokerToastTimer.current);
-      brokerToastTimer.current = setTimeout(() => setBrokerToast(null), 2500);
-    },
-    [],
-  );
+  const handleForexClick = useCallback((pair: ForexPair) => {
+    // Show a brief inline toast indicating broker connection is needed
+    setBrokerToast(pair.pair);
+    if (brokerToastTimer.current) clearTimeout(brokerToastTimer.current);
+    brokerToastTimer.current = setTimeout(() => setBrokerToast(null), 2500);
+  }, []);
 
   // Sorted forex pairs
   const sortedForexPairs = useMemo(() => {
@@ -1392,9 +1392,7 @@ function DiscoverPage() {
                   fontWeight: 700,
                   padding: "0px 4px",
                   borderRadius: "8px",
-                  background: isActive
-                    ? "rgba(0,0,0,0.2)"
-                    : "rgba(163,163,163,0.12)",
+                  background: isActive ? "rgba(0,0,0,0.2)" : "rgba(163,163,163,0.12)",
                   color: isActive ? "rgba(0,0,0,0.7)" : "var(--color-muted-foreground)",
                   fontFamily: "'JetBrains Mono', monospace",
                   lineHeight: "14px",
@@ -1577,7 +1575,9 @@ function DiscoverPage() {
           }}
         >
           {(isForexMode
-            ? SORT_OPTIONS.filter((o) => o.key === "trending" || o.key === "volume" || o.key === "change")
+            ? SORT_OPTIONS.filter(
+                (o) => o.key === "trending" || o.key === "volume" || o.key === "change",
+              )
             : SORT_OPTIONS
           ).map((opt) => (
             <button
@@ -1780,7 +1780,8 @@ function DiscoverPage() {
                       onClick={() => handleTokenClick(token.symbol)}
                     />
                   ))
-                : !error && tokens.length === 0 && (
+                : !error &&
+                  tokens.length === 0 && (
                     <EmptyState
                       icon="🔍"
                       title="No Tokens Found"

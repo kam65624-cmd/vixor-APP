@@ -12,13 +12,9 @@ import {
   DataRow,
   LabelValue,
   SectionTitle,
-  ProgressBar, 
+  ProgressBar,
 } from "@/components/vixor/PageLayout";
-import {
-  formatNumber,
-  formatPercentRaw,
-  formatRelative,
-} from "@/shared/utils/formatters";
+import { formatNumber, formatPercentRaw, formatRelative } from "@/shared/utils/formatters";
 
 export const Route = createFileRoute("/_authenticated/predictions")({
   component: PredictionsPage,
@@ -90,13 +86,8 @@ const PredictionCard = memo(function PredictionCard({
             label={prediction.predictedDirection}
             color={isBuy ? "var(--color-bullish)" : "var(--color-bearish)"}
           />
-          <Badge
-            label={formatPercentRaw(prediction.confidence)}
-            color={"var(--color-primary)"}
-          />
-          {prediction.pattern && (
-            <Badge label={prediction.pattern} color={"var(--color-info)"} />
-          )}
+          <Badge label={formatPercentRaw(prediction.confidence)} color={"var(--color-primary)"} />
+          {prediction.pattern && <Badge label={prediction.pattern} color={"var(--color-info)"} />}
           {prediction.riskLevel && (
             <Badge
               label={prediction.riskLevel.toUpperCase()}
@@ -105,7 +96,9 @@ const PredictionCard = memo(function PredictionCard({
           )}
           <Badge
             label={prediction.source === "analysis" ? "AI" : "SIGNAL"}
-            color={prediction.source === "analysis" ? "var(--color-info)" : "var(--color-neutral-wait)"}
+            color={
+              prediction.source === "analysis" ? "var(--color-info)" : "var(--color-neutral-wait)"
+            }
           />
         </div>
 
@@ -184,25 +177,20 @@ function PredictionsPage() {
   ];
 
   return (
-    <PageLayout
-      title="Predictions"
-      badge="AI"
-      badgeColor={"var(--color-info)"}
-      loading={isLoading}
-    >
+    <PageLayout title="Predictions" badge="AI" badgeColor={"var(--color-info)"} loading={isLoading}>
       <StatsRow stats={stats} />
 
-      <ProgressBar
-        value={accuracy}
-        label="Accuracy"
-        labelRight={formatPercentRaw(accuracy)}
-      />
+      <ProgressBar value={accuracy} label="Accuracy" labelRight={formatPercentRaw(accuracy)} />
 
       <SectionTitle title="All Predictions" count={predictions.length} />
 
       <ScrollArea style={{ flex: 1, overflowY: "auto" }}>
         {predictions.length === 0 ? (
-          <EmptyState icon="🔮" title="No Predictions" message="AI predictions will appear as market patterns are detected." />
+          <EmptyState
+            icon="🔮"
+            title="No Predictions"
+            message="AI predictions will appear as market patterns are detected."
+          />
         ) : (
           predictions.map((p: any) => <PredictionCard key={p.id} prediction={p} />)
         )}

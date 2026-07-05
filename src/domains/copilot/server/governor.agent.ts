@@ -51,22 +51,28 @@ export function buildRiskProfile(memoryContext: string): RiskProfile {
   if (lower.includes("scalp")) defaultProfile.style = "scalper";
   else if (lower.includes("swing")) defaultProfile.style = "swing";
   else if (lower.includes("day") || lower.includes("intraday")) defaultProfile.style = "day trader";
-  else if (lower.includes("position") || lower.includes("long-term")) defaultProfile.style = "position trader";
+  else if (lower.includes("position") || lower.includes("long-term"))
+    defaultProfile.style = "position trader";
 
   // Detect risk tolerance
-  if (lower.includes("conservative") || lower.includes("low risk")) defaultProfile.tolerance = "low";
-  else if (lower.includes("aggressive") || lower.includes("high risk")) defaultProfile.tolerance = "high";
+  if (lower.includes("conservative") || lower.includes("low risk"))
+    defaultProfile.tolerance = "low";
+  else if (lower.includes("aggressive") || lower.includes("high risk"))
+    defaultProfile.tolerance = "high";
   else defaultProfile.tolerance = "medium";
 
   // Detect weakness
-  if (lower.includes("revenge") || lower.includes("chase")) defaultProfile.weakness = "Emotional trading (revenge/chase)";
+  if (lower.includes("revenge") || lower.includes("chase"))
+    defaultProfile.weakness = "Emotional trading (revenge/chase)";
   else if (lower.includes("overtrade")) defaultProfile.weakness = "Overtrading";
   else if (lower.includes("stop")) defaultProfile.weakness = "Poor stop loss discipline";
   else defaultProfile.weakness = "Needs more data to identify";
 
   // Detect strength
-  if (lower.includes("discipline") || lower.includes("patient")) defaultProfile.strength = "Disciplined approach";
-  else if (lower.includes("analysis") || lower.includes("research")) defaultProfile.strength = "Strong analytical approach";
+  if (lower.includes("discipline") || lower.includes("patient"))
+    defaultProfile.strength = "Disciplined approach";
+  else if (lower.includes("analysis") || lower.includes("research"))
+    defaultProfile.strength = "Strong analytical approach";
   else defaultProfile.strength = "Consistent activity";
 
   return defaultProfile;
@@ -121,15 +127,11 @@ You MUST respond with ONLY valid JSON (no markdown, no code fences):
 /**
  * Builds the user message for the Governor LLM call.
  */
-export function buildGovernorUserMessage(
-  input: GovernorInput,
-  riskProfile: RiskProfile,
-): string {
+export function buildGovernorUserMessage(input: GovernorInput, riskProfile: RiskProfile): string {
   const { action, token, amount, currentPrice, portfolioValue } = input;
   const positionValue = amount * currentPrice;
-  const positionPct = portfolioValue > 0
-    ? ((positionValue / portfolioValue) * 100).toFixed(2)
-    : "unknown";
+  const positionPct =
+    portfolioValue > 0 ? ((positionValue / portfolioValue) * 100).toFixed(2) : "unknown";
 
   return `## TRADE ASSESSMENT REQUEST
 - **Action**: ${action.toUpperCase()}
@@ -190,9 +192,8 @@ export function parseGovernorResponse(
       .trim();
     const parsed = JSON.parse(cleaned) as GovernorLLMOutput;
 
-    const riskScore = typeof parsed.riskScore === "number"
-      ? Math.max(0, Math.min(100, parsed.riskScore))
-      : 50;
+    const riskScore =
+      typeof parsed.riskScore === "number" ? Math.max(0, Math.min(100, parsed.riskScore)) : 50;
 
     const { decision, severity } = mapScoreToDecision(riskScore);
 
@@ -200,12 +201,14 @@ export function parseGovernorResponse(
       decisionId,
       decision,
       riskScore,
-      reason: typeof parsed.reason === "string"
-        ? parsed.reason
-        : `Risk score: ${riskScore}/100 for ${token} trade.`,
-      suggestion: typeof parsed.suggestion === "string"
-        ? parsed.suggestion
-        : "Review position sizing before proceeding.",
+      reason:
+        typeof parsed.reason === "string"
+          ? parsed.reason
+          : `Risk score: ${riskScore}/100 for ${token} trade.`,
+      suggestion:
+        typeof parsed.suggestion === "string"
+          ? parsed.suggestion
+          : "Review position sizing before proceeding.",
       riskProfile,
       severity,
       confidence: 0.75,
@@ -274,7 +277,7 @@ export async function assessRisk(
       decisionId,
       decision: "block",
       riskScore: 95,
-      reason: `Position value $${positionValue.toLocaleString()} is ${(positionValue / input.portfolioValue * 100).toFixed(1)}% of portfolio — exceeds 10% maximum.`,
+      reason: `Position value $${positionValue.toLocaleString()} is ${((positionValue / input.portfolioValue) * 100).toFixed(1)}% of portfolio — exceeds 10% maximum.`,
       suggestion: `Reduce position to $${(input.portfolioValue * 0.05).toLocaleString()} (5% of portfolio) or less.`,
       riskProfile,
       severity: "critical",
@@ -301,7 +304,8 @@ export async function assessRisk(
   const stored = await storeDecision({
     userId: input.userId,
     agentId: "governor",
-    decisionType: finalDecision === "block" ? "block" : finalDecision === "warn" ? "warning" : "suggestion",
+    decisionType:
+      finalDecision === "block" ? "block" : finalDecision === "warn" ? "warning" : "suggestion",
     title: `${finalDecision.toUpperCase()}: ${input.action.toUpperCase()} ${input.token}`,
     description: parsed.reason,
     data: {

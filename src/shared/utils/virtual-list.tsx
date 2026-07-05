@@ -27,9 +27,7 @@ export function VirtualList({
     getScrollElement: () => parentRef.current,
     estimateSize: () => estimateSize,
     overscan,
-    getItemKey: getItemKey
-      ? (index) => getItemKey(index)
-      : undefined,
+    getItemKey: getItemKey ? (index) => getItemKey(index) : undefined,
   });
 
   return (
@@ -87,6 +85,6 @@ export function createUIStore<T extends object>(initialState: T) {
         set((state) => {
           Object.assign(state, partial);
         }),
-    }))
+    })),
   );
 }

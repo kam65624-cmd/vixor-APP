@@ -41,7 +41,9 @@ function getSavedLang(): Language {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === "ar" || saved === "en") return saved;
-  } catch {}
+  } catch {
+    /* noop */
+  }
   return "en";
 }
 
@@ -81,7 +83,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLangState(newLang);
     try {
       localStorage.setItem(STORAGE_KEY, newLang);
-    } catch {}
+    } catch {
+      /* noop */
+    }
     applyDirection(newLang);
     // P1: Ensure translations are loaded for the new language
     await ensureTranslations(newLang);

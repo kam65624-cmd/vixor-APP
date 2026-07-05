@@ -76,10 +76,7 @@ Generate the weekly behavioral report as JSON.`;
  * Parses the LLM response into a typed AnalystReport.
  * Falls back to safe defaults if the JSON is malformed.
  */
-export function parseAnalystResponse(
-  raw: string,
-  decisionId: string,
-): AnalystReport {
+export function parseAnalystResponse(raw: string, decisionId: string): AnalystReport {
   try {
     const cleaned = raw
       .replace(/^```json?\s*/i, "")
@@ -89,18 +86,22 @@ export function parseAnalystResponse(
 
     return {
       decisionId,
-      statsSummary: typeof parsed.statsSummary === "string"
-        ? parsed.statsSummary
-        : "Stats summary unavailable.",
-      behavioralPatterns: typeof parsed.behavioralPatterns === "string"
-        ? parsed.behavioralPatterns
-        : "No behavioral patterns identified.",
-      recommendations: typeof parsed.recommendations === "string"
-        ? parsed.recommendations
-        : "No recommendations available.",
-      learningResources: typeof parsed.learningResources === "string"
-        ? parsed.learningResources
-        : "No learning resources suggested.",
+      statsSummary:
+        typeof parsed.statsSummary === "string"
+          ? parsed.statsSummary
+          : "Stats summary unavailable.",
+      behavioralPatterns:
+        typeof parsed.behavioralPatterns === "string"
+          ? parsed.behavioralPatterns
+          : "No behavioral patterns identified.",
+      recommendations:
+        typeof parsed.recommendations === "string"
+          ? parsed.recommendations
+          : "No recommendations available.",
+      learningResources:
+        typeof parsed.learningResources === "string"
+          ? parsed.learningResources
+          : "No learning resources suggested.",
       confidence: 0.8,
     };
   } catch {

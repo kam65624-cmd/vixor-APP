@@ -7,7 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import {
-  PageLayout, 
+  PageLayout,
   StatsRow,
   ScrollArea,
   Badge,
@@ -332,7 +332,9 @@ function JournalPage() {
                   borderRadius: 8,
                   border: "none",
                   cursor: createMutation.isPending ? "wait" : "pointer",
-                  background: createMutation.isPending ? "var(--color-card-hover)" : "var(--color-bullish)",
+                  background: createMutation.isPending
+                    ? "var(--color-card-hover)"
+                    : "var(--color-bullish)",
                   color: "var(--color-foreground)",
                   fontSize: 12,
                   fontWeight: 700,
@@ -518,7 +520,9 @@ const JournalRow = memo(function JournalRow({
         </div>
         <div style={COL.notes} title={entry.content}>
           <span style={{ color: "var(--color-foreground)", fontWeight: 600 }}>{entry.title}</span>
-          {entry.is_pinned && <span style={{ marginLeft: 6, color: "var(--color-neutral-wait)" }}>📌</span>}
+          {entry.is_pinned && (
+            <span style={{ marginLeft: 6, color: "var(--color-neutral-wait)" }}>📌</span>
+          )}
           {entry.tags && entry.tags.length > 0 && (
             <span
               style={{

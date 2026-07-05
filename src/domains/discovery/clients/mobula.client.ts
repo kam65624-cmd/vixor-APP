@@ -162,13 +162,10 @@ export async function fetchMarketData(
   blockchain: string = "solana",
   limit: number = 50,
 ): Promise<ApiResponse<MobulaMarketData[]>> {
-  const resp = await mobulaRequest<{ data: MobulaMarketData[] }>(
-    "/market/data",
-    {
-      blockchain,
-      limit: String(limit),
-    },
-  );
+  const resp = await mobulaRequest<{ data: MobulaMarketData[] }>("/market/data", {
+    blockchain,
+    limit: String(limit),
+  });
 
   if (!resp.success || !resp.data) return resp as unknown as ApiResponse<MobulaMarketData[]>;
 
@@ -231,8 +228,7 @@ export async function fetchHistoricalData(
     CACHE_TTL_MS.social, // historical data can be cached longer
   );
 
-  if (!resp.success || !resp.data)
-    return resp as unknown as ApiResponse<MobulaHistoricalPoint[]>;
+  if (!resp.success || !resp.data) return resp as unknown as ApiResponse<MobulaHistoricalPoint[]>;
 
   return {
     ...resp,
@@ -251,13 +247,10 @@ export async function fetchTrendingTokens(
   blockchain: string = "solana",
   limit: number = 20,
 ): Promise<ApiResponse<MobulaMarketData[]>> {
-  const resp = await mobulaRequest<{ data: MobulaMarketData[] }>(
-    "/market/trending",
-    {
-      blockchain,
-      limit: String(limit),
-    },
-  );
+  const resp = await mobulaRequest<{ data: MobulaMarketData[] }>("/market/trending", {
+    blockchain,
+    limit: String(limit),
+  });
 
   if (!resp.success || !resp.data) return resp as unknown as ApiResponse<MobulaMarketData[]>;
 

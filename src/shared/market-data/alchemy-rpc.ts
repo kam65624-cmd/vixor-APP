@@ -97,7 +97,11 @@ function isConfigured(): boolean {
 
 // ── JSON-RPC Helper ────────────────────────────────────────────────────────
 
-async function rpcCall<T>(chain: EvmChain, method: string, params: unknown[] = []): Promise<T | null> {
+async function rpcCall<T>(
+  chain: EvmChain,
+  method: string,
+  params: unknown[] = [],
+): Promise<T | null> {
   if (!isConfigured()) return null;
   const config = getChainConfig(chain);
 
@@ -128,7 +132,10 @@ async function rpcCall<T>(chain: EvmChain, method: string, params: unknown[] = [
 // ── Public API ──────────────────────────────────────────────────────────────
 
 /** Get native balance (ETH/BNB) for an address */
-export async function getNativeBalance(address: string, chain: EvmChain = "eth"): Promise<EvmNativeBalance | null> {
+export async function getNativeBalance(
+  address: string,
+  chain: EvmChain = "eth",
+): Promise<EvmNativeBalance | null> {
   const result = await rpcCall<string>(chain, "eth_getBalance", [address, "latest"]);
   if (!result) return null;
   const wei = BigInt(result);

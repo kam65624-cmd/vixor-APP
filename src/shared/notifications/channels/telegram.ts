@@ -39,7 +39,6 @@ async function resolveChatId(userId: string, target?: string): Promise<string> {
       .eq("user_id", userId)
       .maybeSingle();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tg = (settingsRow as any)?.telegram_chat_id;
     if (tg) return String(tg);
 

@@ -25,21 +25,14 @@ export const SectionTitleOnly: StoryObj = {
 };
 
 export const SectionTitleWithSubtitle: StoryObj = {
-  render: () => (
-    <SectionTitle
-      title="Institutional Flow"
-      subtitle="Last updated 2 min ago"
-    />
-  ),
+  render: () => <SectionTitle title="Institutional Flow" subtitle="Last updated 2 min ago" />,
 };
 
 export const SectionTitleWithAction: StoryObj = {
   render: () => (
     <SectionTitle
       title="Signal Log"
-      action={
-        <button className="text-xs text-primary hover:underline">View All</button>
-      }
+      action={<button className="text-xs text-primary hover:underline">View All</button>}
     />
   ),
 };
@@ -150,9 +143,7 @@ export const CollapsibleDefaultOpen: StoryObj = {
         icon={BookOpen}
         defaultOpen={true}
         badge={
-          <span className="text-[10px] bg-info/15 text-info px-1.5 py-0.5 rounded">
-            3 terms
-          </span>
+          <span className="text-[10px] bg-info/15 text-info px-1.5 py-0.5 rounded">3 terms</span>
         }
         children={
           <div className="text-xs text-muted-foreground">
@@ -169,9 +160,7 @@ export const CollapsibleDefaultOpen: StoryObj = {
 export const EducationMultipleTerms: StoryObj = {
   render: () => (
     <div className="w-96">
-      <EducationLayer
-        terms={["Order Block", "FVG", "BOS", "Liquidity", "Sweep", "Mitigation"]}
-      />
+      <EducationLayer terms={["Order Block", "FVG", "BOS", "Liquidity", "Sweep", "Mitigation"]} />
     </div>
   ),
 };

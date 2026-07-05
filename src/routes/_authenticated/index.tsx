@@ -292,8 +292,7 @@ function HomePage() {
                 transition: "all 0.15s",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background =
-                  "rgba(124,155,196,0.06)";
+                e.currentTarget.style.background = "rgba(124,155,196,0.06)";
                 e.currentTarget.style.borderColor = "rgba(124,155,196,0.10)";
               }}
               onMouseLeave={(e) => {
@@ -349,7 +348,8 @@ function HomePage() {
                   lineHeight: 1.4,
                 }}
               >
-                Upload any chart and get instant SMC/ICT analysis with order blocks, FVGs, and liquidity zones.
+                Upload any chart and get instant SMC/ICT analysis with order blocks, FVGs, and
+                liquidity zones.
               </div>
             </div>
           </div>
@@ -446,7 +446,15 @@ function HomePage() {
                     {a.msg}
                   </span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, marginLeft: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    flexShrink: 0,
+                    marginLeft: 8,
+                  }}
+                >
                   {a.pnl && (
                     <span
                       style={{
@@ -459,7 +467,9 @@ function HomePage() {
                       {a.pnl}
                     </span>
                   )}
-                  <span style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>{a.time}</span>
+                  <span style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>
+                    {a.time}
+                  </span>
                 </div>
               </div>
             ))}

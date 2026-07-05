@@ -4,8 +4,8 @@
 // Opens X compose window via web intent URL. No API key needed.
 // ============================================================================
 
-import type { ShareableSignal } from './format-signal';
-import { buildXShareUrl } from './format-signal';
+import type { ShareableSignal } from "./format-signal";
+import { buildXShareUrl } from "./format-signal";
 
 /**
  * Open X (Twitter) share dialog for a signal.
@@ -13,7 +13,7 @@ import { buildXShareUrl } from './format-signal';
  */
 export function shareOnX(signal: ShareableSignal): void {
   const url = buildXShareUrl(signal);
-  window.open(url, '_blank', 'noopener,noreferrer,width=600,height=400');
+  window.open(url, "_blank", "noopener,noreferrer,width=600,height=400");
 }
 
 /**

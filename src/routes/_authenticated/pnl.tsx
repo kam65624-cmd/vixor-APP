@@ -53,10 +53,22 @@ function PnLPage() {
   const wins = closedTrades.filter((t) => (t.pnl || 0) > 0).length;
   const losses = closedTrades.filter((t) => (t.pnl || 0) < 0).length;
   const winRate = closedTrades.length > 0 ? Math.round((wins / closedTrades.length) * 100) : 0;
-  const avgWin = wins > 0 ? closedTrades.filter((t) => (t.pnl || 0) > 0).reduce((s, t) => s + (t.pnl || 0), 0) / wins : 0;
-  const avgLoss = losses > 0 ? Math.abs(closedTrades.filter((t) => (t.pnl || 0) < 0).reduce((s, t) => s + (t.pnl || 0), 0) / losses) : 0;
+  const avgWin =
+    wins > 0
+      ? closedTrades.filter((t) => (t.pnl || 0) > 0).reduce((s, t) => s + (t.pnl || 0), 0) / wins
+      : 0;
+  const avgLoss =
+    losses > 0
+      ? Math.abs(
+          closedTrades.filter((t) => (t.pnl || 0) < 0).reduce((s, t) => s + (t.pnl || 0), 0) /
+            losses,
+        )
+      : 0;
   const profitFactor = avgLoss > 0 ? avgWin / avgLoss : avgWin > 0 ? Infinity : 0;
-  const bestTrade = closedTrades.length > 0 ? closedTrades.reduce((best, t) => (t.pnl || 0) > (best.pnl || 0) ? t : best) : null;
+  const bestTrade =
+    closedTrades.length > 0
+      ? closedTrades.reduce((best, t) => ((t.pnl || 0) > (best.pnl || 0) ? t : best))
+      : null;
 
   const pnlFmt = (n: number) => (n >= 0 ? `+$${n.toFixed(2)}` : `-$${Math.abs(n).toFixed(2)}`);
 
@@ -74,38 +86,39 @@ function PnLPage() {
     return `${hours}h`;
   };
 
-  const fmtPrice = (n: number) =>
-    n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2);
+  const fmtPrice = (n: number) => (n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2));
 
-  const description = closedTrades.length > 0
-    ? `${closedTrades.length} closed trades · ${openTrades.length} open`
-    : "No trades yet";
+  const description =
+    closedTrades.length > 0
+      ? `${closedTrades.length} closed trades · ${openTrades.length} open`
+      : "No trades yet";
 
-  const statsItems = closedTrades.length > 0
-    ? [
-        {
-          label: "Total PnL",
-          value: pnlFmt(totalPnl),
-          color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
-        },
-        {
-          label: "Win Rate",
-          value: `${winRate}%`,
-          color: "var(--color-bullish)",
-          sub: `${wins}W / ${losses}L`,
-        },
-        {
-          label: "Profit Factor",
-          value: profitFactor === Infinity ? "∞" : profitFactor.toFixed(2),
-        },
-        {
-          label: "Best Trade",
-          value: bestTrade ? bestTrade.pair : "—",
-          color: bestTrade ? "var(--color-bullish)" : "var(--color-muted-foreground)",
-          sub: bestTrade ? pnlFmt(bestTrade.pnl || 0) : undefined,
-        },
-      ]
-    : [];
+  const statsItems =
+    closedTrades.length > 0
+      ? [
+          {
+            label: "Total PnL",
+            value: pnlFmt(totalPnl),
+            color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
+          },
+          {
+            label: "Win Rate",
+            value: `${winRate}%`,
+            color: "var(--color-bullish)",
+            sub: `${wins}W / ${losses}L`,
+          },
+          {
+            label: "Profit Factor",
+            value: profitFactor === Infinity ? "∞" : profitFactor.toFixed(2),
+          },
+          {
+            label: "Best Trade",
+            value: bestTrade ? bestTrade.pair : "—",
+            color: bestTrade ? "var(--color-bullish)" : "var(--color-muted-foreground)",
+            sub: bestTrade ? pnlFmt(bestTrade.pnl || 0) : undefined,
+          },
+        ]
+      : [];
 
   return (
     <PageLayout
@@ -133,43 +146,43 @@ function PnLPage() {
           <TableHeader columns={COLUMNS} />
         </div>
         <div>
-        {trades.length > 0 ? (
-          trades.map((trade) => (
-            <TradeRow
-              key={trade.id}
-              trade={trade}
-              pnlFmt={pnlFmt}
-              fmtPrice={fmtPrice}
-              fmtDate={fmtDate}
-              fmtDuration={fmtDuration}
-            />
-          ))
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <EmptyState
-              icon="📊"
-              title="No trades recorded yet"
-              message="Start tracking your performance by logging your first trade."
-            />
-            <button
-              onClick={() => navigate({ to: "/trade-desk" })}
-              style={{
-                marginBottom: "24px",
-                padding: "8px 20px",
-                borderRadius: "6px",
-                border: "none",
-                cursor: "pointer",
-                background: `${"var(--color-bullish)"}1F`,
-                color: "var(--color-primary)",
-                fontSize: "11px",
-                fontWeight: 700,
-                letterSpacing: "0.02em",
-              }}
-            >
-              Log a Trade
-            </button>
-          </div>
-        )}
+          {trades.length > 0 ? (
+            trades.map((trade) => (
+              <TradeRow
+                key={trade.id}
+                trade={trade}
+                pnlFmt={pnlFmt}
+                fmtPrice={fmtPrice}
+                fmtDate={fmtDate}
+                fmtDuration={fmtDuration}
+              />
+            ))
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <EmptyState
+                icon="📊"
+                title="No trades recorded yet"
+                message="Start tracking your performance by logging your first trade."
+              />
+              <button
+                onClick={() => navigate({ to: "/trade-desk" })}
+                style={{
+                  marginBottom: "24px",
+                  padding: "8px 20px",
+                  borderRadius: "6px",
+                  border: "none",
+                  cursor: "pointer",
+                  background: `${"var(--color-bullish)"}1F`,
+                  color: "var(--color-primary)",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "0.02em",
+                }}
+              >
+                Log a Trade
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </PageLayout>
@@ -192,7 +205,10 @@ const TradeRow = memo(function TradeRow({
   const isPositive = (trade.pnl || 0) >= 0;
   const pnlColor = isPositive ? "var(--color-bullish)" : "var(--color-bearish)";
   const isLong = trade.direction === "long";
-  const rColor = trade.r_multiple && trade.r_multiple > 0 ? "var(--color-bullish)" : "var(--color-muted-foreground)";
+  const rColor =
+    trade.r_multiple && trade.r_multiple > 0
+      ? "var(--color-bullish)"
+      : "var(--color-muted-foreground)";
 
   return (
     <DataRow style={{ padding: "8px 16px" }}>
@@ -222,32 +238,81 @@ const TradeRow = memo(function TradeRow({
         </div>
 
         {/* Entry */}
-        <div style={{ width: "75px", minWidth: "75px", flexShrink: 0, textAlign: "right", color: "var(--color-foreground)" }}>
+        <div
+          style={{
+            width: "75px",
+            minWidth: "75px",
+            flexShrink: 0,
+            textAlign: "right",
+            color: "var(--color-foreground)",
+          }}
+        >
           {fmtPrice(trade.entry_price)}
         </div>
 
         {/* Exit */}
-        <div style={{ width: "75px", minWidth: "75px", flexShrink: 0, textAlign: "right", color: "var(--color-foreground)" }}>
+        <div
+          style={{
+            width: "75px",
+            minWidth: "75px",
+            flexShrink: 0,
+            textAlign: "right",
+            color: "var(--color-foreground)",
+          }}
+        >
           {trade.exit_price ? fmtPrice(trade.exit_price) : "—"}
         </div>
 
         {/* Qty */}
-        <div style={{ width: "55px", minWidth: "55px", flexShrink: 0, textAlign: "right", color: "var(--color-muted-foreground)" }}>
+        <div
+          style={{
+            width: "55px",
+            minWidth: "55px",
+            flexShrink: 0,
+            textAlign: "right",
+            color: "var(--color-muted-foreground)",
+          }}
+        >
           {trade.quantity ?? "—"}
         </div>
 
         {/* PnL */}
-        <div style={{ width: "75px", minWidth: "75px", flexShrink: 0, textAlign: "right", fontWeight: 700, color: pnlColor }}>
+        <div
+          style={{
+            width: "75px",
+            minWidth: "75px",
+            flexShrink: 0,
+            textAlign: "right",
+            fontWeight: 700,
+            color: pnlColor,
+          }}
+        >
           {trade.pnl !== null ? pnlFmt(trade.pnl) : "—"}
         </div>
 
         {/* R Multiple */}
-        <div style={{ width: "55px", minWidth: "55px", flexShrink: 0, textAlign: "right", color: rColor }}>
+        <div
+          style={{
+            width: "55px",
+            minWidth: "55px",
+            flexShrink: 0,
+            textAlign: "right",
+            color: rColor,
+          }}
+        >
           {trade.r_multiple ? `${trade.r_multiple.toFixed(1)}R` : "—"}
         </div>
 
         {/* Duration */}
-        <div style={{ width: "65px", minWidth: "65px", flexShrink: 0, textAlign: "right", color: "var(--color-muted-foreground)" }}>
+        <div
+          style={{
+            width: "65px",
+            minWidth: "65px",
+            flexShrink: 0,
+            textAlign: "right",
+            color: "var(--color-muted-foreground)",
+          }}
+        >
           {fmtDuration(trade.entry_date, trade.exit_date)}
         </div>
       </div>

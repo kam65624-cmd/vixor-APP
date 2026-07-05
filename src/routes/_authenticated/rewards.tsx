@@ -6,7 +6,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { claimDailyCheckin, redeemReward } from "@/domains/user/functions";
 import { toast } from "sonner";
 import {
-  PageLayout, 
+  PageLayout,
   StatsRow,
   SectionTitle,
   Badge,
@@ -87,9 +87,15 @@ const StreakDayItem = memo(function StreakDayItem({ item }: { item: StreakDayDat
   const bgStyle = item.checked
     ? { background: `${"var(--color-primary)"}1F`, border: `1px solid ${"var(--color-primary)"}33` }
     : item.missed
-      ? { background: `${"var(--color-bearish)"}0F`, border: `1px solid ${"var(--color-bearish)"}1F` }
+      ? {
+          background: `${"var(--color-bearish)"}0F`,
+          border: `1px solid ${"var(--color-bearish)"}1F`,
+        }
       : item.current
-        ? { background: `${"var(--color-bullish)"}1F`, border: `1px solid ${"var(--color-bullish)"}4D` }
+        ? {
+            background: `${"var(--color-bullish)"}1F`,
+            border: `1px solid ${"var(--color-bullish)"}4D`,
+          }
         : { background: "var(--color-card)", border: "1px solid rgba(124,155,196,0.04)" };
 
   const statusColor = item.checked
@@ -109,7 +115,14 @@ const StreakDayItem = memo(function StreakDayItem({ item }: { item: StreakDayDat
         ...bgStyle,
       }}
     >
-      <div style={{ fontSize: 10, fontWeight: 600, color: "var(--color-muted-foreground)", marginBottom: 6 }}>
+      <div
+        style={{
+          fontSize: 10,
+          fontWeight: 600,
+          color: "var(--color-muted-foreground)",
+          marginBottom: 6,
+        }}
+      >
         {item.day}
       </div>
       <div style={{ fontSize: 20, marginBottom: 4 }}>
@@ -159,7 +172,9 @@ const RewardItem = memo(function RewardItem({
       }}
     >
       <div style={{ fontSize: 28, marginBottom: 8 }}>{item.icon}</div>
-      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--color-foreground)", marginBottom: 4 }}>
+      <div
+        style={{ fontSize: 12, fontWeight: 600, color: "var(--color-foreground)", marginBottom: 4 }}
+      >
         {item.name}
       </div>
       <div
@@ -241,8 +256,7 @@ function RewardsPage() {
   const redeemFn = useStableServerFn(redeemReward);
 
   const redeemMutation = useMutation({
-    mutationFn: (params: { rewardName: string; cost: number }) =>
-      redeemFn({ data: params }),
+    mutationFn: (params: { rewardName: string; cost: number }) => redeemFn({ data: params }),
     onMutate: (params) => {
       setRedeemingName(params.rewardName);
       setRedeemErrors((prev) => {
@@ -375,10 +389,7 @@ function RewardsPage() {
 
   // ── Render ──
   return (
-    <PageLayout
-      title="Rewards"
-      loading={isLoading}
-    >
+    <PageLayout title="Rewards" loading={isLoading}>
       {/* ── Points Hero ── */}
       <div
         style={{
@@ -458,7 +469,13 @@ function RewardsPage() {
 
         {/* Check-in Button */}
         {streakDays.some((d) => d.current && !d.checked) && (
-          <div style={{ padding: "12px 16px", background: "var(--color-card)", borderBottom: `1px solid var(--color-border)` }}>
+          <div
+            style={{
+              padding: "12px 16px",
+              background: "var(--color-card)",
+              borderBottom: `1px solid var(--color-border)`,
+            }}
+          >
             <button
               onClick={() => claimMutation.mutate()}
               disabled={claimMutation.isPending}
@@ -486,21 +503,46 @@ function RewardsPage() {
                   : `⭐ Claim +${WEEK_POINTS[streakDays.findIndex((d) => d.current)]} Daily Points`}
             </button>
             {claimMutation.isSuccess && (
-              <div style={{ textAlign: "center", marginTop: 8, fontSize: 11, color: "var(--color-muted-foreground)" }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: 8,
+                  fontSize: 11,
+                  color: "var(--color-muted-foreground)",
+                }}
+              >
                 Streak: {claimMutation.data?.streak} days 🔥
               </div>
             )}
             {claimError && (
-              <div style={{ textAlign: "center", marginTop: 8, fontSize: 11, color: "var(--color-bearish)" }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: 8,
+                  fontSize: 11,
+                  color: "var(--color-bearish)",
+                }}
+              >
                 {claimError}
               </div>
             )}
           </div>
         )}
         {streakDays.some((d) => d.current && d.checked) && (
-          <div style={{ padding: "12px 16px", background: "var(--color-card)", borderBottom: `1px solid var(--color-border)`, textAlign: "center" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-bullish)" }}>✅ Today's reward claimed!</div>
-            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)", marginTop: 4 }}>Come back tomorrow for more points</div>
+          <div
+            style={{
+              padding: "12px 16px",
+              background: "var(--color-card)",
+              borderBottom: `1px solid var(--color-border)`,
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-bullish)" }}>
+              ✅ Today's reward claimed!
+            </div>
+            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)", marginTop: 4 }}>
+              Come back tomorrow for more points
+            </div>
           </div>
         )}
 
@@ -552,13 +594,21 @@ function RewardsPage() {
         {/* Referral stats */}
         <StatsRow
           stats={[
-            { label: "Total Referrals", value: String(referredCount), color: "var(--color-bullish)" },
+            {
+              label: "Total Referrals",
+              value: String(referredCount),
+              color: "var(--color-bullish)",
+            },
             {
               label: "Active",
               value: String(referredCount > 0 ? referredCount : 0),
               color: "var(--color-primary)",
             },
-            { label: "Earned", value: `${fmtNum(referralEarned)} pts`, color: "var(--color-neutral-wait)" },
+            {
+              label: "Earned",
+              value: `${fmtNum(referralEarned)} pts`,
+              color: "var(--color-neutral-wait)",
+            },
           ]}
         />
 
@@ -619,7 +669,8 @@ function RewardsPage() {
                   flex: 1,
                   height: 10,
                   background: "var(--color-card)",
-                  borderRight: i < tiers.length - 1 ? `2px solid ${"var(--color-background)"}` : "none",
+                  borderRight:
+                    i < tiers.length - 1 ? `2px solid ${"var(--color-background)"}` : "none",
                 }}
               >
                 <div
@@ -681,11 +732,15 @@ function RewardsPage() {
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: 12, color: "var(--color-foreground)", fontWeight: 500 }}>
+                    <div
+                      style={{ fontSize: 12, color: "var(--color-foreground)", fontWeight: 500 }}
+                    >
                       {tx.reason?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ??
                         "Points"}
                     </div>
-                    <div style={{ fontSize: 10, color: "var(--color-muted-foreground)", marginTop: 2 }}>
+                    <div
+                      style={{ fontSize: 10, color: "var(--color-muted-foreground)", marginTop: 2 }}
+                    >
                       {fmtDate(tx.created_at)} · {fmtTime(tx.created_at)}
                     </div>
                   </div>

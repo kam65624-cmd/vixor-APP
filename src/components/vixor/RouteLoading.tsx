@@ -87,8 +87,7 @@ export default function RouteLoading() {
               width,
               borderRadius: BAR_RADIUS,
               backgroundColor: BAR_BG,
-              backgroundImage:
-                "linear-gradient(90deg, #1E2028 25%, #2A2D37 50%, #1E2028 75%)",
+              backgroundImage: "linear-gradient(90deg, #1E2028 25%, #2A2D37 50%, #1E2028 75%)",
               backgroundSize: "800px 100%",
               animation: "vixor-shimmer 1.6s ease-in-out infinite",
             }}

@@ -65,10 +65,25 @@ const TRADING_STYLES = [
 ];
 
 const ANALYSIS_TECHNIQUES = [
-  { id: "SMC", icon: "🏗️", label: "SMC", desc: "Smart Money Concepts — full BOS, ChoCH, OB, FVG, Liquidity" },
-  { id: "ICT", icon: "🎯", label: "ICT", desc: "Inner Circle Trader — Optimal Trade Entry, Killzones" },
+  {
+    id: "SMC",
+    icon: "🏗️",
+    label: "SMC",
+    desc: "Smart Money Concepts — full BOS, ChoCH, OB, FVG, Liquidity",
+  },
+  {
+    id: "ICT",
+    icon: "🎯",
+    label: "ICT",
+    desc: "Inner Circle Trader — Optimal Trade Entry, Killzones",
+  },
   { id: "OB_FVG", icon: "🧱", label: "OB + FVG", desc: "Order Blocks & Fair Value Gaps focus" },
-  { id: "CLASSIC", icon: "📊", label: "Classic TA", desc: "Traditional indicators: RSI, MACD, Support/Resistance" },
+  {
+    id: "CLASSIC",
+    icon: "📊",
+    label: "Classic TA",
+    desc: "Traditional indicators: RSI, MACD, Support/Resistance",
+  },
 ];
 
 const POPULAR_PAIRS = [
@@ -498,9 +513,7 @@ function Analyze() {
                   cursor: "pointer",
                 }}
               >
-                <Camera
-                  style={{ width: 20, height: 20, color: "var(--color-muted-foreground)" }}
-                />
+                <Camera style={{ width: 20, height: 20, color: "var(--color-muted-foreground)" }} />
                 <span
                   style={{
                     fontSize: 12,
@@ -669,8 +682,7 @@ function Analyze() {
                       padding: "8px 12px",
                       borderRadius: 6,
                       background: "rgba(14,203,129,0.10)",
-                      border:
-                        "1px solid rgba(14,203,129,0.20)",
+                      border: "1px solid rgba(14,203,129,0.20)",
                     }}
                   >
                     <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
@@ -711,13 +723,9 @@ function Analyze() {
                         gap: 6,
                         cursor: "pointer",
                         background:
-                          tradingStyle === s.id
-                            ? "rgba(14,203,129,0.15)"
-                            : "var(--color-card)",
+                          tradingStyle === s.id ? "rgba(14,203,129,0.15)" : "var(--color-card)",
                         borderColor:
-                          tradingStyle === s.id
-                            ? "rgba(14,203,129,0.30)"
-                            : "var(--color-border)",
+                          tradingStyle === s.id ? "rgba(14,203,129,0.30)" : "var(--color-border)",
                         color:
                           tradingStyle === s.id
                             ? "var(--color-primary)"
@@ -776,8 +784,7 @@ function Analyze() {
                       }}
                     >
                       <span style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontSize: 16 }}>{t.icon}</span>{" "}
-                        {t.label}
+                        <span style={{ fontSize: 16 }}>{t.icon}</span> {t.label}
                       </span>
                       <span
                         style={{

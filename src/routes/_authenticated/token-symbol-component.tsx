@@ -13,7 +13,6 @@ import {
   SectionTitle,
 } from "@/components/vixor/PageLayout";
 
-
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface TokenItem {
@@ -145,13 +144,46 @@ function detectAssetType(symbol: string, chain?: string): AssetType {
   // Forex pairs contain "/"
   if (s.includes("/")) return "forex";
   // Commodities
-  if (["XAU", "XAG", "XPT", "OIL", "WTI", "BRENT", "GOLD", "SILVER"].some(c => s.includes(c))) return "commodity";
+  if (["XAU", "XAG", "XPT", "OIL", "WTI", "BRENT", "GOLD", "SILVER"].some((c) => s.includes(c)))
+    return "commodity";
   // Meme coins (common meme tokens)
-  const memeTokens = ["BONK", "WIF", "PEPE", "DOGE", "SHIB", "FLOKI", "BOME", "MEME", "TURBO", "MOG", "BRETT", "SPX", "GIGA", "POPCAT", "MEW", "NEIRO", "BUBBA"];
+  const memeTokens = [
+    "BONK",
+    "WIF",
+    "PEPE",
+    "DOGE",
+    "SHIB",
+    "FLOKI",
+    "BOME",
+    "MEME",
+    "TURBO",
+    "MOG",
+    "BRETT",
+    "SPX",
+    "GIGA",
+    "POPCAT",
+    "MEW",
+    "NEIRO",
+    "BUBBA",
+  ];
   if (memeTokens.includes(s)) return "meme";
   // Chain-specific meme detection
   if (chain && ["solana", "base", "eth"].includes(chain.toLowerCase())) {
-    const majorCrypto = ["BTC", "ETH", "SOL", "USDT", "USDC", "BNB", "XRP", "ADA", "AVAX", "DOT", "LINK", "MATIC", "UNI"];
+    const majorCrypto = [
+      "BTC",
+      "ETH",
+      "SOL",
+      "USDT",
+      "USDC",
+      "BNB",
+      "XRP",
+      "ADA",
+      "AVAX",
+      "DOT",
+      "LINK",
+      "MATIC",
+      "UNI",
+    ];
     if (!majorCrypto.includes(s)) return "meme";
   }
   return "crypto";
@@ -159,11 +191,16 @@ function detectAssetType(symbol: string, chain?: string): AssetType {
 
 function getAssetTypeBadge(assetType: AssetType): { label: string; color: string } {
   switch (assetType) {
-    case "meme": return { label: "MEME 🐕", color: "#F7931A" };
-    case "crypto": return { label: "CRYPTO ₿", color: "#7C9BC4" };
-    case "forex": return { label: "FOREX 💱", color: "#A78BFA" };
-    case "commodity": return { label: "COMMODITY 🥇", color: "#F0B90B" };
-    default: return { label: "TOKEN", color: "var(--color-muted-foreground)" };
+    case "meme":
+      return { label: "MEME 🐕", color: "#F7931A" };
+    case "crypto":
+      return { label: "CRYPTO ₿", color: "#7C9BC4" };
+    case "forex":
+      return { label: "FOREX 💱", color: "#A78BFA" };
+    case "commodity":
+      return { label: "COMMODITY 🥇", color: "#F0B90B" };
+    default:
+      return { label: "TOKEN", color: "var(--color-muted-foreground)" };
   }
 }
 
@@ -185,14 +222,13 @@ const TradingViewMiniChart = memo(function TradingViewMiniChart({
   useEffect(() => {
     // Check if script already exists
     const existingScript = document.querySelector(
-      'script[src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js"]'
+      'script[src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js"]',
     );
     if (existingScript) {
       setScriptLoaded(true);
     } else {
       const script = document.createElement("script");
-      script.src =
-        "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
       script.async = true;
       script.onload = () => setScriptLoaded(true);
       script.onerror = () => setHasError(true);
@@ -221,8 +257,7 @@ const TradingViewMiniChart = memo(function TradingViewMiniChart({
     container.appendChild(widgetContainer);
 
     const script = document.createElement("script");
-    script.src =
-      "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.async = true;
     script.type = "text/javascript";
 
@@ -309,10 +344,7 @@ const TradingViewMiniChart = memo(function TradingViewMiniChart({
   }
 
   return (
-    <div
-      ref={containerRef}
-      style={{ height, borderBottom: `1px solid var(--color-border)` }}
-    />
+    <div ref={containerRef} style={{ height, borderBottom: `1px solid var(--color-border)` }} />
   );
 });
 
@@ -363,21 +395,14 @@ export function TokenPage() {
 
   const allTrades = tradesQuery.data?.trades ?? [];
   const tokenTrades = allTrades.filter((t: any) =>
-    t.pair?.toUpperCase().includes(symbol.toUpperCase())
+    t.pair?.toUpperCase().includes(symbol.toUpperCase()),
   );
-  const closedTrades = tokenTrades.filter(
-    (t: any) => t.status === "closed" && t.pnl != null
-  );
-  const totalPnl = closedTrades.reduce(
-    (s: number, t: any) => s + (t.pnl || 0),
-    0
-  );
+  const closedTrades = tokenTrades.filter((t: any) => t.status === "closed" && t.pnl != null);
+  const totalPnl = closedTrades.reduce((s: number, t: any) => s + (t.pnl || 0), 0);
   const winRate =
     closedTrades.length > 0
       ? Math.round(
-          (closedTrades.filter((t: any) => (t.pnl || 0) > 0).length /
-            closedTrades.length) *
-            100
+          (closedTrades.filter((t: any) => (t.pnl || 0) > 0).length / closedTrades.length) * 100,
         )
       : 0;
 
@@ -387,8 +412,10 @@ export function TokenPage() {
     const upper = symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
     return (
       discoveryQuery.data.data.find(
-        (t) => t.symbol.toUpperCase().replace(/[^A-Z0-9]/g, "") === upper
-      ) || discoveryQuery.data.data[0] || null
+        (t) => t.symbol.toUpperCase().replace(/[^A-Z0-9]/g, "") === upper,
+      ) ||
+      discoveryQuery.data.data[0] ||
+      null
     );
   }, [discoveryQuery.data, symbol]);
 
@@ -409,14 +436,14 @@ export function TokenPage() {
     return items.some(
       (item: any) =>
         item.pair?.toUpperCase().replace(/[^A-Z0-9]/g, "") ===
-        symbol.toUpperCase().replace(/[^A-Z0-9]/g, "")
+        symbol.toUpperCase().replace(/[^A-Z0-9]/g, ""),
     );
   }, [watchlistQuery.data, symbol]);
 
   // Detect asset type
   const assetType = useMemo(
     () => detectAssetType(symbol, tokenData?.chain),
-    [symbol, tokenData?.chain]
+    [symbol, tokenData?.chain],
   );
   const assetBadge = getAssetTypeBadge(assetType);
 
@@ -428,18 +455,14 @@ export function TokenPage() {
 
   const entryPrice = tokenData?.price ?? 0;
   const numericAmount = parseFloat(amount) || 0;
-  const estimatedTokens =
-    entryPrice > 0 ? (numericAmount * leverage) / entryPrice : 0;
+  const estimatedTokens = entryPrice > 0 ? (numericAmount * leverage) / entryPrice : 0;
   const slDistance = direction === "long" ? 0.02 : 0.02;
   const slPrice =
-    direction === "long"
-      ? entryPrice * (1 - slDistance)
-      : entryPrice * (1 + slDistance);
+    direction === "long" ? entryPrice * (1 - slDistance) : entryPrice * (1 + slDistance);
 
   // ── Loading state ──
 
-  const isInitialLoading =
-    tradesQuery.isLoading || discoveryQuery.isLoading;
+  const isInitialLoading = tradesQuery.isLoading || discoveryQuery.isLoading;
 
   return (
     <PageLayout
@@ -462,7 +485,15 @@ export function TokenPage() {
       >
         <Link
           to="/discover"
-          search={{ category: "ALL", sortBy: "trending", search: "", minLiquidity: undefined, minVolume: undefined, honeypotOnly: false, smartMoneyMin: undefined }}
+          search={{
+            category: "ALL",
+            sortBy: "trending",
+            search: "",
+            minLiquidity: undefined,
+            minVolume: undefined,
+            honeypotOnly: false,
+            smartMoneyMin: undefined,
+          }}
           style={{
             color: "var(--color-primary)",
             fontSize: "11px",
@@ -471,14 +502,8 @@ export function TokenPage() {
         >
           Discover
         </Link>
-        <span
-          style={{ color: "var(--color-muted-foreground)", fontSize: "11px" }}
-        >
-          /
-        </span>
-        <span
-          style={{ color: "var(--color-foreground)", fontSize: "11px", fontWeight: 600 }}
-        >
+        <span style={{ color: "var(--color-muted-foreground)", fontSize: "11px" }}>/</span>
+        <span style={{ color: "var(--color-foreground)", fontSize: "11px", fontWeight: 600 }}>
           {symbol.toUpperCase()}
         </span>
       </div>
@@ -538,11 +563,7 @@ export function TokenPage() {
                   color={"var(--color-primary)"}
                   small
                 />
-                <Badge
-                  label={assetBadge.label}
-                  color={assetBadge.color}
-                  small
-                />
+                <Badge label={assetBadge.label} color={assetBadge.color} small />
                 {tokenData?.risk && (
                   <Badge
                     label={`${tokenData.risk.toUpperCase()} RISK`}
@@ -606,12 +627,8 @@ export function TokenPage() {
                   height: "36px",
                   borderRadius: "8px",
                   border: `1px solid var(--color-border)`,
-                  background: isWatched
-                    ? "rgba(14,203,129,0.12)"
-                    : "var(--color-card)",
-                  color: isWatched
-                    ? "var(--color-bullish)"
-                    : "var(--color-muted-foreground)",
+                  background: isWatched ? "rgba(14,203,129,0.12)" : "var(--color-card)",
+                  color: isWatched ? "var(--color-bullish)" : "var(--color-muted-foreground)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -627,9 +644,7 @@ export function TokenPage() {
               <button
                 onClick={() => {
                   if (navigator.clipboard) {
-                    navigator.clipboard.writeText(
-                      `${window.location.origin}/token/${symbol}`
-                    );
+                    navigator.clipboard.writeText(`${window.location.origin}/token/${symbol}`);
                   }
                 }}
                 style={{
@@ -665,18 +680,9 @@ export function TokenPage() {
               marginTop: "14px",
             }}
           >
-            <MarketStat
-              label="Market Cap"
-              value={fmtCompact(tokenData?.marketCap ?? 0)}
-            />
-            <MarketStat
-              label="24h Volume"
-              value={fmtCompact(tokenData?.volume24h ?? 0)}
-            />
-            <MarketStat
-              label="Liquidity"
-              value={fmtCompact(tokenData?.liquidity ?? 0)}
-            />
+            <MarketStat label="Market Cap" value={fmtCompact(tokenData?.marketCap ?? 0)} />
+            <MarketStat label="24h Volume" value={fmtCompact(tokenData?.volume24h ?? 0)} />
+            <MarketStat label="Liquidity" value={fmtCompact(tokenData?.liquidity ?? 0)} />
           </div>
         </div>
 
@@ -685,11 +691,7 @@ export function TokenPage() {
         ════════════════════════════════════════════════════════════════════ */}
         <TradingViewMiniChart
           symbol={symbol}
-          height={
-            typeof window !== "undefined" && window.innerWidth < 768
-              ? "300px"
-              : "400px"
-          }
+          height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
         />
 
         {/* ════════════════════════════════════════════════════════════════════
@@ -823,14 +825,9 @@ export function TokenPage() {
                     border: `1px solid ${
                       leverage === lev ? "var(--color-primary)" : "var(--color-border)"
                     }`,
-                    background:
-                      leverage === lev
-                        ? "rgba(124,155,196,0.15)"
-                        : "var(--color-card)",
+                    background: leverage === lev ? "rgba(124,155,196,0.15)" : "var(--color-card)",
                     color:
-                      leverage === lev
-                        ? "var(--color-primary)"
-                        : "var(--color-muted-foreground)",
+                      leverage === lev ? "var(--color-primary)" : "var(--color-muted-foreground)",
                     cursor: "pointer",
                     fontSize: "12px",
                     fontWeight: 700,
@@ -854,11 +851,7 @@ export function TokenPage() {
               border: `1px solid var(--color-border)`,
             }}
           >
-            <QuickCalcRow
-              label="Entry Price"
-              value={fmtPrice(entryPrice)}
-              mono
-            />
+            <QuickCalcRow label="Entry Price" value={fmtPrice(entryPrice)} mono />
             <QuickCalcRow
               label="Est. Tokens"
               value={
@@ -904,10 +897,7 @@ export function TokenPage() {
               fontWeight: 700,
               fontSize: "13px",
               letterSpacing: "0.04em",
-              background:
-                direction === "long"
-                  ? "var(--color-bullish)"
-                  : "var(--color-bearish)",
+              background: direction === "long" ? "var(--color-bullish)" : "var(--color-bearish)",
               color: "#000",
               transition: "opacity 0.15s",
             }}
@@ -988,9 +978,7 @@ export function TokenPage() {
                   }}
                 >
                   {tokenData?.marketCap && tokenData.marketCap > 0
-                    ? ((tokenData.volume24h / tokenData.marketCap) * 100).toFixed(
-                        1
-                      ) + "%"
+                    ? ((tokenData.volume24h / tokenData.marketCap) * 100).toFixed(1) + "%"
                     : "—"}
                 </span>
               </div>
@@ -1065,26 +1053,15 @@ export function TokenPage() {
         {/* ════════════════════════════════════════════════════════════════════
             4b. ASSET-TYPE-SPECIFIC SECTIONS
         ════════════════════════════════════════════════════════════════════ */}
-        {assetType === "meme" && (
-          <MemeSections tokenData={tokenData} />
-        )}
-        {assetType === "crypto" && (
-          <CryptoSections tokenData={tokenData} />
-        )}
-        {assetType === "forex" && (
-          <ForexSections symbol={symbol} />
-        )}
-        {assetType === "commodity" && (
-          <CommoditySections tokenData={tokenData} symbol={symbol} />
-        )}
+        {assetType === "meme" && <MemeSections tokenData={tokenData} />}
+        {assetType === "crypto" && <CryptoSections tokenData={tokenData} />}
+        {assetType === "forex" && <ForexSections symbol={symbol} />}
+        {assetType === "commodity" && <CommoditySections tokenData={tokenData} symbol={symbol} />}
 
         {/* ════════════════════════════════════════════════════════════════════
             5. RELATED ANALYSES
         ════════════════════════════════════════════════════════════════════ */}
-        <SectionTitle
-          title="Related Analyses"
-          count={relatedAnalyses.length}
-        />
+        <SectionTitle title="Related Analyses" count={relatedAnalyses.length} />
 
         {relatedAnalyses.length > 0 ? (
           relatedAnalyses.slice(0, 5).map((a: any) => (
@@ -1112,9 +1089,7 @@ export function TokenPage() {
                   }}
                 >
                   <Badge
-                    label={
-                      (a.recommendation || "N/A").toUpperCase()
-                    }
+                    label={(a.recommendation || "N/A").toUpperCase()}
                     color={
                       (a.recommendation || "").toLowerCase() === "buy" ||
                       (a.recommendation || "").toLowerCase() === "long" ||
@@ -1196,10 +1171,7 @@ export function TokenPage() {
             {
               label: "Total PnL",
               value: `${totalPnl >= 0 ? "+" : ""}${totalPnl.toFixed(2)}`,
-              color:
-                totalPnl >= 0
-                  ? "var(--color-bullish)"
-                  : "var(--color-bearish)",
+              color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
             },
             {
               label: "Win Rate",
@@ -1220,9 +1192,7 @@ export function TokenPage() {
         />
 
         {tokenTrades.length > 0 ? (
-          tokenTrades.map((trade: any) => (
-            <TokenTradeRow key={trade.id} trade={trade} />
-          ))
+          tokenTrades.map((trade: any) => <TokenTradeRow key={trade.id} trade={trade} />)
         ) : (
           <EmptyState
             icon="📊"
@@ -1261,8 +1231,7 @@ export function TokenPage() {
               fontWeight: 700,
               fontSize: "13px",
               letterSpacing: "0.04em",
-              background:
-                "rgba(124,155,196,0.10)",
+              background: "rgba(124,155,196,0.10)",
               color: "var(--color-primary)",
               transition: "all 0.15s",
               display: "flex",
@@ -1271,12 +1240,10 @@ export function TokenPage() {
               gap: "8px",
             }}
             onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.background =
-                "rgba(124,155,196,0.18)";
+              (e.target as HTMLElement).style.background = "rgba(124,155,196,0.18)";
             }}
             onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.background =
-                "rgba(124,155,196,0.10)";
+              (e.target as HTMLElement).style.background = "rgba(124,155,196,0.10)";
             }}
           >
             <span style={{ fontSize: "16px" }}>⚡</span>
@@ -1325,9 +1292,14 @@ function ForexSessionIndicator() {
     >
       {sessions.map((s) => {
         const isActive = now >= s.start && now < s.end;
-        const minsUntil = now < s.start ? s.start - now : now >= s.end ? (1440 - now) + s.start : 0;
+        const minsUntil = now < s.start ? s.start - now : now >= s.end ? 1440 - now + s.start : 0;
         const status = isActive ? "active" : minsUntil <= 120 ? "upcoming" : "closed";
-        const dotColor = status === "active" ? s.color : status === "upcoming" ? "#F0B90B" : "var(--color-muted-foreground)";
+        const dotColor =
+          status === "active"
+            ? s.color
+            : status === "upcoming"
+              ? "#F0B90B"
+              : "var(--color-muted-foreground)";
         return (
           <div
             key={s.name}
@@ -1337,7 +1309,8 @@ function ForexSessionIndicator() {
               gap: "5px",
               fontSize: "11px",
               fontWeight: 600,
-              color: status === "active" ? "var(--color-foreground)" : "var(--color-muted-foreground)",
+              color:
+                status === "active" ? "var(--color-foreground)" : "var(--color-muted-foreground)",
             }}
           >
             <span
@@ -1366,7 +1339,17 @@ function ForexSessionIndicator() {
 
 // ── Gauge Bar Component ─────────────────────────────────────────────────────
 
-function GaugeBar({ value, max = 100, color, label }: { value: number; max?: number; color: string; label: string }) {
+function GaugeBar({
+  value,
+  max = 100,
+  color,
+  label,
+}: {
+  value: number;
+  max?: number;
+  color: string;
+  label: string;
+}) {
   const pct = Math.min((value / max) * 100, 100);
   return (
     <div>
@@ -1378,7 +1361,9 @@ function GaugeBar({ value, max = 100, color, label }: { value: number; max?: num
           marginBottom: "4px",
         }}
       >
-        <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}>{label}</span>
+        <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}>
+          {label}
+        </span>
         <span
           style={{
             fontSize: "12px",
@@ -1423,13 +1408,20 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
   const isHoneypot = tokenData?.isHoneypot ?? false;
 
   // Calculate hype level from social + volume
-  const hypeRaw = Math.min(Math.round(socialScore * 0.6 + Math.min(volume / 100000, 40) * 0.4), 100);
+  const hypeRaw = Math.min(
+    Math.round(socialScore * 0.6 + Math.min(volume / 100000, 40) * 0.4),
+    100,
+  );
   const hypeLevel =
-    hypeRaw >= 80 ? { label: "FRENZY", color: "#F6465D" } :
-    hypeRaw >= 60 ? { label: "HIGH", color: "#F7931A" } :
-    hypeRaw >= 40 ? { label: "MODERATE", color: "#F0B90B" } :
-    hypeRaw >= 20 ? { label: "LOW", color: "#7C9BC4" } :
-    { label: "DORMANT", color: "var(--color-muted-foreground)" };
+    hypeRaw >= 80
+      ? { label: "FRENZY", color: "#F6465D" }
+      : hypeRaw >= 60
+        ? { label: "HIGH", color: "#F7931A" }
+        : hypeRaw >= 40
+          ? { label: "MODERATE", color: "#F0B90B" }
+          : hypeRaw >= 20
+            ? { label: "LOW", color: "#7C9BC4" }
+            : { label: "DORMANT", color: "var(--color-muted-foreground)" };
 
   return (
     <>
@@ -1457,7 +1449,13 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
         {/* Social Score Bar */}
         <GaugeBar
           value={socialScore}
-          color={socialScore >= 60 ? "var(--color-bullish)" : socialScore >= 30 ? "#F0B90B" : "var(--color-bearish)"}
+          color={
+            socialScore >= 60
+              ? "var(--color-bullish)"
+              : socialScore >= 30
+                ? "#F0B90B"
+                : "var(--color-bearish)"
+          }
           label="Social Score"
         />
 
@@ -1471,7 +1469,11 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
               marginBottom: "4px",
             }}
           >
-            <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}>Hype Level</span>
+            <span
+              style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}
+            >
+              Hype Level
+            </span>
             <span
               style={{
                 fontSize: "12px",
@@ -1508,7 +1510,13 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
         <div style={{ marginTop: "14px" }}>
           <GaugeBar
             value={smartMoneyPct}
-            color={smartMoneyPct >= 50 ? "var(--color-bullish)" : smartMoneyPct >= 25 ? "#F0B90B" : "var(--color-bearish)"}
+            color={
+              smartMoneyPct >= 50
+                ? "var(--color-bullish)"
+                : smartMoneyPct >= 25
+                  ? "#F0B90B"
+                  : "var(--color-bearish)"
+            }
             label="Smart Money % (est.)"
           />
         </div>
@@ -1550,8 +1558,18 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
             >
               <span style={{ fontSize: "14px" }}>🚫</span>
               <div>
-                <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-bearish)" }}>HONEYPOT DETECTED</div>
-                <div style={{ fontSize: "10px", color: "var(--color-muted-foreground)", marginTop: "2px" }}>You may not be able to sell this token</div>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-bearish)" }}>
+                  HONEYPOT DETECTED
+                </div>
+                <div
+                  style={{
+                    fontSize: "10px",
+                    color: "var(--color-muted-foreground)",
+                    marginTop: "2px",
+                  }}
+                >
+                  You may not be able to sell this token
+                </div>
               </div>
             </div>
           )}
@@ -1570,8 +1588,16 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
             >
               <span style={{ fontSize: "14px" }}>💧</span>
               <div>
-                <div style={{ fontSize: "12px", fontWeight: 700, color: "#F0B90B" }}>LOW LIQUIDITY</div>
-                <div style={{ fontSize: "10px", color: "var(--color-muted-foreground)", marginTop: "2px" }}>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: "#F0B90B" }}>
+                  LOW LIQUIDITY
+                </div>
+                <div
+                  style={{
+                    fontSize: "10px",
+                    color: "var(--color-muted-foreground)",
+                    marginTop: "2px",
+                  }}
+                >
                   Only {fmtCompact(liquidity)} — high slippage risk
                 </div>
               </div>
@@ -1592,8 +1618,16 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
             >
               <span style={{ fontSize: "14px" }}>✓</span>
               <div>
-                <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-bullish)" }}>NO MAJOR FLAGS</div>
-                <div style={{ fontSize: "10px", color: "var(--color-muted-foreground)", marginTop: "2px" }}>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-bullish)" }}>
+                  NO MAJOR FLAGS
+                </div>
+                <div
+                  style={{
+                    fontSize: "10px",
+                    color: "var(--color-muted-foreground)",
+                    marginTop: "2px",
+                  }}
+                >
                   Always DYOR before trading meme tokens
                 </div>
               </div>
@@ -1635,7 +1669,8 @@ function CryptoSections({ tokenData }: { tokenData: TokenItem | null }) {
           marginBottom: "14px",
         }}
       >
-        ⛓️ On-Chain Metrics <span style={{ fontSize: "10px", fontWeight: 500, opacity: 0.6 }}>(est.)</span>
+        ⛓️ On-Chain Metrics{" "}
+        <span style={{ fontSize: "10px", fontWeight: 500, opacity: 0.6 }}>(est.)</span>
       </div>
 
       {/* Holder Count */}
@@ -1750,10 +1785,30 @@ function CryptoSections({ tokenData }: { tokenData: TokenItem | null }) {
       >
         <span style={{ fontSize: "16px" }}>🐋</span>
         <div>
-          <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}>Whale Activity (24h)</div>
-          <div style={{ fontSize: "13px", fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)", marginTop: "2px" }}>
+          <div
+            style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}
+          >
+            Whale Activity (24h)
+          </div>
+          <div
+            style={{
+              fontSize: "13px",
+              fontWeight: 700,
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              color: "var(--color-foreground)",
+              marginTop: "2px",
+            }}
+          >
             {whaleTxCount} large tx{whaleTxCount !== 1 ? "s" : ""} detected
-            <span style={{ fontSize: "10px", color: "var(--color-muted-foreground)", marginLeft: "6px" }}>(simulated)</span>
+            <span
+              style={{
+                fontSize: "10px",
+                color: "var(--color-muted-foreground)",
+                marginLeft: "6px",
+              }}
+            >
+              (simulated)
+            </span>
           </div>
         </div>
       </div>
@@ -1768,21 +1823,60 @@ function ForexSections({ symbol }: { symbol: string }) {
 
   // Simulated economic events
   const events = [
-    { time: "14:30", currency: "USD", event: "Non-Farm Payrolls", impact: "high" as const, forecast: "180K", previous: "175K" },
-    { time: "10:00", currency: "EUR", event: "CPI Flash Estimate", impact: "high" as const, forecast: "2.4%", previous: "2.6%" },
-    { time: "19:00", currency: "GBP", event: "BoE Interest Rate Decision", impact: "medium" as const, forecast: "5.25%", previous: "5.25%" },
+    {
+      time: "14:30",
+      currency: "USD",
+      event: "Non-Farm Payrolls",
+      impact: "high" as const,
+      forecast: "180K",
+      previous: "175K",
+    },
+    {
+      time: "10:00",
+      currency: "EUR",
+      event: "CPI Flash Estimate",
+      impact: "high" as const,
+      forecast: "2.4%",
+      previous: "2.6%",
+    },
+    {
+      time: "19:00",
+      currency: "GBP",
+      event: "BoE Interest Rate Decision",
+      impact: "medium" as const,
+      forecast: "5.25%",
+      previous: "5.25%",
+    },
   ];
 
   // Simulated currency strength (0-100)
   const strengthData: Record<string, number> = {
-    USD: 72, EUR: 65, GBP: 58, JPY: 45, AUD: 51, NZD: 48, CAD: 54, CHF: 61,
+    USD: 72,
+    EUR: 65,
+    GBP: 58,
+    JPY: 45,
+    AUD: 51,
+    NZD: 48,
+    CAD: 54,
+    CHF: 61,
   };
 
   const impactStyle = (impact: "high" | "medium" | "low") => {
     switch (impact) {
-      case "high": return { bg: "rgba(246,70,93,0.15)", border: "var(--color-bearish)", color: "var(--color-bearish)" };
-      case "medium": return { bg: "rgba(240,185,11,0.15)", border: "#F0B90B", color: "#F0B90B" };
-      default: return { bg: "rgba(14,203,129,0.15)", border: "var(--color-bullish)", color: "var(--color-bullish)" };
+      case "high":
+        return {
+          bg: "rgba(246,70,93,0.15)",
+          border: "var(--color-bearish)",
+          color: "var(--color-bearish)",
+        };
+      case "medium":
+        return { bg: "rgba(240,185,11,0.15)", border: "#F0B90B", color: "#F0B90B" };
+      default:
+        return {
+          bg: "rgba(14,203,129,0.15)",
+          border: "var(--color-bullish)",
+          color: "var(--color-bullish)",
+        };
     }
   };
 
@@ -1834,7 +1928,8 @@ function ForexSections({ symbol }: { symbol: string }) {
             marginBottom: "12px",
           }}
         >
-          📅 Economic Calendar <span style={{ fontSize: "10px", fontWeight: 500, opacity: 0.6 }}>(simulated)</span>
+          📅 Economic Calendar{" "}
+          <span style={{ fontSize: "10px", fontWeight: 500, opacity: 0.6 }}>(simulated)</span>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -1877,10 +1972,25 @@ function ForexSections({ symbol }: { symbol: string }) {
                   {evt.currency}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: "12px", fontWeight: 600, color: "var(--color-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "var(--color-foreground)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {evt.event}
                   </div>
-                  <div style={{ fontSize: "10px", color: "var(--color-muted-foreground)", marginTop: "1px" }}>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      color: "var(--color-muted-foreground)",
+                      marginTop: "1px",
+                    }}
+                  >
                     Fcst: {evt.forecast} · Prev: {evt.previous}
                   </div>
                 </div>
@@ -1923,7 +2033,8 @@ function ForexSections({ symbol }: { symbol: string }) {
             marginBottom: "12px",
           }}
         >
-          💪 Currency Strength <span style={{ fontSize: "10px", fontWeight: 500, opacity: 0.6 }}>(simulated)</span>
+          💪 Currency Strength{" "}
+          <span style={{ fontSize: "10px", fontWeight: 500, opacity: 0.6 }}>(simulated)</span>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -1968,11 +2079,12 @@ function ForexSections({ symbol }: { symbol: string }) {
                         width: `${str}%`,
                         height: "100%",
                         borderRadius: "3px",
-                        background: str >= 65
-                          ? "var(--color-bullish)"
-                          : str >= 50
-                            ? "#F0B90B"
-                            : "var(--color-bearish)",
+                        background:
+                          str >= 65
+                            ? "var(--color-bullish)"
+                            : str >= 50
+                              ? "#F0B90B"
+                              : "var(--color-bearish)",
                         transition: "width 0.3s ease",
                       }}
                     />
@@ -2006,8 +2118,14 @@ function CommoditySections({ tokenData, symbol }: { tokenData: TokenItem | null;
   const price = tokenData?.price ?? 0;
 
   // Determine correlation target based on symbol
-  const correlationTarget = s.includes("XAU") || s.includes("GOLD") ? "DXY" : s.includes("XAG") || s.includes("SILVER") ? "XAU" : "US10Y";
-  const correlationValue = s.includes("XAU") || s.includes("GOLD") ? -0.87 : s.includes("XAG") ? 0.92 : -0.45;
+  const correlationTarget =
+    s.includes("XAU") || s.includes("GOLD")
+      ? "DXY"
+      : s.includes("XAG") || s.includes("SILVER")
+        ? "XAU"
+        : "US10Y";
+  const correlationValue =
+    s.includes("XAU") || s.includes("GOLD") ? -0.87 : s.includes("XAG") ? 0.92 : -0.45;
 
   // Simulated key levels based on price
   const resistance = price > 0 ? +(price * 1.035).toFixed(2) : 0;
@@ -2017,13 +2135,15 @@ function CommoditySections({ tokenData, symbol }: { tokenData: TokenItem | null;
   // Determine session
   const hour = new Date().getUTCHours();
   const session =
-    hour >= 0 && hour < 6 ? "Asian Session" :
-    hour >= 6 && hour < 14 ? "London Session" :
-    hour >= 14 && hour < 21 ? "New York Session" :
-    "After-Hours (Low Liquidity)";
+    hour >= 0 && hour < 6
+      ? "Asian Session"
+      : hour >= 6 && hour < 14
+        ? "London Session"
+        : hour >= 14 && hour < 21
+          ? "New York Session"
+          : "After-Hours (Low Liquidity)";
 
-  const sessionColor =
-    hour >= 6 && hour < 21 ? "var(--color-bullish)" : "var(--color-bearish)";
+  const sessionColor = hour >= 6 && hour < 21 ? "var(--color-bullish)" : "var(--color-bearish)";
 
   return (
     <div
@@ -2061,7 +2181,11 @@ function CommoditySections({ tokenData, symbol }: { tokenData: TokenItem | null;
       >
         <span style={{ fontSize: "14px" }}>🕐</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}>Current Session</div>
+          <div
+            style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}
+          >
+            Current Session
+          </div>
           <div style={{ fontSize: "13px", fontWeight: 700, color: sessionColor, marginTop: "2px" }}>
             {session}
           </div>
@@ -2083,15 +2207,28 @@ function CommoditySections({ tokenData, symbol }: { tokenData: TokenItem | null;
       >
         <span style={{ fontSize: "14px" }}>🔗</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}>Correlation <span style={{ fontSize: "9px", opacity: 0.6 }}>(est.)</span></div>
-          <div style={{ fontSize: "13px", fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", marginTop: "2px", color: "var(--color-foreground)" }}>
+          <div
+            style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)" }}
+          >
+            Correlation <span style={{ fontSize: "9px", opacity: 0.6 }}>(est.)</span>
+          </div>
+          <div
+            style={{
+              fontSize: "13px",
+              fontWeight: 700,
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              marginTop: "2px",
+              color: "var(--color-foreground)",
+            }}
+          >
             {s} ↔ {correlationTarget}:{" "}
             <span
               style={{
                 color: correlationValue < 0 ? "var(--color-bearish)" : "var(--color-bullish)",
               }}
             >
-              {correlationValue > 0 ? "+" : ""}{correlationValue.toFixed(2)}
+              {correlationValue > 0 ? "+" : ""}
+              {correlationValue.toFixed(2)}
             </span>
           </div>
         </div>
@@ -2238,9 +2375,7 @@ function QuickCalcRow({
         style={{
           fontSize: "12px",
           fontWeight: 700,
-          fontFamily: mono
-            ? "'JetBrains Mono', ui-monospace, monospace"
-            : undefined,
+          fontFamily: mono ? "'JetBrains Mono', ui-monospace, monospace" : undefined,
           color: valueColor || "var(--color-foreground)",
         }}
       >
@@ -2281,15 +2416,7 @@ function MetricCardLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function MetricPill({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string;
-  color?: string;
-}) {
+function MetricPill({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div
       style={{
@@ -2339,19 +2466,10 @@ function PageScrollArea({ children }: { children: React.ReactNode }) {
 
 // ── Trade Row Component (kept from original) ─────────────────────────────────
 
-const TokenTradeRow = memo(function TokenTradeRow({
-  trade,
-}: {
-  trade: any;
-}) {
+const TokenTradeRow = memo(function TokenTradeRow({ trade }: { trade: any }) {
   const isPos = (trade.pnl || 0) >= 0;
   const isLong = trade.direction === "long";
-  const fmtPrice = (n: number) =>
-    n < 0.001
-      ? n.toFixed(8)
-      : n < 1
-        ? n.toFixed(6)
-        : n.toFixed(2);
+  const fmtPrice = (n: number) => (n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(6) : n.toFixed(2));
 
   return (
     <DataRow>
@@ -2405,9 +2523,7 @@ const TokenTradeRow = memo(function TokenTradeRow({
             color: isPos ? "var(--color-bullish)" : "var(--color-bearish)",
           }}
         >
-          {trade.pnl != null
-            ? (isPos ? "+" : "") + trade.pnl.toFixed(2)
-            : "—"}
+          {trade.pnl != null ? (isPos ? "+" : "") + trade.pnl.toFixed(2) : "—"}
         </div>
         <div
           style={{

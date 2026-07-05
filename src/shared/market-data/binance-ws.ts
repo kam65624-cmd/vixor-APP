@@ -8,42 +8,42 @@
 
 export interface BinanceTickerPayload {
   /** Stream name, e.g. "btcusdt@ticker" */
-  s: string;        // Symbol, e.g. "BTCUSDT"
-  c: string;        // Last price
-  o: string;        // Open price
-  h: string;        // 24h High
-  l: string;        // 24h Low
-  v: string;        // 24h Volume (base asset)
-  q: string;        // 24h Quote volume (USDT)
-  P: string;        // 24h Price change percent
-  p: string;        // 24h Price change absolute
-  E: number;        // Event timestamp (ms)
+  s: string; // Symbol, e.g. "BTCUSDT"
+  c: string; // Last price
+  o: string; // Open price
+  h: string; // 24h High
+  l: string; // 24h Low
+  v: string; // 24h Volume (base asset)
+  q: string; // 24h Quote volume (USDT)
+  P: string; // 24h Price change percent
+  p: string; // 24h Price change absolute
+  E: number; // Event timestamp (ms)
 }
 
 export interface LivePrice {
-  pair: string;           // Canonical pair, e.g. "BTC/USDT"
-  symbol: string;         // Binance symbol, e.g. "BTCUSDT"
-  price: number;          // Current price
-  change24h: number;      // 24h price change percent
-  high24h: number;        // 24h high
-  low24h: number;         // 24h low
-  volume24h: number;      // 24h volume (base)
+  pair: string; // Canonical pair, e.g. "BTC/USDT"
+  symbol: string; // Binance symbol, e.g. "BTCUSDT"
+  price: number; // Current price
+  change24h: number; // 24h price change percent
+  high24h: number; // 24h high
+  low24h: number; // 24h low
+  volume24h: number; // 24h volume (base)
   quoteVolume24h: number; // 24h volume in USDT
-  open24h: number;        // 24h open price
-  timestamp: number;      // Last update timestamp
+  open24h: number; // 24h open price
+  timestamp: number; // Last update timestamp
 }
 
 type PriceCallback = (prices: Map<string, LivePrice>) => void;
-type StatusCallback = (status: 'connecting' | 'connected' | 'disconnected' | 'error') => void;
+type StatusCallback = (status: "connecting" | "connected" | "disconnected" | "error") => void;
 
-const BINANCE_WS_BASE = 'wss://stream.binance.com:9443/stream';
+const BINANCE_WS_BASE = "wss://stream.binance.com:9443/stream";
 const RECONNECT_DELAY_MS = 3000;
 const MAX_RECONNECT_DELAY_MS = 30000;
 const PING_INTERVAL_MS = 30000;
 
 /**
  * BinanceWS — Singleton WebSocket manager for Binance live ticker streams.
- * 
+ *
  * Usage:
  *   const ws = BinanceWS.getInstance();
  *   ws.subscribe(['BTCUSDT', 'ETHUSDT'], (prices) => { ... });
@@ -60,7 +60,7 @@ export class BinanceWS {
   private reconnectDelay = RECONNECT_DELAY_MS;
   private pingTimer: ReturnType<typeof setInterval> | null = null;
   private isDestroyed = false;
-  private status: 'connecting' | 'connected' | 'disconnected' | 'error' = 'disconnected';
+  private status: "connecting" | "connected" | "disconnected" | "error" = "disconnected";
 
   private constructor() {}
 
@@ -126,11 +126,11 @@ export class BinanceWS {
   private connect(): void {
     if (this.isDestroyed) return;
 
-    this.setStatus('connecting');
+    this.setStatus("connecting");
 
     const streams = Array.from(this.subscriptions.keys())
-      .map(s => `${s.toLowerCase()}@ticker`)
-      .join('/');
+      .map((s) => `${s.toLowerCase()}@ticker`)
+      .join("/");
 
     const url = `${BINANCE_WS_BASE}?streams=${streams}`;
 
@@ -139,7 +139,7 @@ export class BinanceWS {
 
       this.ws.onopen = () => {
         this.reconnectDelay = RECONNECT_DELAY_MS;
-        this.setStatus('connected');
+        this.setStatus("connected");
         this.startPing();
       };
 
@@ -155,16 +155,16 @@ export class BinanceWS {
       };
 
       this.ws.onerror = () => {
-        this.setStatus('error');
+        this.setStatus("error");
       };
 
       this.ws.onclose = () => {
         this.stopPing();
-        this.setStatus('disconnected');
+        this.setStatus("disconnected");
         this.scheduleReconnect();
       };
     } catch {
-      this.setStatus('error');
+      this.setStatus("error");
       this.scheduleReconnect();
     }
   }
@@ -191,21 +191,22 @@ export class BinanceWS {
   private sendSubscribe(): void {
     if (this.ws?.readyState !== WebSocket.OPEN) return;
 
-    const streams = Array.from(this.subscriptions.keys())
-      .map(s => `${s.toLowerCase()}@ticker`);
+    const streams = Array.from(this.subscriptions.keys()).map((s) => `${s.toLowerCase()}@ticker`);
 
-    this.ws.send(JSON.stringify({
-      method: 'SUBSCRIBE',
-      params: streams,
-      id: Date.now(),
-    }));
+    this.ws.send(
+      JSON.stringify({
+        method: "SUBSCRIBE",
+        params: streams,
+        id: Date.now(),
+      }),
+    );
   }
 
   private startPing(): void {
     this.stopPing();
     this.pingTimer = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({ method: 'ping' }));
+        this.ws.send(JSON.stringify({ method: "ping" }));
       }
     }, PING_INTERVAL_MS);
   }
@@ -242,25 +243,33 @@ export class BinanceWS {
       this.ws = null;
     }
     this.subscriptions.clear();
-    this.setStatus('disconnected');
+    this.setStatus("disconnected");
   }
 
-  private setStatus(status: 'connecting' | 'connected' | 'disconnected' | 'error'): void {
+  private setStatus(status: "connecting" | "connected" | "disconnected" | "error"): void {
     this.status = status;
     for (const cb of this.statusCallbacks) {
-      try { cb(status); } catch { /* ignore */ }
+      try {
+        cb(status);
+      } catch {
+        /* ignore */
+      }
     }
   }
 
   private notifyPriceCallbacks(): void {
     for (const cb of this.priceCallbacks) {
-      try { cb(this.prices); } catch { /* ignore */ }
+      try {
+        cb(this.prices);
+      } catch {
+        /* ignore */
+      }
     }
   }
 
   private symbolToPair(symbol: string): string {
     // BTCUSDT → BTC/USDT, PEPEUSDT → PEPE/USDT, WIFUSDT → WIF/USDT
-    const usdtIndex = symbol.lastIndexOf('USDT');
+    const usdtIndex = symbol.lastIndexOf("USDT");
     if (usdtIndex > 0) {
       return `${symbol.slice(0, usdtIndex)}/USDT`;
     }

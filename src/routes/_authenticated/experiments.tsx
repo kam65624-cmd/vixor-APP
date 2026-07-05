@@ -141,19 +141,48 @@ function extractRankedCount(result: Record<string, unknown> | null): number {
 
 function StatusBadge({ status }: { status: ExperimentStatus }) {
   const config: Record<string, { bg: string; color: string; border: string }> = {
-    running: { bg: "rgba(16,185,129,0.1)", color: "var(--color-bullish)", border: "rgba(16,185,129,0.2)" },
-    completed: { bg: "rgba(34,197,94,0.1)", color: "var(--color-bullish)", border: "rgba(34,197,94,0.2)" },
-    failed: { bg: "rgba(239,68,68,0.1)", color: "var(--color-bearish)", border: "rgba(239,68,68,0.2)" },
-    cancelled: { bg: "rgba(255,255,255,0.04)", color: "var(--color-muted-foreground)", border: "rgba(255,255,255,0.06)" },
+    running: {
+      bg: "rgba(16,185,129,0.1)",
+      color: "var(--color-bullish)",
+      border: "rgba(16,185,129,0.2)",
+    },
+    completed: {
+      bg: "rgba(34,197,94,0.1)",
+      color: "var(--color-bullish)",
+      border: "rgba(34,197,94,0.2)",
+    },
+    failed: {
+      bg: "rgba(239,68,68,0.1)",
+      color: "var(--color-bearish)",
+      border: "rgba(239,68,68,0.2)",
+    },
+    cancelled: {
+      bg: "rgba(255,255,255,0.04)",
+      color: "var(--color-muted-foreground)",
+      border: "rgba(255,255,255,0.06)",
+    },
   };
   const c = config[status] || config.cancelled;
   return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 6,
-      fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
-      background: c.bg, color: c.color, border: `1px solid ${c.border}`,
-    }}>
-      {status === "running" && <Loader2 style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }} />}
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        padding: "2px 8px",
+        borderRadius: 6,
+        fontSize: 10,
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+        background: c.bg,
+        color: c.color,
+        border: `1px solid ${c.border}`,
+      }}
+    >
+      {status === "running" && (
+        <Loader2 style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }} />
+      )}
       {status === "completed" && <CheckCircle2 style={{ width: 12, height: 12 }} />}
       {status === "failed" && <XCircle style={{ width: 12, height: 12 }} />}
       {status}
@@ -199,17 +228,19 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
     F: "var(--color-bearish)",
   };
 
-  const iconBg = experiment.status === "running"
-    ? "rgba(16,185,129,0.1)"
-    : experiment.status === "completed"
-      ? "rgba(34,197,94,0.1)"
-      : "rgba(239,68,68,0.1)";
+  const iconBg =
+    experiment.status === "running"
+      ? "rgba(16,185,129,0.1)"
+      : experiment.status === "completed"
+        ? "rgba(34,197,94,0.1)"
+        : "rgba(239,68,68,0.1)";
 
-  const iconColor = experiment.status === "running"
-    ? "var(--color-bullish)"
-    : experiment.status === "completed"
+  const iconColor =
+    experiment.status === "running"
       ? "var(--color-bullish)"
-      : "var(--color-bearish)";
+      : experiment.status === "completed"
+        ? "var(--color-bullish)"
+        : "var(--color-bearish)";
 
   return (
     <div style={{ ...cardStyle, border: `1px solid ${"var(--color-border)"}`, overflow: "hidden" }}>
@@ -217,17 +248,46 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
       <div
         style={{ padding: 16, cursor: "pointer" }}
         onClick={() => setExpanded(!expanded)}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLDivElement).style.background = "transparent";
+        }}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            marginBottom: 8,
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 8, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 8,
+                background: iconBg,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <FlaskConical style={{ width: 20, height: 20, color: iconColor }} />
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "var(--color-foreground)" }}>{experiment.config.name}</div>
-              <div style={{ fontSize: 12, color: "var(--color-muted-foreground)", fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "var(--color-foreground)" }}>
+                {experiment.config.name}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "var(--color-muted-foreground)",
+                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                }}
+              >
                 {experiment.config.assetSymbol} · {experiment.config.timeframe}
               </div>
             </div>
@@ -235,7 +295,13 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <StatusBadge status={experiment.status} />
             <ChevronDown
-              style={{ width: 16, height: 16, color: "var(--color-muted-foreground)", transition: "transform 200ms", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+              style={{
+                width: 16,
+                height: 16,
+                color: "var(--color-muted-foreground)",
+                transition: "transform 200ms",
+                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              }}
             />
           </div>
         </div>
@@ -243,28 +309,91 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
         {/* Quick stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+            <div
+              style={{
+                fontSize: 9,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: "var(--color-muted-foreground)",
+                fontWeight: 700,
+              }}
+            >
               Created
             </div>
-            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)" }}>{formatDate(experiment.created_at)}</div>
+            <div
+              style={{
+                fontSize: 11,
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                color: "var(--color-foreground)",
+              }}
+            >
+              {formatDate(experiment.created_at)}
+            </div>
           </div>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+            <div
+              style={{
+                fontSize: 9,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: "var(--color-muted-foreground)",
+                fontWeight: 700,
+              }}
+            >
               Generations
             </div>
-            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontWeight: 700, color: "var(--color-foreground)" }}>{experiment.config.generations}</div>
+            <div
+              style={{
+                fontSize: 11,
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontWeight: 700,
+                color: "var(--color-foreground)",
+              }}
+            >
+              {experiment.config.generations}
+            </div>
           </div>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+            <div
+              style={{
+                fontSize: 9,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: "var(--color-muted-foreground)",
+                fontWeight: 700,
+              }}
+            >
               Population
             </div>
-            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)" }}>{experiment.config.populationSize}</div>
+            <div
+              style={{
+                fontSize: 11,
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                color: "var(--color-foreground)",
+              }}
+            >
+              {experiment.config.populationSize}
+            </div>
           </div>
           <div>
-            <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+            <div
+              style={{
+                fontSize: 9,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: "var(--color-muted-foreground)",
+                fontWeight: 700,
+              }}
+            >
               Duration
             </div>
-            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)" }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                color: "var(--color-foreground)",
+              }}
+            >
               {elapsedMs ? `${(elapsedMs / 1000).toFixed(1)}s` : "---"}
             </div>
           </div>
@@ -273,85 +402,250 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
 
       {/* Expanded details */}
       {expanded && (
-        <div style={{ borderTop: `1px solid ${"var(--color-border)"}`, padding: 16, display: "flex", flexDirection: "column", gap: 12, background: "rgba(10,14,26,0.5)" }}>
+        <div
+          style={{
+            borderTop: `1px solid ${"var(--color-border)"}`,
+            padding: 16,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            background: "rgba(10,14,26,0.5)",
+          }}
+        >
           {experiment.status === "completed" && bestScore ? (
             <>
               {/* Score summary */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-                <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)", border: `1px solid ${"var(--color-border)"}` }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+                <div
+                  style={{
+                    padding: 8,
+                    borderRadius: 6,
+                    background: "var(--color-background)",
+                    border: `1px solid ${"var(--color-border)"}`,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--color-muted-foreground)",
+                      fontWeight: 700,
+                    }}
+                  >
                     Overall Score
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-bullish)" }}>
+                    <span
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 700,
+                        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                        color: "var(--color-bullish)",
+                      }}
+                    >
                       {bestScore.overall}
                     </span>
-                    <span style={{ fontSize: 18, fontWeight: 700, color: gradeColor[bestScore.grade] || "var(--color-muted-foreground)" }}>
+                    <span
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: gradeColor[bestScore.grade] || "var(--color-muted-foreground)",
+                      }}
+                    >
                       {bestScore.grade}
                     </span>
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)", border: `1px solid ${"var(--color-border)"}` }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+                <div
+                  style={{
+                    padding: 8,
+                    borderRadius: 6,
+                    background: "var(--color-background)",
+                    border: `1px solid ${"var(--color-border)"}`,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--color-muted-foreground)",
+                      fontWeight: 700,
+                    }}
+                  >
                     Total Return
                   </div>
-                  <div style={{
-                    fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                    color: bestScore.totalReturn > 0 ? "var(--color-bullish)" : "var(--color-bearish)",
-                  }}>
+                  <div
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      color:
+                        bestScore.totalReturn > 0 ? "var(--color-bullish)" : "var(--color-bearish)",
+                    }}
+                  >
                     {bestScore.totalReturn > 0 ? "+" : ""}
                     {bestScore.totalReturn}%
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)", border: `1px solid ${"var(--color-border)"}` }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+                <div
+                  style={{
+                    padding: 8,
+                    borderRadius: 6,
+                    background: "var(--color-background)",
+                    border: `1px solid ${"var(--color-border)"}`,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--color-muted-foreground)",
+                      fontWeight: 700,
+                    }}
+                  >
                     Max Drawdown
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-bearish)" }}>
+                  <div
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      color: "var(--color-bearish)",
+                    }}
+                  >
                     -{bestScore.maxDrawdown}%
                   </div>
                 </div>
-                <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)", border: `1px solid ${"var(--color-border)"}` }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+                <div
+                  style={{
+                    padding: 8,
+                    borderRadius: 6,
+                    background: "var(--color-background)",
+                    border: `1px solid ${"var(--color-border)"}`,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--color-muted-foreground)",
+                      fontWeight: 700,
+                    }}
+                  >
                     Sharpe Ratio
                   </div>
-                  <div style={{
-                    fontSize: 18, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                    color: bestScore.sharpe > 1.5 ? "var(--color-bullish)" : bestScore.sharpe > 1 ? "var(--color-bullish)" : "var(--color-bearish)",
-                  }}>
+                  <div
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      color:
+                        bestScore.sharpe > 1.5
+                          ? "var(--color-bullish)"
+                          : bestScore.sharpe > 1
+                            ? "var(--color-bullish)"
+                            : "var(--color-bearish)",
+                    }}
+                  >
                     {bestScore.sharpe}
                   </div>
                 </div>
               </div>
 
               {/* Strategy info */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginTop: 8 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: 12,
+                  marginTop: 8,
+                }}
+              >
                 <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)" }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+                  <div
+                    style={{
+                      fontSize: 9,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--color-muted-foreground)",
+                      fontWeight: 700,
+                    }}
+                  >
                     Template
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)" }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      color: "var(--color-foreground)",
+                    }}
+                  >
                     {experiment.config.strategyTemplate}
                   </div>
                 </div>
                 <div style={{ padding: 8, borderRadius: 6, background: "var(--color-background)" }}>
-                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-muted-foreground)", fontWeight: 700 }}>
+                  <div
+                    style={{
+                      fontSize: 9,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--color-muted-foreground)",
+                      fontWeight: 700,
+                    }}
+                  >
                     Ranked Strategies
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "var(--color-foreground)" }}>{rankedCount}</div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      color: "var(--color-foreground)",
+                    }}
+                  >
+                    {rankedCount}
+                  </div>
                 </div>
               </div>
             </>
           ) : experiment.status === "running" ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--color-muted-foreground)" }}>
-              <Loader2 style={{ width: 16, height: 16, color: "var(--color-bullish)", animation: "spin 1s linear infinite" }} />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 14,
+                color: "var(--color-muted-foreground)",
+              }}
+            >
+              <Loader2
+                style={{
+                  width: 16,
+                  height: 16,
+                  color: "var(--color-bullish)",
+                  animation: "spin 1s linear infinite",
+                }}
+              />
               <span>
                 {translate("experiments.runningMsg") ||
                   "Experiment is running... Results will appear here once complete."}
               </span>
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--color-bearish)" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 14,
+                color: "var(--color-bearish)",
+              }}
+            >
               <XCircle style={{ width: 16, height: 16 }} />
               <span>
                 {translate("experiments.failedMsg") ||
@@ -385,7 +679,7 @@ const TIMEFRAMES = ["1H", "4H", "1D"];
 // ---------------------------------------------------------------------------
 
 function ExperimentsPage() {
-  const { t: useT } = useI18n();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const fetchMe = useStableServerFn(getMe);
   const fetchExperiments = useStableServerFn(listExperiments);
@@ -462,10 +756,10 @@ function ExperimentsPage() {
       const msg =
         e instanceof Error
           ? e.message
-          : useT("experiments.createFailed") || "Failed to create experiment";
+          : t("experiments.createFailed") || "Failed to create experiment";
       if (msg.startsWith("INSUFFICIENT_POINTS:")) {
         setCreateError(
-          useT("experiments.insufficientPoints") || "Insufficient points to create an experiment.",
+          t("experiments.insufficientPoints") || "Insufficient points to create an experiment.",
         );
       } else {
         setCreateError(msg);
@@ -485,93 +779,161 @@ function ExperimentsPage() {
 
   return (
     <PageLayout
-      title={useT("experiments.title") || "Experiments"}
-      badge={useT("signals.vixorIntelligence") || "VIXOR ENGINE"}
+      title={t("experiments.title") || "Experiments"}
+      badge={t("signals.vixorIntelligence") || "VIXOR ENGINE"}
       badgeColor={"var(--color-bullish)"}
       loading={me.isLoading}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 24 }}>
         {/* Points Balance + New Experiment Button */}
         <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 6,
-            fontSize: 12, fontWeight: 700,
-            background: hasEnoughPoints ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.1)",
-            color: hasEnoughPoints ? "var(--color-primary)" : "var(--color-bearish)",
-          }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 12px",
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 700,
+              background: hasEnoughPoints ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.1)",
+              color: hasEnoughPoints ? "var(--color-primary)" : "var(--color-bearish)",
+            }}
+          >
             <Coins style={{ width: 14, height: 14 }} />
             <span>{pointsBalance}</span>
-            <span style={{ color: "var(--color-muted-foreground)", fontWeight: 400 }}>{useT("common.points") || "pts"}</span>
+            <span style={{ color: "var(--color-muted-foreground)", fontWeight: 400 }}>
+              {t("common.points") || "pts"}
+            </span>
           </div>
           <button
             onClick={() => setShowNewForm((prev) => !prev)}
             style={{
-              height: 36, padding: "0 12px", borderRadius: 8, background: "var(--color-bullish)", color: "#fff",
-              fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
-              border: "none", cursor: "pointer",
+              height: 36,
+              padding: "0 12px",
+              borderRadius: 8,
+              background: "var(--color-bullish)",
+              color: "#fff",
+              fontSize: 12,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              border: "none",
+              cursor: "pointer",
             }}
           >
             <Plus style={{ width: 14, height: 14 }} />
-            {useT("experiments.newExperiment") || "New Experiment"}
+            {t("experiments.newExperiment") || "New Experiment"}
           </button>
         </div>
 
         {/* New experiment form */}
         {showNewForm && (
-          <div style={{ ...cardStyle, border: `1px solid ${"var(--color-border)"}`, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div
+            style={{
+              ...cardStyle,
+              border: `1px solid ${"var(--color-border)"}`,
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <FlaskConical style={{ width: 16, height: 16, color: "var(--color-bullish)" }} />
               <span style={{ fontSize: 14, fontWeight: 700, color: "var(--color-foreground)" }}>
-                {useT("experiments.newExperiment") || "New Experiment"}
+                {t("experiments.newExperiment") || "New Experiment"}
               </span>
-              <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: "var(--color-bullish)" }}>
+              <span
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "var(--color-bullish)",
+                }}
+              >
                 -{EXPERIMENT_COST} pts
               </span>
             </div>
 
             {/* Insufficient points warning */}
             {!hasEnoughPoints && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, borderRadius: 6, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}>
-                <AlertTriangle style={{ width: 16, height: 16, color: "var(--color-bearish)", flexShrink: 0 }} />
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: 12,
+                  borderRadius: 6,
+                  background: "rgba(239,68,68,0.05)",
+                  border: "1px solid rgba(239,68,68,0.2)",
+                }}
+              >
+                <AlertTriangle
+                  style={{ width: 16, height: 16, color: "var(--color-bearish)", flexShrink: 0 }}
+                />
                 <span style={{ fontSize: 12, color: "var(--color-bearish)" }}>
-                  {useT("experiments.needMorePoints") ||
+                  {t("experiments.needMorePoints") ||
                     `You need ${EXPERIMENT_COST} points. You have ${pointsBalance}.`}
                 </span>
                 <a
                   href="/premium"
-                  style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: "var(--color-bullish)", whiteSpace: "nowrap", textDecoration: "none" }}
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "var(--color-bullish)",
+                    whiteSpace: "nowrap",
+                    textDecoration: "none",
+                  }}
                 >
-                  {useT("premium.getPoints") || "Get Points"}
+                  {t("premium.getPoints") || "Get Points"}
                 </a>
               </div>
             )}
 
             {/* Name */}
             <div>
-              <label style={labelStyle}>{useT("experiments.experimentName") || "Experiment Name"}</label>
+              <label style={labelStyle}>
+                {t("experiments.experimentName") || "Experiment Name"}
+              </label>
               <input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="e.g. SMA Crossover - BTC/USDT"
-                style={{ ...inputStyle, fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
+                style={{
+                  ...inputStyle,
+                  fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+                }}
               />
             </div>
 
             {/* Asset + Timeframe */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
               <div>
-                <label style={labelStyle}>{useT("experiments.assetSymbol") || "Asset Symbol"}</label>
+                <label style={labelStyle}>{t("experiments.assetSymbol") || "Asset Symbol"}</label>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {ASSET_SYMBOLS.map((s) => (
                     <button
                       key={s}
                       onClick={() => setNewAsset(s)}
                       style={{
-                        padding: "0 10px", height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
-                        background: newAsset === s ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
-                        color: newAsset === s ? "var(--color-primary)" : "var(--color-muted-foreground)",
-                        border: newAsset === s ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                        padding: "0 10px",
+                        height: 28,
+                        borderRadius: 6,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        background:
+                          newAsset === s ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
+                        color:
+                          newAsset === s ? "var(--color-primary)" : "var(--color-muted-foreground)",
+                        border:
+                          newAsset === s
+                            ? "1px solid rgba(16,185,129,0.3)"
+                            : "1px solid rgba(255,255,255,0.06)",
                       }}
                     >
                       {s}
@@ -580,18 +942,31 @@ function ExperimentsPage() {
                 </div>
               </div>
               <div>
-                <label style={labelStyle}>{useT("experiments.timeframe") || "Timeframe"}</label>
+                <label style={labelStyle}>{t("experiments.timeframe") || "Timeframe"}</label>
                 <div style={{ display: "flex", gap: 6 }}>
                   {TIMEFRAMES.map((tf) => (
                     <button
                       key={tf}
                       onClick={() => setNewTimeframe(tf)}
                       style={{
-                        flex: 1, height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700,
-                        border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                        background: newTimeframe === tf ? "rgba(16,185,129,0.15)" : "var(--color-card)",
-                        borderColor: newTimeframe === tf ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
-                        color: newTimeframe === tf ? "var(--color-primary)" : "var(--color-muted-foreground)",
+                        flex: 1,
+                        height: 28,
+                        borderRadius: 6,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        border: "1px solid",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        background:
+                          newTimeframe === tf ? "rgba(16,185,129,0.15)" : "var(--color-card)",
+                        borderColor:
+                          newTimeframe === tf ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
+                        color:
+                          newTimeframe === tf
+                            ? "var(--color-primary)"
+                            : "var(--color-muted-foreground)",
                       }}
                     >
                       {tf}
@@ -603,18 +978,30 @@ function ExperimentsPage() {
 
             {/* Strategy */}
             <div>
-              <label style={labelStyle}>{useT("experiments.strategyTemplate") || "Strategy Template"}</label>
+              <label style={labelStyle}>
+                {t("experiments.strategyTemplate") || "Strategy Template"}
+              </label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {STRATEGY_TEMPLATES.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => setNewStrategy(s.id)}
                     style={{
-                      padding: "0 10px", height: 28, borderRadius: 6, fontSize: 11, fontWeight: 700,
-                      border: "1px solid", cursor: "pointer",
-                      background: newStrategy === s.id ? "rgba(16,185,129,0.15)" : "var(--color-card)",
-                      borderColor: newStrategy === s.id ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
-                      color: newStrategy === s.id ? "var(--color-primary)" : "var(--color-muted-foreground)",
+                      padding: "0 10px",
+                      height: 28,
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      border: "1px solid",
+                      cursor: "pointer",
+                      background:
+                        newStrategy === s.id ? "rgba(16,185,129,0.15)" : "var(--color-card)",
+                      borderColor:
+                        newStrategy === s.id ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.06)",
+                      color:
+                        newStrategy === s.id
+                          ? "var(--color-primary)"
+                          : "var(--color-muted-foreground)",
                     }}
                   >
                     {s.label}
@@ -626,7 +1013,7 @@ function ExperimentsPage() {
             {/* Generations + Population */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
               <div>
-                <label style={labelStyle}>{useT("experiments.generations") || "Generations"}</label>
+                <label style={labelStyle}>{t("experiments.generations") || "Generations"}</label>
                 <input
                   type="number"
                   min={1}
@@ -637,7 +1024,9 @@ function ExperimentsPage() {
                 />
               </div>
               <div>
-                <label style={labelStyle}>{useT("experiments.populationSize") || "Population Size"}</label>
+                <label style={labelStyle}>
+                  {t("experiments.populationSize") || "Population Size"}
+                </label>
                 <input
                   type="number"
                   min={4}
@@ -653,23 +1042,35 @@ function ExperimentsPage() {
               onClick={handleCreate}
               disabled={creating || !newName.trim() || !hasEnoughPoints}
               style={{
-                width: "100%", height: 44, borderRadius: 8, fontWeight: 700,
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                border: "none", cursor: "pointer", opacity: (creating || !newName.trim() || !hasEnoughPoints) ? 0.5 : 1,
-                background: hasEnoughPoints ? "var(--color-bullish)" : "var(--color-muted-foreground)",
+                width: "100%",
+                height: 44,
+                borderRadius: 8,
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                border: "none",
+                cursor: "pointer",
+                opacity: creating || !newName.trim() || !hasEnoughPoints ? 0.5 : 1,
+                background: hasEnoughPoints
+                  ? "var(--color-bullish)"
+                  : "var(--color-muted-foreground)",
                 color: hasEnoughPoints ? "#fff" : "var(--color-muted-foreground)",
                 fontSize: 14,
               }}
             >
               {creating ? (
                 <>
-                  <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} />
-                  {useT("experiments.starting") || "Starting experiment..."}
+                  <Loader2
+                    style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }}
+                  />
+                  {t("experiments.starting") || "Starting experiment..."}
                 </>
               ) : (
                 <>
                   <FlaskConical style={{ width: 16, height: 16 }} />
-                  <span>{useT("experiments.startExperiment") || "Start Experiment"}</span>
+                  <span>{t("experiments.startExperiment") || "Start Experiment"}</span>
                   <span style={{ fontSize: 12, opacity: 0.75 }}>(-{EXPERIMENT_COST} pts)</span>
                 </>
               )}
@@ -679,7 +1080,9 @@ function ExperimentsPage() {
 
         {/* Create error */}
         {createError && (
-          <div style={{ ...cardStyle, borderLeft: "4px solid " + "var(--color-bearish)", padding: 12 }}>
+          <div
+            style={{ ...cardStyle, borderLeft: "4px solid " + "var(--color-bearish)", padding: 12 }}
+          >
             <div style={{ fontSize: 12, color: "var(--color-bearish)" }}>{createError}</div>
           </div>
         )}
@@ -688,18 +1091,18 @@ function ExperimentsPage() {
         <StatsRow
           stats={[
             {
-              label: useT("experiments.totalExperiments") || "Total",
+              label: t("experiments.totalExperiments") || "Total",
               value: String(experiments.length),
               sub: runningCount > 0 ? `${runningCount} running` : undefined,
               color: runningCount > 0 ? "var(--color-bullish)" : "var(--color-foreground)",
             },
             {
-              label: useT("experiments.completed") || "Completed",
+              label: t("experiments.completed") || "Completed",
               value: String(completedCount),
               color: "var(--color-bullish)",
             },
             {
-              label: useT("experiments.bestScore") || "Best Score",
+              label: t("experiments.bestScore") || "Best Score",
               value: bestOverall ? `${bestOverall.overall}` : "---",
               sub: bestOverall ? bestOverall.grade : undefined,
               color: "var(--color-bullish)",
@@ -711,13 +1114,18 @@ function ExperimentsPage() {
         {experiments.length === 0 ? (
           <EmptyState
             icon="🧪"
-            title={useT("experiments.noExperiments") || "No experiments yet"}
-            message={useT("experiments.noExperimentsDesc") || "Create your first experiment to start optimizing trading strategies."}
+            title={t("experiments.noExperiments") || "No experiments yet"}
+            message={
+              t("experiments.noExperimentsDesc") ||
+              "Create your first experiment to start optimizing trading strategies."
+            }
           />
         ) : (
           <ScrollArea>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 0 16px" }}>
-              {experiments.map((exp) => <ExperimentCard key={exp.id} experiment={exp} />)}
+              {experiments.map((exp) => (
+                <ExperimentCard key={exp.id} experiment={exp} />
+              ))}
             </div>
           </ScrollArea>
         )}

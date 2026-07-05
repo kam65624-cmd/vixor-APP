@@ -73,7 +73,11 @@ export async function connectPhantom(): Promise<{
       return bs58.encode(signature);
     },
     disconnect: async () => {
-      try { await phantom.disconnect(); } catch { /* ignore */ }
+      try {
+        await phantom.disconnect();
+      } catch {
+        /* ignore */
+      }
     },
   };
 }
@@ -86,7 +90,9 @@ export async function getPhantomSolBalance(address: string): Promise<number> {
   const { Connection, LAMPORTS_PER_SOL } = await import("@solana/web3.js");
   const rpcUrl = process.env.WALLET_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
   const connection = new Connection(rpcUrl, "confirmed");
-  const balance = await connection.getBalance(new (await import("@solana/web3.js")).PublicKey(address));
+  const balance = await connection.getBalance(
+    new (await import("@solana/web3.js")).PublicKey(address),
+  );
   return balance / LAMPORTS_PER_SOL;
 }
 
@@ -94,7 +100,9 @@ export async function getPhantomSolBalance(address: string): Promise<number> {
  * Get SPL token balances for a Phantom-connected address.
  * Uses Helius RPC if available (faster + richer metadata).
  */
-export async function getPhantomTokenBalances(address: string): Promise<import("../types").TokenBalance[]> {
+export async function getPhantomTokenBalances(
+  address: string,
+): Promise<import("../types").TokenBalance[]> {
   const { Connection, PublicKey } = await import("@solana/web3.js");
   const TOKEN_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
@@ -105,10 +113,9 @@ export async function getPhantomTokenBalances(address: string): Promise<import("
     : process.env.WALLET_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 
   const connection = new Connection(rpcUrl, "confirmed");
-  const resp = await connection.getParsedTokenAccountsByOwner(
-    new PublicKey(address),
-    { programId: TOKEN_PROGRAM_ID },
-  );
+  const resp = await connection.getParsedTokenAccountsByOwner(new PublicKey(address), {
+    programId: TOKEN_PROGRAM_ID,
+  });
 
   const balances: import("../types").TokenBalance[] = [];
   for (const acc of resp.value) {
@@ -117,8 +124,8 @@ export async function getPhantomTokenBalances(address: string): Promise<import("
 
     balances.push({
       mint: info.mint,
-      symbol: (info as Record<string, unknown>).symbol as string || "UNKNOWN",
-      name: (info as Record<string, unknown>).name as string || "Unknown Token",
+      symbol: ((info as Record<string, unknown>).symbol as string) || "UNKNOWN",
+      name: ((info as Record<string, unknown>).name as string) || "Unknown Token",
       decimals: info.tokenAmount.decimals,
       balance: info.tokenAmount.amount,
       balanceFormatted: info.tokenAmount.uiAmount.toFixed(info.tokenAmount.decimals > 6 ? 4 : 6),

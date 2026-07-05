@@ -117,7 +117,11 @@ export class RedisRateLimiter {
         };
       }
       const newCount = existing.count + 1;
-      await this.cache!.set(key, { count: newCount, resetAt: existing.resetAt }, this.windowSec * 1000);
+      await this.cache!.set(
+        key,
+        { count: newCount, resetAt: existing.resetAt },
+        this.windowSec * 1000,
+      );
       return {
         allowed: true,
         remaining: this.maxRequests - newCount,

@@ -6,16 +6,10 @@ const isDev =
     : false;
 
 export const logger = {
-  log: isDev
-    ? console.log.bind(console)
-    : (..._args: unknown[]) => {},
-  warn: isDev
-    ? console.warn.bind(console)
-    : (..._args: unknown[]) => {},
+  log: isDev ? console.log.bind(console) : (..._args: unknown[]) => {},
+  warn: isDev ? console.warn.bind(console) : (..._args: unknown[]) => {},
   error: console.error.bind(console), // always log errors
-  info: isDev
-    ? console.info.bind(console)
-    : (..._args: unknown[]) => {},
+  info: isDev ? console.info.bind(console) : (..._args: unknown[]) => {},
 };
 
 export default logger;

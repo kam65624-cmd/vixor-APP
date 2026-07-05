@@ -13,11 +13,7 @@
 // Also exports the existing LLMRouter for backward compatibility.
 // ============================================================================
 
-import type {
-  ChatRequest,
-  ChatResponse,
-  LLMProviderId,
-} from "./types";
+import type { ChatRequest, ChatResponse, LLMProviderId } from "./types";
 import { LLMError } from "./types";
 import { LLMRouter, llmRouter } from "./router";
 
@@ -164,9 +160,7 @@ async function callOpenAICompatible(
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    throw new Error(
-      `${config.provider} API error ${res.status}: ${errText.slice(0, 500)}`,
-    );
+    throw new Error(`${config.provider} API error ${res.status}: ${errText.slice(0, 500)}`);
   }
 
   const json = (await res.json()) as {
@@ -196,7 +190,7 @@ async function callOpenAICompatible(
  * @param _options - Optional call parameters.
  * @param _apiKey - The Gemini API key.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 async function callGemini(
   _messages: LLMMessage[],
   _options: LLMOptions = {},
@@ -261,9 +255,7 @@ export async function callLLM(
   }
 
   if (provider === "unknown") {
-    throw new Error(
-      `Cannot detect LLM provider from API key prefix: "${apiKey.slice(0, 8)}..."`,
-    );
+    throw new Error(`Cannot detect LLM provider from API key prefix: "${apiKey.slice(0, 8)}..."`);
   }
 
   const config = OPENAI_COMPATIBLE_CONFIGS[provider];

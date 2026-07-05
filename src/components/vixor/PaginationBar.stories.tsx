@@ -85,4 +85,3 @@ function PaginationDemo() {
 export const Interactive: StoryObj = {
   render: () => <PaginationDemo />,
 };
-

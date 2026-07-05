@@ -314,7 +314,7 @@ interface StoredExchangeEntry {
  * Ensure the user_settings row exists, return current exchange_credentials.
  */
 async function ensureAndGetCredentials(
-  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  supabase: any,
   userId: string,
 ): Promise<Record<string, StoredExchangeEntry>> {
   const { data: row } = await supabase
@@ -342,7 +342,7 @@ async function ensureAndGetCredentials(
 }
 
 async function persistCredentials(
-  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  supabase: any,
   userId: string,
   creds: Record<string, StoredExchangeEntry>,
 ): Promise<void> {

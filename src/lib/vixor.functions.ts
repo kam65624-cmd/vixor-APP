@@ -49,10 +49,7 @@ export {
 } from "@/domains/trading/functions";
 
 // ── Copilot Domain ──
-export {
-  askCopilot,
-  getConsensus,
-} from "@/domains/copilot/functions";
+export { askCopilot, getConsensus } from "@/domains/copilot/functions";
 
 export {
   createConversation,

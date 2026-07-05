@@ -3,7 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import {
-  PageLayout, 
+  PageLayout,
   StatsRow,
   ProgressBar,
   ScrollArea,
@@ -247,7 +247,9 @@ function AdminApiKeysPage() {
                           textAlign: "right",
                           fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                           fontSize: "10px",
-                          color: key.configured ? "var(--color-muted-foreground)" : "var(--color-muted-foreground)",
+                          color: key.configured
+                            ? "var(--color-muted-foreground)"
+                            : "var(--color-muted-foreground)",
                           flexShrink: 0,
                         }}
                       >

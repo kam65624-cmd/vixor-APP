@@ -17,10 +17,10 @@ export interface EvmChainInfo {
   chainId: EvmChainId;
   name: string;
   label: string;
- nativeSymbol: string;
+  nativeSymbol: string;
   explorerUrl: string;
- rpcUrl: string;
- blockExplorerTx: string;
+  rpcUrl: string;
+  blockExplorerTx: string;
 }
 
 /** All supported EVM chains */

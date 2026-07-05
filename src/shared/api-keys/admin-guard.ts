@@ -20,9 +20,7 @@ const ADMIN_IDS = new Set(
  */
 export function isAdmin(userId: string): boolean {
   if (ADMIN_IDS.size === 0) {
-    console.warn(
-      "[Admin Guard] VIXOR_ADMIN_IDS is not set. No users have admin access.",
-    );
+    console.warn("[Admin Guard] VIXOR_ADMIN_IDS is not set. No users have admin access.");
   }
   return ADMIN_IDS.has(userId);
 }
