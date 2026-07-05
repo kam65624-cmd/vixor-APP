@@ -1078,7 +1078,8 @@ const PointsBadge = memo(function PointsBadge() {
   const { data } = useQuery({
     queryKey: ["user-points-nav"],
     queryFn: () => getUserPoints({}),
-    staleTime: 60_000,
+    staleTime: 30_000,
+    retry: 2,
   });
   const balance = data?.balance ?? 0;
 
