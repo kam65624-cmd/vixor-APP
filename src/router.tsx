@@ -37,5 +37,5 @@ export const getRouter = () => {
     defaultPreload: false,
   });
 
-  return { router, queryClient };
+  return router;
 };
