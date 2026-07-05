@@ -7,9 +7,9 @@ import type { Database } from "./types";
 
 function createSupabaseAdminClient() {
   // ── Resolve Supabase URL ──
-  // Priority: process.env (Vercel runtime) → import.meta.env (Vite build-time)
-  const SUPABASE_URL =
-    process.env.SUPABASE_URL || (import.meta as any).env?.VITE_SUPABASE_URL || "";
+  // On Vercel, env vars are available as process.env.* at runtime.
+  // Also check VITE_ prefixed vars as fallback.
+  const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
   // SECURITY: Only use the service role key — NEVER fall back to anon key.
   // The admin client bypasses RLS and must only use the service role key.
   // If SUPABASE_SERVICE_ROLE_KEY is not set, the app will throw an error.

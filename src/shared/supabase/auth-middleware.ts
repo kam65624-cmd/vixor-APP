@@ -7,17 +7,15 @@ import type { Database } from "./types";
 export const requireSupabaseAuth = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
     // ── Resolve Supabase credentials ──
-    // Priority: process.env (Vercel runtime) → import.meta.env (Vite build-time).
-    // The VITE_ prefixed vars are inlined at build time and available on both
-    // client AND server in TanStack Start / Nitro. This fixes the case where
-    // only VITE_SUPABASE_* vars are set on Vercel (no server-side vars).
-    const SUPABASE_URL =
-      process.env.SUPABASE_URL || (import.meta as any).env?.VITE_SUPABASE_URL || "";
+    // On Vercel, env vars are available as process.env.* at runtime.
+    // Users often set VITE_SUPABASE_* (for the client), so we also check
+    // process.env.VITE_* as fallback for the server.
+    const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
     const SUPABASE_PUBLISHABLE_KEY =
       process.env.SUPABASE_PUBLISHABLE_KEY ||
       process.env.SUPABASE_ANON_KEY ||
-      (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY ||
-      (import.meta as any).env?.VITE_SUPABASE_ANON_KEY ||
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.VITE_SUPABASE_ANON_KEY ||
       "";
 
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
