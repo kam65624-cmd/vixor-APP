@@ -79,3 +79,28 @@ Stage Summary:
 - TypeScript: zero new errors ✅
 - Commit: 449922a pushed to main
 - Phase 8: 12/12 complete (100%)
+
+---
+Task ID: arch-1
+Agent: main
+Task: Fix 4 architectural issues — COMING SOON pages, error states, color-mix Safari, lazy loading
+
+Work Log:
+- Replaced empty Charts COMING SOON page in bottom nav with functional Copilot
+- Moved Charts to More > Trading section, removed Copilot duplicate from AI Tools
+- Added Sonner Toaster component to root layout with Nocturne dark theme styling
+- Wired Sentry captureException to GlobalErrorBoundary and RouteErrorBoundary componentDidCatch
+- Implemented global React Query error handler via queryCache.subscribe with 10s rate-limiting
+- Created src/shared/color-utils.ts with withAlpha() and blendWithCard() Safari-compatible utilities
+- Replaced all 9 production color-mix() occurrences across 5 files (CoinImage, SignalBadge, BaseFeaturePanel, trade-desk, discover)
+- Lazy-loaded 5 heaviest routes (9,625 lines total) using TanStack Router lazyRouteComponent():
+  copilot (2,043 lines), token-symbol (2,439 lines), analysis-id (2,057 lines),
+  daily-loop (1,665 lines), swap (1,421 lines)
+- Build verified: separate SSR chunks generated for each lazy route
+- Committed and pushed: 8a1af2f
+
+Stage Summary:
+- Bottom nav now shows 4 functional pages (Home, Analyze, Copilot, Signals)
+- Error states: users see toast notifications for API failures + errors reported to Sentry
+- Safari compatibility: all color-mix() replaced with rgba() using color-utils.ts
+- Initial bundle reduced by ~9,600 lines of component code via lazy loading
