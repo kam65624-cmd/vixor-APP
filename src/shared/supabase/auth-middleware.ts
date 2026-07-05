@@ -7,33 +7,27 @@ import type { Database } from "./types";
 export const requireSupabaseAuth = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
     // ── Resolve Supabase credentials ──
-    // Check which env var source actually has a value
-    const envSources: Record<string, string | undefined> = {
-      SUPABASE_URL: process.env.SUPABASE_URL,
-      VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY: process.env.SUPABASE_PUBLISHABLE_KEY,
-      SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
-      VITE_SUPABASE_PUBLISHABLE_KEY: process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
-    };
-    // Mask keys for logging (show first 8 + last 4 chars)
-    const mask = (v: string | undefined) => (v ? `${v.slice(0, 8)}...${v.slice(-4)}` : "(empty)");
+    // Prefer SUPABASE_ANON_KEY (standard convention) over SUPABASE_PUBLISHABLE_KEY.
+    // Trim values to handle accidental whitespace in Vercel env vars.
+    const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "").trim();
+    const SUPABASE_ANON_KEY = (
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_PUBLISHABLE_KEY ||
+      process.env.VITE_SUPABASE_ANON_KEY ||
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      ""
+    ).trim();
 
-    const SUPABASE_URL = envSources["SUPABASE_URL"] || envSources["VITE_SUPABASE_URL"] || "";
-    const SUPABASE_PUBLISHABLE_KEY =
-      envSources["SUPABASE_PUBLISHABLE_KEY"] ||
-      envSources["SUPABASE_ANON_KEY"] ||
-      envSources["VITE_SUPABASE_PUBLISHABLE_KEY"] ||
-      envSources["VITE_SUPABASE_ANON_KEY"] ||
-      "";
-
-    if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-      const diag = Object.entries(envSources)
-        .map(([k, v]) => `${k}=${mask(v)}`)
-        .join("|");
-      const message = `Missing Supabase env vars [${diag}]`;
-      console.error(`[Supabase Auth] ${message}`);
-      throw new Error(message);
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      const mask = (v: string | undefined) => (v ? `${v.slice(0, 8)}...${v.slice(-4)}` : "(empty)");
+      const diag = [
+        `S_URL=${mask(process.env.SUPABASE_URL)}`,
+        `S_KEY=${mask(process.env.SUPABASE_ANON_KEY)}`,
+        `S_PUB=${mask(process.env.SUPABASE_PUBLISHABLE_KEY)}`,
+        `V_URL=${mask(process.env.VITE_SUPABASE_URL)}`,
+        `V_KEY=${mask(process.env.VITE_SUPABASE_ANON_KEY)}`,
+      ].join("|");
+      throw new Error(`Missing Supabase env vars [${diag}]`);
     }
 
     const request = getRequest();
@@ -57,11 +51,33 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
       throw new Error("Unauthorized: No token provided");
     }
 
-    const supabase = createClient<Database>(SUPABASE_URL!, SUPABASE_PUBLISHABLE_KEY!, {
+    // Create Supabase client WITHOUT setting Authorization in global.headers.
+    // We pass the token directly to getUser(token) instead.
+    // Setting Authorization in global.headers can conflict with getUser(token)
+    // which also sets Authorization, causing "Invalid API key" in some cases.
+    const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        storage: undefined,
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+    // Validate the user's JWT — pass token directly, NOT in global headers
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data?.user) {
+      throw new Error(
+        `Unauthorized: Invalid token [err:${error?.message}|status:${error?.status}]`,
+      );
+    }
+
+    const userId = data.user.id;
+
+    // Create a SECOND client with the user's token in global headers
+    // for downstream database queries that need RLS user context
+    const supabaseAsUser = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       },
       auth: {
         storage: undefined,
@@ -70,33 +86,9 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
       },
     });
 
-    // Use getUser() with the bearer token — this is the most compatible method
-    // getClaims() was added in supabase-js v2.149.0 but may not be available in all versions
-    const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data?.user) {
-      const supabaseHost = SUPABASE_URL!.replace(/https?:\/\/(.*?)\.supabase\.co.*/, "$1");
-      // Show which env var provided the key, and its masked value
-      const keySource = envSources["SUPABASE_PUBLISHABLE_KEY"]
-        ? "SUPABASE_PUBLISHABLE_KEY"
-        : envSources["SUPABASE_ANON_KEY"]
-          ? "SUPABASE_ANON_KEY"
-          : envSources["VITE_SUPABASE_PUBLISHABLE_KEY"]
-            ? "VITE_SUPABASE_PUBLISHABLE_KEY"
-            : "VITE_SUPABASE_ANON_KEY";
-      const detail = [
-        `key_src:${keySource}`,
-        `key_val:${mask(SUPABASE_PUBLISHABLE_KEY)}`,
-        `url:${SUPABASE_URL}`,
-        `err:${error?.message}|${error?.status}`,
-      ].join("|");
-      throw new Error(`Unauthorized: Invalid token [${detail}]`);
-    }
-
-    const userId = data.user.id;
-
     return next({
       context: {
-        supabase,
+        supabase: supabaseAsUser,
         userId,
         claims: data.user.app_metadata ?? {},
       },
