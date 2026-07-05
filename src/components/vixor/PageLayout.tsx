@@ -120,18 +120,7 @@ export function PageLayout({
             </span>
           )}
         </div>
-        {description && (
-          <p
-            style={{
-              fontSize: "13px",
-              color: "var(--color-muted-foreground)",
-              margin: "4px 0 0",
-              lineHeight: 1.4,
-            }}
-          >
-            {description}
-          </p>
-        )}
+        {/* description prop intentionally not rendered — developer notes, not user content */}
       </div>
 
       {/* ── Sub-tabs ── */}

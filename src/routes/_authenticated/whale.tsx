@@ -48,7 +48,6 @@ function WhalePage() {
       title="Whale Alerts"
       badge="WHALE TRACKER"
       badgeColor={"var(--color-info)"}
-      description="Largest trades sorted by value \u2014 spot whale-like activity"
       loading={isLoading}
       loadingColor={"var(--color-info)"}
     >

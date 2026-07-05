@@ -214,6 +214,7 @@ function RewardsPage() {
   const [copied, setCopied] = useState(false);
   const [redeemingName, setRedeemingName] = useState<string | null>(null);
   const [redeemErrors, setRedeemErrors] = useState<Record<string, string>>({});
+  const [redeemSuccess, setRedeemSuccess] = useState<string | null>(null);
 
   // ── Queries ──
   const queryClient = useQueryClient();
@@ -241,8 +242,10 @@ function RewardsPage() {
         return next;
       });
     },
-    onSuccess: () => {
+    onSuccess: (_data, params) => {
       queryClient.invalidateQueries({ queryKey: ["user-points"] });
+      setRedeemSuccess(`${params.rewardName} redeemed!`);
+      setTimeout(() => setRedeemSuccess(null), 3000);
     },
     onError: (err: Error, params) => {
       setRedeemErrors((prev) => ({ ...prev, [params.rewardName]: err.message }));
@@ -364,7 +367,6 @@ function RewardsPage() {
   return (
     <PageLayout
       title="Rewards"
-      description="Earn points, unlock tiers, and redeem rewards"
       loading={isLoading}
     >
       {/* ── Points Hero ── */}
@@ -409,6 +411,24 @@ function RewardsPage() {
 
       {/* ── Scrollable Content ── */}
       <ScrollArea>
+        {redeemSuccess && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              padding: "8px 16px",
+              background: `${"var(--color-bullish)"}14`,
+              borderBottom: `1px solid ${"var(--color-bullish)"}26`,
+              color: "var(--color-bullish)",
+              fontSize: "11px",
+              fontWeight: 600,
+            }}
+          >
+            ✓ {redeemSuccess}
+          </div>
+        )}
         {/* ── Daily Check-in Streak ── */}
         <SectionTitle title="Daily Check-in Streak" />
         <div

@@ -92,7 +92,6 @@ function AdminApiKeysPage() {
       title="API Key Management"
       badge="ADMIN ONLY"
       badgeColor={"var(--color-neutral-wait)"}
-      description="Centralized view of all platform API keys. Keys are stored in environment variables and never exposed to clients."
       loading={loading}
       loadingColor={"var(--color-neutral-wait)"}
     >

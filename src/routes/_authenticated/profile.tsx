@@ -298,7 +298,6 @@ function ProfilePage() {
   return (
     <PageLayout
       title="Profile"
-      description="Manage your account and view trading statistics"
       loading={isLoading}
     >
       {/* Profile Card */}

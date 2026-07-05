@@ -61,7 +61,6 @@ function AlphaPage() {
       title="Alpha Feed"
       badge="ALPHA INTEL"
       badgeColor={"var(--color-bearish)"}
-      description="AI-generated signals & pattern analyses across all traded pairs"
       tabs={[...TABS]}
       activeTab={activeTab}
       onTabChange={setActiveTab}

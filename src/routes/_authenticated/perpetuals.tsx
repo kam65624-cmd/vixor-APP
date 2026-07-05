@@ -182,7 +182,6 @@ function PerpetualsPage() {
       title="Perpetuals"
       badge="FUTURES"
       badgeColor={"var(--color-info)"}
-      description="Open positions and closed trade performance"
       tabs={TABS as unknown as string[]}
       activeTab={tab}
       onTabChange={(t: string) => setTab(t as Tab)}

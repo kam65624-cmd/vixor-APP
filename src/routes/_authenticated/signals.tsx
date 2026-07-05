@@ -145,7 +145,6 @@ function SignalsPage() {
       title="Signals"
       badge="AI SIGNALS"
       badgeColor={"var(--color-neutral-wait)"}
-      description="Daily technical analysis signals across all tracked pairs"
       tabs={TABS}
       activeTab={activeTab}
       onTabChange={setActiveTab}

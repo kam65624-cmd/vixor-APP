@@ -42,7 +42,6 @@ function VisionPage() {
       title="AI Vision"
       badge="AI ANALYSIS"
       badgeColor={"var(--color-info)"}
-      description="Overview of your AI-powered analyses, patterns detected, and market insights"
       loading={isLoading}
       loadingColor={"var(--color-info)"}
     >

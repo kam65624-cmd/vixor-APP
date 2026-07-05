@@ -52,7 +52,6 @@ function CurvesPage() {
       title="Bonding Curves"
       badge="ACCUMULATION TRACKER"
       badgeColor={"var(--color-bullish)"}
-      description="Trade distribution analysis \u2014 spot accumulation patterns across pairs"
       tabs={[...TABS]}
       activeTab={activeTab}
       onTabChange={setActiveTab}

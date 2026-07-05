@@ -1057,7 +1057,6 @@ function DiscoverPage() {
       title="Discover"
       badge="LIVE"
       badgeColor="var(--color-bullish)"
-      description="Real-time token discovery with volume, smart money tracking, and DEX screener data."
       loading={isLoading}
       loadingColor="var(--color-bullish)"
     >
@@ -1296,39 +1295,13 @@ function DiscoverPage() {
         onToggle={() => setFiltersOpen((v) => !v)}
       />
 
-      {/* Error bar */}
+      {/* Error state — subtle, not alarming */}
       {error && (
-        <div
-          style={{
-            padding: "8px 12px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            background: "rgba(246,70,93,0.08)",
-            borderRadius: "6px",
-            margin: "0 8px",
-          }}
-        >
-          <span style={{ fontSize: "10px", color: "var(--color-bearish)" }}>
-            {resp?.error || "Failed to load tokens. Tap to retry."}
-          </span>
-          <button
-            onClick={() => refetch()}
-            style={{
-              fontSize: "10px",
-              fontWeight: 600,
-              color: "var(--color-bearish)",
-              background: "none",
-              border: "1px solid var(--color-bearish)",
-              borderRadius: "4px",
-              padding: "3px 10px",
-              cursor: "pointer",
-              fontFamily: "'Inter', system-ui, sans-serif",
-            }}
-          >
-            Retry
-          </button>
-        </div>
+        <EmptyState
+          icon="📡"
+          title="Unable to Load"
+          message="Token scan is temporarily unavailable. Pull down to retry."
+        />
       )}
 
       {/* Token List with pull-to-refresh */}
@@ -1367,7 +1340,7 @@ function DiscoverPage() {
                     onClick={() => handleTokenClick(token.symbol)}
                   />
                 ))
-              : !error && (
+              : !error && tokens.length === 0 && (
                   <EmptyState
                     icon="🔍"
                     title="No Tokens Found"

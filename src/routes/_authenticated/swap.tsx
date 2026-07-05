@@ -567,7 +567,6 @@ function SwapPage() {
       title="DEX Swap"
       badge="DEMO"
       badgeColor="var(--color-bearish)"
-      description="Swap tokens on Solana and EVM chains"
       banner={
         <div
           style={{
@@ -1285,7 +1284,7 @@ function SwapPage() {
                   gap: "6px",
                 }}
               >
-                <span>🕐</span> Recent Swaps
+                <span>🕐</span> Demo Swaps (not real)
               </div>
               <div style={{ maxHeight: "240px", overflowY: "auto" }}>
                 {swapHistory.map((record) => {
@@ -1351,7 +1350,7 @@ function SwapPage() {
                             }}
                           />
                           {record.status === "success"
-                            ? "Success"
+                            ? "Simulated"
                             : record.status === "pending"
                               ? "Pending"
                               : "Failed"}

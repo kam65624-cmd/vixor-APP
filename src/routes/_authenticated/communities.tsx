@@ -278,7 +278,6 @@ function CommunitiesPage() {
       title="Communities"
       badge="COMMUNITY"
       badgeColor={"var(--color-info)"}
-      description="Shared trading strategies and community activity"
       tabs={["Strategies", "Activity"]}
       activeTab={activeTab}
       onTabChange={setActiveTab}

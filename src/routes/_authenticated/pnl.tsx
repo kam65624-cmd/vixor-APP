@@ -5,13 +5,12 @@ import { getTradeHistory } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import type { Tables } from "@/shared/supabase/types";
 import {
-  PageLayout, 
+  PageLayout,
   StatsRow,
   SectionTitle,
   DataRow,
   Badge,
   EmptyState,
-  ScrollArea,
   TableHeader,
 } from "@/components/vixor/PageLayout";
 
@@ -112,7 +111,6 @@ function PnLPage() {
     <PageLayout
       title="PnL Tracker"
       badge="TRADE HISTORY"
-      description={description}
       loading={isLoading}
       loadingColor={"var(--color-bullish)"}
     >
@@ -120,8 +118,21 @@ function PnLPage() {
 
       <SectionTitle title="Recent Trades" count={trades.length} />
 
-      <TableHeader columns={COLUMNS} />
-      <ScrollArea>
+      <div
+        className="scrollbar-hide"
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          overflowX: "hidden",
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ position: "sticky", top: 0, zIndex: 10 }}>
+          <TableHeader columns={COLUMNS} />
+        </div>
+        <div>
         {trades.length > 0 ? (
           trades.map((trade) => (
             <TradeRow
@@ -135,7 +146,7 @@ function PnLPage() {
           ))
         ) : (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <EmptyState
+        <EmptyState
               icon="📊"
               title="No trades recorded yet"
               message="Start tracking your performance by logging your first trade."
@@ -159,7 +170,8 @@ function PnLPage() {
             </button>
           </div>
         )}
-      </ScrollArea>
+        </div>
+      </div>
     </PageLayout>
   );
 }

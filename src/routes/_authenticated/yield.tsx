@@ -181,7 +181,6 @@ function YieldPage() {
       title="Yield"
       badge="YIELD"
       badgeColor={"var(--color-bullish)"}
-      description="Closed trade yield performance and returns"
       loading={isLoading}
     >
       <StatsRow stats={stats} />

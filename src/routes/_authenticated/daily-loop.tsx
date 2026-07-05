@@ -297,7 +297,6 @@ function DailyLoopPage() {
       title="Daily Loop"
       badge="ROUTINE BUILDER"
       badgeColor={"var(--color-bullish)"}
-      description="Build consistency, one day at a time"
       tabs={["Today", "History"]}
       activeTab={activeTab === "today" ? "Today" : "History"}
       onTabChange={(tab) => setActiveTab(tab === "Today" ? "today" : "history")}

@@ -921,7 +921,6 @@ function RadarPage() {
       title="Trade Radar"
       badge="LIVE"
       badgeColor="var(--color-bullish)"
-      description="Real-time market intelligence — alerts, price movements, and whale activity"
       loading={isLoading}
       loadingColor="var(--color-bullish)"
     >

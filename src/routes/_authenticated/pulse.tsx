@@ -171,7 +171,6 @@ function PulsePage() {
       title="Pulse"
       badge="LIVE"
       badgeColor={"var(--color-bullish)"}
-      description="Real-time trade signals and activity feed"
       tabs={TABS as unknown as string[]}
       activeTab={tab}
       onTabChange={(t: string) => setTab(t as Tab)}

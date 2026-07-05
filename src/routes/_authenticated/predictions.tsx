@@ -188,7 +188,6 @@ function PredictionsPage() {
       title="Predictions"
       badge="AI"
       badgeColor={"var(--color-info)"}
-      description="AI-powered market predictions and signal analysis"
       loading={isLoading}
     >
       <StatsRow stats={stats} />

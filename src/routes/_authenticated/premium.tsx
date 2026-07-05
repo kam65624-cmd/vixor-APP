@@ -72,6 +72,12 @@ function PremiumPage() {
   const subscription = query.data?.subscription ?? null;
   const isLoading = query.isLoading;
 
+  // Fallback plans when DB is empty
+  const visiblePlans = plans.length > 0 ? plans : [
+    { id: "pro-monthly", name: "Pro", price_cents: 2900, features: ["AI Copilot access", "Advanced signals", "Priority alerts", "Extended history"] },
+    { id: "pro-yearly", name: "Pro Annual", price_cents: 24900, badge: "SAVE 28%", features: ["Everything in Pro", "Annual billing", "Dedicated support", "Early access to features"] },
+  ] as any[];
+
   const currentPlanId = subscription?.plan_id;
   const currentPlanName = plans.find((p) => p.id === currentPlanId)?.name || "Pro";
 
@@ -80,11 +86,6 @@ function PremiumPage() {
       title="Vixor Pro"
       badge="PREMIUM"
       badgeColor={"var(--color-bullish)"}
-      description={
-        subscription
-          ? `You are on the ${currentPlanName} plan`
-          : "Upgrade to unlock advanced features"
-      }
       loading={isLoading}
       loadingColor={"var(--color-bullish)"}
     >
@@ -128,7 +129,7 @@ function PremiumPage() {
           </div>
         )}
 
-        {plans.length > 0 ? (
+        {visiblePlans.length > 0 ? (
           <div
             style={{
               display: "grid",
@@ -139,7 +140,7 @@ function PremiumPage() {
               margin: "0 auto",
             }}
           >
-            {plans.map((plan) => {
+            {visiblePlans.map((plan) => {
               const isCurrent = plan.id === currentPlanId;
               const features = Array.isArray((plan as any).features)
                 ? ((plan as any).features as string[])

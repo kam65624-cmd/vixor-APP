@@ -206,7 +206,6 @@ function JournalPage() {
       title="Trading Journal"
       badge="JOURNAL"
       badgeColor={"var(--color-bullish)"}
-      description="Track your trades, review performance, and improve your strategy"
       tabs={journalTabs}
       activeTab={activeTab}
       onTabChange={setActiveTab}

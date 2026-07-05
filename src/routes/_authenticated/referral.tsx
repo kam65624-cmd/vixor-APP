@@ -82,7 +82,6 @@ function ReferralPage() {
       title="Referral Program"
       badge="REFERRAL"
       badgeColor={"var(--color-bullish)"}
-      description="Invite friends and earn rewards together"
       loading={refQuery.isLoading}
       loadingColor={"var(--color-bullish)"}
     >
