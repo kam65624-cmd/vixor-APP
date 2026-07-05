@@ -10,8 +10,15 @@ import {
 } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageLayout, StatsRow, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
-import { RefreshCw, SlidersHorizontal, ChevronUp, X } from "lucide-react";
+import { RefreshCw, SlidersHorizontal, ChevronUp, X, Link2 } from "lucide-react";
 import { withAlpha, blendWithCard } from "@/shared/color-utils";
+import {
+  FOREX_PAIRS,
+  FOREX_TOTAL_COUNT,
+  FOREX_MAJOR_COUNT,
+  FOREX_MINOR_COUNT,
+  type ForexPair,
+} from "./discover-forex-data";
 
 // ── Route definition with typed search params ───────────────────────────────
 
@@ -84,6 +91,11 @@ type SortKey = (typeof SORT_OPTIONS)[number]["key"];
 type CategoryKey = (typeof CATEGORY_TABS)[number]["key"];
 
 const PULL_THRESHOLD = 60;
+
+// ── Gold accent colour (static RGBA for Safari compat) ───────────────────
+const GOLD_COLOR = "#D4A843";
+const GOLD_BG = "rgba(212,168,67,0.12)";
+const GOLD_BORDER = "rgba(212,168,67,0.25)";
 
 // ── Formatters ───────────────────────────────────────────────────────────────
 
@@ -173,6 +185,203 @@ function SparklineSVG({
 }
 
 // ── Smart Money Bar ──────────────────────────────────────────────────────────
+
+// ── Forex formatters ────────────────────────────────────────────────────────
+
+function fmtForexPrice(p: number): string {
+  if (p >= 100) return p.toFixed(2);
+  if (p >= 1) return p.toFixed(4);
+  return p.toFixed(5);
+}
+
+function fmtForexVolume(v: number): string {
+  if (v >= 1_000_000_000_000) return `$${(v / 1_000_000_000_000).toFixed(1)}T`;
+  if (v >= 1_000_000_000) return `$${(v / 1_000_000_000).toFixed(1)}B`;
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+  return `$${(v / 1_000).toFixed(0)}K`;
+}
+
+// ── Forex Section Header ────────────────────────────────────────────────────
+
+function ForexSectionHeader({ title, count }: { title: string; count: number }) {
+  return (
+    <div
+      style={{
+        padding: "10px 12px 4px",
+        fontSize: "9px",
+        fontWeight: 700,
+        color: "var(--color-muted-foreground)",
+        textTransform: "uppercase" as const,
+        letterSpacing: "0.08em",
+        fontFamily: "'Inter', system-ui, sans-serif",
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+      }}
+    >
+      <span style={{ width: "2px", height: "10px", borderRadius: "1px", background: "var(--color-primary)", display: "inline-block" }} />
+      {title}
+      <span style={{ fontSize: "8px", color: "var(--color-muted-foreground)", opacity: 0.7 }}>
+        ({count})
+      </span>
+    </div>
+  );
+}
+
+// ── Forex Pair Row ──────────────────────────────────────────────────────────
+
+function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void }) {
+  const isUp = item.change24h >= 0;
+  const color = isUp ? "var(--color-bullish)" : "var(--color-bearish)";
+  const isGold = item.type === "gold";
+  const accentColor = isGold ? GOLD_COLOR : color;
+  const badgeBg = isGold ? GOLD_BG : "rgba(163,163,163,0.15)";
+  const badgeColor = isGold ? GOLD_COLOR : "var(--color-muted-foreground)";
+  const hasSparkline = item.sparkline && item.sparkline.length >= 2;
+
+  return (
+    <div
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "10px 12px",
+        borderBottom: "1px solid var(--color-border)",
+        cursor: "pointer",
+        transition: "background 0.12s",
+        ...(isGold
+          ? {
+              background: "linear-gradient(90deg, rgba(212,168,67,0.04) 0%, transparent 60%)",
+            }
+          : {}),
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = isGold
+          ? "linear-gradient(90deg, rgba(212,168,67,0.08) 0%, var(--color-card-hover) 60%)"
+          : "var(--color-card-hover)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = isGold
+          ? "linear-gradient(90deg, rgba(212,168,67,0.04) 0%, transparent 60%)"
+          : "transparent";
+      }}
+    >
+      {/* Left: Pair info */}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            width: "36px",
+            height: "36px",
+            borderRadius: isGold ? "10px" : "50%",
+            background: isGold ? GOLD_BG : blendWithCard(accentColor, 0.12),
+            border: `1px solid ${isGold ? GOLD_BORDER : withAlpha(accentColor, 0.20)}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: isGold ? "14px" : "10px",
+            fontWeight: 800,
+            color: accentColor,
+            flexShrink: 0,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          {isGold ? " Au " : item.pair.slice(0, 3)}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                color: isGold ? GOLD_COLOR : "var(--color-foreground)",
+                fontFamily: "'Inter', system-ui, sans-serif",
+              }}
+            >
+              {isGold ? "Gold" : item.pair}
+            </span>
+            <span
+              style={{
+                fontSize: "8px",
+                fontWeight: 600,
+                padding: "1px 5px",
+                borderRadius: "3px",
+                background: badgeBg,
+                color: badgeColor,
+              }}
+            >
+              {item.badge}
+            </span>
+          </div>
+          <div
+            style={{
+              fontSize: "9px",
+              color: "var(--color-muted-foreground)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: "140px",
+              marginTop: "1px",
+            }}
+          >
+            {item.name}
+          </div>
+        </div>
+      </div>
+
+      {/* Center: Sparkline */}
+      {hasSparkline && (
+        <div style={{ flexShrink: 0, margin: "0 12px", opacity: 0.85 }}>
+          <SparklineSVG
+            data={item.sparkline!}
+            color={isGold ? GOLD_COLOR : undefined}
+          />
+        </div>
+      )}
+
+      {/* Right: Price + Change + Volume */}
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div
+          style={{
+            fontSize: "12px",
+            fontWeight: 700,
+            fontFamily: "'JetBrains Mono', monospace",
+            color: isGold ? GOLD_COLOR : "var(--color-foreground)",
+          }}
+        >
+          {fmtForexPrice(item.price)}
+        </div>
+        <span
+          style={{
+            fontSize: "10px",
+            fontWeight: 600,
+            fontFamily: "'JetBrains Mono', monospace",
+            color,
+          }}
+        >
+          {fmtPct(item.change24h)}
+        </span>
+        <div
+          style={{
+            fontSize: "8px",
+            color: "var(--color-muted-foreground)",
+            marginTop: "2px",
+          }}
+        >
+          Vol {fmtForexVolume(item.volume24h)}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function SmartMoneyBar({ pct }: { pct?: number }) {
   if (pct === undefined || pct === null) return null;
@@ -859,6 +1068,8 @@ function DiscoverPage() {
     return params.toString();
   }, [sortBy, category, search]);
 
+  const isForexMode = category === "FOREX";
+
   const {
     data: resp,
     isLoading,
@@ -883,6 +1094,7 @@ function DiscoverPage() {
     },
     refetchInterval: 15_000,
     staleTime: 10_000,
+    enabled: !isForexMode,
   });
 
   // Update last fetch time on data change
@@ -901,6 +1113,37 @@ function DiscoverPage() {
   }, [resp]);
 
   const stats = useMemo(() => {
+    if (isForexMode) {
+      const bullish = FOREX_PAIRS.filter((p) => p.change24h > 0).length;
+      const bearish = FOREX_PAIRS.filter((p) => p.change24h < 0).length;
+      const totalVol = FOREX_PAIRS.reduce((sum, p) => sum + p.volume24h, 0);
+      return [
+        {
+          label: "Pairs",
+          value: String(FOREX_TOTAL_COUNT),
+          color: GOLD_COLOR,
+          icon: "💱",
+        },
+        {
+          label: "Bullish",
+          value: String(bullish),
+          color: "var(--color-bullish)",
+          icon: "🟢",
+        },
+        {
+          label: "Bearish",
+          value: String(bearish),
+          color: "var(--color-bearish)",
+          icon: "🔴",
+        },
+        {
+          label: "Total Vol",
+          value: fmtForexVolume(totalVol),
+          color: "var(--color-info)",
+          icon: "📊",
+        },
+      ];
+    }
     const bullish = tokens.filter((t) => (t.change24h ?? 0) > 0).length;
     const bearish = tokens.filter((t) => (t.change24h ?? 0) < 0).length;
     const totalVol = tokens.reduce((sum, t) => sum + t.volume24h, 0);
@@ -930,7 +1173,7 @@ function DiscoverPage() {
         icon: "📊",
       },
     ];
-  }, [tokens, resp]);
+  }, [tokens, resp, isForexMode]);
 
   // Category counts
   const categoryCounts = useMemo(() => {
@@ -948,7 +1191,7 @@ function DiscoverPage() {
             t.category === "CRYPTO" ||
             ["eth", "btc", "sol", "bnb"].includes(t.symbol.toLowerCase()),
         ).length,
-      FOREX: base.FOREX ?? base.FX ?? 0,
+      FOREX: FOREX_TOTAL_COUNT,
     };
   }, [resp, tokens]);
 
@@ -1044,6 +1287,47 @@ function DiscoverPage() {
     [navigate],
   );
 
+  // Forex pair click — show "connect broker" toast via Telegram WebApp
+  const [brokerToast, setBrokerToast] = useState<string | null>(null);
+  const brokerToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleForexClick = useCallback(
+    (pair: ForexPair) => {
+      // Show a brief inline toast indicating broker connection is needed
+      setBrokerToast(pair.pair);
+      if (brokerToastTimer.current) clearTimeout(brokerToastTimer.current);
+      brokerToastTimer.current = setTimeout(() => setBrokerToast(null), 2500);
+    },
+    [],
+  );
+
+  // Sorted forex pairs
+  const sortedForexPairs = useMemo(() => {
+    const pairs = [...FOREX_PAIRS];
+    switch (sortBy) {
+      case "volume":
+        pairs.sort((a, b) => b.volume24h - a.volume24h);
+        break;
+      case "change":
+        pairs.sort((a, b) => b.change24h - a.change24h);
+        break;
+      default:
+        // "trending" — gold first, then by volume descending
+        break;
+    }
+    // Apply search filter
+    if (search.search?.trim()) {
+      const q = search.search.trim().toLowerCase();
+      return pairs.filter(
+        (p) =>
+          p.pair.toLowerCase().includes(q) ||
+          p.name.toLowerCase().includes(q) ||
+          p.badge.toLowerCase().includes(q),
+      );
+    }
+    return pairs;
+  }, [sortBy, search.search]);
+
   const handleManualRefresh = useCallback(() => {
     refetch();
   }, [refetch]);
@@ -1125,63 +1409,93 @@ function DiscoverPage() {
         {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-        {/* Live indicator + last updated */}
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
-          {/* Pulsing green dot */}
-          <span
-            style={{
-              width: "6px",
-              height: "6px",
-              borderRadius: "50%",
-              background: "var(--color-bullish)",
-              display: "inline-block",
-              animation: "vixor-pulse 1.8s ease-in-out infinite",
-              boxShadow: "0 0 6px var(--color-bullish)",
-              flexShrink: 0,
-            }}
-            aria-label="Live data"
-          />
-          <span
-            style={{
-              fontSize: "9px",
-              color: "var(--color-muted-foreground)",
-              fontFamily: "'JetBrains Mono', monospace",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Updated {fmtTimeAgo(elapsedSec)}
-          </span>
-
-          {/* Manual refresh button */}
-          <button
-            onClick={handleManualRefresh}
-            disabled={isRefetching}
-            aria-label="Refresh data"
-            style={{
-              width: "26px",
-              height: "26px",
-              borderRadius: "6px",
-              border: "1px solid var(--color-border)",
-              background: "var(--color-card)",
-              color: "var(--color-muted-foreground)",
-              cursor: isRefetching ? "wait" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 0,
-              transition: "all 0.15s ease",
-              flexShrink: 0,
-            }}
-          >
-            <RefreshCw
-              size={12}
+        {/* Live indicator + last updated (hidden in forex — static data) */}
+        {!isForexMode && (
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+            {/* Pulsing green dot */}
+            <span
               style={{
-                animation: isRefetching ? "spin 0.7s linear infinite" : undefined,
-                transition: "transform 0.2s ease",
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                background: "var(--color-bullish)",
+                display: "inline-block",
+                animation: "vixor-pulse 1.8s ease-in-out infinite",
+                boxShadow: "0 0 6px var(--color-bullish)",
+                flexShrink: 0,
               }}
+              aria-label="Live data"
             />
-          </button>
-        </div>
+            <span
+              style={{
+                fontSize: "9px",
+                color: "var(--color-muted-foreground)",
+                fontFamily: "'JetBrains Mono', monospace",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Updated {fmtTimeAgo(elapsedSec)}
+            </span>
+
+            {/* Manual refresh button */}
+            <button
+              onClick={handleManualRefresh}
+              disabled={isRefetching}
+              aria-label="Refresh data"
+              style={{
+                width: "26px",
+                height: "26px",
+                borderRadius: "6px",
+                border: "1px solid var(--color-border)",
+                background: "var(--color-card)",
+                color: "var(--color-muted-foreground)",
+                cursor: isRefetching ? "wait" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 0,
+                transition: "all 0.15s ease",
+                flexShrink: 0,
+              }}
+            >
+              <RefreshCw
+                size={12}
+                style={{
+                  animation: isRefetching ? "spin 0.7s linear infinite" : undefined,
+                  transition: "transform 0.2s ease",
+                }}
+              />
+            </button>
+          </div>
+        )}
+        {isForexMode && (
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+            <span
+              style={{
+                fontSize: "9px",
+                color: GOLD_COLOR,
+                fontFamily: "'JetBrains Mono', monospace",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: GOLD_COLOR,
+                  display: "inline-block",
+                  opacity: 0.7,
+                  flexShrink: 0,
+                }}
+              />
+              Mock data
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Search + Sort Bar */}
@@ -1213,7 +1527,7 @@ function DiscoverPage() {
           </span>
           <input
             type="text"
-            placeholder="Search tokens..."
+            placeholder={isForexMode ? "Search pairs..." : "Search tokens..."}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -1253,7 +1567,7 @@ function DiscoverPage() {
           )}
         </div>
 
-        {/* Sort Pills */}
+        {/* Sort Pills — show relevant subset for forex */}
         <div
           className="scrollbar-hide"
           style={{
@@ -1262,7 +1576,10 @@ function DiscoverPage() {
             flexShrink: 0,
           }}
         >
-          {SORT_OPTIONS.map((opt) => (
+          {(isForexMode
+            ? SORT_OPTIONS.filter((o) => o.key === "trending" || o.key === "volume" || o.key === "change")
+            : SORT_OPTIONS
+          ).map((opt) => (
             <button
               key={opt.key}
               onClick={() => handleSortBy(opt.key)}
@@ -1286,18 +1603,20 @@ function DiscoverPage() {
         </div>
       </div>
 
-      {/* Filter Panel */}
-      <FilterPanel
-        filters={filterState}
-        onChange={handleFilterChange}
-        onApply={handleApplyFilters}
-        onReset={handleResetFilters}
-        isOpen={filtersOpen}
-        onToggle={() => setFiltersOpen((v) => !v)}
-      />
+      {/* Filter Panel — hidden in forex mode */}
+      {!isForexMode && (
+        <FilterPanel
+          filters={filterState}
+          onChange={handleFilterChange}
+          onApply={handleApplyFilters}
+          onReset={handleResetFilters}
+          isOpen={filtersOpen}
+          onToggle={() => setFiltersOpen((v) => !v)}
+        />
+      )}
 
-      {/* Error state — subtle, not alarming */}
-      {error && (
+      {/* Error state — subtle, not alarming (crypto only) */}
+      {error && !isForexMode && (
         <EmptyState
           icon="📡"
           title="Unable to Load"
@@ -1305,9 +1624,9 @@ function DiscoverPage() {
         />
       )}
 
-      {/* Token List with pull-to-refresh */}
+      {/* List area — forex or crypto */}
       <div
-        ref={pullToRefresh.containerRef}
+        ref={isForexMode ? undefined : pullToRefresh.containerRef}
         style={{
           flex: 1,
           overflowY: "auto",
@@ -1315,47 +1634,168 @@ function DiscoverPage() {
           minHeight: 0,
         }}
         className="scrollbar-hide"
-        {...pullToRefresh.pullHandlers}
+        {...(isForexMode ? {} : pullToRefresh.pullHandlers)}
       >
-        {/* Pull-to-refresh indicator */}
-        <div style={pullToRefresh.pullIndicatorStyle}>
-          <PullIndicator
-            distance={pullToRefresh.pullDistance}
-            isRefreshing={pullToRefresh.isRefreshing}
-          />
-        </div>
+        {/* Pull-to-refresh indicator (crypto only) */}
+        {!isForexMode && (
+          <div style={pullToRefresh.pullIndicatorStyle}>
+            <PullIndicator
+              distance={pullToRefresh.pullDistance}
+              isRefreshing={pullToRefresh.isRefreshing}
+            />
+          </div>
+        )}
 
-        {/* Token rows */}
-        <div style={{ padding: "4px 0" }}>
-          {isLoading
-            ? Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} style={{ padding: "6px 12px" }}>
-                  <SkeletonRow />
+        {/* ── FOREX LIST ── */}
+        {isForexMode && (
+          <div style={{ padding: "4px 0" }}>
+            {/* Broker toast notification */}
+            {brokerToast && (
+              <div
+                style={{
+                  margin: "6px 12px",
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  background: "var(--color-card)",
+                  border: `1px solid var(--color-border)`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  animation: "vixor-fade-in 0.2s ease",
+                }}
+              >
+                <Link2 size={14} style={{ color: "var(--color-primary)", flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      color: "var(--color-foreground)",
+                      fontFamily: "'Inter', system-ui, sans-serif",
+                    }}
+                  >
+                    {brokerToast} — Connect Broker
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "9px",
+                      color: "var(--color-muted-foreground)",
+                      marginTop: "1px",
+                    }}
+                  >
+                    Link a forex broker to trade {brokerToast} with live charts.
+                  </div>
                 </div>
-              ))
-            : tokens.length > 0
-              ? tokens.map((token) => (
-                  <TokenRow
-                    key={token.symbol + token.chain}
-                    token={token}
-                    onClick={() => handleTokenClick(token.symbol)}
-                  />
-                ))
-              : !error && tokens.length === 0 && (
-                  <EmptyState
-                    icon="🔍"
-                    title="No Tokens Found"
-                    message={
-                      search.search
-                        ? `No results for "${search.search}". Try a different search term.`
-                        : "Token scan is in progress. Check back in a moment."
-                    }
-                  />
-                )}
-        </div>
+              </div>
+            )}
 
-        {/* Footer info */}
-        {resp?.scanDurationMs && tokens.length > 0 && (
+            {sortedForexPairs.length === 0 ? (
+              <EmptyState
+                icon="💱"
+                title="No Pairs Found"
+                message={
+                  search.search
+                    ? `No forex pairs matching "${search.search}".`
+                    : "No forex pairs available."
+                }
+              />
+            ) : (
+              <>
+                {/* Gold section */}
+                <ForexSectionHeader title="Precious Metals" count={1} />
+                {sortedForexPairs
+                  .filter((p) => p.type === "gold")
+                  .map((pair) => (
+                    <ForexPairRow
+                      key={pair.pair}
+                      item={pair}
+                      onClick={() => handleForexClick(pair)}
+                    />
+                  ))}
+
+                {/* Major pairs section */}
+                {sortedForexPairs.some((p) => p.type === "major") && (
+                  <>
+                    <ForexSectionHeader title="Major Pairs" count={FOREX_MAJOR_COUNT} />
+                    {sortedForexPairs
+                      .filter((p) => p.type === "major")
+                      .map((pair) => (
+                        <ForexPairRow
+                          key={pair.pair}
+                          item={pair}
+                          onClick={() => handleForexClick(pair)}
+                        />
+                      ))}
+                  </>
+                )}
+
+                {/* Minor / Cross pairs section */}
+                {sortedForexPairs.some((p) => p.type === "minor") && (
+                  <>
+                    <ForexSectionHeader title="Minor / Cross Pairs" count={FOREX_MINOR_COUNT} />
+                    {sortedForexPairs
+                      .filter((p) => p.type === "minor")
+                      .map((pair) => (
+                        <ForexPairRow
+                          key={pair.pair}
+                          item={pair}
+                          onClick={() => handleForexClick(pair)}
+                        />
+                      ))}
+                  </>
+                )}
+
+                {/* Footer */}
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    textAlign: "center",
+                    fontSize: "9px",
+                    color: "var(--color-muted-foreground)",
+                    borderTop: "1px solid var(--color-border)",
+                    fontFamily: "'JetBrains Mono', monospace",
+                  }}
+                >
+                  {FOREX_TOTAL_COUNT} pairs · Static mock data · Broker integration coming soon
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── CRYPTO TOKEN LIST ── */}
+        {!isForexMode && (
+          <div style={{ padding: "4px 0" }}>
+            {isLoading
+              ? Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} style={{ padding: "6px 12px" }}>
+                    <SkeletonRow />
+                  </div>
+                ))
+              : tokens.length > 0
+                ? tokens.map((token) => (
+                    <TokenRow
+                      key={token.symbol + token.chain}
+                      token={token}
+                      onClick={() => handleTokenClick(token.symbol)}
+                    />
+                  ))
+                : !error && tokens.length === 0 && (
+                    <EmptyState
+                      icon="🔍"
+                      title="No Tokens Found"
+                      message={
+                        search.search
+                          ? `No results for "${search.search}". Try a different search term.`
+                          : "Token scan is in progress. Check back in a moment."
+                      }
+                    />
+                  )}
+          </div>
+        )}
+
+        {/* Footer info (crypto only) */}
+        {!isForexMode && resp?.scanDurationMs && tokens.length > 0 && (
           <div
             style={{
               padding: "8px 12px",

@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
   lazy,
@@ -16,6 +16,8 @@ import { getTelegramInitData } from "@/shared/telegram";
 import { useRenderGuard } from "@/shared/hooks/use-render-guard";
 import { getUserPoints, getUserProfile, getUnreadNotificationCount } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { useWallet } from "@/domains/wallet/adapter/WalletProvider";
+import { WalletProviderSelector } from "@/domains/wallet/adapter/WalletProviderSelector";
 
 // ── SOL Price Hook ──────────────────────────────────────────────────────────
 
@@ -235,6 +237,15 @@ const moreNavCategories: MoreNavCategory[] = [
           </svg>
         ),
       },
+      {
+        to: "/brokers",
+        label: "Brokers",
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+        ),
+      },
     ],
   },
   {
@@ -409,11 +420,14 @@ function useIsTelegram() {
 export function AppShell({ children }: { children: ReactNode }) {
   useRenderGuard("AppShell");
   const location = useLocation();
+  const navigate = useNavigate();
   const path = location.pathname;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const sol = useSolPrice();
   const isTg = useIsTelegram();
+  const { wallet } = useWallet();
 
   const signedIn = path !== "/auth";
 
@@ -428,6 +442,41 @@ export function AppShell({ children }: { children: ReactNode }) {
       const t = setTimeout(() => setShowOnboarding(true), 1200);
       return () => clearTimeout(t);
     }
+  }, [signedIn]);
+
+  // ── Telegram Profile Auto-Sync ──
+  // On every app open inside Telegram, sync the user's name, photo, and ID
+  // from the WebApp API to the server profile. This ensures the profile
+  // always reflects the latest Telegram data without requiring manual action.
+  const tgSyncRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!signedIn || tgSyncRef.current) return;
+    tgSyncRef.current = true;
+
+    const tg = (window as unknown as {
+      Telegram?: { WebApp?: { initDataUnsafe?: { user?: { id: number; first_name: string; last_name?: string; username?: string; photo_url?: string } } } };
+    }).Telegram?.WebApp;
+    const tgUser = tg?.initDataUnsafe?.user;
+    if (!tgUser?.id) return;
+
+    // Delay to let auth session be established first
+    const timer = setTimeout(() => {
+      import("@/domains/user/functions").then(({ syncTelegramProfile }) =>
+        syncTelegramProfile({
+          data: {
+            telegramId: tgUser.id,
+            firstName: tgUser.first_name,
+            lastName: tgUser.last_name,
+            username: tgUser.username,
+            photoUrl: tgUser.photo_url,
+          },
+        }).catch((err) => {
+          console.warn("[AppShell] Telegram profile sync failed:", err?.message);
+        }),
+      );
+    }, 3000); // 3s delay to ensure auth session is ready
+    return () => clearTimeout(timer);
   }, [signedIn]);
 
   const telegramLinkedRef = useRef(false);
@@ -484,7 +533,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       style={{ background: "var(--color-background)", color: "var(--color-foreground)" }}
     >
       {/* ── Top Bar: Logo + SOL Price + Actions ── */}
-      <TopNav solPrice={sol.price} solChange={sol.change} isTg={isTg} />
+      <TopNav solPrice={sol.price} solChange={sol.change} isTg={isTg} onWalletClick={() => {
+        if (wallet?.status === "connected") {
+          navigate({ to: "/wallet-web3" });
+        } else {
+          setShowWalletModal(true);
+        }
+      }} />
 
       {/* ── Main Content ── */}
       <main
@@ -519,6 +574,55 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Suspense fallback={null}>
           <OnboardingModal onClose={closeOnboarding} />
         </Suspense>
+      )}
+
+      {/* ── Wallet Connection Modal (OpenSea-style) ── */}
+      {showWalletModal && (
+        <div
+          onClick={() => setShowWalletModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(11,13,16,0.70)",
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
+            zIndex: 200,
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            animation: "fadeIn 0.2s ease",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--color-card)",
+              borderTopLeftRadius: "16px",
+              borderTopRightRadius: "16px",
+              borderTop: "1px solid var(--color-border)",
+              width: "100%",
+              maxWidth: "420px",
+              maxHeight: "80vh",
+              overflowY: "auto",
+              animation: "slideUp 0.25s ease",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
+            }}
+          >
+            {/* Handle */}
+            <div style={{ display: "flex", justifyContent: "center", paddingTop: "10px", paddingBottom: "6px" }}>
+              <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(124,155,196,0.15)" }} />
+            </div>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px 12px", borderBottom: "1px solid var(--color-border)" }}>
+              <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--color-foreground)" }}>Connect Wallet</span>
+              <button onClick={() => setShowWalletModal(false)} style={{ background: "var(--color-muted)", border: "none", borderRadius: "6px", padding: "4px 10px", color: "var(--color-muted-foreground)", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}>Close</button>
+            </div>
+            {/* Provider selector */}
+            <div style={{ padding: "12px 16px 16px" }}>
+              <WalletProviderSelector />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -616,10 +720,31 @@ const PointsBadge = memo(function PointsBadge() {
   );
 });
 
+// ── Wallet Nav Label — shows address when connected, "Connect" when not ──
+
+const WalletNavLabel = memo(function WalletNavLabel() {
+  const { wallet } = useWallet();
+  const isConnected = wallet?.status === "connected";
+
+  if (!isConnected) {
+    return <span className="hidden sm:inline">Connect</span>;
+  }
+
+  const addr = wallet.address || "";
+  const short = addr.length > 10 ? `${addr.slice(0, 4)}...${addr.slice(-3)}` : addr;
+
+  return (
+    <span className="hidden sm:inline" style={{ opacity: 0.9 }}>
+      {short}
+    </span>
+  );
+});
+
 interface TopNavProps {
   solPrice?: number | null;
   solChange?: number | null;
   isTg?: boolean;
+  onWalletClick?: () => void;
 }
 
 // ── Top Nav Avatar — shows real user photo ──────────────────────────────
@@ -694,7 +819,7 @@ const TopNavAvatar = memo(function TopNavAvatar() {
   );
 });
 
-const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) {
+const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }: TopNavProps) {
   return (
     <header
       className="fixed inset-x-0 z-50"
@@ -766,14 +891,17 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
           {/* Points */}
           <PointsBadge />
 
-          {/* Wallet — navigates to wallet page (always visible, compact on mobile) */}
-          <Link
-            to="/wallet-web3"
+          {/* Wallet — shows balance when connected, opens modal when disconnected */}
+          <button
+            onClick={onWalletClick}
             className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded text-[10px] sm:text-[11px] font-bold"
             style={{
               background: "var(--gradient-primary)",
               color: "white",
+              border: "none",
+              cursor: "pointer",
               textDecoration: "none",
+              fontFamily: "'Inter', system-ui, sans-serif",
             }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -781,8 +909,8 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg }: TopNavProps) 
               <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
               <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
             </svg>
-            <span className="hidden sm:inline">Connect</span>
-          </Link>
+            <WalletNavLabel />
+          </button>
 
           {/* User Avatar — real photo from profile */}
           <TopNavAvatar />

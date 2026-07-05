@@ -40,6 +40,7 @@ import { Route as AuthenticatedCurvesRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedCopilotRouteImport } from './routes/_authenticated/copilot'
 import { Route as AuthenticatedCommunitiesRouteImport } from './routes/_authenticated/communities'
 import { Route as AuthenticatedChartsRouteImport } from './routes/_authenticated/charts'
+import { Route as AuthenticatedBrokersRouteImport } from './routes/_authenticated/brokers'
 import { Route as AuthenticatedBagsRouteImport } from './routes/_authenticated/bags'
 import { Route as AuthenticatedBacktestRouteImport } from './routes/_authenticated/backtest'
 import { Route as AuthenticatedArbitrageRouteImport } from './routes/_authenticated/arbitrage'
@@ -208,6 +209,11 @@ const AuthenticatedChartsRoute = AuthenticatedChartsRouteImport.update({
   path: '/charts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBrokersRoute = AuthenticatedBrokersRouteImport.update({
+  id: '/brokers',
+  path: '/brokers',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBagsRoute = AuthenticatedBagsRouteImport.update({
   id: '/bags',
   path: '/bags',
@@ -266,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/arbitrage': typeof AuthenticatedArbitrageRoute
   '/backtest': typeof AuthenticatedBacktestRoute
   '/bags': typeof AuthenticatedBagsRoute
+  '/brokers': typeof AuthenticatedBrokersRoute
   '/charts': typeof AuthenticatedChartsRoute
   '/communities': typeof AuthenticatedCommunitiesRoute
   '/copilot': typeof AuthenticatedCopilotRoute
@@ -306,6 +313,7 @@ export interface FileRoutesByTo {
   '/arbitrage': typeof AuthenticatedArbitrageRoute
   '/backtest': typeof AuthenticatedBacktestRoute
   '/bags': typeof AuthenticatedBagsRoute
+  '/brokers': typeof AuthenticatedBrokersRoute
   '/charts': typeof AuthenticatedChartsRoute
   '/communities': typeof AuthenticatedCommunitiesRoute
   '/copilot': typeof AuthenticatedCopilotRoute
@@ -349,6 +357,7 @@ export interface FileRoutesById {
   '/_authenticated/arbitrage': typeof AuthenticatedArbitrageRoute
   '/_authenticated/backtest': typeof AuthenticatedBacktestRoute
   '/_authenticated/bags': typeof AuthenticatedBagsRoute
+  '/_authenticated/brokers': typeof AuthenticatedBrokersRoute
   '/_authenticated/charts': typeof AuthenticatedChartsRoute
   '/_authenticated/communities': typeof AuthenticatedCommunitiesRoute
   '/_authenticated/copilot': typeof AuthenticatedCopilotRoute
@@ -393,6 +402,7 @@ export interface FileRouteTypes {
     | '/arbitrage'
     | '/backtest'
     | '/bags'
+    | '/brokers'
     | '/charts'
     | '/communities'
     | '/copilot'
@@ -433,6 +443,7 @@ export interface FileRouteTypes {
     | '/arbitrage'
     | '/backtest'
     | '/bags'
+    | '/brokers'
     | '/charts'
     | '/communities'
     | '/copilot'
@@ -475,6 +486,7 @@ export interface FileRouteTypes {
     | '/_authenticated/arbitrage'
     | '/_authenticated/backtest'
     | '/_authenticated/bags'
+    | '/_authenticated/brokers'
     | '/_authenticated/charts'
     | '/_authenticated/communities'
     | '/_authenticated/copilot'
@@ -733,6 +745,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChartsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/brokers': {
+      id: '/_authenticated/brokers'
+      path: '/brokers'
+      fullPath: '/brokers'
+      preLoaderRoute: typeof AuthenticatedBrokersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/bags': {
       id: '/_authenticated/bags'
       path: '/bags'
@@ -806,6 +825,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedArbitrageRoute: typeof AuthenticatedArbitrageRoute
   AuthenticatedBacktestRoute: typeof AuthenticatedBacktestRoute
   AuthenticatedBagsRoute: typeof AuthenticatedBagsRoute
+  AuthenticatedBrokersRoute: typeof AuthenticatedBrokersRoute
   AuthenticatedChartsRoute: typeof AuthenticatedChartsRoute
   AuthenticatedCommunitiesRoute: typeof AuthenticatedCommunitiesRoute
   AuthenticatedCopilotRoute: typeof AuthenticatedCopilotRoute
@@ -847,6 +867,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedArbitrageRoute: AuthenticatedArbitrageRoute,
   AuthenticatedBacktestRoute: AuthenticatedBacktestRoute,
   AuthenticatedBagsRoute: AuthenticatedBagsRoute,
+  AuthenticatedBrokersRoute: AuthenticatedBrokersRoute,
   AuthenticatedChartsRoute: AuthenticatedChartsRoute,
   AuthenticatedCommunitiesRoute: AuthenticatedCommunitiesRoute,
   AuthenticatedCopilotRoute: AuthenticatedCopilotRoute,

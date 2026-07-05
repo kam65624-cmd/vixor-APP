@@ -314,7 +314,8 @@ export const linkTelegramAccount = createServerFn({ method: "POST" })
     if (!user) throw new Error("Invalid Telegram signature");
 
     const photoUrl = user.photo_url || null;
-    const username = user.username || user.first_name || "Trader";
+    const username = user.username || null;
+    const displayName = [user.first_name, user.last_name].filter(Boolean).join(" ") || user.username || "Trader";
 
     const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
@@ -324,12 +325,52 @@ export const linkTelegramAccount = createServerFn({ method: "POST" })
         telegram_id: String(user.id) as any,
         telegram_username: username,
         telegram_photo_url: photoUrl,
+        display_name: displayName,
       })
       .eq("id", userId);
 
     if (error) throw new Error("Failed to link Telegram account");
 
-    return { ok: true, telegram_username: username, telegram_photo_url: photoUrl };
+    return { ok: true, telegram_username: username, telegram_photo_url: photoUrl, display_name: displayName };
+  });
+
+// ---------- TELEGRAM AUTO-SYNC ----------
+// Called on every app open from Telegram WebApp to keep profile data fresh.
+// Updates display_name, telegram_username, telegram_photo_url, telegram_id.
+export const syncTelegramProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) =>
+    z.object({
+      telegramId: z.number(),
+      firstName: z.string(),
+      lastName: z.string().optional(),
+      username: z.string().optional(),
+      photoUrl: z.string().optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+    const displayName = [data.firstName, data.lastName].filter(Boolean).join(" ") || data.username || "Trader";
+
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({
+        telegram_id: String(data.telegramId) as any,
+        telegram_username: data.username || null,
+        telegram_photo_url: data.photoUrl || null,
+        display_name: displayName,
+      })
+      .eq("id", userId);
+
+    if (error) {
+      log.warn("sync_telegram_failed", { userId, error: error.message });
+      // Don't throw — this is a background sync, failure should not block the app
+      return { ok: false, error: error.message };
+    }
+
+    return { ok: true, display_name: displayName };
   });
 
 export const createStarsInvoice = createServerFn({ method: "POST" })
