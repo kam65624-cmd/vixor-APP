@@ -426,6 +426,11 @@ function JournalPage() {
                 ? 'Click "+ New Entry" to start your trading journal.'
                 : "No entries match this filter."
             }
+            action={
+              entries.length === 0
+                ? { label: "+ New Entry", onClick: () => setShowForm(true) }
+                : undefined
+            }
           />
         )}
       </ScrollArea>

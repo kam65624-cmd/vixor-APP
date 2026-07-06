@@ -472,10 +472,12 @@ export function PageEmptyState({
   icon,
   title,
   message,
+  action,
 }: {
   icon: string;
   title: string;
   message: string;
+  action?: { label: string; onClick: () => void };
 }) {
   return (
     <div
@@ -511,6 +513,26 @@ export function PageEmptyState({
       >
         {message}
       </div>
+      {action && (
+        <button
+          onClick={action.onClick}
+          style={{
+            marginTop: "4px",
+            fontSize: "12px",
+            fontWeight: 600,
+            padding: "8px 20px",
+            borderRadius: "6px",
+            border: "1px solid var(--color-border)",
+            cursor: "pointer",
+            background: "var(--color-primary)",
+            color: "var(--color-background)",
+            minHeight: "44px",
+            transition: "opacity 0.15s ease",
+          }}
+        >
+          {action.label}
+        </button>
+      )}
     </div>
   );
 }

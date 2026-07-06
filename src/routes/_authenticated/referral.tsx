@@ -239,6 +239,7 @@ function ReferralPage() {
             icon="🔗"
             title="No referrals yet"
             message="Share your referral code with friends to start earning points. You get +25 pts for each friend who signs up, and they get +15 pts too!"
+            action={{ label: "Copy Referral Link", onClick: handleCopy }}
           />
         )}
 

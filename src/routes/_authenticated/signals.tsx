@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { getDailySignals } from "@/shared/data";
@@ -44,6 +44,7 @@ type Signal = {
 const TABS = ["All", "BUY", "SELL", "WAIT"] as const;
 
 function SignalsPage() {
+  const navigate = useNavigate();
   const { play } = useSound();
   const fetchSignals = useStableServerFn(getDailySignals);
   const createTracking = useStableServerFn(createSignalTracking);
@@ -214,6 +215,18 @@ function SignalsPage() {
               signals.length === 0
                 ? "No signals generated yet. Run analyses to populate signals."
                 : "No signals match this filter."
+            }
+            action={
+              signals.length === 0
+                ? {
+                    label: "Analyze Chart",
+                    onClick: () =>
+                      navigate({
+                        to: "/analyze",
+                        search: { screenshot: undefined, pair: undefined },
+                      }),
+                  }
+                : undefined
             }
           />
         )}

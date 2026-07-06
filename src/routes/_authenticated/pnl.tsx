@@ -163,24 +163,8 @@ function PnLPage() {
                 icon="📊"
                 title="No trades recorded yet"
                 message="Start tracking your performance by logging your first trade."
+                action={{ label: "Log a Trade", onClick: () => navigate({ to: "/trade-desk" }) }}
               />
-              <button
-                onClick={() => navigate({ to: "/trade-desk" })}
-                style={{
-                  marginBottom: "24px",
-                  padding: "8px 20px",
-                  borderRadius: "6px",
-                  border: "none",
-                  cursor: "pointer",
-                  background: `${"var(--color-bullish)"}1F`,
-                  color: "var(--color-primary)",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  letterSpacing: "0.02em",
-                }}
-              >
-                Log a Trade
-              </button>
             </div>
           )}
         </div>
