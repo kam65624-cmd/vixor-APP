@@ -243,5 +243,8 @@ export async function searchTokens(query: string): Promise<ScoredToken[]> {
   if (!result.success || !result.data) return [];
 
   // Run through scoring pipeline with empty social/SM data
-  return runDiscoveryPipeline(result.data);
+  // Relax thresholds for search: user explicitly searched for this token
+  return runDiscoveryPipeline(result.data, undefined, undefined, {
+    thresholds: { minLiquidity: 0, minVolume24h: 0 },
+  });
 }

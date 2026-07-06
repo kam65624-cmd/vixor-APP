@@ -211,6 +211,7 @@ export async function searchTokenPairs(
         chainId: string;
         baseToken: { address: string; symbol: string; name: string };
         priceUsd: string;
+        priceChange?: { h24: number };
         volume: { h24: number };
         liquidity: { usd: number };
         fdv: number;
@@ -227,7 +228,7 @@ export async function searchTokenPairs(
         symbol: p.baseToken.symbol,
         name: p.baseToken.name,
         price: parseFloat(p.priceUsd) || 0,
-        change24h: 0,
+        change24h: p.priceChange?.h24 ?? 0,
         volume24h: p.volume?.h24 ?? 0,
         liquidity: p.liquidity?.usd ?? 0,
         marketCap: p.fdv ?? 0,
