@@ -718,8 +718,7 @@ export function CopilotPage() {
   const currentAgentConfig = AGENTS.find((a) => a.id === activeAgent)!;
   const isPending = copilotMutation.isPending || consensusMutation.isPending;
   const conversationsRaw = conversationsQuery.data as
-    | { items: ConversationSummary[]; total: number; hasMore: boolean }
-    | undefined;
+    { items: ConversationSummary[]; total: number; hasMore: boolean } | undefined;
   const conversations = conversationsRaw?.items ?? [];
   const conversationsTotal = conversationsRaw?.total ?? 0;
 
