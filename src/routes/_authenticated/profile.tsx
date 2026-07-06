@@ -1,7 +1,14 @@
 import { memo, useMemo, useState, useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { getUserProfile, getUserPoints, getTradeHistory, getPortfolioData } from "@/shared/data";
+import {
+  getUserProfile,
+  getUserPoints,
+  getTradeHistory,
+  getPortfolioData,
+  getReferralData,
+  getRecentAnalyses,
+} from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
   PageLayout,
@@ -43,17 +50,44 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
 });
 
-// ── Static data (achievements badges are product-level) ─────────────────
+// ── Achievement badges (dynamically computed from user data) ─────────
 
-const badges = [
-  { icon: "🎯", name: "First Trade", desc: "Made your first trade", unlocked: true },
-  { icon: "🔥", name: "On Fire", desc: "7-day login streak", unlocked: true },
-  { icon: "👑", name: "Pro Trader", desc: "Premium subscriber", unlocked: true },
-  { icon: "🤝", name: "Connector", desc: "Referred 5+ users", unlocked: true },
-  { icon: "💰", name: "Big Winner", desc: "Single trade +$500+", unlocked: true },
-  { icon: "📊", name: "Analyst", desc: "50+ analyses", unlocked: true },
-  { icon: "⚡", name: "Speed Demon", desc: "Trade in <2s", unlocked: false },
-  { icon: "🏆", name: "Legend", desc: "Top 10 leaderboard", unlocked: false },
+interface BadgeDef {
+  icon: string;
+  name: string;
+  desc: string;
+  check: (d: BadgeData) => boolean;
+}
+
+interface BadgeData {
+  totalTrades: number;
+  streak: number;
+  referralCount: number;
+  bestTrade: number;
+  analysisCount: number;
+  winRate: number;
+  xp: number;
+}
+
+const BADGE_DEFS: BadgeDef[] = [
+  {
+    icon: "🎯",
+    name: "First Trade",
+    desc: "Made your first trade",
+    check: (d) => d.totalTrades >= 1,
+  },
+  { icon: "🔥", name: "On Fire", desc: "7-day login streak", check: (d) => d.streak >= 7 },
+  {
+    icon: "👑",
+    name: "Pro Trader",
+    desc: "100+ trades completed",
+    check: (d) => d.totalTrades >= 100,
+  },
+  { icon: "🤝", name: "Connector", desc: "Referred 3+ users", check: (d) => d.referralCount >= 3 },
+  { icon: "💰", name: "Big Winner", desc: "Single trade +$500+", check: (d) => d.bestTrade >= 500 },
+  { icon: "📊", name: "Analyst", desc: "10+ chart analyses", check: (d) => d.analysisCount >= 10 },
+  { icon: "⚡", name: "Sharp Eye", desc: "Win rate above 70%", check: (d) => d.winRate >= 70 },
+  { icon: "🏆", name: "Legend", desc: "1000+ XP earned", check: (d) => d.xp >= 1000 },
 ];
 
 const settings = [
@@ -119,7 +153,11 @@ function computeStats(trades: Array<{ pnl: number | null; status: string }>) {
 
 // ── Sub-components ───────────────────────────────────────────────────────
 
-const BadgeItem = memo(function BadgeItem({ item }: { item: (typeof badges)[0] }) {
+const BadgeItem = memo(function BadgeItem({
+  item,
+}: {
+  item: { icon: string; name: string; desc: string; unlocked: boolean };
+}) {
   return (
     <div
       style={{
@@ -248,6 +286,8 @@ function ProfilePage() {
   const fetchPoints = useStableServerFn(getUserPoints);
   const fetchTrades = useStableServerFn(getTradeHistory);
   const fetchPortfolio = useStableServerFn(getPortfolioData);
+  const fetchReferral = useStableServerFn(getReferralData);
+  const fetchAnalyses = useStableServerFn(getRecentAnalyses);
 
   // Queries
   const profileQuery = useQuery({
@@ -274,13 +314,46 @@ function ProfilePage() {
     staleTime: 30_000,
   });
 
+  const referralQuery = useQuery({
+    queryKey: ["referral-profile"],
+    queryFn: () => fetchReferral({}),
+    staleTime: 60_000,
+  });
+
+  const analysesQuery = useQuery({
+    queryKey: ["analyses-profile"],
+    queryFn: () => fetchAnalyses(),
+    staleTime: 60_000,
+  });
+
   // Derived data
   const profile = profileQuery.data?.profile;
   const pointsBalance = pointsQuery.data?.balance ?? 0;
-  const streak = pointsQuery.data?.streak;
+  const streak =
+    (pointsQuery.data?.streak as { current_streak?: number; longest_streak?: number } | undefined)
+      ?.current_streak ?? 0;
   const trades = tradesQuery.data?.trades ?? [];
 
   const { totalTrades, winRate, totalPnl } = useMemo(() => computeStats(trades), [trades]);
+
+  // ── Dynamic badges ──
+  const badgeData: BadgeData = useMemo(() => {
+    const bestTrade = trades.reduce((max, t) => Math.max(max, t.pnl ?? 0), 0);
+    return {
+      totalTrades,
+      streak,
+      referralCount: referralQuery.data?.referredCount ?? 0,
+      bestTrade,
+      analysisCount: analysesQuery.data?.analyses?.length ?? 0,
+      winRate,
+      xp: profile?.xp ?? 0,
+    };
+  }, [totalTrades, streak, referralQuery.data, trades, analysesQuery.data, winRate, profile?.xp]);
+
+  const badges = useMemo(
+    () => BADGE_DEFS.map((b) => ({ ...b, unlocked: b.check(badgeData) })),
+    [badgeData],
+  );
 
   // ── Name: Telegram client-side > server profile > fallback ──
   const displayName = tgDisplayName || profile?.display_name || profile?.username || "Trader";
@@ -289,8 +362,10 @@ function ProfilePage() {
     .toUpperCase();
   const joinedText = useMemo(() => formatJoinDate(profile?.created_at), [profile?.created_at]);
 
-  const longestStreak = streak?.longest_streak ?? profile?.streak_days ?? 0;
-  const currentStreak = streak?.current_streak ?? profile?.streak_days ?? 0;
+  const streakData = pointsQuery.data?.streak as
+    { current_streak?: number; longest_streak?: number } | undefined;
+  const longestStreak = streakData?.longest_streak ?? profile?.streak_days ?? 0;
+  const currentStreak = streakData?.current_streak ?? profile?.streak_days ?? 0;
 
   const [imgError, setImgError] = useState(false);
 
