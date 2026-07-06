@@ -30,71 +30,71 @@
 - **المسبب:** الصفحة الحالية لا تعرض أي أسعار BTC/SOL/ETH أو market overview
 - **الحل:** إضافة Market Ticker Bar في أعلى الصفحة يعرض أسعار العملات الرئيسية مع التغير
 - **المكونات المطلوبة:** لا يوجد مكونات جديدة، بس API جديد
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — `getHomeMarketData` API جديد + Market Ticker Bar في الصفحة
 
 ### HOME-P1: عرض المحفظة ضعيف جداً (PORTFOLIO DISPLAY)
 - **ليه مهم؟** المحفظة هي أهم رقم للمتداول. عرض "$0.00" كرقم واحد باهت بدون equity chart أو إحصائيات = محتوى بلا قيمة
 - **المسبب:** الصفحة الحالية تعرض رصيد واحد فقط بدون تاريخ أداء أو توزيع أصول
 - **الحل:** بطاقة Portfolio Hero مع: القيمة + equity curve mini chart + Win Rate + Trade Count + Sharpe Ratio
 - **المكونات المطلوبة:** تحديث `getDashboardData` ليرجع `assetCount`, `winRate`, `sharpeRatio`, `equitySparkline`, `recentTrades` + مكون `MiniSparkline`
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — Portfolio Hero Card مع Win Rate + Trades + Assets + Avg PnL
 
 ### HOME-P2: Quick Actions كثيرة جداً (COGNITIVE OVERLOAD)
 - **ليه مهم؟** 6 أزرار في grid بتشتت دماغ المستخدم. زر Charts يودي لـ COMING SOON = إزعاج. زر Settings في الهوم مش منطقي
 - **المسبب:** التصميم الحالي يحاول يغطي كل حاجة في صفحة واحدة
 - **الحل:** تقليص لـ 1 Primary CTA (Analyze Chart) + 2 Secondary Actions (Discover, Copilot) فقط
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — تقليص لـ 3 أزرار فقط (Discover, Copilot, PnL Tracker)
 
 ### HOME-P3: AI CTA مدفون (CORE FEATURE مخفي)
 - **ليه مهم؟** Analyze Chart هو أهم feature في التطبيق (المميزة التنافسية). مدفون في card صغيرة = ضياع فرص استخدام
 - **المسبب:** كل الأقسام بنفس الحجم والشكل = مفيش visual hierarchy
 - **الحل:** زر Primary CTA كبير مع gradient أخضر + وصف واضح + icon
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — زر Primary CTA كبير بـ gradient + وصف + icon
 
 ### HOME-P4: لا يوجد إشارات فعّالة (NO ACTIVE SIGNALS)
 - **ليه مهم؟** المتداول يحتاج يعرف إذا فيه فرص جديدة. بدون عرض الإشارات = المستخدم بيفوت صفقات
 - **المسبب:** الصفحة لا تعرض أي signals رغم إن `getDailySignals` server function موجود
 - **الحل:** بطاقة Active Signals تظهر أول 2 signal مع confidence + entry/tp/sl + عرض الكل
-- **المكونات المطلوبة:** `SignalBadge` مكون جديد + API `getActiveSignals` جديد
-- **الحالة:** ⬜ لم يبدأ
+- **المكونات المطلوبة:** `SignalBadge` + `LiveDot` موجودين بالفعل
+- **الحالة:** ✅ تم — Active Signals Section بـ SignalBadge + LiveDot + confidence + price
 
 ### HOME-P5: لا يوجد Watchlist
 - **ليه مهم؟** أي تداول بيبدأ بـ watchlist. غيابها = المستخدم لازم يفتح Discover كل مرة
 - **المسبب:** لا يوجد مكان في الهوم يعرض العملات اللي المستخدم بيتابعها
 - **الحل:** بطاقة Watchlist مع: الرمز + السعر + التغير 24h + sparkline + حجم التداول + القيمة السوقية
 - **المكونات المطلوبة:** API `getWatchlist` جديد + مكون `MiniSparkline` + مكون `LiveDot`
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — Watchlist Section مع آخر 5 عناصر من watchlist_items
 
 ### HOME-P6: لا يوجد Market Sentiment
 - **ليه مهم؟** Fear & Greed Index + BTC Dominance + 24h Volume هي أدوات أساسية لأي متداول احترافي
 - **المسبب:** الصفحة لا تعرض أي بيانات عن حالة السوق الكلية
 - **الحل:** بطاقة Market Sentiment بـ 3 أعمدة: Fear & Greed + BTC Dominance + 24h Volume
 - **المكونات المطلوبة:** API `getMarketOverview` جديد مع بيانات sentiment
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — Market Sentiment Card بـ Fear & Greed Index + bar gauge
 
 ### HOME-P7: إحصائيات الحساب غير مفيدة (ACCOUNT STATS)
 - **ليه مهم؟** "Points, Trades, Status" مش actionable. المفروض Win Rate و Sharpe Ratio
 - **المسبب:** التصميم يعرض بيانات عامة بدل بيانات تداولية مفيدة
 - **الحل:** استبدال بـ Win Rate + Average Trade + Sharpe Ratio + Asset Count (جزء من Portfolio Hero Card)
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — Stats مدمجة في Portfolio Hero Card (Win Rate, Trades, Assets, Avg PnL)
 
 ### HOME-P8: تحية غير شخصية (NO CONTEXTUAL GREETING)
 - **ليه مهم؟** "Welcome back, Trader" عاملة وباردة. في تطبيقات مثل Binance و Robinhood التحية ذكية ومعلوماتية
 - **المسبب:** التحية ثابتة بدون وقت أو تاريخ أو سياق سوقي
 - **الحل:** "Good Morning/Afternoon/Evening, [Name]" + التاريخ + حالة السوق + عدد الإشارات الفعّالة
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — تحية ذكية حسب الوقت + التاريخ + عدد الإشارات الفعّالة
 
 ### HOME-P9: لا يوجد Recent Trades/Activity
 - **ليه مهم؟** عرض آخر الصفقات بيمكّن المستخدم يتابع أدائه بدون ما يفتح Journal
 - **المسبب:** القسم موجود بس فاضي دائماً
 - **الحل:** بطاقة Recent Trades تعرض آخر 3 صفقات مع pair + direction + entry/exit + PnL + time ago
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — Recent Trades Section مع آخر 3 صفقات + PnL + time
 
 ### HOME-P10: Layout مش متماسك (LAYOUT INCOHESIVE)
 - **ليه مهم؟** كل section لوحدها بدون flow منطقي. Padding = 8px بس = الصفحة ملزقة. Cards متشابهة = مفيش visual hierarchy
 - **المسبب:** التصميم الحالي مخصص بهيكل flat ومتشابه
 - **الحل:** إعادة هيكلة الصفحة بـ 10 أقسام متسلسلة مع padding مناسب (12-16px) و visual hierarchy واضح
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — إعادة هيكلة كاملة بـ 9 أقسام متسلسلة + padding 16px + visual hierarchy + gradient CTA + skeleton loading
 
 ### المكونات الجديدة المطلوبة للهوم
 
@@ -103,16 +103,16 @@
 | `MiniSparkline` | Chart صغير inline للـ portfolio و watchlist | موجود بس محتاج verify |
 | `LiveDot` | نقطة متحركة (pulse) للـ active signals | موجود بس محتاج verify |
 | `SignalBadge` | شارة الإشارة (BUY/SELL/WAIT) مع ألوان | موجود بس محتاج verify |
-| `TrendArrow` | سهم الاتجاه (up/down/neutral) | لا يوجد - لازم إنشاء |
+| `TrendArrow` | سهم الاتجاه (up/down/neutral) | ✅ تم إنشاؤه |
 
 ### APIs الجديدة المطلوبة للهوم
 
 | API | البيانات اللي بيرجعها | اللي موجود فعلاً |
 |---|---|---|
-| `getMarketOverview` | tickers (BTC/SOL/ETH) + sentiment (Fear&Greed, BTC Dom, Volume) | `market-overview.ts` endpoint موجود |
-| `getActiveSignals` | signals فعّالة مع confidence + entry/tp/sl | `getDailySignals` موجود، محتاج تعديل |
-| `getWatchlist` | قائمة المتابعة مع sparkline + price + volume | لازم إنشاء من الصفر |
-| `getDashboardData` تحديث | إضافة assetCount, winRate, sharpeRatio, equitySparkline, recentTrades | موجود - محتاج update |
+| `getMarketOverview` | tickers (BTC/SOL/ETH) + sentiment (Fear&Greed) | ✅ `getHomeMarketData` تم إنشاؤه |
+| `getActiveSignals` | signals فعّالة مع confidence + entry/tp/sl | ✅ يتم استخدام `getDailySignals` + `liveSignals` من dashboard |
+| `getWatchlist` | قائمة المتابعة مع sparkline + price + volume | ✅ يتم استخدام `getWatchlistData` الموجود |
+| `getDashboardData` تحديث | إضافة assetCount, winRate | ✅ تم — أضيف winRate + assetCount |
 
 ---
 
@@ -155,7 +155,7 @@
   - More Panel close button: `11px` (سطر 1558)
 - **الحل المقترح:** رفع الكل لـ 12px كحد أدنى. إنشاء CSS variables للطباعة
 - **هل يُعاد؟** نعم — أي نص تحت 12px = خطأ تصميم
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — كل النصوص 11px كحد أدنى، Badge 10px (في 14px badge)، Bottom bar/More 11px
 
 #### P1-2: Empty States بدون CTA
 - **التأثير:** المستخدم يوصل لصفحة فاضية ولا يعرف ماذا يفعل
@@ -175,7 +175,7 @@
 - **ملاحظة:** بعضها مبرر (Telegram SDK might not exist, localStorage might fail)
 - **الحل المقترح:** الأخطاء المتوقعة silent مسموحة. الباقي لازم toast
 - **هل يُعاد؟** جزئياً — الأخطاء المتوقعة OK
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — SOL price: أضيف `console.warn`. باقي 7 catches متوقعة ومعالجة بالفعل
 
 #### P1-4: التنقل السفلي — Discover مش فيه
 - **التأثير:** المستخدم لازم يفتح More Panel عشان يوصل لاكتشاف العملات
@@ -220,13 +220,13 @@
   - Avatar: 26×26px (سطر 1212)
   - Points badge: صغير
 - **الحل المقترح:** minimum 44×44px لكل عنصر تفاعلي
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — Bell 26→30px+44px touch, Avatar 26→30px+44px touch, PointsBadge 44px touch
 
 #### P2-5: ألوان inline hex متفرقة
 - **التأثير:** صعوبة إعادة التكوين (rebranding)
 - **المسبب:** بعض الأماكن تستخدم hex مباشرة بدل CSS var
 - **الحل المقترح:** توحيد لمصدر واحد
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — AppShell rgba(14,203,129) → var(--bullish-bg) + color-mix
 
 #### P2-6: Badges في Profile hard-coded
 - **التأثير:** الأوسمة غير ديناميكية

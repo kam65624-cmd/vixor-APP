@@ -448,6 +448,10 @@ export const getDashboardData = createServerFn({ method: "GET" })
       recentActivity,
       liveSignals,
       profile: profile || null,
+      winRate: trades?.length
+        ? Math.round((trades.filter((t) => (t.pnl ?? 0) > 0).length / trades.length) * 100)
+        : 0,
+      assetCount: holdingMap.size,
     };
   });
 
@@ -1161,3 +1165,58 @@ function formatRelativeTime(dateStr: string): string {
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
 }
+
+// ── Home Market Overview (public — no auth) ─────────────────────
+export interface HomeTickerItem {
+  symbol: string;
+  price: number;
+  change24h: number;
+}
+
+export interface HomeMarketData {
+  tickers: HomeTickerItem[];
+  fearGreedIndex: { value: number; label: string; change: number } | null;
+}
+
+export const getHomeMarketData = createServerFn({ method: "GET" }).handler(async () => {
+  // Fetch top 3 crypto prices via existing market domain
+  let tickers: HomeTickerItem[] = [];
+  try {
+    const { getMarketPrices } = await import("@/domains/market/functions");
+    const prices = await getMarketPrices({ data: undefined });
+    // Pick BTC, ETH, SOL
+    const symbols = ["BTC", "ETH", "SOL"];
+    tickers = (Array.isArray(prices) ? prices : [])
+      .filter((p: any) => symbols.some((s) => p.symbol?.toUpperCase().includes(s)))
+      .map((p: any) => ({
+        symbol: p.symbol?.replace("USDT", "").replace("/", "") || "???",
+        price: p.price ?? 0,
+        change24h: p.change24h ?? 0,
+      }))
+      .slice(0, 3);
+  } catch (e) {
+    console.warn("[Home] Failed to fetch market prices:", e);
+  }
+
+  // Fear & Greed Index from alternative.me (free, no API key)
+  let fearGreedIndex: HomeMarketData["fearGreedIndex"] = null;
+  try {
+    const res = await fetch("https://api.alternative.me/fng/?limit=2", {
+      signal: AbortSignal.timeout(5000),
+    });
+    const json = await res.json();
+    const current = json?.data?.[0];
+    const prev = json?.data?.[1];
+    if (current) {
+      fearGreedIndex = {
+        value: Number(current.value) || 0,
+        label: (current.value_classification as string) || "Neutral",
+        change: prev ? Number(current.value) - Number(prev.value) : 0,
+      };
+    }
+  } catch (e) {
+    console.warn("[Home] Failed to fetch Fear & Greed Index:", e);
+  }
+
+  return { tickers, fearGreedIndex } satisfies HomeMarketData;
+});

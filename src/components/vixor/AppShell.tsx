@@ -37,8 +37,9 @@ function useSolPrice() {
           setPrice(data.price);
           setChange(data.change24h);
         }
-      } catch {
-        // Silently fail — keep last known price
+      } catch (e) {
+        // Expected: network may be unavailable. Keep last known price.
+        console.warn("[AppShell] SOL price fetch failed:", e);
       }
     };
 
@@ -1022,15 +1023,19 @@ const NotificationBell = memo(function NotificationBell() {
       to="/notifications"
       className="relative flex items-center justify-center rounded-full"
       style={{
-        width: "26px",
-        height: "26px",
+        width: "30px",
+        height: "30px",
         background: "var(--color-muted)",
         textDecoration: "none",
+        minWidth: "44px",
+        minHeight: "44px",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <svg
-        width="13"
-        height="13"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="var(--color-muted-foreground)"
@@ -1052,7 +1057,7 @@ const NotificationBell = memo(function NotificationBell() {
             borderRadius: "7px",
             background: "var(--color-bearish)",
             color: "white",
-            fontSize: "8px",
+            fontSize: "10px",
             fontWeight: 800,
             display: "flex",
             alignItems: "center",
@@ -1086,10 +1091,14 @@ const PointsBadge = memo(function PointsBadge() {
   return (
     <Link
       to="/rewards"
-      className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold"
+      className="flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-mono font-bold"
       style={{
         color: "var(--color-primary)",
         textDecoration: "none",
+        minWidth: "44px",
+        minHeight: "44px",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <span style={{ fontSize: "12px" }}>⚡</span>
@@ -1115,6 +1124,7 @@ const WalletNavLabel = memo(function WalletNavLabel() {
         const { getPhantomSolBalance } = await import("@/domains/wallet/adapters/phantom-adapter");
         return await getPhantomSolBalance(addr);
       } catch {
+        // Expected: dynamic import or wallet adapter may fail
         return null;
       }
     },
@@ -1209,12 +1219,14 @@ const TopNavAvatar = memo(function TopNavAvatar() {
       to="/profile"
       className="flex items-center justify-center rounded-full overflow-hidden"
       style={{
-        width: "26px",
-        height: "26px",
+        width: "30px",
+        height: "30px",
         border: "1px solid var(--color-border)",
         textDecoration: "none",
         background: photoUrl && !imgErr ? "none" : "var(--gradient-primary)",
         flexShrink: 0,
+        minWidth: "44px",
+        minHeight: "44px",
       }}
     >
       {photoUrl && !imgErr ? (
@@ -1225,7 +1237,7 @@ const TopNavAvatar = memo(function TopNavAvatar() {
           style={{ width: "100%", height: "100%", objectFit: "cover" as const }}
         />
       ) : (
-        <span style={{ fontSize: "10px", fontWeight: 800, color: "white" }}>{initial}</span>
+        <span style={{ fontSize: "12px", fontWeight: 800, color: "white" }}>{initial}</span>
       )}
     </Link>
   );
@@ -1278,7 +1290,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
 
           {/* SOL Global Price — compact */}
           <div
-            className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold"
+            className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold"
             style={{
               color: (solChange ?? 0) >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
             }}
@@ -1296,7 +1308,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
           {/* Wallet — shows balance when connected, opens modal when disconnected */}
           <button
             onClick={onWalletClick}
-            className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded text-[10px] sm:text-[11px] font-bold"
+            className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded text-[11px] sm:text-[12px] font-bold"
             style={{
               background: "var(--gradient-primary)",
               color: "white",
@@ -1400,7 +1412,7 @@ const BottomBar = memo(function BottomBar({
               </span>
               <span
                 style={{
-                  fontSize: "9px",
+                  fontSize: "11px",
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
                   marginTop: "2px",
@@ -1443,7 +1455,7 @@ const BottomBar = memo(function BottomBar({
         </svg>
         <span
           style={{
-            fontSize: "9px",
+            fontSize: "11px",
             fontWeight: 500,
             color: "var(--color-muted-foreground)",
             marginTop: "2px",
@@ -1571,7 +1583,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
               {/* Category Title */}
               <div
                 style={{
-                  fontSize: "10px",
+                  fontSize: "11px",
                   fontWeight: 700,
                   color: "var(--color-muted-foreground)",
                   textTransform: "uppercase",
@@ -1603,9 +1615,9 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                         gap: "8px",
                         padding: "10px 10px",
                         borderRadius: "8px",
-                        background: isActive ? "rgba(14,203,129,0.12)" : "var(--color-muted)",
+                        background: isActive ? "var(--bullish-bg)" : "var(--color-muted)",
                         border: isActive
-                          ? "1px solid rgba(14,203,129,0.20)"
+                          ? "1px solid color-mix(in srgb, var(--color-bullish) 20%, transparent)"
                           : "1px solid var(--color-border)",
                         textDecoration: "none",
                         color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
