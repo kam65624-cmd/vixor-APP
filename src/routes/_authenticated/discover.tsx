@@ -12,6 +12,8 @@ import { useQuery } from "@tanstack/react-query";
 import { PageLayout, StatsRow, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
 import { RefreshCw, SlidersHorizontal, ChevronUp, X, Link2 } from "lucide-react";
 import { withAlpha, blendWithCard } from "@/shared/color-utils";
+import { getLiveForexPrices } from "@/shared/data";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
   FOREX_PAIRS,
   FOREX_TOTAL_COUNT,
@@ -1294,16 +1296,39 @@ function DiscoverPage() {
   const [brokerToast, setBrokerToast] = useState<string | null>(null);
   const brokerToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleForexClick = useCallback((pair: ForexPair) => {
-    // Show a brief inline toast indicating broker connection is needed
-    setBrokerToast(pair.pair);
-    if (brokerToastTimer.current) clearTimeout(brokerToastTimer.current);
-    brokerToastTimer.current = setTimeout(() => setBrokerToast(null), 2500);
-  }, []);
+  const handleForexClick = useCallback(
+    (pair: ForexPair) => {
+      navigate({ to: "/token/$symbol", params: { symbol: pair.pair } });
+    },
+    [navigate],
+  );
 
-  // Sorted forex pairs
+  // Live forex price query
+  const fetchForex = useStableServerFn(getLiveForexPrices);
+  const forexQuery = useQuery({
+    queryKey: ["live-forex-prices"],
+    queryFn: () => fetchForex(),
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  });
+
+  // Merge live prices into static data
+  const livePriceMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (forexQuery.data) {
+      for (const item of forexQuery.data) {
+        if (item.price > 0) map.set(item.pair, item.price);
+      }
+    }
+    return map;
+  }, [forexQuery.data]);
+
+  // Sorted forex pairs (with live prices merged)
   const sortedForexPairs = useMemo(() => {
-    const pairs = [...FOREX_PAIRS];
+    const pairs = [...FOREX_PAIRS].map((p) => {
+      const livePrice = livePriceMap.get(p.pair);
+      return livePrice ? { ...p, price: livePrice } : p;
+    });
     switch (sortBy) {
       case "volume":
         pairs.sort((a, b) => b.volume24h - a.volume24h);
@@ -1326,7 +1351,7 @@ function DiscoverPage() {
       );
     }
     return pairs;
-  }, [sortBy, search.search]);
+  }, [sortBy, search.search, livePriceMap]);
 
   const handleManualRefresh = useCallback(() => {
     refetch();
