@@ -464,6 +464,110 @@ export function TokenPage() {
 
   const isInitialLoading = tradesQuery.isLoading || discoveryQuery.isLoading;
 
+  // ── Forex / Commodity: show TradingView as primary view ──
+  const isTraditionalAsset = assetType === "forex" || assetType === "commodity";
+  const tvSymbol = toTradingViewSymbol(symbol);
+
+  if (isTraditionalAsset) {
+    return (
+      <PageLayout
+        title={symbol.toUpperCase()}
+        badge={assetBadge.label}
+        badgeColor={assetBadge.color}
+      >
+        <PageScrollArea>
+          <div style={{ padding: 0 }}>
+            <TradingViewMiniChart symbol={symbol} height="60vh" />
+            {/* Basic info below chart */}
+            <div
+              style={{
+                padding: "16px",
+                borderBottom: "1px solid var(--color-border)",
+                background: "var(--color-card)",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: 800,
+                      color: "var(--color-foreground)",
+                      margin: 0,
+                    }}
+                  >
+                    {symbol.toUpperCase()}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "var(--color-muted-foreground)",
+                      marginTop: "4px",
+                    }}
+                  >
+                    {assetType === "commodity" ? "Commodity · TradingView" : "Forex · TradingView"}
+                  </div>
+                </div>
+                <Badge label={assetBadge.label} color={assetBadge.color} />
+              </div>
+            </div>
+            {/* Trade history for this pair */}
+            {tokenTrades.length > 0 && (
+              <>
+                <SectionTitle title="Trade History" count={tokenTrades.length} />
+                {tokenTrades.slice(0, 10).map((t: any) => (
+                  <DataRow key={t.id}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <Badge
+                          label={t.direction?.toUpperCase() || "N/A"}
+                          color={
+                            t.direction === "long" ? "var(--color-bullish)" : "var(--color-bearish)"
+                          }
+                          small
+                        />
+                        <span
+                          style={{
+                            fontSize: "13px",
+                            fontWeight: 700,
+                            color: "var(--color-foreground)",
+                          }}
+                        >
+                          {t.pair}
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 700,
+                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          color:
+                            (t.pnl ?? 0) >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
+                        }}
+                      >
+                        {(t.pnl ?? 0) >= 0 ? "+" : ""}
+                        {t.pnl?.toFixed(2)}
+                      </span>
+                    </div>
+                  </DataRow>
+                ))}
+              </>
+            )}
+          </div>
+        </PageScrollArea>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout
       title={tokenData?.name || symbol.toUpperCase()}
@@ -1055,8 +1159,6 @@ export function TokenPage() {
         ════════════════════════════════════════════════════════════════════ */}
         {assetType === "meme" && <MemeSections tokenData={tokenData} />}
         {assetType === "crypto" && <CryptoSections tokenData={tokenData} />}
-        {assetType === "forex" && <ForexSections symbol={symbol} />}
-        {assetType === "commodity" && <CommoditySections tokenData={tokenData} symbol={symbol} />}
 
         {/* ════════════════════════════════════════════════════════════════════
             5. RELATED ANALYSES
