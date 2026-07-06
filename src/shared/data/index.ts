@@ -1220,3 +1220,70 @@ export const getHomeMarketData = createServerFn({ method: "GET" }).handler(async
 
   return { tickers, fearGreedIndex } satisfies HomeMarketData;
 });
+
+// ── Arbitrage Scanner ─────────────────────────────────────────
+export type ArbitrageScanResponse = {
+  scannedAt: number;
+  mode: string;
+  opportunities: Array<{
+    id: string;
+    strategy: string;
+    startToken: string;
+    endToken: string;
+    grossProfitBps: number;
+    netProfitBps: number;
+    confidence: number;
+    legs: Array<{
+      venue: string;
+      inputSymbol: string;
+      outputSymbol: string;
+    }>;
+  }>;
+  rejected: Array<{ reason: string; strategy: string }>;
+  durationMs: number;
+};
+
+export const scanArbitrage = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const { createArbitrageEngine } = await import("@/domains/arbitrage");
+    const engine = await createArbitrageEngine();
+    const result = await engine.scanOnce();
+
+    const response: ArbitrageScanResponse = {
+      scannedAt: result.scannedAt,
+      mode: result.mode,
+      opportunities: result.opportunities.map((opp) => ({
+        id: opp.id,
+        strategy: opp.strategy,
+        startToken: opp.startToken.symbol,
+        endToken: opp.endToken.symbol,
+        grossProfitBps: opp.grossProfitBps,
+        netProfitBps: opp.netProfitBps,
+        confidence: opp.confidence,
+        legs: opp.legs.map((leg) => ({
+          venue: leg.venue,
+          inputSymbol:
+            opp.startToken.mint === leg.inputMint ? opp.startToken.symbol : opp.endToken.symbol,
+          outputSymbol:
+            opp.endToken.mint === leg.outputMint ? opp.endToken.symbol : opp.startToken.symbol,
+        })),
+      })),
+      rejected: result.rejected.map((r) => ({
+        reason: r.reason,
+        strategy: r.opportunity.strategy,
+      })),
+      durationMs: result.durationMs,
+    };
+
+    return response;
+  } catch (error) {
+    console.warn("[Arbitrage] Scan failed:", error);
+    return {
+      scannedAt: Date.now(),
+      mode: "mock",
+      opportunities: [],
+      rejected: [],
+      durationMs: 0,
+    } satisfies ArbitrageScanResponse;
+  }
+});
