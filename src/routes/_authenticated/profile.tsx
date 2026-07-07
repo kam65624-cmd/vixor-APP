@@ -363,7 +363,8 @@ function ProfilePage() {
   const joinedText = useMemo(() => formatJoinDate(profile?.created_at), [profile?.created_at]);
 
   const streakData = pointsQuery.data?.streak as
-    { current_streak?: number; longest_streak?: number } | undefined;
+    | { current_streak?: number; longest_streak?: number }
+    | undefined;
   const longestStreak = streakData?.longest_streak ?? profile?.streak_days ?? 0;
   const currentStreak = streakData?.current_streak ?? profile?.streak_days ?? 0;
 

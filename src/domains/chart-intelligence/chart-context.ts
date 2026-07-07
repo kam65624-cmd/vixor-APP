@@ -53,7 +53,13 @@ export interface ChartContext {
 
 // ── Chart platform detection ──
 export type ChartPlatform =
-  "tradingview" | "mt5" | "mt4" | "binance" | "exness" | "bybit" | "unknown";
+  | "tradingview"
+  | "mt5"
+  | "mt4"
+  | "binance"
+  | "exness"
+  | "bybit"
+  | "unknown";
 
 // ── Extraction result — either success with context, or failure ──
 export interface ChartExtractionResult {

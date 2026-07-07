@@ -1237,7 +1237,9 @@ const TopNavAvatar = memo(function TopNavAvatar() {
           style={{ width: "100%", height: "100%", objectFit: "cover" as const }}
         />
       ) : (
-        <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--primary-foreground)" }}>{initial}</span>
+        <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--primary-foreground)" }}>
+          {initial}
+        </span>
       )}
     </Link>
   );

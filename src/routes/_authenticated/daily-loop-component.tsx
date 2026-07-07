@@ -279,7 +279,8 @@ export function DailyLoopPage() {
   const loop = loopQuery.data as DailyLoop | undefined;
   const streak = streakQuery.data;
   const historyRaw = historyQuery.data as
-    { items: DailyLoop[]; total: number; hasMore: boolean } | undefined;
+    | { items: DailyLoop[]; total: number; hasMore: boolean }
+    | undefined;
   const history = historyRaw?.items ?? [];
   const historyTotal = historyRaw?.total ?? 0;
   const isLoading = loopQuery.isLoading;

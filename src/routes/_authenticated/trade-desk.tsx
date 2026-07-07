@@ -128,7 +128,8 @@ function TradeDesk() {
   });
 
   const openTradesRaw = openTradesQuery.data as
-    { items: Trade[]; total: number; hasMore: boolean } | undefined;
+    | { items: Trade[]; total: number; hasMore: boolean }
+    | undefined;
   const openTrades = openTradesRaw?.items ?? [];
   const openTradesTotal = openTradesRaw?.total ?? 0;
 
