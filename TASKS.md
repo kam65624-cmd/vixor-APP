@@ -1,7 +1,7 @@
 # VIXOR APP — تقرير التاسكات والتحسينات
 
-> **آخر تحديث:** 2026-07-06
-> **الحالة العامة:** المشروع متقدم جداً — 35/38 صفحة شغالة ببيانات حقيقية
+> **آخر تحديث:** 2026-07-07
+> **الحالة العامة:** المشروع متقدم جداً — 35/38 صفحة شغالة ببيانات حقيقية + نشر Vercel عامل ✅
 
 ---
 
@@ -271,6 +271,11 @@
 | 4 | Redirect loop في rewards | ✅ تم | إزالة `window.location.assign("/auth")` |
 | 5 | "Invalid API key" من Supabase | ✅ تم | إزالة `global.headers.Authorization` من عميل getUser |
 | 6 | npm ci failing (missing from lock file) | ✅ تم | تحديث package-lock.json |
+| 7 | CI npm ci يفشل (npm version mismatch) | ✅ تم | استبدال `npm ci` بـ `npm install` في CI — npm 11 محلي vs npm 10 على GitHub CI |
+| 8 | Vercel deployment فاشل (Hobby plan cron limit) | ✅ تم | شلت cron `*/5 * * * *` — Hobby Plan مش بيسمح أقل من يومي. رجعت 2 crons يوميين |
+| 9 | إزالة كل Mock Data (فوركس، رادار، تحليلات) | ✅ تم + منشور | 10 ملفات +1063/-354 سطر — بيانات حية من Binance/TwelveData/Frankfurter APIs |
+| 10 | Copilot streaming بيرسل context فاضي | ✅ تم + منشور | كان بيرسل `{profile:{}, recentAnalyses:[], signals:[]}` بدل بيانات المستخدم الحقيقية |
+| 11 | MoxiAvatar broken import في AppShell | ✅ تم | شلت import و JSX usage لـ MoxiAvatar اللي كان سبب error |
 
 ---
 
@@ -347,3 +352,24 @@ Sprint 4: التحسينات (يوم 11-14)
 | المكونات | 62+ ملف |
 | Server Functions | 28+ في data/index.ts |
 | نطاقات الأعمال (domains) | 22 نطاق |
+
+---
+
+## مؤجلة — MOXI AI Companion
+
+> **مؤجل حسب طلب المستخدم** — لا يُنفذ حتى إشعار آخر
+
+### وصف الرؤية
+- MOXI هو رفيق AI 2.5D NFT يكون "روح" التطبيق
+- بيشمل 4 agents كمخ: Analyst, Hunter, Coach, Governor
+- بيعوض نظام الإشعارات الحالي بـ proactive real-time awareness
+- تكامل Web3/NFT — كل مستخدم يملك نسخته الفريدة
+- Persona مع حقول: `{name, personality, expertise, communicationStyle, avatar, nftTokenId}`
+
+### التاسكات الفرعية (لما يجي الوقت)
+- [ ] تصميم وبرمجة persona system (`src/domains/moxi/persona.ts`)
+- [ ] بناء context engine (`src/domains/moxi/context-engine.ts`)
+- [ ] إشعارات ذكية ت замен الإشعارات الحالية (`notification-hub.ts`)
+- [ ] أدوات MOXI (tools) للتكامل مع الـ domains الموجودة
+- [ ] MoxiAvatar component (2.5D NFT display)
+- [ ] ربط MOXI بالـ Copilot كـ واجهة محادثة
