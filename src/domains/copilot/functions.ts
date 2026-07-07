@@ -35,7 +35,14 @@ export const askCopilot = createServerFn({ method: "POST" })
         message: z.string().min(1).max(4000),
         history: z.array(ChatMessageSchema).max(20).optional(),
         agent: z
-          .enum(["market_analyst", "risk_manager", "news_analyst", "strategy_builder", "auto"])
+          .enum([
+            "market_analyst",
+            "risk_manager",
+            "news_analyst",
+            "strategy_builder",
+            "auto",
+            "moxi",
+          ])
           .default("auto"),
         chartSession: z
           .object({
@@ -51,6 +58,57 @@ export const askCopilot = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
     const { message, history = [], agent, chartSession } = data;
+
+    // ── MOXI routing: delegate to askMoxi when agent is "moxi" ──
+    if (agent === "moxi") {
+      // Import the MOXI handler logic directly — can't call a ServerFn from inside another
+      const { buildMoxiContext } = await import("@/domains/moxi/context-engine");
+      const { getMoxiPersona: getPersona } = await import("@/domains/moxi/persona");
+      const { buildMoxiSystemPrompt, formatMoxiContext } = await import("@/domains/moxi/prompt");
+      const { LLMRouter } = await import("@/shared/llm");
+
+      const [moxiCtx, persona] = await Promise.all([
+        buildMoxiContext(userId, supabase),
+        getPersona(userId, supabase),
+      ]);
+      const formattedCtx = formatMoxiContext(moxiCtx);
+
+      // Get tool descriptions
+      try {
+        await import("@/shared/tool-registry/tools/trading");
+        await import("@/shared/tool-registry/tools/journal-analysis");
+        const { ToolRegistry } = await import("@/shared/tool-registry");
+        formattedCtx.toolDescriptions = ToolRegistry.toolDescriptionsForPrompt({
+          userId,
+          isPremium: (moxiCtx.profile as any)?.is_premium ?? false,
+          isAdmin: false,
+        });
+      } catch {
+        formattedCtx.toolDescriptions = "Tools available.";
+      }
+
+      const systemPrompt = buildMoxiSystemPrompt(persona, formattedCtx);
+
+      let fullMsg = message;
+      if (chartSession) {
+        try {
+          const { buildChartSessionPrompt, createSessionContext } =
+            await import("@/domains/chart-intelligence");
+          fullMsg = `${buildChartSessionPrompt(createSessionContext({ symbol: chartSession.pair, timeframe: chartSession.timeframe, currentPrice: chartSession.currentPrice }))}\n\n${message}`;
+        } catch {
+          /* non-critical */
+        }
+      }
+
+      const router = new LLMRouter();
+      const routerMessages = [
+        { role: "system" as const, content: systemPrompt },
+        ...history.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+        { role: "user" as const, content: fullMsg },
+      ];
+      const result = await router.chat({ messages: routerMessages, temperature: 0.7 });
+      return { response: result.content || "No response generated.", agent: "moxi" as const };
+    }
 
     // Rate limit check per user
     if (!copilotLimiter.tryAcquire(userId)) {

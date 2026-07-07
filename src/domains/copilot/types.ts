@@ -67,7 +67,7 @@ export interface TelegramUser {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /** Agent IDs for the 4 new VIXOR AI agents. */
-export type VixorAgentId = "coach" | "analyst" | "governor" | "hunter";
+export type VixorAgentId = "coach" | "analyst" | "governor" | "hunter" | "moxi";
 
 /** Decision types stored in vixor_decisions table. */
 export type DecisionType = "suggestion" | "warning" | "block" | "alert" | "report";

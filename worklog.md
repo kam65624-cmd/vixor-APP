@@ -125,3 +125,22 @@ Stage Summary:
 - tsc: 0 errors, eslint: 0 errors (1 pre-existing warning), 262 tests pass
 - ملفات جديدة: use-pull-to-refresh.ts, use-online.ts, PullIndicator.tsx
 - ملفات معدلة: AppShell.tsx, PageLayout.tsx, discover.tsx, styles.css, TASKS.md
+
+---
+Task ID: MOXI-1 to MOXI-7
+Agent: main
+Task: بناء MOXI AI Companion — Foundation + UI Integration
+
+Work Log:
+- MOXI-1: إنشاء types.ts (MoxiPersona, MoxiAvatarVariant, MoxiResponse, MoxiProactiveInsight, MoxiQuickAction) + persona.ts (8 avatar variants, CRUD) + index.ts (barrel)
+- MOXI-2: إنشاء prompt.ts — buildMoxiSystemPrompt + formatMoxiContext
+- MOXI-3: إنشاء functions.ts — askMoxi server function + ToolRegistry integration
+- MOXI-4: إضافة moxi لـ VixorAgentId + askCopilot routing
+- MOXI-5: دمج MOXI في copilot UI (agent selector + quick actions)
+- MOXI-6: إنشاء MoxiAvatar.tsx (gradient + 8 variants + pulse)
+- MOXI-7: إنشاء notification-hub.ts (overexposure, signal proximity, event risk)
+
+Stage Summary:
+- 8 ملفات MOXI جديدة + 3 ملفات معدلة
+- tsc: 0 errors, eslint: 0 errors, 262 tests pass
+- الباقي: SSE streaming, Supabase migration, UI insights feed

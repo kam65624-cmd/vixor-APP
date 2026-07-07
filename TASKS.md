@@ -366,7 +366,7 @@ Sprint 4: التحسينات (يوم 11-14)
 
 ## مؤجلة — MOXI AI Companion
 
-> **مؤجل حسب طلب المستخدم** — لا يُنفذ حتى إشعار آخر
+> **تم البدء في التنفيذ** — 2026-07-07
 
 ### وصف الرؤية
 - MOXI هو رفيق AI 2.5D NFT يكون "روح" التطبيق
@@ -375,10 +375,16 @@ Sprint 4: التحسينات (يوم 11-14)
 - تكامل Web3/NFT — كل مستخدم يملك نسخته الفريدة
 - Persona مع حقول: `{name, personality, expertise, communicationStyle, avatar, nftTokenId}`
 
-### التاسكات الفرعية (لما يجي الوقت)
-- [ ] تصميم وبرمجة persona system (`src/domains/moxi/persona.ts`)
-- [ ] بناء context engine (`src/domains/moxi/context-engine.ts`)
-- [ ] إشعارات ذكية ت замен الإشعارات الحالية (`notification-hub.ts`)
-- [ ] أدوات MOXI (tools) للتكامل مع الـ domains الموجودة
-- [ ] MoxiAvatar component (2.5D NFT display)
-- [ ] ربط MOXI بالـ Copilot كـ واجهة محادثة
+### التاسكات الفرعية
+- [x] تصميم وبرمجة persona system (`src/domains/moxi/persona.ts`) — 8 avatar variants + CRUD
+- [x] بناء context engine (`src/domains/moxi/context-engine.ts`) — كان موجود، تم تحسينه
+- [x] System prompt builder (`src/domains/moxi/prompt.ts`) — MOXI unified prompt مع persona injection
+- [x] Server functions (`src/domains/moxi/functions.ts`) — `askMoxi`, `updateMoxiPersona`, `getMoxiPersona`
+- [x] أدوات MOXI (tools) للتكامل مع الـ domains الموجودة (`src/domains/moxi/tools.ts`) — كان موجود
+- [x] MoxiAvatar component (`src/components/vixor/MoxiAvatar.tsx`) — gradient circle + 8 variants + pulse animation
+- [x] إشعارات ذكية (`src/domains/moxi/notification-hub.ts`) — overexposure detection, signal proximity, event risk
+- [x] ربط MOXI بالـ Copilot كـ واجهة محادثة — "moxi" في AgentId + agent selector + quick actions + routing
+- [x] Barrel exports (`src/domains/moxi/index.ts`)
+- [ ] ربط MOXI بالـ streaming endpoint (`/api/copilot-stream`) — يحتاج SSE support
+- [ ] DB migration: إنشاء جدول `moxi_personas` في Supabase
+- [ ] Moxi insights feed في الـ UI (صفحة أو section في الهوم)

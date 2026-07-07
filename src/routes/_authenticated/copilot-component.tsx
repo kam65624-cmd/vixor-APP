@@ -36,6 +36,7 @@ import {
   Check,
   X,
   Pencil,
+  BrainCircuit,
 } from "lucide-react";
 
 // ─── Helpers ───
@@ -50,7 +51,13 @@ const alpha = (hex: string, pct: number) => {
 
 // ─── Types ───
 
-type AgentId = "market_analyst" | "risk_manager" | "news_analyst" | "strategy_builder" | "auto";
+type AgentId =
+  | "market_analyst"
+  | "risk_manager"
+  | "news_analyst"
+  | "strategy_builder"
+  | "auto"
+  | "moxi";
 
 interface ChatMessage {
   id: string;
@@ -145,6 +152,20 @@ const AGENTS: AgentConfig[] = [
     desc: "Trading Plans & Systems",
     capabilities: ["Daily routines", "Trading plans", "Backtesting ideas", "Psychology coaching"],
   },
+  {
+    id: "moxi",
+    label: "MOXI",
+    icon: BrainCircuit,
+    color: "#A78BFA",
+    bgColor: alpha("#A78BFA", 10),
+    desc: "AI Trading Companion",
+    capabilities: [
+      "Unified analysis + signals + alerts",
+      "Proactive risk & opportunity detection",
+      "Portfolio overview & insights",
+      "Tool execution on your behalf",
+    ],
+  },
 ];
 
 const QUICK_ACTIONS: { label: string; prompt: string; agent: AgentId }[] = [
@@ -183,6 +204,17 @@ const QUICK_ACTIONS: { label: string; prompt: string; agent: AgentId }[] = [
     prompt:
       "Should I trade XAU/USD right now? I want all perspectives — technical, risk, fundamental, and strategic.",
     agent: "auto",
+  },
+  {
+    label: "MOXI: Market pulse",
+    prompt:
+      "Give me a quick market summary — what's moving, what's quiet, any events I should know about?",
+    agent: "moxi",
+  },
+  {
+    label: "MOXI: Check my signals",
+    prompt: "What's the status of my active signals? Any close to TP or SL?",
+    agent: "moxi",
   },
 ];
 
