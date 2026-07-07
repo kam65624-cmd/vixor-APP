@@ -44,8 +44,8 @@ export { CexDexStrategy } from "./strategies/cex-dex";
 export { BaseStrategy } from "./strategies/base";
 export { createStrategies } from "./strategies/index";
 
-export { JupiterClient, MockJupiterClient, createJupiterClient } from "./exchanges/jupiter.client";
-export { AxiomClient, MockAxiomClient, createAxiomClient } from "./exchanges/axiom.client";
+// Exchange clients available via dynamic import (createArbitrageEngine) only
+// to comply with TanStack Start import-protection rules.
 export type { ExchangeClient } from "./exchanges/types";
 export { createExchangeClients } from "./exchanges/index";
 

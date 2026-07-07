@@ -149,6 +149,12 @@
   --bullish-bg: #0ECB8114;
   --bearish-bg: #F6465D14;
   --neutral-wait-bg: #F59E0B14;
+
+  /* Overlay & chrome tokens */
+  --overlay: rgba(11,13,16,0.70);
+  --overlay-secondary: rgba(11,13,16,0.60);
+  --handle-bar: rgba(124,155,196,0.15);
+  --bullish-border: color-mix(in srgb, var(--bullish) 20%, transparent);
 }
 
 /* ===== LIGHT MODE ===== */
@@ -211,6 +217,12 @@
   --bullish-bg: #05966914;
   --bearish-bg: #DC262614;
   --neutral-wait-bg: #D9770614;
+
+  /* Overlay & chrome tokens */
+  --overlay: rgba(0,0,0,0.30);
+  --overlay-secondary: rgba(0,0,0,0.25);
+  --handle-bar: rgba(0,0,0,0.10);
+  --bullish-border: color-mix(in srgb, var(--bullish) 20%, transparent);
 }
 
 .dark {

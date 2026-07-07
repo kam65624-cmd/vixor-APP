@@ -1,7 +1,7 @@
 import type { ArbitrageConfig } from "../config";
 import type { ExchangeClient } from "./types";
-import { createJupiterClient } from "./jupiter.client";
-import { createAxiomClient } from "./axiom.client";
+import { createJupiterClient } from "./jupiter";
+import { createAxiomClient } from "./axiom";
 import { createMockDexClients } from "../mock/dex-clients";
 import { PriceFeed } from "../price-feed";
 

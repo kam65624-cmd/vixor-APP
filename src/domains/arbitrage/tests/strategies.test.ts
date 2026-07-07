@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { MockJupiterClient } from "../exchanges/jupiter.client";
-import { MockAxiomClient } from "../exchanges/axiom.client";
+import { MockJupiterClient } from "../exchanges/jupiter";
+import { MockAxiomClient } from "../exchanges/axiom";
 import { MockDexClient } from "../mock/dex-clients";
 import { PriceFeed } from "../price-feed";
 import { CrossDexStrategy } from "../strategies/cross-dex";

@@ -923,7 +923,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(11,13,16,0.70)",
+            background: "var(--overlay)",
             backdropFilter: "blur(4px)",
             WebkitBackdropFilter: "blur(4px)",
             zIndex: 200,
@@ -962,7 +962,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   width: "36px",
                   height: "4px",
                   borderRadius: "2px",
-                  background: "rgba(124,155,196,0.15)",
+                  background: "var(--handle-bar)",
                 }}
               />
             </div>
@@ -1056,7 +1056,7 @@ const NotificationBell = memo(function NotificationBell() {
             height: "14px",
             borderRadius: "7px",
             background: "var(--color-bearish)",
-            color: "white",
+            color: "var(--primary-foreground)",
             fontSize: "10px",
             fontWeight: 800,
             display: "flex",
@@ -1172,7 +1172,7 @@ function useTelegramPhoto(): string | null {
       const url = tg?.initDataUnsafe?.user?.photo_url;
       if (url) setPhoto(url);
     } catch {
-      /* noop */
+      // Telegram WebApp API unavailable outside Telegram; safe to ignore.
     }
   }, []);
   return photo;
@@ -1198,7 +1198,7 @@ const TopNavAvatar = memo(function TopNavAvatar() {
       if (user?.first_name) setTgName(user.first_name);
       else if (user?.username) setTgName(user.username);
     } catch {
-      /* noop */
+      // Telegram WebApp API unavailable outside Telegram; safe to ignore.
     }
   }, []);
 
@@ -1237,7 +1237,7 @@ const TopNavAvatar = memo(function TopNavAvatar() {
           style={{ width: "100%", height: "100%", objectFit: "cover" as const }}
         />
       ) : (
-        <span style={{ fontSize: "12px", fontWeight: 800, color: "white" }}>{initial}</span>
+        <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--primary-foreground)" }}>{initial}</span>
       )}
     </Link>
   );
@@ -1277,7 +1277,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
                 height="16"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="white"
+                stroke="var(--primary-foreground)"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -1311,7 +1311,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
             className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded text-[11px] sm:text-[12px] font-bold"
             style={{
               background: "var(--gradient-primary)",
-              color: "white",
+              color: "var(--primary-foreground)",
               border: "none",
               cursor: "pointer",
               textDecoration: "none",
@@ -1495,7 +1495,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
         style={{
           position: "fixed",
           inset: 0,
-          background: "rgba(11,13,16,0.60)",
+          background: "var(--overlay-secondary)",
           backdropFilter: "blur(4px)",
           WebkitBackdropFilter: "blur(4px)",
           zIndex: 99,
@@ -1535,7 +1535,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
               width: "36px",
               height: "4px",
               borderRadius: "2px",
-              background: "rgba(124,155,196,0.15)",
+              background: "var(--handle-bar)",
             }}
           />
         </div>
