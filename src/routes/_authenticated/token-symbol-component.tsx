@@ -568,6 +568,199 @@ export function TokenPage() {
     );
   }
 
+  // ── Meme / Crypto: fallback when discovery API returns no data ──
+  if (!isInitialLoading && !tokenData && (assetType === "meme" || assetType === "crypto")) {
+    return (
+      <PageLayout
+        title={symbol.toUpperCase()}
+        badge={assetBadge.label}
+        badgeColor={assetBadge.color}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "6px 16px",
+            borderBottom: `1px solid var(--color-border)`,
+            background: "var(--color-muted)",
+            flexShrink: 0,
+          }}
+        >
+          <Link
+            to="/discover"
+            search={{
+              category: "ALL",
+              sortBy: "trending",
+              search: "",
+              minLiquidity: undefined,
+              minVolume: undefined,
+              honeypotOnly: false,
+              smartMoneyMin: undefined,
+            }}
+            style={{
+              color: "var(--color-primary)",
+              fontSize: "11px",
+              textDecoration: "none",
+            }}
+          >
+            Discover
+          </Link>
+          <span style={{ color: "var(--color-muted-foreground)", fontSize: "11px" }}>/</span>
+          <span style={{ color: "var(--color-foreground)", fontSize: "11px", fontWeight: 600 }}>
+            {symbol.toUpperCase()}
+          </span>
+        </div>
+
+        <PageScrollArea>
+          <div
+            style={{
+              padding: "16px",
+              borderBottom: `1px solid var(--color-border)`,
+              background: "var(--color-card)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                <h2
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: 800,
+                    color: "var(--color-foreground)",
+                    margin: 0,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {symbol.toUpperCase()}
+                </h2>
+                <Badge label={assetBadge.label} color={assetBadge.color} small />
+              </div>
+              <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                <button
+                  onClick={() => {
+                    if (!isWatched) {
+                      navigate({ to: "/trackers" });
+                    }
+                  }}
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "8px",
+                    border: `1px solid var(--color-border)`,
+                    background: isWatched ? "rgba(14,203,129,0.12)" : "var(--color-card)",
+                    color: isWatched ? "var(--color-bullish)" : "var(--color-muted-foreground)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    transition: "all 0.15s",
+                    fontSize: "16px",
+                  }}
+                  title={isWatched ? "In Watchlist" : "Add to Watchlist"}
+                >
+                  {isWatched ? "★" : "☆"}
+                </button>
+                <button
+                  onClick={() => {
+                    if (navigator.clipboard) {
+                      navigator.clipboard.writeText(`${window.location.origin}/token/${symbol}`);
+                    }
+                  }}
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "8px",
+                    border: `1px solid var(--color-border)`,
+                    background: "var(--color-card)",
+                    color: "var(--color-muted-foreground)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    transition: "all 0.15s",
+                    fontSize: "14px",
+                  }}
+                  title="Copy link"
+                >
+                  ↗
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <TradingViewMiniChart
+            symbol={symbol}
+            height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+          />
+
+          <div
+            style={{
+              padding: "14px 16px",
+              background: "var(--color-card)",
+              borderBottom: `1px solid var(--color-border)`,
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12px",
+                color: "var(--color-muted-foreground)",
+                lineHeight: 1.5,
+              }}
+            >
+              Live market data unavailable for this token. Chart data provided by TradingView.
+            </p>
+          </div>
+
+          <div style={{ padding: "20px 16px", background: "var(--color-card)" }}>
+            <button
+              onClick={() => {
+                navigate({
+                  to: "/analyze",
+                  search: { screenshot: undefined, pair: symbol },
+                });
+              }}
+              style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: "8px",
+                border: `1px solid var(--color-primary)`,
+                cursor: "pointer",
+                fontWeight: 700,
+                fontSize: "13px",
+                letterSpacing: "0.04em",
+                background: "rgba(124,155,196,0.10)",
+                color: "var(--color-primary)",
+                transition: "all 0.15s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.background = "rgba(124,155,196,0.18)";
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.background = "rgba(124,155,196,0.10)";
+              }}
+            >
+              <span style={{ fontSize: "16px" }}>⚡</span>
+              ANALYZE {symbol.toUpperCase()}
+            </button>
+          </div>
+
+          <div style={{ height: "24px" }} />
+        </PageScrollArea>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout
       title={tokenData?.name || symbol.toUpperCase()}

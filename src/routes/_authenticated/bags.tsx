@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { memo, useCallback, useState } from "react";
+import { memo } from "react";
 import { getPortfolioData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
@@ -92,55 +92,14 @@ function BagsPage() {
           </ScrollArea>
         </>
       ) : (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            alignItems: "center",
-          }}
-        >
-          <EmptyState
-            icon="🎒"
-            title="No bags yet"
-            message="Start trading to see your portfolio holdings here."
-          />
-          <ActionButton label="Go to Trade Desk" onClick={() => navigate({ to: "/trade-desk" })} />
-        </div>
+        <EmptyState
+          icon="🎒"
+          title="No bags yet"
+          message="Start trading to see your portfolio holdings here."
+          action={{ label: "Connect Wallet", onClick: () => navigate({ to: "/wallet-web3" }) }}
+        />
       )}
     </PageLayout>
-  );
-}
-
-/* ── Small action button for empty state ─────────────────────────────────── */
-
-function ActionButton({ label, onClick }: { label: string; onClick: () => void }) {
-  const [hovered, setHovered] = useState(false);
-
-  const onMouseEnter = useCallback(() => setHovered(true), []);
-  const onMouseLeave = useCallback(() => setHovered(false), []);
-
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      style={{
-        padding: "10px 24px",
-        borderRadius: "8px",
-        border: "none",
-        cursor: "pointer",
-        background: hovered ? `${"var(--color-bullish)"}28` : `rgba(14,203,129,0.10)`,
-        color: "var(--color-primary)",
-        fontSize: "11px",
-        fontWeight: 700,
-        fontFamily: "'Inter', system-ui, sans-serif",
-        transition: "background 0.15s ease",
-        marginBottom: "32px",
-      }}
-    >
-      {label}
-    </button>
   );
 }
 

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, memo } from "react";
 import { getNotifications, markNotificationRead } from "@/shared/data";
@@ -144,6 +144,7 @@ const NotifItem = memo(function NotifItem({
 // ── Page component ────────────────────────────────────────────────────────
 
 function NotificationsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState("All");
 
@@ -237,6 +238,11 @@ function NotificationsPage() {
             notifications.length === 0
               ? "No notifications yet"
               : "No notifications match this filter"
+          }
+          action={
+            notifications.length === 0
+              ? { label: "Set Up Alerts", onClick: () => navigate({ to: "/settings" }) }
+              : undefined
           }
         />
       )}

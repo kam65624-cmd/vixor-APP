@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { memo, useState } from "react";
 import { getBondingCurveData } from "@/shared/data";
@@ -25,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/curves")({
 const TABS = ["All Pairs", "Accumulating"] as const;
 
 function CurvesPage() {
+  const navigate = useNavigate();
   const fetchCurvesData = useStableServerFn(getBondingCurveData);
   const [activeTab, setActiveTab] = useState<string>("All Pairs");
 
@@ -92,6 +93,11 @@ function CurvesPage() {
               pairs.length === 0
                 ? "Start trading to see accumulation patterns."
                 : "No pairs showing accumulation signals right now."
+            }
+            action={
+              pairs.length === 0
+                ? { label: "Go to Charts", onClick: () => navigate({ to: "/charts" }) }
+                : undefined
             }
           />
         )}

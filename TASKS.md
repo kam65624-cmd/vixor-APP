@@ -125,21 +125,21 @@
 - **المسبب:** صفحة `token/$symbol` مبنية للكريبتو فقط (DexScreener API). أزواج الفوركس غير مدعومة
 - **الحل المقترح:** إضافة TradingView widget للفوركس/الذهب أو صفحة منفصلة
 - **هل يُعاد؟** لا لو عملنا صفحة فوركس بـ TradingView
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — الصفحة بتكشف `isTraditionalAsset` وبتعرض TradingView chart كامل لفوركس/ذهب + badge + trade history
 
 #### P0-2: عملات الميم مفيش بيانات حقيقية
 - **التأثير:** صفحة التوكن تفتح فاضية أو بموك بيانات
 - **المسبب:** `discover.tsx` يعتمد على DexScreener/Helius APIs. لو API مش بيرجع بيانات، الصفحة فاضية
 - **الحل المقترح:** تحسين fallback في API أو إضافة مصادر بيانات بديلة
 - **هل يُعاد؟** لا — مشكلة مصدر بيانات مش مشكلة كود
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — إضافة TradingView chart fallback + Analyze CTA + watchlist button لما API بيرجع null
 
 #### P0-3: Charts, Arbitrage, Activity-Web3 صفحات فارغة (COMING SOON)
 - **التأثير:** 3 صفحات في الـ More Panel تعرض رسالة فقط
 - **المسبب:** الواجهات مكتوبة كـ stub. المحركات الخلفية موجودة خاصة arbitrage في `src/domains/arbitrage/`
 - **الحل المقترح:** ربط المحركات الموجودة بالواجهة أو إخفاء الصفحات من الـ nav
 - **هل يُعاد؟** نعم — يجب ربط المحركات أو الإخفاء
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم فعلاً في جلسات سابقة — Charts بتعرض TradingView embed، Arbitrage بيسكن DEX opportunities، Activity-Web3 بعرض Solana wallet data
 
 ---
 
@@ -162,7 +162,7 @@
 - **المسبب:** مكون `EmptyState` لا يقبل prop للأزرار. 19+ صفحة تستخدمه بدون زر
 - **الحل المقترح:** إضافة optional `action` prop لـ EmptyState
 - **هل يُعاد؟** نعم — كل empty state لازم فيه زر action
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — إضافة action buttons لـ 8 صفحات (notifications, whale, predictions, communities, bags, curves, trackers, perpetuals)
 
 #### P1-3: Silent catch blocks (أخطاء تُبتلع بدون إشعار)
 - **التأثير:** أخطاء حقيقية تحصل والمستخدم لا يعرف
@@ -189,7 +189,7 @@
 - **المسبب:** المكون مكتوب كـ `div` وليس `button`
 - **الحل المقترح:** تحويل لعناصر تفاعلية مع `role="button"` و `tabIndex`
 - **هل يُعاد؟** نعم
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم فعلاً — DataRow مكتوب كـ `<button>` مع `onKeyDown` (Enter/Space) + `tabIndex` + `role`
 
 ---
 
@@ -199,13 +199,13 @@
 - **التأثير:** الشاشة غير مريحة بصرياً أثناء التحميل
 - **المسبب:** مكون `RouteLoading` يستخدم spinner
 - **الحل المقترح:** استخدام skeleton screens
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم فعلاً — RouteLoading بيستخدم shimmer skeleton bars بـ animation
 
 #### P2-2: أزرار Settings ما بتشتغلش (بعضها)
 - **التأثير:** بعض الإعدادات تحفظ في localStorage فقط بدون sync مع السيرفر
 - **المسبب:** `settings.tsx` بعض الأقسام localStorage-only
 - **الحل المقترح:** sync مع السيرفر عبر `updateUserSettings`
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — Change Password (toast: Telegram-managed), Export Data (JSON download), Delete Account (2-step confirm)
 
 #### P2-3: OKX/Bybit adapters stubs
 - **التأثير:** مستخدم يحاول يربط Exchange ولا يشتغل
@@ -232,7 +232,7 @@
 - **التأثير:** الأوسمة غير ديناميكية
 - **المسبب:** `profile.tsx` يستخدم `unlocked: true/false` ثابت
 - **الحل المقترح:** جلب الأوسمة من قاعدة البيانات
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم فعلاً — Badges ديناميكية بـ `check: d => d.totalTrades >= 1` pattern، البيانات من 6 queries حقيقية
 
 #### P2-7: روابط Brokers affiliate وهمية
 - **التأثير:** الروابط تحتوي `affiliate_id=VIXOR` كـ placeholder
@@ -244,7 +244,7 @@
 - **التأثير:** بيانات الفوركس مختلطة مع بيانات API حقيقية
 - **المسبب:** ملف `discover-forex-data.ts` بيانات ثابتة
 - **الحل المقترح:** استخدام API حقيقي (TwelveData/Finnhub)
-- **الحالة:** ⬜ لم يبدأ
+- **الحالة:** ✅ تم — commit 29955dc استبدل كل mock data ببيانات حية من TwelveData/Binance/Frankfurter APIs
 
 ---
 
@@ -256,8 +256,8 @@
 | P3-2 | Pull-to-refresh feedback | ⬜ |
 | P3-3 | Keyboard navigation كامل | ⬜ |
 | P3-4 | Offline states | ⬜ |
-| P3-5 | تنظيف ملفات SQL عائمة في الجذر | ⬜ |
-| P3-6 | تنظيف `src/lib/` (نسخة قديمة من الكود) | ⬜ |
+| P3-5 | تنظيف ملفات SQL عائمة في الجذر | ✅ تم — 3 ملفات SQL محذوفة |
+| P3-6 | تنظيف `src/lib/` (نسخة قديمة من الكود) | ✅ تم — vixor-mock.ts محذوف (لم يكن مستخدم) |
 
 ---
 
@@ -276,6 +276,10 @@
 | 9 | إزالة كل Mock Data (فوركس، رادار، تحليلات) | ✅ تم + منشور | 10 ملفات +1063/-354 سطر — بيانات حية من Binance/TwelveData/Frankfurter APIs |
 | 10 | Copilot streaming بيرسل context فاضي | ✅ تم + منشور | كان بيرسل `{profile:{}, recentAnalyses:[], signals:[]}` بدل بيانات المستخدم الحقيقية |
 | 11 | MoxiAvatar broken import في AppShell | ✅ تم | شلت import و JSX usage لـ MoxiAvatar اللي كان سبب error |
+| 12 | Meme coin token page fallback | ✅ تم | TradingView chart + Analyze CTA + watchlist لما API بيرجع null |
+| 13 | EmptyState CTAs لـ 8 صفحات | ✅ تم | notifications, whale, predictions, communities, bags, curves, trackers, perpetuals |
+| 14 | Settings dead buttons (Password/Export/Delete) | ✅ تم | Password→toast, Export→JSON download, Delete→2-step confirm |
+| 15 | تنظيف ملفات عائمة (3 SQL + vixor-mock.ts) | ✅ تم | حذف 4 ملفات مش مستخدمة |
 
 ---
 

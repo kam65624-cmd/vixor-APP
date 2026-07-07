@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getPredictionsData } from "@/shared/data";
@@ -138,6 +138,7 @@ const PredictionCard = memo(function PredictionCard({
 });
 
 function PredictionsPage() {
+  const navigate = useNavigate();
   const getFn = useStableServerFn(getPredictionsData);
 
   const { data, isLoading } = useQuery({
@@ -190,6 +191,11 @@ function PredictionsPage() {
             icon="🔮"
             title="No Predictions"
             message="AI predictions will appear as market patterns are detected."
+            action={{
+              label: "Analyze a Chart",
+              onClick: () =>
+                navigate({ to: "/analyze", search: { screenshot: undefined, pair: undefined } }),
+            }}
           />
         ) : (
           predictions.map((p: any) => <PredictionCard key={p.id} prediction={p} />)

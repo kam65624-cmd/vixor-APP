@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { memo, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -165,6 +165,7 @@ const ClosedTradeCard = memo(function ClosedTradeCard({ trade }: { trade: any })
 });
 
 function PerpetualsPage() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("Open Positions");
   const getStableData = useStableServerFn(getPerpetualsData);
 
@@ -226,6 +227,11 @@ function PerpetualsPage() {
               isOpen
                 ? "No open perpetual positions at the moment."
                 : "No closed trades to display yet."
+            }
+            action={
+              isOpen
+                ? { label: "Start Trading", onClick: () => navigate({ to: "/trade-desk" }) }
+                : undefined
             }
           />
         ) : isOpen ? (

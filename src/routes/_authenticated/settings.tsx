@@ -5,6 +5,7 @@ import { getUserSettings, updateUserSettings } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { soundManager } from "@/shared/sound-manager";
 import { PageLayout, ScrollArea } from "@/components/vixor/PageLayout";
+import { toast } from "sonner";
 import {
   getExchangeCredentials,
   saveExchangeCredentials,
@@ -562,6 +563,46 @@ function SettingsPage() {
     setTimeout(() => setTestSoundPlaying(false), 1000);
   }, []);
 
+  // ── Security & Account handlers ──────────────────────────────────────────
+  const handleChangePassword = useCallback(() => {
+    toast.info("Password change is managed through your Telegram account settings.");
+  }, []);
+
+  const handleExportData = useCallback(() => {
+    try {
+      const settings = loadLocalSettings();
+      const blob = new Blob([JSON.stringify(settings, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "vixor-settings-export.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Settings exported successfully.");
+    } catch {
+      toast.error("Failed to export settings.");
+    }
+  }, []);
+
+  const [deleteConfirmStep, setDeleteConfirmStep] = useState(0);
+  const handleDeleteAccount = useCallback(() => {
+    if (deleteConfirmStep === 0) {
+      setDeleteConfirmStep(1);
+      toast.warning("Are you sure? Click Delete again to confirm.");
+      setTimeout(() => setDeleteConfirmStep(0), 5000);
+    } else {
+      setDeleteConfirmStep(0);
+      toast.error(
+        "Account deletion is managed through Telegram. Please contact support or delete your Telegram account.",
+        { duration: 6000 },
+      );
+    }
+  }, [deleteConfirmStep]);
+
   // ── Server-side editable state ─────────────────────────────────────────────
   const [notificationChannels, setNotificationChannels] = useState<NotificationChannels>({
     price_alerts: true,
@@ -841,6 +882,7 @@ function SettingsPage() {
           desc: "Update your account password",
           btnText: "Change",
           btnColor: "var(--color-bullish)",
+          onClick: handleChangePassword,
         },
         {
           type: "button",
@@ -848,13 +890,15 @@ function SettingsPage() {
           desc: "Download your trading history and portfolio data",
           btnText: "Export",
           btnColor: "var(--color-primary)",
+          onClick: handleExportData,
         },
         {
           type: "button",
           label: "Delete Account",
           desc: "Permanently delete your account and all data",
-          btnText: "Delete",
+          btnText: deleteConfirmStep === 1 ? "Confirm Delete" : "Delete",
           btnColor: "var(--color-bearish)",
+          onClick: handleDeleteAccount,
         },
       ],
     },

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { memo, useState } from "react";
 import { getWatchlistData } from "@/shared/data";
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/_authenticated/trackers")({
 const TABS = ["Watchlist", "Price Alerts"] as const;
 
 function TrackersPage() {
+  const navigate = useNavigate();
   const fetchData = useStableServerFn(getWatchlistData);
   const [activeTab, setActiveTab] = useState<string>(TABS[0]);
 
@@ -130,6 +131,22 @@ function TrackersPage() {
               icon="📌"
               title="No watchlists yet"
               message="No watchlists yet. Create one from the Discover page."
+              action={{
+                label: "Discover Tokens",
+                onClick: () =>
+                  navigate({
+                    to: "/discover",
+                    search: {
+                      category: "ALL",
+                      sortBy: "trending",
+                      search: "",
+                      minLiquidity: undefined,
+                      minVolume: undefined,
+                      honeypotOnly: false,
+                      smartMoneyMin: undefined,
+                    },
+                  }),
+              }}
             />
           )}
         </ScrollArea>
@@ -155,6 +172,22 @@ function TrackersPage() {
               icon="🔔"
               title="No price alerts"
               message="No price alerts set. Add alerts from token pages."
+              action={{
+                label: "Discover Tokens",
+                onClick: () =>
+                  navigate({
+                    to: "/discover",
+                    search: {
+                      category: "ALL",
+                      sortBy: "trending",
+                      search: "",
+                      minLiquidity: undefined,
+                      minVolume: undefined,
+                      honeypotOnly: false,
+                      smartMoneyMin: undefined,
+                    },
+                  }),
+              }}
             />
           )}
         </ScrollArea>

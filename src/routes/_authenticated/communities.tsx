@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getCommunitiesData } from "@/shared/data";
@@ -218,6 +218,7 @@ const PostCard = memo(function PostCard({
 });
 
 function CommunitiesPage() {
+  const navigate = useNavigate();
   const getFn = useStableServerFn(getCommunitiesData);
 
   const { data, isLoading } = useQuery({
@@ -279,6 +280,7 @@ function CommunitiesPage() {
                 icon="🎯"
                 title="No Strategies"
                 message="No strategies have been shared yet. Be the first to share your trading approach."
+                action={{ label: "Join Telegram", onClick: () => navigate({ to: "/settings" }) }}
               />
             ) : (
               strategies.map((s) => <StrategyCard key={s.id} strategy={s} />)
@@ -296,6 +298,7 @@ function CommunitiesPage() {
                 icon="💬"
                 title="No Activity"
                 message="No community posts yet. Share your thoughts and trading ideas."
+                action={{ label: "Join Telegram", onClick: () => navigate({ to: "/settings" }) }}
               />
             ) : (
               posts.map((p: any) => <PostCard key={p.id} post={p} />)

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { memo } from "react";
 import { getWhaleData } from "@/shared/data";
@@ -27,6 +27,7 @@ export const Route = createFileRoute("/_authenticated/whale")({
 });
 
 function WhalePage() {
+  const navigate = useNavigate();
   const fetchWhaleData = useStableServerFn(getWhaleData);
   const query = useQuery({
     queryKey: ["whale-data"],
@@ -81,6 +82,22 @@ function WhalePage() {
             icon="🐋"
             title="No whale activity"
             message="No trades yet. Start trading to see whale activity."
+            action={{
+              label: "Discover Tokens",
+              onClick: () =>
+                navigate({
+                  to: "/discover",
+                  search: {
+                    category: "ALL",
+                    sortBy: "trending",
+                    search: "",
+                    minLiquidity: undefined,
+                    minVolume: undefined,
+                    honeypotOnly: false,
+                    smartMoneyMin: undefined,
+                  },
+                }),
+            }}
           />
         )}
       </ScrollArea>
