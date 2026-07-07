@@ -1750,7 +1750,7 @@ function CryptoSections({ tokenData }: { tokenData: TokenItem | null }) {
   const cexVol = Math.round(volume * 0.38);
   const holderCount = tokenData?.marketCap
     ? Math.round(tokenData.marketCap * 0.001 + 500)
-    : 1200 + Math.round(Math.random() * 500);
+    : 0;
   const whaleTxCount = Math.max(1, Math.round(volume / 5000000));
 
   return (

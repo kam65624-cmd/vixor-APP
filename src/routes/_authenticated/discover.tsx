@@ -12,10 +12,9 @@ import { useQuery } from "@tanstack/react-query";
 import { PageLayout, StatsRow, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
 import { RefreshCw, SlidersHorizontal, ChevronUp, X, Link2 } from "lucide-react";
 import { withAlpha, blendWithCard } from "@/shared/color-utils";
-import { getLiveForexPrices } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
-  FOREX_PAIRS,
+  getLiveForexDiscoverData,
   FOREX_TOTAL_COUNT,
   FOREX_MAJOR_COUNT,
   FOREX_MINOR_COUNT,
@@ -190,17 +189,11 @@ function SparklineSVG({
 
 // ── Forex formatters ────────────────────────────────────────────────────────
 
-function fmtForexPrice(p: number): string {
+function fmtForexPrice(p: number | null): string {
+  if (p === null) return "—";
   if (p >= 100) return p.toFixed(2);
   if (p >= 1) return p.toFixed(4);
   return p.toFixed(5);
-}
-
-function fmtForexVolume(v: number): string {
-  if (v >= 1_000_000_000_000) return `$${(v / 1_000_000_000_000).toFixed(1)}T`;
-  if (v >= 1_000_000_000) return `$${(v / 1_000_000_000).toFixed(1)}B`;
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  return `$${(v / 1_000).toFixed(0)}K`;
 }
 
 // ── Forex Section Header ────────────────────────────────────────────────────
@@ -241,8 +234,10 @@ function ForexSectionHeader({ title, count }: { title: string; count: number }) 
 // ── Forex Pair Row ──────────────────────────────────────────────────────────
 
 function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void }) {
-  const isUp = item.change24h >= 0;
-  const color = isUp ? "var(--color-bullish)" : "var(--color-bearish)";
+  const changeVal = item.change24h ?? 0;
+  const hasChange = item.change24h !== null;
+  const isUp = hasChange && changeVal >= 0;
+  const color = !hasChange ? "var(--color-muted-foreground)" : isUp ? "var(--color-bullish)" : "var(--color-bearish)";
   const isGold = item.type === "gold";
   const accentColor = isGold ? GOLD_COLOR : color;
   const badgeBg = isGold ? GOLD_BG : "rgba(163,163,163,0.15)";
@@ -374,7 +369,7 @@ function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void 
             color,
           }}
         >
-          {fmtPct(item.change24h)}
+          {hasChange ? fmtPct(changeVal) : "—"}
         </span>
         <div
           style={{
@@ -383,7 +378,7 @@ function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void 
             marginTop: "2px",
           }}
         >
-          Vol {fmtForexVolume(item.volume24h)}
+          OTC
         </div>
       </div>
     </div>
@@ -1119,9 +1114,9 @@ function DiscoverPage() {
 
   const stats = useMemo(() => {
     if (isForexMode) {
-      const bullish = FOREX_PAIRS.filter((p) => p.change24h > 0).length;
-      const bearish = FOREX_PAIRS.filter((p) => p.change24h < 0).length;
-      const totalVol = FOREX_PAIRS.reduce((sum, p) => sum + p.volume24h, 0);
+      const forexItems = forexQuery.data ?? [];
+      const bullish = forexItems.filter((p) => (p.change24h ?? 0) > 0).length;
+      const bearish = forexItems.filter((p) => (p.change24h ?? 0) < 0).length;
       return [
         {
           label: "Pairs",
@@ -1142,8 +1137,8 @@ function DiscoverPage() {
           icon: "🔴",
         },
         {
-          label: "Total Vol",
-          value: fmtForexVolume(totalVol),
+          label: "Live",
+          value: "API",
           color: "var(--color-info)",
           icon: "📊",
         },
@@ -1303,55 +1298,39 @@ function DiscoverPage() {
     [navigate],
   );
 
-  // Live forex price query
-  const fetchForex = useStableServerFn(getLiveForexPrices);
+  // Live forex data query (prices, change24h, sparklines from real APIs)
+  const fetchForexDiscover = useStableServerFn(getLiveForexDiscoverData);
   const forexQuery = useQuery({
-    queryKey: ["live-forex-prices"],
-    queryFn: () => fetchForex(),
+    queryKey: ["live-forex-discover-data"],
+    queryFn: () => fetchForexDiscover(),
     staleTime: 60_000,
     refetchInterval: 120_000,
   });
 
-  // Merge live prices into static data
-  const livePriceMap = useMemo(() => {
-    const map = new Map<string, number>();
-    if (forexQuery.data) {
-      for (const item of forexQuery.data) {
-        if (item.price > 0) map.set(item.pair, item.price);
-      }
-    }
-    return map;
-  }, [forexQuery.data]);
-
-  // Sorted forex pairs (with live prices merged)
+  // Sorted forex pairs (live data from server)
   const sortedForexPairs = useMemo(() => {
-    const pairs = [...FOREX_PAIRS].map((p) => {
-      const livePrice = livePriceMap.get(p.pair);
-      return livePrice ? { ...p, price: livePrice } : p;
-    });
+    if (!forexQuery.data) return [];
+    const pairs = [...forexQuery.data];
     switch (sortBy) {
-      case "volume":
-        pairs.sort((a, b) => b.volume24h - a.volume24h);
-        break;
       case "change":
-        pairs.sort((a, b) => b.change24h - a.change24h);
+        pairs.sort((a, b) => (b.change24h ?? 0) - (a.change24h ?? 0));
         break;
       default:
-        // "trending" — gold first, then by volume descending
+        // "trending" / "volume" — gold first (default order from server)
         break;
     }
     // Apply search filter
     if (search.search?.trim()) {
       const q = search.search.trim().toLowerCase();
       return pairs.filter(
-        (p) =>
-          p.pair.toLowerCase().includes(q) ||
-          p.name.toLowerCase().includes(q) ||
-          p.badge.toLowerCase().includes(q),
+      (p) =>
+        p.pair.toLowerCase().includes(q) ||
+        p.name.toLowerCase().includes(q) ||
+        p.badge.toLowerCase().includes(q),
       );
     }
     return pairs;
-  }, [sortBy, search.search, livePriceMap]);
+  }, [sortBy, search.search, forexQuery.data]);
 
   const handleManualRefresh = useCallback(() => {
     refetch();
@@ -1714,7 +1693,13 @@ function DiscoverPage() {
               </div>
             )}
 
-            {sortedForexPairs.length === 0 ? (
+            {forexQuery.isLoading ? (
+              Array.from({ length: 14 }).map((_, i) => (
+                <div key={i} style={{ padding: "6px 12px" }}>
+                  <SkeletonRow />
+                </div>
+              ))
+            ) : sortedForexPairs.length === 0 ? (
               <EmptyState
                 icon="💱"
                 title="No Pairs Found"
@@ -1781,7 +1766,7 @@ function DiscoverPage() {
                     fontFamily: "'JetBrains Mono', monospace",
                   }}
                 >
-                  {FOREX_TOTAL_COUNT} pairs · Static mock data · Broker integration coming soon
+                  {FOREX_TOTAL_COUNT} pairs · Live data via TwelveData
                 </div>
               </>
             )}

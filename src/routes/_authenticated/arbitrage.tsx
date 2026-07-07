@@ -139,7 +139,7 @@ function ArbDashboard() {
       </div>
 
       <PageScrollArea>
-        {/* No data state */}
+        {/* API keys required notice */}
         {!data && !loading && (
           <div
             style={{
@@ -159,19 +159,20 @@ function ArbDashboard() {
                 color: "var(--color-muted-foreground)",
               }}
             >
-              Ready to Scan
+              Arbitrage Scanner
             </div>
             <div
               style={{
                 fontSize: "12px",
                 color: "var(--color-muted-foreground)",
                 textAlign: "center",
-                maxWidth: "260px",
+                maxWidth: "280px",
                 lineHeight: 1.5,
               }}
             >
               Scans Solana DEXs for cross-DEX, triangular, and CEX-DEX arbitrage opportunities.
-              Currently in mock mode.
+              Requires Axiom API key and Helius RPC to operate in live mode. Configure
+              ARBITRAGE_AXIOM_API_KEY and ARBITRAGE_SOLANA_RPC_URL in your environment.
             </div>
           </div>
         )}

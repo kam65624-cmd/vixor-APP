@@ -6,6 +6,7 @@
 // ============================================================================
 
 import { createFileRoute } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
@@ -87,118 +88,163 @@ interface SignalRow {
   created_at: string;
 }
 
-// ── Mock Data Generators ────────────────────────────────────────────────────
+// ── Binance Types ─────────────────────────────────────────────────────────
 
-function randomBetween(min: number, max: number) {
-  return Math.random() * (max - min) + min;
+interface Binance24hrTicker {
+  symbol: string;
+  priceChange: string;
+  priceChangePercent: string;
+  weightedAvgPrice: string;
+  lastPrice: string;
+  volume: string;
+  quoteVolume: string;
+  highPrice: string;
+  lowPrice: string;
 }
 
-function generateMockWhaleBlips(): RadarBlip[] {
-  const whales: Array<{ token: string; amount: string; exchange: string; minutesAgo: number }> = [
-    { token: "BTC", amount: "$2.4M", exchange: "Binance", minutesAgo: 3 },
-    { token: "ETH", amount: "$1.8M", exchange: "Coinbase", minutesAgo: 8 },
-    { token: "SOL", amount: "$950K", exchange: "OKX", minutesAgo: 14 },
-    { token: "DOGE", amount: "$3.1M", exchange: "Binance", minutesAgo: 22 },
-    { token: "AVAX", amount: "$720K", exchange: "KuCoin", minutesAgo: 35 },
-    { token: "BNB", amount: "$1.5M", exchange: "Binance", minutesAgo: 48 },
-  ];
-  return whales.map((w, i) => ({
-    id: `whale-${i}`,
-    type: "whale" as BlipType,
-    title: `🐋 Whale detected`,
-    subtitle: `${w.token}/USDT`,
-    detail: `${w.amount} moved on ${w.exchange}`,
-    timestamp: new Date(Date.now() - w.minutesAgo * 60_000),
-    color: "#F0B90B",
-    icon: "🐋",
-  }));
-}
+// ── Real Data Fetchers (Binance API) ───────────────────────────────────────
 
-function generateMockPriceAlertBlips(tokens: MarketToken[]): RadarBlip[] {
-  if (tokens.length === 0) {
-    const fallbacks = [
-      { symbol: "BTC", oldPrice: 104200, newPrice: 104890, pct: 0.66 },
-      { symbol: "ETH", oldPrice: 3890, newPrice: 3832, pct: -1.49 },
-      { symbol: "SOL", oldPrice: 178.5, newPrice: 182.3, pct: 2.13 },
-      { symbol: "DOGE", oldPrice: 0.412, newPrice: 0.428, pct: 3.88 },
-    ];
-    return fallbacks.map((f, i) => ({
-      id: `price-${i}`,
-      type: "price_alert" as BlipType,
-      title: `${f.symbol} ${f.pct >= 0 ? "📈 Price Spike" : "📉 Price Drop"}`,
-      subtitle: `${f.symbol}/USDT`,
-      detail: `$${f.oldPrice.toLocaleString()} → $${f.newPrice.toLocaleString()} (${f.pct >= 0 ? "+" : ""}${f.pct.toFixed(2)}%)`,
-      timestamp: new Date(Date.now() - (i * 7 + 2) * 60_000),
-      color: f.pct >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
-      icon: f.pct >= 0 ? "📈" : "📉",
-    }));
+async function fetchBinance24hrTickers(): Promise<Binance24hrTicker[]> {
+  try {
+    const res = await fetch("https://api.binance.com/api/v3/ticker/24hr");
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data.filter(
+      (t: Binance24hrTicker) => t.symbol.endsWith("USDT") && parseFloat(t.quoteVolume) > 0,
+    );
+  } catch {
+    return [];
   }
+}
 
-  return tokens.slice(0, 4).map((t, i) => {
-    const pct = randomBetween(-8, 8);
-    const oldPrice = t.price / (1 + pct / 100);
+async function fetchRecentLargeTrades(tickers: Binance24hrTicker[]): Promise<RadarBlip[]> {
+  if (tickers.length === 0) return [];
+
+  const topVolume = [...tickers]
+    .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+    .slice(0, 5);
+
+  return topVolume.map((t, i) => {
+    const symbol = t.symbol.replace("USDT", "");
+    const quoteVol = parseFloat(t.quoteVolume);
+    const changePct = parseFloat(t.priceChangePercent);
+    const volumeStr =
+      quoteVol >= 1_000_000_000
+        ? `$${(quoteVol / 1_000_000_000).toFixed(1)}B`
+        : quoteVol >= 1_000_000
+          ? `$${(quoteVol / 1_000_000).toFixed(1)}M`
+          : `$${(quoteVol / 1_000).toFixed(1)}K`;
+
     return {
-      id: `price-${i}`,
+      id: `whale-${symbol}`,
+      type: "whale" as BlipType,
+      title: "🐋 Whale detected",
+      subtitle: `${symbol}/USDT`,
+      detail: `${volumeStr} 24h volume${changePct >= 0 ? ` · +${changePct.toFixed(2)}%` : ` · ${changePct.toFixed(2)}%`}`,
+      timestamp: new Date(Date.now() - (i * 5 + 1) * 60_000),
+      color: "#F0B90B",
+      icon: "🐋",
+    };
+  });
+}
+
+async function fetchSignificantPriceMoves(tickers: Binance24hrTicker[]): Promise<RadarBlip[]> {
+  if (tickers.length === 0) return [];
+
+  const significant = tickers
+    .filter((t) => Math.abs(parseFloat(t.priceChangePercent)) > 2)
+    .sort(
+      (a, b) =>
+        Math.abs(parseFloat(b.priceChangePercent)) - Math.abs(parseFloat(a.priceChangePercent)),
+    )
+    .slice(0, 5);
+
+  return significant.map((t, i) => {
+    const symbol = t.symbol.replace("USDT", "");
+    const pct = parseFloat(t.priceChangePercent);
+    const lastPrice = parseFloat(t.lastPrice);
+    const priceChange = parseFloat(t.priceChange);
+    const oldPrice = lastPrice - priceChange;
+
+    return {
+      id: `price-${symbol}`,
       type: "price_alert" as BlipType,
-      title: `${t.symbol} ${pct >= 0 ? "📈 Price Spike" : "📉 Price Drop"}`,
-      subtitle: `${t.symbol}/USDT`,
-      detail: `$${oldPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })} → $${t.price.toLocaleString(undefined, { maximumFractionDigits: 2 })} (${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%)`,
-      timestamp: new Date(Date.now() - (i * 11 + 1) * 60_000),
+      title: `${symbol} ${pct >= 0 ? "📈 Price Spike" : "📉 Price Drop"}`,
+      subtitle: `${symbol}/USDT`,
+      detail: `$${oldPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })} → $${lastPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })} (${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%)`,
+      timestamp: new Date(Date.now() - (i * 7 + 2) * 60_000),
       color: pct >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
       icon: pct >= 0 ? "📈" : "📉",
     };
   });
 }
 
-function generateMockVolumeSpikeBlips(tokens: MarketToken[]): RadarBlip[] {
-  if (tokens.length === 0) {
-    return [
-      {
-        id: "vol-0",
-        type: "volume_spike" as BlipType,
-        title: "📊 Volume Surge",
-        subtitle: "BTC/USDT",
-        detail: "Volume 3.2x above 24h average",
-        timestamp: new Date(Date.now() - 5 * 60_000),
-        color: "#F0B90B",
-        icon: "📊",
-      },
-      {
-        id: "vol-1",
-        type: "volume_spike" as BlipType,
-        title: "📊 Volume Surge",
-        subtitle: "SOL/USDT",
-        detail: "Volume 2.7x above 24h average",
-        timestamp: new Date(Date.now() - 18 * 60_000),
-        color: "#F0B90B",
-        icon: "📊",
-      },
-      {
-        id: "vol-2",
-        type: "volume_spike" as BlipType,
-        title: "📊 Volume Surge",
-        subtitle: "DOGE/USDT",
-        detail: "Volume 4.1x above 24h average",
-        timestamp: new Date(Date.now() - 32 * 60_000),
-        color: "#F0B90B",
-        icon: "📊",
-      },
-    ];
+async function fetchVolumeAnomalies(tickers: Binance24hrTicker[]): Promise<RadarBlip[]> {
+  if (tickers.length === 0) return [];
+
+  const topVolume = [...tickers]
+    .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+    .slice(0, 5);
+
+  const blips: RadarBlip[] = [];
+
+  for (const t of topVolume) {
+    try {
+      const res = await fetch(
+        `https://api.binance.com/api/v3/klines?symbol=${t.symbol}&interval=1h&limit=24`,
+      );
+      if (!res.ok) continue;
+      const klines: string[][] = await res.json();
+      if (klines.length < 8) continue;
+
+      // klines[0..4] are newest; each: [openTime, open, high, low, close, volume, closeTime, ...]
+      const volumes = klines.map((k) => parseFloat(k[5]));
+      const recentVolume = volumes.slice(0, 4).reduce((a, b) => a + b, 0);
+      const avgVolume = volumes.reduce((a, b) => a + b, 0) / volumes.length;
+
+      if (avgVolume > 0 && recentVolume / avgVolume > 1.5) {
+        const ratio = recentVolume / avgVolume;
+        const symbol = t.symbol.replace("USDT", "");
+        // Use the close time of the latest kline as a real timestamp
+        const latestCloseTime = parseInt(klines[0][6], 10);
+        blips.push({
+          id: `vol-${symbol}`,
+          type: "volume_spike" as BlipType,
+          title: "📊 Volume Surge",
+          subtitle: `${symbol}/USDT`,
+          detail: `Volume ${ratio.toFixed(1)}x above 24h average`,
+          timestamp: new Date(latestCloseTime),
+          color: "#F0B90B",
+          icon: "📊",
+        });
+      }
+    } catch {
+      // Skip this pair on error
+    }
   }
-  return tokens.slice(0, 3).map((t, i) => {
-    const ratio = randomBetween(2, 5);
-    return {
-      id: `vol-${i}`,
-      type: "volume_spike" as BlipType,
-      title: "📊 Volume Surge",
-      subtitle: `${t.symbol}/USDT`,
-      detail: `Volume ${ratio.toFixed(1)}x above 24h average`,
-      timestamp: new Date(Date.now() - (i * 15 + 5) * 60_000),
-      color: "#F0B90B",
-      icon: "📊",
-    };
-  });
+
+  return blips;
 }
+
+// ── Server Function: Get Radar Blips ──────────────────────────────────────
+
+export const getRadarBlips = createServerFn({ method: "GET" }).handler(
+  async (): Promise<RadarBlip[]> => {
+    const tickers = await fetchBinance24hrTickers();
+    if (tickers.length === 0) return [];
+
+    const [whales, priceMoves, volumeAnomalies] = await Promise.all([
+      fetchRecentLargeTrades(tickers),
+      fetchSignificantPriceMoves(tickers),
+      fetchVolumeAnomalies(tickers),
+    ]);
+
+    const all = [...whales, ...priceMoves, ...volumeAnomalies];
+    all.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    return all.slice(0, 15);
+  },
+);
 
 function generateMockSignals(signals: SignalRow[]): RadarBlip[] {
   if (signals.length === 0) {
@@ -784,6 +830,16 @@ function RadarPage() {
     staleTime: 30_000,
   });
 
+  // ── Data Fetching: Radar Blips (real Binance data) ──
+  const fetchRadarBlips = useStableServerFn(getRadarBlips);
+  const radarBlipsQuery = useQuery({
+    queryKey: ["radar-blips"],
+    queryFn: () => fetchRadarBlips(),
+    refetchInterval: 30_000,
+    retry: 1,
+    staleTime: 15_000,
+  });
+
   // ── Determine demo mode ──
   useEffect(() => {
     if (
@@ -834,17 +890,15 @@ function RadarPage() {
     return [];
   }, [signalsQuery.data]);
 
-  // ── Computed: all blips ──
+  // ── Computed: all blips (real data + AI signals) ──
   const blips: RadarBlip[] = useMemo(() => {
-    const priceAlerts = generateMockPriceAlertBlips(tokens);
-    const whales = generateMockWhaleBlips();
+    const marketBlips = radarBlipsQuery.data ?? [];
     const signalBlips = generateMockSignals(signals);
-    const volumeSpikes = generateMockVolumeSpikeBlips(tokens);
 
-    const all = [...priceAlerts, ...whales, ...signalBlips, ...volumeSpikes];
+    const all = [...marketBlips, ...signalBlips];
     all.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-    return all;
-  }, [tokens, signals]);
+    return all.slice(0, 15);
+  }, [radarBlipsQuery.data, signals]);
 
   // ── Computed: heatmap data ──
   const heatmapData = useMemo(() => {
@@ -910,6 +964,8 @@ function RadarPage() {
   }, [blips]);
 
   const isLoading = marketQuery.isLoading && signalsQuery.isLoading;
+  const isBlipsLoading = radarBlipsQuery.isLoading;
+  const isBlipsEmpty = !isBlipsLoading && blips.length === 0;
 
   return (
     <PageLayout
@@ -1141,20 +1197,50 @@ function RadarPage() {
         {/* Radar Grid Section */}
         <SectionTitle title="Radar Blips" count={blips.length} />
 
-        {/* Radar grid background effect */}
-        <div className="radar-grid-bg" style={{ padding: "10px 16px 14px" }}>
+        {isBlipsLoading ? (
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "40px 16px",
+              color: "var(--color-muted-foreground)",
+              fontSize: 13,
               gap: 8,
             }}
           >
-            {blips.map((blip) => (
-              <BlipCard key={blip.id} blip={blip} />
-            ))}
+            <RadarPulse active={true} />
+            <span>Scanning markets…</span>
           </div>
-        </div>
+        ) : isBlipsEmpty ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "40px 16px",
+              color: "var(--color-muted-foreground)",
+              fontSize: 13,
+            }}
+          >
+            <span>No significant activity detected</span>
+          </div>
+        ) : (
+          /* Radar grid background effect */
+          <div className="radar-grid-bg" style={{ padding: "10px 16px 14px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                gap: 8,
+              }}
+            >
+              {blips.map((blip) => (
+                <BlipCard key={blip.id} blip={blip} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Market Heatmap Section */}
         <SectionTitle title="Market Heatmap" count={heatmapData.length} />
@@ -1162,11 +1248,13 @@ function RadarPage() {
 
         {/* Recent Alerts Log */}
         <SectionTitle title="Recent Alerts Log" count={alertsLog.length} />
-        <div style={{ maxHeight: 400, overflowY: "auto" }} className="scrollbar-hide">
-          {alertsLog.map((blip, i) => (
-            <AlertsLogEntry key={blip.id} blip={blip} index={i} />
-          ))}
-        </div>
+        {isBlipsEmpty ? null : (
+          <div style={{ maxHeight: 400, overflowY: "auto" }} className="scrollbar-hide">
+            {alertsLog.map((blip, i) => (
+              <AlertsLogEntry key={blip.id} blip={blip} index={i} />
+            ))}
+          </div>
+        )}
 
         {/* Bottom spacer for scroll */}
         <div style={{ height: 24 }} />

@@ -25,17 +25,19 @@ import {
   Plus,
   Pin,
   Trash2,
+  Radio,
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { getAnalysis } from "@/domains/analysis/functions";
 import { getNotesByAnalysis, deleteNote } from "@/domains/notes/functions";
 import type { TradingNote, Mood } from "@/domains/notes/types";
 import { NoteEditorDialog } from "@/components/vixor/NoteEditorDialog";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { PageLayout, ScrollArea, Badge, ProgressBar } from "@/components/vixor/PageLayout";
 import { shareOnX, shareOnTelegram } from "@/shared/share";
 import type { ShareableSignal } from "@/shared/share";
+import { createSignalTracking } from "@/domains/signal-tracking/functions";
 
 // ── Local style constants ──────────────────────────────────────────────
 const GREEN_DEEP = "var(--color-bullish)";
@@ -135,7 +137,9 @@ export function AnalysisResult() {
       // kept the old ref alive, confusing React's reconciliation → React #310.
       refetchInterval: (query: { state: { data?: { status?: string } } }) => {
         const s = query.state.data?.status;
-        return s === "complete" || s === "failed" ? false : 3000;
+        if (s === "complete") return 300_000; // Refresh every 5 min for completed analyses (keeps tracked signals current)
+        if (s === "failed") return false;
+        return 3000;
       },
     }),
     [id, fetchAnalysis],
@@ -198,6 +202,25 @@ export function AnalysisResult() {
     shareOnTelegram(shareSignal);
     setShareOpen(false);
   }, [shareSignal]);
+
+  // ── Track as Signal mutation ──
+  const stableCreateTracking = useStableServerFn(createSignalTracking);
+  const trackMutation = useMutation({
+    mutationFn: () =>
+      stableCreateTracking({
+        data: {
+          pair: a.pair,
+          direction: a.recommendation as "BUY" | "SELL",
+          sourceType: "analysis",
+          signalId: id,
+          entryPrice: a.entry != null ? parseFloat(String(a.entry)) : undefined,
+          stopLoss: a.stop_loss != null ? parseFloat(String(a.stop_loss)) : undefined,
+          takeProfit: Array.isArray(a.take_profit)
+            ? a.take_profit.map((v: unknown) => parseFloat(String(v)))
+            : undefined,
+        },
+      }),
+  });
 
   const recColor = isBullish
     ? "var(--color-bullish)"
@@ -396,6 +419,22 @@ export function AnalysisResult() {
                     >
                       {relTime(a.created_at)}
                     </span>
+                    {a.updated_at && a.updated_at !== a.created_at && (
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          color: "var(--color-muted-foreground)",
+                          opacity: 0.7,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "3px",
+                        }}
+                      >
+                        <Radio size={10} />
+                        Updated {relTime(a.updated_at)}
+                      </span>
+                    )}
                   </div>
                   <h1
                     style={{
@@ -599,6 +638,45 @@ export function AnalysisResult() {
                   </div>
                 </div>
               </div>
+
+              {/* Track as Signal button — only for BUY/SELL */}
+              {!isWait && (
+                <div style={{ marginTop: "16px" }}>
+                  <button
+                    onClick={() => trackMutation.mutate()}
+                    disabled={trackMutation.isPending || trackMutation.isSuccess}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "10px 20px",
+                      borderRadius: "10px",
+                      border: "none",
+                      background: trackMutation.isSuccess ? "rgba(14,203,129,0.15)" : GREEN_GRAD,
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: "13px",
+                      cursor:
+                        trackMutation.isPending || trackMutation.isSuccess ? "default" : "pointer",
+                      opacity: trackMutation.isPending || trackMutation.isSuccess ? 0.85 : 1,
+                      transition: "opacity 0.2s",
+                    }}
+                  >
+                    {trackMutation.isPending ? (
+                      <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
+                    ) : trackMutation.isSuccess ? (
+                      <CheckCircle size={16} />
+                    ) : (
+                      <Radio size={16} />
+                    )}
+                    {trackMutation.isPending
+                      ? "Tracking…"
+                      : trackMutation.isSuccess
+                        ? "Tracking"
+                        : "Track Signal"}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* ═══════════════════════════════════════
