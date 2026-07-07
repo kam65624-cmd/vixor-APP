@@ -107,3 +107,21 @@ Work Log:
 Stage Summary:
 - الصفحة الجديدة جاهزة مع كل data fetching + loading states
 - tsc: 0 errors, eslint: 0 errors
+
+---
+Task ID: P1-4, P3-1, P3-2, P3-3, P3-4
+Agent: main
+Task: إكمال التاسكات المتبقية P1-4 + P3-1 to P3-4
+
+Work Log:
+- P1-4: استبدال Signals بـ Discover في Bottom Nav، نقل Signals لـ More Panel (Social)
+- P3-1: إضافة page transition animation (fade+slide 0.2s) بـ `key={path}` wrapper في AppShell + CSS `vixor-page-enter` + reduced-motion support
+- P3-2: استخراج `usePullToRefresh` hook + `PullIndicator` component من discover.tsx لمكتبة مشتركة (`src/shared/hooks/use-pull-to-refresh.ts` + `src/components/vixor/PullIndicator.tsx`)
+- P3-3: إضافة ArrowUp/ArrowDown keyboard navigation في DataRow + `data-row` attribute + `data-row-list` على PageLayout و PageScrollArea
+- P3-4: إنشاء `useOnline` hook (`src/shared/hooks/use-online.ts`) + offline banner أحمر في AppShell مع `role="alert"` + `aria-live="assertive"`
+
+Stage Summary:
+- 5 تاسكات مكتملة — كل P0-P3 done
+- tsc: 0 errors, eslint: 0 errors (1 pre-existing warning), 262 tests pass
+- ملفات جديدة: use-pull-to-refresh.ts, use-online.ts, PullIndicator.tsx
+- ملفات معدلة: AppShell.tsx, PageLayout.tsx, discover.tsx, styles.css, TASKS.md

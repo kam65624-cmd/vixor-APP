@@ -18,6 +18,7 @@ import { getUserPoints, getUserProfile, getUnreadNotificationCount } from "@/sha
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useWallet } from "@/domains/wallet/adapter/WalletProvider";
 import { WalletProviderSelector } from "@/domains/wallet/adapter/WalletProviderSelector";
+import { useOnline } from "@/shared/hooks/use-online";
 
 // ── SOL Price Hook ──────────────────────────────────────────────────────────
 
@@ -124,8 +125,8 @@ const bottomNavItems = [
     ),
   },
   {
-    to: "/signals",
-    label: "Signals",
+    to: "/discover",
+    label: "Discover",
     icon: (
       <svg
         width="20"
@@ -137,11 +138,8 @@ const bottomNavItems = [
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M4.9 19.1C1.7 15.9 1.7 10.6 4.9 7.4" />
-        <path d="M7.8 16.2c-2-2-2-5.2 0-7.2" />
-        <circle cx="12" cy="12" r="2" />
-        <path d="M16.2 16.2c2-2 2-5.2 0-7.2" />
-        <path d="M19.1 19.1c3.2-3.2 3.2-8.5 0-11.7" />
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
       </svg>
     ),
   },
@@ -688,6 +686,28 @@ const moreNavCategories: MoreNavCategory[] = [
     title: "Social",
     items: [
       {
+        to: "/signals",
+        label: "Daily Signals",
+        icon: (
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M4.9 19.1C1.7 15.9 1.7 10.6 4.9 7.4" />
+            <path d="M7.8 16.2c-2-2-2-5.2 0-7.2" />
+            <circle cx="12" cy="12" r="2" />
+            <path d="M16.2 16.2c2-2 2-5.2 0-7.2" />
+            <path d="M19.1 19.1c3.2-3.2 3.2-8.5 0-11.7" />
+          </svg>
+        ),
+      },
+      {
         to: "/communities",
         label: "Communities",
         icon: (
@@ -705,25 +725,6 @@ const moreNavCategories: MoreNavCategory[] = [
             <circle cx="9" cy="7" r="4" />
             <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-        ),
-      },
-      {
-        to: "/discover",
-        label: "Discover",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
           </svg>
         ),
       },
@@ -756,6 +757,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const sol = useSolPrice();
   const isTg = useIsTelegram();
   const { wallet } = useWallet();
+  const { isOnline } = useOnline();
 
   const signedIn = path !== "/auth";
 
@@ -888,6 +890,26 @@ export function AppShell({ children }: { children: ReactNode }) {
         }}
       />
 
+      {/* ── Offline Banner ── */}
+      {!isOnline && (
+        <div
+          style={{
+            padding: "6px 16px",
+            textAlign: "center",
+            fontSize: "11px",
+            fontWeight: 600,
+            color: "#F87171",
+            background: "rgba(248,113,113,0.08)",
+            borderBottom: "1px solid rgba(248,113,113,0.15)",
+            letterSpacing: "0.03em",
+          }}
+          role="alert"
+          aria-live="assertive"
+        >
+          You are offline — data may be stale
+        </div>
+      )}
+
       {/* ── Main Content ── */}
       <main
         className="flex-1 overflow-auto"
@@ -896,7 +918,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           paddingBottom: "calc(52px + env(safe-area-inset-bottom, 0px))",
         }}
       >
-        {children}
+        <div key={path} className="vixor-page-enter">
+          {children}
+        </div>
       </main>
 
       {/* ── Bottom Bar: 5 core nav + More button ── */}

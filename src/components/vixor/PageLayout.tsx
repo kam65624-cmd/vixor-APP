@@ -24,7 +24,7 @@
 //   </PageLayout>
 
 import type { ReactNode, KeyboardEvent } from "react";
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useRef } from "react";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────
 // All colors now use CSS custom properties defined in styles.css.
@@ -184,6 +184,7 @@ export function PageLayout({
 
       {/* ── Content ── */}
       <div
+        data-row-list
         style={{
           flex: 1,
           position: "relative",
@@ -453,6 +454,7 @@ export function PageScrollArea({
 }) {
   return (
     <div
+      data-row-list
       className="scrollbar-hide"
       style={{
         flex: 1,
@@ -581,6 +583,7 @@ export const DataRow = memo(function DataRow({
   style?: Record<string, unknown>;
 }) {
   const [hovered, setHovered] = useState(false);
+  const ref = useRef<HTMLButtonElement>(null);
 
   const handleMouseEnter = useCallback(() => setHovered(true), []);
   const handleMouseLeave = useCallback(() => setHovered(false), []);
@@ -590,6 +593,23 @@ export const DataRow = memo(function DataRow({
       if (onClick && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
         onClick();
+        return;
+      }
+
+      // ArrowUp/ArrowDown — move focus between sibling DataRow buttons
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const container = ref.current?.closest("[data-row-list]");
+        if (!container) return;
+
+        const rows = Array.from(container.querySelectorAll<HTMLButtonElement>("button[data-row]"));
+        const idx = rows.indexOf(ref.current!);
+        if (idx === -1) return;
+
+        const next = e.key === "ArrowDown" ? idx + 1 : idx - 1;
+        if (rows[next]) {
+          rows[next].focus();
+        }
       }
     },
     [onClick],
@@ -597,13 +617,13 @@ export const DataRow = memo(function DataRow({
 
   return (
     <button
+      ref={ref}
       type="button"
+      data-row
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onKeyDown={onClick ? handleKeyDown : undefined}
-      role={onClick ? "button" : undefined}
-      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={handleKeyDown}
       style={{
         padding: "10px 16px",
         borderBottom: "1px solid rgba(124,155,196,0.04)",

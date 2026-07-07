@@ -1,7 +1,7 @@
 # VIXOR APP — تقرير التاسكات والتحسينات
 
 > **آخر تحديث:** 2026-07-07
-> **الحالة العامة:** المشروع متقدم جداً — 35/38 صفحة شغالة ببيانات حقيقية + نشر Vercel عامل ✅
+> **الحالة العامة:** المشروع متقدم جداً — 35/38 صفحة شغالة ببيانات حقيقية + نشر Vercel عامل ✅ + كل التاسكات P0-P3 مكتملة ✅
 
 ---
 
@@ -182,7 +182,7 @@
 - **المسبب:** `bottomNavItems` فيه 4 عناصر فقط: Home, Analyze, Copilot, Signals
 - **التقرير يقترح:** إضافة Discover واستبدال Signals بـ Portfolio
 - **هل يُعاد؟** قرار تصميم — لو المستخدم بيستخدم Discover كتير ننقله
-- **الحالة:** ⬜ لم يبدأ (يحتاج قرار منك)
+- **الحالة:** ✅ تم — Discover في البار السفلي محل Signals، Signals اتنتقلت لـ More Panel (Social)
 
 #### P1-5: DataRow غير accessible
 - **التأثير:** مستخدمو الكيبورد لا يستطيعون التنقل
@@ -252,10 +252,10 @@
 
 | # | التاسك | الحالة |
 |---|---|---|
-| P3-1 | Page transitions (تحريك سلس بين الصفحات) | ⬜ |
-| P3-2 | Pull-to-refresh feedback | ⬜ |
-| P3-3 | Keyboard navigation كامل | ⬜ |
-| P3-4 | Offline states | ⬜ |
+| P3-1 | Page transitions (تحريك سلس بين الصفحات) | ✅ تم — CSS fade+slide animation على `<main>` بـ `key={path}` + `vixor-page-enter` class |
+| P3-2 | Pull-to-refresh feedback | ✅ تم — `usePullToRefresh` hook مشترك + `PullIndicator` component مستخرجين من discover.tsx للاستخدام العام |
+| P3-3 | Keyboard navigation كامل | ✅ تم — DataRow بيدعم ArrowUp/ArrowDown للتنقل بين الـ rows في القوائم + `data-row-list` على الحاويات |
+| P3-4 | Offline states | ✅ تم — `useOnline` hook + banner أحمر في AppShell لما المستخدم أوفلاين |
 | P3-5 | تنظيف ملفات SQL عائمة في الجذر | ✅ تم — 3 ملفات SQL محذوفة |
 | P3-6 | تنظيف `src/lib/` (نسخة قديمة من الكود) | ✅ تم — vixor-mock.ts محذوف (لم يكن مستخدم) |
 
@@ -280,6 +280,11 @@
 | 13 | EmptyState CTAs لـ 8 صفحات | ✅ تم | notifications, whale, predictions, communities, bags, curves, trackers, perpetuals |
 | 14 | Settings dead buttons (Password/Export/Delete) | ✅ تم | Password→toast, Export→JSON download, Delete→2-step confirm |
 | 15 | تنظيف ملفات عائمة (3 SQL + vixor-mock.ts) | ✅ تم | حذف 4 ملفات مش مستخدمة |
+| 16 | P1-4: إضافة Discover للـ Bottom Nav | ✅ تم | Discover محل Signals في البار السفلي، Signals في More Panel |
+| 17 | P3-1: Page transitions | ✅ تم | CSS fade+slide animation بـ `key={path}` على main content |
+| 18 | P3-2: Pull-to-refresh shared hook | ✅ تم | `usePullToRefresh` + `PullIndicator` مستخرجين لمكتبة مشتركة |
+| 19 | P3-3: Keyboard navigation | ✅ تم | ArrowUp/ArrowDown في DataRow + `data-row-list` containers |
+| 20 | P3-4: Offline states | ✅ تم | `useOnline` hook + offline banner أحمر في AppShell |
 
 ---
 

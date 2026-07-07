@@ -603,6 +603,15 @@
   transform: scale(0.985);
 }
 
+/* Page transition — fade + subtle slide on route change */
+@keyframes vixor-page-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.vixor-page-enter {
+  animation: vixor-page-enter 0.2s ease-out both;
+}
+
 /* VIXOR Pulse */
 @keyframes vixor-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
@@ -622,6 +631,7 @@
   .card-stagger > * { animation: none !important; opacity: 1; transform: none; }
   .btn-buy { animation: none !important; }
   .live-badge::before { animation: none !important; opacity: 0.85; }
+  .vixor-page-enter { animation: none !important; opacity: 1; transform: none; }
 }
 
 /* ====== Print ====== */
