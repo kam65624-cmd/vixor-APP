@@ -6,10 +6,6 @@
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/api/check-alerts",
-      "schedule": "30 0 * * *"
-    },
-    {
       "path": "/api/reanalysis-cron",
       "schedule": "*/5 * * * *"
     }
