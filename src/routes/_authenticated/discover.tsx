@@ -237,7 +237,11 @@ function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void 
   const changeVal = item.change24h ?? 0;
   const hasChange = item.change24h !== null;
   const isUp = hasChange && changeVal >= 0;
-  const color = !hasChange ? "var(--color-muted-foreground)" : isUp ? "var(--color-bullish)" : "var(--color-bearish)";
+  const color = !hasChange
+    ? "var(--color-muted-foreground)"
+    : isUp
+      ? "var(--color-bullish)"
+      : "var(--color-bearish)";
   const isGold = item.type === "gold";
   const accentColor = isGold ? GOLD_COLOR : color;
   const badgeBg = isGold ? GOLD_BG : "rgba(163,163,163,0.15)";
@@ -1323,10 +1327,10 @@ function DiscoverPage() {
     if (search.search?.trim()) {
       const q = search.search.trim().toLowerCase();
       return pairs.filter(
-      (p) =>
-        p.pair.toLowerCase().includes(q) ||
-        p.name.toLowerCase().includes(q) ||
-        p.badge.toLowerCase().includes(q),
+        (p) =>
+          p.pair.toLowerCase().includes(q) ||
+          p.name.toLowerCase().includes(q) ||
+          p.badge.toLowerCase().includes(q),
       );
     }
     return pairs;

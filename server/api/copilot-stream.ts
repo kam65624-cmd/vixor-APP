@@ -17,12 +17,12 @@ const streamLimiter = new SlidingWindowLimiter({
   windowMs: 60_000,
 });
 
-/** Extract user ID from Bearer token in h3 request */
+/** Extract user ID + authenticated Supabase client from Bearer token */
 async function authenticateRequest(
   event: ReturnType<typeof defineEventHandler> extends (...args: any[]) => Promise<any>
     ? any
     : never,
-): Promise<string | null> {
+): Promise<{ userId: string; supabase: ReturnType<typeof createClient<Database>> } | null> {
   const authHeader = getHeader(event, "authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
 
@@ -40,7 +40,7 @@ async function authenticateRequest(
 
   const { data, error } = await supabase.auth.getUser(token);
   if (error || !data?.user) return null;
-  return data.user.id;
+  return { userId: data.user.id, supabase };
 }
 
 export default defineEventHandler(async (event) => {
@@ -58,10 +58,11 @@ export default defineEventHandler(async (event) => {
   }
 
   // Auth check
-  const userId = await authenticateRequest(event);
-  if (!userId) {
+  const authResult = await authenticateRequest(event);
+  if (!authResult) {
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
   }
+  const { userId, supabase } = authResult;
 
   // Rate limit check per user
   if (!streamLimiter.tryAcquire(userId)) {
@@ -85,6 +86,92 @@ export default defineEventHandler(async (event) => {
   event.node.res.setHeader("Connection", "keep-alive");
   event.node.res.setHeader("X-Accel-Buffering", "no");
 
+  // Load full user context in parallel (same pattern as askCopilot)
+  const [
+    { data: profile },
+    { data: recentAnalyses },
+    { data: signals },
+    { data: alerts },
+    { data: strategy },
+    watchlistItems,
+    marketPrices,
+    economicEvents,
+    memoryContext,
+  ] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+    supabase
+      .from("analyses")
+      .select("id,pair,timeframe,recommendation,confidence,pattern,status,created_at")
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("daily_signals")
+      .select("pair,timeframe,recommendation,confidence,pattern")
+      .order("signal_date", { ascending: false })
+      .limit(5),
+    supabase
+      .from("price_alerts")
+      .select("pair,condition,target_price,status")
+      .eq("status", "active")
+      .limit(5),
+    supabase
+      .from("user_strategies")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .limit(1)
+      .maybeSingle(),
+    (async () => {
+      try {
+        const { data: wlItems } = await supabase
+          .from("watchlist_items")
+          .select("pair,notes,category")
+          .limit(20);
+        return wlItems || [];
+      } catch {
+        return [];
+      }
+    })(),
+    (async () => {
+      try {
+        const { fetchPrices, POPULAR_PAIRS } =
+          await import("@/domains/market/server/price-fetcher");
+        const pairs = POPULAR_PAIRS.map((p: any) => p.pair);
+        return await fetchPrices(pairs);
+      } catch {
+        return [];
+      }
+    })(),
+    (async () => {
+      try {
+        const { fetchEconomicCalendar } = await import("@/domains/market/server/economic-calendar");
+        return await fetchEconomicCalendar(7);
+      } catch {
+        return [];
+      }
+    })(),
+    (async () => {
+      try {
+        const { MemoryStore } = await import("@/shared/memory");
+        return await MemoryStore.contextForPrompt(userId);
+      } catch {
+        return undefined;
+      }
+    })(),
+  ]);
+
+  const userContext: import("@/domains/copilot/server/agents").UserContext = {
+    profile: profile || {},
+    recentAnalyses: recentAnalyses || [],
+    signals: signals || [],
+    alerts: alerts || [],
+    strategy: strategy || null,
+    watchlist: watchlistItems || [],
+    marketPrices: Array.isArray(marketPrices) ? marketPrices : [],
+    economicEvents: Array.isArray(economicEvents) ? economicEvents : [],
+    memoryContext,
+  };
+
   // Import streaming function
   const { streamAgent } = await import("@/domains/copilot/server/agent-orchestrator");
 
@@ -102,16 +189,7 @@ export default defineEventHandler(async (event) => {
           agent: agent as any,
           message,
           history,
-          context: {
-            profile: {},
-            recentAnalyses: [],
-            signals: [],
-            alerts: [],
-            strategy: null,
-            watchlist: [],
-            marketPrices: [],
-            economicEvents: [],
-          },
+          context: userContext,
         })) {
           sendSSE({
             delta: chunk.delta || "",
