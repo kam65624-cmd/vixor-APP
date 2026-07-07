@@ -6,7 +6,6 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && node scripts/fix-vercel-bundle.mjs",
