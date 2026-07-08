@@ -1,0 +1,20 @@
+{
+  "code": 200,
+  "data": {
+    "description": "",
+    "html": "<html><head><meta name=\"color-scheme\" content=\"light dark\"></head><body><pre style=\"word-wrap: break-word; white-space: pre-wrap;\">{\n  \"name\": \"crypto-sphere\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"lint\": \"eslint .\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"react\": \"^19.0.0\",\n    \"react-dom\": \"^19.0.0\",\n    \"react-google-charts\": \"^5.2.1\",\n    \"react-router-dom\": \"^7.1.5\"\n  },\n  \"devDependencies\": {\n    \"@eslint/js\": \"^9.19.0\",\n    \"@types/react\": \"^19.0.8\",\n    \"@types/react-dom\": \"^19.0.3\",\n    \"@vitejs/plugin-react\": \"^4.3.4\",\n    \"eslint\": \"^9.19.0\",\n    \"eslint-plugin-react\": \"^7.37.4\",\n    \"eslint-plugin-react-hooks\": \"^5.0.0\",\n    \"eslint-plugin-react-refresh\": \"^0.4.18\",\n    \"globals\": \"^15.14.0\",\n    \"vite\": \"^6.1.0\"\n  }\n}\n</pre></body></html>",
+    "httpStatus": 200,
+    "httpStatusText": "",
+    "title": "",
+    "url": "https://raw.githubusercontent.com/mlbhushan/cryptoSphere-marketplace/main/package.json",
+    "usage": {
+      "tokens": 310
+    }
+  },
+  "meta": {
+    "usage": {
+      "tokens": 310
+    }
+  },
+  "status": 20000
+}

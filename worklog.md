@@ -163,3 +163,21 @@ Stage Summary:
 - 1 ملف جديد: migration SQL
 - tsc: 0 errors, eslint: 0 errors
 - MOXI مكتمل بالكامل — كل التاسكات ✅
+---
+Task ID: research-integration
+Agent: Main Agent
+Task: Verify previous work in codebase + Research 10 projects/URLs for VIXOR integration analysis
+
+Work Log:
+- Verified all P1-4, P3-1 to P3-4 changes are in place: AppShell.tsx (useOnline, page transitions, offline banner), PageLayout.tsx (data-row, keyboard nav), use-pull-to-refresh.ts, use-online.ts, PullIndicator.tsx, discover.tsx (refactored), styles.css (vixor-page-enter animation)
+- Verified git: clean status, all commits pushed
+- Launched 7 parallel research agents to analyze: TradingView ecosystem (lightweight-charts, free charting, charting library docs), CCXT, Freqtrade, Hummingbot, CryptoSignal, 4 UI/marketplace projects, Stock-Prediction-Models
+- Read each project's README, docs, and API via web-reader
+- Compiled comprehensive analysis report with integration recommendations
+
+Stage Summary:
+- 3 projects HIGH VALUE for immediate integration: lightweight-charts, CCXT, TradingView embed widgets
+- 5 projects NOT NEEDED: CryptoSignal (VIXOR superior), cryptoSphere (beginner), tradeview (.NET), Open Trading UI (AGPLv3 + dead), Hummingbot (overkill for now)
+- 2 projects REFERENCE ONLY: Freqtrade (future bot API), Stock-Prediction-Models (ML architecture ideas)
+- Key finding: CCXT solves P2-3 (OKX/Bybit stubs) in ~half day
+- Key finding: lightweight-charts replaces TradingView iframe with 20x better performance

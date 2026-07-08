@@ -1,0 +1,20 @@
+{
+  "code": 200,
+  "data": {
+    "description": "",
+    "html": "<html><head><meta name=\"color-scheme\" content=\"light dark\"></head><body><pre style=\"word-wrap: break-word; white-space: pre-wrap;\">#!/usr/local/bin/python\n\"\"\"Main app module\n\"\"\"\n\nimport time\nimport sys\n\nimport logs\nimport conf\nimport structlog\n\nfrom conf import Configuration\nfrom exchange import ExchangeInterface\nfrom notification import Notifier\nfrom behaviour import Behaviour\n\ndef main():\n    \"\"\"Initializes the application\n    \"\"\"\n     # Load settings and create the config object\n    config = Configuration()\n    settings = config.settings\n\n    # Set up logger\n    logs.configure_logging(settings['log_level'], settings['log_mode'])\n    logger = structlog.get_logger()\n\n    # Configure and run configured behaviour.\n    exchange_interface = ExchangeInterface(config.exchanges)\n    notifier = Notifier(config.notifiers)\n\n    behaviour = Behaviour(\n        config,\n        exchange_interface,\n        notifier\n    )\n\n    while True:\n        behaviour.run(settings['market_pairs'], settings['output_mode'])\n        logger.info(\"Sleeping for %s seconds\", settings['update_interval'])\n        time.sleep(settings['update_interval'])\n\nif __name__ == \"__main__\":\n    try:\n        main()\n    except KeyboardInterrupt:\n        sys.exit(0)\n</pre></body></html>",
+    "httpStatus": 200,
+    "httpStatusText": "",
+    "title": "",
+    "url": "https://raw.githubusercontent.com/CryptoSignal/Crypto-Signal/master/app/app.py",
+    "usage": {
+      "tokens": 262
+    }
+  },
+  "meta": {
+    "usage": {
+      "tokens": 262
+    }
+  },
+  "status": 20000
+}

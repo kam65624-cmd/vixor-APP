@@ -1,0 +1,20 @@
+{
+  "code": 200,
+  "data": {
+    "description": "",
+    "html": "<html><head><meta name=\"color-scheme\" content=\"light dark\"></head><body><pre style=\"word-wrap: break-word; white-space: pre-wrap;\">\"\"\" MACD Indicator\n\"\"\"\n\nimport math\n\nimport pandas\nfrom talib import abstract\n\nfrom analyzers.utils import IndicatorUtils\n\n\nclass MACD(IndicatorUtils):\n    def analyze(self, historical_data, signal=['macd'], hot_thresh=None, cold_thresh=None):\n        \"\"\"Performs a macd analysis on the historical data\n\n        Args:\n            historical_data (list): A matrix of historical OHCLV data.\n            signal (list, optional): Defaults to macd. The indicator line to check hot/cold\n                against.\n            hot_thresh (float, optional): Defaults to None. The threshold at which this might be\n                good to purchase.\n            cold_thresh (float, optional): Defaults to None. The threshold at which this might be\n                good to sell.\n\n        Returns:\n            pandas.DataFrame: A dataframe containing the indicators and hot/cold values.\n        \"\"\"\n\n        dataframe = self.convert_to_dataframe(historical_data)\n        macd_values = abstract.MACD(dataframe).iloc[:]\n        macd_values.dropna(how='all', inplace=True)\n\n        if macd_values[signal[0]].shape[0]:\n            macd_values['is_hot'] = macd_values[signal[0]] > hot_thresh\n            macd_values['is_cold'] = macd_values[signal[0]] < cold_thresh\n\n        return macd_values\n</pre></body></html>",
+    "httpStatus": 200,
+    "httpStatusText": "",
+    "title": "",
+    "url": "https://raw.githubusercontent.com/CryptoSignal/Crypto-Signal/master/app/analyzers/indicators/macd.py",
+    "usage": {
+      "tokens": 323
+    }
+  },
+  "meta": {
+    "usage": {
+      "tokens": 323
+    }
+  },
+  "status": 20000
+}
