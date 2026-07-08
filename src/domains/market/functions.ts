@@ -183,6 +183,56 @@ export const getOHLCV = createServerFn({ method: "GET" })
     return null;
   });
 
+// ---------- CHART OHLCV DATA (for CandlestickChart component) ----------
+// Returns full kline array for charting (up to 300 bars)
+export const getChartOHLCV = createServerFn({ method: "GET" })
+  .validator((d: unknown) =>
+    z
+      .object({
+        pair: z.string().min(1),
+        interval: z.string().default("1H"),
+        limit: z.coerce.number().min(10).max(1000).default(300),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { pair, interval, limit } = data;
+
+    // Try Binance first (crypto pairs)
+    if (
+      pair.includes("USDT") ||
+      pair.includes("BTC") ||
+      pair.includes("ETH") ||
+      pair.includes("SOL") ||
+      pair.includes("BNB")
+    ) {
+      try {
+        const { fetchBinanceKlines } = await import("@/domains/market/server/price-fetcher");
+        const klines = await fetchBinanceKlines(pair, interval, limit);
+        if (klines.length > 0) return klines;
+      } catch (err) {
+        console.warn(
+          "[ChartOHLCV] Binance failed:",
+          err instanceof Error ? err.message : String(err),
+        );
+      }
+    }
+
+    // Try TwelveData (forex, commodities, stocks)
+    try {
+      const { fetchTwelveDataKlines } = await import("@/domains/market/server/price-fetcher");
+      const klines = await fetchTwelveDataKlines(pair, interval, limit);
+      if (klines.length > 0) return klines;
+    } catch (err) {
+      console.warn(
+        "[ChartOHLCV] TwelveData failed:",
+        err instanceof Error ? err.message : String(err),
+      );
+    }
+
+    return [];
+  });
+
 // ---------- ECONOMIC CALENDAR (public — no auth required) ----------
 export const getEconomicCalendar = createServerFn({ method: "GET" })
   .validator((d: unknown) =>

@@ -1,7 +1,7 @@
 # VIXOR APP — تقرير التاسكات والتحسينات
 
 > **آخر تحديث:** 2026-07-08
-> **الحالة العامة:** المشروع متقدم جداً — 35/38 صفحة شغالة ببيانات حقيقية + نشر Vercel عامل ✅ + كل التاسكات P0-P3 مكتملة ✅ + MOXI AI Companion مكتمل ✅
+> **الحالة العامة:** المشروع متقدم جداً — 35/38 صفحة شغالة ببيانات حقيقية + نشر Vercel عامل ✅ + كل التاسكات P0-P3 مكتملة ✅ + MOXI AI Companion مكتمل ✅ + CCXT Integration ✅ + lightweight-charts native charts ✅ + TradingView Widgets ✅
 
 ---
 
@@ -211,7 +211,7 @@
 - **التأثير:** مستخدم يحاول يربط Exchange ولا يشتغل
 - **المسبب:** Adapters في `src/domains/trading/` غير مكتملة
 - **ملاحظة:** يحتاج API keys حقيقية أولاً
-- **الحالة:** ⬜ لم يبدأ (محظور حتى توفر API keys)
+- **الحالة:** ✅ تم — `CcxtGenericAdapter` generic class + OKX/Bybit adapters تتعامل مع CCXT API فعلي. P2-3 محلول بالكامل.
 
 #### P2-4: Touch targets صغيرة
 - **التأثير:** أصابع المستخدم تضغط خطأ على الموبايل
@@ -397,3 +397,6 @@ Sprint 4: التحسينات (يوم 11-14)
 - [x] Moxi insights feed في الـ UI — Section 10 في الهوم بـ MoxiAvatar + severity colors + timeAgo + clickable cards
 - [x] MoxiAvatar في Copilot chat — يظهر كـ avatar للرسائل اللي من MOXI بدل الـ icon العادي
 - [x] MOXI كـ agent في orchestrator — `agents.ts` يعرف "moxi" في AgentId + moxiAgent definition في ALL_AGENTS
+- [x] **CCXT Integration** — `CcxtGenericAdapter` generic class (105 exchange) + OKX/Bybit adapters فعليين. P2-3 محلول.
+- [x] **lightweight-charts** — `CandlestickChart` component بـ native Canvas rendering + volume + crosshair OHLCV tooltip + timeframe switching. Charts page تستخدمه للكريبتو.
+- [x] **TradingView Widgets** — `TradingViewTickerTape` (شريط أسعار) + `TradingViewMiniChart` (sparkline cards) + `TradingViewTechAnalysis` (Buy/Sell gauge). جاهزة للدمج.

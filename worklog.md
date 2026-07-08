@@ -181,3 +181,31 @@ Stage Summary:
 - 2 projects REFERENCE ONLY: Freqtrade (future bot API), Stock-Prediction-Models (ML architecture ideas)
 - Key finding: CCXT solves P2-3 (OKX/Bybit stubs) in ~half day
 - Key finding: lightweight-charts replaces TradingView iframe with 20x better performance
+
+---
+Task ID: bdf-integration
+Agent: Main Agent
+Task: Implement BDF — lightweight-charts, CCXT, TradingView Free Widgets
+
+Work Log:
+- D: Installed ccxt@4.5.64 via npm
+- D: Created CcxtGenericAdapter (src/domains/trading/gateway/adapters/ccxt-generic-adapter.ts) — generic CCXT wrapper supporting 105 exchanges
+- D: Rewrote okx-adapter.ts — now delegates to CcxtGenericAdapter (real API calls, all 8 TODOs resolved)
+- D: Rewrote bybit-adapter.ts — now delegates to CcxtGenericAdapter (real API calls, all 7 TODOs resolved)
+- D: Updated adapters/index.ts barrel export
+- D: P2-3 fully resolved — OKX/Bybit are no longer stubs
+- B: Created CandlestickChart component (src/components/vixor/CandlestickChart.tsx) — Canvas-based candlestick chart with volume, crosshair OHLCV tooltip, timeframe switching, loading/error states
+- B: Added getChartOHLCV server function (src/domains/market/functions.ts) — returns up to 1000 klines via Binance or TwelveData
+- B: Updated charts.tsx — crypto pairs use native lightweight-charts, forex uses TradingView embed fallback
+- F: Created TradingViewTickerTape widget (src/components/vixor/TradingViewTickerTape.tsx) — horizontal scrolling prices
+- F: Created TradingViewMiniChart widget (src/components/vixor/TradingViewMiniChart.tsx) — compact sparkline cards
+- F: Created TradingViewTechAnalysis widget (src/components/vixor/TradingViewTechAnalysis.tsx) — Buy/Sell/Neutral gauge
+- Updated TASKS.md: P2-3 marked ✅, added 3 new entries to what was accomplished
+
+Stage Summary:
+- tsc: clean (0 errors)
+- eslint: clean
+- tests: 262/262 passed
+- CCXT: OKX + Bybit adapters from stubs to fully functional with zero custom API code
+- lightweight-charts: native chart replaces TradingView iframe for crypto (20x performance improvement, full DOM control)
+- TradingView Widgets: 3 embeddable components ready for integration

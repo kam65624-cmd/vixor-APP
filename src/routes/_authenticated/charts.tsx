@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
-import { TradingViewChart, SYMBOL_MAP, INTERVAL_MAP } from "@/components/vixor/TradingViewChart";
+import { CandlestickChart } from "@/components/vixor/CandlestickChart";
+import { TradingViewChart, SYMBOL_MAP } from "@/components/vixor/TradingViewChart";
 
 export const Route = createFileRoute("/_authenticated/charts")({
   head: () => ({ meta: [{ title: "Charts — Vixor" }] }),
@@ -21,14 +22,19 @@ const FOREX_PAIRS = [
   "USD/CHF",
 ] as const;
 
-const INTERVALS = ["1M", "5M", "15M", "1H", "4H", "1D", "1W"] as const;
-
 function ChartsPage() {
   const [selectedPair, setSelectedPair] = useState<string>("BTC/USDT");
   const [selectedInterval, setSelectedInterval] = useState<string>("4H");
 
-  const tvSymbol = useMemo(() => SYMBOL_MAP[selectedPair] || selectedPair, [selectedPair]);
-  const tvInterval = useMemo(() => INTERVAL_MAP[selectedInterval] || "240", [selectedInterval]);
+  // Crypto pairs use native lightweight-charts, forex uses TradingView embed
+  const isCrypto = useMemo(
+    () =>
+      selectedPair.includes("USDT") ||
+      selectedPair.includes("BTC") ||
+      selectedPair.includes("ETH") ||
+      selectedPair.includes("SOL"),
+    [selectedPair],
+  );
 
   return (
     <PageLayout title="Charts" badge="LIVE" badgeColor="var(--color-bullish)">
@@ -125,68 +131,47 @@ function ChartsPage() {
         ))}
       </div>
 
-      {/* Interval selector */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "2px",
-          padding: "0 16px",
-          borderBottom: "1px solid var(--color-border)",
-          background: "var(--color-card)",
-          height: "36px",
-          flexShrink: 0,
-          overflowX: "auto",
-        }}
-        className="scrollbar-hide"
-      >
-        <span
-          style={{
-            fontSize: "11px",
-            fontWeight: 700,
-            color: "var(--color-muted-foreground)",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            marginRight: "6px",
-            whiteSpace: "nowrap",
-          }}
-        >
-          TF:
-        </span>
-        {INTERVALS.map((tf) => (
-          <button
-            key={tf}
-            onClick={() => setSelectedInterval(tf)}
-            style={{
-              padding: "5px 10px",
-              fontSize: "12px",
-              fontWeight: tf === selectedInterval ? 600 : 500,
-              borderRadius: "4px",
-              border: "none",
-              cursor: "pointer",
-              color:
-                tf === selectedInterval
-                  ? "var(--color-foreground)"
-                  : "var(--color-muted-foreground)",
-              background: tf === selectedInterval ? "rgba(124,155,196,0.08)" : "transparent",
-              whiteSpace: "nowrap",
-              transition: "all 0.15s ease",
-              borderBottom:
-                tf === selectedInterval
-                  ? "2px solid var(--color-primary)"
-                  : "2px solid transparent",
-              marginBottom: "-1px",
-            }}
-          >
-            {tf}
-          </button>
-        ))}
-      </div>
-
-      {/* Chart */}
+      {/* Chart — native for crypto, TradingView embed for forex */}
       <PageScrollArea style={{ padding: "0", flex: 1 }}>
         <div style={{ padding: "8px", height: "100%" }}>
-          <TradingViewChart symbol={tvSymbol} interval={tvInterval} theme="dark" height="70vh" />
+          {isCrypto ? (
+            <CandlestickChart
+              pair={selectedPair}
+              interval={selectedInterval}
+              height="70vh"
+              onIntervalChange={setSelectedInterval}
+            />
+          ) : (
+            <TradingViewChart
+              symbol={SYMBOL_MAP[selectedPair] || selectedPair}
+              interval={
+                {
+                  "1M": "1",
+                  "5M": "5",
+                  "15M": "15",
+                  "1H": "60",
+                  "4H": "240",
+                  "1D": "D",
+                  "1W": "W",
+                }[selectedInterval] || "240"
+              }
+              theme="dark"
+              height="70vh"
+              onIntervalChange={(tvInterval) => {
+                const reverseMap: Record<string, string> = {
+                  "1": "1M",
+                  "5": "5M",
+                  "15": "15M",
+                  "60": "1H",
+                  "240": "4H",
+                  D: "1D",
+                  W: "1W",
+                };
+                const tf = reverseMap[tvInterval];
+                if (tf) setSelectedInterval(tf);
+              }}
+            />
+          )}
         </div>
       </PageScrollArea>
     </PageLayout>

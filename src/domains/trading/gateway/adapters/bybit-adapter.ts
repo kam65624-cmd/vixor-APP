@@ -1,14 +1,11 @@
 // ============================================================================
-// Bybit Exchange Adapter (Stub)
+// Bybit Exchange Adapter — CCXT-Powered
 // ============================================================================
 //
-// Implements ExchangeAdapter for Bybit.
-// All methods currently return mock data and log calls.
+// Implements ExchangeAdapter for Bybit via CCXT unified API.
+// Replaces the previous stub implementation with real API calls.
 //
-// TODO: implement real Bybit API calls
-//   - REST: https://api.bybit.com
-//   - Testnet: https://api-testnet.bybit.com
-//   - WebSocket: wss://stream.bybit.com/v5/public/spot
+// CCXT handles: HMAC signing, request building, rate limiting, error parsing.
 // ============================================================================
 
 import type {
@@ -19,157 +16,65 @@ import type {
   Position,
   Ticker,
 } from "../types";
-
-// ── Bybit API constants ──
-
-const BYBIT_REST_URL = "https://api.bybit.com";
-const BYBIT_TESTNET_URL = "https://api-testnet.bybit.com";
-const BYBIT_WS_URL = "wss://stream.bybit.com/v5/public/spot";
+import { CcxtGenericAdapter } from "./ccxt-generic-adapter";
 
 // ── Bybit Adapter ──
 
 /**
- * Stub adapter for Bybit exchange.
- * All methods log the call and return deterministic mock data.
+ * Bybit adapter backed by CCXT.
+ * Delegates all operations to CcxtGenericAdapter with exchangeId="bybit".
  */
 export class BybitAdapter implements ExchangeAdapter {
   readonly name = "Bybit";
   readonly id = "bybit";
 
-  private credentials: Record<string, string> = {};
-  private connected = false;
+  private inner: CcxtGenericAdapter;
 
   constructor(credentials?: Record<string, string>) {
+    this.inner = new CcxtGenericAdapter("bybit");
     if (credentials) {
-      this.credentials = credentials;
+      this.inner["credentials"] = credentials;
     }
   }
 
-  // ── Account ──
-
-  /** Fetch account balance. Returns mock data. */
   async getBalance(): Promise<AccountBalance> {
-    this.requireConnected();
-    console.log(`[BybitAdapter] getBalance() called`);
-    // TODO: implement real Bybit API call — GET /v5/account/wallet-balance
-    return {
-      totalBalance: 10000,
-      availableBalance: 8200,
-      unrealizedPnl: -80,
-      marginUsed: 1800,
-      currency: "USDT",
-    };
+    return this.inner.getBalance();
   }
 
-  // ── Orders ──
-
-  /** Place an order. Returns mock filled result. */
   async placeOrder(request: OrderRequest): Promise<OrderResult> {
-    this.requireConnected();
-    console.log(`[BybitAdapter] placeOrder() called`, request);
-    // TODO: implement real Bybit API call — POST /v5/order/create
-    return {
-      id: `bybit-${Date.now()}`,
-      symbol: request.symbol,
-      side: request.side,
-      type: request.type,
-      quantity: request.quantity,
-      price: request.price ?? 0,
-      status: "filled",
-      filledAt: new Date().toISOString(),
-      fee: request.quantity * 0.0006,
-    };
+    return this.inner.placeOrder(request);
   }
 
-  /** Cancel an order. Returns mock success. */
   async cancelOrder(orderId: string): Promise<boolean> {
-    this.requireConnected();
-    console.log(`[BybitAdapter] cancelOrder(${orderId}) called`);
-    // TODO: implement real Bybit API call — POST /v5/order/cancel
-    return true;
+    return this.inner.cancelOrder(orderId);
   }
 
-  /** Get order status. Returns mock result. */
   async getOrderStatus(orderId: string): Promise<OrderResult | null> {
-    this.requireConnected();
-    console.log(`[BybitAdapter] getOrderStatus(${orderId}) called`);
-    // TODO: implement real Bybit API call — GET /v5/order/realtime
-    return {
-      id: orderId,
-      symbol: "BTCUSDT",
-      side: "buy",
-      type: "market",
-      quantity: 0,
-      price: 0,
-      status: "filled",
-      filledAt: new Date().toISOString(),
-    };
+    return this.inner.getOrderStatus(orderId);
   }
 
-  // ── Positions ──
-
-  /** Get open positions. Returns empty array (mock). */
   async getOpenPositions(): Promise<Position[]> {
-    this.requireConnected();
-    console.log(`[BybitAdapter] getOpenPositions() called`);
-    // TODO: implement real Bybit API call — GET /v5/position/list
-    return [];
+    return this.inner.getOpenPositions();
   }
 
-  /** Close a position. Returns mock filled result. */
   async closePosition(symbol: string, quantity?: number): Promise<OrderResult> {
-    this.requireConnected();
-    console.log(`[BybitAdapter] closePosition(${symbol}, ${quantity}) called`);
-    // TODO: implement real Bybit API call
-    return {
-      id: `bybit-close-${Date.now()}`,
-      symbol,
-      side: "sell",
-      type: "market",
-      quantity: quantity ?? 0,
-      price: 0,
-      status: "filled",
-      filledAt: new Date().toISOString(),
-    };
+    return this.inner.closePosition(symbol, quantity);
   }
 
-  // ── Market Data ──
-
-  /** Get ticker. Returns mock data. */
   async getTicker(symbol: string): Promise<Ticker> {
-    console.log(`[BybitAdapter] getTicker(${symbol}) called`);
-    // TODO: implement real Bybit API call — GET /v5/market/tickers
-    const basePrice = 50000;
-    return {
-      bid: basePrice - 5,
-      ask: basePrice + 5,
-      last: basePrice,
-    };
+    return this.inner.getTicker(symbol);
   }
-
-  // ── Connection ──
 
   isConnected(): boolean {
-    return this.connected;
-  }
-
-  /** Throws if the adapter is not connected. */
-  private requireConnected(): void {
-    if (!this.connected) {
-      throw new Error(`[BybitAdapter] Not connected. Call connect() first.`);
-    }
+    return this.inner.isConnected();
   }
 
   async connect(credentials: Record<string, string>): Promise<void> {
-    this.credentials = credentials;
-    console.log(`[BybitAdapter] connect() called — ${BYBIT_REST_URL}`);
-    // TODO: implement real Bybit connectivity test — GET /v5/market/time
-    this.connected = true;
+    return this.inner.connect(credentials);
   }
 
   async disconnect(): Promise<void> {
-    this.connected = false;
-    console.log(`[BybitAdapter] disconnect() called`);
+    return this.inner.disconnect();
   }
 }
 
