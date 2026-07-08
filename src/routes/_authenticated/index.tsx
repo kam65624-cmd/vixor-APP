@@ -6,6 +6,7 @@ import {
   getHomeMarketData,
   getDailySignals,
   getWatchlistData,
+  getMoxiInsights,
 } from "@/shared/data";
 import type { HomeMarketData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
@@ -14,6 +15,8 @@ import { LiveDot } from "@/components/vixor/LiveDot";
 import { MiniSparkline } from "@/components/vixor/MiniSparkline";
 import { SignalBadge } from "@/components/vixor/SignalBadge";
 import { TrendArrow } from "@/components/vixor/TrendArrow";
+import { MoxiAvatar } from "@/components/vixor/MoxiAvatar";
+import { AlertTriangle, Info, Zap, ShieldAlert, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Vixor — AI Chart Analysis" }] }),
@@ -840,6 +843,159 @@ function RecentTradesSection({
   );
 }
 
+// ── 10. MOXI Insights Section ──────────────────────────────────────────
+
+const INSIGHT_ICONS: Record<string, typeof AlertTriangle> = {
+  risk_warning: ShieldAlert,
+  signal_update: TrendingUp,
+  market_shift: Zap,
+  price_alert: AlertTriangle,
+  opportunity: Info,
+};
+
+const INSIGHT_COLORS: Record<string, string> = {
+  critical: "var(--color-bearish)",
+  warning: "#FCD535",
+  info: "var(--color-primary)",
+};
+
+function MoxiInsightsSection({
+  insights,
+  isLoading,
+  nav,
+}: {
+  insights: Array<{
+    type: string;
+    title: string;
+    body: string;
+    severity: string;
+    pair?: string;
+    detectedAt: string;
+  }>;
+  isLoading: boolean;
+  nav: (to: string) => void;
+}) {
+  if (isLoading) {
+    return (
+      <Card style={{ padding: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+          <SkeletonLine width={28} height={28} />
+          <SkeletonLine width={120} height={16} />
+        </div>
+        <SkeletonLine width="100%" height={14} />
+        <SkeletonLine width="80%" height={14} />
+      </Card>
+    );
+  }
+
+  if (!insights || insights.length === 0) return null;
+
+  const timeAgo = (iso: string) => {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60_000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    return `${hrs}h ago`;
+  };
+
+  return (
+    <Card>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "14px 16px 10px",
+        }}
+      >
+        <MoxiAvatar size={24} variant="default" />
+        <SectionHeader title="MOXI Insights" />
+      </div>
+      <div style={{ padding: "0 16px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+        {insights.map((insight, i) => {
+          const Icon = INSIGHT_ICONS[insight.type] || Info;
+          const color = INSIGHT_COLORS[insight.severity] || "var(--color-primary)";
+          return (
+            <button
+              key={`${insight.type}-${insight.pair || i}`}
+              onClick={() => {
+                if (insight.pair) nav(`/token/${insight.pair}`);
+                else nav("/copilot");
+              }}
+              style={{
+                display: "flex",
+                gap: 10,
+                alignItems: "flex-start",
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: `1px solid ${color}22`,
+                background: `${color}08`,
+                cursor: "pointer",
+                textAlign: "left",
+                width: "100%",
+                color: "var(--color-foreground)",
+              }}
+            >
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: `${color}18`,
+                  flexShrink: 0,
+                }}
+              >
+                <Icon size={14} style={{ color }} />
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--color-foreground)",
+                    marginBottom: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  {insight.title}
+                  <span
+                    style={{
+                      fontSize: 10,
+                      color: "var(--color-muted-foreground)",
+                      fontWeight: 400,
+                    }}
+                  >
+                    {timeAgo(insight.detectedAt)}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "var(--color-muted-foreground)",
+                    lineHeight: 1.5,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {insight.body.replace(/\*\*/g, "").replace(/`/g, "")}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
 // ── Main Page ──────────────────────────────────────────────────────────────
 
 function HomePage() {
@@ -879,6 +1035,14 @@ function HomePage() {
     queryKey: ["home-watchlist"],
     queryFn: () => fetchWatchlist({}),
     staleTime: 60_000,
+  });
+
+  const fetchMoxi = useStableServerFn(getMoxiInsights);
+  const moxiQuery = useQuery({
+    queryKey: ["moxi-insights"],
+    queryFn: () => fetchMoxi({}),
+    staleTime: 90_000,
+    refetchInterval: 180_000,
   });
 
   const data = dashQuery.data;
@@ -988,6 +1152,13 @@ function HomePage() {
       ) : (data?.recentActivity?.length ?? 0) > 0 ? (
         <RecentTradesSection trades={data?.recentActivity ?? []} nav={nav} />
       ) : null}
+
+      {/* 10. MOXI Insights */}
+      <MoxiInsightsSection
+        insights={moxiQuery.data ?? []}
+        isLoading={moxiQuery.isLoading}
+        nav={nav}
+      />
     </div>
   );
 }

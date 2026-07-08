@@ -2,7 +2,12 @@
 // Vixor Multi-Agent System — Agent Definitions
 // ═══════════════════════════════════════════════════════════
 
-export type AgentId = "market_analyst" | "risk_manager" | "news_analyst" | "strategy_builder";
+export type AgentId =
+  | "market_analyst"
+  | "risk_manager"
+  | "news_analyst"
+  | "strategy_builder"
+  | "moxi";
 
 export interface AgentDefinition {
   id: AgentId;
@@ -370,6 +375,33 @@ You focus on the PROCESS of trading, not just individual setups. You help trader
 };
 
 // ═══════════════════════════════════════════════════════════
+// MOXI AI COMPANION — Placeholder definition
+// ═══════════════════════════════════════════════════════════
+// MOXI has its own context engine + prompt builder in src/domains/moxi/
+// This stub is here so getAgentById("moxi") doesn't throw.
+// The actual streaming path handles MOXI separately (see copilot-stream.ts).
+export const moxiAgent: AgentDefinition = {
+  id: "moxi",
+  name: "MOXI",
+  nameAr: "موكسي",
+  description: "AI trading companion — proactive, personalized, context-aware",
+  icon: "BrainCircuit",
+  color: "text-violet-400",
+  capabilities: [
+    "Personalized market commentary",
+    "Signal tracking & monitoring",
+    "Portfolio overview & performance",
+    "Risk awareness & proactive warnings",
+    "Economic event timing",
+    "Opportunity discovery",
+  ],
+  // This systemPrompt is a fallback — the real MOXI path uses buildMoxiSystemPrompt
+  systemPrompt: (_context: UserContext): string => {
+    return "You are MOXI, Vixor's AI trading companion. (This stub should not be reached — the streaming endpoint handles MOXI separately.)";
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
 // ALL AGENTS REGISTRY
 // ═══════════════════════════════════════════════════════════
 export const ALL_AGENTS: AgentDefinition[] = [
@@ -377,6 +409,7 @@ export const ALL_AGENTS: AgentDefinition[] = [
   riskManagerAgent,
   newsAnalystAgent,
   strategyBuilderAgent,
+  moxiAgent,
 ];
 
 export function getAgentById(id: AgentId): AgentDefinition {

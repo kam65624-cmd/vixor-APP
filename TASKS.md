@@ -1,7 +1,7 @@
 # VIXOR APP — تقرير التاسكات والتحسينات
 
-> **آخر تحديث:** 2026-07-07
-> **الحالة العامة:** المشروع متقدم جداً — 35/38 صفحة شغالة ببيانات حقيقية + نشر Vercel عامل ✅ + كل التاسكات P0-P3 مكتملة ✅
+> **آخر تحديث:** 2026-07-08
+> **الحالة العامة:** المشروع متقدم جداً — 35/38 صفحة شغالة ببيانات حقيقية + نشر Vercel عامل ✅ + كل التاسكات P0-P3 مكتملة ✅ + MOXI AI Companion مكتمل ✅
 
 ---
 
@@ -285,6 +285,12 @@
 | 18 | P3-2: Pull-to-refresh shared hook | ✅ تم | `usePullToRefresh` + `PullIndicator` مستخرجين لمكتبة مشتركة |
 | 19 | P3-3: Keyboard navigation | ✅ تم | ArrowUp/ArrowDown في DataRow + `data-row-list` containers |
 | 20 | P3-4: Offline states | ✅ تم | `useOnline` hook + offline banner أحمر في AppShell |
+| 21 | MOXI: DB migration `moxi_personas` | ✅ تم | جدول بـ RLS + trigger updated_at + constraints على 8 avatar variants |
+| 22 | MOXI: Streaming SSE support | ✅ تم | MOXI-specific path في `/api/copilot-stream` بـ context engine + persona + LLMRouter.stream() |
+| 23 | MOXI: Agent in orchestrator | ✅ تم | `"moxi"` في `AgentId` type + `moxiAgent` definition في `ALL_AGENTS` |
+| 24 | MOXI: Insights feed server function | ✅ تم | `getMoxiInsights` server function + re-export من `@/shared/data` |
+| 25 | MOXI: Insights UI section | ✅ تم | Section 10 في الهوم بـ MoxiAvatar + severity colors + timeAgo + clickable |
+| 26 | MOXI: MoxiAvatar in chat | ✅ تم | يظهر كـ avatar للرسائل من MOXI في Copilot بدل الـ icon |
 
 ---
 
@@ -366,7 +372,8 @@ Sprint 4: التحسينات (يوم 11-14)
 
 ## مؤجلة — MOXI AI Companion
 
-> **تم البدء في التنفيذ** — 2026-07-07
+> **آخر تحديث:** 2026-07-08
+> **الحالة:** كل تاسكات MOXI مكتملة ✅
 
 ### وصف الرؤية
 - MOXI هو رفيق AI 2.5D NFT يكون "روح" التطبيق
@@ -379,12 +386,14 @@ Sprint 4: التحسينات (يوم 11-14)
 - [x] تصميم وبرمجة persona system (`src/domains/moxi/persona.ts`) — 8 avatar variants + CRUD
 - [x] بناء context engine (`src/domains/moxi/context-engine.ts`) — كان موجود، تم تحسينه
 - [x] System prompt builder (`src/domains/moxi/prompt.ts`) — MOXI unified prompt مع persona injection
-- [x] Server functions (`src/domains/moxi/functions.ts`) — `askMoxi`, `updateMoxiPersona`, `getMoxiPersona`
+- [x] Server functions (`src/domains/moxi/functions.ts`) — `askMoxi`, `updateMoxiPersona`, `getMoxiPersona`, `getMoxiInsights`
 - [x] أدوات MOXI (tools) للتكامل مع الـ domains الموجودة (`src/domains/moxi/tools.ts`) — كان موجود
 - [x] MoxiAvatar component (`src/components/vixor/MoxiAvatar.tsx`) — gradient circle + 8 variants + pulse animation
 - [x] إشعارات ذكية (`src/domains/moxi/notification-hub.ts`) — overexposure detection, signal proximity, event risk
 - [x] ربط MOXI بالـ Copilot كـ واجهة محادثة — "moxi" في AgentId + agent selector + quick actions + routing
 - [x] Barrel exports (`src/domains/moxi/index.ts`)
-- [ ] ربط MOXI بالـ streaming endpoint (`/api/copilot-stream`) — يحتاج SSE support
-- [ ] DB migration: إنشاء جدول `moxi_personas` في Supabase
-- [ ] Moxi insights feed في الـ UI (صفحة أو section في الهوم)
+- [x] ربط MOXI بالـ streaming endpoint (`/api/copilot-stream`) — MOXI-specific SSE path بـ context engine + persona + LLMRouter.stream()
+- [x] DB migration: إنشاء جدول `moxi_personas` في Supabase — `supabase/migrations/20260708000000_add_moxi_personas.sql` مع RLS + trigger + constraints
+- [x] Moxi insights feed في الـ UI — Section 10 في الهوم بـ MoxiAvatar + severity colors + timeAgo + clickable cards
+- [x] MoxiAvatar في Copilot chat — يظهر كـ avatar للرسائل اللي من MOXI بدل الـ icon العادي
+- [x] MOXI كـ agent في orchestrator — `agents.ts` يعرف "moxi" في AgentId + moxiAgent definition في ALL_AGENTS

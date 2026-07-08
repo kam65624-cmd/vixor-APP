@@ -175,6 +175,87 @@ export default defineEventHandler(async (event) => {
   // Import streaming function
   const { streamAgent } = await import("@/domains/copilot/server/agent-orchestrator");
 
+  // ── MOXI-specific streaming path ──
+  // MOXI has its own context engine + persona system + prompt builder.
+  // We handle it separately so it uses the rich MOXI context, not the generic agent context.
+  const isMoxi = agent === "moxi";
+
+  if (isMoxi) {
+    const { buildMoxiContext } = await import("@/domains/moxi/context-engine");
+    const { getMoxiPersona: getPersona } = await import("@/domains/moxi/persona");
+    const { buildMoxiSystemPrompt, formatMoxiContext } = await import("@/domains/moxi/prompt");
+    const { LLMRouter } = await import("@/shared/llm");
+
+    const [moxiCtx, persona] = await Promise.all([
+      buildMoxiContext(userId, supabase),
+      getPersona(userId, supabase),
+    ]);
+    const formattedCtx = formatMoxiContext(moxiCtx);
+
+    // Get tool descriptions for MOXI
+    try {
+      await import("@/shared/tool-registry/tools/trading");
+      await import("@/shared/tool-registry/tools/journal-analysis");
+      const { ToolRegistry } = await import("@/shared/tool-registry");
+      formattedCtx.toolDescriptions = ToolRegistry.toolDescriptionsForPrompt({
+        userId,
+        isPremium: (moxiCtx.profile as any)?.is_premium ?? false,
+        isAdmin: false,
+      });
+    } catch {
+      formattedCtx.toolDescriptions = "Tools available.";
+    }
+
+    const systemPrompt = buildMoxiSystemPrompt(persona, formattedCtx);
+
+    // Build message array for streaming
+    const routerMessages = [
+      { role: "system" as const, content: systemPrompt },
+      ...history.map((m: any) => ({ role: m.role as "user" | "assistant", content: m.content })),
+      { role: "user" as const, content: message },
+    ];
+
+    const moxiStream = new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder();
+
+        function sendSSE(data: object) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        }
+
+        // Yield agent ID first
+        sendSSE({ delta: "", agent: "moxi" });
+
+        try {
+          const router = new LLMRouter();
+          for await (const chunk of router.stream({
+            messages: routerMessages,
+            temperature: 0.7,
+          })) {
+            sendSSE({
+              delta: chunk.delta || "",
+              done: chunk.done || false,
+              agent: "moxi",
+            });
+          }
+          sendSSE({ delta: "", done: true, agent: "moxi" });
+        } catch (err) {
+          console.error("[MOXI Stream] Error:", err);
+          sendSSE({
+            delta: "Error: MOXI streaming failed. Retrying with standard mode...",
+            done: true,
+            error: true,
+          });
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    return moxiStream;
+  }
+
+  // ── Standard agent streaming path (non-MOXI) ──
   // Create a ReadableStream that yields SSE events
   const stream = new ReadableStream({
     async start(controller) {

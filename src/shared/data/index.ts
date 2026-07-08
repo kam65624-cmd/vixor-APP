@@ -1514,3 +1514,12 @@ export const getLiveForexPrices = createServerFn({ method: "GET" }).handler(asyn
     }));
   }
 });
+
+// ── MOXI AI Companion ─────────────────────────
+// Re-exported from @/domains/moxi for centralized data access
+export {
+  getMoxiInsights,
+  getMoxiPersonaFn,
+  askMoxi,
+  updateMoxiPersona,
+} from "@/domains/moxi/functions";

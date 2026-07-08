@@ -29,7 +29,12 @@ export type { AvatarVariantConfig } from "./persona";
 export { buildMoxiSystemPrompt, formatMoxiContext } from "./prompt";
 
 // Server functions
-export { askMoxi, updateMoxiPersona as updateMoxiPersonaFn, getMoxiPersonaFn } from "./functions";
+export {
+  askMoxi,
+  updateMoxiPersona as updateMoxiPersonaFn,
+  getMoxiPersonaFn,
+  getMoxiInsights,
+} from "./functions";
 
 // Notification hub
 export {

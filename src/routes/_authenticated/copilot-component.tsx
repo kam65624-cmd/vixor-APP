@@ -14,6 +14,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useI18n } from "@/shared/i18n";
 import { PaginationBar } from "@/components/vixor/PaginationBar";
 import { PageLayout, ScrollArea, Badge, EmptyState } from "@/components/vixor/PageLayout";
+import { MoxiAvatar } from "@/components/vixor/MoxiAvatar";
 import {
   Bot,
   Send,
@@ -1767,25 +1768,29 @@ function MessageBubble({
     <div
       className={`flex items-start gap-3 animate-in fade-in slide-in-from-bottom-1 duration-300 ${isUser ? "flex-row-reverse" : ""}`}
     >
-      <div
-        className="size-8 rounded-xl flex items-center justify-center shrink-0"
-        style={{
-          background: isUser
-            ? "var(--color-card)"
-            : isError
-              ? alpha("var(--color-bearish)", 10)
-              : alpha("var(--color-bullish)", 10),
-          border: `1px solid ${
-            isUser
-              ? "var(--color-border)"
+      {!isUser && message.agent === "moxi" ? (
+        <MoxiAvatar size={32} variant="default" />
+      ) : (
+        <div
+          className="size-8 rounded-xl flex items-center justify-center shrink-0"
+          style={{
+            background: isUser
+              ? "var(--color-card)"
               : isError
-                ? alpha("var(--color-bearish)", 20)
-                : alpha("var(--color-bullish)", 20)
-          }`,
-        }}
-      >
-        <Icon size={16} style={{ color: iconColor }} />
-      </div>
+                ? alpha("var(--color-bearish)", 10)
+                : alpha("var(--color-bullish)", 10),
+            border: `1px solid ${
+              isUser
+                ? "var(--color-border)"
+                : isError
+                  ? alpha("var(--color-bearish)", 20)
+                  : alpha("var(--color-bullish)", 20)
+            }`,
+          }}
+        >
+          <Icon size={16} style={{ color: iconColor }} />
+        </div>
+      )}
       <div
         className="max-w-[85%] vixor-card p-4"
         style={

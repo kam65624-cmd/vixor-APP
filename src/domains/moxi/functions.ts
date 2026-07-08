@@ -192,3 +192,13 @@ export const getMoxiPersonaFn = createServerFn({ method: "GET" })
     const persona = await getPersona(userId, supabase);
     return persona;
   });
+
+// ---------- GET MOXI INSIGHTS (Proactive Feed) ----------
+export const getMoxiInsights = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId, supabase } = context;
+    const { generateMoxiInsights } = await import("./notification-hub");
+    const insights = await generateMoxiInsights(userId, supabase);
+    return insights;
+  });

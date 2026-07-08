@@ -144,3 +144,22 @@ Stage Summary:
 - 8 ملفات MOXI جديدة + 3 ملفات معدلة
 - tsc: 0 errors, eslint: 0 errors, 262 tests pass
 - الباقي: SSE streaming, Supabase migration, UI insights feed
+
+---
+Task ID: MOXI-8 to MOXI-11
+Agent: main
+Task: إكمال MOXI — Streaming + DB Migration + Insights Feed + Avatar
+
+Work Log:
+- MOXI-8: DB migration `20260708000000_add_moxi_personas.sql` — جدول بـ RLS + trigger updated_at + CHECK على 8 avatar variants
+- MOXI-9: Streaming SSE — أضفت "moxi" لـ AgentId type + moxiAgent في ALL_AGENTS في agents.ts + MOXI-specific streaming path في copilot-stream.ts بيستخدم context engine + persona + LLMRouter.stream()
+- MOXI-10: Insights feed — `getMoxiInsights` server function في functions.ts + re-export من shared/data/index.ts + MoxiInsightsSection component في الهوم (Section 10) بـ MoxiAvatar + severity colors + timeAgo + clickable cards
+- MOXI-11: MoxiAvatar في Copilot chat — import في copilot-component.tsx + conditional render في MessageBubble لما message.agent === "moxi"
+- تحديث TASKS.md (إحصائيات + MOXI section كلها ✅ + items 21-26 في جدول المنجز)
+- تحديث VIXOR-Tasks-Report.html (MOXI section + stats + version v3.0)
+
+Stage Summary:
+- 7 ملفات معدلة: agents.ts, copilot-stream.ts, copilot-component.tsx, index.tsx (home), functions.ts, index.ts (moxi), index.ts (shared/data)
+- 1 ملف جديد: migration SQL
+- tsc: 0 errors, eslint: 0 errors
+- MOXI مكتمل بالكامل — كل التاسكات ✅
