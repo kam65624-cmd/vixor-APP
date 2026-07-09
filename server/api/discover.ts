@@ -2,17 +2,7 @@
  * @module server/api/discover
  * @description GET endpoint for memecoin discovery results.
  * Returns scored tokens based on filter parameters.
- *
- * Query parameters:
- *   chain - Filter by chain (solana, ethereum, base, arbitrum, polygon)
- *   minLiquidity - Minimum liquidity in USD
- *   minVolume - Minimum 24h volume in USD
- *   minMarketCap - Minimum market cap in USD
- *   sortBy - Sort field (trending, volume, change, liquidity, smart)
- *   sortOrder - Sort direction (asc, desc)
- *   limit - Max results (default 50)
- *   offset - Pagination offset (default 0)
- *   search - Search by symbol or name
+ * Falls back to direct DexScreener fetch if the discovery pipeline returns empty.
  */
 
 import { defineEventHandler, getQuery } from "h3";
@@ -67,6 +57,146 @@ const discoverQuerySchema = z.object({
   search: z.string().optional(),
 });
 
+// ── Direct DexScreener fallback (no API keys needed) ────────────────────────
+
+interface DexPair {
+  chainId: string;
+  pairAddress: string;
+  baseToken: { address: string; symbol: string; name: string };
+  priceUsd: string | null;
+  priceChange?: { h24: number } | null;
+  volume?: { h24: number } | null;
+  liquidity?: { usd: number | null; base: number; quote: number } | null;
+  fdv: number | null;
+  marketCap: number | null;
+  info?: { imageUrl?: string | null };
+  pairCreatedAt?: number;
+  txns?: Record<string, { buys: number; sells: number }>;
+}
+
+const CHAIN_MAP: Record<string, string> = {
+  solana: "Solana",
+  ethereum: "Ethereum",
+  base: "Base",
+  arbitrum: "Arbitrum",
+  polygon: "Polygon",
+  bsc: "BSC",
+  avalanche: "Avalanche",
+};
+
+/**
+ * Fetch tokens directly from DexScreener as a fast fallback.
+ * Single request, no API keys required.
+ */
+async function dexScreenerFallback(
+  params: z.infer<typeof discoverQuerySchema>,
+): Promise<Array<Record<string, unknown>>> {
+  const queries = params.chain
+    ? [params.chain, "trending"]
+    : ["trending", "meme", "solana", "ai", "defi"];
+
+  const allPairs: DexPair[] = [];
+  const seen = new Set<string>();
+
+  for (const q of queries) {
+    try {
+      const url = `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`;
+      const res = await fetch(url, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (!res.ok) continue;
+      const json = (await res.json()) as { pairs?: DexPair[] };
+      if (!json.pairs) continue;
+
+      for (const pair of json.pairs) {
+        const key = `${pair.chainId}:${pair.baseToken?.address}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        const liq = pair.liquidity?.usd ?? 0;
+        const price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
+
+        // Apply filters
+        if (params.minLiquidity && liq < params.minLiquidity) continue;
+        if (params.minVolume && (pair.volume?.h24 ?? 0) < params.minVolume) continue;
+        if (price <= 0 && liq < 100) continue;
+
+        allPairs.push(pair);
+      }
+
+      if (allPairs.length >= params.limit * 2) break;
+    } catch {
+      // Continue with next query
+    }
+  }
+
+  // Sort
+  const sortField = params.sortBy;
+  const sortAsc = params.sortOrder === "asc";
+  allPairs.sort((a, b) => {
+    let va = 0,
+      vb = 0;
+    switch (sortField) {
+      case "volume":
+        va = a.volume?.h24 ?? 0;
+        vb = b.volume?.h24 ?? 0;
+        break;
+      case "change":
+        va = a.priceChange?.h24 ?? 0;
+        vb = b.priceChange?.h24 ?? 0;
+        break;
+      case "liquidity":
+        va = a.liquidity?.usd ?? 0;
+        vb = b.liquidity?.usd ?? 0;
+        break;
+      case "trending":
+      default:
+        va = (a.volume?.h24 ?? 0) + (a.liquidity?.usd ?? 0) * 0.1;
+        vb = (b.volume?.h24 ?? 0) + (b.liquidity?.usd ?? 0) * 0.1;
+        break;
+    }
+    return sortAsc ? va - vb : vb - va;
+  });
+
+  // Paginate and transform
+  const page = allPairs.slice(params.offset, params.offset + params.limit);
+
+  return page.map((pair) => {
+    const liq = pair.liquidity?.usd ?? 0;
+    const price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
+    const vol = pair.volume?.h24 ?? 0;
+    const change = pair.priceChange?.h24 ?? 0;
+    const mcap = pair.marketCap ?? pair.fdv ?? 0;
+    const chainLabel = CHAIN_MAP[pair.chainId] ?? pair.chainId.toUpperCase();
+
+    // Generate a fake discovery score based on volume + liquidity
+    const score = Math.min(100, Math.round(Math.log10(vol + liq + 1) * 12));
+
+    return {
+      symbol: pair.baseToken.symbol,
+      name: pair.baseToken.name,
+      price: price > 0 ? price : null,
+      change24h: change,
+      volume24h: vol,
+      liquidity: liq,
+      chain: chainLabel,
+      chainId: pair.chainId,
+      marketCap: mcap,
+      discoveryScore: score,
+      socialScore: 0,
+      liquidityScore: Math.min(100, Math.round(Math.log10(liq + 1) * 10)),
+      isHoneypot: false,
+      logoUrl: pair.info?.imageUrl || undefined,
+      address: pair.baseToken.address,
+      pairAddress: pair.pairAddress,
+      dexUrl: `https://dexscreener.com/${pair.chainId}/${pair.pairAddress}`,
+    };
+  });
+}
+
+// ── Main Handler ────────────────────────────────────────────────────────────
+
 const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
   if (!rateLimit(event)) return;
@@ -91,74 +221,103 @@ const handler = defineEventHandler(async (event) => {
     const cached = await cache.get(cKey);
     if (cached) return { ...cached, cached: true };
 
-    // Full discovery scan
+    // ── Try full discovery pipeline first ──
     const config = getDiscoveryConfig();
-    if (!config.DISCOVERY_ENABLED) {
-      return {
-        success: true,
-        data: [],
-        total: 0,
-        message: "Discovery module is currently disabled",
-      };
+    let clientTokens: Array<Record<string, unknown>> = [];
+    let totalFound = 0;
+    let filteredOut = 0;
+    let scanDurationMs = 0;
+    let source = "discovery-pipeline";
+
+    if (config.DISCOVERY_ENABLED) {
+      const startMs = Date.now();
+      const result = await scanDiscovery({
+        chains: params.chain
+          ? [params.chain as "solana" | "ethereum" | "base" | "arbitrum" | "polygon"]
+          : undefined,
+        minLiquidity: params.minLiquidity || undefined,
+        minVolume24h: params.minVolume || undefined,
+        minMarketCap: params.minMarketCap || undefined,
+        sortBy: params.sortBy as "trending" | "volume" | "change" | "liquidity" | "smart",
+        sortOrder: params.sortOrder as "asc" | "desc",
+        limit: params.limit,
+        offset: params.offset,
+      });
+      scanDurationMs = Date.now() - startMs;
+      totalFound = result.totalFound;
+      filteredOut = result.filteredOut;
+
+      clientTokens = result.tokens.map((t) => ({
+        symbol: t.symbol,
+        name: t.name,
+        price: t.price,
+        change24h: t.change24h,
+        volume24h: t.volume24h,
+        liquidity: t.liquidity,
+        smartMoneyPct: t.smartMoneyScore,
+        risk: t.riskLevel,
+        chain: t.chain.charAt(0).toUpperCase() + t.chain.slice(1),
+        chainId: t.chain,
+        marketCap: t.marketCap,
+        discoveryScore: t.discoveryScore,
+        socialScore: t.socialScore,
+        liquidityScore: t.liquidityScore,
+        ageScore: t.ageScore,
+        nftBadge: t.nftBadge,
+        isHoneypot: t.isHoneypot ?? false,
+        logoUrl: t.logoUrl || undefined,
+        socialMentions: t.socialMentions ?? 0,
+        socialSentiment: t.socialSentiment ?? 0,
+        topHolderPct: t.topHolderPct ?? 0,
+        scannedAt: t.scannedAt,
+        address: t.address || undefined,
+        pairAddress: t.pairIdentifier || undefined,
+        dexUrl: t.pairIdentifier
+          ? `https://dexscreener.com/${t.chain}/${t.pairIdentifier}`
+          : undefined,
+      }));
     }
 
-    const result = await scanDiscovery({
-      chains: params.chain
-        ? [params.chain as "solana" | "ethereum" | "base" | "arbitrum" | "polygon"]
-        : undefined,
-      minLiquidity: params.minLiquidity || undefined,
-      minVolume24h: params.minVolume || undefined,
-      minMarketCap: params.minMarketCap || undefined,
-      sortBy: params.sortBy as "trending" | "volume" | "change" | "liquidity" | "smart",
-      sortOrder: params.sortOrder as "asc" | "desc",
-      limit: params.limit,
-      offset: params.offset,
-    });
-
-    // Transform scored tokens to client-friendly format
-    const clientTokens = result.tokens.map((t) => ({
-      symbol: t.symbol,
-      name: t.name,
-      price: t.price,
-      change24h: t.change24h,
-      volume24h: t.volume24h,
-      liquidity: t.liquidity,
-      smartMoneyPct: t.smartMoneyScore,
-      risk: t.riskLevel,
-      chain: t.chain.charAt(0).toUpperCase() + t.chain.slice(1),
-      chainId: t.chain,
-      marketCap: t.marketCap,
-      discoveryScore: t.discoveryScore,
-      socialScore: t.socialScore,
-      liquidityScore: t.liquidityScore,
-      ageScore: t.ageScore,
-      nftBadge: t.nftBadge,
-      isHoneypot: t.isHoneypot ?? false,
-      logoUrl: t.logoUrl || undefined,
-      socialMentions: t.socialMentions ?? 0,
-      socialSentiment: t.socialSentiment ?? 0,
-      topHolderPct: t.topHolderPct ?? 0,
-      scannedAt: t.scannedAt,
-      address: t.address || undefined,
-      pairAddress: t.pairIdentifier || undefined,
-      dexUrl: t.pairIdentifier
-        ? `https://dexscreener.com/${t.chain}/${t.pairIdentifier}`
-        : undefined,
-    }));
+    // ── Fallback: if pipeline returned 0 tokens, use direct DexScreener ──
+    if (clientTokens.length === 0) {
+      console.log("[discover] Pipeline returned 0 tokens, using DexScreener fallback");
+      const startMs = Date.now();
+      clientTokens = await dexScreenerFallback(params);
+      scanDurationMs = Date.now() - startMs;
+      totalFound = clientTokens.length;
+      source = "dexscreener-fallback";
+    }
 
     const response = {
       success: true,
       data: clientTokens,
-      total: result.totalFound,
-      filteredOut: result.filteredOut,
-      scanDurationMs: result.scanDurationMs,
-      source: "discovery-pipeline",
+      total: totalFound,
+      filteredOut,
+      scanDurationMs,
+      source,
     };
     await cache.set(cKey, response, DISCOVER_CACHE_TTL);
     return response;
   } catch (err) {
-    // Log real error server-side, return generic message to client
     console.error("[discover] Error:", err instanceof Error ? err.message : err);
+
+    // Last resort: try DexScreener fallback even on error
+    try {
+      const query = getQuery(event);
+      const params = discoverQuerySchema.parse(query);
+      const fallbackTokens = await dexScreenerFallback(params);
+      if (fallbackTokens.length > 0) {
+        return {
+          success: true,
+          data: fallbackTokens,
+          total: fallbackTokens.length,
+          source: "dexscreener-fallback-error",
+        };
+      }
+    } catch {
+      // Give up
+    }
+
     return {
       success: false,
       error: "Internal server error",
