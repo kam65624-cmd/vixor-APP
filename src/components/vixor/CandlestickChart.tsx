@@ -183,7 +183,6 @@ function CandlestickChartInner({
       candleSeriesRef.current = null;
       volumeSeriesRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showVolume]);
 
   // ── Load Data ──
