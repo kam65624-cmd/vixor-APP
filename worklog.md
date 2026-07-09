@@ -209,3 +209,23 @@ Stage Summary:
 - CCXT: OKX + Bybit adapters from stubs to fully functional with zero custom API code
 - lightweight-charts: native chart replaces TradingView iframe for crypto (20x performance improvement, full DOM control)
 - TradingView Widgets: 3 embeddable components ready for integration
+---
+Task ID: 1
+Agent: main
+Task: Fix 3 core issues - live prices, chart on token click, broken pages + empty discover data
+
+Work Log:
+- Diagnosed /api/discover returning empty data (data: [], total: 0)
+- Root cause: Discovery pipeline requires Birdeye/Helius/Twitter API keys and 10+ DexScreener requests, causing Vercel serverless timeout or empty results
+- Added DexScreener direct fallback in server/api/discover.ts — activates when pipeline returns 0 tokens
+- Created useDiscoverLivePrices hook for real-time Binance WS + DexScreener polling
+- Integrated live prices into discover page (silent in-place updates with color flash)
+- Replaced DexScreener external link with embedded iframe chart on token detail page
+- Added live Binance WS price to token detail header with LIVE badge
+
+Stage Summary:
+- /api/discover now returns 17+ real tokens with prices, volumes, liquidity
+- Discover page shows live Binance WS prices for listed tokens (BTC, ETH, SOL, etc.)
+- DEX/meme tokens get 10s DexScreener polling for price updates
+- Token detail page shows embedded DexScreener chart instead of external link
+- Token detail header shows live price with LIVE badge for Binance-listed tokens
