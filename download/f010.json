@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "This is a screenshot of the **DexScreener** app (a crypto trading/analytics platform) showing the Ginnancoin (GINNAN) token’s price chart (live, with real - time updates) and trading interface. The right - side “Quick Trade” panel displays live prices (e.g., entry price $85.4800, suggested stop - loss $83.7704) for a long trade setup. The interface includes a candlestick chart, token metrics (price, liquidity, supply), and trading options (leverage, amount), with the UI in English (not Arabic).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783639291,
+  "id": "20260710072127a32cc0399030496d",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260710072127a32cc0399030496d",
+  "usage": {
+    "completion_tokens": 127,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2082,
+    "prompt_tokens_details": {
+      "cached_tokens": 35
+    },
+    "total_tokens": 2209
+  }
+}

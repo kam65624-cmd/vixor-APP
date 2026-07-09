@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "This is a cryptocurrency trading app (likely DEX or trading platform) showing the GINNAN token’s price chart, metrics (price $125K, liquidity $27K, supply 1B), and trading interface. Prices appear live (with real - time 5m volume/buys/sells), and the interface is in English (not Arabic), with a candlestick chart, token stats, and buy/sell options.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783639277,
+  "id": "20260710072113c71caf8e49b64d92",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260710072113c71caf8e49b64d92",
+  "usage": {
+    "completion_tokens": 90,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2082,
+    "prompt_tokens_details": {
+      "cached_tokens": 6
+    },
+    "total_tokens": 2172
+  }
+}

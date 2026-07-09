@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "This is the DEX Screener app (likely DEXTools) showing a list of trending Solana-based tokens (e.g., GINNAN Ginnancoin, Everyday Solana E.) with live prices, market cap, liquidity, volume, and 1-minute price charts. The interface is in English, not Arabic, and displays real-time (live) token data with \"Buy\" action buttons.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783639257,
+  "id": "20260710072053570f190dadc649cd",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260710072053570f190dadc649cd",
+  "usage": {
+    "completion_tokens": 87,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2082,
+    "prompt_tokens_details": {
+      "cached_tokens": 6
+    },
+    "total_tokens": 2169
+  }
+}

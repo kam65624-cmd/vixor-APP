@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "This is a cryptocurrency trading app (likely Pump.fun or similar) showing the GINNAN token’s price chart (live, with real - time updates) and trading interface. The screen displays token details (price, liquidity, supply), a candlestick chart, buy/sell options, and trading metrics, with all text in Arabic.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783639272,
+  "id": "202607100721089d324c08f67c4cdd",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607100721089d324c08f67c4cdd",
+  "usage": {
+    "completion_tokens": 69,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2082,
+    "prompt_tokens_details": {
+      "cached_tokens": 6
+    },
+    "total_tokens": 2151
+  }
+}

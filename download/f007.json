@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "This is a screenshot of the **DexScreener** app (a crypto tracking platform) showing a live trading interface for the \"Ginnancoin\" token. The main section displays a candlestick chart of Ginnancoin’s price (USD/SOL) with live metrics (e.g., $130K market cap, -0.55% change), while the right panel lists other tokens (e.g., 42troll, ESIM) with their current prices and 24h changes—all prices appear live. The interface is in English, not Arabic.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783639280,
+  "id": "202607100721178ad5505f70b94dad",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607100721178ad5505f70b94dad",
+  "usage": {
+    "completion_tokens": 120,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2082,
+    "prompt_tokens_details": {
+      "cached_tokens": 8
+    },
+    "total_tokens": 2202
+  }
+}

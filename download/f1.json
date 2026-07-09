@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "تطبيق \"DexScreener\" (مستكشف DEX).  \n\n**وصف واجهة المستخدم (UI):**  \n- **الأسعار (Prices):** تُعرض أسعار العملات (مثل ANSEM, GINNAN) بجانب تغيراتها (مثلاً +0.27%, +1.541%).  \n- **الرموز (Tokens):** يُظهر قائمة بـ 17 رمزًا، مع تصنيفات \"BULLISH\" (8) و \"BEARISH\" (9)، وبيانات حجم التداول ($55.05M).  \n- **الرسم البياني (Chart):** يوجد رسم بياني لكل عملة يوضح اتجاه السعر (مثل الرسم البياني الأخضر لـ ANSEM).  \n\n**تقييم:**  \nهو مرجع جيد للعملات الصغيرة (altcoins) على DEX، لكنه قد يكون \"مكسورًا\" (broken) إذا كانت البيانات غير دقيقة أو تعرض عملات مخادعة (pump & dump).  \n\n**بالعربية:**  \nتطبيق \"DexScreener\". واجهته تعرض أسعار العملات، قائمة بـ 17 رمزًا (8 صاعدة، 9 هابطة)، ورسم بياني لكل عملة. هو مرجع جيد للعملات الصغيرة، لكن قد يكون مكسورًا إذا كانت البيانات غير دقيقة.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783639243,
+  "id": "20260710072038bf566597e2c4407a",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260710072038bf566597e2c4407a",
+  "usage": {
+    "completion_tokens": 332,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2085,
+    "prompt_tokens_details": {
+      "cached_tokens": 5
+    },
+    "total_tokens": 2417
+  }
+}
