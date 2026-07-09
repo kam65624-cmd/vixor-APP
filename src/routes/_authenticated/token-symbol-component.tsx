@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "@tanstack/react-router";
+import { useParams, useSearch, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { memo, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { getTradeHistory, getRecentAnalyses, getWatchlistData } from "@/shared/data";
@@ -352,7 +352,12 @@ const TradingViewMiniChart = memo(function TradingViewMiniChart({
 
 export function TokenPage() {
   const { symbol } = useParams({ from: "/_authenticated/token/$symbol" });
+  const search = useSearch({ from: "/_authenticated/token/$symbol" });
   const navigate = useNavigate();
+
+  const dexUrl = search.dexUrl;
+  const chainFromDiscover = search.chain;
+  const isDexToken = !!(chainFromDiscover && dexUrl);
 
   const fetchTrades = useStableServerFn(getTradeHistory);
   const fetchAnalyses = useStableServerFn(getRecentAnalyses);
@@ -694,10 +699,46 @@ export function TokenPage() {
             </div>
           </div>
 
-          <TradingViewMiniChart
-            symbol={symbol}
-            height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
-          />
+          {isDexToken && dexUrl ? (
+            <a
+              href={dexUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                height:
+                  typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px",
+                background:
+                  "linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(124,155,196,0.05) 100%)",
+                borderBottom: "1px solid var(--color-border)",
+                textDecoration: "none",
+                color: "var(--color-primary)",
+                fontSize: "14px",
+                fontWeight: 600,
+                flexDirection: "column",
+              }}
+            >
+              <span style={{ fontSize: "32px", opacity: 0.6 }}>📊</span>
+              <span>View Chart on DexScreener</span>
+              <span
+                style={{
+                  fontSize: "11px",
+                  color: "var(--color-muted-foreground)",
+                  fontWeight: 400,
+                }}
+              >
+                {chainFromDiscover?.toUpperCase()} · Full chart & trading
+              </span>
+            </a>
+          ) : (
+            <TradingViewMiniChart
+              symbol={symbol}
+              height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+            />
+          )}
 
           <div
             style={{
@@ -714,7 +755,9 @@ export function TokenPage() {
                 lineHeight: 1.5,
               }}
             >
-              Live market data unavailable for this token. Chart data provided by TradingView.
+              {isDexToken
+                ? "DEX token — click above to view the full interactive chart with trading on DexScreener."
+                : "Live market data unavailable for this token. Chart data provided by TradingView."}
             </p>
           </div>
 
@@ -984,12 +1027,48 @@ export function TokenPage() {
         </div>
 
         {/* ════════════════════════════════════════════════════════════════════
-            2. TRADINGVIEW CHART
+            2. CHART — DexScreener for DEX tokens, TradingView for majors
         ════════════════════════════════════════════════════════════════════ */}
-        <TradingViewMiniChart
-          symbol={symbol}
-          height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
-        />
+        {isDexToken && dexUrl ? (
+          <a
+            href={dexUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              height: typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px",
+              background:
+                "linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(124,155,196,0.05) 100%)",
+              borderBottom: "1px solid var(--color-border)",
+              textDecoration: "none",
+              color: "var(--color-primary)",
+              fontSize: "14px",
+              fontWeight: 600,
+              flexDirection: "column",
+            }}
+          >
+            <span style={{ fontSize: "36px", opacity: 0.5 }}>📊</span>
+            <span>View Full Chart on DexScreener</span>
+            <span
+              style={{
+                fontSize: "11px",
+                color: "var(--color-muted-foreground)",
+                fontWeight: 400,
+              }}
+            >
+              {tokenData?.chain || chainFromDiscover?.toUpperCase()} · Live chart, trading &
+              liquidity
+            </span>
+          </a>
+        ) : (
+          <TradingViewMiniChart
+            symbol={symbol}
+            height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+          />
+        )}
 
         {/* ════════════════════════════════════════════════════════════════════
             3. QUICK TRADE PANEL

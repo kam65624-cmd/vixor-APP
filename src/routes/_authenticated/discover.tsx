@@ -43,6 +43,7 @@ interface TokenItem {
   smartMoneyPct?: number;
   risk?: string;
   chain: string;
+  chainId?: string;
   marketCap: number;
   discoveryScore: number;
   socialScore: number;
@@ -51,6 +52,9 @@ interface TokenItem {
   logoUrl?: string;
   sparkline?: number[];
   category?: string;
+  address?: string;
+  pairAddress?: string;
+  dexUrl?: string;
 }
 
 interface DiscoverResponse {
@@ -981,8 +985,8 @@ function DiscoverPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     },
-    refetchInterval: 15_000,
-    staleTime: 10_000,
+    refetchInterval: 5_000,
+    staleTime: 3_000,
     enabled: !isForexMode,
   });
 
@@ -1170,8 +1174,18 @@ function DiscoverPage() {
   }, [search, navigate]);
 
   const handleTokenClick = useCallback(
-    (symbol: string) => {
-      navigate({ to: "/token/$symbol", params: { symbol } });
+    (token: TokenItem) => {
+      navigate({
+        to: "/token/$symbol",
+        params: { symbol: token.symbol },
+        search: {
+          chain: token.chainId || token.chain.toLowerCase(),
+          price: token.price != null ? String(token.price) : undefined,
+          change24h: token.change24h != null ? String(token.change24h) : undefined,
+          name: token.name,
+          dexUrl: token.dexUrl,
+        },
+      } as any);
     },
     [navigate],
   );
@@ -1182,7 +1196,7 @@ function DiscoverPage() {
 
   const handleForexClick = useCallback(
     (pair: ForexPair) => {
-      navigate({ to: "/token/$symbol", params: { symbol: pair.pair } });
+      navigate({ to: "/token/$symbol", params: { symbol: pair.pair } } as any);
     },
     [navigate],
   );
@@ -1676,7 +1690,7 @@ function DiscoverPage() {
                     <TokenRow
                       key={token.symbol + token.chain}
                       token={token}
-                      onClick={() => handleTokenClick(token.symbol)}
+                      onClick={() => handleTokenClick(token)}
                     />
                   ))
                 : !error &&

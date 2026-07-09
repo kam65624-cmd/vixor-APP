@@ -126,6 +126,7 @@ const handler = defineEventHandler(async (event) => {
       smartMoneyPct: t.smartMoneyScore,
       risk: t.riskLevel,
       chain: t.chain.charAt(0).toUpperCase() + t.chain.slice(1),
+      chainId: t.chain,
       marketCap: t.marketCap,
       discoveryScore: t.discoveryScore,
       socialScore: t.socialScore,
@@ -138,6 +139,11 @@ const handler = defineEventHandler(async (event) => {
       socialSentiment: t.socialSentiment ?? 0,
       topHolderPct: t.topHolderPct ?? 0,
       scannedAt: t.scannedAt,
+      address: t.address || undefined,
+      pairAddress: t.pairIdentifier || undefined,
+      dexUrl: t.pairIdentifier
+        ? `https://dexscreener.com/${t.chain}/${t.pairIdentifier}`
+        : undefined,
     }));
 
     const response = {
