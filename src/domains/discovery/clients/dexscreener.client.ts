@@ -79,6 +79,7 @@ export async function fetchLatestPairs(
   try {
     // DexScreener /dex/tokens/new-pairs is unreliable (often returns null).
     // Use /dex/search with broad trending queries as a reliable alternative.
+    // Fetch in parallel batches of 3 for speed.
     const queries = [
       "solana",
       "trending",
@@ -93,21 +94,31 @@ export async function fetchLatestPairs(
     ];
     const allPairs: any[] = [];
 
-    for (const q of queries) {
-      try {
-        const url = `${apiUrl}/dex/search?q=${encodeURIComponent(q)}`;
-        const response = await fetch(url, {
-          headers: { Accept: "application/json" },
-          signal: AbortSignal.timeout(10_000),
-        });
-        if (response.ok) {
-          const json = (await response.json()) as any;
-          if (json.pairs && Array.isArray(json.pairs)) {
-            allPairs.push(...json.pairs);
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < queries.length; i += BATCH_SIZE) {
+      const batch = queries.slice(i, i + BATCH_SIZE);
+      const results = await Promise.allSettled(
+        batch.map(async (q) => {
+          try {
+            const url = `${apiUrl}/dex/search?q=${encodeURIComponent(q)}`;
+            const response = await fetch(url, {
+              headers: { Accept: "application/json" },
+              signal: AbortSignal.timeout(10_000),
+            });
+            if (response.ok) {
+              const json = (await response.json()) as any;
+              return json.pairs && Array.isArray(json.pairs) ? json.pairs : [];
+            }
+            return [];
+          } catch {
+            return [];
           }
+        }),
+      );
+      for (const r of results) {
+        if (r.status === "fulfilled" && Array.isArray(r.value)) {
+          allPairs.push(...r.value);
         }
-      } catch {
-        // Continue with next query
       }
       if (allPairs.length >= limit * 2) break;
     }
@@ -140,7 +151,7 @@ export async function fetchLatestPairs(
 
       // Skip pairs with no liquidity at all (likely dead or fake)
       const liq = pair.liquidity?.usd ?? 0;
-      if (liq < 1) continue;
+      if (liq < 10) continue; // $10 minimum — very low but filters dead pairs
 
       results.push({
         address: pair.baseToken.address,

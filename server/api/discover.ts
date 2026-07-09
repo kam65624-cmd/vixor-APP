@@ -11,7 +11,7 @@ import { scanDiscovery, searchTokens } from "@/domains/discovery/functions";
 import { getDiscoveryConfig } from "@/domains/discovery/config";
 import { cache } from "@/shared/cache";
 import { withRateLimit } from "../utils/with-rate-limit";
-import { handlePreflight, rateLimit } from "./_security";
+import { handlePreflight } from "./_security";
 
 /** Query parameter schema for GET /api/discover. */
 const DISCOVER_CACHE_TTL = 60_000;
@@ -92,43 +92,54 @@ async function dexScreenerFallback(
   params: z.infer<typeof discoverQuerySchema>,
 ): Promise<Array<Record<string, unknown>>> {
   const queries = params.chain
-    ? [params.chain, "trending"]
-    : ["trending", "meme", "solana", "ai", "defi"];
+    ? [params.chain, "trending", "meme"]
+    : ["trending", "meme", "solana", "ai", "defi", "depin", "gaming", "new", "pump", "rwa"];
 
   const allPairs: DexPair[] = [];
   const seen = new Set<string>();
 
-  for (const q of queries) {
-    try {
-      const url = `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`;
-      const res = await fetch(url, {
-        headers: { Accept: "application/json" },
-        signal: AbortSignal.timeout(8_000),
-      });
-      if (!res.ok) continue;
-      const json = (await res.json()) as { pairs?: DexPair[] };
-      if (!json.pairs) continue;
+  // Fetch in parallel batches of 3 to avoid overwhelming DexScreener
+  const BATCH_SIZE = 3;
+  for (let i = 0; i < queries.length; i += BATCH_SIZE) {
+    const batch = queries.slice(i, i + BATCH_SIZE);
+    const results = await Promise.allSettled(
+      batch.map(async (q) => {
+        try {
+          const url = `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`;
+          const res = await fetch(url, {
+            headers: { Accept: "application/json" },
+            signal: AbortSignal.timeout(10_000),
+          });
+          if (!res.ok) return [];
+          const json = (await res.json()) as { pairs?: DexPair[] };
+          return json.pairs ?? [];
+        } catch {
+          return [];
+        }
+      }),
+    );
 
-      for (const pair of json.pairs) {
-        const key = `${pair.chainId}:${pair.baseToken?.address}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
+    for (const r of results) {
+      if (r.status === "fulfilled" && Array.isArray(r.value)) {
+        for (const pair of r.value) {
+          const key = `${pair.chainId}:${pair.baseToken?.address}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
 
-        const liq = pair.liquidity?.usd ?? 0;
-        const price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
+          const liq = pair.liquidity?.usd ?? 0;
+          const price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
 
-        // Apply filters
-        if (params.minLiquidity && liq < params.minLiquidity) continue;
-        if (params.minVolume && (pair.volume?.h24 ?? 0) < params.minVolume) continue;
-        if (price <= 0 && liq < 100) continue;
+          // Apply filters
+          if (params.minLiquidity && liq < params.minLiquidity) continue;
+          if (params.minVolume && (pair.volume?.h24 ?? 0) < params.minVolume) continue;
+          if (price <= 0 && liq < 100) continue;
 
-        allPairs.push(pair);
+          allPairs.push(pair);
+        }
       }
-
-      if (allPairs.length >= params.limit * 2) break;
-    } catch {
-      // Continue with next query
     }
+
+    if (allPairs.length >= params.limit * 3) break;
   }
 
   // Sort
@@ -199,7 +210,7 @@ async function dexScreenerFallback(
 
 const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
+  // NOTE: rate limiting handled by withRateLimit wrapper below — do NOT double-limit here
 
   try {
     const query = getQuery(event);
@@ -296,7 +307,10 @@ const handler = defineEventHandler(async (event) => {
       scanDurationMs,
       source,
     };
-    await cache.set(cKey, response, DISCOVER_CACHE_TTL);
+    // NEVER cache empty results — prevents 60s poison cache
+    if (clientTokens.length > 0) {
+      await cache.set(cKey, response, DISCOVER_CACHE_TTL);
+    }
     return response;
   } catch (err) {
     console.error("[discover] Error:", err instanceof Error ? err.message : err);
@@ -307,16 +321,21 @@ const handler = defineEventHandler(async (event) => {
       const params = discoverQuerySchema.parse(query);
       const fallbackTokens = await dexScreenerFallback(params);
       if (fallbackTokens.length > 0) {
-        return {
+        const fallbackResp = {
           success: true,
           data: fallbackTokens,
           total: fallbackTokens.length,
           source: "dexscreener-fallback-error",
         };
+        // Cache non-empty fallback results for shorter TTL
+        await cache.set(cKey, fallbackResp, 30_000);
+        return fallbackResp;
       }
     } catch {
       // Give up
     }
+
+    console.error("[discover] All sources returned empty");
 
     return {
       success: false,
@@ -327,4 +346,4 @@ const handler = defineEventHandler(async (event) => {
   }
 });
 
-export default withRateLimit(handler, { maxRequests: 60, windowSec: 60 });
+export default withRateLimit(handler, { maxRequests: 120, windowSec: 60 });

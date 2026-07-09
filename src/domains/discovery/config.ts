@@ -68,13 +68,13 @@ const discoveryEnvSchema = z.object({
     .default("true")
     .transform((v) => (typeof v === "string" ? v !== "false" && v !== "0" : v)),
 
-  /** Minimum liquidity filter in USD (default 10000). */
+  /** Minimum liquidity filter in USD (default 1000, relaxed for coverage). */
   DISCOVERY_MIN_LIQUIDITY: z
     .union([z.string(), z.number()])
     .optional()
-    .default("10000")
+    .default("1000")
     .transform((v) =>
-      typeof v === "number" ? Math.max(v, 0) : clampInt(v, 10000, 0, Number.MAX_SAFE_INTEGER),
+      typeof v === "number" ? Math.max(v, 0) : clampInt(v, 1000, 0, Number.MAX_SAFE_INTEGER),
     ),
 });
 

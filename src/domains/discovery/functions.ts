@@ -24,21 +24,27 @@ import { runDiscoveryPipeline } from "./scoring";
 
 // ── Scan Deduplication ───────────────────────────────────────────────────────
 // Prevents rapid-fire scans from exhausting external API quotas.
+// Stores last result so cooldown periods return cached data instead of empty.
 
 let _lastScanTime = 0;
-const SCAN_COOLDOWN_MS = 10_000; // 10 seconds between scans
+const SCAN_COOLDOWN_MS = 15_000; // 15 seconds between scans
+let _lastScanResult: DiscoveryScanResult | null = null;
 
 /**
  * Checks if a scan can be performed (respecting cooldown).
- * Returns the last scan result if cooldown is active.
+ * Returns the last scan result if cooldown is active (never returns empty).
  */
-function checkScanCooldown(): { allowed: boolean; waitMs: number } {
+function checkScanCooldown(): {
+  allowed: boolean;
+  waitMs: number;
+  cachedResult: DiscoveryScanResult | null;
+} {
   const now = Date.now();
   const elapsed = now - _lastScanTime;
   if (elapsed < SCAN_COOLDOWN_MS) {
-    return { allowed: false, waitMs: SCAN_COOLDOWN_MS - elapsed };
+    return { allowed: false, waitMs: SCAN_COOLDOWN_MS - elapsed, cachedResult: _lastScanResult };
   }
-  return { allowed: true, waitMs: 0 };
+  return { allowed: true, waitMs: 0, cachedResult: null };
 }
 
 /**
@@ -69,15 +75,13 @@ export async function scanDiscovery(params?: DiscoveryFilterParams): Promise<Dis
   }
 
   // Rate-limit: enforce scan cooldown to protect external API quotas
+  // Return last scan result during cooldown (never empty)
   const cooldown = checkScanCooldown();
-  if (!cooldown.allowed) {
+  if (!cooldown.allowed && cooldown.cachedResult && cooldown.cachedResult.tokens.length > 0) {
     return {
-      tokens: [],
-      totalFound: 0,
-      filteredOut: 0,
+      ...cooldown.cachedResult,
       scanDurationMs: Date.now() - startMs,
-      scanTimestamp: new Date().toISOString(),
-      error: `Scan cooldown active. Retry in ${Math.ceil(cooldown.waitMs / 1000)}s`,
+      scanTimestamp: cooldown.cachedResult.scanTimestamp,
     };
   }
 
@@ -217,16 +221,18 @@ export async function scanDiscovery(params?: DiscoveryFilterParams): Promise<Dis
   const limit = params?.limit ?? config.DISCOVERY_MAX_TOKENS;
   const finalTokens = filtered.slice(offset, offset + limit);
 
-  // Update scan timestamp for cooldown tracking
+  // Update scan timestamp + cache result for cooldown
   _lastScanTime = Date.now();
-
-  return {
+  const result: DiscoveryScanResult = {
     tokens: finalTokens,
     totalFound: filtered.length,
     filteredOut: totalFound - filtered.length,
     scanDurationMs: Date.now() - startMs,
     scanTimestamp: new Date().toISOString(),
   };
+  _lastScanResult = result;
+
+  return result;
 }
 
 /**

@@ -21,10 +21,10 @@ export const DEFAULT_SCORING_WEIGHTS: ScoringWeights = {
 
 /** Default thresholds for the 5-stage discovery pipeline. */
 export const DEFAULT_THRESHOLDS: DiscoveryThresholds = {
-  /** Stage 2: minimum $10K liquidity to pass liquidity filter. */
-  minLiquidity: 10_000,
-  /** Minimum $1K 24h volume. */
-  minVolume24h: 1_000,
+  /** Stage 2: minimum $1K liquidity to pass liquidity filter (relaxed for coverage). */
+  minLiquidity: 1_000,
+  /** Minimum $100 24h volume (relaxed — frontend filters handle stricter thresholds). */
+  minVolume24h: 100,
   /** Max 72 hours to be considered a "new pair". */
   maxNewAgeHours: 72,
   /** Minimum combined score for "trending" status. */
