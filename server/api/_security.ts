@@ -1,4 +1,4 @@
-import type { H3Event } from "h3";
+import { type H3Event, getHeader, getMethod, setResponseHeader, setResponseStatus, getRequestURL, getQuery } from "h3";
 
 // --- CORS ---
 const ALLOWED_ORIGINS = [
