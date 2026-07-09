@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { memo, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { getTradeHistory, getRecentAnalyses, getWatchlistData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { BinanceWS, type LivePrice } from "@/shared/market-data/binance-ws";
 import {
   PageLayout,
   StatsRow,
@@ -205,6 +206,56 @@ function getAssetTypeBadge(assetType: AssetType): { label: string; color: string
 }
 
 const LEVERAGE_OPTIONS = [1, 2, 5, 10, 25, 50] as const;
+
+// ── DexScreener Embedded Chart ──────────────────────────────────────────────
+
+const DexScreenerEmbedChart = memo(function DexScreenerEmbedChart({
+  dexUrl,
+  height = "350px",
+}: {
+  dexUrl: string;
+  height?: string;
+}) {
+  // Convert https://dexscreener.com/{chain}/{address} to embed URL
+  const embedUrl = useMemo(() => {
+    try {
+      const url = new URL(dexUrl);
+      // dexscreener.com/solana/addr → dexscreener.com/embed/solana/addr
+      const pathParts = url.pathname.split("/").filter(Boolean);
+      if (pathParts.length >= 2) {
+        return `https://dexscreener.com/${pathParts[0]}/${pathParts[1]}?embed=1&trades=0&info=0&chartLeftToolbar=0&chartToolbar=1`;
+      }
+    } catch {
+      // fallback: try direct embed
+    }
+    return `${dexUrl}?embed=1&trades=0&info=0&chartLeftToolbar=0&chartToolbar=1`;
+  }, [dexUrl]);
+
+  return (
+    <div
+      style={{
+        height,
+        borderBottom: "1px solid var(--color-border)",
+        position: "relative",
+        overflow: "hidden",
+        background: "var(--color-background)",
+      }}
+    >
+      <iframe
+        src={embedUrl}
+        style={{
+          width: "100%",
+          height: "100%",
+          border: "none",
+          display: "block",
+        }}
+        title="DexScreener Chart"
+        loading="lazy"
+        allow="clipboard-write"
+      />
+    </div>
+  );
+});
 
 // ── TradingView Chart Component ──────────────────────────────────────────────
 
@@ -452,13 +503,42 @@ export function TokenPage() {
   );
   const assetBadge = getAssetTypeBadge(assetType);
 
+  // ── Live Binance price for this token (if listed) ──
+  const binanceSymbol = useMemo(() => {
+    const clean = symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    // Check if this is a known Binance pair (crypto, not forex/commodity)
+    if (assetType === "forex" || assetType === "commodity") return null;
+    return `${clean}USDT`;
+  }, [symbol, assetType]);
+
+  const [liveBinancePrice, setLiveBinancePrice] = useState<LivePrice | null>(null);
+
+  useEffect(() => {
+    if (!binanceSymbol) return;
+    const ws = BinanceWS.getInstance();
+    const unsub = ws.subscribe(
+      [binanceSymbol],
+      (prices) => {
+        const p = prices.get(binanceSymbol);
+        if (p) setLiveBinancePrice(p);
+      },
+      undefined,
+    );
+    return () => unsub();
+  }, [binanceSymbol]);
+
+  // Use live price if available, otherwise discovery data
+  const displayPrice = liveBinancePrice?.price ?? tokenData?.price ?? null;
+  const displayChange = liveBinancePrice?.change24h ?? tokenData?.change24h ?? null;
+  const isPriceLive = !!liveBinancePrice;
+
   // ── Quick Trade State ──
 
   const [direction, setDirection] = useState<"long" | "short">("long");
   const [amount, setAmount] = useState("100");
   const [leverage, setLeverage] = useState(5);
 
-  const entryPrice = tokenData?.price ?? 0;
+  const entryPrice = displayPrice ?? 0;
   const numericAmount = parseFloat(amount) || 0;
   const estimatedTokens = entryPrice > 0 ? (numericAmount * leverage) / entryPrice : 0;
   const slDistance = direction === "long" ? 0.02 : 0.02;
@@ -700,39 +780,10 @@ export function TokenPage() {
           </div>
 
           {isDexToken && dexUrl ? (
-            <a
-              href={dexUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                height:
-                  typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px",
-                background:
-                  "linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(124,155,196,0.05) 100%)",
-                borderBottom: "1px solid var(--color-border)",
-                textDecoration: "none",
-                color: "var(--color-primary)",
-                fontSize: "14px",
-                fontWeight: 600,
-                flexDirection: "column",
-              }}
-            >
-              <span style={{ fontSize: "32px", opacity: 0.6 }}>📊</span>
-              <span>View Chart on DexScreener</span>
-              <span
-                style={{
-                  fontSize: "11px",
-                  color: "var(--color-muted-foreground)",
-                  fontWeight: 400,
-                }}
-              >
-                {chainFromDiscover?.toUpperCase()} · Full chart & trading
-              </span>
-            </a>
+            <DexScreenerEmbedChart
+              dexUrl={dexUrl}
+              height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+            />
           ) : (
             <TradingViewMiniChart
               symbol={symbol}
@@ -745,20 +796,39 @@ export function TokenPage() {
               padding: "14px 16px",
               background: "var(--color-card)",
               borderBottom: `1px solid var(--color-border)`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
             <p
               style={{
                 margin: 0,
-                fontSize: "12px",
+                fontSize: "11px",
                 color: "var(--color-muted-foreground)",
                 lineHeight: 1.5,
               }}
             >
               {isDexToken
-                ? "DEX token — click above to view the full interactive chart with trading on DexScreener."
-                : "Live market data unavailable for this token. Chart data provided by TradingView."}
+                ? `Live chart via DexScreener · ${chainFromDiscover?.toUpperCase() ?? "DEX"}`
+                : "Chart data provided by TradingView."}
             </p>
+            {isDexToken && dexUrl && (
+              <a
+                href={dexUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: "10px",
+                  color: "var(--color-primary)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Open on DexScreener →
+              </a>
+            )}
           </div>
 
           <div style={{ padding: "20px 16px", background: "var(--color-card)" }}>
@@ -914,7 +984,23 @@ export function TokenPage() {
               </div>
 
               {/* Price + 24h change */}
-              <div style={{ marginTop: "8px" }}>
+              <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                {isPriceLive && (
+                  <span
+                    style={{
+                      fontSize: "8px",
+                      fontWeight: 700,
+                      padding: "2px 5px",
+                      borderRadius: "3px",
+                      background: "rgba(14,203,129,0.15)",
+                      color: "var(--color-bullish)",
+                      letterSpacing: "0.04em",
+                      lineHeight: 1,
+                    }}
+                  >
+                    LIVE
+                  </span>
+                )}
                 <span
                   style={{
                     fontSize: "24px",
@@ -924,7 +1010,7 @@ export function TokenPage() {
                     letterSpacing: "-0.02em",
                   }}
                 >
-                  {fmtPrice(tokenData?.price ?? null)}
+                  {fmtPrice(displayPrice)}
                 </span>
                 <span
                   style={{
@@ -932,13 +1018,11 @@ export function TokenPage() {
                     fontWeight: 700,
                     fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                     color:
-                      (tokenData?.change24h ?? 0) >= 0
-                        ? "var(--color-bullish)"
-                        : "var(--color-bearish)",
+                      (displayChange ?? 0) >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                     marginLeft: "10px",
                   }}
                 >
-                  {fmtChange(tokenData?.change24h ?? null)}
+                  {fmtChange(displayChange)}
                 </span>
               </div>
             </div>
@@ -1030,39 +1114,10 @@ export function TokenPage() {
             2. CHART — DexScreener for DEX tokens, TradingView for majors
         ════════════════════════════════════════════════════════════════════ */}
         {isDexToken && dexUrl ? (
-          <a
-            href={dexUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              height: typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px",
-              background:
-                "linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(124,155,196,0.05) 100%)",
-              borderBottom: "1px solid var(--color-border)",
-              textDecoration: "none",
-              color: "var(--color-primary)",
-              fontSize: "14px",
-              fontWeight: 600,
-              flexDirection: "column",
-            }}
-          >
-            <span style={{ fontSize: "36px", opacity: 0.5 }}>📊</span>
-            <span>View Full Chart on DexScreener</span>
-            <span
-              style={{
-                fontSize: "11px",
-                color: "var(--color-muted-foreground)",
-                fontWeight: 400,
-              }}
-            >
-              {tokenData?.chain || chainFromDiscover?.toUpperCase()} · Live chart, trading &
-              liquidity
-            </span>
-          </a>
+          <DexScreenerEmbedChart
+            dexUrl={dexUrl}
+            height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+          />
         ) : (
           <TradingViewMiniChart
             symbol={symbol}

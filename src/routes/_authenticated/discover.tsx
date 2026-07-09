@@ -8,6 +8,10 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { usePullToRefresh } from "@/shared/hooks/use-pull-to-refresh";
 import { PullIndicator } from "@/components/vixor/PullIndicator";
 import {
+  useDiscoverLivePrices,
+  type LivePriceOverlay,
+} from "@/shared/market-data/use-discover-live-prices";
+import {
   getLiveForexDiscoverData,
   FOREX_TOTAL_COUNT,
   FOREX_MAJOR_COUNT,
@@ -456,10 +460,34 @@ function NewBadge() {
 
 // ── Token Row Component ──────────────────────────────────────────────────────
 
-function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void }) {
-  const isUp = (token.change24h ?? 0) >= 0;
+function TokenRow({
+  token,
+  onClick,
+  livePrice,
+}: {
+  token: TokenItem;
+  onClick: () => void;
+  livePrice?: LivePriceOverlay[string];
+}) {
+  // Use live price if available, otherwise fall back to API price
+  const displayPrice = livePrice?.price ?? token.price;
+  const displayChange = livePrice?.change24h ?? token.change24h;
+  const isUp = (displayChange ?? 0) >= 0;
   const color = isUp ? "var(--color-bullish)" : "var(--color-bearish)";
   const [imgError, setImgError] = useState(false);
+  const prevPriceRef = useRef<number | null>(null);
+  const [priceFlash, setPriceFlash] = useState<"up" | "down" | null>(null);
+
+  // Flash effect when live price changes
+  useEffect(() => {
+    if (livePrice && prevPriceRef.current !== null && livePrice.price !== prevPriceRef.current) {
+      const flash = livePrice.price > prevPriceRef.current ? "up" : "down";
+      setPriceFlash(flash);
+      const timer = setTimeout(() => setPriceFlash(null), 400);
+      return () => clearTimeout(timer);
+    }
+    if (livePrice) prevPriceRef.current = livePrice.price;
+  }, [livePrice?.price]);
   const hasLogo = token.logoUrl && !imgError;
   const isNew = token.discoveryScore > 80;
   const hasSparkline = token.sparkline && token.sparkline.length >= 2;
@@ -596,7 +624,19 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
             color: "var(--color-foreground)",
           }}
         >
-          {fmtPrice(token.price)}
+          <span
+            style={{
+              color:
+                priceFlash === "up"
+                  ? "var(--color-bullish)"
+                  : priceFlash === "down"
+                    ? "var(--color-bearish)"
+                    : "var(--color-foreground)",
+              transition: "color 0.3s ease",
+            }}
+          >
+            {fmtPrice(displayPrice)}
+          </span>
         </div>
         <div
           style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}
@@ -609,7 +649,7 @@ function TokenRow({ token, onClick }: { token: TokenItem; onClick: () => void })
               color,
             }}
           >
-            {fmtPct(token.change24h)}
+            {fmtPct(displayChange)}
           </span>
         </div>
         <div
@@ -935,18 +975,6 @@ function DiscoverPage() {
   const [sortBy, setSortBy] = useState<SortKey>(search.sortBy as SortKey);
   const [category, setCategory] = useState<CategoryKey>(search.category as CategoryKey);
 
-  // "Updated Xs ago" timer
-  const [lastFetchTime, setLastFetchTime] = useState<number>(Date.now());
-  const [elapsedSec, setElapsedSec] = useState<number>(0);
-
-  // Count up elapsed time since last fetch
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setElapsedSec(Math.floor((Date.now() - lastFetchTime) / 1000));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [lastFetchTime]);
-
   const queryParams = useMemo(() => {
     const params = new URLSearchParams();
     params.set("sortBy", sortBy);
@@ -990,20 +1018,26 @@ function DiscoverPage() {
     enabled: !isForexMode,
   });
 
-  // Update last fetch time on data change
-  const lastFetchKey = resp ? `${resp.source}-${resp.total}` : "";
-  useEffect(() => {
-    if (resp) {
-      setLastFetchTime(Date.now());
-      setElapsedSec(0);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastFetchKey]);
-
   const tokens = useMemo(() => {
     if (!resp?.data) return [];
     return resp.data;
   }, [resp]);
+
+  // ── Live Price Overlay (Binance WS + DexScreener polling) ──
+  const liveTokens = useMemo(
+    () =>
+      tokens.map((t) => ({
+        symbol: t.symbol,
+        chainId: t.chainId,
+        chain: t.chain,
+        pairAddress: t.pairAddress,
+      })),
+    [tokens],
+  );
+  const { overlay: liveOverlay } = useDiscoverLivePrices({
+    tokens: liveTokens,
+    enabled: !isForexMode && tokens.length > 0,
+  });
 
   const stats = useMemo(() => {
     if (isForexMode) {
@@ -1334,12 +1368,12 @@ function DiscoverPage() {
             <span
               style={{
                 fontSize: "9px",
-                color: "var(--color-muted-foreground)",
+                color: "var(--color-bullish)",
                 fontFamily: "'JetBrains Mono', monospace",
                 whiteSpace: "nowrap",
               }}
             >
-              Updated {fmtTimeAgo(elapsedSec)}
+              LIVE
             </span>
 
             {/* Manual refresh button */}
@@ -1691,6 +1725,7 @@ function DiscoverPage() {
                       key={token.symbol + token.chain}
                       token={token}
                       onClick={() => handleTokenClick(token)}
+                      livePrice={liveOverlay[token.symbol]}
                     />
                   ))
                 : !error &&
