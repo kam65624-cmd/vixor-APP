@@ -94,13 +94,7 @@ function AuthPage() {
         console.warn("[Auth] getUser check failed (Supabase may not be configured):", getUserErr);
       }
 
-      console.log("[Auth] Waiting for Telegram WebApp initData...");
       const tg = await waitForTelegram();
-      console.log(
-        "[Auth] Telegram WebApp result:",
-        tg ? "found" : "not found",
-        tg?.initData ? `initData length=${tg.initData.length}` : "no initData",
-      );
 
       const initData: string | undefined = tg?.initData;
 
@@ -111,12 +105,9 @@ function AuthPage() {
           setBusy(true);
         }
         try {
-          console.log("[Auth] Calling telegramSignIn...");
           const { email, password } = await tgSignIn({ data: { initData } });
-          console.log("[Auth] telegramSignIn success, signing in to Supabase...");
           const { error } = await supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
-          console.log("[Auth] Sign-in success, navigating to /");
           navigateRef.current({ to: "/" });
         } catch (e) {
           console.error("[Auth] Telegram auto-signin failed:", e);
@@ -126,7 +117,6 @@ function AuthPage() {
         }
       } else {
         // ── Outside Telegram — show Telegram Login Widget + fallback ──
-        console.log("[Auth] No Telegram initData — showing widget mode");
         if (active) setTgStatus("widget");
       }
     })();

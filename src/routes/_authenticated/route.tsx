@@ -29,16 +29,8 @@ export const Route = createFileRoute("/_authenticated")({
       // This makes the auth page invisible to Telegram users: they land on
       // any authenticated route, the guard signs them in silently, and they
       // see the dashboard immediately.
-      console.log(
-        "[Auth Guard] Session invalid, trying Telegram auto-signin. Error:",
-        getUserError?.message,
-      );
-
       const initData = getTelegramInitData();
       if (initData && initData.length > 10) {
-        console.log(
-          "[Auth Guard] No valid session but Telegram initData found — attempting auto-signin",
-        );
         try {
           const { telegramSignIn } = await import("@/domains/user/auth.functions");
           const { email, password } = await telegramSignIn({ data: { initData } });
@@ -47,7 +39,6 @@ export const Route = createFileRoute("/_authenticated")({
             password,
           });
           if (!signInError && signInData.session) {
-            console.log("[Auth Guard] Telegram auto-signin success");
             return { user: signInData.session.user };
           }
           console.error("[Auth Guard] Telegram auto-signin signIn failed:", signInError?.message);

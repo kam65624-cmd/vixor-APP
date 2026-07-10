@@ -140,11 +140,10 @@ export function NoteEditorDialog({
           data: {
             title: title.trim(),
             content: content.trim(),
-            analysisId: prefillAnalysisId ?? undefined,
+            analysisId: prefillAnalysisId || "",
             pair: effectivePair || undefined,
             tags,
             mood,
-            is_pinned: isPinned,
           },
         });
       }

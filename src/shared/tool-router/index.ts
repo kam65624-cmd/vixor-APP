@@ -74,20 +74,13 @@ class ToolRouterClass {
     }
 
     // 3. Execute via ToolRegistry (includes permission check)
-    if (verbose) {
-      console.log(
-        `[ToolRouter] Dispatching: ${toolName} (${tool.category}${tool.mutative ? ", mutative" : ""}) for user ${context.userId}`,
-      );
-    }
 
     const result = await ToolRegistry.execute(toolName, input, context);
     const executionTime = Date.now() - startTime;
 
     // 4. Audit logging
     if (verbose) {
-      if (result.success) {
-        console.log(`[ToolRouter] ✓ ${toolName} completed in ${executionTime}ms`);
-      } else {
+      if (!result.success) {
         console.warn(`[ToolRouter] ✗ ${toolName} failed: ${result.error}`);
       }
     }

@@ -420,10 +420,6 @@ export const runBacktestServer = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId } = context;
 
-    console.log(
-      `[Backtest] User ${userId} running backtest: ${data.pair} ${data.timeframe} ${data.strategyPreset}`,
-    );
-
     // ── 0. Deduct points ──
     const { data: balBefore } = await supabaseAdmin
       .from("points_balances")
@@ -500,12 +496,6 @@ export const runBacktestServer = createServerFn({ method: "POST" })
 
     // ── 5. Run the backtest ──
     const result = await runBacktest(config);
-
-    console.log(
-      `[Backtest] Completed: ${result.metrics.totalTrades} trades, ` +
-        `${result.metrics.totalReturn.toFixed(2)}% return, ` +
-        `Sharpe ${result.metrics.sharpe.toFixed(2)}`,
-    );
 
     return {
       ...result,

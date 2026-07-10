@@ -88,21 +88,18 @@ export class DummyAdapter implements ExchangeAdapter {
       fee: 0, // No fees in test mode
     };
 
-    console.log(`[DummyAdapter] Filled order:`, result);
     return result;
   }
 
   /** Always returns true (cancel succeeds). */
   async cancelOrder(orderId: string): Promise<boolean> {
     this.requireConnected();
-    console.log(`[DummyAdapter] cancelOrder(${orderId}) → success`);
     return true;
   }
 
   /** Returns a mock filled order result. */
   async getOrderStatus(orderId: string): Promise<OrderResult | null> {
     this.requireConnected();
-    console.log(`[DummyAdapter] getOrderStatus(${orderId})`);
     return {
       id: orderId,
       symbol: "BTCUSDT",
@@ -128,8 +125,6 @@ export class DummyAdapter implements ExchangeAdapter {
   async closePosition(symbol: string, quantity?: number): Promise<OrderResult> {
     this.requireConnected();
     const fillPrice = MOCK_PRICES[symbol] ?? 0;
-    console.log(`[DummyAdapter] closePosition(${symbol}, ${quantity})`);
-
     return {
       id: `dummy-close-${Date.now()}`,
       symbol,
@@ -175,14 +170,13 @@ export class DummyAdapter implements ExchangeAdapter {
 
   /** No-op connect — always succeeds. */
   async connect(_credentials: Record<string, string>): Promise<void> {
-    console.log(`[DummyAdapter] connect() → connected`);
     this.connected = true;
   }
 
   /** No-op disconnect. */
   async disconnect(): Promise<void> {
     this.connected = false;
-    console.log(`[DummyAdapter] disconnect()`);
+    // disconnected
   }
 }
 

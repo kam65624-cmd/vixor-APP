@@ -247,7 +247,6 @@ async function createCache(): Promise<HybridCache> {
         const redis = new Redis({ url: redisUrl, token: redisToken });
         primary = new RedisCache(redis);
         useRedis = true;
-        console.log("[Cache] ✅ Upstash Redis connected");
       } catch (err) {
         console.warn(
           "[Cache] ⚠️ Failed to initialize Upstash Redis, using in-memory fallback:",
@@ -256,7 +255,6 @@ async function createCache(): Promise<HybridCache> {
         primary = inMemory;
       }
     } else {
-      console.log("[Cache] ℹ️ No UPSTASH_REDIS_REST_URL configured, using in-memory cache");
       primary = inMemory;
     }
 

@@ -28,27 +28,22 @@ function useSolPrice() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    let cancelled = false;
+    let unsub: (() => void) | undefined;
 
-    const fetchPrice = async () => {
-      try {
-        const res = await fetch("/api/sol-price");
-        const data = await res.json();
-        if (!cancelled) {
-          setPrice(data.price);
-          setChange(data.change24h);
+    // Use BinanceWS for real-time SOL price instead of polling
+    import("@/shared/market-data/binance-ws").then(({ BinanceWS }) => {
+      const ws = BinanceWS.getInstance();
+      unsub = ws.subscribe(["SOLUSDT"], (prices) => {
+        const sol = prices.get("SOLUSDT");
+        if (sol) {
+          setPrice(sol.price);
+          setChange(sol.change24h);
         }
-      } catch (e) {
-        // Expected: network may be unavailable. Keep last known price.
-        console.warn("[AppShell] SOL price fetch failed:", e);
-      }
-    };
+      });
+    });
 
-    fetchPrice();
-    const interval = setInterval(fetchPrice, 30_000);
     return () => {
-      cancelled = true;
-      clearInterval(interval);
+      unsub?.();
     };
   }, []);
 

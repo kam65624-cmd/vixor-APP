@@ -186,20 +186,9 @@ export async function runChartAnalysis(
   let extractionResult: ChartExtractionResult | null = null;
 
   // z-ai-web-dev-sdk is always available (installed locally, no external API key needed)
-  console.log("[Vixor] Step 1: Running Chart Vision extraction (z-ai VLM)...");
   try {
     extractionResult = await extractChartContext(imageBytes, mimeType, "external_screenshot");
     chartContext = extractionResult.context;
-
-    if (chartContext) {
-      console.log("[Vixor] Chart Vision extracted:", {
-        symbol: chartContext.symbol,
-        timeframe: chartContext.timeframe,
-        price: chartContext.currentPrice,
-        confidence: `${(chartContext.confidence * 100).toFixed(0)}%`,
-        platform: chartContext.platform,
-      });
-    }
   } catch (visionErr) {
     console.warn(
       "[Vixor] Chart Vision extraction failed:",
@@ -215,11 +204,7 @@ export async function runChartAnalysis(
   // ═══════════════════════════════════════════════════════════════════════
 
   if (extractionResult) {
-    const validation = validateChartContext(extractionResult);
-    // validation is ALWAYS valid now — just log warnings
-    if (validation.warnings.length > 0) {
-      console.log("[Vixor] Chart context validation warnings:", validation.warnings);
-    }
+    validateChartContext(extractionResult);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -230,22 +215,8 @@ export async function runChartAnalysis(
   // data anyway, so even if vision is wrong, the analysis is still valid.
   // ═══════════════════════════════════════════════════════════════════════
 
-  if (chartContext) {
-    try {
-      const { validateChartTruth } = await import("@/domains/chart-truth");
-      const truthResult = await validateChartTruth(chartContext);
-      console.log("[Vixor] Truth Score:", truthResult.truthScore, truthResult.status);
-      if (truthResult.warnings.length > 0) {
-        console.warn("[Vixor] Truth warnings:", truthResult.warnings);
-      }
-      // Do NOT throw on low truth score — just warn. Real data will be used anyway.
-    } catch (truthErr) {
-      console.warn(
-        "[Vixor] Truth validation failed silently:",
-        truthErr instanceof Error ? truthErr.message : String(truthErr),
-      );
-    }
-  }
+  // chart-truth module was removed — truth validation is now skipped
+  // The local analysis engine uses real OHLCV data directly, so this is non-blocking.
 
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 3: DETERMINE PAIR — Prefer vision-extracted symbol over user selection
@@ -264,7 +235,6 @@ export async function runChartAnalysis(
   // valid AnalysisResult so users never see a "failed" analysis card.
   // ═══════════════════════════════════════════════════════════════════════
 
-  console.log(`[Vixor] Step 2: Running local SMC/ICT analysis for ${pair} ${timeframe}...`);
   let localResult: import("@/domains/analysis/engine/core/types").LocalAnalysisResult;
   try {
     localResult = runLocalAnalysis({
@@ -295,9 +265,7 @@ export async function runChartAnalysis(
 
   // The local SMC/ICT engine is deterministic and based on REAL OHLCV data.
   // No external AI API is used — this is 100% local.
-  console.log(
-    `[Vixor] Local analysis complete: ${localResult.pair} ${localResult.timeframe} → ${localResult.recommendation} @ ${localResult.confidence}%`,
-  );
+  // Local analysis complete
 
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 4.5: REAL NEWS ENRICHMENT (Finnhub)
@@ -358,11 +326,9 @@ export async function runChartAnalysis(
         verdict,
       };
 
-      console.log(
-        `[Vixor] News enrichment: +${newsItems.length} real headlines from Finnhub (${overallSentiment})`,
-      );
+      // News enriched
     } else {
-      console.log("[Vixor] News enrichment: no recent Finnhub news for this symbol");
+      // No recent news for this symbol
     }
   } catch (newsErr) {
     // Defensive: getNewsForSymbol already returns [] on failure, but if
@@ -378,22 +344,8 @@ export async function runChartAnalysis(
   // ── OPTIONAL: Debate Engine validation ──
   // Gated by environment variable — only runs when explicitly enabled.
   // Attaches results to result._debate for downstream consumption (non-breaking).
-  if (process.env.ENABLE_DEBATE_ENGINE === "true") {
-    try {
-      const { DebateEngine } = await import("@/domains/debate");
-      const debate = new DebateEngine();
-      const debateResult = await debate.run(result);
-      console.log("[Vixor] Debate result:", debateResult.summary);
-      // Attach to result for downstream use (non-breaking, invisible to frontend)
-
-      (result as any)._debate = debateResult;
-    } catch (e) {
-      console.warn(
-        "[Vixor] Debate engine failed silently:",
-        e instanceof Error ? e.message : String(e),
-      );
-    }
-  }
+  // debate engine was removed — debate validation is now skipped
+  // Was gated by ENABLE_DEBATE_ENGINE env var (rarely enabled).
 
   return result;
 }

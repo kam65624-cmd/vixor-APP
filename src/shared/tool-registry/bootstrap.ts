@@ -8,5 +8,3 @@
 
 import "./tools/trading";
 import "./tools/journal-analysis";
-
-console.log("[ToolRegistry] All tools registered");

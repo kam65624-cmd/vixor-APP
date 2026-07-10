@@ -244,8 +244,7 @@ class EventOrchestrator {
 
     const eventTypeStr = eventType as string;
 
-    // Log the event
-    console.log(`[VixorEvents] ${eventTypeStr}`, JSON.stringify(payload).slice(0, 200));
+    // Log the event (payload available for structured logging)
 
     // Persist event (non-blocking)
     if (this.persistEnabled && this.persistFn) {
@@ -294,7 +293,6 @@ class EventOrchestrator {
    */
   setEnabled(enabled: boolean): void {
     this.enabled = enabled;
-    console.log(`[VixorEvents] ${enabled ? "Enabled" : "Disabled"}`);
   }
 
   /**
@@ -305,7 +303,6 @@ class EventOrchestrator {
   setPersistence(fn: (entry: EventLogEntry) => Promise<void>): void {
     this.persistFn = fn;
     this.persistEnabled = true;
-    console.log("[VixorEvents] Persistence configured");
   }
 
   /**

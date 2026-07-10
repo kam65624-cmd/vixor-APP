@@ -20,7 +20,6 @@ import { ALL_KNOWN_PAIRS } from "@/shared/asset-registry";
  */
 export async function invalidatePriceCache(pair: string): Promise<void> {
   await cache.delete(CACHE_KEYS.price(pair));
-  console.log(`[CacheInvalidator] Invalidated price cache for ${pair}`);
 }
 
 /**
@@ -34,8 +33,6 @@ export async function invalidateAllPriceCache(): Promise<void> {
 
   // Also invalidate the aggregated market prices cache
   await cache.delete(CACHE_KEYS.marketPrices());
-
-  console.log(`[CacheInvalidator] Invalidated all price cache (${knownPairs.length} pairs)`);
 }
 
 /**
@@ -44,7 +41,6 @@ export async function invalidateAllPriceCache(): Promise<void> {
  */
 export async function invalidateKlinesCache(pair: string, interval: string): Promise<void> {
   await cache.delete(CACHE_KEYS.klines(pair, interval));
-  console.log(`[CacheInvalidator] Invalidated klines cache for ${pair}:${interval}`);
 }
 
 /**
@@ -53,7 +49,6 @@ export async function invalidateKlinesCache(pair: string, interval: string): Pro
  */
 export async function invalidateNewsCache(category: string): Promise<void> {
   await cache.delete(CACHE_KEYS.news(category));
-  console.log(`[CacheInvalidator] Invalidated news cache for category "${category}"`);
 }
 
 /**
@@ -62,7 +57,6 @@ export async function invalidateNewsCache(category: string): Promise<void> {
  */
 export async function invalidateMarketPricesCache(): Promise<void> {
   await cache.delete(CACHE_KEYS.marketPrices());
-  console.log(`[CacheInvalidator] Invalidated market prices cache`);
 }
 
 /**
@@ -98,5 +92,4 @@ export async function invalidateAllCache(): Promise<void> {
   invalidations.push(cache.delete(CACHE_KEYS.marketPrices()));
 
   await Promise.allSettled(invalidations);
-  console.log(`[CacheInvalidator] 🧹 Invalidated ALL cache entries (${invalidations.length} keys)`);
 }

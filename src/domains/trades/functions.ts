@@ -42,5 +42,6 @@ export const createTrade = createServerFn({ method: "POST" })
         entry_date: new Date().toISOString(),
         quantity: data.amount,
       } as any);
-    return row as Trade;
+    if (!row) throw new Error("Failed to create trade");
+    return row as unknown as Trade;
   });
