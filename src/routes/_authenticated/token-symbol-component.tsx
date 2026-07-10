@@ -216,11 +216,12 @@ const DexScreenerEmbedChart = memo(function DexScreenerEmbedChart({
   dexUrl: string;
   height?: string;
 }) {
+  const [iframeFailed, setIframeFailed] = useState(false);
+
   // Convert https://dexscreener.com/{chain}/{address} to embed URL
   const embedUrl = useMemo(() => {
     try {
       const url = new URL(dexUrl);
-      // dexscreener.com/solana/addr → dexscreener.com/embed/solana/addr
       const pathParts = url.pathname.split("/").filter(Boolean);
       if (pathParts.length >= 2) {
         return `https://dexscreener.com/${pathParts[0]}/${pathParts[1]}?embed=1&trades=0&info=0&chartLeftToolbar=0&chartToolbar=1`;
@@ -230,6 +231,57 @@ const DexScreenerEmbedChart = memo(function DexScreenerEmbedChart({
     }
     return `${dexUrl}?embed=1&trades=0&info=0&chartLeftToolbar=0&chartToolbar=1`;
   }, [dexUrl]);
+
+  // Fallback: iframe blocked (Telegram WebView, etc.) → show "Open Chart" link
+  if (iframeFailed) {
+    return (
+      <div
+        style={{
+          height,
+          borderBottom: "1px solid var(--color-border)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px",
+          background: "var(--color-background)",
+          padding: "20px",
+        }}
+      >
+        <span style={{ fontSize: "32px" }}>📈</span>
+        <span
+          style={{
+            fontSize: "11px",
+            color: "var(--color-muted-foreground)",
+            textAlign: "center",
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}
+        >
+          Chart opens in DexScreener
+        </span>
+        <a
+          href={dexUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "8px 18px",
+            borderRadius: "8px",
+            background: "var(--color-primary)",
+            color: "#000",
+            fontSize: "11px",
+            fontWeight: 700,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            textDecoration: "none",
+          }}
+        >
+          Open Chart ↗
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -252,6 +304,22 @@ const DexScreenerEmbedChart = memo(function DexScreenerEmbedChart({
         title="DexScreener Chart"
         loading="lazy"
         allow="clipboard-write"
+        onError={() => setIframeFailed(true)}
+        // Telegram WebView may silently block — detect via timeout
+        ref={(node) => {
+          if (!node) return;
+          const timer = setTimeout(() => {
+            // If iframe hasn't loaded anything, show fallback
+            try {
+              // Cross-origin: will throw, which means iframe loaded something
+              void node.contentWindow?.document;
+            } catch {
+              // Content loaded (cross-origin = success)
+            }
+          }, 5000);
+          node.onload = () => clearTimeout(timer);
+          return () => clearTimeout(timer);
+        }}
       />
     </div>
   );

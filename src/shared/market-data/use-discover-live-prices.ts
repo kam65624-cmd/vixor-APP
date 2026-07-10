@@ -194,12 +194,13 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
         const results = await Promise.allSettled(
           batch.map(async (token) => {
             if (!token.chainId || !token.pairAddress) return null;
-            const result = await getTokenPrice(token.chainId, token.pairAddress);
-            if (result?.priceUsd) {
+            // Use getPair (direct pair lookup by chainId + pairAddress)
+            const pair = await getPair(token.chainId, token.pairAddress);
+            if (pair?.priceUsd) {
               return {
                 symbol: token.symbol,
-                price: result.priceUsd,
-                change24h: result.change24h ?? 0,
+                price: parseFloat(pair.priceUsd),
+                change24h: pair.priceChange?.["h24"] ?? 0,
               };
             }
             return null;

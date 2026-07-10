@@ -153,6 +153,18 @@ export async function fetchLatestPairs(
       const liq = pair.liquidity?.usd ?? 0;
       if (liq < 10) continue; // $10 minimum — very low but filters dead pairs
 
+      // Skip suspiciously low volume + liquidity (mock/test tokens)
+      const vol = pair.volume?.h24 ?? 0;
+      if (vol < 5 && liq < 500) continue;
+
+      // Skip test/placeholder symbols
+      const sym = (pair.baseToken?.symbol ?? "").toUpperCase();
+      if (/^(TEST|MOCK|FAKE|DUMMY|EXAMPLE|UNNAMED|TOKEN)/.test(sym)) continue;
+
+      // Skip empty or too-short names
+      const tokenName = (pair.baseToken?.name ?? "").trim();
+      if (!tokenName || tokenName.length < 2) continue;
+
       results.push({
         address: pair.baseToken.address,
         symbol: pair.baseToken.symbol,

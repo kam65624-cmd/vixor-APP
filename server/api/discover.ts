@@ -128,11 +128,25 @@ async function dexScreenerFallback(
 
           const liq = pair.liquidity?.usd ?? 0;
           const price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
+          const vol = pair.volume?.h24 ?? 0;
 
-          // Apply filters
+          // Apply user filters
           if (params.minLiquidity && liq < params.minLiquidity) continue;
-          if (params.minVolume && (pair.volume?.h24 ?? 0) < params.minVolume) continue;
+          if (params.minVolume && vol < params.minVolume) continue;
+
+          // ── Quality filters: remove garbage/mock tokens ──
+          // Skip tokens with no price AND negligible liquidity (dead pairs)
           if (price <= 0 && liq < 100) continue;
+          // Skip tokens with suspiciously low volume (< $5) AND low liquidity
+          if (vol < 5 && liq < 500) continue;
+          // Skip tokens with zero or near-zero liquidity
+          if (liq < 50) continue;
+          // Skip if symbol looks like a test/placeholder
+          const sym = (pair.baseToken?.symbol ?? "").toUpperCase();
+          if (/^(TEST|MOCK|FAKE|DUMMY|EXAMPLE|UNNAMED|TOKEN)/.test(sym)) continue;
+          // Skip if name is empty or too short
+          const name = (pair.baseToken?.name ?? "").trim();
+          if (!name || name.length < 2) continue;
 
           allPairs.push(pair);
         }
