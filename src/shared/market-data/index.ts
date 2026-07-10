@@ -17,17 +17,6 @@ export {
   type ResolvedPrice,
 } from "./price-resolver";
 export {
-  searchPairs,
-  getPair,
-  getTokenPairs,
-  getTrendingMetas,
-  getLatestTokenProfiles,
-  getTopBoosts,
-  getTokenPrice,
-  type DexScreenerPair,
-  type DexScreenerToken,
-} from "./dexscreener";
-export {
   fetchFinnhubQuote,
   fetchFinnhubQuotes,
   getFinnhubQuoteCacheStats,

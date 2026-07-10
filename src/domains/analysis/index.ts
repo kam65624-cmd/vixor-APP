@@ -6,12 +6,7 @@
 export * from "./functions";
 
 // Types
-export type {
-  AnalysisRow,
-  CreateAnalysisInput,
-  QuickAnalyzeInput,
-  AnalysisListItem,
-} from "./types";
+// (types are imported directly by consumers)
 
 // Analysis engine
 export { runLocalAnalysis } from "./engine/engine";

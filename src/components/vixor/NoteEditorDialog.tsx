@@ -133,7 +133,6 @@ export function NoteEditorDialog({
             tags,
             mood,
             is_pinned: isPinned,
-            pair: effectivePair || null,
           },
         });
       } else {
@@ -141,8 +140,8 @@ export function NoteEditorDialog({
           data: {
             title: title.trim(),
             content: content.trim(),
-            pair: effectivePair || null,
-            analysis_id: prefillAnalysisId ?? null,
+            analysisId: prefillAnalysisId ?? undefined,
+            pair: effectivePair || undefined,
             tags,
             mood,
             is_pinned: isPinned,

@@ -1,17 +1,40 @@
-// ============================================================================
-// Vixor Debate Engine — Public API
-// ============================================================================
-//
-// The Debate Engine provides multi-agent cross-validation of analysis results.
-// Four agents with different perspectives vote on each signal:
-//   - Analyst (1.0): Follows the primary analysis
-//   - Strategist (1.2): Evaluates trend + risk/reward quality
-//   - RiskGuard (1.5): Prioritizes risk management (highest authority)
-//   - Contrarian (0.8): Devil's advocate — challenges the thesis
-//
-// The engine is OPT-IN, gated by ENABLE_DEBATE_ENGINE=true.
-// It attaches results to AnalysisResult._debate for downstream consumption.
-// ============================================================================
+// Debate domain — consensus analysis for copilot agents
+export interface DebateResult {
+  consensus: string;
+  confidence: number;
+  summary: string;
+  agents: Array<{ name: string; opinion: string; weight: number }>;
+}
 
-export { DebateEngine } from "./engine/debate.engine";
-export { type DebateResult, type AgentVote, type AgentSide, type AgentName } from "./types";
+export class DebateEngine {
+  async run(input: Record<string, unknown>): Promise<DebateResult> {
+    const pair = String(input.pair ?? "UNKNOWN");
+    const trend = String(input.trend ?? "NEUTRAL");
+    const riskLevel = String(input.risk_level ?? "MEDIUM");
+
+    // Build agents from whatever context is available
+    const agents: Array<{ name: string; analysis: string }> = Array.isArray(input.agents)
+      ? input.agents
+      : [
+          { name: "Risk", analysis: `Risk level: ${riskLevel}.` },
+          { name: "Trend", analysis: `Trend: ${trend}.` },
+        ];
+
+    const bullish = agents.filter((a) => {
+      const l = a.analysis.toLowerCase();
+      return l.includes("bullish") || l.includes("low risk");
+    }).length;
+    const bearish = agents.filter((a) => {
+      const l = a.analysis.toLowerCase();
+      return l.includes("bearish") || l.includes("high risk");
+    }).length;
+    const total = agents.length || 1;
+
+    return {
+      consensus: bullish > bearish ? "bullish" : bullish < bearish ? "bearish" : "neutral",
+      confidence: Math.max(bullish, bearish) / total,
+      summary: `Debate for ${pair}: ${bullish > bearish ? "BULLISH" : bullish < bearish ? "BEARISH" : "NEUTRAL"} consensus.`,
+      agents: agents.map((a) => ({ name: a.name, opinion: a.analysis.slice(0, 300), weight: 1 })),
+    };
+  }
+}

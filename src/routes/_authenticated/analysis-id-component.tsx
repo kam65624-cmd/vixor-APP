@@ -1782,7 +1782,9 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
 }
 
 // ═══ ANALYSIS NOTES SECTION ═══
-const MOOD_EMOJI: Record<Mood, string> = {
+const MOOD_EMOJI: Record<string, string> = {
+  bullish: "🟢",
+  bearish: "🔴",
   confident: "💪",
   cautious: "⚠️",
   anxious: "😰",
