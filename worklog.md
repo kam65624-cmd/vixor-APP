@@ -229,3 +229,28 @@ Stage Summary:
 - DEX/meme tokens get 10s DexScreener polling for price updates
 - Token detail page shows embedded DexScreener chart instead of external link
 - Token detail header shows live price with LIVE badge for Binance-listed tokens
+
+---
+Task ID: 1
+Agent: main
+Task: Fix all backend and frontend issues in VIXOR — charts, live prices, chain mapping, dead code
+
+Work Log:
+- Searched entire project for existing TradingView chart code — found 6 components (TradingViewChart, TradingViewMiniChart, TradingViewTechAnalysis, TradingViewTickerTape, CandlestickChart, DexChart)
+- Verified use-discover-live-prices.ts is already 100% WebSocket (BinanceWS + DexScreenerWS) — zero polling
+- Fixed backend: search handler in discover.ts was returning raw ScoredToken[] without mapping chainId/pairAddress/dexUrl — now properly maps all fields
+- Removed dead DexScreenerEmbedChart component (120 lines of iframe code, blocked in Telegram)
+- Removed duplicate TradingViewMiniChart inline component (140 lines), replaced with proper TradingViewChart from components
+- Fixed chainId mapping: BSC was mapped to "ethereum" and Avalanche to "polygon" — now correctly mapped to "bsc" and "avalanche"
+- Added dexChainId field to RawTokenData to preserve original DexScreener chainId for WS subscriptions
+- Added "bsc" and "avalanche" to DiscoveryChain type, CHAIN_META, and ALL_CHAINS
+- Fixed use-discover-live-prices.ts DexScreener WS dependency array (was using .length only, now uses serialized keys)
+- Fixed searchTokenPairs type to include pairAddress field
+- Full TypeScript check: clean (0 errors)
+- Full production build: success (39.70s)
+
+Stage Summary:
+- Backend: 3 bugs fixed (search handler field mapping, chainId mapping, dexUrl generation)
+- Frontend: 2 bugs fixed (dead DexScreener iframe code removed, TradingView chart properly integrated)
+- Live prices: confirmed 100% WebSocket (zero polling) with improved WS re-subscription logic
+- All changes compile and build successfully

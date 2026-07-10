@@ -40,8 +40,8 @@ function mapChain(chainId: string): RawTokenData["chain"] | null {
     base: "base",
     arbitrum: "arbitrum",
     polygon: "polygon",
-    avalanche: "polygon", // mapped to polygon for simplicity
-    bsc: "ethereum", // mapped to ethereum ecosystem
+    avalanche: "avalanche",
+    bsc: "bsc",
   };
   return mapping[chainId] ?? null;
 }
@@ -177,6 +177,7 @@ export async function fetchLatestPairs(
         chain,
         createdAt: pair.pairCreatedAt || 0,
         pairIdentifier: pair.pairAddress,
+        dexChainId: pair.chainId,
         logoUrl: pair.info?.imageUrl,
       });
 
@@ -232,6 +233,7 @@ export async function searchTokenPairs(
     const json = (await response.json()) as {
       pairs?: Array<{
         chainId: string;
+        pairAddress: string;
         baseToken: { address: string; symbol: string; name: string };
         priceUsd: string;
         priceChange?: { h24: number };
@@ -257,6 +259,8 @@ export async function searchTokenPairs(
         marketCap: p.fdv ?? 0,
         chain: mapChain(p.chainId)!,
         createdAt: p.pairCreatedAt || 0,
+        pairIdentifier: p.pairAddress,
+        dexChainId: p.chainId,
         logoUrl: p.info?.imageUrl,
       }));
 

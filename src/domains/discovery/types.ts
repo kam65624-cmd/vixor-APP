@@ -7,7 +7,7 @@
 // ── Token Core ───────────────────────────────────────────────────────────────
 
 /** Supported blockchain networks for token discovery. */
-export type DiscoveryChain = "solana" | "ethereum" | "base" | "arbitrum" | "polygon";
+export type DiscoveryChain = "solana" | "ethereum" | "base" | "arbitrum" | "polygon" | "bsc" | "avalanche";
 
 /** Risk level assigned by VIXOR AI to a discovered token. */
 export type RiskLevel = "low" | "medium" | "high";
@@ -39,6 +39,8 @@ export interface RawTokenData {
   createdAt: string | number;
   /** DexScreener pair URL or identifier. */
   pairIdentifier?: string;
+  /** Original DexScreener chainId (for WebSocket subscription). */
+  dexChainId?: string;
   /** Token logo URL. */
   logoUrl?: string;
   /** Decimals for the token. */

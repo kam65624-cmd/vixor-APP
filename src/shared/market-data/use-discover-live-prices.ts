@@ -133,7 +133,7 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
 
     return () => unsub();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, dexPairs.length]);
+  }, [enabled, dexPairs.map((p) => `${p.chainId}:${p.pairAddress}`).join(",")]);
 
   const getLivePrice = useCallback(
     (symbol: string): { price: number; change24h: number; timestamp: number } | undefined => {

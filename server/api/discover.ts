@@ -232,7 +232,37 @@ const handler = defineEventHandler(async (event) => {
 
     // If search query provided, use search instead of scan
     if (params.search && params.search.trim().length > 0) {
-      const tokens = await searchTokens(params.search);
+      const scoredTokens = await searchTokens(params.search);
+      // Map ScoredToken fields to match the client-facing shape (same as main handler)
+      const tokens = scoredTokens.map((t) => ({
+        symbol: t.symbol,
+        name: t.name,
+        price: t.price,
+        change24h: t.change24h,
+        volume24h: t.volume24h,
+        liquidity: t.liquidity,
+        smartMoneyPct: t.smartMoneyScore,
+        risk: t.riskLevel,
+        chain: t.chain.charAt(0).toUpperCase() + t.chain.slice(1),
+        chainId: t.dexChainId || t.chain,
+        marketCap: t.marketCap,
+        discoveryScore: t.discoveryScore,
+        socialScore: t.socialScore,
+        liquidityScore: t.liquidityScore,
+        ageScore: t.ageScore,
+        nftBadge: t.nftBadge,
+        isHoneypot: t.isHoneypot ?? false,
+        logoUrl: t.logoUrl || undefined,
+        socialMentions: t.socialMentions ?? 0,
+        socialSentiment: t.socialSentiment ?? 0,
+        topHolderPct: t.topHolderPct ?? 0,
+        scannedAt: t.scannedAt,
+        address: t.address || undefined,
+        pairAddress: t.pairIdentifier || undefined,
+        dexUrl: t.pairIdentifier
+          ? `https://dexscreener.com/${t.dexChainId || t.chain}/${t.pairIdentifier}`
+          : undefined,
+      }));
       return {
         success: true,
         data: tokens,
@@ -282,7 +312,7 @@ const handler = defineEventHandler(async (event) => {
         smartMoneyPct: t.smartMoneyScore,
         risk: t.riskLevel,
         chain: t.chain.charAt(0).toUpperCase() + t.chain.slice(1),
-        chainId: t.chain,
+        chainId: t.dexChainId || t.chain,
         marketCap: t.marketCap,
         discoveryScore: t.discoveryScore,
         socialScore: t.socialScore,
@@ -298,7 +328,7 @@ const handler = defineEventHandler(async (event) => {
         address: t.address || undefined,
         pairAddress: t.pairIdentifier || undefined,
         dexUrl: t.pairIdentifier
-          ? `https://dexscreener.com/${t.chain}/${t.pairIdentifier}`
+          ? `https://dexscreener.com/${t.dexChainId || t.chain}/${t.pairIdentifier}`
           : undefined,
       }));
     }

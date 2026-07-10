@@ -6,6 +6,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { BinanceWS, type LivePrice } from "@/shared/market-data/binance-ws";
 import { DexScreenerWS } from "@/shared/market-data/dexscreener-ws";
 import { DexChart } from "@/components/vixor/DexChart";
+import { TradingViewChart } from "@/components/vixor/TradingViewChart";
 import {
   PageLayout,
   StatsRow,
@@ -209,266 +210,6 @@ function getAssetTypeBadge(assetType: AssetType): { label: string; color: string
 
 const LEVERAGE_OPTIONS = [1, 2, 5, 10, 25, 50] as const;
 
-// ── DexScreener Embedded Chart ──────────────────────────────────────────────
-
-const DexScreenerEmbedChart = memo(function DexScreenerEmbedChart({
-  dexUrl,
-  height = "350px",
-}: {
-  dexUrl: string;
-  height?: string;
-}) {
-  const [iframeFailed, setIframeFailed] = useState(false);
-
-  // Convert https://dexscreener.com/{chain}/{address} to embed URL
-  const embedUrl = useMemo(() => {
-    try {
-      const url = new URL(dexUrl);
-      const pathParts = url.pathname.split("/").filter(Boolean);
-      if (pathParts.length >= 2) {
-        return `https://dexscreener.com/${pathParts[0]}/${pathParts[1]}?embed=1&trades=0&info=0&chartLeftToolbar=0&chartToolbar=1`;
-      }
-    } catch {
-      // fallback: try direct embed
-    }
-    return `${dexUrl}?embed=1&trades=0&info=0&chartLeftToolbar=0&chartToolbar=1`;
-  }, [dexUrl]);
-
-  // Fallback: iframe blocked (Telegram WebView, etc.) → show "Open Chart" link
-  if (iframeFailed) {
-    return (
-      <div
-        style={{
-          height,
-          borderBottom: "1px solid var(--color-border)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "10px",
-          background: "var(--color-background)",
-          padding: "20px",
-        }}
-      >
-        <span style={{ fontSize: "32px" }}>📈</span>
-        <span
-          style={{
-            fontSize: "11px",
-            color: "var(--color-muted-foreground)",
-            textAlign: "center",
-            fontFamily: "'Inter', system-ui, sans-serif",
-          }}
-        >
-          Chart opens in DexScreener
-        </span>
-        <a
-          href={dexUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-            padding: "8px 18px",
-            borderRadius: "8px",
-            background: "var(--color-primary)",
-            color: "#000",
-            fontSize: "11px",
-            fontWeight: 700,
-            fontFamily: "'Inter', system-ui, sans-serif",
-            textDecoration: "none",
-          }}
-        >
-          Open Chart ↗
-        </a>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        height,
-        borderBottom: "1px solid var(--color-border)",
-        position: "relative",
-        overflow: "hidden",
-        background: "var(--color-background)",
-      }}
-    >
-      <iframe
-        src={embedUrl}
-        style={{
-          width: "100%",
-          height: "100%",
-          border: "none",
-          display: "block",
-        }}
-        title="DexScreener Chart"
-        loading="lazy"
-        allow="clipboard-write"
-        onError={() => setIframeFailed(true)}
-        // Telegram WebView may silently block — detect via timeout
-        ref={(node) => {
-          if (!node) return;
-          const timer = setTimeout(() => {
-            // If iframe hasn't loaded anything, show fallback
-            try {
-              // Cross-origin: will throw, which means iframe loaded something
-              void node.contentWindow?.document;
-            } catch {
-              // Content loaded (cross-origin = success)
-            }
-          }, 5000);
-          node.onload = () => clearTimeout(timer);
-          return () => clearTimeout(timer);
-        }}
-      />
-    </div>
-  );
-});
-
-// ── TradingView Chart Component ──────────────────────────────────────────────
-
-const TradingViewMiniChart = memo(function TradingViewMiniChart({
-  symbol,
-  height,
-}: {
-  symbol: string;
-  height: string;
-}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
-
-  useEffect(() => {
-    // Check if script already exists
-    const existingScript = document.querySelector(
-      'script[src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js"]',
-    );
-    if (existingScript) {
-      setScriptLoaded(true);
-    } else {
-      const script = document.createElement("script");
-      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-      script.async = true;
-      script.onload = () => setScriptLoaded(true);
-      script.onerror = () => setHasError(true);
-      document.head.appendChild(script);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!scriptLoaded || !containerRef.current) return;
-
-    const container = containerRef.current;
-    container.innerHTML = "";
-
-    const widgetId = `tv_mini_${symbol.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`;
-
-    const widgetContainer = document.createElement("div");
-    widgetContainer.className = "tradingview-widget-container";
-    widgetContainer.style.height = "100%";
-    widgetContainer.style.width = "100%";
-
-    const widgetDiv = document.createElement("div");
-    widgetDiv.id = widgetId;
-    widgetDiv.style.height = "100%";
-    widgetDiv.style.width = "100%";
-    widgetContainer.appendChild(widgetDiv);
-    container.appendChild(widgetContainer);
-
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-    script.async = true;
-    script.type = "text/javascript";
-
-    const tvSymbol = toTradingViewSymbol(symbol);
-
-    const config = {
-      autosize: true,
-      symbol: tvSymbol,
-      interval: "240",
-      timezone: "Etc/UTC",
-      theme: "dark" as const,
-      style: "1",
-      locale: "en",
-      enable_publishing: false,
-      allow_symbol_change: true,
-      hide_top_toolbar: false,
-      hide_legend: false,
-      save_image: false,
-      backgroundColor: "rgba(11, 13, 16, 1)",
-      gridColor: "rgba(255, 255, 255, 0.03)",
-      withdateranges: true,
-      details: false,
-      hotlist: false,
-      calendar: false,
-      show_popup_button: true,
-      popup_width: "1000",
-      popup_height: "650",
-    };
-
-    script.textContent = JSON.stringify(config);
-    script.onerror = () => setHasError(true);
-    widgetContainer.appendChild(script);
-
-    return () => {
-      if (container && widgetContainer.parentNode === container) {
-        container.innerHTML = "";
-      }
-    };
-  }, [scriptLoaded, symbol]);
-
-  if (hasError) {
-    return (
-      <div
-        style={{
-          height,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "var(--color-background)",
-          borderBottom: `1px solid var(--color-border)`,
-        }}
-      >
-        <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>
-          Chart unavailable
-        </span>
-      </div>
-    );
-  }
-
-  if (!scriptLoaded) {
-    return (
-      <div
-        style={{
-          height,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "var(--color-background)",
-          borderBottom: `1px solid var(--color-border)`,
-        }}
-      >
-        <div
-          style={{
-            width: "24px",
-            height: "24px",
-            border: "2px solid var(--color-border)",
-            borderTopColor: "var(--color-primary)",
-            borderRadius: "50%",
-            animation: "spin 0.7s linear infinite",
-          }}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div ref={containerRef} style={{ height, borderBottom: `1px solid var(--color-border)` }} />
-  );
-});
-
 // ── Main Page Component ──────────────────────────────────────────────────────
 
 export function TokenPage() {
@@ -650,7 +391,7 @@ export function TokenPage() {
       >
         <PageScrollArea>
           <div style={{ padding: 0 }}>
-            <TradingViewMiniChart symbol={symbol} height="60vh" />
+            <TradingViewChart symbol={tvSymbol} height="60vh" />
             {/* Basic info below chart */}
             <div
               style={{
@@ -874,8 +615,8 @@ export function TokenPage() {
               height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
             />
           ) : (
-            <TradingViewMiniChart
-              symbol={symbol}
+            <TradingViewChart
+              symbol={tvSymbol}
               height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
             />
           )}
@@ -899,8 +640,8 @@ export function TokenPage() {
               }}
             >
               {isDexToken
-                ? `Live chart via DexScreener · ${chainFromDiscover?.toUpperCase() ?? "DEX"}`
-                : "Chart data provided by TradingView."}
+                ? `Live chart · ${chainFromDiscover?.toUpperCase() ?? "DEX"}`
+                : "Chart powered by TradingView."}
             </p>
             {isDexToken && dexUrl && (
               <a
@@ -1209,8 +950,8 @@ export function TokenPage() {
             height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
           />
         ) : (
-          <TradingViewMiniChart
-            symbol={symbol}
+          <TradingViewChart
+            symbol={tvSymbol}
             height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
           />
         )}

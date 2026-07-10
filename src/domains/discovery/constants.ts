@@ -42,10 +42,12 @@ export const CHAIN_META: Record<DiscoveryChain, { label: string; short: string; 
   base: { label: "Base", short: "BASE", color: "#0052FF" },
   arbitrum: { label: "Arbitrum", short: "ARB", color: "#28A0F0" },
   polygon: { label: "Polygon", short: "POL", color: "#8247E5" },
+  bsc: { label: "BNB Chain", short: "BSC", color: "#F3BA2F" },
+  avalanche: { label: "Avalanche", short: "AVAX", color: "#E84142" },
 };
 
 /** All supported chains as an array. */
-export const ALL_CHAINS: DiscoveryChain[] = ["solana", "ethereum", "base", "arbitrum", "polygon"];
+export const ALL_CHAINS: DiscoveryChain[] = ["solana", "ethereum", "base", "arbitrum", "polygon", "bsc", "avalanche"];
 
 // ── Risk Thresholds ──────────────────────────────────────────────────────────
 
