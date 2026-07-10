@@ -376,3 +376,73 @@ export const getStockFundamentals = createServerFn({ method: "GET" })
     const result = await fetchStockFundamentals(data.symbol);
     return result;
   });
+
+// ---------- DEX OHLCV (GeckoTerminal — free, no API key) ----------
+// Returns kline data for DEX pairs via GeckoTerminal API.
+// Used by the CandlestickChart component for meme/DEX tokens.
+export const getDexOHLCV = createServerFn({ method: "GET" })
+  .validator((d: unknown) =>
+    z
+      .object({
+        chainId: z.string().min(1),
+        pairAddress: z.string().min(1),
+        interval: z.string().default("hour"),
+        limit: z.coerce.number().min(10).max(500).default(200),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { chainId, pairAddress, interval, limit } = data;
+
+    // Map chainId to GeckoTerminal network id
+    const networkMap: Record<string, string> = {
+      ethereum: "eth",
+      solana: "sol",
+      base: "base",
+      arbitrum: "arbitrum",
+      polygon: "polygon",
+      bsc: "bsc",
+      avalanche: "avalanche",
+    };
+    const network = networkMap[chainId] || chainId;
+
+    const url = `https://api.geckoterminal.com/api/v2/networks/${network}/pools/${pairAddress}/ohlcv/${interval}?limit=${limit}`;
+
+    try {
+      const res = await fetch(url, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) return [];
+
+      const json = (await res.json()) as {
+        data?: Array<{
+          attributes: {
+            time: number;
+            open: number;
+            high: number;
+            low: number;
+            close: number;
+            volume: number;
+          };
+        }>;
+      };
+
+      if (!json.data || json.data.length === 0) return [];
+
+      return json.data.map((c) => ({
+        time: c.attributes.time,
+        open: c.attributes.open,
+        high: c.attributes.high,
+        low: c.attributes.low,
+        close: c.attributes.close,
+        volume: c.attributes.volume,
+      }));
+    } catch (err) {
+      console.warn(
+        "[DexOHLCV] GeckoTerminal failed:",
+        err instanceof Error ? err.message : String(err),
+      );
+      return [];
+    }
+  });

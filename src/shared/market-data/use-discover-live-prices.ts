@@ -1,90 +1,30 @@
 // ============================================================================
-// VIXOR useDiscoverLivePrices — Silent real-time price overlay for Discover
+// VIXOR useDiscoverLivePrices — REAL-TIME price overlay for Discover
 // ============================================================================
-// Merges live Binance WS + DexScreener polling prices into discover tokens.
-// Prices update in-place with zero visible refresh for the user.
+// ALL prices are live via WebSocket — zero polling, zero API calls.
+//   - Binance-listed tokens: Binance WebSocket (instant)
+//   - DEX/meme tokens: DexScreener WebSocket (instant)
+// Prices update in-place with no visible refresh for the user.
 // ============================================================================
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { BinanceWS, type LivePrice } from "./binance-ws";
-import { getPair } from "./dexscreener";
+import { DexScreenerWS, type DexPrice } from "./dexscreener-ws";
 
 // Tokens that trade on Binance — they get real-time WebSocket prices
 const BINANCE_SYMBOLS = new Set([
-  "BTC",
-  "ETH",
-  "SOL",
-  "BNB",
-  "XRP",
-  "DOGE",
-  "ADA",
-  "AVAX",
-  "DOT",
-  "LINK",
-  "MATIC",
-  "UNI",
-  "LTC",
-  "BCH",
-  "ATOM",
-  "FIL",
-  "APT",
-  "ARB",
-  "OP",
-  "NEAR",
-  "AAVE",
-  "MKR",
-  "SNX",
-  "GRT",
-  "INJ",
-  "SUI",
-  "SEI",
-  "TIA",
-  "JUP",
-  "WIF",
-  "PEPE",
-  "FLOKI",
-  "BONK",
-  "SHIB",
-  "RENDER",
-  "FET",
-  "AGIX",
-  "OCEAN",
-  "ICP",
-  "HBAR",
-  "ALGO",
-  "XTZ",
-  "FTM",
-  "SAND",
-  "MANA",
-  "GALA",
-  "AXS",
-  "APE",
-  "DYDX",
-  "CRV",
-  "LDO",
-  "RPL",
-  "CKB",
-  "TRX",
-  "TON",
-  "KAS",
-  "RUNE",
-  "THETA",
-  "EGLD",
-  "FLOW",
-  "XLM",
-  "VET",
-  "ALPHA",
-  "ONE",
-  "GAS",
-  "FTM",
+  "BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA", "AVAX", "DOT", "LINK",
+  "MATIC", "UNI", "LTC", "BCH", "ATOM", "FIL", "APT", "ARB", "OP", "NEAR",
+  "AAVE", "MKR", "SNX", "GRT", "INJ", "SUI", "SEI", "TIA", "JUP", "WIF",
+  "PEPE", "FLOKI", "BONK", "SHIB", "RENDER", "FET", "AGIX", "OCEAN", "ICP",
+  "HBAR", "ALGO", "XTZ", "FTM", "SAND", "MANA", "GALA", "AXS", "APE", "DYDX",
+  "CRV", "LDO", "RPL", "CKB", "TRX", "TON", "KAS", "RUNE", "THETA", "EGLD",
+  "FLOW", "XLM", "VET", "ALPHA", "ONE", "GAS",
 ]);
 
-/** Check if a token symbol has a Binance USDT pair */
 function toBinanceSymbol(tokenSymbol: string): string | null {
   const clean = tokenSymbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
-  if (BINANCE_SYMBOLS.has(clean)) {
-    return `${clean}USDT`;
-  }
+  if (BINANCE_SYMBOLS.has(clean)) return `${clean}USDT`;
   return null;
 }
 
@@ -97,39 +37,29 @@ export interface LivePriceOverlay {
 }
 
 interface UseDiscoverLivePricesOptions {
-  /** Array of token symbols currently visible on discover */
   tokens: Array<{ symbol: string; chain?: string; chainId?: string; pairAddress?: string }>;
-  /** Enable/disable live updates. Default: true */
   enabled?: boolean;
-  /** DexScreener poll interval for non-Binance tokens (ms). Default: 10000 */
-  dexPollInterval?: number;
 }
 
 /**
- * useDiscoverLivePrices — Returns a price overlay map keyed by token symbol.
- * Merge into your token list to show live prices silently.
+ * useDiscoverLivePrices — ALL WebSocket, ZERO polling.
  *
- * - Binance-listed tokens: real-time WebSocket (instant, no API calls)
- * - DEX/meme tokens: DexScreener REST polling (10s interval)
- * - Prices update in-place with no visible refresh
+ * Binance tokens → BinanceWS (wss://stream.binance.com)
+ * DEX tokens    → DexScreenerWS (wss://ws.dexscreener.com)
  */
 export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
-  const { tokens, enabled = true, dexPollInterval = 10_000 } = options;
+  const { tokens, enabled = true } = options;
 
   const [overlay, setOverlay] = useState<LivePriceOverlay>({});
   const overlayRef = useRef(overlay);
   overlayRef.current = overlay;
 
-  // Separate tokens into Binance (WS) and DEX (polling)
-  const { wsSymbols, wsSymbolMap, dexTokens } = useMemo(() => {
+  // Separate tokens into Binance WS and DEX WS
+  const { wsSymbols, wsSymbolMap, dexPairs, dexSymbolMap } = useMemo(() => {
     const wsSymbols: string[] = [];
-    const wsSymbolMap = new Map<string, string>(); // binanceSymbol → discoverTokenSymbol
-    const dexTokens: Array<{
-      symbol: string;
-      chain?: string;
-      chainId?: string;
-      pairAddress?: string;
-    }> = [];
+    const wsSymbolMap = new Map<string, string>(); // binanceSymbol → discoverSymbol
+    const dexPairs: Array<{ chainId: string; pairAddress: string }> = [];
+    const dexSymbolMap = new Map<string, string>(); // "chainId:pairAddress" → discoverSymbol
 
     for (const token of tokens) {
       const binanceSym = toBinanceSymbol(token.symbol);
@@ -137,19 +67,20 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
         wsSymbols.push(binanceSym);
         wsSymbolMap.set(binanceSym, token.symbol);
       } else if (token.chainId && token.pairAddress) {
-        dexTokens.push(token);
+        const key = `${token.chainId}:${token.pairAddress}`;
+        dexPairs.push({ chainId: token.chainId, pairAddress: token.pairAddress });
+        dexSymbolMap.set(key, token.symbol);
       }
     }
 
-    return { wsSymbols, wsSymbolMap, dexTokens };
+    return { wsSymbols, wsSymbolMap, dexPairs, dexSymbolMap };
   }, [tokens]);
 
-  // ── Binance WebSocket for listed tokens ──
+  // ── Binance WebSocket ──
   useEffect(() => {
     if (!enabled || wsSymbols.length === 0) return;
 
     const ws = BinanceWS.getInstance();
-
     const unsub = ws.subscribe(
       wsSymbols,
       (updatedPrices: Map<string, LivePrice>) => {
@@ -168,74 +99,42 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
           return next;
         });
       },
-      undefined, // no status callback needed
     );
 
-    return () => {
-      unsub();
-    };
+    return () => unsub();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, wsSymbols.join(",")]);
 
-  // ── DexScreener polling for DEX/meme tokens ──
+  // ── DexScreener WebSocket (REAL-TIME, not polling) ──
   useEffect(() => {
-    if (!enabled || dexTokens.length === 0) return;
+    if (!enabled || dexPairs.length === 0) return;
 
-    let active = true;
+    const ws = DexScreenerWS.getInstance();
 
-    const fetchDexPrices = async () => {
-      // Fetch in parallel with concurrency limit of 5
-      const batchSize = 5;
-      const updates: LivePriceOverlay = {};
-
-      for (let i = 0; i < dexTokens.length; i += batchSize) {
-        if (!active) break;
-        const batch = dexTokens.slice(i, i + batchSize);
-
-        const results = await Promise.allSettled(
-          batch.map(async (token) => {
-            if (!token.chainId || !token.pairAddress) return null;
-            // Use getPair (direct pair lookup by chainId + pairAddress)
-            const pair = await getPair(token.chainId, token.pairAddress);
-            if (pair?.priceUsd) {
-              return {
-                symbol: token.symbol,
-                price: parseFloat(pair.priceUsd),
-                change24h: pair.priceChange?.["h24"] ?? 0,
+    const unsub = ws.subscribe(
+      dexPairs,
+      (updatedPrices: Map<string, DexPrice>) => {
+        setOverlay((prev) => {
+          const next = { ...prev };
+          for (const [key, dexPrice] of updatedPrices) {
+            const discoverSymbol = dexSymbolMap.get(key);
+            if (discoverSymbol && dexPrice.price > 0) {
+              next[discoverSymbol] = {
+                price: dexPrice.price,
+                change24h: dexPrice.change24h,
+                timestamp: dexPrice.timestamp,
               };
             }
-            return null;
-          }),
-        );
-
-        for (const r of results) {
-          if (r.status === "fulfilled" && r.value) {
-            updates[r.value.symbol] = {
-              price: r.value.price,
-              change24h: r.value.change24h,
-              timestamp: Date.now(),
-            };
           }
-        }
-      }
+          return next;
+        });
+      },
+    );
 
-      if (active && Object.keys(updates).length > 0) {
-        setOverlay((prev) => ({ ...prev, ...updates }));
-      }
-    };
+    return () => unsub();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, dexPairs.length]);
 
-    fetchDexPrices();
-    const interval = setInterval(fetchDexPrices, dexPollInterval);
-
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
-  }, [enabled, dexTokens.length, dexPollInterval]);
-
-  /**
-   * Get live price for a specific token symbol.
-   * Returns undefined if no live price is available yet.
-   */
   const getLivePrice = useCallback(
     (symbol: string): { price: number; change24h: number; timestamp: number } | undefined => {
       return overlayRef.current[symbol];

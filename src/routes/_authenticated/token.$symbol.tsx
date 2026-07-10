@@ -9,5 +9,6 @@ export const Route = createFileRoute("/_authenticated/token/$symbol")({
     change24h: (search.change24h as string) || undefined,
     name: (search.name as string) || undefined,
     dexUrl: (search.dexUrl as string) || undefined,
+    pairAddress: (search.pairAddress as string) || undefined,
   }),
 });

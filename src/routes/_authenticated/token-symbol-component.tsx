@@ -4,6 +4,8 @@ import { memo, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { getTradeHistory, getRecentAnalyses, getWatchlistData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { BinanceWS, type LivePrice } from "@/shared/market-data/binance-ws";
+import { DexScreenerWS } from "@/shared/market-data/dexscreener-ws";
+import { DexChart } from "@/components/vixor/DexChart";
 import {
   PageLayout,
   StatsRow,
@@ -475,8 +477,9 @@ export function TokenPage() {
   const navigate = useNavigate();
 
   const dexUrl = search.dexUrl;
+  const pairAddress = search.pairAddress;
   const chainFromDiscover = search.chain;
-  const isDexToken = !!(chainFromDiscover && dexUrl);
+  const isDexToken = !!(chainFromDiscover && pairAddress);
 
   const fetchTrades = useStableServerFn(getTradeHistory);
   const fetchAnalyses = useStableServerFn(getRecentAnalyses);
@@ -580,7 +583,9 @@ export function TokenPage() {
   }, [symbol, assetType]);
 
   const [liveBinancePrice, setLiveBinancePrice] = useState<LivePrice | null>(null);
+  const [liveDexPrice, setLiveDexPrice] = useState<{ price: number; change24h: number } | null>(null);
 
+  // Binance WS for CEX tokens
   useEffect(() => {
     if (!binanceSymbol) return;
     const ws = BinanceWS.getInstance();
@@ -595,10 +600,25 @@ export function TokenPage() {
     return () => unsub();
   }, [binanceSymbol]);
 
-  // Use live price if available, otherwise discovery data
-  const displayPrice = liveBinancePrice?.price ?? tokenData?.price ?? null;
-  const displayChange = liveBinancePrice?.change24h ?? tokenData?.change24h ?? null;
-  const isPriceLive = !!liveBinancePrice;
+  // DexScreener WS for DEX tokens (real-time)
+  useEffect(() => {
+    if (!isDexToken || !chainFromDiscover || !pairAddress) return;
+    const ws = DexScreenerWS.getInstance();
+    const key = `${chainFromDiscover}:${pairAddress}`;
+    const unsub = ws.subscribe(
+      [{ chainId: chainFromDiscover, pairAddress }],
+      (prices) => {
+        const p = prices.get(key);
+        if (p && p.price > 0) setLiveDexPrice({ price: p.price, change24h: p.change24h });
+      },
+    );
+    return () => unsub();
+  }, [isDexToken, chainFromDiscover, pairAddress]);
+
+  // Use live price if available
+  const displayPrice = liveBinancePrice?.price ?? liveDexPrice?.price ?? tokenData?.price ?? null;
+  const displayChange = liveBinancePrice?.change24h ?? liveDexPrice?.change24h ?? tokenData?.change24h ?? null;
+  const isPriceLive = !!(liveBinancePrice || liveDexPrice);
 
   // ── Quick Trade State ──
 
@@ -847,9 +867,10 @@ export function TokenPage() {
             </div>
           </div>
 
-          {isDexToken && dexUrl ? (
-            <DexScreenerEmbedChart
-              dexUrl={dexUrl}
+          {isDexToken && pairAddress && chainFromDiscover ? (
+            <DexChart
+              chainId={chainFromDiscover}
+              pairAddress={pairAddress}
               height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
             />
           ) : (
@@ -1179,11 +1200,12 @@ export function TokenPage() {
         </div>
 
         {/* ════════════════════════════════════════════════════════════════════
-            2. CHART — DexScreener for DEX tokens, TradingView for majors
+            2. CHART — Native DexChart for DEX, TradingView for majors
         ════════════════════════════════════════════════════════════════════ */}
-        {isDexToken && dexUrl ? (
-          <DexScreenerEmbedChart
-            dexUrl={dexUrl}
+        {isDexToken && pairAddress && chainFromDiscover ? (
+          <DexChart
+            chainId={chainFromDiscover}
+            pairAddress={pairAddress}
             height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
           />
         ) : (

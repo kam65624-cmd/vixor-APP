@@ -1218,6 +1218,7 @@ function DiscoverPage() {
           change24h: token.change24h != null ? String(token.change24h) : undefined,
           name: token.name,
           dexUrl: token.dexUrl,
+          pairAddress: token.pairAddress,
         },
       } as any);
     },
