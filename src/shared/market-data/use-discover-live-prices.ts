@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { BinanceWS, type LivePrice } from "./binance-ws";
-import { getTokenPrice } from "./dexscreener";
+import { getPair } from "./dexscreener";
 
 // Tokens that trade on Binance — they get real-time WebSocket prices
 const BINANCE_SYMBOLS = new Set([
