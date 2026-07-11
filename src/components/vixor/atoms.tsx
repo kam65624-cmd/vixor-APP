@@ -432,7 +432,7 @@ export function PriceCell({
 
   return (
     <div className="flex flex-col items-center gap-1 p-3">
-      <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+      <span className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground">
         {label}
       </span>
       <span className={cn("text-mono text-base font-bold", color)}>{value}</span>

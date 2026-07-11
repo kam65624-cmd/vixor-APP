@@ -232,6 +232,8 @@
 @layer base {
   * {
     border-color: var(--color-border);
+    /* Enforce minimum readable font size across the entire app */
+    min-font-size: 12px;
   }
   html,
   body {
@@ -242,6 +244,11 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    font-size: 14px;
+  }
+  /* Prevent any text from being smaller than 12px */
+  *:not(svg):not(path):not(circle):not(rect):not(line):not(polyline) {
+    font-size: max(var(--fs, inherit), 12px);
   }
 }
 
@@ -351,7 +358,7 @@
     border: 0.5px solid #7C9BC440;
     color: var(--color-primary);
     border-radius: var(--radius-pill);
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     padding: 2px 8px;
     display: inline-flex;
@@ -509,6 +516,53 @@
     .lg-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
     .lg-span-2 { grid-column: span 2; }
   }
+
+  /* ====== Market Ticker Smooth Scroll ====== */
+  .market-ticker {
+    display: flex;
+    gap: 16px;
+    padding: 8px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+  }
+  .market-ticker::-webkit-scrollbar { display: none; }
+
+  /* ====== Premium Card Hover ====== */
+  .card-premium {
+    background: var(--gradient-glass), var(--color-card);
+    border: 0.5px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-premium:hover {
+    background: rgba(124, 155, 196, 0.06);
+    border-color: rgba(124, 155, 196, 0.25);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+  .card-premium:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  /* ====== Pulse Animation for Greeting ====== */
+  .greeting-glow {
+    background: radial-gradient(ellipse at center, #7C9BC420 0%, transparent 60%);
+    animation: glow-drift 8s ease-in-out infinite;
+  }
+
+  /* ====== Number Flash (price updates) ====== */
+  .price-flash-up {
+    animation: flash-green 0.5s ease;
+  }
+  .price-flash-down {
+    animation: flash-red 0.5s ease;
+  }
 }
 
 /* Tablet */
@@ -592,6 +646,18 @@
 @keyframes line-draw {
   from { stroke-dashoffset: 1000; }
   to { stroke-dashoffset: 0; }
+}
+
+/* Price flash — bullish */
+@keyframes flash-green {
+  0%, 100% { background: transparent; }
+  30% { background: rgba(14, 203, 129, 0.15); }
+}
+
+/* Price flash — bearish */
+@keyframes flash-red {
+  0%, 100% { background: transparent; }
+  30% { background: rgba(246, 70, 93, 0.15); }
 }
 
 /* Table row press feedback */

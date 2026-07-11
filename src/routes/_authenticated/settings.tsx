@@ -138,8 +138,8 @@ function SettingRow({ item, children }: { item: SettingItem; children?: React.Re
       }}
     >
       <div>
-        <div style={{ fontSize: "11px", fontWeight: 600 }}>{item.label}</div>
-        <div style={{ fontSize: "9px", color: "var(--color-muted-foreground)", marginTop: "2px" }}>
+        <div style={{ fontSize: "12px", fontWeight: 600 }}>{item.label}</div>
+        <div style={{ fontSize: "12px", color: "var(--color-muted-foreground)", marginTop: "2px" }}>
           {item.desc}
         </div>
       </div>
@@ -188,7 +188,7 @@ function ExchangeCard({
   const isConnected = view?.isConnected ?? false;
 
   const inputStyle: React.CSSProperties = {
-    fontSize: "10px",
+    fontSize: "12px",
     fontWeight: 500,
     padding: "5px 8px",
     borderRadius: "4px",
@@ -204,7 +204,7 @@ function ExchangeCard({
   const monoInputStyle: React.CSSProperties = {
     ...inputStyle,
     fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-    fontSize: "9px",
+    fontSize: "12px",
   };
 
   return (
@@ -228,16 +228,16 @@ function ExchangeCard({
       >
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <span style={{ fontSize: "14px" }}>{exchange.icon}</span>
-          <span style={{ fontSize: "11px", fontWeight: 700 }}>{exchange.name}</span>
+          <span style={{ fontSize: "12px", fontWeight: 700 }}>{exchange.name}</span>
           {isConnected ? (
-            <span style={{ fontSize: "10px", color: "var(--color-bullish)", fontWeight: 600 }}>
+            <span style={{ fontSize: "12px", color: "var(--color-bullish)", fontWeight: 600 }}>
               ✓
             </span>
           ) : null}
           {form.isTestnet && (
             <span
               style={{
-                fontSize: "8px",
+                fontSize: "12px",
                 fontWeight: 700,
                 padding: "1px 5px",
                 borderRadius: "3px",
@@ -253,7 +253,7 @@ function ExchangeCard({
           <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
             <span
               style={{
-                fontSize: "9px",
+                fontSize: "12px",
                 fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                 color: "var(--color-muted-foreground)",
                 marginRight: "4px",
@@ -264,7 +264,7 @@ function ExchangeCard({
           </div>
         ) : (
           <span
-            style={{ fontSize: "9px", color: "var(--color-muted-foreground)", fontWeight: 500 }}
+            style={{ fontSize: "12px", color: "var(--color-muted-foreground)", fontWeight: 500 }}
           >
             Not configured
           </span>
@@ -278,7 +278,7 @@ function ExchangeCard({
             onClick={onTest}
             disabled={isTesting}
             style={{
-              fontSize: "9px",
+              fontSize: "12px",
               fontWeight: 600,
               padding: "3px 10px",
               borderRadius: "4px",
@@ -295,7 +295,7 @@ function ExchangeCard({
             onClick={onDelete}
             disabled={isDeleting}
             style={{
-              fontSize: "9px",
+              fontSize: "12px",
               fontWeight: 600,
               padding: "3px 10px",
               borderRadius: "4px",
@@ -311,7 +311,7 @@ function ExchangeCard({
           {view?.lastConnectedAt && (
             <span
               style={{
-                fontSize: "8px",
+                fontSize: "12px",
                 color: "var(--color-muted-foreground)",
                 marginLeft: "auto",
               }}
@@ -326,7 +326,7 @@ function ExchangeCard({
       {testResult && (
         <div
           style={{
-            fontSize: "9px",
+            fontSize: "12px",
             fontWeight: 500,
             padding: "4px 8px",
             borderRadius: "4px",
@@ -383,7 +383,7 @@ function ExchangeCard({
                 border: "none",
                 color: "var(--color-muted-foreground)",
                 cursor: "pointer",
-                fontSize: "11px",
+                fontSize: "12px",
                 padding: "0",
                 lineHeight: 1,
               }}
@@ -413,7 +413,7 @@ function ExchangeCard({
                   onClick={() => onFormChange({ ...form, mtType: mt })}
                   style={{
                     flex: 1,
-                    fontSize: "9px",
+                    fontSize: "12px",
                     fontWeight: 600,
                     padding: "4px 0",
                     borderRadius: "4px",
@@ -466,7 +466,7 @@ function ExchangeCard({
                   }}
                 />
               </div>
-              <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>
+              <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>
                 Testnet
               </span>
             </div>
@@ -474,7 +474,7 @@ function ExchangeCard({
               onClick={onSave}
               disabled={isSaving || !form.apiKey || !form.apiSecret}
               style={{
-                fontSize: "10px",
+                fontSize: "12px",
                 fontWeight: 700,
                 padding: "4px 14px",
                 borderRadius: "5px",
@@ -906,7 +906,7 @@ function SettingsPage() {
 
   // ── Styles ─────────────────────────────────────────────────────────────────
   const inputStyle: React.CSSProperties = {
-    fontSize: "10px",
+    fontSize: "12px",
     fontWeight: 500,
     padding: "4px 8px",
     borderRadius: "4px",
@@ -940,7 +940,7 @@ function SettingsPage() {
                 key={opt}
                 onClick={() => item.onChange(oi)}
                 style={{
-                  fontSize: "9px",
+                  fontSize: "12px",
                   fontWeight: 600,
                   padding: "3px 8px",
                   borderRadius: "4px",
@@ -974,7 +974,7 @@ function SettingsPage() {
           <button
             onClick={item.onClick}
             style={{
-              fontSize: "10px",
+              fontSize: "12px",
               fontWeight: 600,
               padding: "4px 12px",
               borderRadius: "4px",
@@ -1007,7 +1007,7 @@ function SettingsPage() {
             background: `${"var(--color-bullish)"}26`,
             border: `1px solid ${"var(--color-bullish)"}4D`,
             color: "var(--color-bullish)",
-            fontSize: "11px",
+            fontSize: "12px",
             fontWeight: 600,
             padding: "4px 14px",
             borderRadius: "6px",
@@ -1036,7 +1036,7 @@ function SettingsPage() {
             background: `${"var(--color-bearish)"}1A`,
             borderBottom: `1px solid ${"var(--color-bearish)"}33`,
             color: "var(--color-bearish)",
-            fontSize: "10px",
+            fontSize: "12px",
             fontWeight: 500,
           }}
         >
@@ -1058,7 +1058,7 @@ function SettingsPage() {
           onClick={handleSave}
           disabled={updateMutation.isPending}
           style={{
-            fontSize: "10px",
+            fontSize: "12px",
             fontWeight: 700,
             padding: "5px 14px",
             borderRadius: "6px",
@@ -1082,7 +1082,7 @@ function SettingsPage() {
         <div style={{ marginBottom: "12px" }}>
           <div
             style={{
-              fontSize: "11px",
+              fontSize: "12px",
               fontWeight: 700,
               color: "var(--color-muted-foreground)",
               padding: "6px 0",
@@ -1171,7 +1171,7 @@ function SettingsPage() {
           <div key={section.title} style={{ marginBottom: "12px" }}>
             <div
               style={{
-                fontSize: "11px",
+                fontSize: "12px",
                 fontWeight: 700,
                 color: "var(--color-muted-foreground)",
                 padding: "6px 0",

@@ -341,13 +341,22 @@ function Analyze() {
                 display: "block",
                 width: "100%",
                 aspectRatio: "4/3",
-                borderRadius: 8,
+                borderRadius: 16,
                 border: "2px dashed var(--color-border)",
-                background: "rgba(124,155,196,0.03)",
+                background: "rgba(255, 255, 255, 0.04)",
+                backdropFilter: "blur(12px)",
                 cursor: "pointer",
                 position: "relative",
                 overflow: "hidden",
-                transition: "border-color 0.15s, background 0.15s",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-primary)";
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-border)";
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
               }}
             >
               <div
@@ -364,30 +373,33 @@ function Analyze() {
               >
                 <div
                   style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 12,
+                    width: 72,
+                    height: 72,
+                    borderRadius: 16,
                     background: "rgba(14,203,129,0.15)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    marginBottom: 16,
+                    marginBottom: 20,
+                    boxShadow: "0 0 20px rgba(14,203,129,0.1)",
+                    transition: "transform 0.2s ease",
                   }}
                 >
-                  <Upload style={{ width: 32, height: 32, color: "var(--color-bullish)" }} />
+                  <Upload style={{ width: 36, height: 36, color: "var(--color-bullish)" }} />
                 </div>
                 <div
                   style={{
-                    fontWeight: 700,
-                    fontSize: 18,
+                    fontWeight: 800,
+                    fontSize: 20,
                     color: "var(--color-foreground)",
-                    marginBottom: 4,
+                    marginBottom: 8,
+                    letterSpacing: "-0.01em",
                   }}
                 >
                   {t("analyze.tapToUpload") || "Tap to Upload Chart"}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>
-                  PNG, JPG, WebP (Max 8MB)
+                <div style={{ fontSize: 14, color: "var(--color-muted-foreground)", maxWidth: "240px", lineHeight: 1.5 }}>
+                  PNG, JPG, WebP up to 8MB
                 </div>
               </div>
             </label>
@@ -788,7 +800,7 @@ function Analyze() {
                       </span>
                       <span
                         style={{
-                          fontSize: 9,
+                          fontSize: 11,
                           fontWeight: 400,
                           color: "var(--color-muted-foreground)",
                           lineHeight: 1.4,

@@ -27,7 +27,7 @@ import {
   Trash2,
   Radio,
 } from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { getAnalysis } from "@/domains/analysis/functions";
 import { getNotesByAnalysis, deleteNote } from "@/domains/notes/functions";
 import type { TradingNote, Mood } from "@/domains/notes/types";
@@ -118,6 +118,673 @@ function highlightSMC(text: string): React.ReactNode[] {
     }
     return part;
   });
+}
+
+function ChartCanvasOverlay({ analysis, imageUrl, onZoom }: { analysis: any; imageUrl: string; onZoom: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img || !analysis) return;
+
+    const draw = () => {
+      // Match canvas internal resolution to the image natural resolution
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Helper to parse normalized bounding box [ymin, xmin, ymax, xmax] or [y1, x1, y2, x2]
+      const getRect = (box: any) => {
+        if (Array.isArray(box) && box.length >= 4) {
+          // Check if it's [ymin, xmin, ymax, xmax]
+          return {
+            y: box[0] * h,
+            x: box[1] * w,
+            h: (box[2] - box[0]) * h,
+            w: (box[3] - box[1]) * w,
+          };
+        }
+        if (typeof box === "object" && box !== null) {
+          const ymin = box.ymin ?? box.y1 ?? box.top ?? 0;
+          const xmin = box.xmin ?? box.x1 ?? box.left ?? 0;
+          const ymax = box.ymax ?? box.y2 ?? box.bottom ?? 0;
+          const xmax = box.xmax ?? box.x2 ?? box.right ?? 0;
+          // If values are <= 1, assume normalized, otherwise pixel values
+          const scaleY = ymin <= 1 && ymax <= 1 ? h : 1;
+          const scaleX = xmin <= 1 && xmax <= 1 ? w : 1;
+          return {
+            y: ymin * scaleY,
+            x: xmin * scaleX,
+            h: Math.abs(ymax - ymin) * scaleY,
+            w: Math.abs(xmax - xmin) * scaleX,
+          };
+        }
+        return null;
+      };
+
+      // FVG (Fair Value Gaps) - Green/Red boxes
+      if (Array.isArray(analysis.fvgs)) {
+        analysis.fvgs.forEach((fvg: any) => {
+          const rect = getRect(fvg.box || fvg);
+          if (!rect) return;
+          const isBullish = fvg.type === "bullish" || fvg.direction === "up";
+          ctx.fillStyle = isBullish ? "rgba(14,203,129,0.2)" : "rgba(246,70,93,0.2)";
+          ctx.strokeStyle = isBullish ? "rgba(14,203,129,0.8)" : "rgba(246,70,93,0.8)";
+          ctx.lineWidth = 2;
+          ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+          ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+          ctx.fillStyle = ctx.strokeStyle;
+          ctx.font = "bold 14px sans-serif";
+          ctx.fillText("FVG", rect.x + 4, rect.y + 16);
+        });
+      }
+
+      // Order Blocks (OB) - Solid dashed boxes
+      if (Array.isArray(analysis.orderBlocks)) {
+        analysis.orderBlocks.forEach((ob: any) => {
+          const rect = getRect(ob.box || ob);
+          if (!rect) return;
+          const isBullish = ob.type === "bullish" || ob.direction === "up";
+          ctx.fillStyle = isBullish ? "rgba(14,203,129,0.15)" : "rgba(246,70,93,0.15)";
+          ctx.strokeStyle = isBullish ? "rgba(14,203,129,1)" : "rgba(246,70,93,1)";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+          ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+          ctx.setLineDash([]);
+          ctx.fillStyle = ctx.strokeStyle;
+          ctx.font = "bold 14px sans-serif";
+          ctx.fillText("OB", rect.x + 4, rect.y + 16);
+        });
+      }
+
+      // Liquidity Zones - Yellow/Orange filled areas
+      if (Array.isArray(analysis.liquidityZones)) {
+        analysis.liquidityZones.forEach((lz: any) => {
+          const rect = getRect(lz.box || lz);
+          if (!rect) return;
+          ctx.fillStyle = "rgba(245,158,11,0.2)";
+          ctx.strokeStyle = "rgba(245,158,11,0.8)";
+          ctx.lineWidth = 2;
+          ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+          ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+          ctx.fillStyle = ctx.strokeStyle;
+          ctx.font = "bold 14px sans-serif";
+          ctx.fillText("Liquidity", rect.x + 4, rect.y + 16);
+        });
+      }
+
+      // Support / Resistance Levels (Lines)
+      if (Array.isArray(analysis.srLevels)) {
+        analysis.srLevels.forEach((sr: any) => {
+          const rect = getRect(sr.box || sr);
+          const y = rect ? rect.y : (sr.y ?? sr.price ?? 0) * (sr.y <= 1 ? h : 1);
+          if (y === 0) return;
+          ctx.strokeStyle = sr.type === "support" ? "rgba(14,203,129,0.8)" : "rgba(246,70,93,0.8)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(w, y);
+          ctx.stroke();
+          ctx.fillStyle = ctx.strokeStyle;
+          ctx.font = "bold 14px sans-serif";
+          ctx.fillText(sr.type === "support" ? "Support" : "Resistance", 10, y - 4);
+        });
+      }
+
+      // Pivots (Tops / Bottoms)
+      if (Array.isArray(analysis.pivots)) {
+        analysis.pivots.forEach((pivot: any) => {
+          const rect = getRect(pivot.box || pivot);
+          const y = rect ? rect.y : (pivot.y ?? pivot.price ?? 0) * (pivot.y <= 1 ? h : 1);
+          const x = rect ? rect.x + rect.w / 2 : (pivot.x ?? w / 2);
+          if (y === 0) return;
+          ctx.fillStyle = pivot.type === "top" ? "rgba(246,70,93,1)" : "rgba(14,203,129,1)";
+          ctx.beginPath();
+          ctx.arc(x, y, 6, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255,255,255,0.8)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.font = "bold 12px sans-serif";
+          ctx.fillText(pivot.type === "top" ? "Top" : "Bottom", x + 10, y + 4);
+        });
+      }
+    };
+
+    if (img.complete) {
+      draw();
+    } else {
+      img.onload = draw;
+    }
+  }, [analysis, imageUrl]);
+
+  return (
+    <div
+      style={{
+        ...CARD,
+        margin: "0 16px 16px",
+        overflow: "hidden",
+        position: "relative",
+        cursor: "pointer",
+        background: "oklch(0 0 0)",
+      }}
+      onClick={onZoom}
+    >
+      <img
+        ref={imgRef}
+        src={imageUrl}
+        alt="Analyzed chart"
+        style={{
+          width: "100%",
+          maxHeight: "240px",
+          objectFit: "contain",
+          display: "block",
+        }}
+      />
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "8px",
+          right: "8px",
+          width: "32px",
+          height: "32px",
+          borderRadius: "8px",
+          background: "oklch(0 0 0 / 0.60)",
+          backdropFilter: "blur(8px)",
+          color: "var(--color-foreground)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Maximize2 size={16} />
+      </div>
+    </div>
+  );
+}
+
+// ── Chart with Canvas Annotations ────────────────────────────────────────────
+// Draws FVG, Order Blocks, Support/Resistance, and Liquidity zones
+// directly on the chart image using HTML5 Canvas API.
+
+interface AnnotationConfig {
+  imageUrl: string;
+  analysis: any;
+  isBullish: boolean;
+  isBearish: boolean;
+}
+
+function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: AnnotationConfig) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [showAnnotations, setShowAnnotations] = useState(true);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgZoomLocal, setImgZoomLocal] = useState(false);
+
+  // Extract annotation data from analysis
+  const fvgs = useMemo(() => {
+    const raw = analysis?.raw_ai_response ?? {};
+    return (analysis?.fvgs ?? raw.fvgs ?? []) as Array<{
+      type: "bullish" | "bearish";
+      top: number;
+      bottom: number;
+      start_bar?: number;
+      end_bar?: number;
+    }>;
+  }, [analysis]);
+
+  const orderBlocks = useMemo(() => {
+    const raw = analysis?.raw_ai_response ?? {};
+    return (analysis?.order_blocks ?? raw.order_blocks ?? analysis?.orderBlocks ?? raw.orderBlocks ?? []) as Array<{
+      type: "bullish" | "bearish";
+      top: number;
+      bottom: number;
+      bar?: number;
+      strength?: string;
+    }>;
+  }, [analysis]);
+
+  const srLevels = useMemo(() => {
+    const raw = analysis?.raw_ai_response ?? {};
+    return (analysis?.sr_levels ?? raw.sr_levels ?? analysis?.srLevels ?? raw.srLevels ?? []) as Array<{
+      type: "support" | "resistance";
+      price: number;
+      strength?: string;
+    }>;
+  }, [analysis]);
+
+  const liquidityZones = useMemo(() => {
+    const raw = analysis?.raw_ai_response ?? {};
+    return (analysis?.liquidity_zones ?? raw.liquidity_zones ?? analysis?.liquidityZones ?? raw.liquidityZones ?? []) as Array<{
+      type: "buy_side" | "sell_side";
+      price: number;
+    }>;
+  }, [analysis]);
+
+  const priceRange = useMemo(() => {
+    const raw = analysis?.raw_ai_response ?? {};
+    return {
+      high: analysis?.high_price ?? raw.high_price ?? analysis?.chart_high ?? raw.chart_high ?? null,
+      low: analysis?.low_price ?? raw.low_price ?? analysis?.chart_low ?? raw.chart_low ?? null,
+    };
+  }, [analysis]);
+
+  const drawAnnotations = useCallback(() => {
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img || !imgLoaded) return;
+
+    const W = img.clientWidth;
+    const H = img.clientHeight;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, W, H);
+
+    if (!showAnnotations) return;
+
+    // Price-to-pixel helper
+    const high = priceRange.high;
+    const low = priceRange.low;
+    const hasPrice = high != null && low != null && high > low;
+
+    const priceToY = (price: number): number => {
+      if (!hasPrice) return 0;
+      return H - ((price - low!) / (high! - low!)) * H;
+    };
+
+    // ── Draw FVGs ──────────────────────────────────────────────────────────
+    fvgs.forEach((fvg) => {
+      if (!hasPrice) return;
+      const y1 = priceToY(fvg.top);
+      const y2 = priceToY(fvg.bottom);
+      const rectH = Math.abs(y2 - y1);
+      const rectY = Math.min(y1, y2);
+      const color = fvg.type === "bullish" ? "#0ECB81" : "#F6465D";
+
+      // Fill box
+      ctx.fillStyle = fvg.type === "bullish" ? "rgba(14,203,129,0.12)" : "rgba(246,70,93,0.12)";
+      ctx.fillRect(0, rectY, W, rectH);
+
+      // Top border
+      ctx.strokeStyle = color + "80";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(0, rectY, W, rectH);
+      ctx.setLineDash([]);
+
+      // Label
+      ctx.fillStyle = color;
+      ctx.font = "bold 10px 'JetBrains Mono', monospace";
+      ctx.fillText(`FVG ${fvg.type === "bullish" ? "▲" : "▼"}`, 6, rectY + 12);
+    });
+
+    // ── Draw Order Blocks ──────────────────────────────────────────────────
+    orderBlocks.forEach((ob) => {
+      if (!hasPrice) return;
+      const y1 = priceToY(ob.top);
+      const y2 = priceToY(ob.bottom);
+      const rectH = Math.abs(y2 - y1);
+      const rectY = Math.min(y1, y2);
+      const color = ob.type === "bullish" ? "#7C9BC4" : "#F59E0B";
+
+      ctx.fillStyle = ob.type === "bullish" ? "rgba(124,155,196,0.15)" : "rgba(245,158,11,0.15)";
+      ctx.fillRect(0, rectY, W, rectH);
+
+      // Left accent bar
+      ctx.fillStyle = color;
+      ctx.fillRect(0, rectY, 3, rectH);
+
+      // Label
+      ctx.fillStyle = color;
+      ctx.font = "bold 10px 'JetBrains Mono', monospace";
+      ctx.fillText(`OB ${ob.type === "bullish" ? "▲" : "▼"}`, 8, rectY + 12);
+    });
+
+    // ── Draw S/R Levels ───────────────────────────────────────────────────
+    srLevels.forEach((sr) => {
+      if (!hasPrice) return;
+      const y = priceToY(sr.price);
+      const color = sr.type === "support" ? "#0ECB81" : "#F6465D";
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Label pill
+      const label = sr.type === "support" ? "S" : "R";
+      const price = sr.price.toFixed(2);
+      ctx.fillStyle = color + "22";
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const pillW = 50, pillH = 14;
+      ctx.roundRect(W - pillW - 4, y - pillH / 2, pillW, pillH, 3);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.font = "bold 9px 'Inter', sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(`${label} ${price}`, W - 7, y + 4);
+      ctx.textAlign = "left";
+    });
+
+    // ── Draw Liquidity Levels ─────────────────────────────────────────────
+    liquidityZones.forEach((liq) => {
+      if (!hasPrice) return;
+      const y = priceToY(liq.price);
+      const color = liq.type === "buy_side" ? "#0ECB81" : "#F6465D";
+      const label = liq.type === "buy_side" ? "BSL" : "SSL";
+
+      ctx.strokeStyle = color + "99";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = color;
+      ctx.font = "bold 9px 'Inter', sans-serif";
+      ctx.fillText(label, 6, y - 3);
+    });
+
+    // ── Draw Entry/SL/TP lines if we have price data ──────────────────────
+    const entry = typeof analysis?.entry === "number" ? analysis.entry : null;
+    const sl = typeof analysis?.stop_loss === "number" ? analysis.stop_loss : null;
+    const tps = Array.isArray(analysis?.take_profit) ? analysis.take_profit : null;
+
+    if (hasPrice && entry) {
+      const ey = priceToY(entry);
+      ctx.strokeStyle = "#7C9BC4";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(0, ey);
+      ctx.lineTo(W, ey);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(124,155,196,0.15)";
+      ctx.fillRect(W - 54, ey - 9, 50, 16);
+      ctx.fillStyle = "#7C9BC4";
+      ctx.font = "bold 9px monospace";
+      ctx.textAlign = "right";
+      ctx.fillText(`ENT ${entry.toFixed(2)}`, W - 6, ey + 4);
+      ctx.textAlign = "left";
+    }
+
+    if (hasPrice && sl) {
+      const sy = priceToY(sl);
+      ctx.strokeStyle = "#F6465D";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(0, sy);
+      ctx.lineTo(W, sy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#F6465D";
+      ctx.font = "bold 9px monospace";
+      ctx.textAlign = "right";
+      ctx.fillText(`SL ${sl.toFixed(2)}`, W - 6, sy - 3);
+      ctx.textAlign = "left";
+    }
+
+    if (hasPrice && tps) {
+      const tpColors = ["#0ECB81", "#34D399", "#6EE7B7"];
+      (tps as number[]).forEach((tp, i) => {
+        if (typeof tp !== "number") return;
+        const ty = priceToY(tp);
+        const color = tpColors[i] ?? "#0ECB81";
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 3]);
+        ctx.beginPath();
+        ctx.moveTo(0, ty);
+        ctx.lineTo(W, ty);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = color;
+        ctx.font = "bold 9px monospace";
+        ctx.textAlign = "right";
+        ctx.fillText(`TP${i + 1} ${tp.toFixed(2)}`, W - 6, ty - 3);
+        ctx.textAlign = "left";
+      });
+    }
+  }, [showAnnotations, imgLoaded, fvgs, orderBlocks, srLevels, liquidityZones, priceRange, analysis]);
+
+  // Redraw whenever data or toggle changes
+  useEffect(() => {
+    drawAnnotations();
+  }, [drawAnnotations]);
+
+  // Redraw on window resize
+  useEffect(() => {
+    const ro = new ResizeObserver(() => drawAnnotations());
+    if (imgRef.current) ro.observe(imgRef.current);
+    return () => ro.disconnect();
+  }, [drawAnnotations]);
+
+  const hasAnyAnnotations =
+    fvgs.length > 0 || orderBlocks.length > 0 || srLevels.length > 0 || liquidityZones.length > 0;
+  const recColor = isBullish
+    ? "var(--color-bullish)"
+    : isBearish
+      ? "var(--color-bearish)"
+      : "var(--color-neutral-wait)";
+
+  return (
+    <div style={{ ...CARD, margin: "0 16px 16px", overflow: "hidden" }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "10px 12px",
+          borderBottom: "1px solid var(--color-border)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Layers size={14} style={{ color: recColor }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--color-foreground)" }}>
+            Chart Analysis
+          </span>
+          {hasAnyAnnotations && (
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: "var(--color-muted-foreground)",
+                background: "var(--color-muted)",
+                padding: "1px 7px",
+                borderRadius: 20,
+              }}
+            >
+              {fvgs.length + orderBlocks.length + srLevels.length + liquidityZones.length} zones
+            </span>
+          )}
+        </div>
+        {hasAnyAnnotations && (
+          <button
+            onClick={() => setShowAnnotations((v) => !v)}
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: showAnnotations ? recColor : "var(--color-muted-foreground)",
+              background: showAnnotations ? `${recColor}18` : "var(--color-muted)",
+              border: `1px solid ${showAnnotations ? `${recColor}40` : "var(--color-border)"}`,
+              borderRadius: 20,
+              padding: "3px 10px",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            {showAnnotations ? "Hide Zones" : "Show Zones"}
+          </button>
+        )}
+      </div>
+
+      {/* Image + Canvas overlay */}
+      <div
+        ref={containerRef}
+        style={{ position: "relative", cursor: "pointer", background: "#000" }}
+        onClick={() => setImgZoomLocal(true)}
+      >
+        <img
+          ref={imgRef}
+          src={imageUrl}
+          alt="Analyzed chart"
+          onLoad={() => {
+            setImgLoaded(true);
+          }}
+          style={{
+            width: "100%",
+            maxHeight: "240px",
+            objectFit: "contain",
+            display: "block",
+          }}
+        />
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+          }}
+        />
+        {/* Expand button */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 8,
+            right: 8,
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            background: "rgba(0,0,0,0.65)",
+            backdropFilter: "blur(8px)",
+            color: "var(--color-foreground)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Maximize2 size={16} />
+        </div>
+      </div>
+
+      {/* Legend */}
+      {hasAnyAnnotations && showAnnotations && (
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            padding: "8px 12px",
+            borderTop: "1px solid var(--color-border)",
+            flexWrap: "wrap",
+          }}
+        >
+          {fvgs.length > 0 && (
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
+              <span style={{ width: 10, height: 10, background: "rgba(14,203,129,0.3)", border: "1px dashed #0ECB81", display: "inline-block", borderRadius: 2 }} />
+              <span style={{ color: "var(--color-muted-foreground)" }}>FVG ({fvgs.length})</span>
+            </span>
+          )}
+          {orderBlocks.length > 0 && (
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
+              <span style={{ width: 10, height: 10, background: "rgba(124,155,196,0.3)", borderLeft: "3px solid #7C9BC4", display: "inline-block" }} />
+              <span style={{ color: "var(--color-muted-foreground)" }}>OB ({orderBlocks.length})</span>
+            </span>
+          )}
+          {srLevels.length > 0 && (
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
+              <span style={{ width: 12, height: 2, background: "#0ECB81", display: "inline-block", borderRadius: 1 }} />
+              <span style={{ color: "var(--color-muted-foreground)" }}>S/R ({srLevels.length})</span>
+            </span>
+          )}
+          {liquidityZones.length > 0 && (
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
+              <span style={{ width: 12, height: 1, background: "#F59E0B", borderTop: "1px dotted #F59E0B", display: "inline-block" }} />
+              <span style={{ color: "var(--color-muted-foreground)" }}>Liquidity ({liquidityZones.length})</span>
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Full-screen zoom */}
+      {imgZoomLocal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 200,
+            background: "rgba(0,0,0,0.96)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+          onClick={() => setImgZoomLocal(false)}
+        >
+          <button
+            style={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: "rgba(124,155,196,0.10)",
+              border: "1px solid rgba(124,155,196,0.20)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--color-foreground)",
+              cursor: "pointer",
+            }}
+          >
+            <X size={20} />
+          </button>
+          <img
+            src={imageUrl}
+            alt="Chart (full screen)"
+            style={{ maxWidth: "100%", maxHeight: "90vh", objectFit: "contain" }}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function AnalysisResult() {
@@ -710,48 +1377,13 @@ export function AnalysisResult() {
               </div>
             )}
 
-            {/* Chart Image */}
+            {/* Chart Image with Canvas Annotations */}
             {a.imageUrl && (
-              <div
-                style={{
-                  ...CARD,
-                  margin: "0 16px 16px",
-                  overflow: "hidden",
-                  position: "relative",
-                  cursor: "pointer",
-                }}
-                onClick={() => setImgZoom(!imgZoom)}
-              >
-                <img
-                  src={a.imageUrl}
-                  alt="Analyzed chart"
-                  style={{
-                    width: "100%",
-                    maxHeight: "208px",
-                    objectFit: "contain",
-                    background: "oklch(0 0 0)",
-                    display: "block",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "8px",
-                    right: "8px",
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "8px",
-                    background: "oklch(0 0 0 / 0.60)",
-                    backdropFilter: "blur(8px)",
-                    color: "var(--color-foreground)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Maximize2 size={16} />
-                </div>
-              </div>
+              <ChartCanvasOverlay
+                imageUrl={a.imageUrl}
+                analysis={a}
+                onZoom={() => setImgZoom(!imgZoom)}
+              />
             )}
 
             {/* Image zoom overlay */}
