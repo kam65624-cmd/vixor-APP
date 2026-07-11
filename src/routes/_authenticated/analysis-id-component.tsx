@@ -120,15 +120,7 @@ function highlightSMC(text: string): React.ReactNode[] {
   });
 }
 
-function ChartCanvasOverlay({
-  analysis,
-  imageUrl,
-  onZoom,
-}: {
-  analysis: any;
-  imageUrl: string;
-  onZoom: () => void;
-}) {
+function ChartCanvasOverlay({ analysis, imageUrl, onZoom }: { analysis: any; imageUrl: string; onZoom: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -364,11 +356,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
 
   const orderBlocks = useMemo(() => {
     const raw = analysis?.raw_ai_response ?? {};
-    return (analysis?.order_blocks ??
-      raw.order_blocks ??
-      analysis?.orderBlocks ??
-      raw.orderBlocks ??
-      []) as Array<{
+    return (analysis?.order_blocks ?? raw.order_blocks ?? analysis?.orderBlocks ?? raw.orderBlocks ?? []) as Array<{
       type: "bullish" | "bearish";
       top: number;
       bottom: number;
@@ -379,11 +367,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
 
   const srLevels = useMemo(() => {
     const raw = analysis?.raw_ai_response ?? {};
-    return (analysis?.sr_levels ??
-      raw.sr_levels ??
-      analysis?.srLevels ??
-      raw.srLevels ??
-      []) as Array<{
+    return (analysis?.sr_levels ?? raw.sr_levels ?? analysis?.srLevels ?? raw.srLevels ?? []) as Array<{
       type: "support" | "resistance";
       price: number;
       strength?: string;
@@ -392,11 +376,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
 
   const liquidityZones = useMemo(() => {
     const raw = analysis?.raw_ai_response ?? {};
-    return (analysis?.liquidity_zones ??
-      raw.liquidity_zones ??
-      analysis?.liquidityZones ??
-      raw.liquidityZones ??
-      []) as Array<{
+    return (analysis?.liquidity_zones ?? raw.liquidity_zones ?? analysis?.liquidityZones ?? raw.liquidityZones ?? []) as Array<{
       type: "buy_side" | "sell_side";
       price: number;
     }>;
@@ -405,8 +385,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
   const priceRange = useMemo(() => {
     const raw = analysis?.raw_ai_response ?? {};
     return {
-      high:
-        analysis?.high_price ?? raw.high_price ?? analysis?.chart_high ?? raw.chart_high ?? null,
+      high: analysis?.high_price ?? raw.high_price ?? analysis?.chart_high ?? raw.chart_high ?? null,
       low: analysis?.low_price ?? raw.low_price ?? analysis?.chart_low ?? raw.chart_low ?? null,
     };
   }, [analysis]);
@@ -507,8 +486,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
       ctx.strokeStyle = color;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      const pillW = 50,
-        pillH = 14;
+      const pillW = 50, pillH = 14;
       ctx.roundRect(W - pillW - 4, y - pillH / 2, pillW, pillH, 3);
       ctx.fill();
       ctx.stroke();
@@ -601,16 +579,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
         ctx.textAlign = "left";
       });
     }
-  }, [
-    showAnnotations,
-    imgLoaded,
-    fvgs,
-    orderBlocks,
-    srLevels,
-    liquidityZones,
-    priceRange,
-    analysis,
-  ]);
+  }, [showAnnotations, imgLoaded, fvgs, orderBlocks, srLevels, liquidityZones, priceRange, analysis]);
 
   // Redraw whenever data or toggle changes
   useEffect(() => {
@@ -746,65 +715,26 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
         >
           {fvgs.length > 0 && (
             <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
-              <span
-                style={{
-                  width: 10,
-                  height: 10,
-                  background: "rgba(14,203,129,0.3)",
-                  border: "1px dashed #0ECB81",
-                  display: "inline-block",
-                  borderRadius: 2,
-                }}
-              />
+              <span style={{ width: 10, height: 10, background: "rgba(14,203,129,0.3)", border: "1px dashed #0ECB81", display: "inline-block", borderRadius: 2 }} />
               <span style={{ color: "var(--color-muted-foreground)" }}>FVG ({fvgs.length})</span>
             </span>
           )}
           {orderBlocks.length > 0 && (
             <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
-              <span
-                style={{
-                  width: 10,
-                  height: 10,
-                  background: "rgba(124,155,196,0.3)",
-                  borderLeft: "3px solid #7C9BC4",
-                  display: "inline-block",
-                }}
-              />
-              <span style={{ color: "var(--color-muted-foreground)" }}>
-                OB ({orderBlocks.length})
-              </span>
+              <span style={{ width: 10, height: 10, background: "rgba(124,155,196,0.3)", borderLeft: "3px solid #7C9BC4", display: "inline-block" }} />
+              <span style={{ color: "var(--color-muted-foreground)" }}>OB ({orderBlocks.length})</span>
             </span>
           )}
           {srLevels.length > 0 && (
             <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
-              <span
-                style={{
-                  width: 12,
-                  height: 2,
-                  background: "#0ECB81",
-                  display: "inline-block",
-                  borderRadius: 1,
-                }}
-              />
-              <span style={{ color: "var(--color-muted-foreground)" }}>
-                S/R ({srLevels.length})
-              </span>
+              <span style={{ width: 12, height: 2, background: "#0ECB81", display: "inline-block", borderRadius: 1 }} />
+              <span style={{ color: "var(--color-muted-foreground)" }}>S/R ({srLevels.length})</span>
             </span>
           )}
           {liquidityZones.length > 0 && (
             <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
-              <span
-                style={{
-                  width: 12,
-                  height: 1,
-                  background: "#F59E0B",
-                  borderTop: "1px dotted #F59E0B",
-                  display: "inline-block",
-                }}
-              />
-              <span style={{ color: "var(--color-muted-foreground)" }}>
-                Liquidity ({liquidityZones.length})
-              </span>
+              <span style={{ width: 12, height: 1, background: "#F59E0B", borderTop: "1px dotted #F59E0B", display: "inline-block" }} />
+              <span style={{ color: "var(--color-muted-foreground)" }}>Liquidity ({liquidityZones.length})</span>
             </span>
           )}
         </div>

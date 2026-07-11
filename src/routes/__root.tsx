@@ -232,6 +232,12 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        />
         <HeadContent />
         {/* ── Theme bootstrap (runs before paint to prevent FOUC) ──
             Reads the user's saved theme from localStorage and applies the
@@ -408,6 +414,12 @@ function RootComponent() {
     return () => {
       mounted = false;
       if (authDebounce) clearTimeout(authDebounce);
+      
+      const win = window as unknown as { __vxAuthSub?: { unsubscribe(): void } };
+      if (win.__vxAuthSub) {
+        win.__vxAuthSub.unsubscribe();
+        win.__vxAuthSub = undefined;
+      }
     };
   }, []);
 
