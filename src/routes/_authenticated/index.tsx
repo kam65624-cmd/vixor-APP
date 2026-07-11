@@ -296,7 +296,6 @@ function HomePage() {
     refetchInterval: 60_000,
   });
 
-
   const data = dashQuery.data;
   const user = meQuery.data;
   const displayName = user?.profile?.display_name || user?.profile?.username || "Trader";

@@ -100,7 +100,7 @@ function TradingViewChartInner({
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
-    
+
     // Clear container
     container.innerHTML = "";
     const containerId = `tv_${Math.random().toString(36).substring(7)}`;
@@ -113,7 +113,7 @@ function TradingViewChartInner({
     let tvWidget: any = null;
 
     const initWidget = () => {
-      if (typeof window === 'undefined' || !(window as any).TradingView) return;
+      if (typeof window === "undefined" || !(window as any).TradingView) return;
       try {
         tvWidget = new (window as any).TradingView.widget({
           autosize: true,

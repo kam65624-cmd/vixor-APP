@@ -377,7 +377,10 @@ async function runLocalAnalysisFallback(
         verdict,
       };
     }
-  } catch {}
+  } catch (newsError) {
+    // Ignore news fetch failure in local fallback
+    console.debug("[Vixor] Fallback news fetch failed:", newsError);
+  }
 
   return {
     ...localResult,
