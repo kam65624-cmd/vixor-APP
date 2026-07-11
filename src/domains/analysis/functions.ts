@@ -392,4 +392,3 @@ export const getAnalysis = createServerFn({ method: "GET" })
     }
     return { ...a, signal_badge: signalBadge, vixor_message: vixorMessage, imageUrl } as any;
   });
-

@@ -13,13 +13,71 @@ import { DexScreenerWS, type DexPrice } from "./dexscreener-ws";
 
 // Tokens that trade on Binance — they get real-time WebSocket prices
 const BINANCE_SYMBOLS = new Set([
-  "BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA", "AVAX", "DOT", "LINK",
-  "MATIC", "UNI", "LTC", "BCH", "ATOM", "FIL", "APT", "ARB", "OP", "NEAR",
-  "AAVE", "MKR", "SNX", "GRT", "INJ", "SUI", "SEI", "TIA", "JUP", "WIF",
-  "PEPE", "FLOKI", "BONK", "SHIB", "RENDER", "FET", "AGIX", "OCEAN", "ICP",
-  "HBAR", "ALGO", "XTZ", "FTM", "SAND", "MANA", "GALA", "AXS", "APE", "DYDX",
-  "CRV", "LDO", "RPL", "CKB", "TRX", "TON", "KAS", "RUNE", "THETA", "EGLD",
-  "FLOW", "XLM", "VET", "ALPHA", "ONE", "GAS",
+  "BTC",
+  "ETH",
+  "SOL",
+  "BNB",
+  "XRP",
+  "DOGE",
+  "ADA",
+  "AVAX",
+  "DOT",
+  "LINK",
+  "MATIC",
+  "UNI",
+  "LTC",
+  "BCH",
+  "ATOM",
+  "FIL",
+  "APT",
+  "ARB",
+  "OP",
+  "NEAR",
+  "AAVE",
+  "MKR",
+  "SNX",
+  "GRT",
+  "INJ",
+  "SUI",
+  "SEI",
+  "TIA",
+  "JUP",
+  "WIF",
+  "PEPE",
+  "FLOKI",
+  "BONK",
+  "SHIB",
+  "RENDER",
+  "FET",
+  "AGIX",
+  "OCEAN",
+  "ICP",
+  "HBAR",
+  "ALGO",
+  "XTZ",
+  "FTM",
+  "SAND",
+  "MANA",
+  "GALA",
+  "AXS",
+  "APE",
+  "DYDX",
+  "CRV",
+  "LDO",
+  "RPL",
+  "CKB",
+  "TRX",
+  "TON",
+  "KAS",
+  "RUNE",
+  "THETA",
+  "EGLD",
+  "FLOW",
+  "XLM",
+  "VET",
+  "ALPHA",
+  "ONE",
+  "GAS",
 ]);
 
 function toBinanceSymbol(tokenSymbol: string): string | null {
@@ -81,25 +139,22 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
     if (!enabled || wsSymbols.length === 0) return;
 
     const ws = BinanceWS.getInstance();
-    const unsub = ws.subscribe(
-      wsSymbols,
-      (updatedPrices: Map<string, LivePrice>) => {
-        setOverlay((prev) => {
-          const next = { ...prev };
-          for (const [binanceSymbol, livePrice] of updatedPrices) {
-            const discoverSymbol = wsSymbolMap.get(binanceSymbol);
-            if (discoverSymbol && livePrice.price > 0) {
-              next[discoverSymbol] = {
-                price: livePrice.price,
-                change24h: livePrice.change24h,
-                timestamp: livePrice.timestamp,
-              };
-            }
+    const unsub = ws.subscribe(wsSymbols, (updatedPrices: Map<string, LivePrice>) => {
+      setOverlay((prev) => {
+        const next = { ...prev };
+        for (const [binanceSymbol, livePrice] of updatedPrices) {
+          const discoverSymbol = wsSymbolMap.get(binanceSymbol);
+          if (discoverSymbol && livePrice.price > 0) {
+            next[discoverSymbol] = {
+              price: livePrice.price,
+              change24h: livePrice.change24h,
+              timestamp: livePrice.timestamp,
+            };
           }
-          return next;
-        });
-      },
-    );
+        }
+        return next;
+      });
+    });
 
     return () => unsub();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,25 +166,22 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
 
     const ws = DexScreenerWS.getInstance();
 
-    const unsub = ws.subscribe(
-      dexPairs,
-      (updatedPrices: Map<string, DexPrice>) => {
-        setOverlay((prev) => {
-          const next = { ...prev };
-          for (const [key, dexPrice] of updatedPrices) {
-            const discoverSymbol = dexSymbolMap.get(key);
-            if (discoverSymbol && dexPrice.price > 0) {
-              next[discoverSymbol] = {
-                price: dexPrice.price,
-                change24h: dexPrice.change24h,
-                timestamp: dexPrice.timestamp,
-              };
-            }
+    const unsub = ws.subscribe(dexPairs, (updatedPrices: Map<string, DexPrice>) => {
+      setOverlay((prev) => {
+        const next = { ...prev };
+        for (const [key, dexPrice] of updatedPrices) {
+          const discoverSymbol = dexSymbolMap.get(key);
+          if (discoverSymbol && dexPrice.price > 0) {
+            next[discoverSymbol] = {
+              price: dexPrice.price,
+              change24h: dexPrice.change24h,
+              timestamp: dexPrice.timestamp,
+            };
           }
-          return next;
-        });
-      },
-    );
+        }
+        return next;
+      });
+    });
 
     return () => unsub();
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -10,9 +10,6 @@ export {
 
 export { extractChartContext } from "./chart-vision";
 
-export {
-  type ValidationResult,
-  validateChartContext,
-} from "./chart-validation";
+export { type ValidationResult, validateChartContext } from "./chart-validation";
 
 export { type ChartSession, sessionToContext, buildChartSessionPrompt } from "./chart-session";

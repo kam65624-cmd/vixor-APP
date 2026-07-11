@@ -127,8 +127,7 @@ function TradeDesk() {
   });
 
   const openTradesRaw = openTradesQuery.data as
-    | { items: Trade[]; total: number; hasMore: boolean }
-    | undefined;
+    { items: Trade[]; total: number; hasMore: boolean } | undefined;
   const openTrades = openTradesRaw?.items ?? [];
   const openTradesTotal = openTradesRaw?.total ?? 0;
 
@@ -142,7 +141,16 @@ function TradeDesk() {
       stop_loss?: number | null;
       notes?: string | null;
       strategy?: string | null;
-    }) => createTradeFn({ data: { pair: data.pair, direction: data.direction, entry_price: data.entry_price, amount: data.amount, stop_loss: data.stop_loss ?? undefined } }),
+    }) =>
+      createTradeFn({
+        data: {
+          pair: data.pair,
+          direction: data.direction,
+          entry_price: data.entry_price,
+          amount: data.amount,
+          stop_loss: data.stop_loss ?? undefined,
+        },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["open-trades-desk"] });
       queryClient.invalidateQueries({ queryKey: ["open-trades"] });
@@ -223,7 +231,7 @@ function TradeDesk() {
       pair,
       direction,
       entry_price: entry,
-      amount: result ? parseFloat(result.lots) : parseFloat(balance) * parseFloat(riskPct) / 100,
+      amount: result ? parseFloat(result.lots) : (parseFloat(balance) * parseFloat(riskPct)) / 100,
       quantity: result ? parseFloat(result.lots) : null,
       stop_loss: sl > 0 ? Math.round(slPrice * 100000) / 100000 : null,
       notes: `Risk: ${riskPct}% · SL: ${slPips} pips`,

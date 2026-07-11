@@ -1,4 +1,10 @@
-import type { GovernorInput, RiskDecision, RiskDecisionType, RiskProfile, DecisionSeverity } from "../types";
+import type {
+  GovernorInput,
+  RiskDecision,
+  RiskDecisionType,
+  RiskProfile,
+  DecisionSeverity,
+} from "../types";
 
 // Governor agent — risk assessment
 export async function assessRisk(input: GovernorInput): Promise<RiskDecision> {
@@ -13,7 +19,9 @@ export async function assessRisk(input: GovernorInput): Promise<RiskDecision> {
     reason: isHighRisk
       ? `Position size (${portfolioPct.toFixed(1)}% of portfolio) exceeds 20% risk limit.`
       : "Position size within acceptable risk parameters.",
-    suggestion: isHighRisk ? "Reduce position to stay under 20% portfolio allocation." : "Approved. Ensure stop-loss is set.",
+    suggestion: isHighRisk
+      ? "Reduce position to stay under 20% portfolio allocation."
+      : "Approved. Ensure stop-loss is set.",
     riskProfile: {
       style: "moderate",
       tolerance: "medium",

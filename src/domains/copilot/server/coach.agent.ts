@@ -9,8 +9,10 @@ export async function coachTrade(input: CoachInput): Promise<CoachResponse> {
       ? "I notice you might be over-leveraging. Consider reducing position size."
       : "Your trade setup looks reasonable. Stay disciplined.",
     sentiment: isOnTilt ? ("bearish" as CoachSentiment) : ("neutral" as CoachSentiment),
-    riskLevel: isOnTilt ? "high" as RiskLevel : "low" as RiskLevel,
-    suggestion: isOnTilt ? "Reduce position size by 50% and set a tighter stop-loss." : "Follow your trading plan and maintain stop-loss discipline.",
+    riskLevel: isOnTilt ? ("high" as RiskLevel) : ("low" as RiskLevel),
+    suggestion: isOnTilt
+      ? "Reduce position size by 50% and set a tighter stop-loss."
+      : "Follow your trading plan and maintain stop-loss discipline.",
     confidence: 0.7,
   };
 }

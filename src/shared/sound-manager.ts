@@ -9,14 +9,7 @@
 
 // ── Public types ───────────────────────────────────────────────────────────────
 export type SoundType =
-  | "alert"
-  | "signal"
-  | "trade"
-  | "whale"
-  | "notification"
-  | "success"
-  | "error"
-  | "click";
+  "alert" | "signal" | "trade" | "whale" | "notification" | "success" | "error" | "click";
 
 // ── Frequency helpers ─────────────────────────────────────────────────────────
 /** Note → Hz (4th / 5th octave) */

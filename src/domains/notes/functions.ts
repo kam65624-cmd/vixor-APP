@@ -11,7 +11,7 @@ export const getNotesByAnalysis = createServerFn({ method: "GET" })
       .select("*")
       .eq("analysis_id", data.analysisId)
       .order("created_at", { ascending: false });
-    return (rows as unknown[]) as any[];
+    return rows as unknown[] as any[];
   });
 
 export const createNote = createServerFn({ method: "POST" })

@@ -324,7 +324,9 @@ export function TokenPage() {
   }, [symbol, assetType]);
 
   const [liveBinancePrice, setLiveBinancePrice] = useState<LivePrice | null>(null);
-  const [liveDexPrice, setLiveDexPrice] = useState<{ price: number; change24h: number } | null>(null);
+  const [liveDexPrice, setLiveDexPrice] = useState<{ price: number; change24h: number } | null>(
+    null,
+  );
 
   // Binance WS for CEX tokens
   useEffect(() => {
@@ -346,19 +348,17 @@ export function TokenPage() {
     if (!isDexToken || !chainFromDiscover || !pairAddress) return;
     const ws = DexScreenerWS.getInstance();
     const key = `${chainFromDiscover}:${pairAddress}`;
-    const unsub = ws.subscribe(
-      [{ chainId: chainFromDiscover, pairAddress }],
-      (prices) => {
-        const p = prices.get(key);
-        if (p && p.price > 0) setLiveDexPrice({ price: p.price, change24h: p.change24h });
-      },
-    );
+    const unsub = ws.subscribe([{ chainId: chainFromDiscover, pairAddress }], (prices) => {
+      const p = prices.get(key);
+      if (p && p.price > 0) setLiveDexPrice({ price: p.price, change24h: p.change24h });
+    });
     return () => unsub();
   }, [isDexToken, chainFromDiscover, pairAddress]);
 
   // Use live price if available
   const displayPrice = liveBinancePrice?.price ?? liveDexPrice?.price ?? tokenData?.price ?? null;
-  const displayChange = liveBinancePrice?.change24h ?? liveDexPrice?.change24h ?? tokenData?.change24h ?? null;
+  const displayChange =
+    liveBinancePrice?.change24h ?? liveDexPrice?.change24h ?? tokenData?.change24h ?? null;
   const isPriceLive = !!(liveBinancePrice || liveDexPrice);
 
   // ── Quick Trade State ──

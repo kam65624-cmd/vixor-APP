@@ -398,7 +398,14 @@ function Analyze() {
                 >
                   {t("analyze.tapToUpload") || "Tap to Upload Chart"}
                 </div>
-                <div style={{ fontSize: 14, color: "var(--color-muted-foreground)", maxWidth: "240px", lineHeight: 1.5 }}>
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: "var(--color-muted-foreground)",
+                    maxWidth: "240px",
+                    lineHeight: 1.5,
+                  }}
+                >
                   PNG, JPG, WebP up to 8MB
                 </div>
               </div>

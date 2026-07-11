@@ -19,7 +19,7 @@ export const listTrades = createServerFn({ method: "GET" })
       .eq("status", data.status)
       .order("created_at", { ascending: false })
       .limit(data.limit);
-    return (rows as unknown[]) as Trade[];
+    return rows as unknown[] as Trade[];
   });
 
 export const createTrade = createServerFn({ method: "POST" })
@@ -36,12 +36,10 @@ export const createTrade = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase
-      .from("trades")
-      .insert({
-        entry_date: new Date().toISOString(),
-        quantity: data.amount,
-      } as any);
+    const { data: row, error } = await context.supabase.from("trades").insert({
+      entry_date: new Date().toISOString(),
+      quantity: data.amount,
+    } as any);
     if (!row) throw new Error("Failed to create trade");
     return row as unknown as Trade;
   });

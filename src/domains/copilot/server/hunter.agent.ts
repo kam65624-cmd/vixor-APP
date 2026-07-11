@@ -6,7 +6,9 @@ export async function scoreOpportunity(
   _ctx?: { userId?: string },
 ): Promise<HunterScore> {
   const hasActivity = input.smartMoneyActivity.length > 50;
-  const score = hasActivity ? 65 + Math.floor(Math.random() * 25) : 20 + Math.floor(Math.random() * 30);
+  const score = hasActivity
+    ? 65 + Math.floor(Math.random() * 25)
+    : 20 + Math.floor(Math.random() * 30);
 
   return {
     decisionId: `hunter_${Date.now()}`,

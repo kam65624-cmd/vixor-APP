@@ -5,7 +5,10 @@ export async function recordFeedback(
   feedback: { rating?: number; comment?: string } | string,
 ): Promise<{ success: boolean }> {
   // Accepts either object or string ("accepted"/"rejected")
-  const fb = typeof feedback === "string" ? { rating: feedback === "accepted" ? 5 : 2, comment: feedback } : feedback;
+  const fb =
+    typeof feedback === "string"
+      ? { rating: feedback === "accepted" ? 5 : 2, comment: feedback }
+      : feedback;
   console.log(`[Copilot] Feedback recorded for ${decisionId}:`, fb);
   return { success: true };
 }
