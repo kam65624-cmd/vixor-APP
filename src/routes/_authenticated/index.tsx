@@ -81,7 +81,15 @@ function CardSkeleton({ rows = 2 }: { rows?: number }) {
 
 // ── Card Wrapper ───────────────────────────────────────────────────────────
 
-function Card({ children, style, className = "" }: { children: React.ReactNode; style?: React.CSSProperties; className?: string }) {
+function Card({
+  children,
+  style,
+  className = "",
+}: {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+  className?: string;
+}) {
   return (
     <div
       className={`bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:bg-white/10 ${className}`}
@@ -103,9 +111,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between px-5 pt-5 pb-3">
-      <span className="text-[14px] font-bold text-foreground tracking-wide">
-        {title}
-      </span>
+      <span className="text-[14px] font-bold text-foreground tracking-wide">{title}</span>
       {action && (
         <button
           onClick={action.onClick}
@@ -129,16 +135,25 @@ const MarketTickerBar = memo(function MarketTickerBar({ data }: { data?: HomeMar
       <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
       <div className="flex gap-8 py-3 px-4 overflow-x-auto scrollbar-none items-center market-ticker">
         {data.tickers.map((t) => (
-          <div key={t.symbol} className="flex items-center gap-2.5 flex-shrink-0 group cursor-pointer">
+          <div
+            key={t.symbol}
+            className="flex items-center gap-2.5 flex-shrink-0 group cursor-pointer"
+          >
             <span className="text-[13px] font-bold text-foreground/90 group-hover:text-white transition-colors">
               {t.symbol}
             </span>
             <span className="text-[13px] font-semibold font-mono text-foreground/80">
-              ${t.price >= 1 ? t.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : t.price.toFixed(4)}
+              $
+              {t.price >= 1
+                ? t.price.toLocaleString(undefined, { maximumFractionDigits: 2 })
+                : t.price.toFixed(4)}
             </span>
-            <span className={`text-[12px] font-bold font-mono flex items-center gap-1 ${t.change24h >= 0 ? "text-bullish" : "text-bearish"}`}>
+            <span
+              className={`text-[12px] font-bold font-mono flex items-center gap-1 ${t.change24h >= 0 ? "text-bullish" : "text-bearish"}`}
+            >
               <TrendArrow direction={t.change24h >= 0 ? "up" : "down"} size={12} />
-              {t.change24h >= 0 ? "+" : ""}{t.change24h.toFixed(1)}%
+              {t.change24h >= 0 ? "+" : ""}
+              {t.change24h.toFixed(1)}%
             </span>
           </div>
         ))}
@@ -208,7 +223,7 @@ function PortfolioHeroCard({
     <div className="mx-4 relative group">
       {/* Subtle animated glow */}
       <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-bullish/20 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition duration-500 pointer-events-none" />
-      
+
       <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
         <div className="p-6">
           <div className="flex items-start justify-between">
@@ -225,11 +240,18 @@ function PortfolioHeroCard({
                 <div className="text-[12px] text-white/60 uppercase tracking-widest font-bold mb-1.5">
                   Total PnL
                 </div>
-                <div className="text-[20px] font-black font-mono leading-none drop-shadow-sm" style={{ color: pnlColor(totalPnl) }}>
+                <div
+                  className="text-[20px] font-black font-mono leading-none drop-shadow-sm"
+                  style={{ color: pnlColor(totalPnl) }}
+                >
                   {pnlFmt(totalPnl)}
                 </div>
-                <div className="text-[13px] font-bold font-mono bg-white/10 inline-block px-2 py-0.5 rounded-md mt-2 shadow-inner" style={{ color: pnlColor(totalPnl) }}>
-                  {totalPnlPct >= 0 ? "+" : ""}{totalPnlPct.toFixed(1)}%
+                <div
+                  className="text-[13px] font-bold font-mono bg-white/10 inline-block px-2 py-0.5 rounded-md mt-2 shadow-inner"
+                  style={{ color: pnlColor(totalPnl) }}
+                >
+                  {totalPnlPct >= 0 ? "+" : ""}
+                  {totalPnlPct.toFixed(1)}%
                 </div>
               </div>
             )}
@@ -246,7 +268,10 @@ function PortfolioHeroCard({
               { label: "Assets", value: String(assetCount), color: "var(--color-primary)" },
               {
                 label: "Avg PnL",
-                value: tradeCount > 0 ? (totalPnl >= 0 ? "+" : "") + (totalPnl / tradeCount).toFixed(1) + "%" : "—",
+                value:
+                  tradeCount > 0
+                    ? (totalPnl >= 0 ? "+" : "") + (totalPnl / tradeCount).toFixed(1) + "%"
+                    : "—",
                 color: pnlColor(totalPnl / Math.max(tradeCount, 1)),
               },
             ].map((s) => (
@@ -316,7 +341,9 @@ function QuickActionsGrid({ nav }: { nav: (to: string) => void }) {
           onClick={() => nav(a.to)}
           className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl cursor-pointer bg-white/5 border border-white/10 text-foreground min-h-[96px] transition-all duration-300 hover:bg-white/10 hover:border-primary/40 hover:-translate-y-1 group shadow-lg"
         >
-          <span className="text-[28px] group-hover:scale-110 transition-transform duration-300">{a.icon}</span>
+          <span className="text-[28px] group-hover:scale-110 transition-transform duration-300">
+            {a.icon}
+          </span>
           <span className="text-[13px] font-bold tracking-wide">{a.label}</span>
         </button>
       ))}
@@ -426,7 +453,9 @@ function WatchlistSection({
               onClick={() => nav(`/token/${sym}`)}
               className="flex items-center justify-between px-3 py-3 rounded-lg cursor-pointer bg-transparent border-none text-foreground w-full text-left hover:bg-white/10 transition-colors group"
             >
-              <span className="text-[14px] font-bold group-hover:text-white transition-colors">{sym}</span>
+              <span className="text-[14px] font-bold group-hover:text-white transition-colors">
+                {sym}
+              </span>
               <span className="text-[12px] font-medium text-muted-foreground group-hover:text-white/80 transition-colors">
                 {item.pair || sym}
               </span>
@@ -466,7 +495,10 @@ function MarketSentimentCard({ fearGreed }: { fearGreed: HomeMarketData["fearGre
               >
                 {fearGreed.value}
               </span>
-              <span className="text-[15px] font-extrabold uppercase tracking-widest" style={{ color: fgiColor }}>
+              <span
+                className="text-[15px] font-extrabold uppercase tracking-widest"
+                style={{ color: fgiColor }}
+              >
                 {fearGreed.label}
               </span>
             </div>
@@ -523,18 +555,20 @@ function RecentTradesSection({
             }`}
           >
             <div className="flex items-center gap-3.5 flex-1 min-w-0">
-              <div className={`p-2 rounded-full flex items-center justify-center ${t.type === 'buy' ? 'bg-bullish/15 text-bullish' : 'bg-bearish/15 text-bearish'}`}>
+              <div
+                className={`p-2 rounded-full flex items-center justify-center ${t.type === "buy" ? "bg-bullish/15 text-bullish" : "bg-bearish/15 text-bearish"}`}
+              >
                 <TrendArrow direction={t.type === "buy" ? "up" : "down"} size={14} />
               </div>
-              <span className="text-[13px] font-bold text-foreground/90 truncate">
-                {t.msg}
-              </span>
+              <span className="text-[13px] font-bold text-foreground/90 truncate">{t.msg}</span>
             </div>
             <div className="flex items-center gap-4 flex-shrink-0 ml-4">
               {t.pnl && (
                 <span
                   className="text-[14px] font-bold font-mono"
-                  style={{ color: t.type === "sell" ? "var(--color-bearish)" : "var(--color-bullish)" }}
+                  style={{
+                    color: t.type === "sell" ? "var(--color-bearish)" : "var(--color-bullish)",
+                  }}
                 >
                   {t.pnl}
                 </span>
@@ -609,9 +643,7 @@ function MoxiInsightsSection({
     <Card className="mx-4">
       <div className="flex items-center gap-3 px-5 pt-5 pb-3 border-b border-white/5">
         <MoxiAvatar size={28} variant="default" />
-        <span className="text-[15px] font-bold text-foreground tracking-wide">
-          MOXI Insights
-        </span>
+        <span className="text-[15px] font-bold text-foreground tracking-wide">MOXI Insights</span>
       </div>
       <div className="px-4 py-4 flex flex-col gap-3">
         {insights.map((insight, i) => {

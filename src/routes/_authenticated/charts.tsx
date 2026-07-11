@@ -135,13 +135,63 @@ function ChartsPage() {
       <PageScrollArea style={{ padding: "0", flex: 1 }}>
         <div style={{ padding: "8px", height: "100%", position: "relative" }}>
           {!selectedPair ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "70vh", color: "var(--color-muted-foreground)", background: "var(--color-card)", borderRadius: "12px", border: "1px solid var(--color-border)", padding: "32px", textAlign: "center" }}>
-              <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "var(--color-border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "70vh",
+                color: "var(--color-muted-foreground)",
+                background: "var(--color-card)",
+                borderRadius: "12px",
+                border: "1px solid var(--color-border)",
+                padding: "32px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "64px",
+                  height: "64px",
+                  borderRadius: "50%",
+                  background: "var(--color-border)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "16px",
+                }}
+              >
                 <span style={{ fontSize: "24px" }}>📉</span>
               </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--color-foreground)", marginBottom: "8px" }}>No chart data available</h3>
-              <p style={{ fontSize: "14px", maxWidth: "280px", marginBottom: "24px" }}>Please select a trading pair from the menu above to view its live chart.</p>
-              <button onClick={() => setSelectedPair("BTC/USDT")} style={{ padding: "10px 20px", background: "var(--color-bullish)", color: "var(--color-foreground)", borderRadius: "8px", fontWeight: 700, border: "none", cursor: "pointer", transition: "opacity 0.2s" }}>Select BTC/USDT</button>
+              <h3
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 700,
+                  color: "var(--color-foreground)",
+                  marginBottom: "8px",
+                }}
+              >
+                No chart data available
+              </h3>
+              <p style={{ fontSize: "14px", maxWidth: "280px", marginBottom: "24px" }}>
+                Please select a trading pair from the menu above to view its live chart.
+              </p>
+              <button
+                onClick={() => setSelectedPair("BTC/USDT")}
+                style={{
+                  padding: "10px 20px",
+                  background: "var(--color-bullish)",
+                  color: "var(--color-foreground)",
+                  borderRadius: "8px",
+                  fontWeight: 700,
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "opacity 0.2s",
+                }}
+              >
+                Select BTC/USDT
+              </button>
             </div>
           ) : isCrypto ? (
             <CandlestickChart

@@ -414,7 +414,7 @@ function RootComponent() {
     return () => {
       mounted = false;
       if (authDebounce) clearTimeout(authDebounce);
-      
+
       const win = window as unknown as { __vxAuthSub?: { unsubscribe(): void } };
       if (win.__vxAuthSub) {
         win.__vxAuthSub.unsubscribe();
