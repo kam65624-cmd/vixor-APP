@@ -1,9 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npx pnpm install --frozen-lockfile && npx pnpm build",
-  "installCommand": "npx pnpm install --frozen-lockfile",
-  "framework": "vite",
-  "outputDirectory": ".vercel/output",
+  "installCommand": "corepack enable pnpm && pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm build",
   "crons": [
     {
       "path": "/api/generate-signals",
