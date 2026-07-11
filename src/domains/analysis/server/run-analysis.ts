@@ -1,45 +1,45 @@
 // ============================================================================
-// Vixor Analysis Runner — Chart Intelligence Pipeline
+// Vixor Analysis Runner — Gemini Vision-Powered Chart Intelligence
 // ============================================================================
 //
-// ARCHITECTURE (100% Local — Zero External AI APIs):
+// ARCHITECTURE:
 //
 //   When an IMAGE is uploaded:
-//     1. CHART VISION — Extract ChartContext using z-ai VLM (local SDK)
-//     2. VALIDATE — If confidence < 80%, REFUSE to analyze (no hallucination)
-//     2.5. TRUTH VALIDATION — Compare vision price vs real market price
-//     3. DETERMINE PAIR — Vision-extracted > user-selected > filename > default
-//     4. LOCAL ENGINE — Run SMC/ICT analysis on real OHLCV data (ONLY engine)
-//     5. DEBATE ENGINE (optional) — Multi-agent cross-validation
+//     1. Send image + context to Gemini 1.5 Flash (Vision model)
+//     2. Parse structured JSON response into AnalysisResult
+//     3. Enrich with real Finnhub news for the detected pair
+//     4. Return the final AnalysisResult
 //
 //   When NO image (quick analyze from TradingView):
-//     1. LOCAL ENGINE — Run directly on real OHLCV data (highest accuracy)
+//     1. Fetch real OHLCV bars from Binance/TwelveData
+//     2. Send OHLCV data to Gemini for SMC/ICT analysis
+//     3. Return result
 //
-// Golden Rule: The AI must NEVER mention a price, symbol, timeframe, support,
-// or resistance unless it was EXTRACTED from the image or from real market data.
-//
-// NO EXTERNAL AI APIs — No Gemini, no OpenAI, no Lovable Gateway.
-// The local SMC/ICT engine is the ONLY analysis engine.
+// Golden Rule: The AI READS the actual image. It sees the real candles,
+// support/resistance lines, and patterns drawn on the chart.
 // ============================================================================
 
 import { z } from "zod";
-import { runLocalAnalysis } from "@/domains/analysis/engine/engine";
-import {
-  extractChartContext,
-  validateChartContext,
-  type ChartContext,
-  type ChartExtractionResult,
-  type ValidationResult,
-} from "@/domains/chart-intelligence";
+import { generateObject } from "ai";
+import { google } from "@ai-sdk/google";
 import { getNewsForSymbol, type NewsItem } from "@/domains/market/server/news";
+import { runLocalAnalysis, generateFallbackResult } from "@/domains/analysis/engine/engine";
+import {
+  PAIR_CONFIGS,
+  type OHLCVBar,
+  type LocalAnalysisResult,
+} from "@/domains/analysis/engine/core/types";
 
-// ── Error class for analysis refusal ──
-//
-// REMOVED (audit §15 issue #9): `ChartExtractionRefusedError` was dead code —
-// defined but never thrown anywhere in the codebase. The validation layer is
-// SOFT (see chart-validation.ts) and never refuses to analyze — it always
-// proceeds with whatever data is available. If a future iteration re-introduces
-// hard refusal for very low confidence, this error class can be revived.
+// ── Error class ──
+export class AnalysisError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+  ) {
+    super(message);
+    this.name = "AnalysisError";
+  }
+}
 
 // Re-export the schema for other files that import it
 export const AnalysisSchema = z.object({
@@ -130,7 +130,7 @@ export const AnalysisSchema = z.object({
             explanation: z
               .string()
               .describe(
-                "Explanation of how this news negatively or positively affects the technical structure, invalidation levels, or general price action",
+                "Explanation of how this news negatively or positively affects the technical structure",
               ),
           }),
         )
@@ -175,116 +175,175 @@ export async function runChartAnalysis(
   realBars?: import("@/domains/analysis/engine/core/types").OHLCVBar[],
   analysis_style?: string,
 ): Promise<AnalysisResult> {
-  // ═══════════════════════════════════════════════════════════════════════
-  // STEP 1: CHART VISION — Extract context from the image FIRST
-  //
-  // This is the CORE fix. Previously, the image was IGNORED and the system
-  // just used OHLCV data from APIs. Now we actually READ the image.
-  // ═══════════════════════════════════════════════════════════════════════
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
 
-  let chartContext: ChartContext | null = null;
-  let extractionResult: ChartExtractionResult | null = null;
-
-  // z-ai-web-dev-sdk is always available (installed locally, no external API key needed)
-  try {
-    extractionResult = await extractChartContext(imageBytes, mimeType, "external_screenshot");
-    chartContext = extractionResult.context;
-  } catch (visionErr) {
-    console.warn(
-      "[Vixor] Chart Vision extraction failed:",
-      visionErr instanceof Error ? visionErr.message : String(visionErr),
+  // ── If no Gemini API key, fall back to local engine ──
+  if (!apiKey) {
+    console.warn("[Vixor] No GOOGLE_GENERATIVE_AI_API_KEY found — falling back to local engine");
+    return runLocalAnalysisFallback(
+      selectedPair,
+      fileName,
+      trading_style,
+      realBars,
+      analysis_style,
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // STEP 2: VALIDATE — Validation is now SOFT (warnings only, never blocks)
-  //
-  // The SMC/ICT engine uses real OHLCV data, so even if vision extraction
-  // fails, the analysis is still valid. We log warnings but NEVER refuse.
-  // ═══════════════════════════════════════════════════════════════════════
+  const pair = selectedPair ?? detectPairFromFileName(fileName) ?? "BTC/USDT";
+  const timeframe = inferTimeframeFromTradingStyle(trading_style);
 
-  if (extractionResult) {
-    validateChartContext(extractionResult);
+  const base64Image = Buffer.from(imageBytes).toString("base64");
+
+  const systemPrompt = `You are Vixor, an elite AI trading analyst specializing in Smart Money Concepts (SMC) and ICT methodology.
+
+You are analyzing a REAL trading chart image. You must:
+1. READ the actual candles, price levels, and patterns visible in the image
+2. Identify the EXACT trading pair shown (look for labels, title, ticker symbol on the chart)
+3. Identify the timeframe shown on the chart
+4. Provide analysis based ONLY on what you actually SEE in the image
+
+CRITICAL RULES:
+- Never fabricate prices. Extract REAL prices from the chart image.
+- The pair in the image OVERRIDES any user-provided pair selection.
+- If you see "XAUUSD" or "Gold" in the chart, the pair is "XAU/USD" — analyze GOLD.
+- If you see "BTCUSDT" or "Bitcoin" in the chart, the pair is "BTC/USDT" — analyze BITCOIN.
+- Provide entry, stop loss, and take profits based on the ACTUAL price levels visible.
+- Look for: Order Blocks, Fair Value Gaps (FVG), Break of Structure (BOS), Change of Character (CHoCH), liquidity sweeps, imbalances.
+
+Trading style: ${trading_style || "Swing Trading"}
+User-selected pair (may differ from chart): ${pair}`;
+
+  try {
+    const result = await generateObject({
+      model: google("gemini-1.5-flash"),
+      schema: AnalysisSchema,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              image: base64Image,
+            },
+            {
+              type: "text",
+              text: `Analyze this trading chart using Smart Money Concepts (SMC) and ICT methodology. 
+
+The user has selected: ${pair} (${timeframe} timeframe, ${trading_style || "Swing Trading"} style).
+
+IMPORTANT: Look at the actual chart image. Identify the REAL pair and prices shown. Provide your analysis based on what you actually see in the chart.
+
+Provide a complete structured analysis with:
+- The actual pair shown in the chart
+- Realistic entry, stop loss, and 3 take profit levels based on visible chart levels
+- At least 3-5 specific reasons based on what you see
+- Management instructions
+- A confident vixor_message`,
+            },
+          ],
+        },
+      ],
+    });
+
+    const analysisResult = result.object;
+
+    // ── Enrich with real news ──
+    try {
+      const newsItems: NewsItem[] = await getNewsForSymbol(analysisResult.pair, { limit: 5 });
+      if (newsItems.length > 0) {
+        const sentimentCounts = newsItems.reduce(
+          (acc, n) => {
+            if (n.sentiment === "positive") acc.positive++;
+            else if (n.sentiment === "negative") acc.negative++;
+            else acc.neutral++;
+            return acc;
+          },
+          { positive: 0, negative: 0, neutral: 0 },
+        );
+
+        const overallSentiment =
+          sentimentCounts.positive > sentimentCounts.negative
+            ? "BULLISH"
+            : sentimentCounts.negative > sentimentCounts.positive
+              ? "BEARISH"
+              : "NEUTRAL";
+
+        const verdict =
+          overallSentiment === "BULLISH"
+            ? `Recent news leans bullish (${sentimentCounts.positive} positive vs ${sentimentCounts.negative} negative headlines).`
+            : overallSentiment === "BEARISH"
+              ? `Recent news leans bearish (${sentimentCounts.negative} negative vs ${sentimentCounts.positive} positive headlines). Trade with caution.`
+              : `News sentiment is mixed. No strong catalyst from news flow.`;
+
+        analysisResult.news_impact = {
+          relevant_news: newsItems.slice(0, 3).map((n) => ({
+            headline: n.title,
+            source: n.source,
+            impact:
+              n.sentiment === "positive"
+                ? ("POSITIVE" as const)
+                : n.sentiment === "negative"
+                  ? ("NEGATIVE" as const)
+                  : ("NEUTRAL" as const),
+            explanation: n.summary || `Published ${n.publishedAt}`,
+          })),
+          overall_sentiment: overallSentiment as "BULLISH" | "BEARISH" | "NEUTRAL",
+          verdict,
+        };
+      }
+    } catch (newsErr) {
+      console.warn("[Vixor] News enrichment failed (non-fatal):", newsErr);
+    }
+
+    return analysisResult;
+  } catch (err) {
+    console.error(
+      "[Vixor] Gemini Vision analysis failed:",
+      err instanceof Error ? err.message : err,
+    );
+    // Fall back to local engine if Gemini fails
+    return runLocalAnalysisFallback(
+      selectedPair,
+      fileName,
+      trading_style,
+      realBars,
+      analysis_style,
+    );
   }
+}
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // STEP 2.5: TRUTH VALIDATION — Verify vision data against real market
-  //
-  // Compares the vision-extracted price against real market data.
-  // NEVER blocks analysis — only warns. The local engine uses real OHLCV
-  // data anyway, so even if vision is wrong, the analysis is still valid.
-  // ═══════════════════════════════════════════════════════════════════════
+// ---------------------------------------------------------------------------
+// Local engine fallback (when no API key or Gemini fails)
+// ---------------------------------------------------------------------------
 
-  // chart-truth module was removed — truth validation is now skipped
-  // The local analysis engine uses real OHLCV data directly, so this is non-blocking.
+async function runLocalAnalysisFallback(
+  selectedPair?: string,
+  fileName?: string,
+  trading_style?: string,
+  realBars?: OHLCVBar[],
+  analysis_style?: string,
+): Promise<AnalysisResult> {
+  const pair = selectedPair ?? detectPairFromFileName(fileName) ?? "EUR/USD";
+  const timeframe = inferTimeframeFromTradingStyle(trading_style);
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // STEP 3: DETERMINE PAIR — Prefer vision-extracted symbol over user selection
-  // ═══════════════════════════════════════════════════════════════════════
-
-  const pair =
-    chartContext?.symbol ?? selectedPair ?? detectPairFromFileName(fileName) ?? "EUR/USD";
-
-  const timeframe = chartContext?.timeframe ?? inferTimeframeFromTradingStyle(trading_style);
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // STEP 4: LOCAL ENGINE — Run SMC/ICT analysis on real OHLCV data
-  //
-  // SAFETY NET: The local engine is fully deterministic and CANNOT fail.
-  // If it ever throws (which would be a bug), we still return a minimal
-  // valid AnalysisResult so users never see a "failed" analysis card.
-  // ═══════════════════════════════════════════════════════════════════════
-
-  let localResult: import("@/domains/analysis/engine/core/types").LocalAnalysisResult;
+  let localResult: LocalAnalysisResult;
   try {
     localResult = runLocalAnalysis({
       pair,
       timeframe,
       tradingStyle: trading_style,
       analysisStyle: analysis_style,
-      imageBytes,
       bars: realBars,
     });
   } catch (engineErr) {
-    // Absolute last-resort fallback — should never happen because
-    // runLocalAnalysis already has a synthetic-data fallback built in,
-    // but if it does, we still produce a valid result.
-    console.error(
-      "[Vixor] Local analysis engine threw unexpectedly:",
-      engineErr instanceof Error ? engineErr.message : String(engineErr),
-    );
-    const { generateFallbackResult } = await import("@/domains/analysis/engine/engine");
-    const { PAIR_CONFIGS } = await import("@/domains/analysis/engine/core/types");
+    console.error("[Vixor] Local engine failed:", engineErr);
     const config = PAIR_CONFIGS[pair] || PAIR_CONFIGS["EUR/USD"]!;
     localResult = generateFallbackResult(pair, timeframe, config);
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // STEP 5: BUILD RESULT — Local engine is the ONLY analysis engine
-  // ═══════════════════════════════════════════════════════════════════════
-
-  // The local SMC/ICT engine is deterministic and based on REAL OHLCV data.
-  // No external AI API is used — this is 100% local.
-  // Local analysis complete
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // STEP 4.5: REAL NEWS ENRICHMENT (Finnhub)
-  // ═══════════════════════════════════════════════════════════════════════
-  //
-  // The local engine returns `news_impact: undefined` (P0.3 fix — fake newsMap
-  // was deleted). We now fetch REAL news from Finnhub and attach a real
-  // `news_impact` object so users see actual market-moving headlines attached
-  // to their analysis.
-  //
-  // Failures are non-fatal: if Finnhub is unreachable, no API key configured,
-  // or the circuit breaker is open, `newsImpact` stays `undefined` and the
-  // analysis pipeline continues normally. The UI hides the news section when
-  // `news_impact` is undefined.
+  // Enrich with news
   try {
-    const newsItems: NewsItem[] = await getNewsForSymbol(localResult.pair, {
-      limit: 5,
-    });
-
+    const newsItems: NewsItem[] = await getNewsForSymbol(localResult.pair, { limit: 5 });
     if (newsItems.length > 0) {
       const sentimentCounts = newsItems.reduce(
         (acc, n) => {
@@ -295,23 +354,15 @@ export async function runChartAnalysis(
         },
         { positive: 0, negative: 0, neutral: 0 },
       );
-
       const overallSentiment =
         sentimentCounts.positive > sentimentCounts.negative
           ? "BULLISH"
           : sentimentCounts.negative > sentimentCounts.positive
             ? "BEARISH"
             : "NEUTRAL";
-
-      const verdict =
-        overallSentiment === "BULLISH"
-          ? `Recent news sentiment leans positive (${sentimentCounts.positive} bullish vs ${sentimentCounts.negative} bearish headlines in the past 7 days). Aligns with the technical bias if direction matches.`
-          : overallSentiment === "BEARISH"
-            ? `Recent news sentiment leans negative (${sentimentCounts.negative} bearish vs ${sentimentCounts.positive} bullish headlines in the past 7 days). Consider this when sizing positions.`
-            : `News sentiment is mixed or neutral (${sentimentCounts.neutral} neutral headlines). No strong directional catalyst from news flow.`;
-
+      const verdict = `News sentiment: ${overallSentiment.toLowerCase()} (${sentimentCounts.positive} pos, ${sentimentCounts.negative} neg)`;
       localResult.news_impact = {
-        relevant_news: newsItems.map((n) => ({
+        relevant_news: newsItems.slice(0, 3).map((n) => ({
           headline: n.title,
           source: n.source,
           impact:
@@ -325,40 +376,10 @@ export async function runChartAnalysis(
         overall_sentiment: overallSentiment as "BULLISH" | "BEARISH" | "NEUTRAL",
         verdict,
       };
-
-      // News enriched
-    } else {
-      // No recent news for this symbol
     }
-  } catch (newsErr) {
-    // Defensive: getNewsForSymbol already returns [] on failure, but if
-    // something unexpected happens here, we must NOT break the analysis.
-    console.warn(
-      "[Vixor] News enrichment failed (non-fatal):",
-      newsErr instanceof Error ? newsErr.message : String(newsErr),
-    );
-  }
+  } catch {}
 
-  const result = buildAnalysisResult(localResult, chartContext);
-
-  // ── OPTIONAL: Debate Engine validation ──
-  // Gated by environment variable — only runs when explicitly enabled.
-  // Attaches results to result._debate for downstream consumption (non-breaking).
-  // debate engine was removed — debate validation is now skipped
-  // Was gated by ENABLE_DEBATE_ENGINE env var (rarely enabled).
-
-  return result;
-}
-
-// ---------------------------------------------------------------------------
-// Build final AnalysisResult with chart context enrichment
-// ---------------------------------------------------------------------------
-
-function buildAnalysisResult(
-  localResult: import("@/domains/analysis/engine/core/types").LocalAnalysisResult,
-  chartContext: ChartContext | null,
-): AnalysisResult {
-  const result: AnalysisResult = {
+  return {
     ...localResult,
     market_structure: {
       ...localResult.market_structure,
@@ -370,24 +391,10 @@ function buildAnalysisResult(
     news_impact: localResult.news_impact
       ? {
           ...localResult.news_impact,
-          overall_sentiment:
-            localResult.news_impact.overall_sentiment === "NEUTRAL"
-              ? "NEUTRAL"
-              : localResult.news_impact.overall_sentiment,
+          overall_sentiment: localResult.news_impact.overall_sentiment,
         }
       : undefined,
   };
-
-  // If vision extracted a DIFFERENT symbol than what the local engine used,
-  // log a warning but keep the local engine's result (it used real OHLCV data)
-  if (chartContext?.symbol && chartContext.symbol !== localResult.pair) {
-    console.warn(
-      `[Vixor] VISION vs DATA mismatch: Vision detected "${chartContext.symbol}" but local engine analyzed "${localResult.pair}" using real OHLCV data. ` +
-        `The data-based analysis is more reliable. If this is wrong, the user may have selected the wrong pair.`,
-    );
-  }
-
-  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -399,7 +406,7 @@ function detectPairFromFileName(fileName?: string): string | undefined {
   const name = fileName.toLowerCase();
   if (name.includes("gold") || name.includes("xau")) return "XAU/USD";
   if (name.includes("eur") || name.includes("euro")) return "EUR/USD";
-  if (name.includes("btc") || name.includes("bitcoin")) return "BTC/USD";
+  if (name.includes("btc") || name.includes("bitcoin")) return "BTC/USDT";
   if (name.includes("eth") || name.includes("ethereum")) return "ETH/USDT";
   if (name.includes("gbp") || name.includes("pound")) return "GBP/JPY";
   if (name.includes("jpy") || name.includes("yen")) return "GBP/JPY";
