@@ -38,7 +38,9 @@ import type { ExchangeStatus, ExecuteTradeResult } from "@/domains/trading/gatew
 export const Route = createFileRoute("/_authenticated/trade-desk")({
   head: () => ({ meta: [{ title: "Trade Desk — Vixor" }] }),
   component: TradeDesk,
-  validateSearch: (search: Record<string, unknown>): { symbol?: string; price?: string; direction?: string } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { symbol?: string; price?: string; direction?: string } => ({
     symbol: search.symbol as string | undefined,
     price: search.price as string | undefined,
     direction: search.direction as string | undefined,
@@ -93,7 +95,7 @@ function TradeDesk() {
   const [slPips, setSlPips] = useState("30");
   const [pair, setPair] = useState(search.symbol || "XAUUSD");
   const [direction, setDirection] = useState<TradeDirection>(
-    (search.direction as TradeDirection) || "long"
+    (search.direction as TradeDirection) || "long",
   );
   const [entryPrice, setEntryPrice] = useState(search.price || "");
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -245,7 +247,7 @@ function TradeDesk() {
       notes: `Risk: ${riskPct}% · SL: ${slPips} pips`,
       strategy: "Risk Calculator",
     });
-  }, [entryPrice, pair, slPips, direction, result, riskPct, saveMutation]);
+  }, [entryPrice, pair, slPips, direction, result, riskPct, balance, saveMutation]);
 
   // ── Execution helpers ──
   const isExchangeConnected = exchangeStatus?.connected ?? false;
