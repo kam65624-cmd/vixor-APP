@@ -223,7 +223,7 @@ User-selected pair (may differ from chart): ${pair}`;
 
   try {
     const result = await generateObject({
-      model: openrouter("meta-llama/llama-3.2-11b-vision-instruct:free") as any,
+      model: openrouter("qwen/qwen2.5-vl-72b-instruct:free") as any,
       schema: AnalysisSchema,
       messages: [
         {
