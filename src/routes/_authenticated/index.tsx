@@ -188,15 +188,15 @@ function SignalRow({
       >
         {signal.type === "WAIT" ? "—" : isBuy ? "B" : "S"}
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 pr-2">
         <div className="text-sm font-bold text-foreground">{signal.token}</div>
-        <div className="text-[11px] text-foreground/50 truncate">{signal.reason}</div>
+        <div className="text-[11px] text-foreground/50 whitespace-normal leading-snug mt-0.5">{signal.reason}</div>
       </div>
-      <div className="text-right shrink-0">
-        <div className="text-xs font-bold font-mono" style={{ color }}>
+      <div className="text-right shrink-0 flex flex-col items-end justify-center">
+        <div className="text-sm font-bold font-mono leading-none mb-1" style={{ color }}>
           {signal.confidence}%
         </div>
-        <div className="text-[10px] text-foreground/40 font-mono">{signal.price}</div>
+        <div className="text-[10px] text-foreground/40 font-mono leading-none">{signal.price}</div>
       </div>
     </div>
   );
@@ -346,7 +346,7 @@ function HomePage() {
               View all <ChevronRight size={11} />
             </button>
           </div>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard
               label="Value"
               value={

@@ -47,7 +47,10 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
   };
 
   return (
-    <DataRow onClick={handleClick} style={{ padding: "8px 16px", alignItems: "center", cursor: "pointer" }}>
+    <DataRow
+      onClick={handleClick}
+      style={{ padding: "8px 16px", display: "flex", alignItems: "center", cursor: "pointer" }}
+    >
       <div
         style={{
           display: "flex",

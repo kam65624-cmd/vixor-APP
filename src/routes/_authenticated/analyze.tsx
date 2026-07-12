@@ -356,7 +356,8 @@ function Analyze() {
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--color-primary)";
                 e.currentTarget.style.background = "rgba(124, 155, 196, 0.08)";
-                e.currentTarget.style.boxShadow = "inset 0 0 60px rgba(124, 155, 196, 0.15), 0 8px 30px -4px rgba(0, 0, 0, 0.6)";
+                e.currentTarget.style.boxShadow =
+                  "inset 0 0 60px rgba(124, 155, 196, 0.15), 0 8px 30px -4px rgba(0, 0, 0, 0.6)";
                 e.currentTarget.style.transform = "translateY(-2px)";
               }}
               onMouseLeave={(e) => {
@@ -384,13 +385,15 @@ function Analyze() {
                     width: 80,
                     height: 80,
                     borderRadius: 24,
-                    background: "linear-gradient(135deg, rgba(14,203,129,0.15), rgba(14,203,129,0.05))",
+                    background:
+                      "linear-gradient(135deg, rgba(14,203,129,0.15), rgba(14,203,129,0.05))",
                     border: "1px solid rgba(14,203,129,0.2)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     marginBottom: 24,
-                    boxShadow: "0 12px 32px rgba(14,203,129,0.15), inset 0 2px 0 rgba(255,255,255,0.1)",
+                    boxShadow:
+                      "0 12px 32px rgba(14,203,129,0.15), inset 0 2px 0 rgba(255,255,255,0.1)",
                   }}
                 >
                   <Upload style={{ width: 36, height: 36, color: "var(--color-bullish)" }} />
@@ -434,12 +437,13 @@ function Analyze() {
                   gap: 6,
                 }}
               >
-                <Crosshair style={{ width: 14, height: 14, color: "var(--color-primary)" }} /> Pair / Instrument
+                <Crosshair style={{ width: 14, height: 14, color: "var(--color-primary)" }} /> Pair
+                / Instrument
               </label>
               <Select value={selectedPair} onValueChange={setSelectedPair}>
                 <SelectTrigger
-                  style={{ 
-                    ...inputStyle, 
+                  style={{
+                    ...inputStyle,
                     fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                     height: 48,
                     background: "rgba(255,255,255,0.03)",
@@ -494,14 +498,28 @@ function Analyze() {
                   }}
                 >
                   <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--color-bullish)", letterSpacing: "0.02em" }}>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "var(--color-bullish)",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
                     Analyzing: {selectedPair}
                   </span>
                 </div>
               )}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 4 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 10,
+                marginTop: 4,
+              }}
+            >
               {/* Gallery */}
               <label
                 htmlFor="chart-upload-input"

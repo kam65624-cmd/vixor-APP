@@ -8,5 +8,5 @@ export const Route = createFileRoute("/_authenticated/copilot")({
     chartPrice: (search.chartPrice as number) || undefined,
     chartSymbol: (search.chartSymbol as string) || undefined,
   }),
-  component: lazyRouteComponent(() => import("./copilot-component"), "CopilotPage"),
+  component: lazyRouteComponent(() => import("./-copilot-component"), "CopilotPage"),
 });

@@ -17,7 +17,7 @@ import {
   FOREX_MAJOR_COUNT,
   FOREX_MINOR_COUNT,
   type ForexPair,
-} from "./discover-forex-data";
+} from "./-discover-forex-data";
 
 // ── Route definition with typed search params ───────────────────────────────
 

@@ -296,12 +296,13 @@ const SignalRow = memo(function SignalRow({
       <div
         style={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "space-between",
           marginBottom: "10px",
+          gap: "12px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", flex: 1 }}>
           {/* Direction badge */}
           <div
             style={{
@@ -339,6 +340,20 @@ const SignalRow = memo(function SignalRow({
           >
             {signal.timeframe}
           </span>
+          {/* Reasons inline */}
+          {signal.reasons && signal.reasons.length > 0 && (
+            <div
+              style={{
+                fontSize: "11px",
+                color: "var(--color-muted-foreground)",
+                lineHeight: 1.4,
+                width: "100%",
+                marginTop: "4px"
+              }}
+            >
+              {signal.reasons.join(" · ")}
+            </div>
+          )}
         </div>
         {/* Confidence */}
         <div
@@ -347,6 +362,7 @@ const SignalRow = memo(function SignalRow({
             flexDirection: "column",
             alignItems: "flex-end",
             gap: "2px",
+            flexShrink: 0,
           }}
         >
           <span
@@ -363,7 +379,7 @@ const SignalRow = memo(function SignalRow({
           </span>
           <span
             style={{
-              fontSize: "10px",
+              fontSize: "9px",
               color: "var(--color-muted-foreground)",
               letterSpacing: "0.04em",
             }}
@@ -372,22 +388,6 @@ const SignalRow = memo(function SignalRow({
           </span>
         </div>
       </div>
-
-      {/* Reasons */}
-      {signal.reasons && signal.reasons.length > 0 && (
-        <div
-          style={{
-            fontSize: "12px",
-            color: "var(--color-muted-foreground)",
-            lineHeight: 1.6,
-            marginBottom: "10px",
-            paddingBottom: "10px",
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
-          }}
-        >
-          {signal.reasons.join(" · ")}
-        </div>
-      )}
 
       {/* Price grid */}
       <div

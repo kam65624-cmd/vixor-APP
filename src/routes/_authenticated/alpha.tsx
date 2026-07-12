@@ -152,13 +152,13 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
         transition: "transform 0.2s ease, box-shadow 0.2s ease",
       }}
     >
-      {/* Top row: type badge, pair, timeframe, confidence */}
       <div
         style={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "space-between",
           marginBottom: "12px",
+          gap: "12px",
         }}
       >
         <div
@@ -168,6 +168,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
             gap: "8px",
             minWidth: 0,
             flex: 1,
+            flexWrap: "wrap",
           }}
         >
           <div
@@ -209,19 +210,23 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
             </span>
           )}
           {item.pattern && (
-            <span
-              style={{
-                fontSize: "11px",
-                fontWeight: 600,
-                padding: "2px 6px",
-                borderRadius: "6px",
-                background: "rgba(245,158,11,0.1)",
-                color: "var(--color-neutral-wait)",
-                border: "1px solid rgba(245,158,11,0.2)",
-              }}
-            >
-              {item.pattern}
-            </span>
+            <div style={{ width: "100%", marginTop: "4px" }}>
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  background: "rgba(245,158,11,0.1)",
+                  color: "var(--color-neutral-wait)",
+                  border: "1px solid rgba(245,158,11,0.2)",
+                  display: "inline-block",
+                  lineHeight: 1.4,
+                }}
+              >
+                {item.pattern}
+              </span>
+            </div>
           )}
         </div>
         <div
@@ -248,7 +253,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
           </span>
           <span
             style={{
-              fontSize: "10px",
+              fontSize: "9px",
               color: "var(--color-muted-foreground)",
               letterSpacing: "0.04em",
             }}
