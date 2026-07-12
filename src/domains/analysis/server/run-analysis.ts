@@ -303,16 +303,12 @@ Provide a complete structured analysis with:
     return analysisResult;
   } catch (err) {
     console.error(
-      "[Vixor] Gemini Vision analysis failed:",
+      "[Vixor] OpenRouter Vision analysis failed:",
       err instanceof Error ? err.message : err,
     );
-    // Fall back to local engine if Gemini fails
-    return runLocalAnalysisFallback(
-      selectedPair,
-      fileName,
-      trading_style,
-      realBars,
-      analysis_style,
+    throw new AnalysisError(
+      `OpenRouter Error: ${err instanceof Error ? err.message : JSON.stringify(err)}`,
+      "OPENROUTER_ERROR"
     );
   }
 }
