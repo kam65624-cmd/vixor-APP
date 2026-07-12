@@ -255,129 +255,15 @@ function generateMockSignals(signals: SignalRow[]): RadarBlip[] {
     ];
     return fallbacks.map((f, i) => ({
       id: `sig-${i}`,
-      type: "signal" as BlipType,
-      title: `🤖 AI Signal: ${f.direction}`,
-      subtitle: f.pair,
-      detail: `Confidence ${f.confidence}% · ${f.timeframe}`,
-      timestamp: new Date(Date.now() - (i * 20 + 10) * 60_000),
-      color: f.direction === "BUY" ? "var(--color-bullish)" : "var(--color-bearish)",
-      icon: "🤖",
-    }));
-  }
-  return signals.slice(0, 4).map((s, i) => ({
-    id: `sig-${i}`,
-    type: "signal" as BlipType,
-    title: `🤖 AI Signal: ${s.recommendation}`,
-    subtitle: s.pair,
-    detail: `Confidence ${s.confidence}% · ${s.timeframe}`,
-    timestamp: new Date(Date.now() - (i * 25 + 5) * 60_000),
-    color:
-      s.recommendation === "BUY"
-        ? "var(--color-bullish)"
-        : s.recommendation === "SELL"
-          ? "var(--color-bearish)"
-          : "var(--color-muted-foreground)",
-    icon: "🤖",
-  }));
+  return [];
 }
 
 function generateMockTokens(): MarketToken[] {
-  return [
-    {
-      symbol: "BTC",
-      price: 104890,
-      change24h: 1.24,
-      volume24h: 32_400_000_000,
-      high24h: 105420,
-      low24h: 103210,
-    },
-    {
-      symbol: "ETH",
-      price: 3832,
-      change24h: -0.87,
-      volume24h: 18_200_000_000,
-      high24h: 3910,
-      low24h: 3795,
-    },
-    {
-      symbol: "SOL",
-      price: 182.3,
-      change24h: 4.12,
-      volume24h: 5_600_000_000,
-      high24h: 184.1,
-      low24h: 174.2,
-    },
-    {
-      symbol: "BNB",
-      price: 712.5,
-      change24h: 0.43,
-      volume24h: 2_100_000_000,
-      high24h: 718,
-      low24h: 705,
-    },
-    {
-      symbol: "XRP",
-      price: 2.48,
-      change24h: -2.31,
-      volume24h: 3_800_000_000,
-      high24h: 2.56,
-      low24h: 2.44,
-    },
-    {
-      symbol: "DOGE",
-      price: 0.428,
-      change24h: 7.82,
-      volume24h: 4_500_000_000,
-      high24h: 0.435,
-      low24h: 0.395,
-    },
-    {
-      symbol: "ADA",
-      price: 1.12,
-      change24h: 3.45,
-      volume24h: 1_800_000_000,
-      high24h: 1.14,
-      low24h: 1.07,
-    },
-    {
-      symbol: "AVAX",
-      price: 42.8,
-      change24h: -1.56,
-      volume24h: 980_000_000,
-      high24h: 44.1,
-      low24h: 41.9,
-    },
-  ];
+  return [];
 }
 
 function generateMockHeatmapData(): Array<{ symbol: string; change: number }> {
-  return [
-    { symbol: "BTC", change: 1.24 },
-    { symbol: "ETH", change: -0.87 },
-    { symbol: "SOL", change: 4.12 },
-    { symbol: "BNB", change: 0.43 },
-    { symbol: "XRP", change: -2.31 },
-    { symbol: "DOGE", change: 7.82 },
-    { symbol: "ADA", change: 3.45 },
-    { symbol: "AVAX", change: -1.56 },
-    { symbol: "LINK", change: 2.18 },
-    { symbol: "DOT", change: -0.92 },
-    { symbol: "MATIC", change: 5.67 },
-    { symbol: "UNI", change: -3.14 },
-    { symbol: "ATOM", change: 1.89 },
-    { symbol: "FIL", change: -4.21 },
-    { symbol: "ARB", change: 6.33 },
-    { symbol: "OP", change: -1.08 },
-    { symbol: "NEAR", change: 3.76 },
-    { symbol: "APT", change: -2.55 },
-    { symbol: "SUI", change: 8.14 },
-    { symbol: "SEI", change: -0.43 },
-    { symbol: "TIA", change: 2.91 },
-    { symbol: "JUP", change: -5.12 },
-    { symbol: "WIF", change: 11.23 },
-    { symbol: "PEPE", change: 9.45 },
-    { symbol: "BONK", change: -6.78 },
-  ];
+  return [];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

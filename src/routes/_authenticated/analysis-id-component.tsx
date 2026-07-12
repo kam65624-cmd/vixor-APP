@@ -1444,6 +1444,36 @@ export function AnalysisResult() {
                 >
                   {highlightSMC(vixorMsg)}
                 </p>
+                <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid var(--color-border)" }}>
+                  <Link
+                    to="/trade-desk"
+                    search={{
+                      symbol: a.pair?.replace("/", ""),
+                      direction: a.recommendation === "BUY" ? "long" : "short",
+                      price: a.entry != null ? String(a.entry) : undefined,
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      width: "100%",
+                      height: "44px",
+                      borderRadius: "8px",
+                      background: "linear-gradient(135deg, var(--color-bullish), rgba(14,203,129,0.70))",
+                      color: "var(--color-foreground)",
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      textDecoration: "none",
+                      boxShadow: "0 4px 12px rgba(14,203,129,0.25)",
+                      transition: "transform 0.15s ease",
+                    }}
+                  >
+                    <Zap size={16} />
+                    Trade This Signal
+                  </Link>
+                </div>
               </div>
             )}
 

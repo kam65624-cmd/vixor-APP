@@ -507,32 +507,39 @@ function TokenRow({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "10px 12px",
+        padding: "12px 14px",
         borderBottom: "1px solid var(--color-border)",
         cursor: "pointer",
-        transition: "background 0.12s",
+        transition: "background 0.15s ease",
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-card-hover)")}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = "rgba(124,155,196,0.06)";
+        e.currentTarget.style.transform = "translateX(2px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+        e.currentTarget.style.transform = "translateX(0)";
+      }}
     >
       {/* Left: Token info */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1, minWidth: 0 }}>
         <div
           style={{
-            width: "36px",
-            height: "36px",
+            width: "40px",
+            height: "40px",
             borderRadius: "50%",
-            background: hasLogo ? "var(--color-card)" : blendWithCard(color, 0.12),
-            border: `1px solid ${withAlpha(color, 0.2)}`,
+            background: hasLogo ? "var(--color-card)" : blendWithCard(color, 0.15),
+            border: `1.5px solid ${withAlpha(color, 0.3)}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "10px",
+            fontSize: "12px",
             fontWeight: 800,
             color,
             flexShrink: 0,
             letterSpacing: "-0.02em",
             overflow: "hidden",
+            boxShadow: `0 0 12px ${withAlpha(color, 0.15)}`,
           }}
         >
           {hasLogo ? (
@@ -548,10 +555,10 @@ function TokenRow({
           )}
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <span
               style={{
-                fontSize: "12px",
+                fontSize: "13px",
                 fontWeight: 700,
                 color: "var(--color-foreground)",
                 fontFamily: "'Inter', system-ui, sans-serif",
@@ -561,11 +568,11 @@ function TokenRow({
             </span>
             <span
               style={{
-                fontSize: "8px",
+                fontSize: "10px",
                 fontWeight: 600,
-                padding: "1px 5px",
-                borderRadius: "3px",
-                background: "rgba(163,163,163,0.15)",
+                padding: "1px 6px",
+                borderRadius: "4px",
+                background: "rgba(163,163,163,0.12)",
                 color: "var(--color-muted-foreground)",
               }}
             >
@@ -574,28 +581,28 @@ function TokenRow({
             {token.isHoneypot && (
               <span
                 style={{
-                  fontSize: "8px",
+                  fontSize: "10px",
                   fontWeight: 700,
-                  padding: "1px 5px",
-                  borderRadius: "3px",
+                  padding: "1px 6px",
+                  borderRadius: "4px",
                   background: "rgba(239,68,68,0.15)",
                   color: "#ef4444",
                 }}
               >
-                HONEYPOT
+                ⚠ HONEYPOT
               </span>
             )}
             {isNew && <NewBadge />}
           </div>
           <div
             style={{
-              fontSize: "9px",
+              fontSize: "11px",
               color: "var(--color-muted-foreground)",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-              maxWidth: "140px",
-              marginTop: "1px",
+              maxWidth: "150px",
+              marginTop: "2px",
             }}
           >
             {token.name}
@@ -614,11 +621,11 @@ function TokenRow({
         </div>
       )}
 
-      {/* Right: Price + Change + Volume + MCap */}
+      {/* Right: Price + Change + Volume */}
       <div style={{ textAlign: "right", flexShrink: 0 }}>
         <div
           style={{
-            fontSize: "12px",
+            fontSize: "13px",
             fontWeight: 700,
             fontFamily: "'JetBrains Mono', monospace",
             color: "var(--color-foreground)",
@@ -639,14 +646,23 @@ function TokenRow({
           </span>
         </div>
         <div
-          style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            justifyContent: "flex-end",
+            marginTop: "3px",
+          }}
         >
           <span
             style={{
-              fontSize: "10px",
-              fontWeight: 600,
+              fontSize: "12px",
+              fontWeight: 700,
               fontFamily: "'JetBrains Mono', monospace",
               color,
+              background: `${color}18`,
+              padding: "1px 6px",
+              borderRadius: "4px",
             }}
           >
             {fmtPct(displayChange)}
@@ -656,22 +672,17 @@ function TokenRow({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
+            gap: "6px",
             justifyContent: "flex-end",
-            marginTop: "2px",
+            marginTop: "3px",
           }}
         >
-          <span style={{ fontSize: "8px", color: "var(--color-muted-foreground)" }}>
+          <span style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
             Vol {fmtCompact(token.volume24h)}
           </span>
           {token.marketCap > 0 && (
-            <span style={{ fontSize: "8px", color: "var(--color-muted-foreground)" }}>
+            <span style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
               MC {fmtCompact(token.marketCap)}
-            </span>
-          )}
-          {token.liquidity > 0 && (
-            <span style={{ fontSize: "8px", color: "var(--color-info)" }}>
-              Liq {fmtCompact(token.liquidity)}
             </span>
           )}
         </div>
@@ -1311,33 +1322,33 @@ function DiscoverPage() {
               key={tab.key}
               onClick={() => handleCategoryChange(tab.key)}
               style={{
-                fontSize: "10px",
+                fontSize: "13px",
                 fontWeight: isActive ? 700 : 500,
-                padding: "5px 10px",
-                borderRadius: "5px",
-                border: "none",
+                padding: "6px 14px",
+                borderRadius: "8px",
+                border: isActive ? "1px solid var(--color-primary)" : "1px solid transparent",
                 cursor: "pointer",
-                background: isActive ? "var(--color-primary)" : "var(--color-card)",
+                background: isActive ? "var(--color-primary)" : "transparent",
                 color: isActive ? "#000" : "var(--color-muted-foreground)",
                 transition: "all 0.15s ease",
                 whiteSpace: "nowrap",
                 display: "flex",
                 alignItems: "center",
-                gap: "5px",
+                gap: "6px",
                 fontFamily: "'Inter', system-ui, sans-serif",
               }}
             >
               {tab.label}
               <span
                 style={{
-                  fontSize: "8px",
+                  fontSize: "11px",
                   fontWeight: 700,
-                  padding: "0px 4px",
+                  padding: "0 5px",
                   borderRadius: "8px",
-                  background: isActive ? "rgba(0,0,0,0.2)" : "rgba(163,163,163,0.12)",
+                  background: isActive ? "rgba(0,0,0,0.18)" : "rgba(163,163,163,0.12)",
                   color: isActive ? "rgba(0,0,0,0.7)" : "var(--color-muted-foreground)",
                   fontFamily: "'JetBrains Mono', monospace",
-                  lineHeight: "14px",
+                  lineHeight: "18px",
                 }}
               >
                 {count}
@@ -1714,6 +1725,109 @@ function DiscoverPage() {
         {/* ── CRYPTO TOKEN LIST ── */}
         {!isForexMode && (
           <div style={{ padding: "4px 0" }}>
+            {/* Top Movers Section */}
+            {!isLoading && tokens.length > 0 && (
+              <div style={{ padding: "12px 14px 8px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <span style={{ fontSize: "10px" }}>⚡</span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      color: "var(--color-muted-foreground)",
+                    }}
+                  >
+                    Top Movers
+                  </span>
+                </div>
+                <div
+                  className="scrollbar-hide"
+                  style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}
+                >
+                  {[...tokens]
+                    .sort((a, b) => Math.abs(b.change24h ?? 0) - Math.abs(a.change24h ?? 0))
+                    .slice(0, 8)
+                    .map((t) => {
+                      const isUp = (t.change24h ?? 0) >= 0;
+                      const col = isUp ? "var(--color-bullish)" : "var(--color-bearish)";
+                      return (
+                        <button
+                          key={t.symbol + t.chain}
+                          onClick={() => handleTokenClick(t)}
+                          style={{
+                            flexShrink: 0,
+                            padding: "10px 14px",
+                            borderRadius: "10px",
+                            background: "var(--color-card)",
+                            border: `1px solid ${isUp ? "rgba(14,203,129,0.25)" : "rgba(246,70,93,0.25)"}`,
+                            cursor: "pointer",
+                            textAlign: "left",
+                            minWidth: "100px",
+                            backdropFilter: "blur(8px)",
+                            transition: "all 0.15s ease",
+                            boxShadow: `0 2px 12px ${isUp ? "rgba(14,203,129,0.08)" : "rgba(246,70,93,0.08)"}`,
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "translateY(-2px)";
+                            e.currentTarget.style.boxShadow = `0 6px 20px ${isUp ? "rgba(14,203,129,0.18)" : "rgba(246,70,93,0.18)"}`;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0)";
+                            e.currentTarget.style.boxShadow = `0 2px 12px ${isUp ? "rgba(14,203,129,0.08)" : "rgba(246,70,93,0.08)"}`;
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: 800,
+                              color: "var(--color-foreground)",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            {t.symbol}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "13px",
+                              fontWeight: 700,
+                              color: col,
+                              fontFamily: "'JetBrains Mono', monospace",
+                            }}
+                          >
+                            {isUp ? "+" : ""}
+                            {(t.change24h ?? 0).toFixed(2)}%
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "11px",
+                              color: "var(--color-muted-foreground)",
+                              fontFamily: "'JetBrains Mono', monospace",
+                              marginTop: "2px",
+                            }}
+                          >
+                            {fmtPrice(t.price)}
+                          </div>
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
+            {/* Divider */}
+            {!isLoading && tokens.length > 0 && (
+              <div style={{ height: "1px", background: "var(--color-border)", margin: "4px 0" }} />
+            )}
+
             {isLoading
               ? Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} style={{ padding: "6px 12px" }}>

@@ -38,6 +38,11 @@ import type { ExchangeStatus, ExecuteTradeResult } from "@/domains/trading/gatew
 export const Route = createFileRoute("/_authenticated/trade-desk")({
   head: () => ({ meta: [{ title: "Trade Desk — Vixor" }] }),
   component: TradeDesk,
+  validateSearch: (search: Record<string, unknown>) => ({
+    symbol: (search.symbol as string) || undefined,
+    price: (search.price as string) || undefined,
+    direction: (search.direction as string) || undefined,
+  }),
 });
 
 const PAIRS = ["XAUUSD", "EURUSD", "GBPUSD", "USDJPY", "BTCUSD"];
@@ -79,15 +84,18 @@ const inputStyle = {
 } as React.CSSProperties;
 
 function TradeDesk() {
+  const search = Route.useSearch();
   const { t } = useI18n();
   const { play } = useSound();
   const queryClient = useQueryClient();
   const [balance, setBalance] = useState("10000");
   const [riskPct, setRiskPct] = useState("1");
   const [slPips, setSlPips] = useState("30");
-  const [pair, setPair] = useState("XAUUSD");
-  const [direction, setDirection] = useState<TradeDirection>("long");
-  const [entryPrice, setEntryPrice] = useState("");
+  const [pair, setPair] = useState(search.symbol || "XAUUSD");
+  const [direction, setDirection] = useState<TradeDirection>(
+    (search.direction as TradeDirection) || "long"
+  );
+  const [entryPrice, setEntryPrice] = useState(search.price || "");
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showCoach, setShowCoach] = useState(false);
   const [showGovernor, setShowGovernor] = useState(false);
