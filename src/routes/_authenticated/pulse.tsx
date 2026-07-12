@@ -1,11 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { memo, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-
-export const Route = createFileRoute("/_authenticated/pulse")({
-  head: () => ({ meta: [{ title: "Pulse \u2014 Vixor" }] }),
-  component: PulsePage,
-});
 import {
   PageLayout,
   StatsRow,
@@ -17,6 +12,11 @@ import {
 import { formatTimeAgo, formatPrice, formatQuantity } from "@/shared/utils/formatters";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getPulseData } from "@/shared/data";
+
+export const Route = createFileRoute("/_authenticated/pulse")({
+  head: () => ({ meta: [{ title: "Pulse \u2014 Vixor" }] }),
+  component: PulsePage,
+});
 
 const TABS = ["All", "Trades", "Signals"] as const;
 type Tab = (typeof TABS)[number];
