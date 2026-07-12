@@ -1444,7 +1444,13 @@ export function AnalysisResult() {
                 >
                   {highlightSMC(vixorMsg)}
                 </p>
-                <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid var(--color-border)" }}>
+                <div
+                  style={{
+                    marginTop: "16px",
+                    paddingTop: "16px",
+                    borderTop: "1px solid var(--color-border)",
+                  }}
+                >
                   <Link
                     to="/trade-desk"
                     search={{
@@ -1460,7 +1466,8 @@ export function AnalysisResult() {
                       width: "100%",
                       height: "44px",
                       borderRadius: "8px",
-                      background: "linear-gradient(135deg, var(--color-bullish), rgba(14,203,129,0.70))",
+                      background:
+                        "linear-gradient(135deg, var(--color-bullish), rgba(14,203,129,0.70))",
                       color: "var(--color-foreground)",
                       fontWeight: 800,
                       textTransform: "uppercase",
