@@ -223,7 +223,7 @@ User-selected pair (may differ from chart): ${pair}`;
 
   try {
     const result = await generateObject({
-      model: openrouter("qwen/qwen2.5-vl-72b-instruct:free") as any,
+      model: openrouter(process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-lite-preview-02-05:free") as any,
       schema: AnalysisSchema,
       messages: [
         {
