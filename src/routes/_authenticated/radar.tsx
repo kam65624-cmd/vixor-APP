@@ -247,14 +247,6 @@ export const getRadarBlips = createServerFn({ method: "GET" }).handler(
 );
 
 function generateMockSignals(signals: SignalRow[]): RadarBlip[] {
-  if (signals.length === 0) {
-    const fallbacks = [
-      { pair: "BTC/USDT", direction: "BUY", confidence: 82, timeframe: "4H" },
-      { pair: "ETH/USDT", direction: "SELL", confidence: 71, timeframe: "1H" },
-      { pair: "SOL/USDT", direction: "BUY", confidence: 88, timeframe: "15M" },
-    ];
-    return fallbacks.map((f, i) => ({
-      id: `sig-${i}`,
   return [];
 }
 
