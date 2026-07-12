@@ -21,7 +21,7 @@
 
 import { z } from "zod";
 import { generateObject } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { getNewsForSymbol, type NewsItem } from "@/domains/market/server/news";
 import { runLocalAnalysis, generateFallbackResult } from "@/domains/analysis/engine/engine";
 import {
@@ -189,9 +189,12 @@ export async function runChartAnalysis(
     );
   }
 
-  const openrouter = createOpenAI({
+  const openrouter = createOpenAICompatible({
+    name: "openrouter",
     baseURL: "https://openrouter.ai/api/v1",
-    apiKey,
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
   });
 
   const pair = selectedPair ?? detectPairFromFileName(fileName) ?? "BTC/USDT";
