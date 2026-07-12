@@ -63,27 +63,31 @@ const LOT_SIZES: Record<string, number> = {
   BTCUSD: 1,
 };
 
-const card = {
-  background: "var(--color-card)",
-  border: `1px solid ${"var(--color-border)"}`,
-  borderRadius: "12px",
+const card: React.CSSProperties = {
+  background: "rgba(255,255,255,0.04)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: "16px",
+  boxShadow: "0 4px 24px -8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
 };
-const mono = {
+const mono: React.CSSProperties = {
   fontFamily: "'JetBrains Mono', ui-monospace, monospace",
 };
-const labelStyle = {
-  fontSize: "10px",
-  fontWeight: 700,
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.05em",
+const labelStyle: React.CSSProperties = {
+  fontSize: "12px",
+  fontWeight: 600,
+  textTransform: "uppercase",
+  letterSpacing: "0.06em",
   color: "var(--color-muted-foreground)",
 };
-const inputStyle = {
-  background: "rgba(124,155,196,0.06)",
-  border: `1px solid ${"var(--color-border)"}`,
+const inputStyle: React.CSSProperties = {
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(255,255,255,0.10)",
   color: "var(--color-foreground)",
   outline: "none",
-} as React.CSSProperties;
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
 
 function TradeDesk() {
   const search = Route.useSearch();
@@ -393,23 +397,51 @@ function TradeDesk() {
       <ScrollArea>
         {/* RISK CALCULATOR */}
         <div
+          className="animate-slide-up"
           style={{
             ...card,
             margin: "16px 16px 0",
             padding: "20px",
-            borderLeft: `4px solid ${"var(--color-bullish)"}`,
+            borderLeft: "4px solid var(--color-bullish)",
           }}
         >
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "8px",
-              marginBottom: "16px",
+              gap: "10px",
+              marginBottom: "20px",
+              paddingBottom: "14px",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
             }}
           >
-            <Calculator className="size-4" style={{ color: "var(--color-bullish)" }} />
-            <h2 style={labelStyle}>{t("tradeDesk.riskCalculator")}</h2>
+            <div
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "10px",
+                background: "rgba(14,203,129,0.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Calculator className="size-4" style={{ color: "var(--color-bullish)" }} />
+            </div>
+            <div>
+              <h2 style={{ ...labelStyle, fontSize: "13px", color: "var(--color-foreground)" }}>
+                {t("tradeDesk.riskCalculator")}
+              </h2>
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "var(--color-muted-foreground)",
+                  marginTop: "2px",
+                }}
+              >
+                Position size & risk management
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
@@ -463,23 +495,27 @@ function TradeDesk() {
 
           <div
             style={{
-              padding: "16px",
-              borderRadius: "12px",
+              padding: "20px",
+              borderRadius: "14px",
               textAlign: "center",
-              background: "rgba(124,155,196,0.03)",
-              border: `1px solid ${"var(--color-border)"}`,
+              background: "linear-gradient(135deg, rgba(14,203,129,0.06), rgba(14,203,129,0.02))",
+              border: "1px solid rgba(14,203,129,0.15)",
             }}
           >
-            <div style={{ ...labelStyle, marginBottom: "4px" }}>
+            <div style={{ ...labelStyle, marginBottom: "8px", opacity: 0.8 }}>
               {t("tradeDesk.recommendedLotSize")}
             </div>
             <div
+              key={result?.lots}
+              className={result ? "animate-data-update" : ""}
               style={{
-                fontSize: "30px",
-                fontWeight: 700,
+                fontSize: "36px",
+                fontWeight: 800,
                 ...mono,
                 color: "var(--color-bullish)",
-                marginBottom: "8px",
+                marginBottom: "10px",
+                textShadow: "0 0 20px rgba(14,203,129,0.4)",
+                letterSpacing: "-0.02em",
               }}
             >
               {result ? result.lots : "0.00"}
@@ -714,7 +750,7 @@ function TradeDesk() {
         </div>
 
         {/* ACTIVE POSITIONS */}
-        <div style={{ marginTop: "24px" }}>
+        <div style={{ marginTop: "24px" }} className="animate-slide-up">
           <SectionTitle title={t("tradeDesk.activePositions")} count={openTrades.length} />
 
           {openTrades.length === 0 ? (
@@ -728,7 +764,7 @@ function TradeDesk() {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "8px",
+                gap: "10px",
                 padding: "0 16px 16px",
               }}
             >

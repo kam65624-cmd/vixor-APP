@@ -70,39 +70,39 @@
 /* ===== DARK MODE (DEFAULT) — VIXOR Nocturne ===== */
 :root {
   /* Surfaces */
-  --background: #0B0D10;
-  --card: rgba(255, 255, 255, 0.025);
-  --card-solid: #101317;
-  --card-hover: #16181C;
-  --surface-elevated: #16181C;
-  --popover: #101317;
+  --background: #0B0E14; /* Deep sophisticated navy/slate instead of dead black */
+  --card: rgba(255, 255, 255, 0.04); /* More visible glassmorphism */
+  --card-solid: #12161F;
+  --card-hover: rgba(255, 255, 255, 0.08);
+  --surface-elevated: #161B26;
+  --popover: #12161F;
 
   /* Text */
-  --foreground: #FAFAFA;
-  --card-foreground: #FAFAFA;
-  --popover-foreground: #FAFAFA;
-  --text-muted: #6B7280;
+  --foreground: #F8FAFC;
+  --card-foreground: #F8FAFC;
+  --popover-foreground: #F8FAFC;
+  --text-muted: #94A3B8;
 
   /* Primary accent — Navy from VIXOR logo */
   --primary: #7C9BC4;
-  --primary-foreground: #0B0D10;
+  --primary-foreground: #0B0E14;
   --primary-glow: #9FB6D6;
 
   /* Secondary / Muted */
-  --secondary: #16181C;
-  --secondary-foreground: #FAFAFA;
-  --muted: #16181C;
-  --muted-foreground: #9CA3AF;
-  --accent: #16181C;
-  --accent-foreground: #FAFAFA;
-  --accent-dark: #232E3C;
+  --secondary: #1E293B;
+  --secondary-foreground: #F8FAFC;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --accent: #1E293B;
+  --accent-foreground: #F8FAFC;
+  --accent-dark: #334155;
 
   /* Borders */
-  --border: #1E232A;
-  --border-subtle: #1A1D22;
-  --input: #1A1D22;
-  --ring: #7C9BC466;
-  --border-hover: #2A3140;
+  --border: #273346;
+  --border-subtle: #1E293B;
+  --input: #273346;
+  --ring: #7C9BC480;
+  --border-hover: #334155;
 
   /* Semantic — Binance-sourced, EXCLUSIVE use for profit/loss */
   --bullish: #0ECB81;
@@ -280,14 +280,16 @@
   }
 
   .vixor-card-hover {
-    transition:
-      background-color 200ms ease,
-      transform 200ms ease,
-      border-color 200ms ease;
+    @apply relative overflow-hidden transition-all duration-300;
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
   }
+
   .vixor-card-hover:hover {
     background: var(--color-card-hover);
     border-color: var(--color-border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
   /* Financial numbers — ALWAYS monospace */
@@ -704,4 +706,42 @@
 @media print {
   .glass-header, .glass-card, nav, aside { display: none !important; }
   body { background: white !important; color: black !important; }
+}
+
+/* ===== ANIMATIONS FOR DATA UPDATING & INTERACTIVE MOVEMENT ===== */
+@keyframes data-update-flash {
+  0% { background-color: rgba(124, 155, 196, 0.15); transform: scale(1.01); }
+  100% { background-color: transparent; transform: scale(1); }
+}
+
+.animate-data-update {
+  animation: data-update-flash 0.6s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes slide-up-fade {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulse-border {
+  0% { border-color: var(--color-border); }
+  50% { border-color: var(--color-primary); }
+  100% { border-color: var(--color-border); }
+}
+
+.animate-pulse-border {
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes subtle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.animate-subtle-bounce {
+  animation: subtle-bounce 3s ease-in-out infinite;
 }
