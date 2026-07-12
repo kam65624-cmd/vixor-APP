@@ -22,6 +22,7 @@ const TABS = ["All", "Trades", "Signals"] as const;
 type Tab = (typeof TABS)[number];
 
 const PulseRow = memo(function PulseRow({ item }: { item: any }) {
+  const navigate = useNavigate();
   const isTrade = item.type === "trade";
   const typeColor = isTrade ? "var(--color-primary)" : "var(--color-info)";
   const actionColor =
@@ -31,8 +32,22 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
         ? "var(--color-bearish)"
         : "var(--color-neutral-wait)";
 
+  const handleClick = () => {
+    if (isTrade && item.pair) {
+      navigate({
+        to: "/trade-desk",
+        search: { symbol: item.pair.replace("/", "") },
+      });
+    } else if (!isTrade && item.id) {
+      navigate({
+        to: "/analysis/$id",
+        params: { id: item.id },
+      });
+    }
+  };
+
   return (
-    <DataRow style={{ padding: "8px 16px", alignItems: "center" }}>
+    <DataRow onClick={handleClick} style={{ padding: "8px 16px", alignItems: "center", cursor: "pointer" }}>
       <div
         style={{
           display: "flex",

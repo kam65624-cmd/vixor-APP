@@ -498,6 +498,7 @@ const JournalRow = memo(function JournalRow({
   index: number;
   fmtDate: (d: string) => string;
 }) {
+  const navigate = useNavigate();
   const moodColor = moodColors[entry.mood] || "var(--color-muted-foreground)";
   const moodEmoji: Record<string, string> = {
     confident: "😎",
@@ -506,8 +507,17 @@ const JournalRow = memo(function JournalRow({
     neutral: "😐",
   };
 
+  const handleClick = () => {
+    if (entry.pair) {
+      navigate({
+        to: "/trade-desk",
+        search: { symbol: entry.pair.replace("/", "") },
+      });
+    }
+  };
+
   return (
-    <DataRow>
+    <DataRow onClick={handleClick}>
       <div
         style={{
           display: "flex",
