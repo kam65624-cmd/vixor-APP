@@ -302,7 +302,9 @@ const SignalRow = memo(function SignalRow({
           gap: "12px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", flex: 1 }}>
+        <div
+          style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", flex: 1 }}
+        >
           {/* Direction badge */}
           <div
             style={{
@@ -348,7 +350,7 @@ const SignalRow = memo(function SignalRow({
                 color: "var(--color-muted-foreground)",
                 lineHeight: 1.4,
                 width: "100%",
-                marginTop: "4px"
+                marginTop: "4px",
               }}
             >
               {signal.reasons.join(" · ")}
