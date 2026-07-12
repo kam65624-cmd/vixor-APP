@@ -21,7 +21,7 @@
 
 import { z } from "zod";
 import { generateObject } from "ai";
-import { google } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
 import { getNewsForSymbol, type NewsItem } from "@/domains/market/server/news";
 import { runLocalAnalysis, generateFallbackResult } from "@/domains/analysis/engine/engine";
 import {
@@ -175,11 +175,11 @@ export async function runChartAnalysis(
   realBars?: import("@/domains/analysis/engine/core/types").OHLCVBar[],
   analysis_style?: string,
 ): Promise<AnalysisResult> {
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+  const apiKey = process.env.OPENROUTER_API_KEY;
 
-  // ── If no Gemini API key, fall back to local engine ──
+  // ── If no OpenRouter API key, fall back to local engine ──
   if (!apiKey) {
-    console.warn("[Vixor] No GOOGLE_GENERATIVE_AI_API_KEY found — falling back to local engine");
+    console.warn("[Vixor] No OPENROUTER_API_KEY found — falling back to local engine");
     return runLocalAnalysisFallback(
       selectedPair,
       fileName,
@@ -188,6 +188,11 @@ export async function runChartAnalysis(
       analysis_style,
     );
   }
+
+  const openrouter = createOpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey,
+  });
 
   const pair = selectedPair ?? detectPairFromFileName(fileName) ?? "BTC/USDT";
   const timeframe = inferTimeframeFromTradingStyle(trading_style);
@@ -215,7 +220,7 @@ User-selected pair (may differ from chart): ${pair}`;
 
   try {
     const result = await generateObject({
-      model: google("gemini-1.5-flash"),
+      model: openrouter("meta-llama/llama-3.2-11b-vision-instruct:free") as any,
       schema: AnalysisSchema,
       messages: [
         {
