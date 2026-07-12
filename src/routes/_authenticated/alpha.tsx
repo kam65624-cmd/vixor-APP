@@ -137,98 +137,283 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
         : "var(--color-bearish)";
 
   return (
-    <DataRow leftAccent={badgeColor}>
+    <div
+      className="animate-slide-up"
+      style={{
+        margin: "0 16px 10px",
+        padding: "16px",
+        background: "rgba(255,255,255,0.04)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        border: `1px solid ${badgeColor}22`,
+        borderLeft: `3px solid ${badgeColor}`,
+        borderRadius: "14px",
+        boxShadow: "0 4px 20px -8px rgba(0,0,0,0.5)",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+      }}
+    >
       {/* Top row: type badge, pair, timeframe, confidence */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: "6px",
+          marginBottom: "12px",
         }}
       >
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "6px",
+            gap: "8px",
             minWidth: 0,
             flex: 1,
           }}
         >
-          <Badge label={isSignal ? "SIGNAL" : "ANALYSIS"} color={badgeColor} />
+          <div
+            style={{
+              padding: "3px 10px",
+              borderRadius: "8px",
+              background: `${badgeColor}18`,
+              border: `1px solid ${badgeColor}40`,
+              fontSize: "11px",
+              fontWeight: 800,
+              color: badgeColor,
+              letterSpacing: "0.06em",
+            }}
+          >
+            {isSignal ? "SIGNAL" : "ANALYSIS"}
+          </div>
           <span
             style={{
-              fontSize: "12px",
+              fontSize: "15px",
               fontWeight: 700,
               color: "var(--color-foreground)",
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             }}
           >
             {item.pair || "\u2014"}
           </span>
           {item.timeframe && (
-            <Badge label={item.timeframe} color={"var(--color-muted-foreground)"} small />
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                padding: "2px 6px",
+                borderRadius: "6px",
+                background: "rgba(255,255,255,0.05)",
+                color: "var(--color-muted-foreground)",
+              }}
+            >
+              {item.timeframe}
+            </span>
           )}
-          {item.pattern && <Badge label={item.pattern} color={"var(--color-neutral-wait)"} small />}
+          {item.pattern && (
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                padding: "2px 6px",
+                borderRadius: "6px",
+                background: "rgba(245,158,11,0.1)",
+                color: "var(--color-neutral-wait)",
+                border: "1px solid rgba(245,158,11,0.2)",
+              }}
+            >
+              {item.pattern}
+            </span>
+          )}
         </div>
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            gap: "8px",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: "2px",
             flexShrink: 0,
             marginLeft: "8px",
           }}
         >
           <span
             style={{
-              fontSize: "12px",
-              fontWeight: 700,
+              fontSize: "18px",
+              fontWeight: 800,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
               color: confidenceColor,
+              textShadow: `0 0 12px ${confidenceColor}40`,
+              lineHeight: 1,
             }}
           >
             {formatPercentRaw(confidencePct)}
+          </span>
+          <span
+            style={{
+              fontSize: "10px",
+              color: "var(--color-muted-foreground)",
+              letterSpacing: "0.04em",
+            }}
+          >
+            CONFIDENCE
           </span>
         </div>
       </div>
 
       {/* Confidence progress bar */}
-      <ProgressBar value={confidencePct} color={confidenceColor} />
+      <div style={{ marginBottom: "16px" }}>
+        <ProgressBar value={confidencePct} color={confidenceColor} />
+      </div>
 
-      {/* Bottom row: entry, SL, TP */}
+      {/* Price grid */}
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "8px",
+          marginBottom: "12px",
         }}
       >
         {item.entry !== undefined && item.entry !== null && (
-          <LabelValue label="Entry" value={formatPrice(item.entry)} mono />
+          <div
+            style={{
+              padding: "8px",
+              borderRadius: "8px",
+              background: "rgba(255,255,255,0.03)",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "10px",
+                color: "var(--color-muted-foreground)",
+                marginBottom: "4px",
+                letterSpacing: "0.05em",
+              }}
+            >
+              ENTRY
+            </div>
+            <div
+              style={{
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "var(--color-foreground)",
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              }}
+            >
+              {formatPrice(item.entry)}
+            </div>
+          </div>
         )}
         {item.stopLoss !== undefined && item.stopLoss !== null && (
-          <LabelValue
-            label="SL"
-            value={formatPrice(item.stopLoss)}
-            mono
-            valueColor={"var(--color-bearish)"}
-          />
+          <div
+            style={{
+              padding: "8px",
+              borderRadius: "8px",
+              background: "rgba(246,70,93,0.06)",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "10px",
+                color: "var(--color-bearish)",
+                marginBottom: "4px",
+                letterSpacing: "0.05em",
+              }}
+            >
+              STOP LOSS
+            </div>
+            <div
+              style={{
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "var(--color-bearish)",
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              }}
+            >
+              {formatPrice(item.stopLoss)}
+            </div>
+          </div>
         )}
         {item.takeProfit !== undefined && item.takeProfit !== null && (
-          <LabelValue
-            label="TP"
-            value={formatTP(item.takeProfit)}
-            mono
-            valueColor={"var(--color-bullish)"}
-          />
+          <div
+            style={{
+              padding: "8px",
+              borderRadius: "8px",
+              background: "rgba(14,203,129,0.06)",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "10px",
+                color: "var(--color-bullish)",
+                marginBottom: "4px",
+                letterSpacing: "0.05em",
+              }}
+            >
+              TAKE PROFIT
+            </div>
+            <div
+              style={{
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "var(--color-bullish)",
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              }}
+            >
+              {formatTP(item.takeProfit)}
+            </div>
+          </div>
         )}
+      </div>
+
+      {/* Footer row: Reasons & Time */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          marginTop: "4px",
+        }}
+      >
+        {/* Reasons (if present) */}
+        {item.reasons && item.reasons.length > 0 ? (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "4px",
+              flex: 1,
+            }}
+          >
+            {item.reasons.map(
+              (reason: string, i: number) =>
+                reason && (
+                  <span
+                    key={i}
+                    style={{
+                      fontSize: "11px",
+                      padding: "3px 8px",
+                      borderRadius: "6px",
+                      background: "rgba(255,255,255,0.06)",
+                      color: "var(--color-muted-foreground)",
+                    }}
+                  >
+                    {reason}
+                  </span>
+                ),
+            )}
+          </div>
+        ) : (
+          <div style={{ flex: 1 }} />
+        )}
+
         {item.created_at && (
           <span
             style={{
-              fontSize: "9px",
+              fontSize: "11px",
               color: "var(--color-muted-foreground)",
-              marginLeft: "auto",
+              marginLeft: "12px",
               flexShrink: 0,
             }}
           >
@@ -236,25 +421,6 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
           </span>
         )}
       </div>
-
-      {/* Reasons (if present) */}
-      {item.reasons && item.reasons.length > 0 && (
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "4px",
-            marginTop: "8px",
-          }}
-        >
-          {item.reasons.map(
-            (reason: string, i: number) =>
-              reason && (
-                <Badge key={i} label={reason} color={"var(--color-muted-foreground)"} small />
-              ),
-          )}
-        </div>
-      )}
-    </DataRow>
+    </div>
   );
 });
