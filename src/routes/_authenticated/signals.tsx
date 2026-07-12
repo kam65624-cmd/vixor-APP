@@ -251,51 +251,124 @@ const SignalRow = memo(function SignalRow({
   onShareTelegram?: () => void;
 }) {
   const color = recColor(signal.recommendation);
+  const navigate = useNavigate();
+
+  const handleTrade = () => {
+    navigate({
+      to: "/trade-desk",
+      search: {
+        symbol: signal.pair,
+        price: signal.entry ? String(signal.entry) : undefined,
+        direction:
+          signal.recommendation === "BUY"
+            ? "long"
+            : signal.recommendation === "SELL"
+              ? "short"
+              : undefined,
+      },
+    });
+  };
+
+  const confidenceGlow =
+    signal.recommendation === "BUY"
+      ? "0 0 12px rgba(14,203,129,0.3)"
+      : signal.recommendation === "SELL"
+        ? "0 0 12px rgba(246,70,93,0.3)"
+        : "none";
 
   return (
-    <DataRow leftAccent={color}>
-      {/* Top line — pair info, pattern, confidence */}
+    <div
+      className="animate-slide-up"
+      style={{
+        margin: "0 16px 10px",
+        padding: "16px",
+        background: "rgba(255,255,255,0.04)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        border: `1px solid ${color}22`,
+        borderLeft: `3px solid ${color}`,
+        borderRadius: "14px",
+        boxShadow: "0 4px 20px -8px rgba(0,0,0,0.5)",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+      }}
+    >
+      {/* Header row */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: signal.reasons && signal.reasons.length > 0 ? "6px" : "0",
+          marginBottom: "10px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
-          <Badge label={signal.recommendation} color={color} />
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* Direction badge */}
+          <div
+            style={{
+              padding: "3px 10px",
+              borderRadius: "8px",
+              background: `${color}18`,
+              border: `1px solid ${color}40`,
+              fontSize: "11px",
+              fontWeight: 800,
+              color,
+              letterSpacing: "0.06em",
+            }}
+          >
+            {signal.recommendation}
+          </div>
           <span
             style={{
-              fontSize: "13px",
+              fontSize: "15px",
               fontWeight: 700,
               color: "var(--color-foreground)",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             }}
           >
             {signal.pair}
           </span>
-          <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)", flexShrink: 0 }}>
-            {signal.timeframe}
-          </span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-          {signal.pattern && (
-            <span style={{ fontSize: "9px", color: "var(--color-muted-foreground)" }}>
-              {signal.pattern}
-            </span>
-          )}
           <span
             style={{
               fontSize: "11px",
-              fontWeight: 700,
+              fontWeight: 600,
+              padding: "2px 6px",
+              borderRadius: "6px",
+              background: "rgba(255,255,255,0.05)",
+              color: "var(--color-muted-foreground)",
+            }}
+          >
+            {signal.timeframe}
+          </span>
+        </div>
+        {/* Confidence */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: "2px",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "18px",
+              fontWeight: 800,
+              color,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              color: "var(--color-neutral-wait)",
+              textShadow: confidenceGlow,
+              lineHeight: 1,
             }}
           >
             {signal.confidence}%
+          </span>
+          <span
+            style={{
+              fontSize: "10px",
+              color: "var(--color-muted-foreground)",
+              letterSpacing: "0.04em",
+            }}
+          >
+            CONFIDENCE
           </span>
         </div>
       </div>
@@ -304,111 +377,233 @@ const SignalRow = memo(function SignalRow({
       {signal.reasons && signal.reasons.length > 0 && (
         <div
           style={{
-            fontSize: "10px",
+            fontSize: "12px",
             color: "var(--color-muted-foreground)",
-            lineHeight: 1.5,
-            marginBottom: "6px",
+            lineHeight: 1.6,
+            marginBottom: "10px",
+            paddingBottom: "10px",
+            borderBottom: "1px solid rgba(255,255,255,0.05)",
           }}
         >
           {signal.reasons.join(" · ")}
         </div>
       )}
 
-      {/* Bottom line — entry, SL, TP, date */}
+      {/* Price grid */}
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          fontSize: "10px",
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-          color: "var(--color-muted-foreground)",
-          flexWrap: "wrap",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "8px",
+          marginBottom: "12px",
         }}
       >
         {signal.entry != null && (
-          <span>
-            Entry: <span style={{ color: "var(--color-foreground)" }}>${signal.entry}</span>
-          </span>
+          <div
+            style={{
+              padding: "8px",
+              borderRadius: "8px",
+              background: "rgba(255,255,255,0.03)",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "10px",
+                color: "var(--color-muted-foreground)",
+                marginBottom: "4px",
+                letterSpacing: "0.05em",
+              }}
+            >
+              ENTRY
+            </div>
+            <div
+              style={{
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "var(--color-foreground)",
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              }}
+            >
+              {signal.entry}
+            </div>
+          </div>
         )}
         {signal.stop_loss != null && (
-          <span>
-            SL: <span style={{ color: "var(--color-bearish)" }}>${signal.stop_loss}</span>
-          </span>
+          <div
+            style={{
+              padding: "8px",
+              borderRadius: "8px",
+              background: "rgba(246,70,93,0.06)",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "10px",
+                color: "var(--color-bearish)",
+                marginBottom: "4px",
+                letterSpacing: "0.05em",
+              }}
+            >
+              STOP LOSS
+            </div>
+            <div
+              style={{
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "var(--color-bearish)",
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              }}
+            >
+              {signal.stop_loss}
+            </div>
+          </div>
         )}
         {signal.take_profit && signal.take_profit.length > 0 && (
-          <span>
-            TP:{" "}
-            <span style={{ color: "var(--color-bullish)" }}>
-              {signal.take_profit.map((t) => `$${t}`).join(", ")}
-            </span>
-          </span>
+          <div
+            style={{
+              padding: "8px",
+              borderRadius: "8px",
+              background: "rgba(14,203,129,0.06)",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "10px",
+                color: "var(--color-bullish)",
+                marginBottom: "4px",
+                letterSpacing: "0.05em",
+              }}
+            >
+              TAKE PROFIT
+            </div>
+            <div
+              style={{
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "var(--color-bullish)",
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              }}
+            >
+              {signal.take_profit[0]}
+            </div>
+          </div>
         )}
-        <span style={{ marginLeft: "auto" }}>
-          {new Date(signal.signal_date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          })}
-        </span>
       </div>
+
       {/* Action buttons */}
-      <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+        {/* Trade CTA — most prominent */}
+        {signal.recommendation !== "WAIT" && (
+          <button
+            onClick={handleTrade}
+            style={{
+              flex: 1,
+              height: "34px",
+              borderRadius: "9px",
+              border: "none",
+              background: `linear-gradient(135deg, ${color}, ${color}99)`,
+              color: "var(--color-foreground)",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "5px",
+              boxShadow: `0 2px 12px ${color}44`,
+              transition: "opacity 0.2s ease",
+            }}
+          >
+            ⚡ Trade
+          </button>
+        )}
+
+        {/* Track */}
         {signal.recommendation !== "WAIT" && (
           <button
             onClick={onTrack}
             disabled={isTracked}
             style={{
-              fontSize: "9px",
-              fontWeight: 700,
-              padding: "4px 10px",
-              borderRadius: "6px",
-              border: `1px solid ${isTracked ? "var(--color-bullish)" : "var(--color-border)"}`,
-              background: isTracked ? "rgba(14,203,129,0.15)" : "transparent",
+              height: "34px",
+              padding: "0 12px",
+              borderRadius: "9px",
+              border: `1px solid ${isTracked ? "var(--color-bullish)" : "rgba(255,255,255,0.10)"}`,
+              background: isTracked ? "rgba(14,203,129,0.12)" : "rgba(255,255,255,0.04)",
               color: isTracked ? "var(--color-bullish)" : "var(--color-muted-foreground)",
               cursor: isTracked ? "default" : "pointer",
+              fontSize: "11px",
+              fontWeight: 700,
               whiteSpace: "nowrap",
+              transition: "all 0.2s ease",
             }}
           >
-            {isTracked ? "TRACKING" : "TRACK"}
+            {isTracked ? "✓ Tracked" : "Track"}
           </button>
         )}
+
+        {/* Share buttons */}
         {onShareX && (
           <button
             onClick={onShareX}
             style={{
-              fontSize: "9px",
-              fontWeight: 700,
-              padding: "4px 10px",
-              borderRadius: "6px",
-              border: "1px solid var(--color-border)",
-              background: "transparent",
+              width: "34px",
+              height: "34px",
+              borderRadius: "9px",
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(255,255,255,0.04)",
               color: "var(--color-muted-foreground)",
               cursor: "pointer",
-              whiteSpace: "nowrap",
+              fontSize: "12px",
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.2s ease",
             }}
           >
-            X
+            𝕏
           </button>
         )}
         {onShareTelegram && (
           <button
             onClick={onShareTelegram}
             style={{
-              fontSize: "9px",
-              fontWeight: 700,
-              padding: "4px 10px",
-              borderRadius: "6px",
-              border: "1px solid var(--color-border)",
-              background: "transparent",
+              width: "34px",
+              height: "34px",
+              borderRadius: "9px",
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(255,255,255,0.04)",
               color: "var(--color-muted-foreground)",
               cursor: "pointer",
-              whiteSpace: "nowrap",
+              fontSize: "12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.2s ease",
             }}
           >
-            TG
+            ✈
           </button>
         )}
+
+        {/* Date */}
+        <span
+          style={{
+            fontSize: "11px",
+            color: "var(--color-muted-foreground)",
+            marginLeft: "auto",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {new Date(signal.signal_date).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
+        </span>
       </div>
-    </DataRow>
+    </div>
   );
 });
