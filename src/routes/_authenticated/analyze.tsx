@@ -334,29 +334,36 @@ function Analyze() {
               capture="environment"
               onChange={(e) => pickFile(e.target.files?.[0] || null)}
             />
-            {/* Upload dropzone — uses htmlFor only (no onClick) to prevent double-trigger on mobile */}
+            {/* Upload dropzone */}
             <label
               htmlFor="chart-upload-input"
+              className="animate-slide-up"
               style={{
                 display: "block",
                 width: "100%",
                 aspectRatio: "4/3",
                 borderRadius: 16,
-                border: "2px dashed var(--color-border)",
-                background: "rgba(255, 255, 255, 0.04)",
+                border: "2px dashed rgba(255, 255, 255, 0.15)",
+                background: "rgba(255, 255, 255, 0.02)",
                 backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
                 cursor: "pointer",
                 position: "relative",
                 overflow: "hidden",
-                transition: "all 0.2s ease",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: "inset 0 0 40px rgba(0, 0, 0, 0.3)",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--color-primary)";
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
+                e.currentTarget.style.background = "rgba(124, 155, 196, 0.08)";
+                e.currentTarget.style.boxShadow = "inset 0 0 60px rgba(124, 155, 196, 0.15), 0 8px 30px -4px rgba(0, 0, 0, 0.6)";
+                e.currentTarget.style.transform = "translateY(-2px)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--color-border)";
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
+                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)";
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.02)";
+                e.currentTarget.style.boxShadow = "inset 0 0 40px rgba(0, 0, 0, 0.3)";
+                e.currentTarget.style.transform = "translateY(0)";
               }}
             >
               <div
@@ -372,17 +379,18 @@ function Analyze() {
                 }}
               >
                 <div
+                  className="animate-subtle-bounce"
                   style={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: 16,
-                    background: "rgba(14,203,129,0.15)",
+                    width: 80,
+                    height: 80,
+                    borderRadius: 24,
+                    background: "linear-gradient(135deg, rgba(14,203,129,0.15), rgba(14,203,129,0.05))",
+                    border: "1px solid rgba(14,203,129,0.2)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    marginBottom: 20,
-                    boxShadow: "0 0 20px rgba(14,203,129,0.1)",
-                    transition: "transform 0.2s ease",
+                    marginBottom: 24,
+                    boxShadow: "0 12px 32px rgba(14,203,129,0.15), inset 0 2px 0 rgba(255,255,255,0.1)",
                   }}
                 >
                   <Upload style={{ width: 36, height: 36, color: "var(--color-bullish)" }} />
@@ -390,10 +398,11 @@ function Analyze() {
                 <div
                   style={{
                     fontWeight: 800,
-                    fontSize: 20,
+                    fontSize: 22,
                     color: "var(--color-foreground)",
                     marginBottom: 8,
                     letterSpacing: "-0.01em",
+                    textShadow: "0 2px 10px rgba(0,0,0,0.5)",
                   }}
                 >
                   {t("analyze.tapToUpload") || "Tap to Upload Chart"}
@@ -412,24 +421,31 @@ function Analyze() {
             </label>
 
             {/* Pair Selection Dropdown */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
               <label
                 style={{
                   fontSize: 12,
                   textTransform: "uppercase",
                   fontWeight: 700,
                   color: "var(--color-muted-foreground)",
-                  letterSpacing: "0.05em",
+                  letterSpacing: "0.06em",
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
                 }}
               >
-                <Crosshair style={{ width: 12, height: 12 }} /> Pair / Instrument
+                <Crosshair style={{ width: 14, height: 14, color: "var(--color-primary)" }} /> Pair / Instrument
               </label>
               <Select value={selectedPair} onValueChange={setSelectedPair}>
                 <SelectTrigger
-                  style={{ ...inputStyle, fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
+                  style={{ 
+                    ...inputStyle, 
+                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    height: 48,
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 12,
+                  }}
                 >
                   <SelectValue placeholder="Select pair" />
                 </SelectTrigger>
@@ -466,112 +482,112 @@ function Analyze() {
               </Select>
               {selectedPair !== "auto" && (
                 <div
+                  className="animate-slide-up"
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 6,
-                    padding: "8px 12px",
-                    borderRadius: 6,
-                    background: "rgba(14,203,129,0.10)",
+                    gap: 8,
+                    padding: "10px 14px",
+                    borderRadius: 10,
+                    background: "rgba(14,203,129,0.08)",
                     border: "1px solid rgba(14,203,129,0.20)",
                   }}
                 >
                   <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-bullish)" }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--color-bullish)", letterSpacing: "0.02em" }}>
                     Analyzing: {selectedPair}
                   </span>
                 </div>
               )}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-              {/* Gallery — uses label htmlFor instead of programmatic click for mobile compatibility */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 4 }}>
+              {/* Gallery */}
               <label
                 htmlFor="chart-upload-input"
+                className="vixor-card-hover"
                 style={{
-                  height: 56,
-                  borderRadius: 8,
-                  ...cardStyle,
-                  border: `1px solid ${"var(--color-border)"}`,
+                  height: 64,
+                  borderRadius: 12,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 4,
+                  gap: 6,
                   cursor: "pointer",
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <ImageIcon
-                  style={{ width: 20, height: 20, color: "var(--color-muted-foreground)" }}
-                />
+                <ImageIcon style={{ width: 22, height: 22, color: "var(--color-primary-glow)" }} />
                 <span
                   style={{
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: 700,
                     textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    color: "var(--color-muted-foreground)",
+                    letterSpacing: "0.06em",
+                    color: "var(--color-foreground)",
                   }}
                 >
                   {t("analyze.gallery") || "Gallery"}
                 </span>
               </label>
-              {/* Camera — uses separate input with capture attribute */}
+              {/* Camera */}
               <label
                 htmlFor="chart-camera-input"
+                className="vixor-card-hover"
                 style={{
-                  height: 56,
-                  borderRadius: 8,
-                  ...cardStyle,
-                  border: `1px solid ${"var(--color-border)"}`,
+                  height: 64,
+                  borderRadius: 12,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 4,
+                  gap: 6,
                   cursor: "pointer",
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <Camera style={{ width: 20, height: 20, color: "var(--color-muted-foreground)" }} />
+                <Camera style={{ width: 22, height: 22, color: "var(--color-primary-glow)" }} />
                 <span
                   style={{
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: 700,
                     textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    color: "var(--color-muted-foreground)",
+                    letterSpacing: "0.06em",
+                    color: "var(--color-foreground)",
                   }}
                 >
                   Camera
                 </span>
               </label>
-              {/* Paste from clipboard */}
+              {/* Paste */}
               <button
                 type="button"
                 onClick={handlePaste}
+                className="vixor-card-hover"
                 style={{
-                  height: 56,
-                  borderRadius: 8,
-                  ...cardStyle,
-                  border: `1px solid ${"var(--color-border)"}`,
+                  height: 64,
+                  borderRadius: 12,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 4,
+                  gap: 6,
                   cursor: "pointer",
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <Clipboard
-                  style={{ width: 20, height: 20, color: "var(--color-muted-foreground)" }}
-                />
+                <Clipboard style={{ width: 22, height: 22, color: "var(--color-primary-glow)" }} />
                 <span
                   style={{
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: 700,
                     textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    color: "var(--color-muted-foreground)",
+                    letterSpacing: "0.06em",
+                    color: "var(--color-foreground)",
                   }}
                 >
                   {t("analyze.paste") || "Paste"}
