@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { memo, useState, useCallback, useRef, useEffect } from "react";
+import { memo, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { getDailySignals } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { createSignalTracking, getUserSignalTrackings } from "@/domains/signal-tracking";
@@ -123,7 +123,7 @@ function SignalsPage() {
     staleTime: 60_000,
   });
 
-  const signals: Signal[] = query.data?.signals ?? [];
+  const signals = useMemo((): Signal[] => query.data?.signals ?? [], [query.data?.signals]);
   const isLoading = query.isLoading;
 
   // Play sound for newly appeared signals

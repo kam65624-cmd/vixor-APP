@@ -311,7 +311,10 @@ function RewardsPage() {
   const balance = pointsQuery.data?.balance ?? 0;
   const lifetimeEarned = pointsQuery.data?.lifetimeEarned ?? 0;
   const streak = pointsQuery.data?.streak;
-  const transactions = pointsQuery.data?.recentTransactions ?? [];
+  const transactions = useMemo(
+    () => pointsQuery.data?.recentTransactions ?? [],
+    [pointsQuery.data?.recentTransactions],
+  );
   const referralCode = refQuery.data?.referralCode ?? "";
   const referredCount = refQuery.data?.referredCount ?? 0;
   const referralEarned = refQuery.data?.earnedPoints ?? 0;

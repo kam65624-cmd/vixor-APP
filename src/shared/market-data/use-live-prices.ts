@@ -126,6 +126,7 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
       unsubPrices();
       // Don't destroy singleton — other components might be using it
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, wsSymbols.join(",")]);
 
   // REST polling for non-crypto pairs (forex, gold, etc.)
@@ -183,6 +184,7 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
       active = false;
       clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, nonCryptoPairs.join(","), pollInterval, status]);
 
   const getPrice = useCallback((pair: string): LivePrice | undefined => {

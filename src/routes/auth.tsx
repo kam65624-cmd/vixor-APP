@@ -124,6 +124,7 @@ function AuthPage() {
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Step 2: Mount Telegram Login Widget when in browser mode ──
@@ -200,6 +201,7 @@ function AuthPage() {
         setWidgetTimedOut(true);
       }
     }, 5000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tgStatus]);
 
   // ── Email/password submit handler ──

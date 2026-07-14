@@ -487,7 +487,7 @@ function TokenRow({
       return () => clearTimeout(timer);
     }
     if (livePrice) prevPriceRef.current = livePrice.price;
-  }, [livePrice?.price]);
+  }, [livePrice]);
   const hasLogo = token.logoUrl && !imgError;
   const isNew = token.discoveryScore > 80;
   const hasSparkline = token.sparkline && token.sparkline.length >= 2;
@@ -1111,7 +1111,7 @@ function DiscoverPage() {
         icon: "📊",
       },
     ];
-  }, [tokens, resp, isForexMode]);
+  }, [tokens, resp, isForexMode, forexQuery.data]);
 
   // Category counts
   const categoryCounts = useMemo(() => {
@@ -1329,7 +1329,9 @@ function DiscoverPage() {
                 border: isActive ? "1px solid var(--color-primary)" : "1px solid transparent",
                 cursor: "pointer",
                 background: isActive ? "var(--color-primary)" : "transparent",
-                color: isActive ? "var(--color-primary-foreground)" : "var(--color-muted-foreground)",
+                color: isActive
+                  ? "var(--color-primary-foreground)"
+                  : "var(--color-muted-foreground)",
                 transition: "all 0.15s ease",
                 whiteSpace: "nowrap",
                 display: "flex",
@@ -1346,7 +1348,9 @@ function DiscoverPage() {
                   padding: "0 5px",
                   borderRadius: "8px",
                   background: isActive ? "rgba(0,0,0,0.18)" : "var(--color-card)",
-                  color: isActive ? "var(--color-primary-foreground)" : "var(--color-muted-foreground)",
+                  color: isActive
+                    ? "var(--color-primary-foreground)"
+                    : "var(--color-muted-foreground)",
                   fontFamily: "'JetBrains Mono', monospace",
                   lineHeight: "18px",
                 }}
@@ -1544,7 +1548,10 @@ function DiscoverPage() {
                 border: "none",
                 cursor: "pointer",
                 background: sortBy === opt.key ? "var(--color-primary)" : "var(--color-card)",
-                color: sortBy === opt.key ? "var(--color-primary-foreground)" : "var(--color-muted-foreground)",
+                color:
+                  sortBy === opt.key
+                    ? "var(--color-primary-foreground)"
+                    : "var(--color-muted-foreground)",
                 transition: "all 0.12s",
                 whiteSpace: "nowrap",
                 fontFamily: "'Inter', system-ui, sans-serif",

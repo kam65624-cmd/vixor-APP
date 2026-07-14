@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 "use client";
 
 // ============================================================================
@@ -232,7 +233,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     } finally {
       setLoading(false);
     }
-  }, [wallet]);
+  }, [wallet, sessions]);
 
   // ── Clear error ──
   const clearError = useCallback(() => setError(null), []);

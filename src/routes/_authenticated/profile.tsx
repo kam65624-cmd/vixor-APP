@@ -332,7 +332,7 @@ function ProfilePage() {
   const streak =
     (pointsQuery.data?.streak as { current_streak?: number; longest_streak?: number } | undefined)
       ?.current_streak ?? 0;
-  const trades = tradesQuery.data?.trades ?? [];
+  const trades = useMemo(() => tradesQuery.data?.trades ?? [], [tradesQuery.data?.trades]);
 
   const { totalTrades, winRate, totalPnl } = useMemo(() => computeStats(trades), [trades]);
 
@@ -418,7 +418,7 @@ function ProfilePage() {
     });
 
     return list;
-  }, [profile]);
+  }, [profile, tgUser]);
 
   // PnL formatting
   const pnlFormatted = useMemo(() => {

@@ -1443,14 +1443,16 @@ const BottomBar = memo(function BottomBar({
                 {item.icon}
               </span>
               {isActive && (
-                <div style={{
-                  width: "4px",
-                  height: "4px",
-                  borderRadius: "50%",
-                  background: "var(--color-primary)",
-                  marginTop: "3px",
-                  boxShadow: "0 0 8px var(--color-primary)",
-                }} />
+                <div
+                  style={{
+                    width: "4px",
+                    height: "4px",
+                    borderRadius: "50%",
+                    background: "var(--color-primary)",
+                    marginTop: "3px",
+                    boxShadow: "0 0 8px var(--color-primary)",
+                  }}
+                />
               )}
               <span
                 style={{

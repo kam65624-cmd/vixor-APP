@@ -168,7 +168,7 @@ function PulsePage() {
     staleTime: 30_000,
   });
 
-  const feed = data?.feed ?? [];
+  const feed = useMemo(() => data?.feed ?? [], [data?.feed]);
   const stats = data?.stats;
 
   const filtered = useMemo(() => {

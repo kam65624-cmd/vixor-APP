@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // ============================================================================
 // VIXOR Trade Radar — Real-time Market Intelligence Dashboard
 // ============================================================================

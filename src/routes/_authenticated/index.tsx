@@ -106,9 +106,7 @@ function StatCard({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="vx-stat-label">
-        {label}
-      </span>
+      <span className="vx-stat-label">{label}</span>
       <span className={`vx-stat-value ${color}`}>{value}</span>
       {subtext && <span className="vx-stat-sub">{subtext}</span>}
     </div>
@@ -184,7 +182,7 @@ function SignalRow({
     <div className="flex items-center gap-3 py-3 border-b border-white/5 last:border-0">
       <div
         className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-bold"
-        style={{ background: bg, color, border: '1px solid rgba(255,255,255,0.08)' }}
+        style={{ background: bg, color, border: "1px solid rgba(255,255,255,0.08)" }}
       >
         {signal.type === "WAIT" ? "—" : isBuy ? "B" : "S"}
       </div>
@@ -338,13 +336,8 @@ function HomePage() {
       {data && (
         <div className="mx-4 mt-4 vx-card p-4">
           <div className="vx-section-header mb-4">
-            <span className="vx-section-title">
-              Portfolio Overview
-            </span>
-            <button
-              onClick={() => navigate({ to: "/pnl" as any })}
-              className="vx-section-action"
-            >
+            <span className="vx-section-title">Portfolio Overview</span>
+            <button onClick={() => navigate({ to: "/pnl" as any })} className="vx-section-action">
               View all <ChevronRight size={11} />
             </button>
           </div>
@@ -446,9 +439,7 @@ function HomePage() {
           <div className="vx-section-header mb-3">
             <div className="flex items-center gap-2">
               <Zap size={14} className="text-amber-400" />
-              <span className="vx-section-title">
-                Active Signals
-              </span>
+              <span className="vx-section-title">Active Signals</span>
             </div>
             <button
               onClick={() => navigate({ to: "/signals" as any })}

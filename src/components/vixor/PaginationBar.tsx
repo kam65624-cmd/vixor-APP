@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // ============================================================================
 // Vixor Pagination Bar — Reusable UI component
 // ============================================================================
