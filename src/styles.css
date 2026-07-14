@@ -4,21 +4,39 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ===== VIXOR Nocturne — Design System V3 =====
- * Dark-glass aesthetic. Inspired by Binance, Axiom.trade, OpenSea.
- * Primary accent: Navy #7C9BC4 (extracted from VIXOR logo).
- * Semantic colors: #0ECB81 (buy/profit), #F6465D (sell/loss) — EXCLUSIVE use.
- * See /upload/VIXOR_Nocturne_Design_System.md for full spec.
- */
+/* ===== VIXOR Design System V4 — Trading Terminal + Mobile =====
+ * Merged from two reference systems:
+ *   System 1: Dark Trading Terminal (web/desktop)
+ *   System 2: Cryptex Mobile UI Kit (mobile/Telegram)
+ *
+ * Color tokens: background/surface hierarchy, semantic green/red,
+ *   blue-purple primary, gold accent.
+ * Typography: Inter + JetBrains Mono for numbers.
+ * Spacing: 4px base unit.
+ * ============================================================ */
 
 @theme inline {
-  /* Nocturne radius tokens */
-  --radius-sm: 7px;
-  --radius-md: 10px;
-  --radius-lg: 13px;
-  --radius-xl: 17px;
-  --radius-2xl: 21px;
+  /* Radius tokens — Trading Terminal (sm/md) + Mobile (card/lg) */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
   --radius-pill: 20px;
+  --radius-full: 9999px;
+
+  /* Spacing tokens — 4px base */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Transition tokens */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease-in-out;
+  --transition-slow: 300ms ease-out;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -42,7 +60,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Trading semantics — EXCLUSIVE: green=profit, red=loss only */
+  /* Trading semantics — green=buy/profit, red=sell/loss */
   --color-bullish: var(--bullish);
   --color-bearish: var(--bearish);
   --color-neutral-wait: var(--neutral-wait);
@@ -51,174 +69,192 @@
   --color-tp2: var(--tp2);
   --color-tp3: var(--tp3);
 
-  /* Nocturne chart palette (multi-asset, NOT semantic) */
-  --color-chart-1: #7C9BC4;
+  /* Chart palette (multi-asset, NOT semantic) */
+  --color-chart-1: #5B6EF5;
   --color-chart-2: #8C9EFF;
-  --color-chart-3: #9FB6D6;
+  --color-chart-3: #7B61FF;
 
-  /* Nocturne surface aliases */
+  /* Surface aliases */
   --color-surface-elevated: var(--surface-elevated);
   --color-accent-dark: var(--accent-dark);
   --color-border-subtle: var(--border-subtle);
   --color-text-muted: var(--text-muted);
   --color-buy-text: var(--buy-text);
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* Gold accent for paid/premium states */
+  --color-gold: var(--gold);
+
+  /* Typography */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+
+  /* Type scale */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-display: 28px;
 }
 
-/* ===== DARK MODE (DEFAULT) — VIXOR Nocturne ===== */
+/* ===== DARK MODE (DEFAULT) — VIXOR V4 Trading Terminal ===== */
 :root {
-  /* Surfaces */
-  --background: #0B0E14; /* Deep sophisticated navy/slate instead of dead black */
-  --card: rgba(255, 255, 255, 0.04); /* More visible glassmorphism */
-  --card-solid: #12161F;
-  --card-hover: rgba(255, 255, 255, 0.08);
-  --surface-elevated: #161B26;
-  --popover: #12161F;
+  /* ── Surfaces (3-layer depth hierarchy) ── */
+  --background: #0A0A0D;
+  --card: #121215;
+  --card-solid: #121215;
+  --card-hover: #1A1A1F;
+  --surface-elevated: #1A1A1F;
+  --popover: #1A1A1F;
 
-  /* Text */
-  --foreground: #F8FAFC;
-  --card-foreground: #F8FAFC;
-  --popover-foreground: #F8FAFC;
-  --text-muted: #94A3B8;
+  /* ── Text (3-tier hierarchy) ── */
+  --foreground: #FFFFFF;
+  --card-foreground: #FFFFFF;
+  --popover-foreground: #FFFFFF;
+  --text-primary: #FFFFFF;
+  --text-secondary: #9A9AA5;
+  --text-tertiary: #5C5C66;
+  --text-muted: #5C5C66;
 
-  /* Primary accent — Navy from VIXOR logo */
-  --primary: #7C9BC4;
-  --primary-foreground: #0B0E14;
-  --primary-glow: #9FB6D6;
+  /* ── Primary accent — Blue-Purple #5B6EF5 ── */
+  --primary: #5B6EF5;
+  --primary-foreground: #FFFFFF;
+  --primary-glow: #7B8AFF;
 
-  /* Secondary / Muted */
-  --secondary: #1E293B;
-  --secondary-foreground: #F8FAFC;
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8;
-  --accent: #1E293B;
-  --accent-foreground: #F8FAFC;
-  --accent-dark: #334155;
+  /* ── Secondary / Muted ── */
+  --secondary: #1A1A1F;
+  --secondary-foreground: #FFFFFF;
+  --muted: #1A1A1F;
+  --muted-foreground: #9A9AA5;
+  --accent: #1A1A1F;
+  --accent-foreground: #FFFFFF;
+  --accent-dark: #232329;
 
-  /* Borders */
-  --border: #273346;
-  --border-subtle: #1E293B;
-  --input: #273346;
-  --ring: #7C9BC480;
-  --border-hover: #334155;
+  /* ── Borders ── */
+  --border: #2A2A31;
+  --border-subtle: #1E1E25;
+  --input: #2A2A31;
+  --ring: #5B6EF566;
+  --border-hover: #3A3A45;
 
-  /* Semantic — Binance-sourced, EXCLUSIVE use for profit/loss */
-  --bullish: #0ECB81;
-  --bearish: #F6465D;
-  --destructive: #F6465D;
-  --destructive-foreground: #FAFAFA;
-  --neutral-wait: #F59E0B;
-
-  /* Info = accent brand (navy) */
-  --info: #7C9BC4;
+  /* ── Semantic Trading Colors ── */
+  --bullish: #2ECC71;
+  --bearish: #F0384E;
+  --destructive: #F0384E;
+  --destructive-foreground: #FFFFFF;
+  --neutral-wait: #F5A623;
+  --info: #5B6EF5;
 
   /* TP gradient levels (bullish spectrum) */
-  --tp1: #0ECB81;
-  --tp2: #34D399;
+  --tp1: #2ECC71;
+  --tp2: #26D07C;
   --tp3: #6EE7B7;
 
-  /* Buy button text: dark green on green bg (not white) */
+  /* Gold accent — Paid/Premium states */
+  --gold: #F0C419;
+
+  /* Buy button text: dark on green bg */
   --buy-text: #04150D;
 
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #7C9BC4, #9FB6D6);
-  --gradient-bullish: linear-gradient(135deg, #0ECB812E, #0ECB8105);
-  --gradient-bearish: linear-gradient(135deg, #F6465D2E, #F6465D05);
-  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
-  --gradient-accent-bg: radial-gradient(ellipse at 30% 20%, #7C9BC414 0%, transparent 60%);
+  /* ── Gradients ── */
+  --gradient-primary: linear-gradient(135deg, #5B6EF5, #7B8AFF);
+  --gradient-bullish: linear-gradient(135deg, #2ECC712E, #2ECC7105);
+  --gradient-bearish: linear-gradient(135deg, #F0384E2E, #F0384E05);
+  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008));
+  --gradient-accent-bg: radial-gradient(ellipse at 30% 20%, #5B6EF510 0%, transparent 60%);
 
-  /* Shadows — Nocturne: subtle, no neon glow */
-  --shadow-card: 0 4px 24px -8px rgba(0, 0, 0, 0.5);
-  --shadow-elevated: 0 12px 40px -12px rgba(0, 0, 0, 0.7);
-  --shadow-glow: 0 0 20px -4px #7C9BC430;
+  /* ── Shadows — Layer-based depth (no glow) ── */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 16px -4px #5B6EF525;
 
-  /* Background treatment */
-  --bg-grid: linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  /* ── Background treatment ── */
+  --bg-grid: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
   --bg-grid-size: 40px 40px;
 
-  /* Layout bridge tokens */
+  /* ── Layout bridge tokens ── */
   --surface: var(--background);
   --surface-2: var(--muted);
   --surface-3: var(--accent);
-  --text-primary: var(--foreground);
-  --text-secondary: var(--muted-foreground);
-  --text-tertiary: #6B7280;
-  --bullish-bg: #0ECB8114;
-  --bearish-bg: #F6465D14;
-  --neutral-wait-bg: #F59E0B14;
+  --bullish-bg: #2ECC7114;
+  --bearish-bg: #F0384E14;
+  --neutral-wait-bg: #F5A62314;
 
-  /* Overlay & chrome tokens */
-  --overlay: rgba(11,13,16,0.70);
-  --overlay-secondary: rgba(11,13,16,0.60);
-  --handle-bar: rgba(124,155,196,0.15);
+  /* ── Overlay & chrome tokens ── */
+  --overlay: rgba(10, 10, 13, 0.75);
+  --overlay-secondary: rgba(10, 10, 13, 0.60);
+  --handle-bar: rgba(91, 110, 245, 0.15);
   --bullish-border: color-mix(in srgb, var(--bullish) 20%, transparent);
 }
 
 /* ===== LIGHT MODE ===== */
 .light {
-  --background: #F8F9FA;
-  --card: rgba(0, 0, 0, 0.03);
+  --background: #FFFFFF;
+  --card: #FFFFFF;
   --card-solid: #FFFFFF;
-  --card-hover: #F0F1F3;
-  --surface-elevated: #F0F1F3;
+  --card-hover: #F5F5F7;
+  --surface-elevated: #F5F5F7;
   --popover: #FFFFFF;
 
   --foreground: #111827;
   --card-foreground: #111827;
   --popover-foreground: #111827;
-  --text-muted: #6B7280;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --text-muted: #9CA3AF;
 
-  --primary: #5A7FA6;
+  --primary: #5B6EF5;
   --primary-foreground: #FFFFFF;
-  --primary-glow: #7C9BC4;
+  --primary-glow: #7B8AFF;
 
-  --secondary: #F0F1F3;
+  --secondary: #F5F5F7;
   --secondary-foreground: #111827;
-  --muted: #F0F1F3;
+  --muted: #F5F5F7;
   --muted-foreground: #6B7280;
-  --accent: #F0F1F3;
+  --accent: #F5F5F7;
   --accent-foreground: #111827;
   --accent-dark: #D1D9E6;
 
-  --border: #E2E5EA;
-  --border-subtle: #ECEEF1;
-  --input: #E2E5EA;
-  --ring: #5A7FA666;
-  --border-hover: #C8CDD5;
+  --border: #E5E7EB;
+  --border-subtle: #F3F4F6;
+  --input: #E5E7EB;
+  --ring: #5B6EF566;
+  --border-hover: #D1D5DB;
 
   --bullish: #059669;
   --bearish: #DC2626;
   --destructive: #DC2626;
   --destructive-foreground: #FFFFFF;
   --neutral-wait: #D97706;
-  --info: #5A7FA6;
+  --info: #5B6EF5;
 
   --tp1: #059669;
   --tp2: #10B981;
   --tp3: #34D399;
 
+  --gold: #F0C419;
+
   --buy-text: #022C22;
 
-  --gradient-primary: linear-gradient(135deg, #5A7FA6, #7C9BC4);
+  --gradient-primary: linear-gradient(135deg, #5B6EF5, #7B8AFF);
   --gradient-bullish: linear-gradient(135deg, #05966926, #05966905);
   --gradient-bearish: linear-gradient(135deg, #DC262626, #DC262605);
-  --gradient-glass: linear-gradient(135deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01));
+  --gradient-glass: linear-gradient(135deg, rgba(0,0,0,0.02), rgba(0,0,0,0.005));
 
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.1);
-  --shadow-elevated: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-glow: 0 0 16px -4px #5A7FA620;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-elevated: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-glow: 0 0 16px -4px #5B6EF520;
 
   --bg-grid: none;
 
-  --text-tertiary: #9CA3AF;
   --bullish-bg: #05966914;
   --bearish-bg: #DC262614;
   --neutral-wait-bg: #D9770614;
 
-  /* Overlay & chrome tokens */
   --overlay: rgba(0,0,0,0.30);
   --overlay-secondary: rgba(0,0,0,0.25);
   --handle-bar: rgba(0,0,0,0.10);
@@ -232,8 +268,6 @@
 @layer base {
   * {
     border-color: var(--color-border);
-    /* Enforce minimum readable font size across the entire app */
-    min-font-size: 12px;
   }
   html,
   body {
@@ -244,58 +278,60 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    font-size: 14px;
-  }
-  /* Prevent any text from being smaller than 12px */
-  *:not(svg):not(path):not(circle):not(rect):not(line):not(polyline) {
-    font-size: max(var(--fs, inherit), 12px);
   }
 }
 
-/* ====== Nocturne Utility Classes ====== */
+/* ====== V4 Utility Classes ====== */
 @layer utilities {
-  /* Glass card — 0.5px border, subtle transparency, optional blur */
+  /* Glass card — subtle transparency, optional blur */
   .glass-card {
     background: var(--gradient-glass), var(--color-card);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    border: 0.5px solid var(--color-border);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
   }
 
   /* Glass header */
   .glass-header {
-    background: rgba(11,13,16,0.70);
+    background: rgba(10, 10, 13, 0.75);
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
-    border-bottom: 0.5px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
   }
 
-  /* Nocturne card — solid bg, 0.5px border */
+  /* Vixor card — solid bg, clean border */
   .vixor-card {
     background: var(--color-card-solid, var(--color-card));
-    border: 0.5px solid var(--color-border);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
   }
 
   .vixor-card-hover {
-    @apply relative overflow-hidden transition-all duration-300;
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
+    transition:
+      background-color var(--transition-normal),
+      transform var(--transition-normal),
+      border-color var(--transition-normal);
   }
-
   .vixor-card-hover:hover {
     background: var(--color-card-hover);
     border-color: var(--color-border-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
-  /* Financial numbers — ALWAYS monospace */
+  /* Financial numbers — ALWAYS monospace with tabular alignment */
   .text-mono {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* Number display — for prices, market caps, percentages */
+  .text-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   /* Gradients */
@@ -303,7 +339,7 @@
   .gradient-bullish { background: var(--gradient-bullish); }
   .gradient-bearish { background: var(--gradient-bearish); }
   .gradient-info {
-    background: linear-gradient(135deg, #7C9BC4, #9FB6D6);
+    background: linear-gradient(135deg, #5B6EF5, #7B8AFF);
   }
 
   /* Scrollbar hide */
@@ -316,7 +352,7 @@
   .pt-safe { padding-top: max(env(safe-area-inset-top), 0px); }
   .pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
 
-  /* ====== Nocturne Background Treatment ====== */
+  /* ====== Background Treatment ====== */
   .nocturne-bg {
     background:
       var(--gradient-accent-bg),
@@ -325,42 +361,63 @@
     background-size: 100% 100%, var(--bg-grid-size), 100% 100%;
   }
 
-  /* ====== Nocturne Button Styles ====== */
+  /* ====== Button Styles (Design System V4) ====== */
   .btn-buy {
     background: var(--color-bullish);
     color: var(--color-buy-text);
-    font-weight: 700;
+    font-weight: 600;
+    font-size: 14px;
     border: none;
+    border-radius: var(--radius-md);
+    height: 34px;
+    padding: 0 var(--space-md);
     cursor: pointer;
-    transition: transform 0.12s ease;
-    animation: buy-pulse-glow 2.2s ease-in-out infinite;
+    transition: transform 0.12s ease, opacity var(--transition-fast);
   }
-  .btn-buy:active {
-    transform: scale(0.95);
-  }
+  .btn-buy:hover { opacity: 0.9; }
+  .btn-buy:active { transform: scale(0.95); }
+  .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .btn-sell {
     background: transparent;
     color: var(--color-foreground);
     font-weight: 500;
-    border: 0.5px solid var(--color-border);
+    font-size: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    height: 34px;
+    padding: 0 var(--space-md);
     cursor: pointer;
-    transition: transform 0.12s ease, border-color 0.15s ease;
+    transition: transform 0.12s ease, border-color var(--transition-fast);
   }
-  .btn-sell:active {
-    transform: scale(0.95);
-  }
-  .btn-sell:hover {
-    border-color: var(--color-border-hover);
-  }
+  .btn-sell:active { transform: scale(0.95); }
+  .btn-sell:hover { border-color: var(--color-border-hover); }
+  .btn-sell:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* ====== Nocturne Live Badge ====== */
+  /* Primary button — Blue-purple accent */
+  .btn-primary {
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    border-radius: var(--radius-md);
+    height: 34px;
+    padding: 0 var(--space-md);
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity var(--transition-fast);
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.95); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ====== Live Badge ====== */
   .live-badge {
-    background: #7C9BC414;
-    border: 0.5px solid #7C9BC440;
+    background: #5B6EF514;
+    border: 1px solid #5B6EF530;
     color: var(--color-primary);
     border-radius: var(--radius-pill);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     padding: 2px 8px;
     display: inline-flex;
@@ -379,17 +436,17 @@
   /* ====== Terminal-Style Components ====== */
   .terminal-card {
     background: var(--color-card-solid, var(--color-card));
-    border: 0.5px solid var(--color-border);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
   }
   .terminal-card-accent {
     background: var(--color-card-solid, var(--color-card));
-    border: 0.5px solid var(--color-border);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     border-left: 2px solid var(--color-primary);
   }
   .terminal-section {
-    border-bottom: 0.5px solid var(--color-border-subtle, var(--color-border));
+    border-bottom: 1px solid var(--color-border-subtle, var(--color-border));
     padding-bottom: 1rem;
     margin-bottom: 1rem;
   }
@@ -399,83 +456,94 @@
     margin-bottom: 0;
   }
 
-  /* Data grid */
+  /* Data grid — 1px separator between cells */
   .data-grid {
     display: grid;
     gap: 1px;
-    background: var(--color-border-subtle, var(--color-border));
+    background: var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
   }
   .data-grid > * {
     background: var(--color-card-solid, var(--color-card));
-    padding: 0.75rem;
+    padding: 12px 16px;
   }
 
-  /* Strength indicators — use ONLY bullish/bearish/neutral */
+  /* Strength indicators */
   .strength-strong {
     color: var(--color-bullish);
     background: var(--bullish-bg);
-    border-color: #0ECB8130;
+    border-color: #2ECC7130;
   }
   .strength-moderate {
     color: var(--color-neutral-wait);
     background: var(--neutral-wait-bg);
-    border-color: #F59E0B30;
+    border-color: #F5A62330;
   }
   .strength-weak {
     color: var(--color-bearish);
     background: var(--bearish-bg);
-    border-color: #F6465D30;
+    border-color: #F0384E30;
   }
 
-  /* Scenario cards — accent border = navy primary */
+  /* Scenario cards */
   .scenario-primary {
     border-left: 2px solid var(--color-primary);
-    background: linear-gradient(135deg, #7C9BC40F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(135deg, #5B6EF50F, var(--color-card-solid, var(--color-card)));
   }
   .scenario-alternative {
     border-left: 2px solid var(--color-info);
-    background: linear-gradient(135deg, #7C9BC40F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(135deg, #5B6EF50F, var(--color-card-solid, var(--color-card)));
   }
   .scenario-counter {
     border-left: 2px solid var(--color-bearish);
-    background: linear-gradient(135deg, #F6465D0F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(135deg, #F0384E0F, var(--color-card-solid, var(--color-card)));
   }
 
   /* Divider */
   .section-divider {
-    height: 0.5px;
+    height: 1px;
     background: linear-gradient(90deg, transparent, var(--color-border), transparent);
     margin: 1.5rem 0;
   }
 
-  /* Term highlight — uses primary (navy) */
+  /* Term highlight */
   .term-highlight {
     color: var(--color-primary);
     font-weight: 600;
-    background: #7C9BC418;
+    background: #5B6EF518;
     padding: 0 3px;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     cursor: help;
-    transition: background-color 150ms ease;
+    transition: background-color var(--transition-fast);
   }
   .term-highlight:hover {
-    background: #7C9BC428;
+    background: #5B6EF528;
+  }
+
+  /* Gold/Paid badge */
+  .badge-gold {
+    color: var(--color-gold);
+    background: #F0C41914;
+    border: 1px solid #F0C41930;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
   }
 
   /* Collapsible */
   .collapsible-trigger {
     cursor: pointer;
     user-select: none;
-    transition: background-color 150ms ease;
+    transition: background-color var(--transition-fast);
   }
   .collapsible-trigger:hover {
     background: var(--color-card-hover);
   }
   .collapsible-content {
     overflow: hidden;
-    transition: max-height 300ms ease-out, opacity 200ms ease-out;
+    transition: max-height var(--transition-slow), opacity 200ms ease-out;
   }
   .collapsible-content[data-state="closed"] {
     max-height: 0;
@@ -494,17 +562,17 @@
   .rtl .scenario-primary {
     border-left: none;
     border-right: 2px solid var(--color-primary);
-    background: linear-gradient(225deg, #7C9BC40F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(225deg, #5B6EF50F, var(--color-card-solid, var(--color-card)));
   }
   .rtl .scenario-alternative {
     border-left: none;
     border-right: 2px solid var(--color-info);
-    background: linear-gradient(225deg, #7C9BC40F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(225deg, #5B6EF50F, var(--color-card-solid, var(--color-card)));
   }
   .rtl .scenario-counter {
     border-left: none;
     border-right: 2px solid var(--color-bearish);
-    background: linear-gradient(225deg, #F6465D0F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(225deg, #F0384E0F, var(--color-card-solid, var(--color-card)));
   }
   .rtl .bg-gradient-to-r {
     background-image: linear-gradient(to left, var(--tw-gradient-stops));
@@ -517,53 +585,6 @@
     .lg-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
     .lg-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
     .lg-span-2 { grid-column: span 2; }
-  }
-
-  /* ====== Market Ticker Smooth Scroll ====== */
-  .market-ticker {
-    display: flex;
-    gap: 16px;
-    padding: 8px 16px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
-  }
-  .market-ticker::-webkit-scrollbar { display: none; }
-
-  /* ====== Premium Card Hover ====== */
-  .card-premium {
-    background: var(--gradient-glass), var(--color-card);
-    border: 0.5px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .card-premium:hover {
-    background: rgba(124, 155, 196, 0.06);
-    border-color: rgba(124, 155, 196, 0.25);
-    box-shadow: var(--shadow-glow);
-    transform: translateY(-1px);
-  }
-  .card-premium:active {
-    transform: translateY(0);
-    box-shadow: none;
-  }
-
-  /* ====== Pulse Animation for Greeting ====== */
-  .greeting-glow {
-    background: radial-gradient(ellipse at center, #7C9BC420 0%, transparent 60%);
-    animation: glow-drift 8s ease-in-out infinite;
-  }
-
-  /* ====== Number Flash (price updates) ====== */
-  .price-flash-up {
-    animation: flash-green 0.5s ease;
-  }
-  .price-flash-down {
-    animation: flash-red 0.5s ease;
   }
 }
 
@@ -580,7 +601,7 @@
   .lg-grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.5rem; }
 }
 
-/* ====== Nocturne Animations ====== */
+/* ====== V4 Animations ====== */
 
 /* Spin — loading */
 @keyframes spin {
@@ -602,15 +623,9 @@
   100% { background-position: 200% 0; }
 }
 .shimmer {
-  background: linear-gradient(90deg, transparent, rgba(124,155,196,0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(91,110,245,0.06), transparent);
   background-size: 200% 100%;
   animation: shimmer 1.6s linear infinite;
-}
-
-/* Buy button pulse glow — Nocturne: subtle box-shadow pulse */
-@keyframes buy-pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 #0ECB8100; }
-  50% { box-shadow: 0 0 16px -2px #0ECB8130; }
 }
 
 /* Live dot pulse — green dot for live badges */
@@ -650,21 +665,22 @@
   to { stroke-dashoffset: 0; }
 }
 
-/* Price flash — bullish */
-@keyframes flash-green {
-  0%, 100% { background: transparent; }
-  30% { background: rgba(14, 203, 129, 0.15); }
+/* Table row — clean 1px separator, hover feedback */
+.data-row {
+  border-bottom: 1px solid var(--color-border);
+  padding: 12px 16px;
+  transition: background var(--transition-fast);
 }
-
-/* Price flash — bearish */
-@keyframes flash-red {
-  0%, 100% { background: transparent; }
-  30% { background: rgba(246, 70, 93, 0.15); }
+.data-row:last-child {
+  border-bottom: none;
+}
+.data-row:hover {
+  background: var(--color-card-hover);
 }
 
 /* Table row press feedback */
 .row-press {
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: background var(--transition-fast), transform var(--transition-fast);
 }
 .row-press:active {
   background: var(--color-card-hover);
@@ -697,7 +713,6 @@
   .shimmer { animation: none !important; }
   .pulse-dot { animation: none !important; opacity: 0.85; }
   .card-stagger > * { animation: none !important; opacity: 1; transform: none; }
-  .btn-buy { animation: none !important; }
   .live-badge::before { animation: none !important; opacity: 0.85; }
   .vixor-page-enter { animation: none !important; opacity: 1; transform: none; }
 }
@@ -706,42 +721,4 @@
 @media print {
   .glass-header, .glass-card, nav, aside { display: none !important; }
   body { background: white !important; color: black !important; }
-}
-
-/* ===== ANIMATIONS FOR DATA UPDATING & INTERACTIVE MOVEMENT ===== */
-@keyframes data-update-flash {
-  0% { background-color: rgba(124, 155, 196, 0.15); transform: scale(1.01); }
-  100% { background-color: transparent; transform: scale(1); }
-}
-
-.animate-data-update {
-  animation: data-update-flash 0.6s cubic-bezier(0.2, 0, 0, 1);
-}
-
-@keyframes slide-up-fade {
-  0% { opacity: 0; transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-.animate-slide-up {
-  animation: slide-up-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes pulse-border {
-  0% { border-color: var(--color-border); }
-  50% { border-color: var(--color-primary); }
-  100% { border-color: var(--color-border); }
-}
-
-.animate-pulse-border {
-  animation: pulse-border 2s infinite;
-}
-
-@keyframes subtle-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-}
-
-.animate-subtle-bounce {
-  animation: subtle-bounce 3s ease-in-out infinite;
 }
