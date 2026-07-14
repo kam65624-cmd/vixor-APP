@@ -4,39 +4,46 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ===== VIXOR Design System V4 — Trading Terminal + Mobile =====
- * Merged from two reference systems:
- *   System 1: Dark Trading Terminal (web/desktop)
- *   System 2: Cryptex Mobile UI Kit (mobile/Telegram)
- *
- * Color tokens: background/surface hierarchy, semantic green/red,
- *   blue-purple primary, gold accent.
- * Typography: Inter + JetBrains Mono for numbers.
- * Spacing: 4px base unit.
+/* ===== VIXOR Design System V5 — Premium Trading 2026/2027 =====
+ * Based on V4, upgraded to 2026/2027 Premium Spec:
+ *   - Indigo primary (#6366F1) replacing blue-purple
+ *   - Modern teal bullish (#22D3A6) replacing classic green
+ *   - Deeper backgrounds (08090C / 101114 / 16171C)
+ *   - 3-level shadow + glow system
+ *   - Motion tokens with premium easings
+ *   - 8-level typography scale
+ *   - Berkeley Mono for financial numbers
  * ============================================================ */
 
 @theme inline {
   /* Radius tokens — Trading Terminal (sm/md) + Mobile (card/lg) */
   --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 20px;
-  --radius-pill: 20px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-pill: 9999px;
   --radius-full: 9999px;
 
   /* Spacing tokens — 4px base */
   --space-xs: 4px;
   --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
 
-  /* Transition tokens */
-  --transition-fast: 150ms ease;
-  --transition-normal: 200ms ease-in-out;
-  --transition-slow: 300ms ease-out;
+  /* Motion tokens — V5 Spec */
+  --transition-instant: 100ms ease;
+  --transition-fast: 180ms ease;
+  --transition-base: 240ms ease-in-out;
+  --transition-slow: 400ms ease-out;
+  /* Easing curves */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -70,7 +77,7 @@
   --color-tp3: var(--tp3);
 
   /* Chart palette (multi-asset, NOT semantic) */
-  --color-chart-1: #5B6EF5;
+  --color-chart-1: #6366F1;
   --color-chart-2: #8C9EFF;
   --color-chart-3: #7B61FF;
 
@@ -86,9 +93,19 @@
 
   /* Typography */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  --font-display: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Berkeley Mono", "JetBrains Mono", "SF Mono", ui-monospace, monospace;
 
-  /* Type scale */
+  /* Type scale — V5 Spec (8 levels) */
+  --text-display: 32px;
+  --text-h1: 24px;
+  --text-h2: 20px;
+  --text-h3: 16px;
+  --text-body-lg: 15px;
+  --text-body: 13px;
+  --text-caption: 12px;
+  --text-micro: 11px;
+  /* Legacy aliases (deprecated, use above) */
   --text-xs: 11px;
   --text-sm: 12px;
   --text-base: 14px;
@@ -96,59 +113,59 @@
   --text-lg: 18px;
   --text-xl: 20px;
   --text-2xl: 24px;
-  --text-display: 28px;
 }
 
 /* ===== DARK MODE (DEFAULT) — VIXOR V4 Trading Terminal ===== */
 :root {
   /* ── Surfaces (3-layer depth hierarchy) ── */
-  --background: #0A0A0D;
-  --card: #121215;
-  --card-solid: #121215;
-  --card-hover: #1A1A1F;
-  --surface-elevated: #1A1A1F;
-  --popover: #1A1A1F;
+  --background: #08090C;
+  --card: #101114;
+  --card-solid: #101114;
+  --card-hover: #16171C;
+  --surface-elevated: #16171C;
+  --surface-2: #16171C;
+  --popover: #16171C;
 
   /* ── Text (3-tier hierarchy) ── */
   --foreground: #FFFFFF;
   --card-foreground: #FFFFFF;
   --popover-foreground: #FFFFFF;
   --text-primary: #FFFFFF;
-  --text-secondary: #9A9AA5;
-  --text-tertiary: #5C5C66;
-  --text-muted: #5C5C66;
+  --text-secondary: #9498A8;
+  --text-tertiary: #565A66;
+  --text-muted: #565A66;
 
-  /* ── Primary accent — Blue-Purple #5B6EF5 ── */
-  --primary: #5B6EF5;
+  /* ── Primary accent — Blue-Purple #6366F1 ── */
+  --primary: #6366F1;
   --primary-foreground: #FFFFFF;
-  --primary-glow: #7B8AFF;
+  --primary-glow: #818CF8;
 
   /* ── Secondary / Muted ── */
-  --secondary: #1A1A1F;
+  --secondary: #16171C;
   --secondary-foreground: #FFFFFF;
-  --muted: #1A1A1F;
-  --muted-foreground: #9A9AA5;
-  --accent: #1A1A1F;
+  --muted: #16171C;
+  --muted-foreground: #9498A8;
+  --accent: #16171C;
   --accent-foreground: #FFFFFF;
-  --accent-dark: #232329;
+  --accent-dark: #1E1F26;
 
   /* ── Borders ── */
-  --border: #2A2A31;
-  --border-subtle: #1E1E25;
-  --input: #2A2A31;
-  --ring: #5B6EF566;
-  --border-hover: #3A3A45;
+  --border: rgba(255,255,255,0.08);
+  --border-subtle: rgba(255,255,255,0.04);
+  --input: rgba(255,255,255,0.08);
+  --ring: #6366F140;
+  --border-hover: rgba(255,255,255,0.15);
 
   /* ── Semantic Trading Colors ── */
-  --bullish: #2ECC71;
-  --bearish: #F0384E;
-  --destructive: #F0384E;
+  --bullish: #22D3A6;
+  --bearish: #FB4667;
+  --destructive: #FB4667;
   --destructive-foreground: #FFFFFF;
   --neutral-wait: #F5A623;
-  --info: #5B6EF5;
+  --info: #6366F1;
 
   /* TP gradient levels (bullish spectrum) */
-  --tp1: #2ECC71;
+  --tp1: #22D3A6;
   --tp2: #26D07C;
   --tp3: #6EE7B7;
 
@@ -159,16 +176,16 @@
   --buy-text: #04150D;
 
   /* ── Gradients ── */
-  --gradient-primary: linear-gradient(135deg, #5B6EF5, #7B8AFF);
-  --gradient-bullish: linear-gradient(135deg, #2ECC712E, #2ECC7105);
-  --gradient-bearish: linear-gradient(135deg, #F0384E2E, #F0384E05);
-  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008));
-  --gradient-accent-bg: radial-gradient(ellipse at 30% 20%, #5B6EF510 0%, transparent 60%);
+  --gradient-primary: linear-gradient(135deg, #6366F1, #818CF8);
+  --gradient-bullish: linear-gradient(135deg, #22D3A62E, #22D3A605);
+  --gradient-bearish: linear-gradient(135deg, #FB46672E, #FB466705);
+  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  --gradient-accent-bg: radial-gradient(ellipse at 30% 20%, #6366F110 0%, transparent 60%);
 
   /* ── Shadows — Layer-based depth (no glow) ── */
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 16px -4px #5B6EF525;
+  --shadow-resting: 0px 1px 2px rgba(0,0,0,0.4);
+  --shadow-elevated: 0px 8px 24px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 16px -4px #6366F125;
 
   /* ── Background treatment ── */
   --bg-grid: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
@@ -179,14 +196,14 @@
   --surface: var(--background);
   --surface-2: var(--muted);
   --surface-3: var(--accent);
-  --bullish-bg: #2ECC7114;
-  --bearish-bg: #F0384E14;
+  --bullish-bg: #22D3A614;
+  --bearish-bg: #FB466714;
   --neutral-wait-bg: #F5A62314;
 
   /* ── Overlay & chrome tokens ── */
-  --overlay: rgba(10, 10, 13, 0.75);
+  --overlay: rgba(8, 9, 12, 0.75);
   --overlay-secondary: rgba(10, 10, 13, 0.60);
-  --handle-bar: rgba(91, 110, 245, 0.15);
+  --handle-bar: rgba(99, 102, 241, 0.15);
   --bullish-border: color-mix(in srgb, var(--bullish) 20%, transparent);
 }
 
@@ -207,9 +224,9 @@
   --text-tertiary: #9CA3AF;
   --text-muted: #9CA3AF;
 
-  --primary: #5B6EF5;
+  --primary: #6366F1;
   --primary-foreground: #FFFFFF;
-  --primary-glow: #7B8AFF;
+  --primary-glow: #818CF8;
 
   --secondary: #F5F5F7;
   --secondary-foreground: #111827;
@@ -222,7 +239,7 @@
   --border: #E5E7EB;
   --border-subtle: #F3F4F6;
   --input: #E5E7EB;
-  --ring: #5B6EF566;
+  --ring: #6366F140;
   --border-hover: #D1D5DB;
 
   --bullish: #059669;
@@ -230,7 +247,7 @@
   --destructive: #DC2626;
   --destructive-foreground: #FFFFFF;
   --neutral-wait: #D97706;
-  --info: #5B6EF5;
+  --info: #6366F1;
 
   --tp1: #059669;
   --tp2: #10B981;
@@ -240,14 +257,14 @@
 
   --buy-text: #022C22;
 
-  --gradient-primary: linear-gradient(135deg, #5B6EF5, #7B8AFF);
+  --gradient-primary: linear-gradient(135deg, #6366F1, #818CF8);
   --gradient-bullish: linear-gradient(135deg, #05966926, #05966905);
   --gradient-bearish: linear-gradient(135deg, #DC262626, #DC262605);
   --gradient-glass: linear-gradient(135deg, rgba(0,0,0,0.02), rgba(0,0,0,0.005));
 
   --shadow-card: 0 1px 3px rgba(0,0,0,0.08);
   --shadow-elevated: 0 4px 12px rgba(0,0,0,0.06);
-  --shadow-glow: 0 0 16px -4px #5B6EF520;
+  --shadow-glow: 0 0 16px -4px #6366F120;
 
   --bg-grid: none;
 
@@ -307,7 +324,7 @@
 
   /* Glass header */
   .glass-header {
-    background: rgba(10, 10, 13, 0.75);
+    background: rgba(8, 9, 12, 0.75);
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
     border-bottom: 1px solid var(--color-border);
@@ -318,7 +335,7 @@
     background: var(--color-card-solid, var(--color-card));
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--shadow-resting, 0px 1px 2px rgba(0,0,0,0.4));
   }
 
   .vixor-card-hover {
@@ -352,7 +369,7 @@
   .gradient-bullish { background: var(--gradient-bullish); }
   .gradient-bearish { background: var(--gradient-bearish); }
   .gradient-info {
-    background: linear-gradient(135deg, #5B6EF5, #7B8AFF);
+    background: linear-gradient(135deg, #6366F1, #818CF8);
   }
 
   /* Scrollbar hide */
@@ -382,8 +399,8 @@
     font-size: 14px;
     border: none;
     border-radius: var(--radius-md);
-    height: 34px;
-    padding: 0 var(--space-md);
+    height: 36px;
+    padding: 0 16px;
     cursor: pointer;
     transition: transform 0.12s ease, opacity var(--transition-fast);
   }
@@ -398,8 +415,8 @@
     font-size: 14px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    height: 34px;
-    padding: 0 var(--space-md);
+    height: 36px;
+    padding: 0 16px;
     cursor: pointer;
     transition: transform 0.12s ease, border-color var(--transition-fast);
   }
@@ -415,8 +432,8 @@
     font-size: 14px;
     border: none;
     border-radius: var(--radius-md);
-    height: 34px;
-    padding: 0 var(--space-md);
+    height: 36px;
+    padding: 0 16px;
     cursor: pointer;
     transition: transform 0.12s ease, opacity var(--transition-fast);
   }
@@ -426,8 +443,8 @@
 
   /* ====== Live Badge ====== */
   .live-badge {
-    background: #5B6EF514;
-    border: 1px solid #5B6EF530;
+    background: #6366F114;
+    border: 1px solid #6366F130;
     color: var(--color-primary);
     border-radius: var(--radius-pill);
     font-size: 11px;
@@ -486,7 +503,7 @@
   .strength-strong {
     color: var(--color-bullish);
     background: var(--bullish-bg);
-    border-color: #2ECC7130;
+    border-color: #22D3A630;
   }
   .strength-moderate {
     color: var(--color-neutral-wait);
@@ -496,21 +513,21 @@
   .strength-weak {
     color: var(--color-bearish);
     background: var(--bearish-bg);
-    border-color: #F0384E30;
+    border-color: #FB466730;
   }
 
   /* Scenario cards */
   .scenario-primary {
     border-left: 2px solid var(--color-primary);
-    background: linear-gradient(135deg, #5B6EF50F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(135deg, #6366F10F, var(--color-card-solid, var(--color-card)));
   }
   .scenario-alternative {
     border-left: 2px solid var(--color-info);
-    background: linear-gradient(135deg, #5B6EF50F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(135deg, #6366F10F, var(--color-card-solid, var(--color-card)));
   }
   .scenario-counter {
     border-left: 2px solid var(--color-bearish);
-    background: linear-gradient(135deg, #F0384E0F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(135deg, #FB46670F, var(--color-card-solid, var(--color-card)));
   }
 
   /* Divider */
@@ -524,14 +541,14 @@
   .term-highlight {
     color: var(--color-primary);
     font-weight: 600;
-    background: #5B6EF518;
+    background: #6366F118;
     padding: 0 3px;
     border-radius: var(--radius-xs);
     cursor: help;
     transition: background-color var(--transition-fast);
   }
   .term-highlight:hover {
-    background: #5B6EF528;
+    background: #6366F128;
   }
 
   /* Gold/Paid badge */
@@ -575,17 +592,17 @@
   .rtl .scenario-primary {
     border-left: none;
     border-right: 2px solid var(--color-primary);
-    background: linear-gradient(225deg, #5B6EF50F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(225deg, #6366F10F, var(--color-card-solid, var(--color-card)));
   }
   .rtl .scenario-alternative {
     border-left: none;
     border-right: 2px solid var(--color-info);
-    background: linear-gradient(225deg, #5B6EF50F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(225deg, #6366F10F, var(--color-card-solid, var(--color-card)));
   }
   .rtl .scenario-counter {
     border-left: none;
     border-right: 2px solid var(--color-bearish);
-    background: linear-gradient(225deg, #F0384E0F, var(--color-card-solid, var(--color-card)));
+    background: linear-gradient(225deg, #FB46670F, var(--color-card-solid, var(--color-card)));
   }
   .rtl .bg-gradient-to-r {
     background-image: linear-gradient(to left, var(--tw-gradient-stops));
@@ -607,7 +624,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%);
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%);
     pointer-events: none;
   }
   .vx-card-hover:hover {
@@ -631,7 +648,7 @@
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: var(--radius-xl);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+    box-shadow: 0px 8px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
   }
 
   /* ====== Premium Input System ====== */
@@ -642,7 +659,7 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-size: 14px;
-    height: 44px;
+    height: 40px;
     padding: 0 12px;
     transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
     outline: none;
@@ -709,9 +726,9 @@
     font-weight: 600;
     font-size: 14px;
     border: none;
-    border-radius: var(--radius-lg);
-    height: 44px;
-    padding: 0 20px;
+    border-radius: var(--radius-md);
+    height: 40px;
+    padding: 0 16px;
     cursor: pointer;
     transition: all var(--transition-normal);
     position: relative;
@@ -730,28 +747,28 @@
   .vx-btn-primary {
     background: linear-gradient(135deg, var(--color-primary), var(--primary-glow));
     color: var(--color-primary-foreground);
-    box-shadow: 0 4px 16px rgba(91,110,245,0.3);
+    box-shadow: 0 4px 16px rgba(99,102,241,0.3);
   }
   .vx-btn-primary:hover {
-    box-shadow: 0 6px 24px rgba(91,110,245,0.4);
+    box-shadow: 0 6px 24px rgba(99,102,241,0.4);
     filter: brightness(1.1);
   }
   .vx-btn-bullish {
-    background: linear-gradient(135deg, #2ECC71, #27AE60);
+    background: linear-gradient(135deg, #22D3A6, #1AB394);
     color: var(--color-buy-text);
-    box-shadow: 0 4px 16px rgba(46,204,113,0.25);
+    box-shadow: 0 4px 16px rgba(34,211,166,0.25);
   }
   .vx-btn-bullish:hover {
-    box-shadow: 0 6px 24px rgba(46,204,113,0.35);
+    box-shadow: 0 6px 24px rgba(34,211,166,0.35);
     filter: brightness(1.1);
   }
   .vx-btn-bearish {
-    background: linear-gradient(135deg, #F0384E, #D63040);
+    background: linear-gradient(135deg, #FB4667, #E63E5E);
     color: white;
-    box-shadow: 0 4px 16px rgba(240,56,78,0.25);
+    box-shadow: 0 4px 16px rgba(251,70,103,0.25);
   }
   .vx-btn-bearish:hover {
-    box-shadow: 0 6px 24px rgba(240,56,78,0.35);
+    box-shadow: 0 6px 24px rgba(251,70,103,0.35);
     filter: brightness(1.1);
   }
   .vx-btn-ghost {
@@ -764,16 +781,16 @@
     border-color: var(--color-border-hover);
   }
   .vx-btn-sm {
-    height: 34px;
-    padding: 0 14px;
+    height: 32px;
+    padding: 0 12px;
     font-size: 12px;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
   }
   .vx-btn-lg {
-    height: 52px;
-    padding: 0 28px;
+    height: 48px;
+    padding: 0 24px;
     font-size: 15px;
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-lg);
   }
   /* Button ripple effect */
   .vx-btn::after {
@@ -869,8 +886,8 @@
     100% { background-position: 200% 0; }
   }
   @keyframes vx-glow-pulse {
-    0%, 100% { box-shadow: 0 0 8px rgba(91,110,245,0.15); }
-    50% { box-shadow: 0 0 20px rgba(91,110,245,0.3); }
+    0%, 100% { box-shadow: 0 0 8px rgba(99,102,241,0.15); }
+    50% { box-shadow: 0 0 20px rgba(99,102,241,0.3); }
   }
   @keyframes vx-float {
     0%, 100% { transform: translateY(0px); }
@@ -991,7 +1008,7 @@
   }
   .vx-status-dot-live {
     background: var(--color-bullish);
-    box-shadow: 0 0 8px rgba(46,204,113,0.5);
+    box-shadow: 0 0 8px rgba(34,211,166,0.5);
     animation: pulse-dot 1.8s ease-in-out infinite;
   }
   .vx-status-dot-offline {
