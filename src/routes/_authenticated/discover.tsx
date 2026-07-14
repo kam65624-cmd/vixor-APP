@@ -1111,7 +1111,8 @@ function DiscoverPage() {
         icon: "📊",
       },
     ];
-  }, [tokens, resp, isForexMode, forexQuery.data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokens, resp, isForexMode]);
 
   // Category counts
   const categoryCounts = useMemo(() => {
