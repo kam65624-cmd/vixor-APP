@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans+AR:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@page {
+    size: 720px 1020px;
+    margin: 0;
+}
+:root {
+    --c-bg: #0A0A0D;
+    --c-surface: #121215;
+    --c-surface2: #1A1A1F;
+    --c-border: #2A2A31;
+    --c-text: #FFFFFF;
+    --c-text2: #9A9AA5;
+    --c-text3: #5C5C66;
+    --c-primary: #5B6EF5;
+    --c-primary-dim: rgba(91,110,245,0.15);
+    --c-green: #2ECC71;
+    --c-green-dim: rgba(46,204,113,0.12);
+    --c-red: #F0384E;
+    --c-red-dim: rgba(240,56,78,0.12);
+    --c-gold: #F0C419;
+    --c-gold-dim: rgba(240,196,25,0.12);
+    --c-orange: #F5A623;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    margin: 0; padding: 0;
+    width: 720px;
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-family: 'Noto Sans AR', 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+}
+@media screen {
+    html { height: auto; display: flex; justify-content: center; background: #111; }
+    body { margin: 20px auto; }
+}
+
+/* Cover */
+.cover {
+    width: 720px; height: 1020px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    break-after: page;
+    background: var(--c-bg);
+}
+.cover::before {
+    content: ''; position: absolute;
+    top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(91,110,245,0.15), transparent 70%);
+    border-radius: 50%;
+}
+.cover::after {
+    content: ''; position: absolute;
+    bottom: -60px; left: -60px;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(46,204,113,0.08), transparent 70%);
+    border-radius: 50%;
+}
+.cover-tag {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    color: var(--c-primary); text-transform: uppercase;
+    border: 1px solid rgba(91,110,245,0.3);
+    padding: 6px 20px; border-radius: 20px;
+    margin-bottom: 30px; z-index: 1;
+}
+.cover-title {
+    font-size: 42px; font-weight: 900; color: var(--c-text);
+    text-align: center; line-height: 1.2; z-index: 1;
+    max-width: 580px;
+}
+.cover-sub {
+    font-size: 15px; color: var(--c-text2); text-align: center;
+    max-width: 480px; margin-top: 20px; line-height: 1.8; z-index: 1;
+}
+.cover-meta {
+    position: absolute; bottom: 50px; z-index: 1;
+    display: flex; gap: 30px; font-size: 11px; color: var(--c-text3);
+}
+.cover-meta span { display: flex; align-items: center; gap: 6px; }
+.cover-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c-primary); }
+
+/* Main Content */
+.main-content {
+    padding: 50px 55px 40px 55px;
+}
+
+/* Section Headers */
+.chapter-header { break-after: avoid; break-inside: avoid; margin-top: 32px; }
+.section-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+    color: var(--c-primary); text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.section-title {
+    font-size: 22px; font-weight: 800; color: var(--c-text);
+    line-height: 1.3; margin-bottom: 10px;
+}
+.section-desc {
+    font-size: 12.5px; color: var(--c-text2); line-height: 1.7;
+    margin-bottom: 16px;
+}
+.divider {
+    width: 40px; height: 3px; border-radius: 2px;
+    background: var(--c-primary); margin-bottom: 20px;
+}
+
+/* Body Text */
+.body-text {
+    font-size: 12.5px; color: var(--c-text2); line-height: 1.8;
+    margin-bottom: 12px;
+}
+
+/* Cards */
+.card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    break-inside: avoid;
+}
+.card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+}
+.card-title {
+    font-size: 14px; font-weight: 700; color: var(--c-text);
+}
+.card-badge {
+    font-size: 9px; font-weight: 700; padding: 3px 10px;
+    border-radius: 6px; letter-spacing: 0.5px;
+}
+.badge-green { background: var(--c-green-dim); color: var(--c-green); }
+.badge-red { background: var(--c-red-dim); color: var(--c-red); }
+.badge-orange { background: var(--c-gold-dim); color: var(--c-gold); }
+.badge-blue { background: var(--c-primary-dim); color: var(--c-primary); }
+.badge-gray { background: rgba(255,255,255,0.05); color: var(--c-text3); }
+
+/* Info Grid */
+.info-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-bottom: 12px;
+}
+.info-item {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 8px 10px; background: rgba(255,255,255,0.02);
+    border-radius: 6px; border: 1px solid rgba(255,255,255,0.04);
+}
+.info-label { font-size: 10px; color: var(--c-text3); font-weight: 600; }
+.info-value { font-size: 12px; color: var(--c-text); font-weight: 600; }
+
+/* Issue List */
+.issue-item {
+    display: flex; gap: 8px; padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 11.5px; color: var(--c-text2); line-height: 1.6;
+}
+.issue-item:last-child { border-bottom: none; }
+.issue-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
+.dot-red { background: var(--c-red); }
+.dot-orange { background: var(--c-orange); }
+.dot-green { background: var(--c-green); }
+.dot-blue { background: var(--c-primary); }
+
+/* Recommendation Box */
+.rec-box {
+    background: var(--c-primary-dim);
+    border: 1px solid rgba(91,110,245,0.2);
+    border-radius: 8px; padding: 12px 14px;
+    margin-top: 10px; break-inside: avoid;
+}
+.rec-title {
+    font-size: 11px; font-weight: 700; color: var(--c-primary);
+    margin-bottom: 6px; letter-spacing: 0.5px;
+}
+.rec-text { font-size: 11.5px; color: var(--c-text2); line-height: 1.7; }
+
+/* Priority Table */
+.priority-table {
+    width: 100%; border-collapse: collapse; margin: 12px 0;
+    font-size: 11px;
+}
+.priority-table th {
+    text-align: right; padding: 8px 10px;
+    background: var(--c-surface);
+    color: var(--c-text3); font-weight: 700;
+    border-bottom: 1px solid var(--c-border);
+    font-size: 10px; letter-spacing: 0.5px;
+}
+.priority-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--c-text2);
+}
+.priority-high { color: var(--c-red); font-weight: 700; }
+.priority-med { color: var(--c-orange); font-weight: 700; }
+.priority-low { color: var(--c-green); font-weight: 700; }
+
+/* Stats Row */
+.stats-strip {
+    display: flex; gap: 1px; margin: 16px 0;
+    background: var(--c-border); border-radius: 10px;
+    overflow: hidden;
+}
+.stat-cell {
+    flex: 1; padding: 14px 12px; text-align: center;
+    background: var(--c-surface);
+}
+.stat-num { font-size: 20px; font-weight: 800; color: var(--c-text); }
+.stat-label { font-size: 10px; color: var(--c-text3); margin-top: 4px; font-weight: 600; }
+
+/* Ending */
+.ending {
+    width: 720px; height: 1020px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    break-before: page; overflow: hidden;
+    background: var(--c-bg);
+}
+.ending-title { font-size: 28px; font-weight: 900; color: var(--c-text); margin-bottom: 16px; }
+.ending-sub { font-size: 14px; color: var(--c-text2); text-align: center; max-width: 400px; line-height: 1.8; }
+
+/* Sub-section title */
+.sub-title {
+    font-size: 15px; font-weight: 700; color: var(--c-text);
+    margin: 20px 0 10px 0; padding-right: 10px;
+    border-right: 3px solid var(--c-primary);
+}
+</style>
+</head>
+<body>
+
+<!-- ====== COVER ====== -->
+<div class="cover">
+    <div class="cover-tag">VIXOR APP AUDIT</div>
+    <div class="cover-title">تقرير تحليل صفحات تطبيق VIXOR</div>
+    <div class="cover-sub">
+        تحليل شامل ومفصل لكل صفحة في تطبيق VIXOR للتداول بالذكاء الاصطناعي.
+        يشمل: الحالة الحالية، المكونات المستخدمة، المشاكل المكتشفة،
+        والتوصيات الخاصة بإعادة التصميم بنظام التصميم Premium المطلوب.
+    </div>
+    <div class="cover-meta">
+        <span><div class="cover-dot"></div> 37 صفحة ومكون</span>
+        <span>يوليو 2026</span>
+        <span>إصدار سري</span>
+    </div>
+</div>
+
+<!-- ====== MAIN CONTENT ====== -->
+<div class="main-content">
+
+<!-- ===== CH 1: EXECUTIVE SUMMARY ===== -->
+<div class="chapter-header">
+    <div class="section-tag">الفصل الاول</div>
+    <div class="section-title">ملخص تنفيذي</div>
+    <div class="divider"></div>
+</div>
+
+<div class="body-text">
+    تطبيق VIXOR هو تيرمنال تداول ذكي مبني بتقنية React + TanStack Start، يعمل كتطبيق Telegram Web App. يحتوي التطبيق على 37 صفحة ومكون رئيسي موزعة على نظام توجيه معقد. تم بناء الواجهة بالكامل باستخدام inline styles مع نظام CSS Variables لتوحيد الالوان، لكن بدون استخدام مكتبة مكونات موحدة او نظام تصميم منظم.
+</div>
+
+<div class="body-text">
+    يعتمد التطبيق على عدد محدود من المكونات المشتركة المصدرة من PageLayout.tsx الذي يوفر حوالي 15 مكون فرعي (StatsRow, Badge, DataRow, EmptyState, ScrollArea, وغيرها). لكن معظم الصفحات تعيد بناء عناصر واجهة المستخدم من الصفر داخل كل ملف بدلا من استخدام هذه المكونات المشتركة، مما ادى الى تضخم كبير في حجم الملفات وعدم تناسق بصري بين الصفحات.
+</div>
+
+<div class="stats-strip">
+    <div class="stat-cell">
+        <div class="stat-num">37</div>
+        <div class="stat-label">صفحة ومكون</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-num">4</div>
+        <div class="stat-label">ملفات اكبر من 2000 سطر</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-num">95%</div>
+        <div class="stat-label">inline styles</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-num">1</div>
+        <div class="stat-label">صفحة بيانات وهمية</div>
+    </div>
+</div>
+
+<div class="body-text">
+    اكبر المشاكل المكتشفة هي: تضخم ملفات المكونات (ملف واحد يصل الى 2991 سطر)، استخدام INLINE STYLES بنسبة 95% بدلا من Tailwind CSS او مكتبة مكونات، عدم وجود انواع TypeScript صارمة (any types في كل مكان)، وعدم تناسق في انماط جلب البيانات بين الصفحات. كما ان صفحة Swap تعتمد بالكامل على بيانات وهمية بدون اي تكامل حقيقي مع DEX.
+</div>
+
+<!-- ===== CH 2: DESIGN SYSTEM ANALYSIS ===== -->
+<div class="chapter-header">
+    <div class="section-tag">الفصل الثاني</div>
+    <div class="section-title">تحليل نظام التصميم الحالي</div>
+    <div class="divider"></div>
+</div>
+
+<div class="body-text">
+    يعتمد التطبيق على ملف styles.css بحجم 1155 سطر يعرف نظام التصيم V4 المدمج من نظامين مرجعيين: Trading Terminal (للويب/ديسكتوب) و Cryptex Mobile UI Kit (للموبايل/تليجرام). النظام يوفر CSS Variables للالوان والانماط، لكن المشكلة الاساسية هي ان هذه المتغيرات نادرا ما تُستخدم عبر Tailwind Classes، بل تُمرر كقيم inline style في كل مكون.
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">الالوان الاساسية الحالية</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">الخلفية الرئيسية</div><div class="info-value">#0A0A0D</div></div>
+        <div class="info-item"><div class="info-label">السطح (Surface)</div><div class="info-value">#121215</div></div>
+        <div class="info-item"><div class="info-label">اللون الاساسي (Primary)</div><div class="info-value">#5B6EF5</div></div>
+        <div class="info-item"><div class="info-label">النجاح (Bullish)</div><div class="info-value">#2ECC71</div></div>
+        <div class="info-item"><div class="info-label">الخطر (Bearish)</div><div class="info-value">#F0384E</div></div>
+        <div class="info-item"><div class="info-label">التحذير</div><div class="info-value">#F5A623</div></div>
+        <div class="info-item"><div class="info-label">النص الرئيسي</div><div class="info-value">#FFFFFF</div></div>
+        <div class="info-item"><div class="info-label">النص الثانوي</div><div class="info-value">#9A9AA5</div></div>
+    </div>
+</div>
+
+<div class="body-text">
+    نظام الخطوط يستخدم Inter للنصوص العادية و JetBrains Mono للارقام والبيانات. الاحجام معرفة من 11px الى 28px مع خطوات واضحة. لكن المشكلة هي ان احجام الخطوط الفعلية في المكونات لا تتبع هذا النظام بدقة، فتجد احجاما عشوائية مثل 9px و 10px و 13px و 15px في اماكن متفرقة.
+</div>
+
+<div class="sub-title">المشاكل الاساسية في نظام التصميم</div>
+
+<div class="issue-item"><div class="issue-dot dot-red"></div><div>95% من التنسيق عبر inline styles بدلا من Tailwind او CSS classes، مما يجعل الصيانة شبه مستحيلة ويمنع اعادة الاستخدام</div></div>
+<div class="issue-item"><div class="issue-dot dot-red"></div><div>نمط `${"var(--color-border)"}` مكرر مئات المرات لان CSS Variables لا تعمل مباشرة في inline styles بدون هذا التغليف</div></div>
+<div class="issue-item"><div class="issue-dot dot-red"></div><div>لا يوجد مكتبة ازرار او بطاقات او نماذج موحدة - كل صفحة تعيد بناء هذه العناصر من الصفر</div></div>
+<div class="issue-item"><div class="issue-dot dot-orange"></div><div>الاحجام والزوايا والظلال غير متناسقة بين الصفحات: بعضها يستخدم border-radius: 10px وبعضها 12px وبعضها 16px</div></div>
+<div class="issue-item"><div class="issue-dot dot-orange"></div><div>التحويلات (transitions) غير موحدة: بعضها 150ms وبعضها 200ms وبعضها 300ms وبعضها بدون اي تحويل</div></div>
+<div class="issue-item"><div class="issue-dot dot-orange"></div><div>لا يوجد نظام ظلال (shadow system) موحد - كل مكون يحدد ظله الخاص</div></div>
+
+<!-- ===== CH 3: PAGE ANALYSES ===== -->
+<div class="chapter-header">
+    <div class="section-tag">الفصل الثالث</div>
+    <div class="section-title">تحليل مفصل لكل صفحة</div>
+    <div class="divider"></div>
+</div>
+
+<div class="body-text">
+    فيما يلي تحليل شامل لكل صفحة في التطبيق مرتب حسب الاهمية الوظيفية. كل تحليل يتضمن: وصف الصفحة، المكونات المستخدمة، مصدر البيانات، الحالة الوظيفية، والمشاكل المكتشفة مع توصيات التحسين.
+</div>
+
+<!-- PAGE 1: Home / -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">1. الصفحة الرئيسية (/)</div>
+        <div class="card-badge badge-green">تعمل بالكامل</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">543</div></div>
+        <div class="info-item"><div class="info-label">مصدر البيانات</div><div class="info-value">Server Functions</div></div>
+        <div class="info-item"><div class="info-label">المكونات</div><div class="info-value">6 مكونات داخلية</div></div>
+        <div class="info-item"><div class="info-label">الحالة</div><div class="info-value">وظيفية</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">الصفحة الرئيسية تعرض: تحية مخصصة باسم المستخدم، شريط اسعار مباشر متحرك (Market Ticker)، ملخص المحفظة (القيمة، PnL، نسبة الفوز، عدد الصفقات)، بطاقة CTA للتحليل بالذكاء الاصطناعي، شبكة الميزات الاربع (Live Charts، Discover، AI Copilot، PnL Tracker)، الاشارات النشطة، ومقياس الخوف والطمع (Fear and Greed Gauge).</div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>شريط Ticker يستخدم CSS animation مباشرة بدلا من framer-motion مما يسبب مشاكل اداء على الموبايل</div></div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>مكون FearGreedGauge مبنى بـ SVG يدوي بدلا من مكتبة رسوم بيانية موحدة</div></div>
+    <div class="issue-item"><div class="issue-dot dot-blue"></div><div>بطاقات الميزات تستخدم نمط vx-card و vx-card-interactive وهو نمط جيد لكنه يحتاج الى توحيد مع باقي الصفحات</div></div>
+    <div class="rec-box"><div class="rec-title">توصيات التحسين</div><div class="rec-text">تحويل Ticker الى مكون مشترك قابل لاعادة الاستخدام، اضافة loading skeleton، تحسين شبكة الميزات لتكون responsive، واضافة رسوم بيانية مصغرة (sparklines) في بطاقات الاشارات.</div></div>
+</div>
+
+<!-- PAGE 2: Auth -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">2. صفحة تسجيل الدخول (/auth)</div>
+        <div class="card-badge badge-green">ممتازة</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">522</div></div>
+        <div class="info-item"><div class="info-label">مصدر البيانات</div><div class="info-value">Supabase + Telegram</div></div>
+        <div class="info-item"><div class="info-label">الثغرات</div><div class="info-value">SSR معطل</div></div>
+        <div class="info-item"><div class="info-label">التصميم</div><div class="info-value">Ambient Glow + Cards</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">صفحة الدخول هي الاكتمال من حيث التصميم في التطبيق. تدعم ثلاث طرق للمصادقة: تلقائي داخل Telegram WebApp، Telegram Login Widget للمتصفح، والبريد الالكتروني كخيار احتياطي مخفي. تحتوي على شريط الميزات الاربع، وتاثيرات Ambient Glow في الخلفية.</div>
+    <div class="issue-item"><div class="issue-dot dot-green"></div><div>التصميم نظيف ومتسق مع نظام الالوان - من افضل الصفحات في التطبيق</div></div>
+    <div class="issue-item"><div class="issue-dot dot-blue"></div><div>يحتاج تحسين عند فشل تحميل Telegram Widget - الرسالة الحالية غير واضحة للمستخدم العربي</div></div>
+    <div class="rec-box"><div class="rec-title">توصيات التحسين</div><div class="rec-text">اضافة دعم اللغة العربية للواجهة، تحسين رسائل الخطا، واضافة تاثيرات تحميل اكثر سلاسة.</div></div>
+</div>
+
+<!-- PAGE 3: Trade Desk -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">3. منصة التداول (/trade-desk)</div>
+        <div class="card-badge badge-orange">تحتاج اعادة هيكلة</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">1,360</div></div>
+        <div class="info-item"><div class="info-label">مصدر البيانات</div><div class="info-value">Server Functions + BinanceWS</div></div>
+        <div class="info-item"><div class="info-label">المكونات</div><div class="info-value">7+ مكونات داخلية</div></div>
+        <div class="info-item"><div class="info-label">التعقيد</div><div class="info-value">عالي جدا</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">صفحة التداول هي القلب الوظيفي للتطبيق. تحتوي على: نموذج انشاء صفقة مع حساب المخاطر (Risk Calculator)، جدول الصفقات مع ترقيم الصفحات (Pagination)، Coach Overlay للتوجيه، Governor Risk Panel لحماية رأس المال، تكامل مع Exchange Gateway للتنفيذ الحقيقي، وتاثيرات صوتية عند التنفيذ. هي ثاني اكبر ملف في التطبيق.</div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>1360 سطر في ملف واحد - يحتاج تقسيم فوري الى مكونات منفصلة (TradeForm, TradeTable, RiskPanel)</div></div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>تعتمد بشكل كبير على inline styles مما يجعل تعديل التصميم مؤلما</div></div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>Navigate pattern يستخدم `as any` لتجاوز فحص الانواع</div></div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>CoachOverlay و GovernorRiskPanel مكونات خارجية لكنها غير مستخدمة في صفحات اخرى</div></div>
+    <div class="rec-box"><div class="rec-title">توصيات التحسين</div><div class="rec-text">تقسيم الملف الى 5 مكونات على الاقل. تحويل نموذج التداول الى مكون منفصل مع API مخطط (props interface). تبني نظام ازرار موحد. اضافة تاثيرات hover و focus متسقة.</div></div>
+</div>
+
+<!-- PAGE 4: Analyze -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">4. التحليل بالذكاء الاصطناعي (/analyze)</div>
+        <div class="card-badge badge-green">وظيفية</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">~1,200</div></div>
+        <div class="info-item"><div class="info-label">مصدر البيانات</div><div class="info-value">Vision AI (glm-4.6v)</div></div>
+        <div class="info-item"><div class="info-label">الوظيفة</div><div class="info-value">رفع + لقط + تحليل</div></div>
+        <div class="info-item"><div class="info-label">المكتبات</div><div class="info-value">z-ai-web-dev-sdk</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">صفحة التحليل هي ميزة التطبيق الاساسية. تتيح للمستخدم رفع صورة رسم بياني او لقطة شاشة او لصق من الحافظة، ثم تحليلها باستخدام نموذج الرؤية glm-4.6v عبر z-ai-web-dev-sdk. تدعم اختيار الزوج الزمني ونوع التحليل (SMC/ICT). تعرض النتيجة بتوصية الشراء/البيع مع مستوى الثقة ونقاط الدخول والخروج.</div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>التحويل من الصفحة الى صفحة النتائج يحتاج تحميل lazy مما يسبب تاخير ملحوظ</div></div>
+    <div class="issue-item"><div class="issue-dot dot-blue"></div><div>واجهة رفع الصور تحتاج الى تحسين بصري لتكون اكثر جاذبية (drag and drop zone)</div></div>
+    <div class="rec-box"><div class="rec-title">توصيات التحسين</div><div class="rec-text">اضافة منطقة Drag and Drop احترافية، تحسين حالة التحميل بتاثيرات متحركة، اضافة معاينة الصورة قبل التحليل مع امكانية القص.</div></div>
+</div>
+
+<!-- PAGE 5: Analysis Detail -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">5. صفحة تفاصيل التحليل (/analysis/$id)</div>
+        <div class="card-badge badge-red">حرجة - تحتاج تقسيم</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">2,991</div></div>
+        <div class="info-item"><div class="info-label">المكونات الداخلية</div><div class="info-value">10+</div></div>
+        <div class="info-item"><div class="info-label">Lazy Loaded</div><div class="info-value">نعم</div></div>
+        <div class="info-item"><div class="info-label">الاولوية</div><div class="info-value">قصوى</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">اكبر مكون في التطبيق باسرار. يعرض: راس الصفحة مع السعر المباشر، ملخص الاشارة (الاتجاه، الثقة، نقاط الدخول/الوقف/الاستهداف)، شارات الانماط، بطاقات الاسباب، لوحة التحليل الفني، نظام ملاحظات كامل (اضافة/حذف/تثبيت)، مشاركة على X و Telegram، والتحليلات ذات الصلة. يحتوي على حالة معقدة جدا تشمل الملاحظات وحوار المشاركة.</div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>2991 سطر! هذا الملف يجب تقسيمه الى 8-10 مكونات منفصلة على الاقل</div></div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>الحالة المعقدة (notes, share dialog, expandable sections) تجعل الصيانة شبه مستحيلة</div></div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>نمط `${"var(--color-border)"}` مكرر المئات من المرات</div></div>
+    <div class="rec-box"><div class="rec-title">توصيات التحسين</div><div class="rec-text">تقسيم فوري الى: AnalysisHeader, SignalSummary, PatternBadges, ReasonCards, TechnicalPanel, NotesSection, ShareDialog, RelatedAnalyses. كل مكون بملف منفصل مع types واضحة.</div></div>
+</div>
+
+<!-- PAGE 6: Token Detail -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">6. صفحة تفاصيل التوكن (/token/$symbol)</div>
+        <div class="card-badge badge-red">حرجة - تحتاج تقسيم</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">2,814</div></div>
+        <div class="info-item"><div class="info-label">البيانات الحية</div><div class="info-value">BinanceWS + DexScreenerWS</div></div>
+        <div class="info-item"><div class="info-label">المخططات</div><div class="info-value">TradingView + DexChart</div></div>
+        <div class="info-item"><div class="info-label">التبويبات</div><div class="info-value">Trades, Analyses, Watchlist</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">ثاني اكبر مكون. يعرض: راس التوكن مع السعر والقيمة السوقية والحجم والسيولة، مخطط TradingView مع DexChart، نظام تبويبات (الصفقات، التحليلات، قائمة المراقبة)، تاريخ الصفقات، التحليلات ذات الصلة، نسبة الاموال الذكية، كشف Honeypot، والسعر المباشر عبر WebSocket. ميزات كثيرة جدا مكتومة في ملف واحد.</div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>2814 سطر - يحتاج تقسيم عاجل مثل صفحة التحليل</div></div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>اشتراكات WebSocket متعددة قد تسبب تسرب ذاكرة اذا لم تُلغى بشكل صحيح عند مغادرة الصفحة</div></div>
+    <div class="rec-box"><div class="rec-title">توصيات التحسين</div><div class="rec-text">تقسيم الى: TokenHeader, TokenChart, TokenTrades, TokenAnalyses, TokenWatchlist, SmartMoneyIndicator, HoneypotBadge. فصل منطق WebSocket في hook منفصل.</div></div>
+</div>
+
+<!-- PAGE 7: Discover -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">7. صفحة الاكتشاف (/discover)</div>
+        <div class="card-badge badge-green">وظيفية</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">~2,200</div></div>
+        <div class="info-item"><div class="info-label">التصنيفات</div><div class="info-value">ALL, Trending, New, Volume</div></div>
+        <div class="info-item"><div class="info-label">الاسعار الحية</div><div class="info-value">DexScreener + BinanceWS</div></div>
+        <div class="info-item"><div class="info-label">Pull to Refresh</div><div class="info-value">مدعوم</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">صفحة الاكتشاف تعرض التوكنات الرائجة مع اسعار مباشرة. تدعم: تصفية بالتصنيف (ALL, Trending, New, Volume)، ترتيب (trending, volume, price, liquidity)، بحث نصي، فلاتر متقدمة (السيولة، الحجم، Honeypot، الاموال الذكية)، وبيانات الفوركس. تستخدم Pull to Refresh وعرض اسعار حية. من الصفحات الاكثر اكتمالا من حيث الوظائف.</div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>حجم الملف كبير بسبب دمج منطق الفلاتر والعرض في ملف واحد</div></div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>بطاقات التوكن تعيد بناء نفس التصميم بدلا من استخدام مكون TokenCard موحد</div></div>
+    <div class="rec-box"><div class="rec-title">توصيات التحسين</div><div class="rec-text">استخراج مكون TokenCard موحد، فصل منطق الفلاتر في hook منفصل، اضافة infinite scroll بدلا من تحميل كل البيانات مرة واحدة.</div></div>
+</div>
+
+<!-- PAGE 8: Copilot -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">8. مساعد الذكاء الاصطناعي (/copilot)</div>
+        <div class="card-badge badge-red">حرجة - 2141 سطر</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">2,141</div></div>
+        <div class="info-item"><div class="info-label">الوكلاء</div><div class="info-value">5 وكلاء AI</div></div>
+        <div class="info-item"><div class="info-label">الميزات</div><div class="info-value">Chat, Consensus, Streaming</div></div>
+        <div class="info-item"><div class="info-label">Lazy Loaded</div><div class="info-value">نعم</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">واجهة المحادثة الذكية مع 5 وكلاء: محلل السوق، مدير المخاطر، محلل الاخبار، بناء الاستراتيجيات، والتلقائي. يدعم: قائمة المحادثات الجانبية (انشاء/حذف/اعادة تسمية)، رسائل المستخدم والمساعد والاجماع، استجابة متدفقة (streaming)، وضع الاجماع (consensus)، ودعم i18n. اكثر المكونات تعقيدا من حيث ادارة الحالة.</div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>2141 سطر في ملف واحد - يحتاج تقسيم الى 6 مكونات على الاقل</div></div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>يحتوي على تعليق "use client" غير صالح لان التطبيق يستخدم TanStack Router وليس Next.js</div></div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>دالة alpha() للالوان hex مكررة بدلا من استخدام مكتبة الوان</div></div>
+    <div class="rec-box"><div class="rec-title">توصيات التحسين</div><div class="rec-text">تقسيم الى: ConversationList, ChatMessages, AgentSelector, ConsensusMode, StreamingResponse, CopilotInput. استخدام مكتبةzustand لادارة الحالة المعقدة.</div></div>
+</div>
+
+<!-- PAGE 9: Signals -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">9. صفحة الاشارات (/signals)</div>
+        <div class="card-badge badge-green">وظيفية</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">610</div></div>
+        <div class="info-item"><div class="info-label">التبويبات</div><div class="info-value">All, BUY, SELL, WAIT</div></div>
+        <div class="info-item"><div class="info-label">الميزات</div><div class="info-value">Track, Share X/TG</div></div>
+        <div class="info-item"><div class="info-label">المراقبة</div><div class="info-value">useSignalMonitor</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">تعرض الاشارات اليومية مع: تبويبات للتصفية (All/BUY/SELL/WAIT)، شريط احصائيات، بطاقات الاشارة مع الاتجاه والثقة ونقاط الدخول/الوقف/الاستهداف، تتبع الاشارة (Track)، مشاركة على X و Telegram، ومراقبة تلقائية لتحقيق الاستهداف. تاثير صوتي عند ظهور اشارة جديدة. من الصفحات الجيدة وظيفيا.</div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>بطاقة الاشارة بتصميم جيد لكنها تحتاج الى تحويل الى مكون مشترك لاستخدامه في صفحات اخرى</div></div>
+    <div class="issue-item"><div class="issue-dot dot-blue"></div><div>نظام التتبع لا يعرض حالة الاشارة المتتبعة (تم تحقيق الاستهداف؟)</div></div>
+</div>
+
+<!-- PAGE 10: Charts -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">10. الرسوم البيانية (/charts)</div>
+        <div class="card-badge badge-green">تعمل</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">238</div></div>
+        <div class="info-item"><div class="info-label">الكريبتو</div><div class="info-value">CandlestickChart (native)</div></div>
+        <div class="info-item"><div class="info-label">الفوركس</div><div class="info-value">TradingView embed</div></div>
+        <div class="info-item"><div class="info-label">الازواج</div><div class="info-value">3 Crypto + 8 Forex</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">تعرض مخططات حية: الكريبتو يستخدم CandlestickChart الاصلي مع lightweight-charts، والفوركس يستخدم تضمين TradingView. تدعم 3 ازواج كريبتو (BTC, ETH, SOL) و 8 ازواج فوركس. محدد الازواج يعمل كشريط تبويب افقي.</div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>لا يوجد محدد للزمن (timeframe) ظاهر - المستخدم لا يعرف كيف يغير الاطار الزمني</div></div>
+    <div class="issue-item"><div class="issue-dot dot-blue"></div><div>شريط الازواج يعتمد كليا على inline styles بدلا من مكون شريط تبويب موحد</div></div>
+</div>
+
+<!-- PAGE 11: Vision -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">11. صفحة الرؤية AI (/vision)</div>
+        <div class="card-badge badge-blue">بسيطة</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">206</div></div>
+        <div class="info-item"><div class="info-label">الوظيفة</div><div class="info-value">قائمة تحليلات سابقة</div></div>
+        <div class="info-item"><div class="info-label">العرض</div><div class="info-value">جدول بيانات</div></div>
+        <div class="info-item"><div class="info-label">الانواع</div><div class="info-value">any (ضعيف)</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">تعرض التحليلات السابقة في جدول بسيط: الزوج، الحالة، الاشارة، الثقة، النمط، الاتجاه، الاسباب، والتاريخ. تدعم حتى 20 تحليل. تستخدم PageLayout مع StatsRow و EmptyState.</div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>AnalysisRow يستخدم any type بدلا من نوع محدد - يفقد فوائد TypeScript</div></div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>راس الجدول مبنى بـ inline styles بدلا من TableHeader المكون من PageLayout</div></div>
+</div>
+
+<!-- PAGE 12: PnL Tracker -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">12. متتبع الارباح والخسائر (/pnl)</div>
+        <div class="card-badge badge-green">وظيفية</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">305</div></div>
+        <div class="info-item"><div class="info-label">الاحصائيات</div><div class="info-value">PnL, WinRate, ProfitFactor</div></div>
+        <div class="info-item"><div class="info-label">الاعمدة</div><div class="info-value">8 اعمدة ثابتة</div></div>
+        <div class="info-item"><div class="info-label">الانواع</div><div class="info-value">Supabase Tables</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">يعرض تاريخ الصفقات المغلقة مع: اجمالي PnL، نسبة الفوز، معامل الربح (Profit Factor)، افضل صفقة. الجدول يحتوي على 8 اعمدة: الزوج، الاتجاه، الدخول، الخروج، الكمية، PnL، R-Multiple، المدة. يستخدم انواع Supabase Tables الصارمة مما يجعله من الصفحات الاقل مشاكل من حيث TypeScript.</div>
+    <div class="issue-item"><div class="issue-dot dot-blue"></div><div>الجدول لا يدعم الفرز او البحث - مع زيادة الصفقات سيصبح من الصعب التنقل</div></div>
+    <div class="issue-item"><div class="issue-dot dot-blue"></div><div>لا يوجد رسم بياني لمنحنى PnL عبر الزمن</div></div>
+</div>
+
+<!-- PAGE 13: Portfolio -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">13. المحفظة (/portfolio)</div>
+        <div class="card-badge badge-green">وظيفية</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">334</div></div>
+        <div class="info-item"><div class="info-label">التبويبات</div><div class="info-value">Holdings, History</div></div>
+        <div class="info-item"><div class="info-label">Allocation</div><div class="info-value">شريط الوان</div></div>
+        <div class="info-item"><div class="info-label">البيانات</div><div class="info-value">Server Function</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">تعرض المحفظة مع: شريط احصائيات (القيمة، PnL، عدد المقتنيات)، شريط التوزيع بالالوان، تبويب Holdings مع صفوف ثنائية السطر تعرض الرمز والسلسلة والقيمة والكمية وسعر الدخول والنسبة، وتبويب History يوجه الى صفحة PnL.</div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>تبويب History فارغ دائما - يحتاج اما عرض بيانات حقيقية او ازالته</div></div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>الصفوف تستخدم any type بدلا من Holding type محدد</div></div>
+</div>
+
+<!-- PAGE 14: Swap -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">14. صفحة التبديل (/swap)</div>
+        <div class="card-badge badge-red">وهمية 100%</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">1,426</div></div>
+        <div class="info-item"><div class="info-label">البيانات</div><div class="info-value">100% hardcoded mock</div></div>
+        <div class="info-item"><div class="info-label">DEX Integration</div><div class="info-value">لا يوجد</div></div>
+        <div class="info-item"><div class="info-label">الحالة</div><div class="info-value">Stub / Placeholder</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">صفحة التبديل تبدو وظيفية بالكامل لكنها تعتمد بالكامل على بيانات وهمية: اسعار ثابتة (PRICES)، قوائم توكنات ثابتة (TOKENS)، ارصدة وهمية (MOCK_BALANCES)، ومعاملات وهمية (MOCK_TRANSACTIONS). لا يوجد اي تكامل مع DEX حقيقي مثل Jupiter او Raydium. الملف كبير جدا (1426 سطر) لصفحة لا تعمل فعليا.</div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>100% بيانات وهمية - المستخدم يظن انه يتبديل توكنات حقيقية</div></div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>1426 سطر لصفحة وهمية - يجب اما بناء تكامل حقيقي او تبسيطها كصفحة قادمة</div></div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>تحتوي على "use client" غير صالح (تطبيق TanStack وليس Next.js)</div></div>
+    <div class="rec-box"><div class="rec-title">توصيات التحسين</div><div class="rec-text">اما: (1) تكامل حقيقي مع Jupiter/Raydium API، او (2) تحويلها الى صفحة "قادمة قريبا" بسيطة حتى يُبنى التكامل. لا يجب ابقاء واجهة كاذبة.</div></div>
+</div>
+
+<!-- PAGE 15: Daily Loop -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">15. حلقة التداول اليومية (/daily-loop)</div>
+        <div class="card-badge badge-orange">كبيرة</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">عدد الاسطر</div><div class="info-value">1,789</div></div>
+        <div class="info-item"><div class="info-label">المراحل</div><div class="info-value">Morning, Session, EOD</div></div>
+        <div class="info-item"><div class="info-label">Lazy Loaded</div><div class="info-value">نعم</div></div>
+        <div class="info-item"><div class="info-label">الميزات</div><div class="info-value">Checklist, Streaks, Notes</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:8px;">نظام حلقة التداول اليومية يوفر: ثلاث مراحل (التحضير الصباحي، تتبع الجلسة، مراجعة نهاية اليوم)، قوائم مراجعة قابلة للتوسيع، محدد الانحياز السوقي، متتبع الحالة العاطفية، عداد السلاسل (Streak)، وتاريخ الحلقات مع ترقيم الصفحات. من الميزات المتقدمة التي تحتاج لتقسيم.</div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>1789 سطر في ملف واحد يحتاج تقسيم فوري</div></div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>لون GREEN_DARK = "#059669" ثابت بدلا من استخدام CSS Variable</div></div>
+    <div class="issue-item"><div class="issue-dot dot-orange"></div><div>تحتوي على "use client" غير صالح</div></div>
+</div>
+
+<!-- Remaining Pages - Condensed -->
+<div class="chapter-header">
+    <div class="section-tag">الفصل الرابع</div>
+    <div class="section-title">الصفحات المتبقية (تحليل مختصر)</div>
+    <div class="divider"></div>
+</div>
+
+<div class="body-text">فيما يلي تحليل مختصر للصفحات المتبقية مرتب حسب الاهمية. كل صفحة تتضمن: الوصف، عدد الاسطر، الحالة، والمشكلة الاكبر.</div>
+
+<!-- Radar -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">16. الرادار (/radar)</div>
+        <div class="card-badge badge-red">1142 سطر</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">الوظيفة</div><div class="info-value">لوحة استخبارات السوق</div></div>
+        <div class="info-item"><div class="info-label">المشكلة</div><div class="info-value">رادار محاكى يستهلك CPU</div></div>
+        <div class="info-item"><div class="info-label">Inline Styles</div><div class="info-value">ضخمة</div></div>
+        <div class="info-item"><div class="info-label">التحويلات</div><div class="info-value">CSS in JS</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:4px;">لوحة استخبارات مباشرة مستوحاة من الرادار العسكري. تحتوي على: محاكاة رادار متحركة (Canvas/JS)، شريط اسعار BTC/SOL/ETH، اكبر المتحركين، اشارات السوق مع شريط الثقة، وتبويبات (Tokens, Signals, Alerts). حجمها الكبير (1142 سطر) والمحاكاة الثقيلة تجعلها مرشحة اولى للتحسين.</div>
+</div>
+
+<!-- Experiments -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">17. المختبر (/experiments)</div>
+        <div class="card-badge badge-red">1135 سطر</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">الوظيفة</div><div class="info-value">تجارب A/B للتداول</div></div>
+        <div class="info-item"><div class="info-label">المشكلة</div><div class="info-value">ملف ضخم بمكون واحد</div></div>
+        <div class="info-item"><div class="info-label">الميزات</div><div class="info-value">انشاء، تشغيل، نتائج</div></div>
+        <div class="info-item"><div class="info-label">الرسوم</div><div class="info-value">منحنى رأس المال</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:4px;">محرك تجارب A/B يتيح: انشاء تجربة (الاسم، الاستراتيجية، الزوج، المدة)، تشغيل التجربة، عرض النتائج مع منحنى رأس المال. ميزة متقدمة لكنها تحتاج تقسيم مثل كل الملفات الكبيرة.</div>
+</div>
+
+<!-- Backtest -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">18. الاختبار العكسي (/backtest)</div>
+        <div class="card-badge badge-orange">952 سطر</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">الوظيفة</div><div class="info-value">اختبار استراتيجيات</div></div>
+        <div class="info-item"><div class="info-label">المدخلات</div><div class="info-value">استراتيجية، زوج، رأس مال</div></div>
+        <div class="info-item"><div class="info-label">المخرجات</div><div class="info-value">Return, WinRate, Sharpe</div></div>
+        <div class="info-item"><div class="info-label">Inline Styles</div><div class="info-value">كثيرة</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:4px;">محرك اختبار عكسي يتيح: تكوين الاستراتيجية والزوج والاطار الزمني ورأس المال الاولي وSL/TP، تشغيل الاختبار، عرض النتائج (اجمالي العائد، نسبة الفوز، اقصى تراجع، Sharpe، PnL) وقائمة الصفقات. ميزة قوية تحتاج تنظيم.</div>
+</div>
+
+<!-- Rewards -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">19. المكافات (/rewards)</div>
+        <div class="card-badge badge-orange">804 سطر</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">الوظيفة</div><div class="info-value">نقاط، مستويات، استرداد</div></div>
+        <div class="info-item"><div class="info-label">المستويات</div><div class="info-value">Bronze الى Platinum</div></div>
+        <div class="info-item"><div class="info-label">Check-in</div><div class="info-value">تقويم 7 ايام</div></div>
+        <div class="info-item"><div class="info-label">المشكلة</div><div class="info-value">ملف كبير ومتكرر</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:4px;">نظام مكافات مع: شريط تقدم المستوى (Bronze الى Platinum)، تقويم تسجيل دخول يومي (7 ايام)، شبكة استرداد المكافات مع ايقونات، قسم الاحالة، واحصائيات. صفحة غنية بالوظائف لكنها تحتاج تقسيم وتقليل inline styles.</div>
+</div>
+
+<!-- Brokers -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">20. الوسطاء (/brokers)</div>
+        <div class="card-badge badge-orange">819 سطر</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">الوظيفة</div><div class="info-value">سوق ربط الوسطاء</div></div>
+        <div class="info-item"><div class="info-label">الوسطاء</div><div class="info-value">8 وسطاء hardcoded</div></div>
+        <div class="info-item"><div class="info-label">المشكلة</div><div class="info-value">inline styles ضخمة</div></div>
+        <div class="info-item"><div class="info-label">الروابط</div><div class="info-value">affiliate URLs</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:4px;">سوق ربط وسطاء الفوركس/CFD مع: شبكة بطاقات الوسطاء (الشعار، التقييم بالنجوم، ربط/فصل، فتح حساب)، نافذة منبثقة، وشريط الوسطاء المتصلين. الروابط affiliation hardcoded والتقييمات بصيغة SVG طويلة.</div>
+</div>
+
+<!-- Settings -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">21. الاعدادات (/settings)</div>
+        <div class="card-badge badge-orange">46KB</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">الوظيفة</div><div class="info-value">اعدادات التطبيق</div></div>
+        <div class="info-item"><div class="info-label">الاقسام</div><div class="info-value">عام، صوت، تبادلات، امان</div></div>
+        <div class="info-item"><div class="info-label">التبادلات</div><div class="info-value">Binance, Bybit, OKX</div></div>
+        <div class="info-item"><div class="info-label">الحجم</div><div class="info-value">كبير جدا</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:4px;">صفحة الاعدادات الشاملة: اعدادات عامة (Sound, Dark Mode, Compact)، اعدادات الصوت، ربط بورصات (Binance, Bybit, OKX) مع فحص الاتصال، اعدادات الامان (2FA، تأكيدات التداول)، وادارة مفاتيح API. ملف ضخم يحتاج تقسيم حسب القسم.</div>
+</div>
+
+<!-- Profile -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">22. الملف الشخصي (/profile)</div>
+        <div class="card-badge badge-green">740 سطر</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">الوظيفة</div><div class="info-value">الملف والانجازات</div></div>
+        <div class="info-item"><div class="info-label">الانجازات</div><div class="info-value">8 شارات ديناميكية</div></div>
+        <div class="info-item"><div class="info-label">الحسابات</div><div class="info-value">TG, Twitter, Discord</div></div>
+        <div class="info-item"><div class="info-label">البيانات</div><div class="info-value">6 استعلامات متوازية</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:4px;">الملف الشخصي يعرض: صورة من Telegram، الاسم والتاريخ والنقاط، احصائيات التداول، المحفظة مع شريط التوزيع، 8 شارات انجاز ديناميكية (محسوبة من بيانات المستخدم الحقيقية)، الحسابات المتصلة، وروابط الاعدادات. صفحة غنية بالبيانات مع 6 استعلامات متوازية.</div>
+</div>
+
+<!-- AppShell -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">23. الهيكل الخارجي (AppShell)</div>
+        <div class="card-badge badge-red">1704 سطر - حرج</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">الوظيفة</div><div class="info-value">الشريط الجانبي + البار السفلي</div></div>
+        <div class="info-item"><div class="info-label">الروابط</div><div class="info-value">37+ عنصر تنقل</div></div>
+        <div class="info-item"><div class="info-label">السعر الحي</div><div class="info-value">SOL via BinanceWS</div></div>
+        <div class="info-item"><div class="info-label">Telegram</div><div class="info-value">مدمج</div></div>
+    </div>
+    <div class="body-text" style="margin-bottom:4px;">العمود الفقري للتطبيق: شريط جانبي قابل للطي مع 37+ عنصر تنقل مع ايقونات وشارات، شريط تبويب سفلي للموبايل (5 عناصر)، راس الصفحة مع سعر SOL المباشر، زر ربط المحفظة، عداد الاشعارات غير المقروءة، ومؤشر الاتصال. يدعم التبديل بين الوضع الجانبي والسفلي. ملف حرج لانه يحيط بكل الصفحات.</div>
+    <div class="issue-item"><div class="issue-dot dot-red"></div><div>1704 سطر - يجب تقسيمه الى: Sidebar, BottomNav, Header, WalletButton, NotificationBadge</div></div>
+</div>
+
+<!-- Remaining Short Pages -->
+<div class="sub-title">الصفحات المتبقية (مختصرة)</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">24-37. الصفحات المتبقية</div>
+        <div class="card-badge badge-blue">متنوعة</div>
+    </div>
+    <table class="priority-table">
+        <tr><th>الصفحة</th><th>المسار</th><th>الاسطر</th><th>الحالة</th><th>المشكلة الرئيسية</th></tr>
+        <tr><td>Whale</td><td>/whale</td><td>169</td><td class="priority-med">جيدة</td><td>any types</td></tr>
+        <tr><td>Wallet Web3</td><td>/wallet-web3</td><td>289</td><td class="priority-orange">جزئية</td><td>تبويب Transactions فارغ دائما</td></tr>
+        <tr><td>Trackers</td><td>/trackers</td><td>322</td><td class="priority-med">جيدة</td><td>inline styles ثقيلة</td></tr>
+        <tr><td>Referral</td><td>/referral</td><td>323</td><td class="priority-med">جيدة</td><td>رابط hardcoded لـ vercel</td></tr>
+        <tr><td>Pulse</td><td>/pulse</td><td>224</td><td class="priority-med">جيدة</td><td>type casting غير صحيح</td></tr>
+        <tr><td>Premium</td><td>/premium</td><td>337</td><td class="priority-med">وظيفية</td><td>لا يوجد بوابة دفع حقيقية</td></tr>
+        <tr><td>Predictions</td><td>/predictions</td><td>207</td><td class="priority-med">جيدة</td><td>any types</td></tr>
+        <tr><td>Perpetuals</td><td>/perpetuals</td><td>246</td><td class="priority-med">جيدة</td><td>استيراد بعد Route export</td></tr>
+        <tr><td>Notifications</td><td>/notifications</td><td>252</td><td class="priority-med">جيدة</td><td>N+1 mutations للتحديد كمقروء</td></tr>
+        <tr><td>Journal</td><td>/journal</td><td>571</td><td class="priority-med">جيدة</td><td>استيراد غير مستخدم (getTradeHistory)</td></tr>
+        <tr><td>Yield</td><td>/yield</td><td>187</td><td class="priority-med">جيدة</td><td>any types</td></tr>
+        <tr><td>Curves</td><td>/curves</td><td>178</td><td class="priority-med">جيدة</td><td>any types</td></tr>
+        <tr><td>Communities</td><td>/communities</td><td>312</td><td class="priority-low">بسيطة</td><td>Empty state يوجه لـ /settings</td></tr>
+        <tr><td>Bags</td><td>/bags</td><td>235</td><td class="priority-med">جيدة</td><td>لون الصورة الرمزية ثابت اخضر</td></tr>
+        <tr><td>Arbitrage</td><td>/arbitrage</td><td>323</td><td class="priority-low">Mock</td><td>useState بدل React Query</td></tr>
+        <tr><td>Alpha</td><td>/alpha</td><td>432</td><td class="priority-med">جيدة</td><td>glassmorphism يتعارض مع التصميم</td></tr>
+        <tr><td>Activity Web3</td><td>/activity-web3</td><td>235</td><td class="priority-low">بسيطة</td><td>useState بدل React Query</td></tr>
+        <tr><td>Admin API Keys</td><td>/admin/api-keys</td><td>325</td><td class="priority-low">بسيطة</td><td>قراءة فقط بدون تعديل</td></tr>
+    </table>
+</div>
+
+<!-- ===== CH 5: PRIORITY MATRIX ===== -->
+<div class="chapter-header">
+    <div class="section-tag">الفصل الخامس</div>
+    <div class="section-title">مصفوفة الاولويات لاعادة التصميم</div>
+    <div class="divider"></div>
+</div>
+
+<div class="body-text">
+    بناء على التحليل الشامل، تم تصنيف الصفحات حسب اولوية اعادة التصميم. الاولوية تعتمد على: حجم الملف (تعقيد الصيانة)، عدد المستخدمين المتوقع، مدى سوء حالة التصميم الحالية، والاثر على تجربة المستخدم.
+</div>
+
+<table class="priority-table">
+    <tr><th>الاولوية</th><th>الصفحة</th><th>السبب</th><th>العمل المطلوب</th></tr>
+    <tr><td class="priority-high">حرجة</td><td>AppShell</td><td>1704 سطر - يحيط بكل الصفحات</td><td>تقسيم الى 5 مكونات + توحيد التصميم</td></tr>
+    <tr><td class="priority-high">حرجة</td><td>Analysis Detail</td><td>2991 سطر - اكبر ملف</td><td>تقسيم الى 8-10 مكونات</td></tr>
+    <tr><td class="priority-high">حرجة</td><td>Token Detail</td><td>2814 سطر + WebSocket</td><td>تقسيم + فصل WebSocket hook</td></tr>
+    <tr><td class="priority-high">حرجة</td><td>Copilot</td><td>2141 سطر + حالة معقدة</td><td>تقسيم + Zustand لادارة الحالة</td></tr>
+    <tr><td class="priority-high">حرجة</td><td>Swap</td><td>1426 سطر بيانات وهمية</td><td>تكامل حقيقي او تبسيط</td></tr>
+    <tr><td class="priority-high">حرجة</td><td>Daily Loop</td><td>1789 سطر + "use client" زائد</td><td>تقسيم + توحيد الالوان</td></tr>
+    <tr><td class="priority-high">حرجة</td><td>Radar</td><td>1142 سطر + CPU heavy</td><td>تحسين الرادار + تقسيم</td></tr>
+    <tr><td class="priority-high">حرجة</td><td>Experiments</td><td>1135 سطر</td><td>تقسيم الى مكونات</td></tr>
+    <tr><td class="priority-med">عالية</td><td>Trade Desk</td><td>1360 سطر</td><td>تقسيم + مكونات موحدة</td></tr>
+    <tr><td class="priority-med">عالية</td><td>Backtest</td><td>952 سطر</td><td>تقسيم + توحيد الانماط</td></tr>
+    <tr><td class="priority-med">عالية</td><td>Rewards</td><td>804 سطر</td><td>تقسيم + تقليل inline styles</td></tr>
+    <tr><td class="priority-med">عالية</td><td>Brokers</td><td>819 سطر</td><td>تقسيم + تقليل SVG verbosity</td></tr>
+    <tr><td class="priority-low">متوسطة</td><td>Settings, Profile, Discover, Analyze</td><td>400-700 سطر</td><td>تحسين تدريجي</td></tr>
+    <tr><td class="priority-low">متوسطة</td><td>Signals, PnL, Portfolio, Charts</td><td>200-600 سطر</td><td>تحسين الانماط والانواع</td></tr>
+    <tr><td class="priority-low">منخفضة</td><td>Auth, Home, Whale, Yield, Curves</td><td>جيدة نسبيا</td><td>تحسينات طفيفة</td></tr>
+</table>
+
+<!-- ===== CH 6: CROSS-CUTTING ISSUES ===== -->
+<div class="chapter-header">
+    <div class="section-tag">الفصل السادس</div>
+    <div class="section-title">المشاكل المشتركة بين كل الصفحات</div>
+    <div class="divider"></div>
+</div>
+
+<div class="sub-title">1. وباء Inline Styles</div>
+<div class="body-text">95% من التنسيق يتم عبر inline styles. هذا يعني ان اي تعديل تصميمي يتطلب تعديل كل ملف على حدة. الحل هو بناء نظام مكونات موحد باستخدام Tailwind CSS classes مع CSS Variables. نمط `${"var(--color-border)"}` يجب ان يستبدل بـ className مباشر.</div>
+
+<div class="sub-title">2. ملفات ضخمة تحتاج تقسيم</div>
+<div class="body-text">10 ملفات تتجاوز 800 سطر و4 ملفات تتجاوز 2000 سطر. هذا يجعل الصيانة والتطوير بطيئين جدا ويمنع المراجعة الفعالة. كل ملف يجب ان لا يتجاوز 300-400 سطر كحد اقصى.</div>
+
+<div class="sub-title">3. غياب انواع TypeScript</div>
+<div class="body-text">معظم الصفحات تستخدم any type للبيانات المستلمة من السيرفر. هذا يلغي فوائد TypeScript في اكتشاف الاخطاء مبكرا. يجب تعريف واجهات صارمة لكل نوع بيانات وربطها بالـ Supabase types.</div>
+
+<div class="sub-title">4. عدم تناسق جلب البيانات</div>
+<div class="body-text">معظم الصفحات تستخدم useStableServerFn + useQuery (النمط الصحيح)، لكن 3 صفحات (activity-web3, admin/api-keys, arbitrage) تستخدم useState + useEffect مباشرة. هذا يسبب عدم تناسق في ادارة الحالة والتحميل والاخطاء.</div>
+
+<div class="sub-title">5. توجيهات Next.js زائدة</div>
+<div class="body-text">ملفين يحتويان على "use client" وهو توجيه Next.js غير صالح لان التطبيق يستخدم TanStack Router. هذه التوجيهات يجب ازالتها فورا لانها قد تسبب ارتباكا.</div>
+
+<div class="sub-title">6. غياب نظام مكونات موحد</div>
+<div class="body-text">رغم وجود PageLayout الذي يوفر 15 مكون فرعي، فان معظم الصفحات تعيد بناء الازرار والبطاقات والنماذج من الصفر. الحل هو بناء مكتبة مكونات VIXOR موحدة (Button, Card, Input, Select, Modal, Badge) تستخدم Tailwind classes وتتبع نظام التصميم بدقة.</div>
+
+</div>
+
+<!-- ====== ENDING ====== -->
+<div class="ending">
+    <div class="ending-title">VIXOR</div>
+    <div class="ending-sub">
+        هذا التقرير يغطي تحليلا شاملا لكل صفحة في تطبيق VIXOR.
+        يُوصى بالبدء باعادة هيكلة الملفات الحرجة (التي تتجاوز 1000 سطر)
+        ثم بناء نظام مكونات موحد قبل البدء في اعادة التصميم البصري.
+    </div>
+</div>
+
+</body>
+</html>
