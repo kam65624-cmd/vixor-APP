@@ -51,20 +51,20 @@ const decisionConfig: Record<
 > = {
   allow: {
     label: "Allow",
-    bg: "bg-emerald-500/10",
+    bg: "bg-bullish/10",
     border: "border-bullish/30",
     text: "text-bullish",
     panelBorder: "border-emerald-500/40",
-    progressColor: "[&>div]:bg-emerald-500",
+    progressColor: "[&>div]:bg-bullish",
     icon: ShieldCheck,
   },
   warn: {
     label: "Warning",
-    bg: "bg-amber-500/10",
+    bg: "bg-[var(--gold)]/10",
     border: "border-neutral-wait/30",
     text: "text-neutral-wait",
     panelBorder: "border-amber-500/40",
-    progressColor: "[&>div]:bg-amber-500",
+    progressColor: "[&>div]:bg-[var(--gold)]",
     icon: AlertTriangle,
   },
   block: {

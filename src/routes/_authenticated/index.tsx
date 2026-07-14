@@ -509,9 +509,7 @@ function HomePage() {
                 <div className="flex items-center gap-2.5">
                   <div
                     className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold ${
-                      a.type === "buy"
-                        ? "bg-emerald-400/10 text-bullish"
-                        : "bg-red-400/10 text-bearish"
+                      a.type === "buy" ? "bg-bullish/10 text-bullish" : "bg-bearish/10 text-bearish"
                     }`}
                   >
                     {a.type === "buy" ? "↑" : "↓"}

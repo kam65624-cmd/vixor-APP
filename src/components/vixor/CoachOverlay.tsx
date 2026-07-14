@@ -44,7 +44,7 @@ const sentimentConfig: Record<
 > = {
   bullish: {
     label: "Bullish",
-    bg: "bg-emerald-500/10",
+    bg: "bg-bullish/10",
     border: "border-bullish/30",
     text: "text-bullish",
     icon: TrendingUp,
@@ -68,13 +68,13 @@ const sentimentConfig: Record<
 const riskConfig: Record<RiskLevel, { label: string; bg: string; border: string; text: string }> = {
   low: {
     label: "Low Risk",
-    bg: "bg-emerald-500/10",
+    bg: "bg-bullish/10",
     border: "border-bullish/30",
     text: "text-bullish",
   },
   medium: {
     label: "Medium Risk",
-    bg: "bg-amber-500/10",
+    bg: "bg-[var(--gold)]/10",
     border: "border-neutral-wait/30",
     text: "text-neutral-wait",
   },
@@ -285,7 +285,7 @@ export function CoachOverlay({
       </div>
 
       {/* ── Confidence Bar ── */}
-      <Progress value={response.confidence * 100} className="h-1.5 mb-4 [&>div]:bg-emerald-500" />
+      <Progress value={response.confidence * 100} className="h-1.5 mb-4 [&>div]:bg-bullish" />
 
       {/* ── Comment ── */}
       <div className="mb-4">
