@@ -55,7 +55,7 @@ const TickerItem = memo(function TickerItem({
       <span className="text-xs font-bold text-foreground/80">{symbol}</span>
       <span className="text-xs font-mono font-semibold text-foreground">{fmtPrice(price)}</span>
       <span
-        className={`text-[11px] font-bold font-mono flex items-center gap-0.5 ${isUp ? "text-emerald-400" : "text-red-400"}`}
+        className={`text-[11px] font-bold font-mono flex items-center gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}
       >
         {isUp ? "+" : ""}
         {change24h.toFixed(2)}%
@@ -207,7 +207,12 @@ function FearGreedGauge({ fearGreed }: { fearGreed: HomeMarketData["fearGreedInd
   if (!fearGreed) return null;
   const { value, label, change } = fearGreed;
   const angle = (value / 100) * 180 - 90; // -90° to 90°
-  const color = value >= 60 ? "#10b981" : value >= 40 ? "#f59e0b" : "#ef4444";
+  const color =
+    value >= 60
+      ? "var(--color-bullish)"
+      : value >= 40
+        ? "var(--color-neutral-wait)"
+        : "var(--color-bearish)";
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -258,7 +263,7 @@ function FearGreedGauge({ fearGreed }: { fearGreed: HomeMarketData["fearGreedInd
         </div>
         {change !== 0 && (
           <div
-            className={`text-[10px] font-mono mt-0.5 ${change > 0 ? "text-emerald-400" : "text-red-400"}`}
+            className={`text-[10px] font-mono mt-0.5 ${change > 0 ? "text-bullish" : "text-bearish"}`}
           >
             {change > 0 ? "+" : ""}
             {change} vs yesterday
@@ -314,7 +319,7 @@ function HomePage() {
           <div className="text-lg font-extrabold text-white tracking-tight">
             {displayName}
             {isPremium && (
-              <span className="ml-2 text-[10px] font-bold bg-amber-400/10 text-amber-400 border border-amber-400/20 px-2 py-0.5 rounded-full align-middle">
+              <span className="ml-2 text-[10px] font-bold bg-gold/10 text-gold border border-gold/20 px-2 py-0.5 rounded-full align-middle">
                 PRO
               </span>
             )}
@@ -358,14 +363,14 @@ function HomePage() {
                   ? `+$${data.totalPnl.toFixed(0)}`
                   : `-$${Math.abs(data.totalPnl).toFixed(0)}`
               }
-              color={data.totalPnl >= 0 ? "text-emerald-400" : "text-red-400"}
+              color={data.totalPnl >= 0 ? "text-bullish" : "text-bearish"}
             />
             <StatCard
               label="Win Rate"
               value={`${data.winRate}%`}
-              color={data.winRate >= 50 ? "text-emerald-400" : "text-red-400"}
+              color={data.winRate >= 50 ? "text-bullish" : "text-bearish"}
             />
-            <StatCard label="Trades" value={String(data.tradeCount)} color="text-sky-400" />
+            <StatCard label="Trades" value={String(data.tradeCount)} color="text-primary" />
           </div>
         </div>
       )}
@@ -376,15 +381,16 @@ function HomePage() {
           onClick={() => navigate({ to: "/analyze" as any })}
           className="vx-card vx-card-interactive vx-card-hover group relative w-full p-5 text-left"
           style={{
-            background: "linear-gradient(135deg, #10b98120, #059669, #047857)",
-            border: "1px solid rgba(16,185,129,0.25)",
+            background:
+              "linear-gradient(135deg, rgba(34,211,166,0.12), var(--color-bullish), #1a8f7f)",
+            border: "1px solid rgba(34,211,166,0.25)",
           }}
         >
           <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/5 group-hover:scale-110 transition-transform duration-500" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <Scan size={18} className="text-emerald-300" />
-              <span className="text-xs font-bold text-emerald-300 uppercase tracking-widest">
+              <Scan size={18} className="text-bullish" />
+              <span className="text-xs font-bold text-bullish uppercase tracking-widest">
                 AI Vision Analysis
               </span>
             </div>
@@ -393,7 +399,7 @@ function HomePage() {
               <br />
               Get AI-powered SMC/ICT analysis.
             </div>
-            <div className="mt-3 flex items-center gap-2 text-emerald-300 text-xs font-bold">
+            <div className="mt-3 flex items-center gap-2 text-bullish text-xs font-bold">
               Start analyzing <ChevronRight size={13} />
             </div>
           </div>
@@ -407,7 +413,7 @@ function HomePage() {
           title="Live Charts"
           desc="TradingView charts for any pair"
           to="/charts"
-          accent="#3b82f6"
+          accent="var(--color-primary)"
         />
         <FeatureCard
           icon={Eye}
@@ -415,21 +421,21 @@ function HomePage() {
           desc="Find trending tokens & signals"
           badge="LIVE"
           to="/discover"
-          accent="#a855f7"
+          accent="var(--color-primary)"
         />
         <FeatureCard
           icon={Bot}
           title="AI Copilot"
           desc="Ask anything about markets"
           to="/copilot"
-          accent="#f59e0b"
+          accent="var(--gold)"
         />
         <FeatureCard
           icon={TrendingUp}
           title="PnL Tracker"
           desc="Track your trade performance"
           to="/pnl"
-          accent="#10b981"
+          accent="var(--color-bullish)"
         />
       </div>
 
@@ -438,7 +444,7 @@ function HomePage() {
         <div className="mx-4 mt-4">
           <div className="vx-section-header mb-3">
             <div className="flex items-center gap-2">
-              <Zap size={14} className="text-amber-400" />
+              <Zap size={14} className="text-[var(--gold)]" />
               <span className="vx-section-title">Active Signals</span>
             </div>
             <button
@@ -462,7 +468,7 @@ function HomePage() {
       {marketData?.fearGreedIndex && (
         <div className="mx-4 mt-4">
           <div className="flex items-center gap-2 mb-3">
-            <AlertCircle size={14} className="text-sky-400" />
+            <AlertCircle size={14} className="text-primary" />
             <span className="text-xs font-bold uppercase tracking-widest text-foreground/60">
               Market Sentiment
             </span>
@@ -474,11 +480,11 @@ function HomePage() {
                 Updated daily · measures market emotion
               </div>
               {marketData.fearGreedIndex.value >= 60 ? (
-                <div className="mt-2 text-[11px] text-emerald-400 font-semibold">
+                <div className="mt-2 text-[11px] text-bullish font-semibold">
                   Greed is high — consider taking profits
                 </div>
               ) : marketData.fearGreedIndex.value <= 30 ? (
-                <div className="mt-2 text-[11px] text-red-400 font-semibold">
+                <div className="mt-2 text-[11px] text-bearish font-semibold">
                   Extreme fear — potential buying opportunity
                 </div>
               ) : null}
@@ -492,7 +498,7 @@ function HomePage() {
       {data?.recentActivity && data.recentActivity.length > 0 && (
         <div className="mx-4 mt-4">
           <div className="flex items-center gap-2 mb-3">
-            <BarChart2 size={14} className="text-purple-400" />
+            <BarChart2 size={14} className="text-primary" />
             <span className="text-xs font-bold uppercase tracking-widest text-foreground/60">
               Recent Activity
             </span>
@@ -504,8 +510,8 @@ function HomePage() {
                   <div
                     className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold ${
                       a.type === "buy"
-                        ? "bg-emerald-400/10 text-emerald-400"
-                        : "bg-red-400/10 text-red-400"
+                        ? "bg-emerald-400/10 text-bullish"
+                        : "bg-red-400/10 text-bearish"
                     }`}
                   >
                     {a.type === "buy" ? "↑" : "↓"}
@@ -517,7 +523,7 @@ function HomePage() {
                 <div className="text-right shrink-0">
                   {a.pnl && (
                     <div
-                      className={`text-xs font-bold font-mono ${a.pnl.startsWith("+") ? "text-emerald-400" : "text-red-400"}`}
+                      className={`text-xs font-bold font-mono ${a.pnl.startsWith("+") ? "text-bullish" : "text-bearish"}`}
                     >
                       {a.pnl}
                     </div>
