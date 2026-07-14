@@ -282,14 +282,13 @@ const SignalRow = memo(function SignalRow({
       style={{
         margin: "0 16px 10px",
         padding: "16px",
-        background: "rgba(255,255,255,0.04)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        border: `1px solid ${color}22`,
+        background: "var(--color-card)",
+        border: "1px solid var(--color-border)",
         borderLeft: `3px solid ${color}`,
-        borderRadius: "14px",
-        boxShadow: "0 4px 20px -8px rgba(0,0,0,0.5)",
-        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+        borderRadius: "16px",
+        boxShadow: "var(--shadow-card)",
+        transition: "all var(--transition-normal)",
+        cursor: "pointer",
       }}
     >
       {/* Header row */}
@@ -309,8 +308,8 @@ const SignalRow = memo(function SignalRow({
           <div
             style={{
               padding: "3px 10px",
-              borderRadius: "8px",
-              background: `${color}18`,
+              borderRadius: "6px",
+              background: `${color}12`,
               border: `1px solid ${color}40`,
               fontSize: "11px",
               fontWeight: 800,
@@ -373,7 +372,7 @@ const SignalRow = memo(function SignalRow({
               fontWeight: 800,
               color,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              textShadow: confidenceGlow,
+              textShadow: `0 0 20px color-mix(in srgb, ${color} 40%, transparent)`,
               lineHeight: 1,
             }}
           >
@@ -404,8 +403,8 @@ const SignalRow = memo(function SignalRow({
           <div
             style={{
               padding: "8px",
-              borderRadius: "8px",
-              background: "rgba(255,255,255,0.03)",
+              borderRadius: "10px",
+              background: "rgba(255,255,255,0.04)",
               textAlign: "center",
             }}
           >
@@ -435,8 +434,8 @@ const SignalRow = memo(function SignalRow({
           <div
             style={{
               padding: "8px",
-              borderRadius: "8px",
-              background: "rgba(246,70,93,0.06)",
+              borderRadius: "10px",
+              background: "var(--bearish-bg)",
               textAlign: "center",
             }}
           >
@@ -466,8 +465,8 @@ const SignalRow = memo(function SignalRow({
           <div
             style={{
               padding: "8px",
-              borderRadius: "8px",
-              background: "rgba(14,203,129,0.06)",
+              borderRadius: "10px",
+              background: "var(--bullish-bg)",
               textAlign: "center",
             }}
           >
@@ -504,7 +503,7 @@ const SignalRow = memo(function SignalRow({
             style={{
               flex: 1,
               height: "34px",
-              borderRadius: "9px",
+              borderRadius: "10px",
               border: "none",
               background: `linear-gradient(135deg, ${color}, ${color}99)`,
               color: "var(--color-foreground)",
@@ -531,7 +530,7 @@ const SignalRow = memo(function SignalRow({
             style={{
               height: "34px",
               padding: "0 12px",
-              borderRadius: "9px",
+              borderRadius: "10px",
               border: `1px solid ${isTracked ? "var(--color-bullish)" : "rgba(255,255,255,0.10)"}`,
               background: isTracked ? "rgba(14,203,129,0.12)" : "rgba(255,255,255,0.04)",
               color: isTracked ? "var(--color-bullish)" : "var(--color-muted-foreground)",
@@ -553,7 +552,7 @@ const SignalRow = memo(function SignalRow({
             style={{
               width: "34px",
               height: "34px",
-              borderRadius: "9px",
+              borderRadius: "10px",
               border: "1px solid rgba(255,255,255,0.08)",
               background: "rgba(255,255,255,0.04)",
               color: "var(--color-muted-foreground)",
@@ -575,7 +574,7 @@ const SignalRow = memo(function SignalRow({
             style={{
               width: "34px",
               height: "34px",
-              borderRadius: "9px",
+              borderRadius: "10px",
               border: "1px solid rgba(255,255,255,0.08)",
               background: "rgba(255,255,255,0.04)",
               color: "var(--color-muted-foreground)",

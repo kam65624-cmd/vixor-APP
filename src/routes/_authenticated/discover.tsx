@@ -1329,7 +1329,7 @@ function DiscoverPage() {
                 border: isActive ? "1px solid var(--color-primary)" : "1px solid transparent",
                 cursor: "pointer",
                 background: isActive ? "var(--color-primary)" : "transparent",
-                color: isActive ? "#000" : "var(--color-muted-foreground)",
+                color: isActive ? "var(--color-primary-foreground)" : "var(--color-muted-foreground)",
                 transition: "all 0.15s ease",
                 whiteSpace: "nowrap",
                 display: "flex",
@@ -1345,8 +1345,8 @@ function DiscoverPage() {
                   fontWeight: 700,
                   padding: "0 5px",
                   borderRadius: "8px",
-                  background: isActive ? "rgba(0,0,0,0.18)" : "rgba(163,163,163,0.12)",
-                  color: isActive ? "rgba(0,0,0,0.7)" : "var(--color-muted-foreground)",
+                  background: isActive ? "rgba(0,0,0,0.18)" : "var(--color-card)",
+                  color: isActive ? "var(--color-primary-foreground)" : "var(--color-muted-foreground)",
                   fontFamily: "'JetBrains Mono', monospace",
                   lineHeight: "18px",
                 }}
@@ -1544,7 +1544,7 @@ function DiscoverPage() {
                 border: "none",
                 cursor: "pointer",
                 background: sortBy === opt.key ? "var(--color-primary)" : "var(--color-card)",
-                color: sortBy === opt.key ? "#000" : "var(--color-muted-foreground)",
+                color: sortBy === opt.key ? "var(--color-primary-foreground)" : "var(--color-muted-foreground)",
                 transition: "all 0.12s",
                 whiteSpace: "nowrap",
                 fontFamily: "'Inter', system-ui, sans-serif",
@@ -1774,15 +1774,15 @@ function DiscoverPage() {
                             minWidth: "100px",
                             backdropFilter: "blur(8px)",
                             transition: "all 0.15s ease",
-                            boxShadow: `0 2px 12px ${isUp ? "rgba(14,203,129,0.08)" : "rgba(246,70,93,0.08)"}`,
+                            boxShadow: "var(--shadow-card)",
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.transform = "translateY(-2px)";
-                            e.currentTarget.style.boxShadow = `0 6px 20px ${isUp ? "rgba(14,203,129,0.18)" : "rgba(246,70,93,0.18)"}`;
+                            e.currentTarget.style.boxShadow = "var(--shadow-elevated)";
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.transform = "translateY(0)";
-                            e.currentTarget.style.boxShadow = `0 2px 12px ${isUp ? "rgba(14,203,129,0.08)" : "rgba(246,70,93,0.08)"}`;
+                            e.currentTarget.style.boxShadow = "var(--shadow-card)";
                           }}
                         >
                           <div

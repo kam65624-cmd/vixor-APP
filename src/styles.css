@@ -278,6 +278,19 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
+  }
+  /* Smooth focus rings */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+  /* Premium selection color */
+  ::selection {
+    background: var(--color-primary);
+    color: white;
   }
 }
 
@@ -579,6 +592,425 @@
   }
   .rtl .text-left { text-align: right; }
   .rtl .text-right { text-align: left; }
+
+  /* ====== Premium Card System ====== */
+  .vx-card {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+  }
+  .vx-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .vx-card-hover:hover {
+    background: var(--color-card-hover);
+    border-color: var(--color-border-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-elevated);
+  }
+  .vx-card-interactive {
+    cursor: pointer;
+  }
+  .vx-card-interactive:active {
+    transform: scale(0.985) translateY(0);
+    transition-duration: 100ms;
+  }
+
+  /* Glassmorphism premium card */
+  .vx-glass {
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  /* ====== Premium Input System ====== */
+  .vx-input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    height: 44px;
+    padding: 0 12px;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    outline: none;
+    width: 100%;
+  }
+  .vx-input::placeholder {
+    color: var(--color-text-muted);
+  }
+  .vx-input:hover {
+    border-color: var(--color-border-hover);
+  }
+  .vx-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-ring);
+    background: rgba(255,255,255,0.06);
+  }
+
+  /* ====== Premium Badge System ====== */
+  .vx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+  .vx-badge-bullish {
+    color: var(--color-bullish);
+    background: var(--bullish-bg);
+    border: 1px solid rgba(46,204,113,0.25);
+  }
+  .vx-badge-bearish {
+    color: var(--color-bearish);
+    background: var(--bearish-bg);
+    border: 1px solid rgba(240,56,78,0.25);
+  }
+  .vx-badge-wait {
+    color: var(--color-neutral-wait);
+    background: var(--neutral-wait-bg);
+    border: 1px solid rgba(245,166,35,0.25);
+  }
+  .vx-badge-primary {
+    color: var(--color-primary);
+    background: rgba(91,110,245,0.1);
+    border: 1px solid rgba(91,110,245,0.25);
+  }
+  .vx-badge-muted {
+    color: var(--color-muted-foreground);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ====== Premium Button System ====== */
+  .vx-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    border-radius: var(--radius-lg);
+    height: 44px;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .vx-btn:active {
+    transform: scale(0.96);
+    transition-duration: 100ms;
+  }
+  .vx-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .vx-btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--primary-glow));
+    color: var(--color-primary-foreground);
+    box-shadow: 0 4px 16px rgba(91,110,245,0.3);
+  }
+  .vx-btn-primary:hover {
+    box-shadow: 0 6px 24px rgba(91,110,245,0.4);
+    filter: brightness(1.1);
+  }
+  .vx-btn-bullish {
+    background: linear-gradient(135deg, #2ECC71, #27AE60);
+    color: var(--color-buy-text);
+    box-shadow: 0 4px 16px rgba(46,204,113,0.25);
+  }
+  .vx-btn-bullish:hover {
+    box-shadow: 0 6px 24px rgba(46,204,113,0.35);
+    filter: brightness(1.1);
+  }
+  .vx-btn-bearish {
+    background: linear-gradient(135deg, #F0384E, #D63040);
+    color: white;
+    box-shadow: 0 4px 16px rgba(240,56,78,0.25);
+  }
+  .vx-btn-bearish:hover {
+    box-shadow: 0 6px 24px rgba(240,56,78,0.35);
+    filter: brightness(1.1);
+  }
+  .vx-btn-ghost {
+    background: transparent;
+    color: var(--color-foreground);
+    border: 1px solid var(--color-border);
+  }
+  .vx-btn-ghost:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: var(--color-border-hover);
+  }
+  .vx-btn-sm {
+    height: 34px;
+    padding: 0 14px;
+    font-size: 12px;
+    border-radius: var(--radius-md);
+  }
+  .vx-btn-lg {
+    height: 52px;
+    padding: 0 28px;
+    font-size: 15px;
+    border-radius: var(--radius-xl);
+  }
+  /* Button ripple effect */
+  .vx-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.15) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .vx-btn:active::after {
+    opacity: 1;
+  }
+
+  /* ====== Premium Tab System ====== */
+  .vx-tabs {
+    display: flex;
+    gap: 2px;
+    background: rgba(255,255,255,0.03);
+    border-radius: var(--radius-lg);
+    padding: 3px;
+    border: 1px solid var(--color-border-subtle, var(--color-border));
+  }
+  .vx-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-muted-foreground);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: none;
+    background: transparent;
+    white-space: nowrap;
+  }
+  .vx-tab:hover {
+    color: var(--color-foreground);
+    background: rgba(255,255,255,0.04);
+  }
+  .vx-tab-active {
+    background: var(--color-card);
+    color: var(--color-foreground);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  /* ====== Premium Data Display ====== */
+  .vx-stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    line-height: 1;
+  }
+  .vx-stat-value {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-foreground);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .vx-stat-sub {
+    font-size: 10px;
+    color: var(--color-text-muted);
+    line-height: 1;
+  }
+
+  /* ====== Premium Animations ====== */
+  @keyframes vx-fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes vx-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes vx-scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes vx-slide-in-right {
+    from { opacity: 0; transform: translateX(12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes vx-shimmer-premium {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes vx-glow-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(91,110,245,0.15); }
+    50% { box-shadow: 0 0 20px rgba(91,110,245,0.3); }
+  }
+  @keyframes vx-float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes vx-count-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .vx-animate-fade-up {
+    animation: vx-fade-up 0.4s ease-out both;
+  }
+  .vx-animate-fade-in {
+    animation: vx-fade-in 0.3s ease-out both;
+  }
+  .vx-animate-scale-in {
+    animation: vx-scale-in 0.3s ease-out both;
+  }
+
+  /* Stagger system for child elements */
+  .vx-stagger > * { animation: vx-fade-up 0.4s ease-out both; }
+  .vx-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .vx-stagger > *:nth-child(2) { animation-delay: 50ms; }
+  .vx-stagger > *:nth-child(3) { animation-delay: 100ms; }
+  .vx-stagger > *:nth-child(4) { animation-delay: 150ms; }
+  .vx-stagger > *:nth-child(5) { animation-delay: 200ms; }
+  .vx-stagger > *:nth-child(6) { animation-delay: 250ms; }
+  .vx-stagger > *:nth-child(7) { animation-delay: 300ms; }
+  .vx-stagger > *:nth-child(8) { animation-delay: 350ms; }
+  .vx-stagger > *:nth-child(9) { animation-delay: 400ms; }
+  .vx-stagger > *:nth-child(10) { animation-delay: 450ms; }
+
+  /* Premium shimmer */
+  .vx-shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(91,110,245,0.04) 25%, rgba(91,110,245,0.08) 50%, rgba(91,110,245,0.04) 75%, transparent 100%);
+    background-size: 200% 100%;
+    animation: vx-shimmer-premium 2s linear infinite;
+    border-radius: var(--radius-md);
+  }
+
+  /* ====== Premium Section Headers ====== */
+  .vx-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    margin-bottom: 12px;
+  }
+  .vx-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-muted-foreground);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .vx-section-action {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+  }
+  .vx-section-action:hover {
+    color: var(--color-foreground);
+    background: rgba(255,255,255,0.04);
+  }
+
+  /* ====== Premium Divider ====== */
+  .vx-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--color-border) 20%, var(--color-border) 80%, transparent 100%);
+    margin: 16px 0;
+  }
+
+  /* ====== Premium Scrollbar ====== */
+  .vx-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .vx-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .vx-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+  }
+  .vx-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.2);
+  }
+
+  /* ====== Premium Tooltip/Overlay ====== */
+  .vx-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 50;
+    animation: vx-fade-in 0.2s ease-out;
+  }
+
+  /* ====== Premium Status Indicator ====== */
+  .vx-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .vx-status-dot-live {
+    background: var(--color-bullish);
+    box-shadow: 0 0 8px rgba(46,204,113,0.5);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+  .vx-status-dot-offline {
+    background: var(--color-bearish);
+  }
+  .vx-status-dot-pending {
+    background: var(--color-neutral-wait);
+    animation: pulse-dot 2.4s ease-in-out infinite;
+  }
+
+  /* ====== Premium Number Display ====== */
+  .vx-price-up { color: var(--color-bullish); }
+  .vx-price-down { color: var(--color-bearish); }
+  .vx-price-flash-up {
+    animation: vx-price-up-flash 0.6s ease-out;
+  }
+  .vx-price-flash-down {
+    animation: vx-price-down-flash 0.6s ease-out;
+  }
 
   /* ====== Responsive ====== */
   @media (min-width: 1024px) {

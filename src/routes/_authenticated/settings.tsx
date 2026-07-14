@@ -104,10 +104,11 @@ function ToggleSwitch({ enabled, onClick }: { enabled: boolean; onClick: () => v
         height: "20px",
         borderRadius: "10px",
         cursor: "pointer",
-        background: enabled ? "var(--color-bullish)" : "rgba(255,255,255,0.1)",
+        background: enabled ? "var(--color-bullish)" : "var(--color-border)",
         position: "relative",
-        transition: "background 0.2s",
+        transition: "background var(--transition-normal)",
         flexShrink: 0,
+        boxShadow: enabled ? "0 0 8px rgba(46,204,113,0.3)" : "none",
       }}
     >
       <div
@@ -134,7 +135,7 @@ function SettingRow({ item, children }: { item: SettingItem; children?: React.Re
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "10px 12px",
+        padding: "12px 16px",
       }}
     >
       <div>
@@ -191,14 +192,15 @@ function ExchangeCard({
     fontSize: "12px",
     fontWeight: 500,
     padding: "5px 8px",
-    borderRadius: "4px",
+    borderRadius: "6px",
     border: "1px solid var(--color-border)",
-    background: "rgba(124,155,196,0.04)",
+    background: "rgba(255,255,255,0.04)",
     color: "var(--color-foreground)",
     width: "100%",
     outline: "none",
     font: "inherit",
     boxSizing: "border-box",
+    transition: "border-color var(--transition-fast)",
   };
 
   const monoInputStyle: React.CSSProperties = {
@@ -211,10 +213,11 @@ function ExchangeCard({
     <div
       style={{
         background: "var(--color-card-hover)",
-        borderRadius: "8px",
+        borderRadius: "12px",
         border: "1px solid var(--color-border)",
         padding: "10px 12px",
         marginBottom: "8px",
+        boxShadow: "var(--shadow-card)",
       }}
     >
       {/* Header */}

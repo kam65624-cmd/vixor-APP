@@ -109,11 +109,12 @@ export function PageLayout({
               style={{
                 fontSize: "10px",
                 fontWeight: 700,
-                padding: "2px 8px",
-                borderRadius: "4px",
-                background: `${badgeColor}18`,
+                padding: "3px 10px",
+                borderRadius: "6px",
+                background: `${badgeColor}14`,
                 color: badgeColor,
-                letterSpacing: "0.04em",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase" as const,
               }}
             >
               {badge}
@@ -132,8 +133,8 @@ export function PageLayout({
             gap: "2px",
             padding: "0 16px",
             borderBottom: `1px solid ${"var(--color-border)"}`,
-            background: "var(--color-muted)",
-            height: "36px",
+            background: "rgba(255,255,255,0.02)",
+            height: "40px",
             overflowX: "auto",
             flexShrink: 0,
           }}
@@ -148,14 +149,15 @@ export function PageLayout({
                 style={{
                   fontSize: "12px",
                   fontWeight: isActive ? 600 : 500,
-                  padding: "6px 12px",
-                  borderRadius: "4px",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
                   border: "none",
                   cursor: "pointer",
                   color: isActive ? "var(--color-foreground)" : "var(--color-muted-foreground)",
-                  background: isActive ? "rgba(124,155,196,0.08)" : "transparent",
+                  background: isActive ? "var(--color-card)" : "transparent",
                   whiteSpace: "nowrap",
-                  transition: "all 0.15s ease",
+                  boxShadow: isActive ? "0 1px 4px rgba(0,0,0,0.15)" : "none",
+                  transition: "all var(--transition-fast)",
                   borderBottom: isActive
                     ? `2px solid ${"var(--color-primary)"}`
                     : "2px solid transparent",
@@ -270,6 +272,7 @@ export const StatsRow = memo(function StatsRow({ stats }: { stats: StatItem[] })
               fontSize: "14px",
               fontWeight: 700,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontVariantNumeric: "tabular-nums",
               color: s.color || "var(--color-foreground)",
               lineHeight: 1.2,
               overflow: "hidden",
@@ -554,9 +557,9 @@ export const PageBadge = memo(function PageBadge({
       style={{
         fontSize: "12px",
         fontWeight: 700,
-        padding: small ? "1px 6px" : "2px 8px",
-        borderRadius: "3px",
-        background: `${color}18`,
+        padding: small ? "1px 6px" : "3px 10px",
+        borderRadius: "6px",
+        background: `${color}14`,
         color,
         letterSpacing: "0.03em",
         display: "inline-flex",
@@ -625,9 +628,9 @@ export const DataRow = memo(function DataRow({
       onMouseLeave={handleMouseLeave}
       onKeyDown={handleKeyDown}
       style={{
-        padding: "10px 16px",
-        borderBottom: "1px solid rgba(124,155,196,0.04)",
-        background: hovered ? "rgba(124,155,196,0.03)" : "var(--color-card)",
+        padding: "12px 16px",
+        borderBottom: "1px solid var(--color-border)",
+        background: hovered ? "var(--color-card-hover)" : "var(--color-card)",
         borderLeft: leftAccent ? `2px solid ${leftAccent}` : undefined,
         transition: "background 0.1s ease",
         ...customStyle,
@@ -756,8 +759,8 @@ export function SkeletonRow() {
   return (
     <div
       style={{
-        padding: "10px 16px",
-        borderBottom: "1px solid rgba(124,155,196,0.04)",
+        padding: "12px 16px",
+        borderBottom: "1px solid var(--color-border)",
         background: "var(--color-card)",
       }}
     >

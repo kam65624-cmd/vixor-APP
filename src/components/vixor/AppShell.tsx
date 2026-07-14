@@ -909,7 +909,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main
         className="flex-1 overflow-auto"
         style={{
-          paddingTop: isTg ? "calc(40px + env(safe-area-inset-top, 0px))" : "40px",
+          paddingTop: isTg ? "calc(44px + env(safe-area-inset-top, 0px))" : "44px",
           paddingBottom: "calc(52px + env(safe-area-inset-bottom, 0px))",
         }}
       >
@@ -956,8 +956,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={(e) => e.stopPropagation()}
             style={{
               background: "var(--color-card)",
-              borderTopLeftRadius: "16px",
-              borderTopRightRadius: "16px",
+              backdropFilter: "blur(24px) saturate(180%)",
+              WebkitBackdropFilter: "blur(24px) saturate(180%)",
+              borderTopLeftRadius: "20px",
+              borderTopRightRadius: "20px",
               borderTop: "1px solid var(--color-border)",
               width: "100%",
               maxWidth: "420px",
@@ -1110,9 +1112,11 @@ const PointsBadge = memo(function PointsBadge() {
   return (
     <Link
       to="/rewards"
-      className="flex items-center gap-1 px-2 py-0.5 rounded text-[12px] font-mono font-bold"
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-mono font-bold"
       style={{
         color: "var(--color-primary)",
+        background: "rgba(91,110,245,0.08)",
+        border: "1px solid rgba(91,110,245,0.15)",
         textDecoration: "none",
         minWidth: "44px",
         minHeight: "44px",
@@ -1269,9 +1273,11 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
     <header
       className="fixed inset-x-0 z-50"
       style={{
-        background: "var(--color-background)",
+        background: "rgba(10, 10, 13, 0.80)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        WebkitBackdropFilter: "blur(20px) saturate(180%)",
         borderBottom: "1px solid var(--color-border)",
-        height: "40px",
+        height: "44px",
         top: isTg ? "env(safe-area-inset-top, 0px)" : "0px",
         display: "flex",
         alignItems: "center",
@@ -1334,6 +1340,9 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
               background: "var(--gradient-primary)",
               color: "var(--primary-foreground)",
               border: "none",
+              borderRadius: "8px",
+              boxShadow: "0 2px 8px rgba(91,110,245,0.25)",
+              height: "30px",
               cursor: "pointer",
               textDecoration: "none",
               fontFamily: "'Inter', system-ui, sans-serif",
@@ -1391,8 +1400,10 @@ const BottomBar = memo(function BottomBar({
     <nav
       className="fixed bottom-0 inset-x-0 z-50"
       style={{
-        background: "var(--color-background)",
-        borderTop: "1px solid var(--color-border)",
+        background: "rgba(10, 10, 13, 0.85)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
         height: isTg ? "calc(52px + env(safe-area-inset-bottom, 0px))" : "52px",
         display: "flex",
         alignItems: "center",
@@ -1431,12 +1442,21 @@ const BottomBar = memo(function BottomBar({
               >
                 {item.icon}
               </span>
+              {isActive && (
+                <div style={{
+                  width: "4px",
+                  height: "4px",
+                  borderRadius: "50%",
+                  background: "var(--color-primary)",
+                  marginTop: "3px",
+                  boxShadow: "0 0 8px var(--color-primary)",
+                }} />
+              )}
               <span
                 style={{
                   fontSize: "11px",
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
-                  marginTop: "2px",
                   letterSpacing: "0.02em",
                   transition: "all 0.2s ease",
                 }}
@@ -1532,8 +1552,8 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
           left: 0,
           right: 0,
           background: "var(--color-card)",
-          borderTopLeftRadius: "16px",
-          borderTopRightRadius: "16px",
+          borderTopLeftRadius: "20px",
+          borderTopRightRadius: "20px",
           borderTop: "1px solid var(--color-border)",
           zIndex: 100,
           maxHeight: "75vh",
@@ -1620,7 +1640,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: "6px",
+                  gap: "8px",
                 }}
               >
                 {category.items.map((item) => {
@@ -1634,8 +1654,8 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                         display: "flex",
                         alignItems: "center",
                         gap: "8px",
-                        padding: "10px 10px",
-                        borderRadius: "8px",
+                        padding: "12px",
+                        borderRadius: "12px",
                         background: isActive ? "var(--bullish-bg)" : "var(--color-muted)",
                         border: isActive
                           ? "1px solid color-mix(in srgb, var(--color-bullish) 20%, transparent)"
@@ -1644,7 +1664,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                         color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
                         fontSize: "12px",
                         fontWeight: isActive ? 600 : 500,
-                        transition: "all 0.15s ease",
+                        transition: "all 0.2s ease",
                       }}
                     >
                       <span

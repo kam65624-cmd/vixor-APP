@@ -40,14 +40,16 @@ export const Route = createFileRoute("/_authenticated/analyze")({
 const cardStyle: React.CSSProperties = {
   background: "var(--color-card)",
   border: `1px solid ${"var(--color-border)"}`,
-  borderRadius: 8,
+  borderRadius: 12,
+  boxShadow: "var(--shadow-card)",
 };
 
 const inputStyle: React.CSSProperties = {
   background: "var(--color-card)",
   border: `1px solid ${"var(--color-border)"}`,
   color: "var(--color-foreground)",
-  borderRadius: 6,
+  borderRadius: 8,
+  transition: "border-color var(--transition-fast), box-shadow var(--transition-fast)",
   height: 44,
   paddingLeft: 12,
   paddingRight: 12,
@@ -733,7 +735,7 @@ function Analyze() {
                       alignItems: "center",
                       gap: 6,
                       padding: "8px 12px",
-                      borderRadius: 6,
+                      borderRadius: 8,
                       background: "rgba(14,203,129,0.10)",
                       border: "1px solid rgba(14,203,129,0.20)",
                     }}

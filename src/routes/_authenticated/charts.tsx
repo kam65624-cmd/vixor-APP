@@ -183,7 +183,7 @@ function ChartsPage() {
                   padding: "10px 20px",
                   background: "var(--color-bullish)",
                   color: "var(--color-foreground)",
-                  borderRadius: "8px",
+                  borderRadius: "12px",
                   fontWeight: 700,
                   border: "none",
                   cursor: "pointer",

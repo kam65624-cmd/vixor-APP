@@ -69,9 +69,9 @@ const MarketTicker = memo(function MarketTicker({ data }: { data?: HomeMarketDat
   const repeated = [...data.tickers, ...data.tickers, ...data.tickers];
 
   return (
-    <div className="relative w-full overflow-hidden border-y border-white/5 bg-[#0b0e14]">
-      <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#0b0e14] to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#0b0e14] to-transparent z-10 pointer-events-none" />
+    <div className="relative w-full overflow-hidden border-y border-white/5 bg-[var(--color-card)]">
+      <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[var(--color-card)] to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[var(--color-card)] to-transparent z-10 pointer-events-none" />
       <div
         className="flex animate-ticker"
         style={{
@@ -106,11 +106,11 @@ function StatCard({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] uppercase tracking-widest text-foreground/40 font-semibold">
+      <span className="vx-stat-label">
         {label}
       </span>
-      <span className={`text-sm font-bold font-mono ${color}`}>{value}</span>
-      {subtext && <span className="text-[10px] text-foreground/40">{subtext}</span>}
+      <span className={`vx-stat-value ${color}`}>{value}</span>
+      {subtext && <span className="vx-stat-sub">{subtext}</span>}
     </div>
   );
 }
@@ -135,15 +135,15 @@ function FeatureCard({
   return (
     <button
       onClick={() => navigate({ to: to as any })}
-      className="group relative flex flex-col gap-3 p-4 rounded-2xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/15 transition-all duration-300 text-left w-full"
+      className="vx-card vx-card-interactive vx-card-hover group relative flex flex-col gap-3 p-4 text-left w-full"
     >
       {badge && (
         <span
           className="absolute top-3 right-3 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest"
           style={{
-            background: `${accent}22`,
+            background: `${accent}15`,
             color: accent,
-            border: `1px solid ${accent}44`,
+            border: `1px solid ${accent}30`,
           }}
         >
           {badge}
@@ -177,14 +177,14 @@ function SignalRow({
 }) {
   const isBuy = signal.type === "BUY" || signal.type === "STRONG_BUY";
   const isSell = signal.type === "SELL" || signal.type === "STRONG_SELL";
-  const color = isBuy ? "#10b981" : isSell ? "#ef4444" : "#6b7280";
-  const bg = isBuy ? "#10b98115" : isSell ? "#ef444415" : "#6b728015";
+  const color = isBuy ? "var(--color-bullish)" : isSell ? "var(--color-bearish)" : "#6b7280";
+  const bg = isBuy ? "var(--bullish-bg)" : isSell ? "var(--bearish-bg)" : "rgba(255,255,255,0.05)";
 
   return (
     <div className="flex items-center gap-3 py-3 border-b border-white/5 last:border-0">
       <div
         className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-bold"
-        style={{ background: bg, color, border: `1px solid ${color}33` }}
+        style={{ background: bg, color, border: '1px solid rgba(255,255,255,0.08)' }}
       >
         {signal.type === "WAIT" ? "—" : isBuy ? "B" : "S"}
       </div>
@@ -306,7 +306,7 @@ function HomePage() {
   const signals = dashQuery.data?.liveSignals ?? [];
 
   return (
-    <div className="min-h-screen bg-[#080b10] text-foreground font-sans pb-24">
+    <div className="min-h-screen bg-[var(--color-background)] text-foreground font-sans pb-24">
       {/* ── Top Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div>
@@ -324,7 +324,7 @@ function HomePage() {
         </div>
         <button
           onClick={() => navigate({ to: "/analyze" as any })}
-          className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-bold text-xs px-4 py-2.5 rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/20"
+          className="vx-btn vx-btn-bullish vx-btn-sm"
         >
           <Scan size={14} />
           Analyze
@@ -336,14 +336,14 @@ function HomePage() {
 
       {/* ── Portfolio Stats ────────────────────────────────────────── */}
       {data && (
-        <div className="mx-4 mt-4 p-4 rounded-2xl border border-white/8 bg-white/[0.03]">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] uppercase tracking-widest text-foreground/40 font-semibold">
+        <div className="mx-4 mt-4 vx-card p-4">
+          <div className="vx-section-header mb-4">
+            <span className="vx-section-title">
               Portfolio Overview
             </span>
             <button
               onClick={() => navigate({ to: "/pnl" as any })}
-              className="text-[11px] text-foreground/40 hover:text-foreground transition-colors flex items-center gap-1"
+              className="vx-section-action"
             >
               View all <ChevronRight size={11} />
             </button>
@@ -381,10 +381,10 @@ function HomePage() {
       <div className="mx-4 mt-4">
         <button
           onClick={() => navigate({ to: "/analyze" as any })}
-          className="group relative w-full overflow-hidden rounded-2xl p-5 text-left transition-all duration-300"
+          className="vx-card vx-card-interactive vx-card-hover group relative w-full p-5 text-left"
           style={{
             background: "linear-gradient(135deg, #10b98120, #059669, #047857)",
-            border: "1px solid #10b98140",
+            border: "1px solid rgba(16,185,129,0.25)",
           }}
         >
           <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/5 group-hover:scale-110 transition-transform duration-500" />
@@ -408,7 +408,7 @@ function HomePage() {
       </div>
 
       {/* ── Features Grid ─────────────────────────────────────────── */}
-      <div className="mx-4 mt-4 grid grid-cols-2 gap-3">
+      <div className="mx-4 mt-4 vx-stagger grid grid-cols-2 gap-3">
         <FeatureCard
           icon={LineChart}
           title="Live Charts"
@@ -443,24 +443,26 @@ function HomePage() {
       {/* ── Active Signals ─────────────────────────────────────────── */}
       {signals.length > 0 && (
         <div className="mx-4 mt-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="vx-section-header mb-3">
             <div className="flex items-center gap-2">
               <Zap size={14} className="text-amber-400" />
-              <span className="text-xs font-bold uppercase tracking-widest text-foreground/60">
+              <span className="vx-section-title">
                 Active Signals
               </span>
             </div>
             <button
               onClick={() => navigate({ to: "/signals" as any })}
-              className="text-[11px] text-foreground/40 hover:text-foreground transition-colors flex items-center gap-1"
+              className="vx-section-action"
             >
               All signals <ChevronRight size={11} />
             </button>
           </div>
-          <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4">
-            {signals.slice(0, 3).map((s, i) => (
-              <SignalRow key={i} signal={s} />
-            ))}
+          <div className="vx-stagger">
+            <div className="vx-card px-4">
+              {signals.slice(0, 3).map((s, i) => (
+                <SignalRow key={i} signal={s} />
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -474,7 +476,7 @@ function HomePage() {
               Market Sentiment
             </span>
           </div>
-          <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 flex items-center justify-between gap-4">
+          <div className="vx-card p-4 flex items-center justify-between gap-4">
             <div className="flex-1">
               <div className="text-sm font-bold text-foreground/70 mb-1">Fear & Greed Index</div>
               <div className="text-[11px] text-foreground/40">
@@ -504,7 +506,7 @@ function HomePage() {
               Recent Activity
             </span>
           </div>
-          <div className="rounded-2xl border border-white/8 bg-white/[0.03] divide-y divide-white/5">
+          <div className="vx-card divide-y divide-[var(--color-border)]">
             {data.recentActivity.slice(0, 4).map((a, i) => (
               <div key={i} className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-2.5">

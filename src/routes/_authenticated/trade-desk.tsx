@@ -64,12 +64,10 @@ const LOT_SIZES: Record<string, number> = {
 };
 
 const card: React.CSSProperties = {
-  background: "rgba(255,255,255,0.04)",
-  backdropFilter: "blur(12px)",
-  WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  background: "var(--color-card)",
+  border: "1px solid var(--color-border)",
   borderRadius: "16px",
-  boxShadow: "0 4px 24px -8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+  boxShadow: "var(--shadow-card)",
 };
 const mono: React.CSSProperties = {
   fontFamily: "'JetBrains Mono', ui-monospace, monospace",
@@ -82,11 +80,11 @@ const labelStyle: React.CSSProperties = {
   color: "var(--color-muted-foreground)",
 };
 const inputStyle: React.CSSProperties = {
-  background: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.10)",
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid var(--color-border)",
   color: "var(--color-foreground)",
   outline: "none",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease, background var(--transition-fast)",
 };
 
 function TradeDesk() {
