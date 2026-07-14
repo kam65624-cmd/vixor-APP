@@ -153,12 +153,13 @@ interface MoreNavCategory {
 }
 
 const moreNavCategories: MoreNavCategory[] = [
+  // ── Layer 1: Core Loop (highest design priority) ──
   {
-    title: "AI Tools",
+    title: "Core Loop",
     items: [
       {
-        to: "/alpha",
-        label: "Alpha Signals",
+        to: "/signals",
+        label: "Signals",
         icon: (
           <svg
             width="16"
@@ -170,108 +171,11 @@ const moreNavCategories: MoreNavCategory[] = [
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-          </svg>
-        ),
-      },
-      {
-        to: "/whale",
-        label: "Whale Alerts",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M2 20c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1s1.2 1 2.5 1c2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-            <path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76" />
-          </svg>
-        ),
-      },
-      {
-        to: "/predictions",
-        label: "Predictions",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <circle cx="12" cy="12" r="6" />
+            <path d="M4.9 19.1C1.7 15.9 1.7 10.6 4.9 7.4" />
+            <path d="M7.8 16.2c-2-2-2-5.2 0-7.2" />
             <circle cx="12" cy="12" r="2" />
-          </svg>
-        ),
-      },
-      {
-        to: "/vision",
-        label: "Vision",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-        ),
-      },
-      {
-        to: "/trackers",
-        label: "Trackers",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M3 3v18h18" />
-            <path d="m19 9-5 5-4-4-3 3" />
-          </svg>
-        ),
-      },
-    ],
-  },
-  {
-    title: "Trading",
-    items: [
-      {
-        to: "/charts",
-        label: "Charts",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M3 3v18h18" />
-            <path d="m19 9-5 5-4-4-3 3" />
+            <path d="M16.2 16.2c2-2 2-5.2 0-7.2" />
+            <path d="M19.1 19.1c3.2-3.2 3.2-8.5 0-11.7" />
           </svg>
         ),
       },
@@ -292,43 +196,6 @@ const moreNavCategories: MoreNavCategory[] = [
             <rect x="2" y="3" width="20" height="14" rx="2" />
             <path d="M8 21h8" />
             <path d="M12 17v4" />
-          </svg>
-        ),
-      },
-      {
-        to: "/backtest",
-        label: "Backtest",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-            <path d="M3 3v5h5" />
-          </svg>
-        ),
-      },
-      {
-        to: "/journal",
-        label: "Journal",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
           </svg>
         ),
       },
@@ -354,8 +221,71 @@ const moreNavCategories: MoreNavCategory[] = [
         ),
       },
       {
+        to: "/alpha",
+        label: "Alpha Signals",
+        icon: (
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+        ),
+      },
+      {
+        to: "/predictions",
+        label: "Predictions",
+        icon: (
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="6" />
+            <circle cx="12" cy="12" r="2" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  // ── Layer 2: Data & Markets ──
+  {
+    title: "Data & Markets",
+    items: [
+      {
+        to: "/charts",
+        label: "Charts",
+        icon: (
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 3v18h18" />
+            <path d="m19 9-5 5-4-4-3 3" />
+          </svg>
+        ),
+      },
+      {
         to: "/pulse",
-        label: "Pulse",
+        label: "Pulse & Whale",
         icon: (
           <svg
             width="16"
@@ -373,7 +303,7 @@ const moreNavCategories: MoreNavCategory[] = [
       },
       {
         to: "/radar",
-        label: "Trade Radar",
+        label: "Radar",
         icon: (
           <svg
             width="16"
@@ -395,8 +325,8 @@ const moreNavCategories: MoreNavCategory[] = [
         ),
       },
       {
-        to: "/brokers",
-        label: "Brokers",
+        to: "/curves",
+        label: "Bonding Curves",
         icon: (
           <svg
             width="16"
@@ -408,19 +338,20 @@ const moreNavCategories: MoreNavCategory[] = [
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            <path d="M3 3v18h18" />
+            <path d="m7 17 4-8 4 4 5-9" />
           </svg>
         ),
       },
     ],
   },
+  // ── Layer 3: Account & Performance ──
   {
-    title: "DeFi & Portfolio",
+    title: "Performance",
     items: [
       {
-        to: "/wallet-web3",
-        label: "Wallet",
+        to: "/portfolio",
+        label: "Portfolio",
         icon: (
           <svg
             width="16"
@@ -432,8 +363,9 @@ const moreNavCategories: MoreNavCategory[] = [
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <path d="M8 21h8" />
+            <path d="M12 17v4" />
             <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
           </svg>
         ),
@@ -458,6 +390,62 @@ const moreNavCategories: MoreNavCategory[] = [
         ),
       },
       {
+        to: "/journal",
+        label: "Journal",
+        icon: (
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+          </svg>
+        ),
+      },
+      {
+        to: "/backtest",
+        label: "Strategy Lab",
+        icon: (
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+        ),
+      },
+      {
+        to: "/vision",
+        label: "Vision AI",
+        icon: (
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        ),
+      },
+      {
         to: "/bags",
         label: "Bags",
         icon: (
@@ -473,6 +461,33 @@ const moreNavCategories: MoreNavCategory[] = [
           >
             <rect x="2" y="7" width="20" height="14" rx="2" />
             <path d="M16 3h-8l-2 4h12l-2-4z" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  // ── Layer 4: AI & Automation ──
+  {
+    title: "AI & Automation",
+    items: [
+      {
+        to: "/copilot",
+        label: "Copilot",
+        icon: (
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 8V4H8" />
+            <rect width="16" height="12" x="4" y="8" rx="2" />
+            <path d="M15 13v2" />
+            <path d="M9 13v2" />
           </svg>
         ),
       },
@@ -497,48 +512,8 @@ const moreNavCategories: MoreNavCategory[] = [
         ),
       },
       {
-        to: "/yield",
-        label: "Yield",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M3 20h18" />
-            <path d="M7 16V4" />
-            <path d="M12 16V8" />
-            <path d="M17 16v-4" />
-          </svg>
-        ),
-      },
-      {
-        to: "/swap",
-        label: "DEX Swap",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="m7 15 5 5 5-5" />
-            <path d="m7 9 5-5 5 5" />
-          </svg>
-        ),
-      },
-      {
-        to: "/curves",
-        label: "Virtual Curve",
+        to: "/trackers",
+        label: "Trackers",
         icon: (
           <svg
             width="16"
@@ -551,14 +526,15 @@ const moreNavCategories: MoreNavCategory[] = [
             strokeLinejoin="round"
           >
             <path d="M3 3v18h18" />
-            <path d="m7 17 4-8 4 4 5-9" />
+            <path d="m19 9-5 5-4-4-3 3" />
           </svg>
         ),
       },
     ],
   },
+  // ── Layer 5: Platform Management ──
   {
-    title: "Tools & Settings",
+    title: "Platform",
     items: [
       {
         to: "/settings",
@@ -636,6 +612,25 @@ const moreNavCategories: MoreNavCategory[] = [
         ),
       },
       {
+        to: "/brokers",
+        label: "Brokers",
+        icon: (
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+        ),
+      },
+      {
         to: "/referral",
         label: "Referral",
         icon: (
@@ -653,73 +648,6 @@ const moreNavCategories: MoreNavCategory[] = [
             <circle cx="9" cy="7" r="4" />
             <line x1="19" x2="19" y1="8" y2="14" />
             <line x1="22" x2="16" y1="11" y2="11" />
-          </svg>
-        ),
-      },
-      {
-        to: "/notifications",
-        label: "Notifications",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-          </svg>
-        ),
-      },
-    ],
-  },
-  {
-    title: "Social",
-    items: [
-      {
-        to: "/signals",
-        label: "Daily Signals",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M4.9 19.1C1.7 15.9 1.7 10.6 4.9 7.4" />
-            <path d="M7.8 16.2c-2-2-2-5.2 0-7.2" />
-            <circle cx="12" cy="12" r="2" />
-            <path d="M16.2 16.2c2-2 2-5.2 0-7.2" />
-            <path d="M19.1 19.1c3.2-3.2 3.2-8.5 0-11.7" />
-          </svg>
-        ),
-      },
-      {
-        to: "/communities",
-        label: "Communities",
-        icon: (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
         ),
       },
