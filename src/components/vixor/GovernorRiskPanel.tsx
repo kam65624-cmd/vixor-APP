@@ -54,7 +54,7 @@ const decisionConfig: Record<
     bg: "bg-bullish/10",
     border: "border-bullish/30",
     text: "text-bullish",
-    panelBorder: "border-emerald-500/40",
+    panelBorder: "border-bullish/40",
     progressColor: "[&>div]:bg-bullish",
     icon: ShieldCheck,
   },
@@ -63,17 +63,17 @@ const decisionConfig: Record<
     bg: "bg-[var(--gold)]/10",
     border: "border-neutral-wait/30",
     text: "text-neutral-wait",
-    panelBorder: "border-amber-500/40",
+    panelBorder: "border-neutral-wait/40",
     progressColor: "[&>div]:bg-[var(--gold)]",
     icon: AlertTriangle,
   },
   block: {
     label: "Blocked",
-    bg: "bg-red-500/10",
+    bg: "bg-bearish/10",
     border: "border-bearish/30",
     text: "text-bearish",
-    panelBorder: "border-red-500/40",
-    progressColor: "[&>div]:bg-red-500",
+    panelBorder: "border-bearish/40",
+    progressColor: "[&>div]:bg-bearish",
     icon: Ban,
   },
 };
@@ -185,7 +185,7 @@ export function GovernorRiskPanel({
     return (
       <div className="rounded-xl border border-bearish/30 bg-card/80 backdrop-blur-sm shadow-lg shadow-black/20 p-5 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center gap-2.5 mb-3">
-          <div className="flex items-center justify-center size-8 rounded-lg bg-red-500/10">
+          <div className="flex items-center justify-center size-8 rounded-lg bg-bearish/10">
             <AlertCircle className="size-4 text-bearish" />
           </div>
           <span className="text-sm font-semibold text-bearish">Risk Assessment Error</span>

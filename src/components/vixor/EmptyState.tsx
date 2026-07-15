@@ -26,21 +26,21 @@ export function EmptyState({ icon, title, description, action, className }: Empt
         <div
           className="mb-3 flex h-12 w-12 items-center justify-center rounded-full"
           style={{
-            background: "var(--surface-2)",
-            color: "var(--text-tertiary)",
-            border: "1px solid var(--border)",
+            background: "var(--color-card-hover)",
+            color: "var(--color-text-muted)",
+            border: "1px solid var(--color-border)",
           }}
         >
           {icon}
         </div>
       )}
-      <p className="mb-1.5 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+      <p className="mb-1.5 text-sm font-medium" style={{ color: "var(--color-foreground)" }}>
         {title}
       </p>
       {description && (
         <p
           className="mb-5 max-w-sm text-[13px] leading-relaxed"
-          style={{ color: "var(--text-secondary)" }}
+          style={{ color: "var(--color-muted-foreground)" }}
         >
           {description}
         </p>
@@ -54,9 +54,13 @@ export function EmptyState({ icon, title, description, action, className }: Empt
             "min-h-[44px]",
           )}
           style={{
-            background: action.variant === "primary" ? "var(--info)" : "var(--surface)",
-            color: action.variant === "primary" ? "var(--surface)" : "var(--text-primary)",
-            borderColor: "var(--border)",
+            background:
+              action.variant === "primary" ? "var(--color-primary)" : "var(--color-card-hover)",
+            color:
+              action.variant === "primary"
+                ? "var(--color-primary-foreground)"
+                : "var(--color-foreground)",
+            borderColor: "var(--color-border)",
           }}
         >
           {action.label}

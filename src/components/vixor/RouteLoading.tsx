@@ -38,7 +38,7 @@ const BARS = [
 const BAR_HEIGHT = 12;
 const BAR_RADIUS = 6;
 const BAR_GAP = 12;
-const BAR_BG = "#1E2028";
+const BAR_BG = "var(--color-card)";
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -63,7 +63,7 @@ export default function RouteLoading() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        backgroundColor: "#0B0D10",
+        backgroundColor: "var(--color-background)",
         padding: 40,
       }}
       role="status"
@@ -87,7 +87,7 @@ export default function RouteLoading() {
               width,
               borderRadius: BAR_RADIUS,
               backgroundColor: BAR_BG,
-              backgroundImage: "linear-gradient(90deg, #1E2028 25%, #2A2D37 50%, #1E2028 75%)",
+              backgroundImage: `linear-gradient(90deg, var(--color-card) 25%, var(--color-border) 50%, var(--color-card) 75%)`,
               backgroundSize: "800px 100%",
               animation: "vixor-shimmer 1.6s ease-in-out infinite",
             }}

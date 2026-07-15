@@ -32,6 +32,10 @@ export function TrendArrow({ direction, size = 14, className }: TrendArrowProps)
       fill="none"
       style={{ color, transform: rotation, transition: "transform 0.2s ease" }}
       className={className}
+      aria-label={
+        direction === "up" ? "Trending up" : direction === "down" ? "Trending down" : "Flat"
+      }
+      role="img"
     >
       <path d="M8 2L14 10H10V14H6V10H2L8 2Z" fill="currentColor" />
     </svg>

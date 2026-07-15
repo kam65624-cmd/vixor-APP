@@ -51,16 +51,16 @@ const sentimentConfig: Record<
   },
   bearish: {
     label: "Bearish",
-    bg: "bg-red-500/10",
+    bg: "bg-bearish/10",
     border: "border-bearish/30",
     text: "text-bearish",
     icon: TrendingDown,
   },
   neutral: {
     label: "Neutral",
-    bg: "bg-slate-500/10",
-    border: "border-slate-500/30",
-    text: "text-slate-400",
+    bg: "bg-muted-foreground/10",
+    border: "border-muted-foreground/30",
+    text: "text-muted-foreground",
     icon: Minus,
   },
 };
@@ -80,7 +80,7 @@ const riskConfig: Record<RiskLevel, { label: string; bg: string; border: string;
   },
   high: {
     label: "High Risk",
-    bg: "bg-red-500/10",
+    bg: "bg-bearish/10",
     border: "border-bearish/30",
     text: "text-bearish",
   },
@@ -129,11 +129,11 @@ export function CoachOverlay({
 
   const borderColor =
     riskLevel === "high"
-      ? "border-red-500/40"
+      ? "border-bearish/40"
       : riskLevel === "medium"
-        ? "border-amber-500/40"
+        ? "border-neutral-wait/40"
         : riskLevel === "low"
-          ? "border-emerald-500/40"
+          ? "border-bullish/40"
           : "border-border/50";
 
   const handleAccept = () => {
@@ -185,7 +185,7 @@ export function CoachOverlay({
     return (
       <div className="rounded-xl border border-bearish/30 bg-card/80 backdrop-blur-sm shadow-lg shadow-black/20 p-5 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center gap-2.5 mb-3">
-          <div className="flex items-center justify-center size-8 rounded-lg bg-red-500/10">
+          <div className="flex items-center justify-center size-8 rounded-lg bg-bearish/10">
             <AlertCircle className="size-4 text-bearish" />
           </div>
           <span className="text-sm font-semibold text-bearish">Coach Error</span>

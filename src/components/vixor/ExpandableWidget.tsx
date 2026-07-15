@@ -60,11 +60,11 @@ const VARIANT_MAP: Record<WidgetVariant, VariantConfig> = {
     badgeBorder: "border-neutral-wait/40",
   },
   aggressive: {
-    borderColor: "#FF9800",
-    textColor: "text-[#FF9800]",
-    gradientFrom: "from-[#FF9800]/5",
-    badgeBg: "bg-[#FF9800]/15",
-    badgeBorder: "border-[#FF9800]/40",
+    borderColor: "var(--color-gold)",
+    textColor: "text-gold",
+    gradientFrom: "from-gold/5",
+    badgeBg: "bg-gold/15",
+    badgeBorder: "border-gold/40",
   },
 };
 
