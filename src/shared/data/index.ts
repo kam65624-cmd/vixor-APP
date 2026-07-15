@@ -1188,21 +1188,35 @@ export interface HomeMarketData {
 }
 
 export const getHomeMarketData = createServerFn({ method: "GET" }).handler(async () => {
-  // Fetch 8 top crypto prices directly from Binance (no API key needed)
+  // Fetch 20 top crypto prices directly from Binance (no API key needed)
   let tickers: HomeTickerItem[] = [];
   let marketOverview: HomeMarketData["marketOverview"] = null;
 
+  // Expanded symbol list — top 20 cryptos by volume
+  const symbols = [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT",
+    "XRPUSDT",
+    "DOGEUSDT",
+    "ADAUSDT",
+    "AVAXUSDT",
+    "DOTUSDT",
+    "LINKUSDT",
+    "MATICUSDT",
+    "UNIUSDT",
+    "ATOMUSDT",
+    "LTCUSDT",
+    "NEARUSDT",
+    "APTUSDT",
+    "ARBUSDT",
+    "OPUSDT",
+    "FILUSDT",
+    "INJUSDT",
+  ];
+
   try {
-    const symbols = [
-      "BTCUSDT",
-      "ETHUSDT",
-      "SOLUSDT",
-      "BNBUSDT",
-      "XRPUSDT",
-      "DOGEUSDT",
-      "ADAUSDT",
-      "AVAXUSDT",
-    ];
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
@@ -1258,6 +1272,21 @@ export const getHomeMarketData = createServerFn({ method: "GET" }).handler(async
     }
   } catch (e) {
     console.warn("[Home] Failed to fetch Fear & Greed Index:", e);
+  }
+
+  // BTC dominance from CoinGecko (free, no key needed)
+  let btcDominance = 0;
+  try {
+    const res = await fetch("https://api.coingecko.com/api/v3/global", {
+      signal: AbortSignal.timeout(5000),
+    });
+    const json = await res.json();
+    btcDominance = json?.data?.market_cap_percentage?.btc ?? 0;
+    if (marketOverview) {
+      marketOverview.btcDominance = btcDominance;
+    }
+  } catch (e) {
+    console.warn("[Home] Failed to fetch BTC dominance:", e);
   }
 
   return { tickers, fearGreedIndex, marketOverview } satisfies HomeMarketData;

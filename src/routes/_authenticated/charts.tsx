@@ -18,6 +18,12 @@ const CRYPTO_PAIRS = [
   "BNB/USDT",
   "XRP/USDT",
   "DOGE/USDT",
+  "ADA/USDT",
+  "AVAX/USDT",
+  "DOT/USDT",
+  "LINK/USDT",
+  "NEAR/USDT",
+  "INJ/USDT",
 ] as const;
 
 const FOREX_PAIRS = [
