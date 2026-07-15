@@ -3,13 +3,22 @@ import { useState, useMemo } from "react";
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
 import { CandlestickChart } from "@/components/vixor/CandlestickChart";
 import { TradingViewChart, SYMBOL_MAP } from "@/components/vixor/TradingViewChart";
+import { useLivePrices } from "@/shared/market-data";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/charts")({
   head: () => ({ meta: [{ title: "Charts — Vixor" }] }),
   component: ChartsPage,
 });
 
-const CRYPTO_PAIRS = ["BTC/USDT", "ETH/USDT", "SOL/USDT"] as const;
+const CRYPTO_PAIRS = [
+  "BTC/USDT",
+  "ETH/USDT",
+  "SOL/USDT",
+  "BNB/USDT",
+  "XRP/USDT",
+  "DOGE/USDT",
+] as const;
 
 const FOREX_PAIRS = [
   "XAU/USD",
@@ -22,11 +31,31 @@ const FOREX_PAIRS = [
   "USD/CHF",
 ] as const;
 
+function formatPrice(p: number): string {
+  if (p >= 1000) return `$${p.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  if (p >= 1) return `$${p.toFixed(4)}`;
+  return `$${p.toFixed(6)}`;
+}
+
+function formatCompact(v: number): string {
+  if (v >= 1e12) return `$${(v / 1e12).toFixed(1)}T`;
+  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
+  if (v >= 1e3) return `$${(v / 1e3).toFixed(1)}K`;
+  return `$${v.toFixed(0)}`;
+}
+
 function ChartsPage() {
   const [selectedPair, setSelectedPair] = useState<string>("BTC/USDT");
   const [selectedInterval, setSelectedInterval] = useState<string>("4H");
 
-  // Crypto pairs use native lightweight-charts, forex uses TradingView embed
+  // Get live prices for price bar
+  const { getPrice } = useLivePrices({
+    pairs: [...CRYPTO_PAIRS],
+  });
+
+  const liveData = getPrice(selectedPair);
+
   const isCrypto = useMemo(
     () =>
       selectedPair.includes("USDT") ||
@@ -36,164 +65,96 @@ function ChartsPage() {
     [selectedPair],
   );
 
+  const priceChange = liveData?.change24h ?? 0;
+  const isUp = priceChange >= 0;
+
   return (
     <PageLayout title="Charts" badge="LIVE" badgeColor="var(--color-bullish)">
-      {/* Pair selector */}
-      <div
-        style={{
-          display: "flex",
-          gap: "1px",
-          background: "var(--color-border)",
-          borderBottom: "1px solid var(--color-border)",
-          flexShrink: 0,
-          overflowX: "auto",
-        }}
-        className="scrollbar-hide"
-      >
-        <div
-          style={{
-            padding: "6px 12px",
-            background: "var(--color-muted)",
-            fontSize: "11px",
-            fontWeight: 700,
-            color: "var(--color-muted-foreground)",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            display: "flex",
-            alignItems: "center",
-            whiteSpace: "nowrap",
-          }}
-        >
-          Crypto
+      {/* Live Price Bar */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
+        <div className="flex items-center gap-3">
+          <span className="text-lg font-extrabold text-foreground">{selectedPair}</span>
+          {liveData && (
+            <>
+              <span className="text-lg font-bold font-mono text-foreground">
+                {formatPrice(liveData.price)}
+              </span>
+              <div
+                className={`flex items-center gap-1 text-xs font-bold font-mono ${isUp ? "text-bullish" : "text-bearish"}`}
+              >
+                {isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                {isUp ? "+" : ""}
+                {priceChange.toFixed(2)}%
+              </div>
+            </>
+          )}
         </div>
-        {CRYPTO_PAIRS.map((pair) => (
-          <button
-            key={pair}
-            onClick={() => setSelectedPair(pair)}
-            style={{
-              padding: "7px 10px",
-              fontSize: "12px",
-              fontWeight: pair === selectedPair ? 700 : 500,
-              color:
-                pair === selectedPair ? "var(--color-foreground)" : "var(--color-muted-foreground)",
-              background: pair === selectedPair ? "var(--color-card)" : "var(--color-card)",
-              borderBottom:
-                pair === selectedPair ? "2px solid var(--color-bullish)" : "2px solid transparent",
-              border: "none",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              transition: "all var(--transition-fast)",
-              marginBottom: "-1px",
-            }}
-          >
-            {pair}
-          </button>
-        ))}
-        <div
-          style={{
-            padding: "6px 12px",
-            background: "var(--color-muted)",
-            fontSize: "11px",
-            fontWeight: 700,
-            color: "var(--color-muted-foreground)",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            display: "flex",
-            alignItems: "center",
-            whiteSpace: "nowrap",
-            borderLeft: "2px solid var(--color-border)",
-          }}
-        >
-          Forex
-        </div>
-        {FOREX_PAIRS.map((pair) => (
-          <button
-            key={pair}
-            onClick={() => setSelectedPair(pair)}
-            style={{
-              padding: "7px 10px",
-              fontSize: "12px",
-              fontWeight: pair === selectedPair ? 700 : 500,
-              color:
-                pair === selectedPair ? "var(--color-foreground)" : "var(--color-muted-foreground)",
-              background: "var(--color-card)",
-              borderBottom:
-                pair === selectedPair ? "2px solid var(--color-bullish)" : "2px solid transparent",
-              border: "none",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              transition: "all var(--transition-fast)",
-              marginBottom: "-1px",
-            }}
-          >
-            {pair}
-          </button>
-        ))}
+        {liveData && (
+          <div className="flex items-center gap-4 text-[10px] font-mono text-muted-foreground">
+            <span>
+              H{" "}
+              <span className="text-foreground font-semibold">{formatPrice(liveData.high24h)}</span>
+            </span>
+            <span>
+              L{" "}
+              <span className="text-foreground font-semibold">{formatPrice(liveData.low24h)}</span>
+            </span>
+            <span>
+              Vol{" "}
+              <span className="text-foreground font-semibold">
+                {formatCompact(liveData.quoteVolume24h)}
+              </span>
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Chart — native for crypto, TradingView embed for forex */}
-      <PageScrollArea style={{ padding: "0", flex: 1 }}>
-        <div style={{ padding: "8px", height: "100%", position: "relative" }}>
-          {!selectedPair ? (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "70vh",
-                color: "var(--color-muted-foreground)",
-                background: "var(--color-card)",
-                borderRadius: "12px",
-                border: "1px solid var(--color-border)",
-                padding: "32px",
-                textAlign: "center",
-              }}
+      {/* Pair Selector */}
+      <div className="flex items-center gap-px border-b border-border bg-muted/30 overflow-x-auto scrollbar-hide flex-shrink-0">
+        <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 shrink-0">
+          Crypto
+        </div>
+        {CRYPTO_PAIRS.map((pair) => {
+          const isActive = pair === selectedPair;
+          return (
+            <button
+              key={pair}
+              onClick={() => setSelectedPair(pair)}
+              className={`px-3 py-2 text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 ${
+                isActive
+                  ? "text-foreground bg-card border-b-2 border-bullish"
+                  : "text-muted-foreground hover:text-foreground/80 hover:bg-card/50 border-b-2 border-transparent"
+              }`}
             >
-              <div
-                style={{
-                  width: "64px",
-                  height: "64px",
-                  borderRadius: "50%",
-                  background: "var(--color-border)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: "16px",
-                }}
-              >
-                <span style={{ fontSize: "24px" }}>📉</span>
-              </div>
-              <h3
-                style={{
-                  fontSize: "18px",
-                  fontWeight: 700,
-                  color: "var(--color-foreground)",
-                  marginBottom: "8px",
-                }}
-              >
-                No chart data available
-              </h3>
-              <p style={{ fontSize: "14px", maxWidth: "280px", marginBottom: "24px" }}>
-                Please select a trading pair from the menu above to view its live chart.
-              </p>
-              <button
-                onClick={() => setSelectedPair("BTC/USDT")}
-                style={{
-                  padding: "10px 20px",
-                  background: "var(--color-bullish)",
-                  color: "var(--color-foreground)",
-                  borderRadius: "12px",
-                  fontWeight: 700,
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "opacity 0.2s",
-                }}
-              >
-                Select BTC/USDT
-              </button>
-            </div>
-          ) : isCrypto ? (
+              {pair.replace("/USDT", "")}
+            </button>
+          );
+        })}
+        <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 shrink-0 border-l border-border">
+          Forex
+        </div>
+        {FOREX_PAIRS.map((pair) => {
+          const isActive = pair === selectedPair;
+          return (
+            <button
+              key={pair}
+              onClick={() => setSelectedPair(pair)}
+              className={`px-3 py-2 text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 ${
+                isActive
+                  ? "text-foreground bg-card border-b-2 border-bullish"
+                  : "text-muted-foreground hover:text-foreground/80 hover:bg-card/50 border-b-2 border-transparent"
+              }`}
+            >
+              {pair}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Chart */}
+      <PageScrollArea style={{ padding: "0", flex: 1 }}>
+        <div className="p-2 h-full relative">
+          {isCrypto ? (
             <CandlestickChart
               pair={selectedPair}
               interval={selectedInterval}

@@ -15,6 +15,10 @@ import {
   LineChart,
   Eye,
   AlertCircle,
+  Radio,
+  Activity,
+  Globe,
+  Crown,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -35,6 +39,14 @@ function fmtPrice(p: number): string {
   if (p >= 1000) return `$${p.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
   if (p >= 1) return `$${p.toFixed(4)}`;
   return `$${p.toFixed(6)}`;
+}
+
+function formatVolume(v: number): string {
+  if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
+  if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
+  if (v >= 1e3) return `$${(v / 1e3).toFixed(2)}K`;
+  return `$${v.toFixed(0)}`;
 }
 
 // ─── Components ───────────────────────────────────────────────────────────────
@@ -110,6 +122,74 @@ function StatCard({
       <span className={`vx-stat-value ${color}`}>{value}</span>
       {subtext && <span className="vx-stat-sub">{subtext}</span>}
     </div>
+  );
+}
+
+// Market overview stat pill
+function MarketStatPill({
+  icon: Icon,
+  label,
+  value,
+  accent = "var(--color-primary)",
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  accent?: string;
+}) {
+  return (
+    <div
+      className="vx-card flex-1 flex items-center gap-3 p-3.5"
+      style={{
+        borderColor: `color-mix(in srgb, ${accent} 12%, transparent)`,
+      }}
+    >
+      <div
+        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        style={{
+          background: `color-mix(in srgb, ${accent} 8%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${accent} 15%, transparent)`,
+        }}
+      >
+        <Icon size={16} style={{ color: accent }} />
+      </div>
+      <div className="min-w-0">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-foreground/40">
+          {label}
+        </div>
+        <div className="text-sm font-bold font-mono text-foreground truncate">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+// Top Mover card
+function MoverCard({
+  item,
+  isGainer,
+}: {
+  item: { symbol: string; price: number; change24h: number };
+  isGainer: boolean;
+}) {
+  const navigate = useNavigate();
+  const color = isGainer ? "text-bullish" : "text-bearish";
+  const bgColor = isGainer ? "bg-bullish/5" : "bg-bearish/5";
+  const borderColor = isGainer ? "border-bullish/10" : "border-bearish/10";
+
+  return (
+    <button
+      onClick={() => navigate({ to: "/charts" as any })}
+      className={`flex items-center justify-between p-3 rounded-xl border ${bgColor} ${borderColor} hover:border-opacity-30 transition-all w-full text-left`}
+    >
+      <div>
+        <div className="text-sm font-bold text-foreground">{item.symbol}</div>
+        <div className="text-[11px] text-muted-foreground font-mono">{fmtPrice(item.price)}</div>
+      </div>
+      <div className={`text-sm font-bold font-mono ${color}`}>
+        {item.change24h >= 0 ? "+" : ""}
+        {item.change24h.toFixed(2)}%
+      </div>
+    </button>
   );
 }
 
@@ -318,10 +398,12 @@ function HomePage() {
   const isPremium = !!user?.isPremium;
   const marketData = marketQuery.data;
   const signals = dashQuery.data?.liveSignals ?? [];
+  const hasTrades = !!data && (data.tradeCount ?? 0) > 0;
+  const overview = marketData?.marketOverview ?? undefined;
 
   return (
     <div className="min-h-screen bg-[var(--color-background)] text-foreground font-sans pb-24">
-      {/* ── Top Header ─────────────────────────────────────────────── */}
+      {/* ── Section 1: Top Header ─────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div>
           <div className="text-[11px] text-foreground/40 font-semibold uppercase tracking-widest">
@@ -345,12 +427,86 @@ function HomePage() {
         </button>
       </div>
 
-      {/* ── Live Market Ticker ─────────────────────────────────────── */}
+      {/* ── Section 2: Live Market Ticker Strip ──────────────────── */}
       {marketData && <MarketTicker data={marketData} />}
 
-      {/* ── Portfolio Stats ────────────────────────────────────────── */}
-      {data && (
-        <div className="mx-4 mt-4 vx-card p-4">
+      {/* ── Section 3: Market Overview Stats Bar ─────────────────── */}
+      {overview && (
+        <div className="mx-4 mt-4 flex gap-3 vx-stagger">
+          <MarketStatPill
+            icon={Activity}
+            label="24h Volume"
+            value={formatVolume(overview.totalVolume)}
+            accent="var(--color-primary)"
+          />
+          <MarketStatPill
+            icon={Crown}
+            label="BTC Dominance"
+            value={`${overview.btcDominance.toFixed(1)}%`}
+            accent="var(--color-gold)"
+          />
+          <MarketStatPill
+            icon={Globe}
+            label="Active Pairs"
+            value={String(marketData?.tickers?.length ?? 8)}
+            accent="var(--color-bullish)"
+          />
+        </div>
+      )}
+
+      {/* ── Section 4: Top Movers ────────────────────────────────── */}
+      {overview && (overview.topGainers?.length || overview.topLosers?.length) && (
+        <div className="mx-4 mt-4">
+          <div className="vx-section-header mb-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={14} className="text-primary" />
+              <span className="vx-section-title">Top Movers</span>
+            </div>
+            <button
+              onClick={() => navigate({ to: "/discover" as any })}
+              className="vx-section-action"
+            >
+              Discover <ChevronRight size={11} />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Top Gainers */}
+            <div className="vx-card p-3">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-bullish mb-2.5 flex items-center gap-1.5">
+                <TrendingUp size={11} />
+                Top Gainers
+              </div>
+              <div className="flex flex-col gap-2">
+                {(overview.topGainers ?? []).slice(0, 3).map((item) => (
+                  <MoverCard key={item.symbol} item={item} isGainer />
+                ))}
+                {(!overview.topGainers || overview.topGainers.length === 0) && (
+                  <div className="text-[11px] text-foreground/30 py-2 text-center">Loading...</div>
+                )}
+              </div>
+            </div>
+            {/* Top Losers */}
+            <div className="vx-card p-3">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-bearish mb-2.5 flex items-center gap-1.5">
+                <TrendingUp size={11} className="rotate-180" />
+                Top Losers
+              </div>
+              <div className="flex flex-col gap-2">
+                {(overview.topLosers ?? []).slice(0, 3).map((item) => (
+                  <MoverCard key={item.symbol} item={item} isGainer={false} />
+                ))}
+                {(!overview.topLosers || overview.topLosers.length === 0) && (
+                  <div className="text-[11px] text-foreground/30 py-2 text-center">Loading...</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Section 5: Portfolio Overview (conditional) ──────────── */}
+      {hasTrades && data && (
+        <div className="mx-4 mt-4 vx-card p-4 vx-stagger">
           <div className="vx-section-header mb-4">
             <span className="vx-section-title">Portfolio Overview</span>
             <button onClick={() => navigate({ to: "/pnl" as any })} className="vx-section-action">
@@ -386,8 +542,8 @@ function HomePage() {
         </div>
       )}
 
-      {/* ── CTA: Analyze Chart ────────────────────────────────────── */}
-      <div className="mx-4 mt-4">
+      {/* ── Section 6: AI Analysis CTA ───────────────────────────── */}
+      <div className="mx-4 mt-4 vx-stagger">
         <button
           onClick={() => navigate({ to: "/analyze" as any })}
           className="vx-card vx-card-interactive vx-card-hover group relative w-full p-5 text-left overflow-hidden"
@@ -419,7 +575,7 @@ function HomePage() {
         </button>
       </div>
 
-      {/* ── Features Grid ─────────────────────────────────────────── */}
+      {/* ── Section 7: Features Grid (6 cards) ───────────────────── */}
       <div className="mx-4 mt-4 vx-stagger grid grid-cols-2 gap-3">
         <FeatureCard
           icon={LineChart}
@@ -441,7 +597,7 @@ function HomePage() {
           title="AI Copilot"
           desc="Ask anything about markets"
           to="/copilot"
-          accent="var(--gold)"
+          accent="var(--color-gold)"
         />
         <FeatureCard
           icon={TrendingUp}
@@ -450,9 +606,24 @@ function HomePage() {
           to="/pnl"
           accent="var(--color-bullish)"
         />
+        <FeatureCard
+          icon={Radio}
+          title="Radar"
+          desc="Real-time market intelligence"
+          badge="LIVE"
+          to="/radar"
+          accent="var(--color-bullish)"
+        />
+        <FeatureCard
+          icon={Zap}
+          title="Signals"
+          desc="AI-powered trade signals"
+          to="/signals"
+          accent="var(--color-gold)"
+        />
       </div>
 
-      {/* ── Active Signals ─────────────────────────────────────────── */}
+      {/* ── Section 8: Active Signals (conditional) ──────────────── */}
       {signals.length > 0 && (
         <div className="mx-4 mt-4">
           <div className="vx-section-header mb-3">
@@ -477,7 +648,7 @@ function HomePage() {
         </div>
       )}
 
-      {/* ── Market Sentiment ───────────────────────────────────────── */}
+      {/* ── Section 9: Fear & Greed (conditional) ────────────────── */}
       {marketData?.fearGreedIndex && (
         <div className="mx-4 mt-4">
           <div className="flex items-center gap-2 mb-3">
@@ -507,7 +678,7 @@ function HomePage() {
         </div>
       )}
 
-      {/* ── Recent Activity ────────────────────────────────────────── */}
+      {/* ── Section 10: Recent Activity (conditional) ────────────── */}
       {data?.recentActivity && data.recentActivity.length > 0 && (
         <div className="mx-4 mt-4">
           <div className="flex items-center gap-2 mb-3">
