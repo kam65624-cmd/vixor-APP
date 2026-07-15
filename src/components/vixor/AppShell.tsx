@@ -19,6 +19,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useWallet } from "@/domains/wallet/adapter/WalletProvider";
 import { WalletProviderSelector } from "@/domains/wallet/adapter/WalletProviderSelector";
 import { useOnline } from "@/shared/hooks/use-online";
+import { useLivePrices } from "@/shared/market-data";
 
 // ── SOL Price Hook ──────────────────────────────────────────────────────────
 
@@ -1022,6 +1023,55 @@ const NotificationBell = memo(function NotificationBell() {
   );
 });
 
+// ── Live BTC Price Indicator (navbar) ─────────────────────────────────────
+
+const LivePriceIndicator = memo(function LivePriceIndicator() {
+  const { getPrice } = useLivePrices({ pairs: ["BTC/USDT"] });
+  const btc = getPrice("BTC/USDT");
+
+  if (!btc) return null;
+
+  const isUp = btc.change24h >= 0;
+  return (
+    <div
+      className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-lg"
+      style={{
+        background: isUp
+          ? "color-mix(in srgb, var(--color-bullish) 6%, transparent)"
+          : "color-mix(in srgb, var(--color-bearish) 6%, transparent)",
+        border:
+          "1px solid " +
+          (isUp
+            ? "color-mix(in srgb, var(--color-bullish) 12%, transparent)"
+            : "color-mix(in srgb, var(--color-bearish) 12%, transparent)"),
+      }}
+    >
+      <span className="text-[10px] font-bold" style={{ color: "var(--color-muted-foreground)" }}>
+        BTC
+      </span>
+      <span
+        className="text-[11px] font-bold"
+        style={{ fontFamily: "var(--font-mono)", color: "var(--color-foreground)" }}
+      >
+        $
+        {btc.price >= 1000
+          ? btc.price.toLocaleString("en-US", { maximumFractionDigits: 0 })
+          : btc.price.toFixed(2)}
+      </span>
+      <span
+        className="text-[10px] font-bold"
+        style={{
+          fontFamily: "var(--font-mono)",
+          color: isUp ? "var(--color-bullish)" : "var(--color-bearish)",
+        }}
+      >
+        {isUp ? "+" : ""}
+        {btc.change24h.toFixed(2)}%
+      </span>
+    </div>
+  );
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // TOP NAV — Minimal: Logo, Discover CTA, SOL price, Deposit, Wallet, User, Bell
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1253,6 +1303,9 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
             SOL {solPrice ? `$${solPrice.toFixed(2)}` : "..."}
             {solChange != null ? ` ${solChange >= 0 ? "+" : ""}${solChange.toFixed(1)}%` : ""}
           </div>
+
+          {/* BTC Live Price Indicator */}
+          <LivePriceIndicator />
         </div>
 
         {/* Right: Actions */}
