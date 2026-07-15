@@ -305,13 +305,16 @@ Provide a complete structured analysis with:
 
     return analysisResult;
   } catch (err) {
-    console.error(
-      "[Vixor] OpenRouter Vision analysis failed:",
+    console.warn(
+      "[Vixor] OpenRouter Vision analysis failed, falling back to local engine:",
       err instanceof Error ? err.message : err,
     );
-    throw new AnalysisError(
-      `OpenRouter Error: ${err instanceof Error ? err.message : JSON.stringify(err)}`,
-      "OPENROUTER_ERROR",
+    return runLocalAnalysisFallback(
+      selectedPair,
+      fileName,
+      trading_style,
+      realBars,
+      analysis_style,
     );
   }
 }
