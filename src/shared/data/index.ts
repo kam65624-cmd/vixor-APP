@@ -1171,31 +1171,73 @@ export interface HomeTickerItem {
   symbol: string;
   price: number;
   change24h: number;
+  volume24h?: number;
+  high24h?: number;
+  low24h?: number;
 }
 
 export interface HomeMarketData {
   tickers: HomeTickerItem[];
   fearGreedIndex: { value: number; label: string; change: number } | null;
+  marketOverview: {
+    totalVolume: number;
+    btcDominance: number;
+    topGainers: HomeTickerItem[];
+    topLosers: HomeTickerItem[];
+  } | null;
 }
 
 export const getHomeMarketData = createServerFn({ method: "GET" }).handler(async () => {
-  // Fetch top 3 crypto prices via existing market domain
+  // Fetch 8 top crypto prices directly from Binance (no API key needed)
   let tickers: HomeTickerItem[] = [];
+  let marketOverview: HomeMarketData["marketOverview"] = null;
+
   try {
-    const { getMarketPrices } = await import("@/domains/market/functions");
-    const prices = await getMarketPrices({ data: undefined });
-    // Pick BTC, ETH, SOL
-    const symbols = ["BTC", "ETH", "SOL"];
-    tickers = (Array.isArray(prices) ? prices : [])
-      .filter((p: any) => symbols.some((s) => p.symbol?.toUpperCase().includes(s)))
-      .map((p: any) => ({
-        symbol: p.symbol?.replace("USDT", "").replace("/", "") || "???",
-        price: p.price ?? 0,
-        change24h: p.change24h ?? 0,
-      }))
-      .slice(0, 3);
+    const symbols = [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "BNBUSDT",
+      "XRPUSDT",
+      "DOGEUSDT",
+      "ADAUSDT",
+      "AVAXUSDT",
+    ];
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch(
+      "https://api.binance.com/api/v3/ticker/24hr?symbols=" + JSON.stringify(symbols),
+      { signal: controller.signal, headers: { Accept: "application/json" } },
+    );
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        tickers = data.map((t: any) => ({
+          symbol: (t.symbol || "").replace("USDT", ""),
+          price: parseFloat(t.lastPrice) || 0,
+          change24h: parseFloat(t.priceChangePercent) || 0,
+          volume24h: parseFloat(t.quoteVolume) || 0,
+          high24h: parseFloat(t.highPrice) || 0,
+          low24h: parseFloat(t.lowPrice) || 0,
+        }));
+
+        // Compute market overview
+        const totalVolume = tickers.reduce((s: number, t: any) => s + (t.volume24h || 0), 0);
+        const sorted = [...tickers].sort((a: any, b: any) => b.change24h - a.change24h);
+
+        marketOverview = {
+          totalVolume,
+          btcDominance: 0, // Would need market cap API for accurate value
+          topGainers: sorted.slice(0, 3),
+          topLosers: sorted.slice(-3).reverse(),
+        };
+      }
+    }
   } catch (e) {
-    console.warn("[Home] Failed to fetch market prices:", e);
+    console.warn("[Home] Failed to fetch Binance tickers:", e);
   }
 
   // Fear & Greed Index from alternative.me (free, no API key)
@@ -1218,7 +1260,7 @@ export const getHomeMarketData = createServerFn({ method: "GET" }).handler(async
     console.warn("[Home] Failed to fetch Fear & Greed Index:", e);
   }
 
-  return { tickers, fearGreedIndex } satisfies HomeMarketData;
+  return { tickers, fearGreedIndex, marketOverview } satisfies HomeMarketData;
 });
 
 // ── Arbitrage Scanner ─────────────────────────────────────────
