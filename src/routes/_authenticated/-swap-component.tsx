@@ -381,7 +381,7 @@ function TokenSelectorModal({
                 textAlign: "left",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(124,155,196,0.04)";
+                (e.currentTarget as HTMLElement).style.background = "rgba(99,102,241,0.04)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -604,7 +604,7 @@ export function SwapPage() {
                 padding: "12px",
                 borderRadius: "12px",
                 border: "1px dashed var(--color-primary)",
-                background: "rgba(124,155,196,0.08)",
+                background: "rgba(99,102,241,0.08)",
                 color: "var(--color-primary)",
                 fontSize: "14px",
                 fontWeight: 600,
@@ -693,7 +693,7 @@ export function SwapPage() {
                   const el = e.currentTarget as HTMLElement;
                   el.style.borderColor = "var(--color-primary)";
                   el.style.color = "var(--color-primary)";
-                  el.style.background = "rgba(124,155,196,0.08)";
+                  el.style.background = "rgba(99,102,241,0.08)";
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement;
@@ -822,7 +822,7 @@ export function SwapPage() {
                       right: "0",
                       top: "50%",
                       transform: "translateY(-50%)",
-                      background: "rgba(124,155,196,0.15)",
+                      background: "rgba(99,102,241,0.15)",
                       color: "var(--color-primary)",
                       border: "none",
                       borderRadius: "4px",
@@ -1118,7 +1118,7 @@ export function SwapPage() {
                             slippage === s
                               ? "1px solid var(--color-primary)"
                               : "1px solid var(--color-border)",
-                          background: slippage === s ? "rgba(124,155,196,0.15)" : "transparent",
+                          background: slippage === s ? "rgba(99,102,241,0.15)" : "transparent",
                           color:
                             slippage === s
                               ? "var(--color-primary)"
@@ -1190,14 +1190,14 @@ export function SwapPage() {
                     width: "100%",
                     height: "48px",
                     borderRadius: "10px",
-                    background: "rgba(246,70,93,0.20)",
+                    background: "rgba(251,70,103,0.20)",
                     color: "var(--color-bearish)",
                     fontSize: "15px",
                     fontWeight: 700,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: "1px solid rgba(246,70,93,0.30)",
+                    border: "1px solid rgba(251,70,103,0.30)",
                   }}
                 >
                   Insufficient Balance
@@ -1212,7 +1212,7 @@ export function SwapPage() {
                     borderRadius: "10px",
                     background:
                       isSwapping || !fromAmount || swapResult.output <= 0
-                        ? "rgba(14,203,129,0.40)"
+                        ? "rgba(34,211,166,0.40)"
                         : "var(--color-bullish)",
                     color: isSwapping
                       ? "var(--color-muted-foreground)"

@@ -31,7 +31,7 @@ const BROKERS: BrokerInfo[] = [
     name: "Binance",
     rating: 4.9,
     badge: "FEATURED",
-    color: "#F0B90B",
+    color: "var(--color-gold)",
     affiliateUrl: "https://www.binance.com/en/register?ref=VIXOR",
   },
   {
@@ -125,7 +125,7 @@ const StarRating = memo(function StarRating({ rating }: { rating: number }) {
           fontWeight: 600,
           color: "var(--color-muted-foreground)",
           marginLeft: "4px",
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
         }}
       >
         {rating.toFixed(1)}
@@ -232,7 +232,7 @@ const BrokerCard = memo(function BrokerCard({
                   fontWeight: 700,
                   padding: "1px 6px",
                   borderRadius: "3px",
-                  background: "rgba(14, 203, 129, 0.12)",
+                  background: "rgba(34, 211, 166, 0.12)",
                   color: "var(--color-bullish)",
                   letterSpacing: "0.04em",
                 }}
@@ -633,7 +633,7 @@ const ConnectedStrip = memo(function ConnectedStrip({
     <div
       style={{
         padding: "10px 16px",
-        background: "rgba(14, 203, 129, 0.04)",
+        background: "rgba(34, 211, 166, 0.04)",
         borderBottom: "1px solid var(--color-border)",
         display: "flex",
         gap: "8px",
@@ -652,7 +652,7 @@ const ConnectedStrip = memo(function ConnectedStrip({
             padding: "6px 10px",
             borderRadius: "8px",
             background: "var(--color-card)",
-            border: "1px solid rgba(14, 203, 129, 0.2)",
+            border: "1px solid rgba(34, 211, 166, 0.2)",
             flexShrink: 0,
           }}
         >
@@ -682,7 +682,7 @@ const ConnectedStrip = memo(function ConnectedStrip({
               fontWeight: 700,
               padding: "1px 6px",
               borderRadius: "3px",
-              background: "rgba(14, 203, 129, 0.12)",
+              background: "rgba(34, 211, 166, 0.12)",
               color: "var(--color-bullish)",
               letterSpacing: "0.04em",
             }}

@@ -118,7 +118,7 @@ function ErrorView({ error, onReset }: { error: Error | null; onReset: () => voi
       <div className="mx-auto max-w-sm text-center">
         <div
           className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
-          style={{ background: "rgba(246,70,93,0.12)" }}
+          style={{ background: "var(--bearish-bg)" }}
         >
           <svg
             width="32"
@@ -447,7 +447,7 @@ function RootComponent() {
             toastOptions={{
               style: {
                 background: "var(--card)",
-                border: "1px solid #2A2D37",
+                border: "1px solid var(--color-border)",
                 color: "#E4E5E9",
               },
             }}

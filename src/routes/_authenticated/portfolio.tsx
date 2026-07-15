@@ -195,7 +195,7 @@ const HoldingRow = memo(function HoldingRow({
                 width: 26,
                 height: 26,
                 borderRadius: "50%",
-                background: isPos ? `rgba(14,203,129,0.10)` : `rgba(246,70,93,0.10)`,
+                background: isPos ? `rgba(34,211,166,0.10)` : `rgba(251,70,103,0.10)`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -211,7 +211,7 @@ const HoldingRow = memo(function HoldingRow({
             <div style={{ minWidth: 0 }}>
               <div
                 style={{
-                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                   fontSize: "12px",
                   fontWeight: 700,
                   color: "var(--color-foreground)",
@@ -239,7 +239,7 @@ const HoldingRow = memo(function HoldingRow({
               style={{
                 fontSize: "12px",
                 fontWeight: 700,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: pnlColor,
               }}
             >

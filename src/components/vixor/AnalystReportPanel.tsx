@@ -152,7 +152,7 @@ export function AnalystReportPanel({ onRefresh }: AnalystReportPanelProps) {
     return (
       <div className="rounded-xl border border-bearish/30 bg-card/80 backdrop-blur-sm shadow-lg shadow-black/20 p-5 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center gap-2.5 mb-3">
-          <div className="flex items-center justify-center size-8 rounded-lg bg-red-500/10">
+          <div className="flex items-center justify-center size-8 rounded-lg bg-bearish/10">
             <AlertCircle className="size-4 text-bearish" />
           </div>
           <span className="text-sm font-semibold text-bearish">Report Error</span>

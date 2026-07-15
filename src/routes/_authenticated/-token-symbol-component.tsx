@@ -134,7 +134,7 @@ function getRiskColor(risk?: string): string {
   if (!risk) return "var(--color-muted-foreground)";
   const r = risk.toLowerCase();
   if (r === "low") return "var(--color-bullish)";
-  if (r === "medium") return "#F0B90B";
+  if (r === "medium") return "var(--color-gold)";
   if (r === "high") return "var(--color-bearish)";
   return "var(--color-muted-foreground)";
 }
@@ -198,11 +198,11 @@ function getAssetTypeBadge(assetType: AssetType): { label: string; color: string
     case "meme":
       return { label: "MEME 🐕", color: "#F7931A" };
     case "crypto":
-      return { label: "CRYPTO ₿", color: "#7C9BC4" };
+      return { label: "CRYPTO ₿", color: "var(--color-primary)" };
     case "forex":
       return { label: "FOREX 💱", color: "#A78BFA" };
     case "commodity":
-      return { label: "COMMODITY 🥇", color: "#F0B90B" };
+      return { label: "COMMODITY 🥇", color: "var(--color-gold)" };
     default:
       return { label: "TOKEN", color: "var(--color-muted-foreground)" };
   }
@@ -463,7 +463,7 @@ export function TokenPage() {
                         style={{
                           fontSize: "13px",
                           fontWeight: 700,
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                           color:
                             (t.pnl ?? 0) >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                         }}
@@ -567,7 +567,7 @@ export function TokenPage() {
                     height: "36px",
                     borderRadius: "8px",
                     border: `1px solid var(--color-border)`,
-                    background: isWatched ? "rgba(14,203,129,0.12)" : "var(--color-card)",
+                    background: isWatched ? "rgba(34,211,166,0.12)" : "var(--color-card)",
                     color: isWatched ? "var(--color-bullish)" : "var(--color-muted-foreground)",
                     display: "flex",
                     alignItems: "center",
@@ -678,7 +678,7 @@ export function TokenPage() {
                 fontWeight: 700,
                 fontSize: "13px",
                 letterSpacing: "0.04em",
-                background: "rgba(124,155,196,0.10)",
+                background: "rgba(99,102,241,0.10)",
                 color: "var(--color-primary)",
                 transition: "all 0.15s",
                 display: "flex",
@@ -687,10 +687,10 @@ export function TokenPage() {
                 gap: "8px",
               }}
               onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.background = "rgba(124,155,196,0.18)";
+                (e.target as HTMLElement).style.background = "rgba(99,102,241,0.18)";
               }}
               onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.background = "rgba(124,155,196,0.10)";
+                (e.target as HTMLElement).style.background = "rgba(99,102,241,0.10)";
               }}
             >
               <span style={{ fontSize: "16px" }}>⚡</span>
@@ -793,7 +793,7 @@ export function TokenPage() {
                     fontSize: "14px",
                     fontWeight: 600,
                     color: "var(--color-muted-foreground)",
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                   }}
                 >
                   ${symbol.toUpperCase()}
@@ -822,7 +822,7 @@ export function TokenPage() {
                       fontWeight: 700,
                       padding: "2px 5px",
                       borderRadius: "3px",
-                      background: "rgba(14,203,129,0.15)",
+                      background: "rgba(34,211,166,0.15)",
                       color: "var(--color-bullish)",
                       letterSpacing: "0.04em",
                       lineHeight: 1,
@@ -835,7 +835,7 @@ export function TokenPage() {
                   style={{
                     fontSize: "24px",
                     fontWeight: 800,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                     color: "var(--color-foreground)",
                     letterSpacing: "-0.02em",
                   }}
@@ -846,7 +846,7 @@ export function TokenPage() {
                   style={{
                     fontSize: "14px",
                     fontWeight: 700,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                     color:
                       (displayChange ?? 0) >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                     marginLeft: "10px",
@@ -881,7 +881,7 @@ export function TokenPage() {
                   height: "36px",
                   borderRadius: "8px",
                   border: `1px solid var(--color-border)`,
-                  background: isWatched ? "rgba(14,203,129,0.12)" : "var(--color-card)",
+                  background: isWatched ? "rgba(34,211,166,0.12)" : "var(--color-card)",
                   color: isWatched ? "var(--color-bullish)" : "var(--color-muted-foreground)",
                   display: "flex",
                   alignItems: "center",
@@ -1051,7 +1051,7 @@ export function TokenPage() {
                 color: "var(--color-foreground)",
                 fontSize: "14px",
                 fontWeight: 600,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 outline: "none",
                 boxSizing: "border-box",
               }}
@@ -1087,13 +1087,13 @@ export function TokenPage() {
                     border: `1px solid ${
                       leverage === lev ? "var(--color-primary)" : "var(--color-border)"
                     }`,
-                    background: leverage === lev ? "rgba(124,155,196,0.15)" : "var(--color-card)",
+                    background: leverage === lev ? "rgba(99,102,241,0.15)" : "var(--color-card)",
                     color:
                       leverage === lev ? "var(--color-primary)" : "var(--color-muted-foreground)",
                     cursor: "pointer",
                     fontSize: "12px",
                     fontWeight: 700,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                     transition: "all 0.12s",
                   }}
                 >
@@ -1235,7 +1235,7 @@ export function TokenPage() {
                   style={{
                     fontSize: "18px",
                     fontWeight: 800,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                     color: "var(--color-info)",
                   }}
                 >
@@ -1254,12 +1254,12 @@ export function TokenPage() {
                   style={{
                     fontSize: "18px",
                     fontWeight: 800,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                     color:
                       (tokenData?.smartMoneyPct ?? 0) >= 50
                         ? "var(--color-bullish)"
                         : (tokenData?.smartMoneyPct ?? 0) >= 25
-                          ? "#F0B90B"
+                          ? "var(--color-gold)"
                           : "var(--color-bearish)",
                   }}
                 >
@@ -1286,12 +1286,12 @@ export function TokenPage() {
                   style={{
                     fontSize: "18px",
                     fontWeight: 800,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                     color:
                       (tokenData?.discoveryScore ?? 0) >= 60
                         ? "var(--color-bullish)"
                         : (tokenData?.discoveryScore ?? 0) >= 30
-                          ? "#F0B90B"
+                          ? "var(--color-gold)"
                           : "var(--color-muted-foreground)",
                   }}
                 >
@@ -1380,7 +1380,7 @@ export function TokenPage() {
                       style={{
                         fontSize: "11px",
                         fontWeight: 600,
-                        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                        fontFamily: "var(--font-mono)",
                         color: "var(--color-primary)",
                       }}
                     >
@@ -1393,7 +1393,7 @@ export function TokenPage() {
                     fontSize: "11px",
                     color: "var(--color-muted-foreground)",
                     flexShrink: 0,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                   }}
                 >
                   {new Date(a.created_at).toLocaleDateString("en-US", {
@@ -1491,7 +1491,7 @@ export function TokenPage() {
               fontWeight: 700,
               fontSize: "13px",
               letterSpacing: "0.04em",
-              background: "rgba(124,155,196,0.10)",
+              background: "rgba(99,102,241,0.10)",
               color: "var(--color-primary)",
               transition: "all 0.15s",
               display: "flex",
@@ -1500,10 +1500,10 @@ export function TokenPage() {
               gap: "8px",
             }}
             onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.background = "rgba(124,155,196,0.18)";
+              (e.target as HTMLElement).style.background = "rgba(99,102,241,0.18)";
             }}
             onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.background = "rgba(124,155,196,0.10)";
+              (e.target as HTMLElement).style.background = "rgba(99,102,241,0.10)";
             }}
           >
             <span style={{ fontSize: "16px" }}>⚡</span>
@@ -1537,9 +1537,9 @@ function ForexSessionIndicator() {
   }, []);
 
   const sessions = [
-    { name: "Tokyo", start: 0, end: 540, color: "#F0B90B" },
-    { name: "London", start: 480, end: 1020, color: "#7C9BC4" },
-    { name: "New York", start: 780, end: 1320, color: "#0ECB81" },
+    { name: "Tokyo", start: 0, end: 540, color: "var(--color-gold)" },
+    { name: "London", start: 480, end: 1020, color: "var(--color-primary)" },
+    { name: "New York", start: 780, end: 1320, color: "var(--color-bullish)" },
   ] as const;
 
   return (
@@ -1558,7 +1558,7 @@ function ForexSessionIndicator() {
           status === "active"
             ? s.color
             : status === "upcoming"
-              ? "#F0B90B"
+              ? "var(--color-gold)"
               : "var(--color-muted-foreground)";
         return (
           <div
@@ -1628,7 +1628,7 @@ function GaugeBar({
           style={{
             fontSize: "12px",
             fontWeight: 700,
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             color,
           }}
         >
@@ -1674,13 +1674,13 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
   );
   const hypeLevel =
     hypeRaw >= 80
-      ? { label: "FRENZY", color: "#F6465D" }
+      ? { label: "FRENZY", color: "var(--color-bearish)" }
       : hypeRaw >= 60
         ? { label: "HIGH", color: "#F7931A" }
         : hypeRaw >= 40
-          ? { label: "MODERATE", color: "#F0B90B" }
+          ? { label: "MODERATE", color: "var(--color-gold)" }
           : hypeRaw >= 20
-            ? { label: "LOW", color: "#7C9BC4" }
+            ? { label: "LOW", color: "var(--color-primary)" }
             : { label: "DORMANT", color: "var(--color-muted-foreground)" };
 
   return (
@@ -1713,7 +1713,7 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
             socialScore >= 60
               ? "var(--color-bullish)"
               : socialScore >= 30
-                ? "#F0B90B"
+                ? "var(--color-gold)"
                 : "var(--color-bearish)"
           }
           label="Social Score"
@@ -1738,7 +1738,7 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
               style={{
                 fontSize: "12px",
                 fontWeight: 700,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: hypeLevel.color,
               }}
             >
@@ -1759,7 +1759,7 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
                 width: `${hypeRaw}%`,
                 height: "100%",
                 borderRadius: "3px",
-                background: `linear-gradient(90deg, #7C9BC4, ${hypeLevel.color})`,
+                background: `linear-gradient(90deg, var(--color-primary), ${hypeLevel.color})`,
                 transition: "width 0.3s ease",
               }}
             />
@@ -1774,7 +1774,7 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
               smartMoneyPct >= 50
                 ? "var(--color-bullish)"
                 : smartMoneyPct >= 25
-                  ? "#F0B90B"
+                  ? "var(--color-gold)"
                   : "var(--color-bearish)"
             }
             label="Smart Money % (est.)"
@@ -1812,8 +1812,8 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
                 gap: "8px",
                 padding: "10px 12px",
                 borderRadius: "8px",
-                background: "rgba(246,70,93,0.12)",
-                border: `1px solid rgba(246,70,93,0.25)`,
+                background: "var(--bearish-bg)",
+                border: `1px solid rgba(251,70,103,0.25)`,
               }}
             >
               <span style={{ fontSize: "14px" }}>🚫</span>
@@ -1848,7 +1848,7 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
             >
               <span style={{ fontSize: "14px" }}>💧</span>
               <div>
-                <div style={{ fontSize: "12px", fontWeight: 700, color: "#F0B90B" }}>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-gold)" }}>
                   LOW LIQUIDITY
                 </div>
                 <div
@@ -1872,8 +1872,8 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
                 gap: "8px",
                 padding: "10px 12px",
                 borderRadius: "8px",
-                background: "rgba(14,203,129,0.08)",
-                border: `1px solid rgba(14,203,129,0.20)`,
+                background: "rgba(34,211,166,0.08)",
+                border: `1px solid rgba(34,211,166,0.20)`,
               }}
             >
               <span style={{ fontSize: "14px" }}>✓</span>
@@ -1947,7 +1947,7 @@ function CryptoSections({ tokenData }: { tokenData: TokenItem | null }) {
               style={{
                 fontSize: "16px",
                 fontWeight: 800,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-foreground)",
               }}
             >
@@ -1962,7 +1962,7 @@ function CryptoSections({ tokenData }: { tokenData: TokenItem | null }) {
               style={{
                 fontSize: "16px",
                 fontWeight: 800,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-primary)",
               }}
             >
@@ -1977,8 +1977,8 @@ function CryptoSections({ tokenData }: { tokenData: TokenItem | null }) {
               style={{
                 fontSize: "16px",
                 fontWeight: 800,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                color: "#F0B90B",
+                fontFamily: "var(--font-mono)",
+                color: "var(--color-gold)",
               }}
             >
               {fmtCompact(cexVol)}
@@ -2023,7 +2023,7 @@ function CryptoSections({ tokenData }: { tokenData: TokenItem | null }) {
             style={{
               width: `${volume > 0 ? (cexVol / volume) * 100 : 50}%`,
               height: "100%",
-              background: "#F0B90B",
+              background: "var(--color-gold)",
             }}
           />
         </div>
@@ -2052,7 +2052,7 @@ function CryptoSections({ tokenData }: { tokenData: TokenItem | null }) {
             style={{
               fontSize: "13px",
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: "var(--color-foreground)",
               marginTop: "2px",
             }}
@@ -2123,15 +2123,19 @@ function ForexSections({ symbol }: { symbol: string }) {
     switch (impact) {
       case "high":
         return {
-          bg: "rgba(246,70,93,0.15)",
+          bg: "rgba(251,70,103,0.15)",
           border: "var(--color-bearish)",
           color: "var(--color-bearish)",
         };
       case "medium":
-        return { bg: "rgba(240,185,11,0.15)", border: "#F0B90B", color: "#F0B90B" };
+        return {
+          bg: "rgba(240,185,11,0.15)",
+          border: "var(--color-gold)",
+          color: "var(--color-gold)",
+        };
       default:
         return {
-          bg: "rgba(14,203,129,0.15)",
+          bg: "rgba(34,211,166,0.15)",
           border: "var(--color-bullish)",
           color: "var(--color-bullish)",
         };
@@ -2210,7 +2214,7 @@ function ForexSections({ symbol }: { symbol: string }) {
                   style={{
                     fontSize: "12px",
                     fontWeight: 700,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                     color: "var(--color-foreground)",
                     width: "40px",
                     flexShrink: 0,
@@ -2309,7 +2313,7 @@ function ForexSections({ symbol }: { symbol: string }) {
                     gap: "8px",
                     padding: isRelevant ? "6px 8px" : "4px 8px",
                     borderRadius: "6px",
-                    background: isRelevant ? "rgba(124,155,196,0.10)" : "transparent",
+                    background: isRelevant ? "rgba(99,102,241,0.10)" : "transparent",
                   }}
                 >
                   <span
@@ -2341,7 +2345,7 @@ function ForexSections({ symbol }: { symbol: string }) {
                           str >= 65
                             ? "var(--color-bullish)"
                             : str >= 50
-                              ? "#F0B90B"
+                              ? "var(--color-gold)"
                               : "var(--color-bearish)",
                         transition: "width 0.3s ease",
                       }}
@@ -2351,7 +2355,7 @@ function ForexSections({ symbol }: { symbol: string }) {
                     style={{
                       fontSize: "10px",
                       fontWeight: 700,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color: "var(--color-foreground)",
                       width: "24px",
                       textAlign: "right",
@@ -2474,7 +2478,7 @@ function CommoditySections({ tokenData, symbol }: { tokenData: TokenItem | null;
             style={{
               fontSize: "13px",
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               marginTop: "2px",
               color: "var(--color-foreground)",
             }}
@@ -2519,7 +2523,7 @@ function CommoditySections({ tokenData, symbol }: { tokenData: TokenItem | null;
               style={{
                 fontSize: "16px",
                 fontWeight: 800,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-bearish)",
               }}
             >
@@ -2534,7 +2538,7 @@ function CommoditySections({ tokenData, symbol }: { tokenData: TokenItem | null;
               style={{
                 fontSize: "16px",
                 fontWeight: 800,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-primary)",
               }}
             >
@@ -2549,7 +2553,7 @@ function CommoditySections({ tokenData, symbol }: { tokenData: TokenItem | null;
               style={{
                 fontSize: "16px",
                 fontWeight: 800,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-bullish)",
               }}
             >
@@ -2586,7 +2590,7 @@ function MarketStat({ label, value }: { label: string; value: string }) {
         style={{
           fontSize: "13px",
           fontWeight: 700,
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
           color: "var(--color-foreground)",
           lineHeight: 1.2,
           overflow: "hidden",
@@ -2618,7 +2622,7 @@ function QuickCalcRow({
         justifyContent: "space-between",
         alignItems: "center",
         padding: "4px 0",
-        borderBottom: `1px solid rgba(124,155,196,0.04)`,
+        borderBottom: `1px solid rgba(99,102,241,0.04)`,
       }}
     >
       <span
@@ -2633,7 +2637,7 @@ function QuickCalcRow({
         style={{
           fontSize: "12px",
           fontWeight: 700,
-          fontFamily: mono ? "'JetBrains Mono', ui-monospace, monospace" : undefined,
+          fontFamily: mono ? "var(--font-mono)" : undefined,
           color: valueColor || "var(--color-foreground)",
         }}
       >
@@ -2688,7 +2692,7 @@ function MetricPill({ label, value, color }: { label: string; value: string; col
         style={{
           fontSize: "13px",
           fontWeight: 700,
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
           color: color || "var(--color-foreground)",
         }}
       >
@@ -2736,7 +2740,7 @@ const TokenTradeRow = memo(function TokenTradeRow({ trade }: { trade: any }) {
           display: "flex",
           alignItems: "center",
           fontSize: "11px",
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
         }}
       >
         <div style={{ width: "50px" }}>

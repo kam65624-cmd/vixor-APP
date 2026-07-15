@@ -208,7 +208,7 @@ function ForexSectionHeader({ title, count }: { title: string; count: number }) 
         color: "var(--color-muted-foreground)",
         textTransform: "uppercase" as const,
         letterSpacing: "0.08em",
-        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFamily: "var(--font-sans)",
         display: "flex",
         alignItems: "center",
         gap: "6px",
@@ -312,7 +312,7 @@ function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void 
                 fontSize: "12px",
                 fontWeight: 700,
                 color: isGold ? GOLD_COLOR : "var(--color-foreground)",
-                fontFamily: "'Inter', system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
               }}
             >
               {isGold ? "Gold" : item.pair}
@@ -359,7 +359,7 @@ function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void 
           style={{
             fontSize: "12px",
             fontWeight: 700,
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: "var(--font-mono)",
             color: isGold ? GOLD_COLOR : "var(--color-foreground)",
           }}
         >
@@ -369,7 +369,7 @@ function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void 
           style={{
             fontSize: "10px",
             fontWeight: 600,
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: "var(--font-mono)",
             color,
           }}
         >
@@ -425,7 +425,7 @@ function SmartMoneyBar({ pct }: { pct?: number }) {
         style={{
           fontSize: "7px",
           fontWeight: 600,
-          fontFamily: "'JetBrains Mono', monospace",
+          fontFamily: "var(--font-mono)",
           color,
           lineHeight: 1,
         }}
@@ -513,7 +513,7 @@ function TokenRow({
         transition: "background 0.15s ease",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = "rgba(124,155,196,0.06)";
+        e.currentTarget.style.background = "rgba(99,102,241,0.06)";
         e.currentTarget.style.transform = "translateX(2px)";
       }}
       onMouseLeave={(e) => {
@@ -561,7 +561,7 @@ function TokenRow({
                 fontSize: "13px",
                 fontWeight: 700,
                 color: "var(--color-foreground)",
-                fontFamily: "'Inter', system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
               }}
             >
               {token.symbol}
@@ -627,7 +627,7 @@ function TokenRow({
           style={{
             fontSize: "13px",
             fontWeight: 700,
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: "var(--font-mono)",
             color: "var(--color-foreground)",
           }}
         >
@@ -658,7 +658,7 @@ function TokenRow({
             style={{
               fontSize: "12px",
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "var(--font-mono)",
               color,
               background: `${color}18`,
               padding: "1px 6px",
@@ -720,7 +720,7 @@ function FilterPanel({
     borderRadius: "6px",
     padding: "7px 10px",
     fontSize: "11px",
-    fontFamily: "'JetBrains Mono', monospace",
+    fontFamily: "var(--font-mono)",
     color: "var(--color-foreground)",
     outline: "none",
     minWidth: 0,
@@ -744,7 +744,7 @@ function FilterPanel({
           background: isOpen ? "var(--color-primary)" : "var(--color-card)",
           color: isOpen ? "#000" : "var(--color-muted-foreground)",
           transition: "all 0.15s ease",
-          fontFamily: "'Inter', system-ui, sans-serif",
+          fontFamily: "var(--font-sans)",
         }}
       >
         <SlidersHorizontal size={11} />
@@ -795,7 +795,7 @@ function FilterPanel({
                   color: "var(--color-muted-foreground)",
                   display: "block",
                   marginBottom: "4px",
-                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                 }}
@@ -818,7 +818,7 @@ function FilterPanel({
                   color: "var(--color-muted-foreground)",
                   display: "block",
                   marginBottom: "4px",
-                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                 }}
@@ -846,7 +846,7 @@ function FilterPanel({
                   color: "var(--color-muted-foreground)",
                   display: "block",
                   marginBottom: "4px",
-                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                 }}
@@ -861,7 +861,7 @@ function FilterPanel({
                   borderRadius: "6px",
                   border: `1px solid ${filters.honeypotOnly ? "var(--color-bearish)" : "var(--color-border)"}`,
                   background: filters.honeypotOnly
-                    ? "rgba(246, 70, 93, 0.15)"
+                    ? "rgba(251, 70, 103, 0.15)"
                     : "var(--color-card)",
                   color: filters.honeypotOnly
                     ? "var(--color-bearish)"
@@ -869,7 +869,7 @@ function FilterPanel({
                   fontSize: "10px",
                   fontWeight: 600,
                   cursor: "pointer",
-                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                   transition: "all 0.15s ease",
                 }}
               >
@@ -887,7 +887,7 @@ function FilterPanel({
                   display: "flex",
                   justifyContent: "space-between",
                   marginBottom: "4px",
-                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                 }}
@@ -896,7 +896,7 @@ function FilterPanel({
                 <span
                   style={{
                     color: "var(--color-foreground)",
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: "var(--font-mono)",
                   }}
                 >
                   {filters.smartMoneyMin}%
@@ -936,7 +936,7 @@ function FilterPanel({
                 cursor: "pointer",
                 background: "transparent",
                 color: "var(--color-muted-foreground)",
-                fontFamily: "'Inter', system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
                 transition: "all 0.12s ease",
               }}
             >
@@ -953,7 +953,7 @@ function FilterPanel({
                 cursor: "pointer",
                 background: "var(--color-primary)",
                 color: "#000",
-                fontFamily: "'Inter', system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
                 transition: "all 0.12s ease",
               }}
             >
@@ -1338,7 +1338,7 @@ function DiscoverPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
-                fontFamily: "'Inter', system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
               }}
             >
               {tab.label}
@@ -1352,7 +1352,7 @@ function DiscoverPage() {
                   color: isActive
                     ? "var(--color-primary-foreground)"
                     : "var(--color-muted-foreground)",
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: "var(--font-mono)",
                   lineHeight: "18px",
                 }}
               >
@@ -1386,7 +1386,7 @@ function DiscoverPage() {
               style={{
                 fontSize: "9px",
                 color: "var(--color-bullish)",
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: "var(--font-mono)",
                 whiteSpace: "nowrap",
               }}
             >
@@ -1430,7 +1430,7 @@ function DiscoverPage() {
               style={{
                 fontSize: "9px",
                 color: GOLD_COLOR,
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: "var(--font-mono)",
                 whiteSpace: "nowrap",
                 display: "flex",
                 alignItems: "center",
@@ -1495,7 +1495,7 @@ function DiscoverPage() {
               color: "var(--color-foreground)",
               fontSize: "11px",
               padding: "8px 0",
-              fontFamily: "'Inter', system-ui, sans-serif",
+              fontFamily: "var(--font-sans)",
             }}
           />
           {search.search && (
@@ -1555,7 +1555,7 @@ function DiscoverPage() {
                     : "var(--color-muted-foreground)",
                 transition: "all 0.12s",
                 whiteSpace: "nowrap",
-                fontFamily: "'Inter', system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
               }}
             >
               {opt.label}
@@ -1632,7 +1632,7 @@ function DiscoverPage() {
                       fontSize: "10px",
                       fontWeight: 700,
                       color: "var(--color-foreground)",
-                      fontFamily: "'Inter', system-ui, sans-serif",
+                      fontFamily: "var(--font-sans)",
                     }}
                   >
                     {brokerToast} — Connect Broker
@@ -1720,7 +1720,7 @@ function DiscoverPage() {
                     fontSize: "9px",
                     color: "var(--color-muted-foreground)",
                     borderTop: "1px solid var(--color-border)",
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: "var(--font-mono)",
                   }}
                 >
                   {FOREX_TOTAL_COUNT} pairs · Live data via TwelveData
@@ -1776,7 +1776,7 @@ function DiscoverPage() {
                             padding: "10px 14px",
                             borderRadius: "10px",
                             background: "var(--color-card)",
-                            border: `1px solid ${isUp ? "rgba(14,203,129,0.25)" : "rgba(246,70,93,0.25)"}`,
+                            border: `1px solid ${isUp ? "rgba(34,211,166,0.25)" : "rgba(251,70,103,0.25)"}`,
                             cursor: "pointer",
                             textAlign: "left",
                             minWidth: "100px",
@@ -1808,7 +1808,7 @@ function DiscoverPage() {
                               fontSize: "13px",
                               fontWeight: 700,
                               color: col,
-                              fontFamily: "'JetBrains Mono', monospace",
+                              fontFamily: "var(--font-mono)",
                             }}
                           >
                             {isUp ? "+" : ""}
@@ -1818,7 +1818,7 @@ function DiscoverPage() {
                             style={{
                               fontSize: "11px",
                               color: "var(--color-muted-foreground)",
-                              fontFamily: "'JetBrains Mono', monospace",
+                              fontFamily: "var(--font-mono)",
                               marginTop: "2px",
                             }}
                           >
@@ -1875,7 +1875,7 @@ function DiscoverPage() {
               fontSize: "9px",
               color: "var(--color-muted-foreground)",
               borderTop: "1px solid var(--color-border)",
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "var(--font-mono)",
             }}
           >
             Scanned {resp.total} tokens in {(resp.scanDurationMs / 1000).toFixed(1)}s

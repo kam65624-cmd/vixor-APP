@@ -54,7 +54,7 @@ const inputStyle: React.CSSProperties = {
   paddingLeft: 12,
   paddingRight: 12,
   fontSize: 14,
-  fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+  fontFamily: "var(--font-sans)",
   width: "100%",
   outline: "none",
   boxSizing: "border-box",
@@ -304,8 +304,8 @@ function Analyze() {
           <div
             style={{
               padding: 12,
-              background: "rgba(246,70,93,0.10)",
-              border: "1px solid rgba(246,70,93,0.30)",
+              background: "rgba(251,70,103,0.10)",
+              border: "1px solid rgba(251,70,103,0.30)",
               color: "var(--color-bearish)",
               fontSize: 12,
               fontWeight: 700,
@@ -357,9 +357,9 @@ function Analyze() {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--color-primary)";
-                e.currentTarget.style.background = "rgba(124, 155, 196, 0.08)";
+                e.currentTarget.style.background = "rgba(99, 102, 241, 0.08)";
                 e.currentTarget.style.boxShadow =
-                  "inset 0 0 60px rgba(124, 155, 196, 0.15), 0 8px 30px -4px rgba(0, 0, 0, 0.6)";
+                  "inset 0 0 60px rgba(99, 102, 241, 0.15), 0 8px 30px -4px rgba(0, 0, 0, 0.6)";
                 e.currentTarget.style.transform = "translateY(-2px)";
               }}
               onMouseLeave={(e) => {
@@ -388,14 +388,14 @@ function Analyze() {
                     height: 80,
                     borderRadius: 24,
                     background:
-                      "linear-gradient(135deg, rgba(14,203,129,0.15), rgba(14,203,129,0.05))",
-                    border: "1px solid rgba(14,203,129,0.2)",
+                      "linear-gradient(135deg, rgba(34,211,166,0.15), rgba(34,211,166,0.05))",
+                    border: "1px solid rgba(34,211,166,0.2)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     marginBottom: 24,
                     boxShadow:
-                      "0 12px 32px rgba(14,203,129,0.15), inset 0 2px 0 rgba(255,255,255,0.1)",
+                      "0 12px 32px rgba(34,211,166,0.15), inset 0 2px 0 rgba(255,255,255,0.1)",
                   }}
                 >
                   <Upload style={{ width: 36, height: 36, color: "var(--color-bullish)" }} />
@@ -446,7 +446,7 @@ function Analyze() {
                 <SelectTrigger
                   style={{
                     ...inputStyle,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                     height: 48,
                     background: "rgba(255,255,255,0.03)",
                     border: "1px solid rgba(255,255,255,0.1)",
@@ -463,7 +463,7 @@ function Analyze() {
                           display: "flex",
                           alignItems: "center",
                           gap: 8,
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                         }}
                       >
                         <span style={{ fontSize: 16 }}>{p.icon}</span>
@@ -495,8 +495,8 @@ function Analyze() {
                     gap: 8,
                     padding: "10px 14px",
                     borderRadius: 10,
-                    background: "rgba(14,203,129,0.08)",
-                    border: "1px solid rgba(14,203,129,0.20)",
+                    background: "rgba(34,211,166,0.08)",
+                    border: "1px solid rgba(34,211,166,0.20)",
                   }}
                 >
                   <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
@@ -626,7 +626,7 @@ function Analyze() {
                 overflow: "hidden",
                 border: `1px solid ${"var(--color-border)"}`,
                 aspectRatio: "4/3",
-                background: "rgba(124,155,196,0.05)",
+                background: "rgba(99,102,241,0.05)",
               }}
             >
               <img
@@ -691,7 +691,7 @@ function Analyze() {
                   <SelectTrigger
                     style={{
                       ...inputStyle,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                     }}
                   >
                     <SelectValue placeholder="Select pair" />
@@ -704,7 +704,7 @@ function Analyze() {
                             display: "flex",
                             alignItems: "center",
                             gap: 8,
-                            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                            fontFamily: "var(--font-mono)",
                           }}
                         >
                           <span style={{ fontSize: 16 }}>{p.icon}</span>
@@ -736,8 +736,8 @@ function Analyze() {
                       gap: 6,
                       padding: "8px 12px",
                       borderRadius: 8,
-                      background: "rgba(14,203,129,0.10)",
-                      border: "1px solid rgba(14,203,129,0.20)",
+                      background: "rgba(34,211,166,0.10)",
+                      border: "1px solid rgba(34,211,166,0.20)",
                     }}
                   >
                     <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
@@ -778,9 +778,9 @@ function Analyze() {
                         gap: 6,
                         cursor: "pointer",
                         background:
-                          tradingStyle === s.id ? "rgba(14,203,129,0.15)" : "var(--color-card)",
+                          tradingStyle === s.id ? "rgba(34,211,166,0.15)" : "var(--color-card)",
                         borderColor:
-                          tradingStyle === s.id ? "rgba(14,203,129,0.30)" : "var(--color-border)",
+                          tradingStyle === s.id ? "rgba(34,211,166,0.30)" : "var(--color-border)",
                         color:
                           tradingStyle === s.id
                             ? "var(--color-primary)"
@@ -825,7 +825,7 @@ function Analyze() {
                         padding: "10px 12px",
                         background:
                           analysisTechnique === t.id
-                            ? "rgba(124,155,196,0.15)"
+                            ? "rgba(99,102,241,0.15)"
                             : "var(--color-card)",
                         borderColor:
                           analysisTechnique === t.id
@@ -864,8 +864,8 @@ function Analyze() {
                   gap: 8,
                   padding: 12,
                   borderRadius: 8,
-                  background: "rgba(14,203,129,0.05)",
-                  border: "1px solid rgba(14,203,129,0.15)",
+                  background: "rgba(34,211,166,0.05)",
+                  border: "1px solid rgba(34,211,166,0.15)",
                 }}
               >
                 <Info
@@ -950,7 +950,7 @@ function Analyze() {
                   position: "absolute",
                   inset: 0,
                   borderRadius: 12,
-                  background: "rgba(14,203,129,0.20)",
+                  background: "rgba(34,211,166,0.20)",
                   animation: "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite",
                 }}
               />
@@ -992,7 +992,7 @@ function Analyze() {
             <div
               style={{
                 fontSize: 14,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-bullish)",
                 fontWeight: 700,
               }}

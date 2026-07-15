@@ -98,7 +98,7 @@ const PulseRow = memo(function PulseRow({ item }: { item: any }) {
           style={{
             fontSize: "10px",
             color: "var(--color-muted-foreground)",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",

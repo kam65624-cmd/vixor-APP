@@ -216,7 +216,7 @@ const WatchlistItemRow = memo(function WatchlistItemRow({ item }: { item: any })
           style={{
             width: "25%",
             textAlign: "right",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             color: "var(--color-muted-foreground)",
             fontSize: "11px",
           }}
@@ -227,7 +227,7 @@ const WatchlistItemRow = memo(function WatchlistItemRow({ item }: { item: any })
           style={{
             width: "25%",
             textAlign: "right",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             color: "var(--color-bullish)",
             fontSize: "11px",
           }}
@@ -286,7 +286,7 @@ const AlertRow = memo(function AlertRow({ alert }: { alert: any }) {
           style={{
             width: "20%",
             textAlign: "right",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             fontSize: "11px",
             color: "var(--color-foreground)",
           }}

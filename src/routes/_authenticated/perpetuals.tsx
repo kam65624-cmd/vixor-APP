@@ -58,7 +58,7 @@ const OpenPositionCard = memo(function OpenPositionCard({ position }: { position
             style={{
               fontSize: "12px",
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: pnlColor,
             }}
           >
@@ -128,7 +128,7 @@ const ClosedTradeCard = memo(function ClosedTradeCard({ trade }: { trade: any })
             alignItems: "center",
             gap: "8px",
             fontSize: "10px",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             color: "var(--color-muted-foreground)",
           }}
         >
@@ -141,7 +141,7 @@ const ClosedTradeCard = memo(function ClosedTradeCard({ trade }: { trade: any })
             style={{
               fontSize: "11px",
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: pnlColor,
             }}
           >
@@ -151,7 +151,7 @@ const ClosedTradeCard = memo(function ClosedTradeCard({ trade }: { trade: any })
           <span
             style={{
               fontSize: "10px",
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: rMult >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
             }}
           >

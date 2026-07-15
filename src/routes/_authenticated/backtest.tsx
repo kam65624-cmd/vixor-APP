@@ -56,7 +56,7 @@ const inputStyle: React.CSSProperties = {
   paddingLeft: 12,
   paddingRight: 12,
   fontSize: 14,
-  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+  fontFamily: "var(--font-mono)",
   width: "100%",
   outline: "none",
   boxSizing: "border-box",
@@ -551,7 +551,7 @@ function BacktestPage() {
                     letterSpacing: "0.1em",
                     color: "var(--color-muted-foreground)",
                     marginLeft: "auto",
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                   }}
                 >
                   {form.pair} · {form.timeframe}
@@ -654,7 +654,7 @@ function BacktestPage() {
                       style={{
                         fontSize: 14,
                         fontWeight: 700,
-                        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                        fontFamily: "var(--font-mono)",
                         color: stat.color,
                       }}
                     >
@@ -758,7 +758,7 @@ function BacktestPage() {
                     top: 8,
                     left: 8,
                     fontSize: 9,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                     color: "var(--color-muted-foreground)",
                   }}
                 >
@@ -773,7 +773,7 @@ function BacktestPage() {
                     bottom: 8,
                     left: 8,
                     fontSize: 9,
-                    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                    fontFamily: "var(--font-mono)",
                     color: "var(--color-muted-foreground)",
                   }}
                 >
@@ -810,7 +810,7 @@ function BacktestPage() {
                       letterSpacing: "0.1em",
                       color: "var(--color-muted-foreground)",
                       marginLeft: "auto",
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                     }}
                   >
                     {result.trades.length} trades
@@ -837,7 +837,7 @@ function BacktestPage() {
                           textAlign: "center",
                           color:
                             trade.netPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                         }}
                       >
                         {trade.netPnl >= 0 ? "+" : ""}
@@ -845,7 +845,7 @@ function BacktestPage() {
                       <span
                         style={{
                           fontWeight: 700,
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                           width: 56,
                           textAlign: "right",
                           color: "var(--color-foreground)",
@@ -867,7 +867,7 @@ function BacktestPage() {
                       <span
                         style={{
                           fontSize: 10,
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                           color: "var(--color-muted-foreground)",
                         }}
                       >
@@ -879,7 +879,7 @@ function BacktestPage() {
                           fontWeight: 700,
                           color:
                             trade.netPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                         }}
                       >
                         {trade.rMultiple?.toFixed(1) || "—"}R
@@ -940,7 +940,7 @@ function MetricCard({
         style={{
           fontSize: 18,
           fontWeight: 700,
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
           color: positive ? "var(--color-bullish)" : "var(--color-bearish)",
         }}
       >

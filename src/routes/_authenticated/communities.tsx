@@ -113,7 +113,7 @@ const StrategyCard = memo(function StrategyCard({
           style={{
             fontSize: 11,
             color: "var(--color-muted-foreground)",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             flexShrink: 0,
           }}
         >
@@ -206,7 +206,7 @@ const PostCard = memo(function PostCard({
           style={{
             fontSize: 11,
             color: "var(--color-muted-foreground)",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             flexShrink: 0,
           }}
         >

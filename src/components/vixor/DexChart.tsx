@@ -40,26 +40,26 @@ interface KlineBar {
 
 const CHART_OPTIONS: DeepPartial<ChartOptions> = {
   layout: {
-    background: { type: ColorType.Solid, color: "#0B0D10" },
+    background: { type: ColorType.Solid, color: "var(--color-background)" },
     textColor: "#9CA3AF",
     fontSize: 11,
-    fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+    fontFamily: "var(--font-sans)",
   },
   grid: {
-    vertLines: { color: "rgba(124,155,196,0.04)" },
-    horzLines: { color: "rgba(124,155,196,0.04)" },
+    vertLines: { color: "rgba(99,102,241,0.04)" },
+    horzLines: { color: "rgba(99,102,241,0.04)" },
   },
   crosshair: {
     mode: CrosshairMode.Normal,
-    vertLine: { color: "rgba(124,155,196,0.3)", labelBackgroundColor: "#7C9BC4" },
-    horzLine: { color: "rgba(124,155,196,0.3)", labelBackgroundColor: "#7C9BC4" },
+    vertLine: { color: "rgba(99,102,241,0.3)", labelBackgroundColor: "var(--color-primary)" },
+    horzLine: { color: "rgba(99,102,241,0.3)", labelBackgroundColor: "var(--color-primary)" },
   },
   rightPriceScale: {
-    borderColor: "rgba(124,155,196,0.08)",
+    borderColor: "rgba(99,102,241,0.08)",
     scaleMargins: { top: 0.05, bottom: 0.25 },
   },
   timeScale: {
-    borderColor: "rgba(124,155,196,0.08)",
+    borderColor: "rgba(99,102,241,0.08)",
     timeVisible: true,
     rightOffset: 5,
     barSpacing: 8,
@@ -98,12 +98,12 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
     });
 
     const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: "#0ECB81",
-      downColor: "#F6465D",
-      borderDownColor: "#F6465D",
-      borderUpColor: "#0ECB81",
-      wickDownColor: "#F6465D",
-      wickUpColor: "#0ECB81",
+      upColor: "var(--color-bullish)",
+      downColor: "var(--color-bearish)",
+      borderDownColor: "var(--color-bearish)",
+      borderUpColor: "var(--color-bullish)",
+      wickDownColor: "var(--color-bearish)",
+      wickUpColor: "var(--color-bullish)",
     });
 
     const volumeSeries = chart.addSeries(HistogramSeries, {
@@ -164,7 +164,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
         const volumes: HistogramData[] = data.map((k) => ({
           time: k.time as unknown as import("lightweight-charts").Time,
           value: k.volume,
-          color: k.close >= k.open ? "rgba(14,203,129,0.3)" : "rgba(246,70,93,0.3)",
+          color: k.close >= k.open ? "rgba(34,211,166,0.3)" : "rgba(251,70,103,0.3)",
         }));
 
         candleRef.current?.setData(candles);
@@ -209,7 +209,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
               border: "none",
               fontSize: "10px",
               fontWeight: activeInterval === tf.key ? 700 : 500,
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "var(--font-mono)",
               cursor: "pointer",
               background: activeInterval === tf.key ? "var(--color-primary)" : "transparent",
               color: activeInterval === tf.key ? "#000" : "var(--color-muted-foreground)",
@@ -238,7 +238,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
             style={{
               fontSize: "12px",
               color: "var(--color-muted-foreground)",
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "var(--font-mono)",
             }}
           >
             Loading chart...
@@ -266,7 +266,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
             style={{
               fontSize: "11px",
               color: "var(--color-muted-foreground)",
-              fontFamily: "'Inter', system-ui, sans-serif",
+              fontFamily: "var(--font-sans)",
             }}
           >
             {error}
@@ -281,7 +281,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
               color: "var(--color-foreground)",
               fontSize: "10px",
               cursor: "pointer",
-              fontFamily: "'Inter', system-ui, sans-serif",
+              fontFamily: "var(--font-sans)",
             }}
           >
             Retry

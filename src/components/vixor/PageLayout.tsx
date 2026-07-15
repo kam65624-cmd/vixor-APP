@@ -77,7 +77,7 @@ export function PageLayout({
       style={{
         background: "var(--color-background)",
         color: "var(--color-foreground)",
-        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+        fontFamily: "var(--font-sans)",
         minHeight: "100%",
         display: "flex",
         flexDirection: "column",
@@ -271,7 +271,7 @@ export const StatsRow = memo(function StatsRow({ stats }: { stats: StatItem[] })
             style={{
               fontSize: "14px",
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               fontVariantNumeric: "tabular-nums",
               color: s.color || "var(--color-foreground)",
               lineHeight: 1.2,
@@ -435,7 +435,7 @@ export function ProgressBar({
           style={{
             fontSize: "12px",
             fontWeight: 700,
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             color: barColor,
             whiteSpace: "nowrap",
           }}
@@ -697,7 +697,7 @@ export function LabelValue({
       style={{
         fontSize: "12px",
         color: "var(--color-muted-foreground)",
-        fontFamily: mono ? "'JetBrains Mono', ui-monospace, monospace" : undefined,
+        fontFamily: mono ? "var(--font-mono)" : undefined,
       }}
     >
       {label}{" "}
@@ -848,7 +848,7 @@ export function ProfileCard({
           width: "38px",
           height: "38px",
           borderRadius: "50%",
-          background: "rgba(124,155,196,0.08)",
+          background: "rgba(99,102,241,0.08)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -908,7 +908,7 @@ function MiniStat({ label, value, color }: { label: string; value: string; color
         style={{
           fontSize: "13px",
           fontWeight: 800,
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
           color,
         }}
       >

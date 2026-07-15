@@ -144,7 +144,7 @@ async function fetchRecentLargeTrades(tickers: Binance24hrTicker[]): Promise<Rad
       subtitle: `${symbol}/USDT`,
       detail: `${volumeStr} 24h volume${changePct >= 0 ? ` · +${changePct.toFixed(2)}%` : ` · ${changePct.toFixed(2)}%`}`,
       timestamp: new Date(Date.now() - (i * 5 + 1) * 60_000),
-      color: "#F0B90B",
+      color: "var(--color-gold)",
       icon: "🐋",
     };
   });
@@ -216,7 +216,7 @@ async function fetchVolumeAnomalies(tickers: Binance24hrTicker[]): Promise<Radar
           subtitle: `${symbol}/USDT`,
           detail: `Volume ${ratio.toFixed(1)}x above 24h average`,
           timestamp: new Date(latestCloseTime),
-          color: "#F0B90B",
+          color: "var(--color-gold)",
           icon: "📊",
         });
       }
@@ -280,14 +280,14 @@ function formatPrice(price: number): string {
 }
 
 function heatmapColor(change: number): string {
-  if (change >= 8) return "rgba(14, 203, 129, 0.85)";
-  if (change >= 5) return "rgba(14, 203, 129, 0.6)";
-  if (change >= 2) return "rgba(14, 203, 129, 0.4)";
-  if (change >= 0) return "rgba(14, 203, 129, 0.2)";
-  if (change >= -2) return "rgba(246, 70, 93, 0.2)";
-  if (change >= -5) return "rgba(246, 70, 93, 0.4)";
-  if (change >= -8) return "rgba(246, 70, 93, 0.6)";
-  return "rgba(246, 70, 93, 0.85)";
+  if (change >= 8) return "rgba(34, 211, 166, 0.85)";
+  if (change >= 5) return "rgba(34, 211, 166, 0.6)";
+  if (change >= 2) return "rgba(34, 211, 166, 0.4)";
+  if (change >= 0) return "rgba(34, 211, 166, 0.2)";
+  if (change >= -2) return "rgba(251, 70, 103, 0.2)";
+  if (change >= -5) return "rgba(251, 70, 103, 0.4)";
+  if (change >= -8) return "rgba(251, 70, 103, 0.6)";
+  return "rgba(251, 70, 103, 0.85)";
 }
 
 // ── Sub-Components ──────────────────────────────────────────────────────────
@@ -330,7 +330,7 @@ function BlipCard({ blip }: { blip: RadarBlip }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: hovered ? "rgba(124,155,196,0.04)" : "var(--color-card)",
+        background: hovered ? "rgba(99,102,241,0.04)" : "var(--color-card)",
         border: `1px solid ${hovered ? blip.color + "40" : "var(--color-border)"}`,
         borderLeft: `3px solid ${blip.color}`,
         borderRadius: 8,
@@ -371,7 +371,7 @@ function BlipCard({ blip }: { blip: RadarBlip }) {
           style={{
             fontSize: 11,
             color: "var(--color-muted-foreground)",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             whiteSpace: "nowrap" as const,
           }}
         >
@@ -391,7 +391,7 @@ function BlipCard({ blip }: { blip: RadarBlip }) {
         style={{
           fontSize: 11,
           color: "var(--color-muted-foreground)",
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
           paddingLeft: 14,
         }}
       >
@@ -472,7 +472,7 @@ function TickerStrip({ tokens }: { tokens: MarketToken[] }) {
                 style={{
                   fontSize: 12,
                   fontWeight: 700,
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono)",
                   color: "var(--color-foreground)",
                 }}
               >
@@ -482,7 +482,7 @@ function TickerStrip({ tokens }: { tokens: MarketToken[] }) {
                 style={{
                   fontSize: 11,
                   fontWeight: 600,
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono)",
                   color: isUp ? "var(--color-bullish)" : "var(--color-bearish)",
                 }}
               >
@@ -545,7 +545,7 @@ function HeatmapGrid({ data }: { data: Array<{ symbol: string; change: number }>
             style={{
               fontSize: 10,
               fontWeight: 600,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: d.change >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
             }}
           >
@@ -567,8 +567,8 @@ function AlertsLogEntry({ blip, index }: { blip: RadarBlip; index: number }) {
         alignItems: "center",
         gap: 10,
         padding: "10px 16px",
-        borderBottom: "1px solid rgba(124,155,196,0.04)",
-        background: index % 2 === 0 ? "var(--color-card)" : "rgba(124,155,196,0.02)",
+        borderBottom: "1px solid rgba(99,102,241,0.04)",
+        background: index % 2 === 0 ? "var(--color-card)" : "rgba(99,102,241,0.02)",
         transition: "background 0.1s ease",
       }}
     >
@@ -576,7 +576,7 @@ function AlertsLogEntry({ blip, index }: { blip: RadarBlip; index: number }) {
       <span
         style={{
           fontSize: 11,
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
           color: "var(--color-muted-foreground)",
           minWidth: 48,
           flexShrink: 0,
@@ -607,7 +607,7 @@ function AlertsLogEntry({ blip, index }: { blip: RadarBlip; index: number }) {
           style={{
             fontSize: 11,
             color: "var(--color-muted-foreground)",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             whiteSpace: "nowrap" as const,
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -650,8 +650,8 @@ function DemoNotice() {
           fontWeight: 800,
           padding: "1px 6px",
           borderRadius: 3,
-          background: "#F0B90B22",
-          color: "#F0B90B",
+          background: "color-mix(in srgb, var(--color-gold) 13%, transparent)",
+          color: "var(--color-gold)",
           letterSpacing: "0.06em",
         }}
       >
@@ -823,7 +823,7 @@ function RadarPage() {
       {
         label: "Whale Moves",
         value: String(whaleCount),
-        color: "#F0B90B",
+        color: "var(--color-gold)",
         icon: "🐋",
         sub: "large txns",
       },
@@ -988,7 +988,7 @@ function RadarPage() {
                     style={{
                       fontSize: 12,
                       fontWeight: 700,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color: "var(--color-foreground)",
                     }}
                   >
@@ -998,7 +998,7 @@ function RadarPage() {
                     style={{
                       fontSize: 11,
                       fontWeight: 600,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color: isUp ? "var(--color-bullish)" : "var(--color-bearish)",
                     }}
                   >
@@ -1047,7 +1047,7 @@ function RadarPage() {
                     style={{
                       fontSize: 12,
                       fontWeight: 700,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color: "var(--color-foreground)",
                     }}
                   >
@@ -1057,7 +1057,7 @@ function RadarPage() {
                     style={{
                       fontSize: 11,
                       fontWeight: 600,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color: isUp ? "var(--color-bullish)" : "var(--color-bearish)",
                     }}
                   >

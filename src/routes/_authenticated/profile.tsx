@@ -165,7 +165,7 @@ const BadgeItem = memo(function BadgeItem({
         padding: "14px 8px",
         borderRadius: 12,
         background: "var(--color-card)",
-        border: "1px solid rgba(124,155,196,0.04)",
+        border: "1px solid rgba(99,102,241,0.04)",
         opacity: item.unlocked ? 1 : 0.35,
       }}
     >
@@ -473,7 +473,7 @@ function ProfilePage() {
               borderRadius: 16,
               objectFit: "cover" as const,
               flexShrink: 0,
-              border: "2px solid rgba(124,155,196,0.15)",
+              border: "2px solid rgba(99,102,241,0.15)",
             }}
           />
         ) : (
@@ -490,7 +490,7 @@ function ProfilePage() {
               fontWeight: 800,
               color: "var(--color-foreground)",
               flexShrink: 0,
-              border: "2px solid rgba(124,155,196,0.15)",
+              border: "2px solid rgba(99,102,241,0.15)",
             }}
           >
             {initial}
@@ -606,7 +606,7 @@ function ProfilePage() {
                             width: 24,
                             height: 24,
                             borderRadius: "50%",
-                            background: isPos ? "rgba(14,203,129,0.10)" : "rgba(246,70,93,0.10)",
+                            background: isPos ? "rgba(34,211,166,0.10)" : "rgba(251,70,103,0.10)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -636,7 +636,7 @@ function ProfilePage() {
                           style={{
                             fontSize: "11px",
                             fontWeight: 700,
-                            fontFamily: "'JetBrains Mono', monospace",
+                            fontFamily: "var(--font-mono)",
                             color: c,
                           }}
                         >

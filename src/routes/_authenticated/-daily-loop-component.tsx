@@ -50,7 +50,7 @@ const CSS_VARS: React.CSSProperties = {
   "--color-muted": "rgba(255,255,255,0.05)",
   "--color-muted-foreground": "var(--color-muted-foreground)",
   "--color-card": "var(--color-card)",
-  "--color-card-hover": "rgba(124,155,196,0.06)",
+  "--color-card-hover": "rgba(99,102,241,0.06)",
   "--color-border": "var(--color-border)",
   "--color-bullish": "var(--color-bullish)",
   "--color-bearish": "var(--color-bearish)",
@@ -465,7 +465,7 @@ function TodayTab({
             style={{
               fontSize: 14,
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: "var(--color-bullish)",
             }}
           >
@@ -617,7 +617,7 @@ function StreakWidget({
             style={{
               fontSize: 24,
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: "var(--color-foreground)",
             }}
           >
@@ -630,7 +630,7 @@ function StreakWidget({
             style={{
               fontSize: 24,
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: "var(--color-bullish)",
             }}
           >
@@ -643,7 +643,7 @@ function StreakWidget({
             style={{
               fontSize: 24,
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: "var(--color-bullish)",
             }}
           >
@@ -1033,7 +1033,7 @@ function SessionCard({
             style={{
               fontSize: 10,
               color: "var(--color-muted-foreground)",
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
             }}
           >
             {session.hours}
@@ -1200,7 +1200,7 @@ function EodReviewPhase({
                 style={{
                   fontSize: 14,
                   fontWeight: 700,
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono)",
                   color: loop.daily_pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                 }}
               >
@@ -1221,7 +1221,7 @@ function EodReviewPhase({
                 style={{
                   fontSize: 14,
                   fontWeight: 700,
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono)",
                   color: "var(--color-foreground)",
                 }}
               >
@@ -1234,7 +1234,7 @@ function EodReviewPhase({
                 style={{
                   fontSize: 14,
                   fontWeight: 700,
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono)",
                   color: "var(--color-bullish)",
                 }}
               >
@@ -1247,7 +1247,7 @@ function EodReviewPhase({
                 style={{
                   fontSize: 14,
                   fontWeight: 700,
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono)",
                   color: "var(--color-bearish)",
                 }}
               >
@@ -1291,7 +1291,7 @@ function EodReviewPhase({
               value={dailyPnl}
               onChange={(e) => setDailyPnl(e.target.value)}
               placeholder="0.00"
-              style={{ ...INPUT_STYLE, fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
+              style={{ ...INPUT_STYLE, fontFamily: "var(--font-mono)" }}
             />
           </div>
 
@@ -1314,7 +1314,7 @@ function EodReviewPhase({
                   ...INPUT_STYLE,
                   borderRadius: 6,
                   padding: "8px 10px",
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono)",
                 }}
               />
             </div>
@@ -1329,7 +1329,7 @@ function EodReviewPhase({
                   ...INPUT_STYLE,
                   borderRadius: 6,
                   padding: "8px 10px",
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono)",
                   color: "var(--color-bullish)",
                 }}
               />
@@ -1345,7 +1345,7 @@ function EodReviewPhase({
                   ...INPUT_STYLE,
                   borderRadius: 6,
                   padding: "8px 10px",
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono)",
                   color: "var(--color-bearish)",
                 }}
               />
@@ -1575,7 +1575,7 @@ function HistoryTab({
                         style={{
                           fontSize: 9,
                           fontWeight: 700,
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                           color: "var(--color-muted-foreground)",
                         }}
                       >
@@ -1620,7 +1620,7 @@ function HistoryTab({
                       style={{
                         fontSize: 12,
                         fontWeight: 700,
-                        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                        fontFamily: "var(--font-mono)",
                         color:
                           loop.daily_pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                       }}
@@ -1663,7 +1663,7 @@ function HistoryTab({
                         style={{
                           fontSize: 12,
                           fontWeight: 700,
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                           color: "var(--color-foreground)",
                         }}
                       >
@@ -1684,7 +1684,7 @@ function HistoryTab({
                         style={{
                           fontSize: 12,
                           fontWeight: 700,
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                           color: "var(--color-bullish)",
                         }}
                       >
@@ -1705,7 +1705,7 @@ function HistoryTab({
                         style={{
                           fontSize: 12,
                           fontWeight: 700,
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                           color: "var(--color-bearish)",
                         }}
                       >

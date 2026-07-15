@@ -78,7 +78,7 @@ const YieldCard = memo(function YieldCard({
             fontSize: 14,
             fontWeight: 700,
             color: "var(--color-bullish)",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
           }}
         >
           {formatPnL(yieldVal)}
@@ -115,7 +115,7 @@ const YieldCard = memo(function YieldCard({
         style={{
           fontSize: 11,
           color: "var(--color-muted-foreground)",
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
         }}
       >
         {formatDateFull(position.exitDate)}

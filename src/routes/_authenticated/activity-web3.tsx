@@ -122,7 +122,7 @@ function ActivityPage() {
                     style={{
                       fontSize: "13px",
                       fontWeight: 700,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color: t.pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                     }}
                   >

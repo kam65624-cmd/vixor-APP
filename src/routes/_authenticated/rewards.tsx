@@ -96,7 +96,7 @@ const StreakDayItem = memo(function StreakDayItem({ item }: { item: StreakDayDat
             background: `${"var(--color-bullish)"}1F`,
             border: `1px solid ${"var(--color-bullish)"}4D`,
           }
-        : { background: "var(--color-card)", border: "1px solid rgba(124,155,196,0.04)" };
+        : { background: "var(--color-card)", border: "1px solid rgba(99,102,241,0.04)" };
 
   const statusColor = item.checked
     ? "var(--color-primary)"
@@ -213,7 +213,7 @@ const RewardItem = memo(function RewardItem({
             : canAfford
               ? "var(--color-bullish)"
               : "var(--color-muted-foreground)",
-          fontFamily: "'Inter', system-ui, sans-serif",
+          fontFamily: "var(--font-sans)",
           opacity: redeeming ? 0.7 : 1,
           transition: "all 0.15s",
         }}
@@ -414,7 +414,7 @@ function RewardsPage() {
         style={{
           background: `linear-gradient(135deg, ${"var(--color-bullish)"}1F 0%, ${"var(--color-neutral-wait)"}0F 100%)`,
           borderRadius: 0,
-          border: "1px solid rgba(124,155,196,0.15)",
+          border: "1px solid rgba(99,102,241,0.15)",
           borderLeft: 0,
           borderRight: 0,
           padding: "24px 16px",
@@ -507,10 +507,10 @@ function RewardsPage() {
                 background: claimMutation.isSuccess
                   ? "var(--color-bullish)"
                   : "linear-gradient(135deg, var(--color-bullish) 0%, var(--color-primary) 100%)",
-                color: "#0B0D10",
+                color: "var(--color-background)",
                 fontSize: 15,
                 fontWeight: 800,
-                fontFamily: "'Inter', system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
                 transition: "all 0.2s",
                 opacity: claimMutation.isPending ? 0.7 : 1,
               }}
@@ -602,7 +602,7 @@ function RewardsPage() {
               cursor: "pointer",
               background: `${"var(--color-bullish)"}26`,
               color: "var(--color-primary)",
-              fontFamily: "'Inter', system-ui, sans-serif",
+              fontFamily: "var(--font-sans)",
             }}
             onClick={handleCopy}
           >

@@ -130,7 +130,7 @@ function ArbDashboard() {
               marginLeft: "auto",
               fontSize: "12px",
               color: "var(--color-muted-foreground)",
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
             }}
           >
             {new Date(data.scannedAt).toLocaleTimeString()}
@@ -220,7 +220,7 @@ function ArbDashboard() {
                     style={{
                       fontSize: "14px",
                       fontWeight: 800,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color: "var(--color-bullish)",
                     }}
                   >

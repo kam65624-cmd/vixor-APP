@@ -190,7 +190,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
               fontSize: "15px",
               fontWeight: 700,
               color: "var(--color-foreground)",
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
             }}
           >
             {item.pair || "\u2014"}
@@ -217,9 +217,9 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
                   fontWeight: 600,
                   padding: "3px 8px",
                   borderRadius: "6px",
-                  background: "rgba(245,158,11,0.1)",
+                  background: "rgba(245,166,35,0.1)",
                   color: "var(--color-neutral-wait)",
-                  border: "1px solid rgba(245,158,11,0.2)",
+                  border: "1px solid rgba(245,166,35,0.2)",
                   display: "inline-block",
                   lineHeight: 1.4,
                 }}
@@ -243,7 +243,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
             style={{
               fontSize: "18px",
               fontWeight: 800,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: confidenceColor,
               textShadow: `0 0 12px ${confidenceColor}40`,
               lineHeight: 1,
@@ -301,7 +301,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
                 fontSize: "13px",
                 fontWeight: 700,
                 color: "var(--color-foreground)",
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
               }}
             >
               {formatPrice(item.entry)}
@@ -313,7 +313,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
             style={{
               padding: "8px",
               borderRadius: "8px",
-              background: "rgba(246,70,93,0.06)",
+              background: "rgba(251,70,103,0.06)",
               textAlign: "center",
             }}
           >
@@ -332,7 +332,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
                 fontSize: "13px",
                 fontWeight: 700,
                 color: "var(--color-bearish)",
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
               }}
             >
               {formatPrice(item.stopLoss)}
@@ -344,7 +344,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
             style={{
               padding: "8px",
               borderRadius: "8px",
-              background: "rgba(14,203,129,0.06)",
+              background: "rgba(34,211,166,0.06)",
               textAlign: "center",
             }}
           >
@@ -363,7 +363,7 @@ const AlphaCard = memo(function AlphaCard({ item }: { item: any }) {
                 fontSize: "13px",
                 fontWeight: 700,
                 color: "var(--color-bullish)",
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
               }}
             >
               {formatTP(item.takeProfit)}

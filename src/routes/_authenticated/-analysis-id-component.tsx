@@ -50,7 +50,7 @@ const CARD: React.CSSProperties = {
   boxShadow: "0 4px 24px -8px oklch(0 0 0 / 0.4)",
 };
 
-const MONO = { fontFamily: "'JetBrains Mono', ui-monospace, monospace" } as const;
+const MONO = { fontFamily: "var(--font-mono)" } as const;
 
 const LABEL: React.CSSProperties = {
   fontSize: "12px",
@@ -107,7 +107,7 @@ function highlightSMC(text: string): React.ReactNode[] {
           style={{
             color: "var(--color-bullish)",
             fontWeight: 700,
-            background: `rgba(14,203,129,0.10)`,
+            background: `rgba(34,211,166,0.10)`,
             padding: "0 2px",
             borderRadius: "2px",
           }}
@@ -183,8 +183,8 @@ function ChartCanvasOverlay({
           const rect = getRect(fvg.box || fvg);
           if (!rect) return;
           const isBullish = fvg.type === "bullish" || fvg.direction === "up";
-          ctx.fillStyle = isBullish ? "rgba(14,203,129,0.2)" : "rgba(246,70,93,0.2)";
-          ctx.strokeStyle = isBullish ? "rgba(14,203,129,0.8)" : "rgba(246,70,93,0.8)";
+          ctx.fillStyle = isBullish ? "rgba(34,211,166,0.2)" : "rgba(251,70,103,0.2)";
+          ctx.strokeStyle = isBullish ? "rgba(34,211,166,0.8)" : "rgba(251,70,103,0.8)";
           ctx.lineWidth = 2;
           ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
           ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
@@ -200,8 +200,8 @@ function ChartCanvasOverlay({
           const rect = getRect(ob.box || ob);
           if (!rect) return;
           const isBullish = ob.type === "bullish" || ob.direction === "up";
-          ctx.fillStyle = isBullish ? "rgba(14,203,129,0.15)" : "rgba(246,70,93,0.15)";
-          ctx.strokeStyle = isBullish ? "rgba(14,203,129,1)" : "rgba(246,70,93,1)";
+          ctx.fillStyle = isBullish ? "rgba(34,211,166,0.15)" : "rgba(251,70,103,0.15)";
+          ctx.strokeStyle = isBullish ? "rgba(34,211,166,1)" : "rgba(251,70,103,1)";
           ctx.lineWidth = 2;
           ctx.setLineDash([5, 5]);
           ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
@@ -218,8 +218,8 @@ function ChartCanvasOverlay({
         analysis.liquidityZones.forEach((lz: any) => {
           const rect = getRect(lz.box || lz);
           if (!rect) return;
-          ctx.fillStyle = "rgba(245,158,11,0.2)";
-          ctx.strokeStyle = "rgba(245,158,11,0.8)";
+          ctx.fillStyle = "rgba(245,166,35,0.2)";
+          ctx.strokeStyle = "rgba(245,166,35,0.8)";
           ctx.lineWidth = 2;
           ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
           ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
@@ -235,7 +235,7 @@ function ChartCanvasOverlay({
           const rect = getRect(sr.box || sr);
           const y = rect ? rect.y : (sr.y ?? sr.price ?? 0) * (sr.y <= 1 ? h : 1);
           if (y === 0) return;
-          ctx.strokeStyle = sr.type === "support" ? "rgba(14,203,129,0.8)" : "rgba(246,70,93,0.8)";
+          ctx.strokeStyle = sr.type === "support" ? "rgba(34,211,166,0.8)" : "rgba(251,70,103,0.8)";
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(0, y);
@@ -254,7 +254,7 @@ function ChartCanvasOverlay({
           const y = rect ? rect.y : (pivot.y ?? pivot.price ?? 0) * (pivot.y <= 1 ? h : 1);
           const x = rect ? rect.x + rect.w / 2 : (pivot.x ?? w / 2);
           if (y === 0) return;
-          ctx.fillStyle = pivot.type === "top" ? "rgba(246,70,93,1)" : "rgba(14,203,129,1)";
+          ctx.fillStyle = pivot.type === "top" ? "rgba(251,70,103,1)" : "rgba(34,211,166,1)";
           ctx.beginPath();
           ctx.arc(x, y, 6, 0, 2 * Math.PI);
           ctx.fill();
@@ -444,10 +444,10 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
       const y2 = priceToY(fvg.bottom);
       const rectH = Math.abs(y2 - y1);
       const rectY = Math.min(y1, y2);
-      const color = fvg.type === "bullish" ? "#0ECB81" : "#F6465D";
+      const color = fvg.type === "bullish" ? "var(--color-bullish)" : "var(--color-bearish)";
 
       // Fill box
-      ctx.fillStyle = fvg.type === "bullish" ? "rgba(14,203,129,0.12)" : "rgba(246,70,93,0.12)";
+      ctx.fillStyle = fvg.type === "bullish" ? "rgba(34,211,166,0.12)" : "rgba(251,70,103,0.12)";
       ctx.fillRect(0, rectY, W, rectH);
 
       // Top border
@@ -470,9 +470,9 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
       const y2 = priceToY(ob.bottom);
       const rectH = Math.abs(y2 - y1);
       const rectY = Math.min(y1, y2);
-      const color = ob.type === "bullish" ? "#7C9BC4" : "#F59E0B";
+      const color = ob.type === "bullish" ? "var(--color-primary)" : "#F59E0B";
 
-      ctx.fillStyle = ob.type === "bullish" ? "rgba(124,155,196,0.15)" : "rgba(245,158,11,0.15)";
+      ctx.fillStyle = ob.type === "bullish" ? "rgba(99,102,241,0.15)" : "rgba(245,166,35,0.15)";
       ctx.fillRect(0, rectY, W, rectH);
 
       // Left accent bar
@@ -489,7 +489,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
     srLevels.forEach((sr) => {
       if (!hasPrice) return;
       const y = priceToY(sr.price);
-      const color = sr.type === "support" ? "#0ECB81" : "#F6465D";
+      const color = sr.type === "support" ? "var(--color-bullish)" : "var(--color-bearish)";
 
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.5;
@@ -523,7 +523,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
     liquidityZones.forEach((liq) => {
       if (!hasPrice) return;
       const y = priceToY(liq.price);
-      const color = liq.type === "buy_side" ? "#0ECB81" : "#F6465D";
+      const color = liq.type === "buy_side" ? "var(--color-bullish)" : "var(--color-bearish)";
       const label = liq.type === "buy_side" ? "BSL" : "SSL";
 
       ctx.strokeStyle = color + "99";
@@ -547,16 +547,16 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
 
     if (hasPrice && entry) {
       const ey = priceToY(entry);
-      ctx.strokeStyle = "#7C9BC4";
+      ctx.strokeStyle = "var(--color-primary)";
       ctx.lineWidth = 2;
       ctx.setLineDash([]);
       ctx.beginPath();
       ctx.moveTo(0, ey);
       ctx.lineTo(W, ey);
       ctx.stroke();
-      ctx.fillStyle = "rgba(124,155,196,0.15)";
+      ctx.fillStyle = "rgba(99,102,241,0.15)";
       ctx.fillRect(W - 54, ey - 9, 50, 16);
-      ctx.fillStyle = "#7C9BC4";
+      ctx.fillStyle = "var(--color-primary)";
       ctx.font = "bold 9px monospace";
       ctx.textAlign = "right";
       ctx.fillText(`ENT ${entry.toFixed(2)}`, W - 6, ey + 4);
@@ -565,7 +565,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
 
     if (hasPrice && sl) {
       const sy = priceToY(sl);
-      ctx.strokeStyle = "#F6465D";
+      ctx.strokeStyle = "var(--color-bearish)";
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 3]);
       ctx.beginPath();
@@ -573,7 +573,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
       ctx.lineTo(W, sy);
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = "#F6465D";
+      ctx.fillStyle = "var(--color-bearish)";
       ctx.font = "bold 9px monospace";
       ctx.textAlign = "right";
       ctx.fillText(`SL ${sl.toFixed(2)}`, W - 6, sy - 3);
@@ -581,11 +581,11 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
     }
 
     if (hasPrice && tps) {
-      const tpColors = ["#0ECB81", "#34D399", "#6EE7B7"];
+      const tpColors = ["var(--color-bullish)", "#34D399", "#6EE7B7"];
       (tps as number[]).forEach((tp, i) => {
         if (typeof tp !== "number") return;
         const ty = priceToY(tp);
-        const color = tpColors[i] ?? "#0ECB81";
+        const color = tpColors[i] ?? "var(--color-bullish)";
         ctx.strokeStyle = color;
         ctx.lineWidth = 1.5;
         ctx.setLineDash([6, 3]);
@@ -750,7 +750,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
                 style={{
                   width: 10,
                   height: 10,
-                  background: "rgba(14,203,129,0.3)",
+                  background: "rgba(34,211,166,0.3)",
                   border: "1px dashed #0ECB81",
                   display: "inline-block",
                   borderRadius: 2,
@@ -765,8 +765,8 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
                 style={{
                   width: 10,
                   height: 10,
-                  background: "rgba(124,155,196,0.3)",
-                  borderLeft: "3px solid #7C9BC4",
+                  background: "rgba(99,102,241,0.3)",
+                  borderLeft: "3px solid var(--color-primary)",
                   display: "inline-block",
                 }}
               />
@@ -781,7 +781,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
                 style={{
                   width: 12,
                   height: 2,
-                  background: "#0ECB81",
+                  background: "var(--color-bullish)",
                   display: "inline-block",
                   borderRadius: 1,
                 }}
@@ -835,8 +835,8 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
               width: 40,
               height: 40,
               borderRadius: "50%",
-              background: "rgba(124,155,196,0.10)",
-              border: "1px solid rgba(124,155,196,0.20)",
+              background: "rgba(99,102,241,0.10)",
+              border: "1px solid rgba(99,102,241,0.20)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -1009,7 +1009,7 @@ export function AnalysisResult() {
               ...CARD,
               padding: "32px",
               textAlign: "center",
-              borderColor: "rgba(246,70,93,0.30)",
+              borderColor: "rgba(251,70,103,0.30)",
             }}
           >
             <div
@@ -1017,7 +1017,7 @@ export function AnalysisResult() {
                 width: "64px",
                 height: "64px",
                 borderRadius: "50%",
-                background: "rgba(246,70,93,0.10)",
+                background: "rgba(251,70,103,0.10)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -1080,20 +1080,20 @@ export function AnalysisResult() {
                 overflow: "hidden",
                 margin: "0 16px 16px",
                 borderColor: isBullish
-                  ? "rgba(14,203,129,0.50)"
+                  ? "rgba(34,211,166,0.50)"
                   : isBearish
-                    ? "rgba(246,70,93,0.50)"
-                    : "rgba(245,158,11,0.40)",
+                    ? "rgba(251,70,103,0.50)"
+                    : "rgba(245,166,35,0.40)",
                 boxShadow: isBullish
-                  ? "0 0 40px rgba(14,203,129,0.20)"
+                  ? "0 0 40px rgba(34,211,166,0.20)"
                   : isBearish
-                    ? "0 0 40px rgba(246,70,93,0.20)"
-                    : "0 0 30px rgba(245,158,11,0.15)",
+                    ? "0 0 40px rgba(251,70,103,0.20)"
+                    : "0 0 30px rgba(245,166,35,0.15)",
                 background: isBullish
-                  ? `linear-gradient(to bottom right, rgba(14,203,129,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`
+                  ? `linear-gradient(to bottom right, rgba(34,211,166,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`
                   : isBearish
-                    ? `linear-gradient(to bottom right, rgba(246,70,93,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`
-                    : `linear-gradient(to bottom right, rgba(245,158,11,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`,
+                    ? `linear-gradient(to bottom right, rgba(251,70,103,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`
+                    : `linear-gradient(to bottom right, rgba(245,166,35,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`,
               }}
             >
               {/* Animated top bar */}
@@ -1209,19 +1209,19 @@ export function AnalysisResult() {
                     ...MONO,
                     letterSpacing: "0.05em",
                     background: isBullish
-                      ? "rgba(14,203,129,0.06)"
+                      ? "rgba(34,211,166,0.06)"
                       : isBearish
-                        ? "rgba(246,70,93,0.06)"
-                        : "rgba(245,158,11,0.06)",
+                        ? "rgba(251,70,103,0.06)"
+                        : "rgba(245,166,35,0.06)",
                     borderColor: isBullish
-                      ? "rgba(14,203,129,0.30)"
+                      ? "rgba(34,211,166,0.30)"
                       : isBearish
-                        ? "rgba(246,70,93,0.30)"
-                        : "rgba(245,158,11,0.30)",
+                        ? "rgba(251,70,103,0.30)"
+                        : "rgba(245,166,35,0.30)",
                     boxShadow: isBullish
-                      ? "0 0 20px rgba(14,203,129,0.30)"
+                      ? "0 0 20px rgba(34,211,166,0.30)"
                       : isBearish
-                        ? "0 0 20px rgba(246,70,93,0.30)"
+                        ? "0 0 20px rgba(251,70,103,0.30)"
                         : "none",
                   }}
                 >
@@ -1265,10 +1265,10 @@ export function AnalysisResult() {
                   {/* Stop Loss */}
                   <div
                     style={{
-                      background: "rgba(246,70,93,0.05)",
+                      background: "rgba(251,70,103,0.05)",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: "1px solid rgba(246,70,93,0.30)",
+                      border: "1px solid rgba(251,70,103,0.30)",
                       textAlign: "center",
                     }}
                   >
@@ -1289,10 +1289,10 @@ export function AnalysisResult() {
                   {/* Target */}
                   <div
                     style={{
-                      background: "rgba(14,203,129,0.05)",
+                      background: "rgba(34,211,166,0.05)",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: "1px solid rgba(14,203,129,0.30)",
+                      border: "1px solid rgba(34,211,166,0.30)",
                       textAlign: "center",
                     }}
                   >
@@ -1327,15 +1327,15 @@ export function AnalysisResult() {
                       fontSize: "14px",
                       color: recColor,
                       background: isBullish
-                        ? "rgba(14,203,129,0.06)"
+                        ? "rgba(34,211,166,0.06)"
                         : isBearish
-                          ? "rgba(246,70,93,0.06)"
-                          : "rgba(245,158,11,0.06)",
+                          ? "rgba(251,70,103,0.06)"
+                          : "rgba(245,166,35,0.06)",
                       borderColor: isBullish
-                        ? "rgba(14,203,129,0.30)"
+                        ? "rgba(34,211,166,0.30)"
                         : isBearish
-                          ? "rgba(246,70,93,0.30)"
-                          : "rgba(245,158,11,0.30)",
+                          ? "rgba(251,70,103,0.30)"
+                          : "rgba(245,166,35,0.30)",
                     }}
                   >
                     R:R {signalBadge.rr}
@@ -1389,7 +1389,7 @@ export function AnalysisResult() {
                       padding: "10px 20px",
                       borderRadius: "10px",
                       border: "none",
-                      background: trackMutation.isSuccess ? "rgba(14,203,129,0.15)" : GREEN_GRAD,
+                      background: trackMutation.isSuccess ? "rgba(34,211,166,0.15)" : GREEN_GRAD,
                       color: "#fff",
                       fontWeight: 700,
                       fontSize: "13px",
@@ -1439,7 +1439,7 @@ export function AnalysisResult() {
                     fontSize: "14px",
                     fontWeight: 500,
                     lineHeight: 1.6,
-                    color: "rgba(124,155,196,0.90)",
+                    color: "rgba(99,102,241,0.90)",
                   }}
                 >
                   {highlightSMC(vixorMsg)}
@@ -1467,13 +1467,13 @@ export function AnalysisResult() {
                       height: "44px",
                       borderRadius: "8px",
                       background:
-                        "linear-gradient(135deg, var(--color-bullish), rgba(14,203,129,0.70))",
+                        "linear-gradient(135deg, var(--color-bullish), rgba(34,211,166,0.70))",
                       color: "var(--color-foreground)",
                       fontWeight: 800,
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
                       textDecoration: "none",
-                      boxShadow: "0 4px 12px rgba(14,203,129,0.25)",
+                      boxShadow: "0 4px 12px rgba(34,211,166,0.25)",
                       transition: "transform 0.15s ease",
                     }}
                   >
@@ -1517,8 +1517,8 @@ export function AnalysisResult() {
                     width: "40px",
                     height: "40px",
                     borderRadius: "50%",
-                    background: "rgba(124,155,196,0.10)",
-                    border: "1px solid rgba(124,155,196,0.20)",
+                    background: "rgba(99,102,241,0.10)",
+                    border: "1px solid rgba(99,102,241,0.20)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -1659,7 +1659,7 @@ export function AnalysisResult() {
                         s: scenarios.balanced,
                         color: "var(--color-bullish)",
                         border: "var(--color-bullish)",
-                        bg: "rgba(14,203,129,0.05)",
+                        bg: "rgba(34,211,166,0.05)",
                         glow: true,
                       },
                       {
@@ -1667,7 +1667,7 @@ export function AnalysisResult() {
                         s: scenarios.aggressive,
                         color: "var(--color-neutral-wait)",
                         border: "var(--color-neutral-wait)",
-                        bg: "rgba(245,158,11,0.05)",
+                        bg: "rgba(245,166,35,0.05)",
                       },
                     ].map(({ label, s, color, border, bg, glow }) => (
                       <div
@@ -1677,7 +1677,7 @@ export function AnalysisResult() {
                           padding: "16px",
                           borderLeft: `4px solid ${border}`,
                           background: bg,
-                          boxShadow: glow ? "0 0 20px rgba(14,203,129,0.12)" : undefined,
+                          boxShadow: glow ? "0 0 20px rgba(34,211,166,0.12)" : undefined,
                         }}
                       >
                         <div
@@ -1759,10 +1759,10 @@ export function AnalysisResult() {
                           {/* SL */}
                           <div
                             style={{
-                              background: "rgba(246,70,93,0.05)",
+                              background: "rgba(251,70,103,0.05)",
                               padding: "10px",
                               borderRadius: "12px",
-                              border: "1px solid rgba(246,70,93,0.20)",
+                              border: "1px solid rgba(251,70,103,0.20)",
                             }}
                           >
                             <div
@@ -1788,10 +1788,10 @@ export function AnalysisResult() {
                           {/* TP */}
                           <div
                             style={{
-                              background: "rgba(14,203,129,0.05)",
+                              background: "rgba(34,211,166,0.05)",
                               padding: "10px",
                               borderRadius: "12px",
-                              border: "1px solid rgba(14,203,129,0.20)",
+                              border: "1px solid rgba(34,211,166,0.20)",
                             }}
                           >
                             <div
@@ -1864,14 +1864,14 @@ export function AnalysisResult() {
                           <div
                             key={i}
                             style={{
-                              background: "rgba(246,70,93,0.05)",
-                              border: "1px solid rgba(246,70,93,0.20)",
+                              background: "rgba(251,70,103,0.05)",
+                              border: "1px solid rgba(251,70,103,0.20)",
                               padding: "8px 12px",
                               borderRadius: "8px",
                               ...MONO,
                               fontSize: "14px",
                               fontWeight: 700,
-                              color: "rgba(246,70,93,0.90)",
+                              color: "rgba(251,70,103,0.90)",
                             }}
                           >
                             {l.toLocaleString()}
@@ -1895,14 +1895,14 @@ export function AnalysisResult() {
                           <div
                             key={i}
                             style={{
-                              background: "rgba(14,203,129,0.05)",
-                              border: "1px solid rgba(14,203,129,0.20)",
+                              background: "rgba(34,211,166,0.05)",
+                              border: "1px solid rgba(34,211,166,0.20)",
                               padding: "8px 12px",
                               borderRadius: "8px",
                               ...MONO,
                               fontSize: "14px",
                               fontWeight: 700,
-                              color: "rgba(14,203,129,0.90)",
+                              color: "rgba(34,211,166,0.90)",
                             }}
                           >
                             {l.toLocaleString()}
@@ -1941,8 +1941,8 @@ export function AnalysisResult() {
                             justifyContent: "space-between",
                             padding: "12px",
                             borderRadius: "12px",
-                            background: "rgba(14,203,129,0.05)",
-                            border: "1px solid rgba(14,203,129,0.20)",
+                            background: "rgba(34,211,166,0.05)",
+                            border: "1px solid rgba(34,211,166,0.20)",
                           }}
                         >
                           <span
@@ -1969,8 +1969,8 @@ export function AnalysisResult() {
                             justifyContent: "space-between",
                             padding: "12px",
                             borderRadius: "12px",
-                            background: "rgba(246,70,93,0.05)",
-                            border: "1px solid rgba(246,70,93,0.20)",
+                            background: "rgba(251,70,103,0.05)",
+                            border: "1px solid rgba(251,70,103,0.20)",
                           }}
                         >
                           <span
@@ -2041,8 +2041,8 @@ export function AnalysisResult() {
                             padding: "12px",
                             borderRadius: "12px",
                             border: "1px solid",
-                            background: danger ? "rgba(246,70,93,0.10)" : "var(--color-card)",
-                            borderColor: danger ? "rgba(246,70,93,0.30)" : "var(--color-border)",
+                            background: danger ? "rgba(251,70,103,0.10)" : "var(--color-card)",
+                            borderColor: danger ? "rgba(251,70,103,0.30)" : "var(--color-border)",
                           }}
                         >
                           <span
@@ -2157,7 +2157,7 @@ export function AnalysisResult() {
                       ...CARD,
                       padding: "20px",
                       marginBottom: "16px",
-                      borderColor: "rgba(246,70,93,0.20)",
+                      borderColor: "rgba(251,70,103,0.20)",
                     }}
                   >
                     <h3
@@ -2213,8 +2213,8 @@ export function AnalysisResult() {
                     gap: "12px",
                     padding: "16px",
                     borderRadius: "12px",
-                    background: "rgba(245,158,11,0.10)",
-                    border: "1px solid rgba(245,158,11,0.20)",
+                    background: "rgba(245,166,35,0.10)",
+                    border: "1px solid rgba(245,166,35,0.20)",
                   }}
                 >
                   <AlertTriangle
@@ -2346,15 +2346,15 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
               border: "1px solid",
               color: sentColor,
               background: isBullish
-                ? "rgba(14,203,129,0.06)"
+                ? "rgba(34,211,166,0.06)"
                 : isBearish
-                  ? "rgba(246,70,93,0.06)"
-                  : "rgba(245,158,11,0.06)",
+                  ? "rgba(251,70,103,0.06)"
+                  : "rgba(245,166,35,0.06)",
               borderColor: isBullish
-                ? "rgba(14,203,129,0.30)"
+                ? "rgba(34,211,166,0.30)"
                 : isBearish
-                  ? "rgba(246,70,93,0.30)"
-                  : "rgba(245,158,11,0.30)",
+                  ? "rgba(251,70,103,0.30)"
+                  : "rgba(245,166,35,0.30)",
             }}
           >
             {overall_sentiment}
@@ -2367,10 +2367,10 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
             borderRadius: "12px",
             borderLeft: `4px solid ${sentColor}`,
             background: isBullish
-              ? "rgba(14,203,129,0.05)"
+              ? "rgba(34,211,166,0.05)"
               : isBearish
-                ? "rgba(246,70,93,0.05)"
-                : "rgba(245,158,11,0.05)",
+                ? "rgba(251,70,103,0.05)"
+                : "rgba(245,166,35,0.05)",
           }}
         >
           <span style={{ ...LABEL, letterSpacing: "0.1em", display: "block", marginBottom: "4px" }}>
@@ -2786,8 +2786,8 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                borderColor: "rgba(246,70,93,0.30)",
-                background: "rgba(246,70,93,0.05)",
+                borderColor: "rgba(251,70,103,0.30)",
+                background: "rgba(251,70,103,0.05)",
               }}
             >
               <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>

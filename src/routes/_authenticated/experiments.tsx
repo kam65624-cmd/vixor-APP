@@ -50,7 +50,7 @@ const inputStyle: React.CSSProperties = {
   paddingLeft: 12,
   paddingRight: 12,
   fontSize: 14,
-  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+  fontFamily: "var(--font-mono)",
   width: "100%",
   outline: "none",
   boxSizing: "border-box",
@@ -285,7 +285,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
                 style={{
                   fontSize: 12,
                   color: "var(--color-muted-foreground)",
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                  fontFamily: "var(--font-mono)",
                 }}
               >
                 {experiment.config.assetSymbol} · {experiment.config.timeframe}
@@ -323,7 +323,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
             <div
               style={{
                 fontSize: 11,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-foreground)",
               }}
             >
@@ -345,7 +345,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
             <div
               style={{
                 fontSize: 11,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 fontWeight: 700,
                 color: "var(--color-foreground)",
               }}
@@ -368,7 +368,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
             <div
               style={{
                 fontSize: 11,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-foreground)",
               }}
             >
@@ -390,7 +390,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
             <div
               style={{
                 fontSize: 11,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-foreground)",
               }}
             >
@@ -440,7 +440,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
                       style={{
                         fontSize: 18,
                         fontWeight: 700,
-                        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                        fontFamily: "var(--font-mono)",
                         color: "var(--color-bullish)",
                       }}
                     >
@@ -480,7 +480,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
                     style={{
                       fontSize: 18,
                       fontWeight: 700,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color:
                         bestScore.totalReturn > 0 ? "var(--color-bullish)" : "var(--color-bearish)",
                     }}
@@ -512,7 +512,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
                     style={{
                       fontSize: 18,
                       fontWeight: 700,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color: "var(--color-bearish)",
                     }}
                   >
@@ -542,7 +542,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
                     style={{
                       fontSize: 18,
                       fontWeight: 700,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color:
                         bestScore.sharpe > 1.5
                           ? "var(--color-bullish)"
@@ -581,7 +581,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
                     style={{
                       fontSize: 12,
                       fontWeight: 700,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color: "var(--color-foreground)",
                     }}
                   >
@@ -604,7 +604,7 @@ function ExperimentCard({ experiment }: { experiment: ExperimentRecord }) {
                     style={{
                       fontSize: 12,
                       fontWeight: 700,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       color: "var(--color-foreground)",
                     }}
                   >
@@ -905,7 +905,7 @@ function ExperimentsPage() {
                 placeholder="e.g. SMA Crossover - BTC/USDT"
                 style={{
                   ...inputStyle,
-                  fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+                  fontFamily: "var(--font-sans)",
                 }}
               />
             </div>

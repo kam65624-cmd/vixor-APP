@@ -146,7 +146,7 @@ const CurveCard = memo(function CurveCard({ pair }: { pair: any }) {
           style={{
             fontSize: "12px",
             fontWeight: 700,
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             color: isAccumulating ? "var(--color-bullish)" : "var(--color-bearish)",
           }}
         >

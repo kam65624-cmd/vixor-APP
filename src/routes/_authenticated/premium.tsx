@@ -207,7 +207,7 @@ function PremiumPage() {
                     style={{
                       fontSize: "28px",
                       fontWeight: 800,
-                      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                      fontFamily: "var(--font-mono)",
                       marginBottom: "4px",
                       color: "var(--color-foreground)",
                     }}
@@ -276,7 +276,7 @@ function PremiumPage() {
                         fontSize: "12px",
                         fontWeight: 700,
                         cursor: "default",
-                        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+                        fontFamily: "var(--font-sans)",
                       }}
                     >
                       ✓ Subscribed!
@@ -294,7 +294,7 @@ function PremiumPage() {
                         fontSize: "12px",
                         fontWeight: 700,
                         cursor: "default",
-                        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+                        fontFamily: "var(--font-sans)",
                       }}
                     >
                       Current Plan
@@ -314,7 +314,7 @@ function PremiumPage() {
                         fontWeight: 700,
                         cursor: subscribing === plan.id ? "wait" : "pointer",
                         opacity: subscribing ? 0.7 : 1,
-                        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+                        fontFamily: "var(--font-sans)",
                       }}
                     >
                       {subscribing === plan.id ? "Processing..." : "Upgrade"}

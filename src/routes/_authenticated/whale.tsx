@@ -156,7 +156,7 @@ const WhaleCard = memo(function WhaleCard({ trade, index }: { trade: any; index:
             style={{
               fontSize: "12px",
               fontWeight: 700,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: dirColor,
             }}
           >

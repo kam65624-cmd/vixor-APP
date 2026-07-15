@@ -205,7 +205,7 @@ function ExchangeCard({
 
   const monoInputStyle: React.CSSProperties = {
     ...inputStyle,
-    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+    fontFamily: "var(--font-mono)",
     fontSize: "12px",
   };
 
@@ -244,7 +244,7 @@ function ExchangeCard({
                 fontWeight: 700,
                 padding: "1px 5px",
                 borderRadius: "3px",
-                background: "rgba(124,155,196,0.15)",
+                background: "rgba(99,102,241,0.15)",
                 color: "var(--color-primary)",
               }}
             >
@@ -257,7 +257,7 @@ function ExchangeCard({
             <span
               style={{
                 fontSize: "12px",
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-muted-foreground)",
                 marginRight: "4px",
               }}
@@ -427,7 +427,7 @@ function ExchangeCard({
                         ? "var(--color-foreground)"
                         : "var(--color-muted-foreground)",
                     background:
-                      form.mtType === mt ? `${"var(--color-bullish)"}26` : "rgba(124,155,196,0.04)",
+                      form.mtType === mt ? `${"var(--color-bullish)"}26` : "rgba(99,102,241,0.04)",
                   }}
                 >
                   {mt.toUpperCase()}
@@ -914,7 +914,7 @@ function SettingsPage() {
     padding: "4px 8px",
     borderRadius: "4px",
     border: `1px solid ${"var(--color-border)"}`,
-    background: "rgba(124,155,196,0.04)",
+    background: "rgba(99,102,241,0.04)",
     color: "var(--color-foreground)",
     width: "160px",
     outline: "none",
@@ -954,7 +954,7 @@ function SettingsPage() {
                       ? "var(--color-foreground)"
                       : "var(--color-muted-foreground)",
                   background:
-                    oi === item.current ? `${"var(--color-bullish)"}26` : "rgba(124,155,196,0.04)",
+                    oi === item.current ? `${"var(--color-bullish)"}26` : "rgba(99,102,241,0.04)",
                 }}
               >
                 {opt}
@@ -1204,7 +1204,7 @@ function SettingsPage() {
                   style={{
                     borderBottom:
                       i < section.items.length - 1
-                        ? `1px solid ${"rgba(124,155,196,0.04)"}`
+                        ? `1px solid ${"rgba(99,102,241,0.04)"}`
                         : "none",
                   }}
                 >

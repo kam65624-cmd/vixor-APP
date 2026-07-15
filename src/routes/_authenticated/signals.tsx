@@ -271,9 +271,9 @@ const SignalRow = memo(function SignalRow({
 
   const confidenceGlow =
     signal.recommendation === "BUY"
-      ? "0 0 12px rgba(14,203,129,0.3)"
+      ? "0 0 12px rgba(34,211,166,0.3)"
       : signal.recommendation === "SELL"
-        ? "0 0 12px rgba(246,70,93,0.3)"
+        ? "0 0 12px rgba(251,70,103,0.3)"
         : "none";
 
   return (
@@ -324,7 +324,7 @@ const SignalRow = memo(function SignalRow({
               fontSize: "15px",
               fontWeight: 700,
               color: "var(--color-foreground)",
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
             }}
           >
             {signal.pair}
@@ -371,7 +371,7 @@ const SignalRow = memo(function SignalRow({
               fontSize: "18px",
               fontWeight: 800,
               color,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               textShadow: `0 0 20px color-mix(in srgb, ${color} 40%, transparent)`,
               lineHeight: 1,
             }}
@@ -423,7 +423,7 @@ const SignalRow = memo(function SignalRow({
                 fontSize: "13px",
                 fontWeight: 700,
                 color: "var(--color-foreground)",
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
               }}
             >
               {signal.entry}
@@ -454,7 +454,7 @@ const SignalRow = memo(function SignalRow({
                 fontSize: "13px",
                 fontWeight: 700,
                 color: "var(--color-bearish)",
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
               }}
             >
               {signal.stop_loss}
@@ -485,7 +485,7 @@ const SignalRow = memo(function SignalRow({
                 fontSize: "13px",
                 fontWeight: 700,
                 color: "var(--color-bullish)",
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
               }}
             >
               {signal.take_profit[0]}
@@ -532,7 +532,7 @@ const SignalRow = memo(function SignalRow({
               padding: "0 12px",
               borderRadius: "10px",
               border: `1px solid ${isTracked ? "var(--color-bullish)" : "rgba(255,255,255,0.10)"}`,
-              background: isTracked ? "rgba(14,203,129,0.12)" : "rgba(255,255,255,0.04)",
+              background: isTracked ? "rgba(34,211,166,0.12)" : "rgba(255,255,255,0.04)",
               color: isTracked ? "var(--color-bullish)" : "var(--color-muted-foreground)",
               cursor: isTracked ? "default" : "pointer",
               fontSize: "11px",

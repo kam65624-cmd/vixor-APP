@@ -162,7 +162,7 @@ const AnalysisRow = memo(function AnalysisRow({ analysis }: { analysis: any }) {
           style={{
             width: "10%",
             textAlign: "right",
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             fontWeight: 700,
             color: "var(--color-neutral-wait)",
           }}

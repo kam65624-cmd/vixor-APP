@@ -60,26 +60,26 @@ interface CandlestickChartProps {
 
 const VIXOR_CHART_OPTIONS: DeepPartial<ChartOptions> = {
   layout: {
-    background: { type: ColorType.Solid, color: "#0B0D10" },
+    background: { type: ColorType.Solid, color: "var(--color-background)" },
     textColor: "#9CA3AF",
     fontSize: 11,
-    fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+    fontFamily: "var(--font-sans)",
   },
   grid: {
-    vertLines: { color: "rgba(124,155,196,0.04)" },
-    horzLines: { color: "rgba(124,155,196,0.04)" },
+    vertLines: { color: "rgba(99,102,241,0.04)" },
+    horzLines: { color: "rgba(99,102,241,0.04)" },
   },
   crosshair: {
     mode: CrosshairMode.Normal,
-    vertLine: { color: "rgba(124,155,196,0.3)", labelBackgroundColor: "#7C9BC4" },
-    horzLine: { color: "rgba(124,155,196,0.3)", labelBackgroundColor: "#7C9BC4" },
+    vertLine: { color: "rgba(99,102,241,0.3)", labelBackgroundColor: "var(--color-primary)" },
+    horzLine: { color: "rgba(99,102,241,0.3)", labelBackgroundColor: "var(--color-primary)" },
   },
   rightPriceScale: {
-    borderColor: "rgba(124,155,196,0.08)",
+    borderColor: "rgba(99,102,241,0.08)",
     scaleMargins: { top: 0.05, bottom: 0.25 },
   },
   timeScale: {
-    borderColor: "rgba(124,155,196,0.08)",
+    borderColor: "rgba(99,102,241,0.08)",
     timeVisible: true,
     rightOffset: 5,
     barSpacing: 8,
@@ -125,12 +125,12 @@ function CandlestickChartInner({
 
     // Candlestick series (main)
     const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: "#0ECB81",
-      downColor: "#F6465D",
-      borderDownColor: "#F6465D",
-      borderUpColor: "#0ECB81",
-      wickDownColor: "#F6465D",
-      wickUpColor: "#0ECB81",
+      upColor: "var(--color-bullish)",
+      downColor: "var(--color-bearish)",
+      borderDownColor: "var(--color-bearish)",
+      borderUpColor: "var(--color-bullish)",
+      wickDownColor: "var(--color-bearish)",
+      wickUpColor: "var(--color-bullish)",
     });
 
     // Volume series (sub-chart)
@@ -212,7 +212,7 @@ function CandlestickChartInner({
         const volume: HistogramData[] = data.map((k) => ({
           time: k.time as Time,
           value: k.volume,
-          color: k.close >= k.open ? "rgba(14,203,129,0.25)" : "rgba(246,70,93,0.25)",
+          color: k.close >= k.open ? "rgba(34,211,166,0.25)" : "rgba(251,70,103,0.25)",
         }));
 
         candleSeriesRef.current!.setData(candles);
@@ -245,7 +245,7 @@ function CandlestickChartInner({
       const volume: HistogramData[] = initialData.map((k) => ({
         time: k.time as Time,
         value: k.volume,
-        color: k.close >= k.open ? "rgba(14,203,129,0.25)" : "rgba(246,70,93,0.25)",
+        color: k.close >= k.open ? "rgba(34,211,166,0.25)" : "rgba(251,70,103,0.25)",
       }));
 
       candleSeriesRef.current!.setData(candles);
@@ -283,8 +283,8 @@ function CandlestickChartInner({
           alignItems: "center",
           justifyContent: "space-between",
           padding: "4px 8px",
-          borderBottom: "0.5px solid rgba(124,155,196,0.08)",
-          background: "rgba(124,155,196,0.02)",
+          borderBottom: "0.5px solid rgba(99,102,241,0.08)",
+          background: "rgba(99,102,241,0.02)",
           flexShrink: 0,
           gap: "4px",
           overflowX: "auto",
@@ -308,7 +308,7 @@ function CandlestickChartInner({
                   activeInterval === tf
                     ? "var(--color-foreground)"
                     : "var(--color-muted-foreground)",
-                background: activeInterval === tf ? "rgba(124,155,196,0.12)" : "transparent",
+                background: activeInterval === tf ? "rgba(99,102,241,0.12)" : "transparent",
                 whiteSpace: "nowrap",
                 transition: "all 0.1s ease",
               }}
@@ -325,7 +325,7 @@ function CandlestickChartInner({
               display: "flex",
               gap: "10px",
               fontSize: "10px",
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               color: "var(--color-muted-foreground)",
               flexShrink: 0,
             }}
@@ -393,7 +393,7 @@ function CandlestickChartInner({
               style={{
                 width: "24px",
                 height: "24px",
-                border: "2px solid rgba(124,155,196,0.15)",
+                border: "2px solid rgba(99,102,241,0.15)",
                 borderTopColor: "var(--color-primary)",
                 borderRadius: "50%",
                 animation: "spin 0.7s linear infinite",

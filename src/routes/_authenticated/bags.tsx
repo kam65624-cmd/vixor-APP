@@ -149,7 +149,7 @@ const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
                 width: "32px",
                 height: "32px",
                 borderRadius: "50%",
-                background: `rgba(14,203,129,0.10)`,
+                background: `rgba(34,211,166,0.10)`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -191,7 +191,7 @@ const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
               style={{
                 fontSize: "12px",
                 fontWeight: 700,
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFamily: "var(--font-mono)",
                 color: "var(--color-foreground)",
               }}
             >
@@ -217,7 +217,7 @@ const BagRow = memo(function BagRow({ bag }: { bag: BagData }) {
             style={{
               marginLeft: "auto",
               fontSize: "10px",
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               fontWeight: 700,
               color,
               whiteSpace: "nowrap",

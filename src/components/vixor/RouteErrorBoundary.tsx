@@ -112,7 +112,7 @@ function ErrorScreen({
             height="32"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#F6465D"
+            stroke="var(--color-bearish)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -176,9 +176,9 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#0B0D10",
+    backgroundColor: "var(--color-background)",
     color: "#E4E5E9",
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif',
+    fontFamily: "var(--font-sans)",
     overflow: "auto",
   },
   accentBar: {
@@ -187,7 +187,7 @@ const styles: Record<string, React.CSSProperties> = {
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: "#F6465D",
+    backgroundColor: "var(--color-bearish)",
   },
   inner: {
     display: "flex",
@@ -205,7 +205,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: 64,
     height: 64,
     borderRadius: "50%",
-    backgroundColor: "rgba(246, 70, 93, 0.12)",
+    backgroundColor: "rgba(251, 70, 103, 0.12)",
     marginBottom: 24,
   },
   heading: {
@@ -241,7 +241,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 12,
     lineHeight: 1.6,
     fontFamily: '"SF Mono", "Fira Code", "Fira Mono", Menlo, monospace',
-    color: "#F6465D",
+    color: "var(--color-bearish)",
     whiteSpace: "pre-wrap" as const,
     wordBreak: "break-word" as const,
   },
@@ -270,7 +270,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 14,
     fontWeight: 600,
     color: "#FFFFFF",
-    backgroundColor: "#F6465D",
+    backgroundColor: "var(--color-bearish)",
     border: "none",
     borderRadius: 8,
     cursor: "pointer",
@@ -286,7 +286,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 500,
     color: "#C5C7CE",
     backgroundColor: "transparent",
-    border: "1px solid #2A2D37",
+    border: "1px solid var(--color-border)",
     borderRadius: 8,
     cursor: "pointer",
     transition: "background-color 0.15s ease",

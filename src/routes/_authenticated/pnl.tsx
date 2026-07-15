@@ -204,7 +204,7 @@ const TradeRow = memo(function TradeRow({
           overflowX: "auto",
           gap: 0,
           fontSize: "11px",
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
         }}
       >
         {/* Pair */}

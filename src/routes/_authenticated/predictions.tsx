@@ -109,7 +109,7 @@ const PredictionCard = memo(function PredictionCard({
             style={{
               fontSize: 11,
               color: "var(--color-muted-foreground)",
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--font-mono)",
               whiteSpace: "nowrap",
             }}
           >

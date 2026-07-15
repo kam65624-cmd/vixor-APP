@@ -77,7 +77,7 @@ const inputBase: React.CSSProperties = {
   color: "var(--color-foreground)",
   fontSize: 13,
   outline: "none",
-  fontFamily: "'Inter', system-ui, sans-serif",
+  fontFamily: "var(--font-sans)",
 };
 
 function JournalPage() {
@@ -235,7 +235,7 @@ function JournalPage() {
             color: "var(--color-foreground)",
             fontSize: "12px",
             fontWeight: 700,
-            fontFamily: "'Inter', system-ui, sans-serif",
+            fontFamily: "var(--font-sans)",
             display: "flex",
             alignItems: "center",
             gap: "6px",
@@ -339,7 +339,7 @@ function JournalPage() {
                   color: "var(--color-foreground)",
                   fontSize: 12,
                   fontWeight: 700,
-                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -446,7 +446,7 @@ const COL = {
     minWidth: 70,
     fontSize: "11px",
     color: "var(--color-muted-foreground)",
-    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+    fontFamily: "var(--font-mono)",
     flexShrink: 0,
   },
   token: {
@@ -454,7 +454,7 @@ const COL = {
     minWidth: 65,
     fontSize: "12px",
     fontWeight: 700,
-    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+    fontFamily: "var(--font-mono)",
     color: "var(--color-foreground)",
     flexShrink: 0,
   },

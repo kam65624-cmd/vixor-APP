@@ -100,8 +100,8 @@ function AdminApiKeysPage() {
         <div
           style={{
             padding: "16px",
-            background: `rgba(246,70,93,0.10)`,
-            borderBottom: `1px solid rgba(246,70,93,0.19)`,
+            background: `rgba(251,70,103,0.10)`,
+            borderBottom: `1px solid rgba(251,70,103,0.19)`,
           }}
         >
           <p
@@ -210,7 +210,7 @@ function AdminApiKeysPage() {
                         style={{
                           flex: 1.5,
                           minWidth: 100,
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                           fontSize: "10px",
                           color: "var(--color-muted-foreground)",
                           flexShrink: 0,
@@ -245,7 +245,7 @@ function AdminApiKeysPage() {
                         style={{
                           width: "90px",
                           textAlign: "right",
-                          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                          fontFamily: "var(--font-mono)",
                           fontSize: "10px",
                           color: key.configured
                             ? "var(--color-muted-foreground)"
@@ -265,8 +265,8 @@ function AdminApiKeysPage() {
             <div
               style={{
                 padding: "12px 16px",
-                background: `rgba(14,203,129,0.06)`,
-                borderTop: `1px solid rgba(14,203,129,0.10)`,
+                background: `rgba(34,211,166,0.06)`,
+                borderTop: `1px solid rgba(34,211,166,0.10)`,
               }}
             >
               <div

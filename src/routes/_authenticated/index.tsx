@@ -386,7 +386,7 @@ function HomePage() {
             border: "1px solid rgba(34,211,166,0.25)",
           }}
         >
-          <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/5 group-hover:scale-110 transition-transform duration-500" />
+          <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-muted group-hover:scale-110 transition-transform duration-500" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
               <Scan size={18} className="text-bullish" />

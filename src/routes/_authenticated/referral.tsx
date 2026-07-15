@@ -180,7 +180,7 @@ function ReferralPage() {
                 color: "var(--color-primary)",
                 fontSize: "11px",
                 fontWeight: 700,
-                fontFamily: "'Inter', system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
                 whiteSpace: "nowrap",
                 transition: "background 0.15s ease",
               }}
@@ -200,7 +200,7 @@ function ReferralPage() {
               color: "var(--color-foreground)",
               fontSize: "12px",
               fontWeight: 700,
-              fontFamily: "'Inter', system-ui, sans-serif",
+              fontFamily: "var(--font-sans)",
               marginTop: "10px",
               transition: "opacity 0.15s ease",
             }}
