@@ -75,3 +75,29 @@ Stage Summary:
 - 3 commits: ce7e038, f82b3f9
 - Phase 1 (Foundation) COMPLETE
 - Phase 2 Core Loop pages: Home V5 applied, remaining pages need full redesign
+
+---
+Task ID: 3
+Agent: main
+Task: Phase 3 Data Layer — Live market data integration, Home/Charts redesign, premium UI
+
+Work Log:
+- Analyzed full project structure (290+ source files, 46 routes, 95 domain files)
+- Identified root cause: Home page depended on Supabase user data (trades/signals) which new users don't have
+- Identified getHomeMarketData only fetched 3 coins via asset registry
+- Expanded getHomeMarketData to directly call Binance API for 8 coins (BTC, ETH, SOL, BNB, XRP, DOGE, ADA, AVAX)
+- Added marketOverview to HomeMarketData: totalVolume, topGainers, topLosers
+- Redesigned Home page: market stats bar, top gainers/losers, expanded ticker (8 coins), 6 feature cards
+- Gated portfolio section on hasTrades so new users see rich market content
+- Redesigned Charts page: added live price bar with Binance WS, H/L/Vol stats, Tailwind pair selector
+- Added BNB, XRP, DOGE to Charts crypto pairs
+- Added live BTC price indicator to AppShell navbar
+- All inline styles in Charts converted to Tailwind classes
+- Full production build passes, TypeScript clean, ESLint clean
+
+Stage Summary:
+- 3 commits pushed: 92b8fe6, b0bfe41, 5c0869a
+- App now shows real live data from Binance on Home, Charts, and Navbar
+- New users see 8 live coins + market overview even without trades/signals
+- Charts page shows real-time prices via Binance WebSocket
+- Build verified: `pnpm run build` successful in 22.88s
