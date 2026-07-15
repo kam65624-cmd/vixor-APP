@@ -281,12 +281,12 @@ function formatPrice(price: number): string {
 
 function heatmapColor(change: number): string {
   if (change >= 8) return "color-mix(in srgb, var(--color-bullish) 85%, transparent)";
-  if (change >= 5) return "rgba(34, 211, 166, 0.6)";
-  if (change >= 2) return "rgba(34, 211, 166, 0.4)";
-  if (change >= 0) return "rgba(34, 211, 166, 0.2)";
-  if (change >= -2) return "rgba(251, 70, 103, 0.2)";
-  if (change >= -5) return "rgba(251, 70, 103, 0.4)";
-  if (change >= -8) return "rgba(251, 70, 103, 0.6)";
+  if (change >= 5) return "color-mix(in srgb, var(--color-bullish) 60%, transparent)";
+  if (change >= 2) return "color-mix(in srgb, var(--color-bullish) 40%, transparent)";
+  if (change >= 0) return "color-mix(in srgb, var(--color-bullish) 20%, transparent)";
+  if (change >= -2) return "color-mix(in srgb, var(--color-bearish) 20%, transparent)";
+  if (change >= -5) return "color-mix(in srgb, var(--color-bearish) 40%, transparent)";
+  if (change >= -8) return "color-mix(in srgb, var(--color-bearish) 60%, transparent)";
   return "color-mix(in srgb, var(--color-bearish) 85%, transparent)";
 }
 
@@ -570,7 +570,10 @@ function AlertsLogEntry({ blip, index }: { blip: RadarBlip; index: number }) {
         gap: 10,
         padding: "10px 16px",
         borderBottom: "1px solid color-mix(in srgb, var(--color-primary) 4%, transparent)",
-        background: index % 2 === 0 ? "var(--color-card)" : "rgba(99,102,241,0.02)",
+        background:
+          index % 2 === 0
+            ? "var(--color-card)"
+            : "color-mix(in srgb, var(--color-primary) 2%, transparent)",
         transition: "background 0.1s ease",
       }}
     >

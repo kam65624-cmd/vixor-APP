@@ -729,7 +729,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
             width: 32,
             height: 32,
             borderRadius: 8,
-            background: "rgba(0,0,0,0.65)",
+            background: "var(--overlay)",
             backdropFilter: "blur(8px)",
             color: "var(--color-foreground)",
             display: "flex",
@@ -758,7 +758,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
                 style={{
                   width: 10,
                   height: 10,
-                  background: "rgba(34,211,166,0.3)",
+                  background: "color-mix(in srgb, var(--color-bullish) 30%, transparent)",
                   border: "1px dashed #0ECB81",
                   display: "inline-block",
                   borderRadius: 2,
@@ -773,7 +773,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
                 style={{
                   width: 10,
                   height: 10,
-                  background: "rgba(99,102,241,0.3)",
+                  background: "color-mix(in srgb, var(--color-primary) 30%, transparent)",
                   borderLeft: "3px solid var(--color-primary)",
                   display: "inline-block",
                 }}
@@ -825,7 +825,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
             position: "fixed",
             inset: 0,
             zIndex: 200,
-            background: "rgba(0,0,0,0.96)",
+            background: "color-mix(in srgb, var(--color-background) 96%, transparent)",
             backdropFilter: "blur(8px)",
             display: "flex",
             flexDirection: "column",
@@ -1090,8 +1090,8 @@ export function AnalysisResult() {
                 borderColor: isBullish
                   ? "color-mix(in srgb, var(--color-bullish) 50%, transparent)"
                   : isBearish
-                    ? "rgba(251,70,103,0.50)"
-                    : "rgba(245,166,35,0.40)",
+                    ? "color-mix(in srgb, var(--color-bearish) 50%, transparent)"
+                    : "color-mix(in srgb, var(--color-neutral-wait) 40%, transparent)",
                 boxShadow: isBullish
                   ? "0 0 40px var(--bullish-border)"
                   : isBearish
@@ -1146,7 +1146,7 @@ export function AnalysisResult() {
                         textTransform: "uppercase",
                         letterSpacing: "0.1em",
                         color: "var(--color-muted-foreground)",
-                        background: "rgba(11,13,16,0.80)",
+                        background: "var(--overlay)",
                         backdropFilter: "blur(8px)",
                         padding: "2px 8px",
                         borderRadius: "4px",
@@ -1217,15 +1217,15 @@ export function AnalysisResult() {
                     ...MONO,
                     letterSpacing: "0.05em",
                     background: isBullish
-                      ? "rgba(34,211,166,0.06)"
+                      ? "color-mix(in srgb, var(--color-bullish) 6%, transparent)"
                       : isBearish
-                        ? "rgba(251,70,103,0.06)"
-                        : "rgba(245,166,35,0.06)",
+                        ? "color-mix(in srgb, var(--color-bearish) 6%, transparent)"
+                        : "color-mix(in srgb, var(--color-neutral-wait) 6%, transparent)",
                     borderColor: isBullish
                       ? "color-mix(in srgb, var(--color-bullish) 30%, transparent)"
                       : isBearish
                         ? "color-mix(in srgb, var(--color-bearish) 30%, transparent)"
-                        : "rgba(245,166,35,0.30)",
+                        : "color-mix(in srgb, var(--color-neutral-wait) 30%, transparent)",
                     boxShadow: isBullish
                       ? "0 0 20px color-mix(in srgb, var(--color-bullish) 30%, transparent)"
                       : isBearish
@@ -1250,7 +1250,7 @@ export function AnalysisResult() {
                   {/* Entry */}
                   <div
                     style={{
-                      background: "rgba(11,13,16,0.70)",
+                      background: "var(--overlay-secondary)",
                       backdropFilter: "blur(8px)",
                       padding: "12px",
                       borderRadius: "12px",
@@ -1273,7 +1273,7 @@ export function AnalysisResult() {
                   {/* Stop Loss */}
                   <div
                     style={{
-                      background: "rgba(251,70,103,0.05)",
+                      background: "color-mix(in srgb, var(--color-bearish) 5%, transparent)",
                       padding: "12px",
                       borderRadius: "12px",
                       border: "1px solid color-mix(in srgb, var(--color-bearish) 30%, transparent)",
@@ -1297,7 +1297,7 @@ export function AnalysisResult() {
                   {/* Target */}
                   <div
                     style={{
-                      background: "rgba(34,211,166,0.05)",
+                      background: "color-mix(in srgb, var(--color-bullish) 5%, transparent)",
                       padding: "12px",
                       borderRadius: "12px",
                       border: "1px solid color-mix(in srgb, var(--color-bullish) 30%, transparent)",
@@ -1335,15 +1335,15 @@ export function AnalysisResult() {
                       fontSize: "14px",
                       color: recColor,
                       background: isBullish
-                        ? "rgba(34,211,166,0.06)"
+                        ? "color-mix(in srgb, var(--color-bullish) 6%, transparent)"
                         : isBearish
-                          ? "rgba(251,70,103,0.06)"
-                          : "rgba(245,166,35,0.06)",
+                          ? "color-mix(in srgb, var(--color-bearish) 6%, transparent)"
+                          : "color-mix(in srgb, var(--color-neutral-wait) 6%, transparent)",
                       borderColor: isBullish
                         ? "color-mix(in srgb, var(--color-bullish) 30%, transparent)"
                         : isBearish
                           ? "color-mix(in srgb, var(--color-bearish) 30%, transparent)"
-                          : "rgba(245,166,35,0.30)",
+                          : "color-mix(in srgb, var(--color-neutral-wait) 30%, transparent)",
                     }}
                   >
                     R:R {signalBadge.rr}
@@ -1449,7 +1449,7 @@ export function AnalysisResult() {
                     fontSize: "14px",
                     fontWeight: 500,
                     lineHeight: 1.6,
-                    color: "rgba(99,102,241,0.90)",
+                    color: "color-mix(in srgb, var(--color-primary) 90%, transparent)",
                   }}
                 >
                   {highlightSMC(vixorMsg)}
@@ -1477,7 +1477,7 @@ export function AnalysisResult() {
                       height: "44px",
                       borderRadius: "8px",
                       background:
-                        "linear-gradient(135deg, var(--color-bullish), rgba(34,211,166,0.70))",
+                        "linear-gradient(135deg, var(--color-bullish), color-mix(in srgb, var(--color-bullish) 70%, transparent))",
                       color: "var(--color-foreground)",
                       fontWeight: 800,
                       textTransform: "uppercase",
@@ -1663,14 +1663,14 @@ export function AnalysisResult() {
                         s: scenarios.conservative,
                         color: "var(--color-info)",
                         border: "var(--color-info)",
-                        bg: "rgba(59,130,246,0.05)",
+                        bg: "color-mix(in srgb, var(--color-primary) 5%, transparent)",
                       },
                       {
                         label: "Balanced ✦",
                         s: scenarios.balanced,
                         color: "var(--color-bullish)",
                         border: "var(--color-bullish)",
-                        bg: "rgba(34,211,166,0.05)",
+                        bg: "color-mix(in srgb, var(--color-bullish) 5%, transparent)",
                         glow: true,
                       },
                       {
@@ -1678,7 +1678,7 @@ export function AnalysisResult() {
                         s: scenarios.aggressive,
                         color: "var(--color-neutral-wait)",
                         border: "var(--color-neutral-wait)",
-                        bg: "rgba(245,166,35,0.05)",
+                        bg: "color-mix(in srgb, var(--color-neutral-wait) 5%, transparent)",
                       },
                     ].map(({ label, s, color, border, bg, glow }) => (
                       <div
@@ -1772,7 +1772,8 @@ export function AnalysisResult() {
                           {/* SL */}
                           <div
                             style={{
-                              background: "rgba(251,70,103,0.05)",
+                              background:
+                                "color-mix(in srgb, var(--color-bearish) 5%, transparent)",
                               padding: "10px",
                               borderRadius: "12px",
                               border:
@@ -1802,7 +1803,8 @@ export function AnalysisResult() {
                           {/* TP */}
                           <div
                             style={{
-                              background: "rgba(34,211,166,0.05)",
+                              background:
+                                "color-mix(in srgb, var(--color-bullish) 5%, transparent)",
                               padding: "10px",
                               borderRadius: "12px",
                               border: "1px solid var(--bullish-border)",
@@ -1878,7 +1880,8 @@ export function AnalysisResult() {
                           <div
                             key={i}
                             style={{
-                              background: "rgba(251,70,103,0.05)",
+                              background:
+                                "color-mix(in srgb, var(--color-bearish) 5%, transparent)",
                               border:
                                 "1px solid color-mix(in srgb, var(--color-bearish) 20%, transparent)",
                               padding: "8px 12px",
@@ -1886,7 +1889,7 @@ export function AnalysisResult() {
                               ...MONO,
                               fontSize: "14px",
                               fontWeight: 700,
-                              color: "rgba(251,70,103,0.90)",
+                              color: "color-mix(in srgb, var(--color-bearish) 90%, transparent)",
                             }}
                           >
                             {l.toLocaleString()}
@@ -1910,14 +1913,15 @@ export function AnalysisResult() {
                           <div
                             key={i}
                             style={{
-                              background: "rgba(34,211,166,0.05)",
+                              background:
+                                "color-mix(in srgb, var(--color-bullish) 5%, transparent)",
                               border: "1px solid var(--bullish-border)",
                               padding: "8px 12px",
                               borderRadius: "8px",
                               ...MONO,
                               fontSize: "14px",
                               fontWeight: 700,
-                              color: "rgba(34,211,166,0.90)",
+                              color: "color-mix(in srgb, var(--color-bullish) 90%, transparent)",
                             }}
                           >
                             {l.toLocaleString()}
@@ -1956,7 +1960,7 @@ export function AnalysisResult() {
                             justifyContent: "space-between",
                             padding: "12px",
                             borderRadius: "12px",
-                            background: "rgba(34,211,166,0.05)",
+                            background: "color-mix(in srgb, var(--color-bullish) 5%, transparent)",
                             border: "1px solid var(--bullish-border)",
                           }}
                         >
@@ -1984,7 +1988,7 @@ export function AnalysisResult() {
                             justifyContent: "space-between",
                             padding: "12px",
                             borderRadius: "12px",
-                            background: "rgba(251,70,103,0.05)",
+                            background: "color-mix(in srgb, var(--color-bearish) 5%, transparent)",
                             border:
                               "1px solid color-mix(in srgb, var(--color-bearish) 20%, transparent)",
                           }}
@@ -2234,7 +2238,7 @@ export function AnalysisResult() {
                     padding: "16px",
                     borderRadius: "12px",
                     background: "color-mix(in srgb, var(--color-neutral-wait) 10%, transparent)",
-                    border: "1px solid rgba(245,166,35,0.20)",
+                    border: "1px solid var(--neutral-wait-border)",
                   }}
                 >
                   <AlertTriangle
@@ -2366,15 +2370,15 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
               border: "1px solid",
               color: sentColor,
               background: isBullish
-                ? "rgba(34,211,166,0.06)"
+                ? "color-mix(in srgb, var(--color-bullish) 6%, transparent)"
                 : isBearish
-                  ? "rgba(251,70,103,0.06)"
-                  : "rgba(245,166,35,0.06)",
+                  ? "color-mix(in srgb, var(--color-bearish) 6%, transparent)"
+                  : "color-mix(in srgb, var(--color-neutral-wait) 6%, transparent)",
               borderColor: isBullish
                 ? "color-mix(in srgb, var(--color-bullish) 30%, transparent)"
                 : isBearish
                   ? "color-mix(in srgb, var(--color-bearish) 30%, transparent)"
-                  : "rgba(245,166,35,0.30)",
+                  : "color-mix(in srgb, var(--color-neutral-wait) 30%, transparent)",
             }}
           >
             {overall_sentiment}
@@ -2387,10 +2391,10 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
             borderRadius: "12px",
             borderLeft: `4px solid ${sentColor}`,
             background: isBullish
-              ? "rgba(34,211,166,0.05)"
+              ? "color-mix(in srgb, var(--color-bullish) 5%, transparent)"
               : isBearish
-                ? "rgba(251,70,103,0.05)"
-                : "rgba(245,166,35,0.05)",
+                ? "color-mix(in srgb, var(--color-bearish) 5%, transparent)"
+                : "color-mix(in srgb, var(--color-neutral-wait) 5%, transparent)",
           }}
         >
           <span style={{ ...LABEL, letterSpacing: "0.1em", display: "block", marginBottom: "4px" }}>
@@ -2510,7 +2514,7 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
                 style={{
                   padding: "12px",
                   borderRadius: "8px",
-                  background: "rgba(11,13,16,0.60)",
+                  background: "var(--overlay-secondary)",
                   border: `1px solid ${"var(--color-border)"}`,
                   fontSize: "12px",
                   color: "var(--color-muted-foreground)",
@@ -2807,7 +2811,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                 alignItems: "center",
                 justifyContent: "space-between",
                 borderColor: "color-mix(in srgb, var(--color-bearish) 30%, transparent)",
-                background: "rgba(251,70,103,0.05)",
+                background: "color-mix(in srgb, var(--color-bearish) 5%, transparent)",
               }}
             >
               <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>

@@ -271,9 +271,9 @@ const SignalRow = memo(function SignalRow({
 
   const confidenceGlow =
     signal.recommendation === "BUY"
-      ? "0 0 12px rgba(34,211,166,0.3)"
+      ? "0 0 12px color-mix(in srgb, var(--color-bullish) 30%, transparent)"
       : signal.recommendation === "SELL"
-        ? "0 0 12px rgba(251,70,103,0.3)"
+        ? "0 0 12px color-mix(in srgb, var(--color-bearish) 30%, transparent)"
         : "none";
 
   return (

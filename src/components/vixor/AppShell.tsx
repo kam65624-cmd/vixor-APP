@@ -1199,7 +1199,7 @@ const TopNavAvatar = memo(function TopNavAvatar() {
 const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }: TopNavProps) {
   return (
     <header
-      className="fixed inset-x-0 z-50"
+      className="fixed inset-x-0 z-50 top-nav-premium"
       style={{
         background: "var(--overlay-secondary)",
         backdropFilter: "blur(20px) saturate(180%)",
@@ -1326,7 +1326,7 @@ const BottomBar = memo(function BottomBar({
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-50"
+      className="fixed bottom-0 inset-x-0 z-50 bottom-nav-premium"
       style={{
         background: "var(--overlay-secondary)",
         backdropFilter: "blur(20px) saturate(180%)",
@@ -1365,7 +1365,8 @@ const BottomBar = memo(function BottomBar({
               <span
                 style={{
                   color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
-                  transition: "color 0.2s ease",
+                  transition: "color var(--transition-base)",
+                  filter: isActive ? "drop-shadow(0 0 6px var(--color-primary))" : "none",
                 }}
               >
                 {item.icon}
@@ -1378,7 +1379,7 @@ const BottomBar = memo(function BottomBar({
                     borderRadius: "50%",
                     background: "var(--color-primary)",
                     marginTop: "3px",
-                    boxShadow: "0 0 8px var(--color-primary)",
+                    boxShadow: "0 0 8px var(--color-primary), 0 0 16px var(--shadow-glow)",
                   }}
                 />
               )}

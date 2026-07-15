@@ -689,7 +689,8 @@ export function TokenPage() {
                 gap: "8px",
               }}
               onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.background = "rgba(99,102,241,0.18)";
+                (e.target as HTMLElement).style.background =
+                  "color-mix(in srgb, var(--color-primary) 18%, transparent)";
               }}
               onMouseLeave={(e) => {
                 (e.target as HTMLElement).style.background =
@@ -1508,7 +1509,8 @@ export function TokenPage() {
               gap: "8px",
             }}
             onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.background = "rgba(99,102,241,0.18)";
+              (e.target as HTMLElement).style.background =
+                "color-mix(in srgb, var(--color-primary) 18%, transparent)";
             }}
             onMouseLeave={(e) => {
               (e.target as HTMLElement).style.background =

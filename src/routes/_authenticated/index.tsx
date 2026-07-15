@@ -390,14 +390,16 @@ function HomePage() {
       <div className="mx-4 mt-4">
         <button
           onClick={() => navigate({ to: "/analyze" as any })}
-          className="vx-card vx-card-interactive vx-card-hover group relative w-full p-5 text-left"
+          className="vx-card vx-card-interactive vx-card-hover group relative w-full p-5 text-left overflow-hidden"
           style={{
             background:
               "linear-gradient(135deg, color-mix(in srgb, var(--color-bullish) 12%, transparent), var(--color-bullish), #1a8f7f)",
             border: "1px solid color-mix(in srgb, var(--color-bullish) 25%, transparent)",
+            boxShadow: "0 0 32px -8px var(--color-bullish)",
           }}
         >
-          <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-muted group-hover:scale-110 transition-transform duration-500" />
+          <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-bullish/5 group-hover:scale-125 transition-transform duration-700" />
+          <div className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-bullish/5 group-hover:scale-110 transition-transform duration-500" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
               <Scan size={18} className="text-bullish" />

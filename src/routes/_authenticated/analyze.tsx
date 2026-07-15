@@ -391,14 +391,14 @@ function Analyze() {
                     height: 80,
                     borderRadius: 24,
                     background:
-                      "linear-gradient(135deg, color-mix(in srgb, var(--color-bullish) 15%, transparent), rgba(34,211,166,0.05))",
-                    border: "1px solid rgba(34,211,166,0.2)",
+                      "linear-gradient(135deg, color-mix(in srgb, var(--color-bullish) 15%, transparent), color-mix(in srgb, var(--color-bullish) 5%, transparent))",
+                    border: "1px solid var(--bullish-border)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     marginBottom: 24,
                     boxShadow:
-                      "0 12px 32px color-mix(in srgb, var(--color-bullish) 15%, transparent), inset 0 2px 0 rgba(255,255,255,0.1)",
+                      "0 12px 32px color-mix(in srgb, var(--color-bullish) 15%, transparent), inset 0 2px 0 color-mix(in srgb, var(--color-foreground) 10%, transparent)",
                   }}
                 >
                   <Upload style={{ width: 36, height: 36, color: "var(--color-bullish)" }} />
@@ -453,7 +453,8 @@ function Analyze() {
                     fontFamily: "var(--font-mono)",
                     height: 48,
                     background: "color-mix(in srgb, var(--color-foreground) 3%, transparent)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    border:
+                      "1px solid color-mix(in srgb, var(--color-foreground) 10%, transparent)",
                     borderRadius: 12,
                   }}
                 >
@@ -630,7 +631,7 @@ function Analyze() {
                 overflow: "hidden",
                 border: `1px solid ${"var(--color-border)"}`,
                 aspectRatio: "4/3",
-                background: "rgba(99,102,241,0.05)",
+                background: "color-mix(in srgb, var(--color-primary) 5%, transparent)",
               }}
             >
               <img
@@ -872,7 +873,7 @@ function Analyze() {
                   gap: 8,
                   padding: 12,
                   borderRadius: 8,
-                  background: "rgba(34,211,166,0.05)",
+                  background: "color-mix(in srgb, var(--color-bullish) 5%, transparent)",
                   border: "1px solid color-mix(in srgb, var(--color-bullish) 15%, transparent)",
                 }}
               >
