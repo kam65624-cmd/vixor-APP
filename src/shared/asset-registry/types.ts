@@ -344,6 +344,24 @@ const ASSETS: AssetDefinition[] = [
     popular: false,
     priority: 15,
   },
+  {
+    pair: "LINK/USDT",
+    name: "Chainlink",
+    label: "LINK",
+    icon: "⬡",
+    category: "crypto",
+    base: "LINK",
+    quote: "USDT",
+    symbols: {
+      binance: "LINKUSDT",
+      twelveData: "LINK/USDT",
+      tradingView: "BINANCE:LINKUSDT",
+    },
+    config: { pipSize: 0.01, decimals: 2, volatility: 0.03, typicalRange: 0.04, basePrice: 18 },
+    active: true,
+    popular: true,
+    priority: 8,
+  },
 
   // ── Commodities ──────────────────────────────────────────────────────
   {

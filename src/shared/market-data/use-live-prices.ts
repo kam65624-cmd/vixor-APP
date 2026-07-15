@@ -74,8 +74,9 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
     const nonCryptoPairs: string[] = [];
 
     for (const pair of pairs) {
-      const asset = AssetRegistry.get(pair);
-      if (asset?.symbols.binance && asset.category === "crypto") {
+      const asset = AssetRegistry.find(pair);
+      if (!asset) continue; // skip unknown pairs gracefully
+      if (asset.symbols.binance && asset.category === "crypto") {
         wsSymbols.push(asset.symbols.binance);
         wsPairMap.set(asset.symbols.binance, pair);
       } else {
@@ -152,8 +153,9 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
                 low24h?: number;
                 volume24h?: number;
               };
-              const asset = AssetRegistry.get(pair);
-              const symbol = asset?.symbols.binance || pair.replace("/", "");
+              const asset = AssetRegistry.find(pair);
+              if (!asset) continue;
+              const symbol = asset.symbols.binance || pair.replace("/", "");
               next.set(symbol, {
                 pair,
                 symbol,
@@ -188,8 +190,9 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
   }, [enabled, nonCryptoPairs.join(","), pollInterval, status]);
 
   const getPrice = useCallback((pair: string): LivePrice | undefined => {
-    const asset = AssetRegistry.get(pair);
-    const symbol = asset?.symbols.binance || pair.replace("/", "");
+    const asset = AssetRegistry.find(pair);
+    if (!asset) return undefined;
+    const symbol = asset.symbols.binance || pair.replace("/", "");
     return pricesRef.current.get(symbol);
   }, []);
 
