@@ -3,6 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { memo, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { getDailySignals } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { useLivePrices } from "@/shared/market-data";
+import { LiveDot } from "@/components/vixor/LiveDot";
+import { ArrowUpRight, ArrowDownRight, Zap } from "lucide-react";
 import { createSignalTracking, getUserSignalTrackings } from "@/domains/signal-tracking";
 import { shareOnX, shareOnTelegram } from "@/shared/share";
 import type { ShareableSignal } from "@/shared/share";
@@ -40,6 +43,136 @@ type Signal = {
   signal_date: string;
   created_at: string;
 };
+
+// ── Live Market Price Bar (shown on signals page) ──────────────────────────
+
+const SIGNAL_PAIRS = [
+  "BTC/USDT",
+  "ETH/USDT",
+  "SOL/USDT",
+  "XRP/USDT",
+  "DOGE/USDT",
+  "BNB/USDT",
+  "ADA/USDT",
+  "AVAX/USDT",
+];
+
+const LiveMarketBar = memo(function LiveMarketBar() {
+  const { priceList, status } = useLivePrices({ pairs: SIGNAL_PAIRS });
+
+  if (priceList.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        margin: "0 16px 12px",
+        padding: "10px 14px",
+        borderRadius: "12px",
+        background: "color-mix(in srgb, var(--color-primary) 6%, var(--color-card))",
+        border: "1px solid color-mix(in srgb, var(--color-primary) 10%, transparent)",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          marginBottom: "8px",
+        }}
+      >
+        <Zap size={11} style={{ color: "var(--color-primary)" }} />
+        <span
+          style={{
+            fontSize: "9px",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "var(--color-foreground)",
+            opacity: 0.5,
+          }}
+        >
+          Live Prices
+        </span>
+        <LiveDot size={5} />
+        {status === "connected" && (
+          <span
+            style={{
+              fontSize: "9px",
+              color: "var(--color-bullish)",
+              fontWeight: 600,
+              marginLeft: "auto",
+            }}
+          >
+            Connected
+          </span>
+        )}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          gap: "4px",
+          overflowX: "auto",
+          scrollbarWidth: "none",
+        }}
+      >
+        {priceList.map((p) => {
+          const isUp = p.change24h >= 0;
+          const sym = p.pair.split("/")[0];
+          return (
+            <div
+              key={p.symbol}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: "4px 10px",
+                borderRadius: "8px",
+                background: "color-mix(in srgb, var(--color-foreground) 3%, transparent)",
+                minWidth: "72px",
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--color-foreground)" }}>
+                {sym}
+              </span>
+              <span
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 600,
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--color-foreground)",
+                  opacity: 0.8,
+                }}
+              >
+                {p.price >= 1000
+                  ? `$${(p.price / 1000).toFixed(1)}k`
+                  : p.price >= 1
+                    ? `$${p.price.toFixed(2)}`
+                    : `$${p.price.toFixed(4)}`}
+              </span>
+              <span
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  fontFamily: "var(--font-mono)",
+                  color: isUp ? "var(--color-bullish)" : "var(--color-bearish)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1px",
+                }}
+              >
+                {isUp ? <ArrowUpRight size={8} /> : <ArrowDownRight size={8} />}
+                {isUp ? "+" : ""}
+                {p.change24h.toFixed(1)}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
 
 const TABS = ["All", "BUY", "SELL", "WAIT"] as const;
 
@@ -193,6 +326,9 @@ function SignalsPage() {
       />
 
       <SectionTitle title="Active Signals" count={filtered.length} />
+
+      {/* Live Market Prices — always visible */}
+      <LiveMarketBar />
 
       <ScrollArea style={{ padding: "0" }}>
         {filtered.length > 0 ? (
