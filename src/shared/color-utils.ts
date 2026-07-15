@@ -13,12 +13,12 @@
 // ── Dark theme RGB values (primary) ────────────────────────────────────────────
 
 const DARK_RGB: Record<string, [number, number, number]> = {
-  "--color-bullish": [14, 203, 129],
-  "--color-bearish": [246, 70, 93],
-  "--color-neutral-wait": [245, 158, 11],
-  "--color-foreground": [250, 250, 250],
-  "--color-muted-foreground": [156, 163, 175],
-  "--color-info": [124, 155, 196],
+  "--color-bullish": [34, 211, 166],
+  "--color-bearish": [251, 70, 103],
+  "--color-neutral-wait": [245, 166, 35],
+  "--color-foreground": [255, 255, 255],
+  "--color-muted-foreground": [148, 152, 168],
+  "--color-info": [99, 102, 241],
 };
 
 // ── Light theme RGB values (secondary, best-effort) ───────────────────────────
@@ -29,11 +29,11 @@ const LIGHT_RGB: Record<string, [number, number, number]> = {
   "--color-neutral-wait": [217, 119, 6],
   "--color-foreground": [17, 24, 39],
   "--color-muted-foreground": [107, 114, 128],
-  "--color-info": [90, 127, 166],
+  "--color-info": [99, 102, 241],
 };
 
 // Dark card background: --card = rgba(0, 0, 0, 0.35) → approximate solid #12141A
-const CARD_DARK: [number, number, number] = [18, 20, 26];
+const CARD_DARK: [number, number, number] = [16, 17, 20];
 // Light card background
 const CARD_LIGHT: [number, number, number] = [255, 255, 255];
 

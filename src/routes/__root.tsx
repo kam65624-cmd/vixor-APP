@@ -446,7 +446,7 @@ function RootComponent() {
             position="top-center"
             toastOptions={{
               style: {
-                background: "#1A1D24",
+                background: "var(--card)",
                 border: "1px solid #2A2D37",
                 color: "#E4E5E9",
               },
