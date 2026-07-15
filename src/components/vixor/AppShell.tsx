@@ -821,9 +821,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             textAlign: "center",
             fontSize: "11px",
             fontWeight: 600,
-            color: "#F87171",
-            background: "rgba(248,113,113,0.08)",
-            borderBottom: "1px solid rgba(248,113,113,0.15)",
+            color: "var(--color-bearish)",
+            background: "var(--bearish-bg)",
+            borderBottom: "1px solid var(--bearish-bg)",
             letterSpacing: "0.03em",
           }}
           role="alert"
@@ -1043,8 +1043,8 @@ const PointsBadge = memo(function PointsBadge() {
       className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-mono font-bold"
       style={{
         color: "var(--color-primary)",
-        background: "rgba(91,110,245,0.08)",
-        border: "1px solid rgba(91,110,245,0.15)",
+        background: "rgba(99,102,241,0.08)",
+        border: "1px solid rgba(99,102,241,0.15)",
         textDecoration: "none",
         minWidth: "44px",
         minHeight: "44px",
@@ -1201,7 +1201,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
     <header
       className="fixed inset-x-0 z-50"
       style={{
-        background: "rgba(10, 10, 13, 0.80)",
+        background: "var(--overlay-secondary)",
         backdropFilter: "blur(20px) saturate(180%)",
         WebkitBackdropFilter: "blur(20px) saturate(180%)",
         borderBottom: "1px solid var(--color-border)",
@@ -1269,11 +1269,11 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
               color: "var(--primary-foreground)",
               border: "none",
               borderRadius: "8px",
-              boxShadow: "0 2px 8px rgba(91,110,245,0.25)",
+              boxShadow: "0 2px 8px rgba(99,102,241,0.25)",
               height: "30px",
               cursor: "pointer",
               textDecoration: "none",
-              fontFamily: "'Inter', system-ui, sans-serif",
+              fontFamily: "var(--font-sans)",
             }}
           >
             <svg
@@ -1328,10 +1328,10 @@ const BottomBar = memo(function BottomBar({
     <nav
       className="fixed bottom-0 inset-x-0 z-50"
       style={{
-        background: "rgba(10, 10, 13, 0.85)",
+        background: "var(--overlay-secondary)",
         backdropFilter: "blur(20px) saturate(180%)",
         WebkitBackdropFilter: "blur(20px) saturate(180%)",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
+        borderTop: "1px solid var(--color-border-subtle)",
         height: isTg ? "calc(52px + env(safe-area-inset-bottom, 0px))" : "52px",
         display: "flex",
         alignItems: "center",
