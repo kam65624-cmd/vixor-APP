@@ -335,7 +335,7 @@ const SignalRow = memo(function SignalRow({
               fontWeight: 600,
               padding: "2px 6px",
               borderRadius: "6px",
-              background: "rgba(255,255,255,0.05)",
+              background: "color-mix(in srgb, var(--color-foreground) 5%, transparent)",
               color: "var(--color-muted-foreground)",
             }}
           >
@@ -404,7 +404,7 @@ const SignalRow = memo(function SignalRow({
             style={{
               padding: "8px",
               borderRadius: "10px",
-              background: "rgba(255,255,255,0.04)",
+              background: "color-mix(in srgb, var(--color-foreground) 4%, transparent)",
               textAlign: "center",
             }}
           >
@@ -531,14 +531,16 @@ const SignalRow = memo(function SignalRow({
               height: "34px",
               padding: "0 12px",
               borderRadius: "10px",
-              border: `1px solid ${isTracked ? "var(--color-bullish)" : "rgba(255,255,255,0.10)"}`,
-              background: isTracked ? "rgba(34,211,166,0.12)" : "rgba(255,255,255,0.04)",
+              border: `1px solid ${isTracked ? "var(--color-bullish)" : "color-mix(in srgb, var(--color-foreground) 10%, transparent)"}`,
+              background: isTracked
+                ? "color-mix(in srgb, var(--color-bullish) 12%, transparent)"
+                : "color-mix(in srgb, var(--color-foreground) 4%, transparent)",
               color: isTracked ? "var(--color-bullish)" : "var(--color-muted-foreground)",
               cursor: isTracked ? "default" : "pointer",
               fontSize: "11px",
               fontWeight: 700,
               whiteSpace: "nowrap",
-              transition: "all 0.2s ease",
+              transition: "all var(--transition-base)",
             }}
           >
             {isTracked ? "✓ Tracked" : "Track"}
@@ -553,8 +555,8 @@ const SignalRow = memo(function SignalRow({
               width: "34px",
               height: "34px",
               borderRadius: "10px",
-              border: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.04)",
+              border: "1px solid color-mix(in srgb, var(--color-foreground) 8%, transparent)",
+              background: "color-mix(in srgb, var(--color-foreground) 4%, transparent)",
               color: "var(--color-muted-foreground)",
               cursor: "pointer",
               fontSize: "12px",
@@ -562,7 +564,7 @@ const SignalRow = memo(function SignalRow({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              transition: "all 0.2s ease",
+              transition: "all var(--transition-base)",
             }}
           >
             𝕏
@@ -575,15 +577,15 @@ const SignalRow = memo(function SignalRow({
               width: "34px",
               height: "34px",
               borderRadius: "10px",
-              border: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.04)",
+              border: "1px solid color-mix(in srgb, var(--color-foreground) 8%, transparent)",
+              background: "color-mix(in srgb, var(--color-foreground) 4%, transparent)",
               color: "var(--color-muted-foreground)",
               cursor: "pointer",
               fontSize: "12px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              transition: "all 0.2s ease",
+              transition: "all var(--transition-base)",
             }}
           >
             ✈

@@ -280,14 +280,14 @@ function formatPrice(price: number): string {
 }
 
 function heatmapColor(change: number): string {
-  if (change >= 8) return "rgba(34, 211, 166, 0.85)";
+  if (change >= 8) return "color-mix(in srgb, var(--color-bullish) 85%, transparent)";
   if (change >= 5) return "rgba(34, 211, 166, 0.6)";
   if (change >= 2) return "rgba(34, 211, 166, 0.4)";
   if (change >= 0) return "rgba(34, 211, 166, 0.2)";
   if (change >= -2) return "rgba(251, 70, 103, 0.2)";
   if (change >= -5) return "rgba(251, 70, 103, 0.4)";
   if (change >= -8) return "rgba(251, 70, 103, 0.6)";
-  return "rgba(251, 70, 103, 0.85)";
+  return "color-mix(in srgb, var(--color-bearish) 85%, transparent)";
 }
 
 // ── Sub-Components ──────────────────────────────────────────────────────────
@@ -330,7 +330,9 @@ function BlipCard({ blip }: { blip: RadarBlip }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: hovered ? "rgba(99,102,241,0.04)" : "var(--color-card)",
+        background: hovered
+          ? "color-mix(in srgb, var(--color-primary) 4%, transparent)"
+          : "var(--color-card)",
         border: `1px solid ${hovered ? blip.color + "40" : "var(--color-border)"}`,
         borderLeft: `3px solid ${blip.color}`,
         borderRadius: 8,
@@ -338,7 +340,7 @@ function BlipCard({ blip }: { blip: RadarBlip }) {
         display: "flex",
         flexDirection: "column",
         gap: 6,
-        transition: "all 0.2s ease",
+        transition: "all var(--transition-base)",
         position: "relative" as const,
         overflow: "hidden",
       }}
@@ -567,7 +569,7 @@ function AlertsLogEntry({ blip, index }: { blip: RadarBlip; index: number }) {
         alignItems: "center",
         gap: 10,
         padding: "10px 16px",
-        borderBottom: "1px solid rgba(99,102,241,0.04)",
+        borderBottom: "1px solid color-mix(in srgb, var(--color-primary) 4%, transparent)",
         background: index % 2 === 0 ? "var(--color-card)" : "rgba(99,102,241,0.02)",
         transition: "background 0.1s ease",
       }}
@@ -639,8 +641,8 @@ function DemoNotice() {
         alignItems: "center",
         gap: 8,
         padding: "8px 16px",
-        background: "rgba(240,185,11,0.10)",
-        borderBottom: "1px solid rgba(240,185,11,0.20)",
+        background: "color-mix(in srgb, var(--color-gold) 10%, transparent)",
+        borderBottom: "1px solid color-mix(in srgb, var(--color-gold) 0.20%, transparent)",
         flexShrink: 0,
       }}
     >

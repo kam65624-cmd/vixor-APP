@@ -80,7 +80,7 @@ const labelStyle: React.CSSProperties = {
   color: "var(--color-muted-foreground)",
 };
 const inputStyle: React.CSSProperties = {
-  background: "rgba(255,255,255,0.04)",
+  background: "color-mix(in srgb, var(--color-foreground) 4%, transparent)",
   border: "1px solid var(--color-border)",
   color: "var(--color-foreground)",
   outline: "none",
@@ -343,12 +343,14 @@ function TradeDesk() {
               padding: "4px 10px",
               borderRadius: "20px",
               border: `1px solid ${isExchangeConnected ? `${"var(--color-bullish)"}44` : "var(--color-border)"}`,
-              background: isExchangeConnected ? `rgba(34,211,166,0.08)` : "rgba(99,102,241,0.04)",
+              background: isExchangeConnected
+                ? `var(--bullish-bg)`
+                : "color-mix(in srgb, var(--color-primary) 4%, transparent)",
               cursor: "pointer",
               fontSize: "11px",
               fontWeight: 600,
               color: isExchangeConnected ? "var(--color-bullish)" : "var(--color-muted-foreground)",
-              transition: "all 0.15s ease",
+              transition: "all var(--transition-fast)",
             }}
           >
             <span
@@ -410,7 +412,7 @@ function TradeDesk() {
               gap: "10px",
               marginBottom: "20px",
               paddingBottom: "14px",
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              borderBottom: "1px solid color-mix(in srgb, var(--color-foreground) 6%, transparent)",
             }}
           >
             <div
@@ -418,7 +420,7 @@ function TradeDesk() {
                 width: "32px",
                 height: "32px",
                 borderRadius: "10px",
-                background: "rgba(34,211,166,0.12)",
+                background: "color-mix(in srgb, var(--color-bullish) 12%, transparent)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -497,7 +499,7 @@ function TradeDesk() {
               borderRadius: "14px",
               textAlign: "center",
               background: "linear-gradient(135deg, rgba(34,211,166,0.06), rgba(34,211,166,0.02))",
-              border: "1px solid rgba(34,211,166,0.15)",
+              border: "1px solid color-mix(in srgb, var(--color-bullish) 15%, transparent)",
             }}
           >
             <div style={{ ...labelStyle, marginBottom: "8px", opacity: 0.8 }}>
@@ -512,7 +514,7 @@ function TradeDesk() {
                 ...mono,
                 color: "var(--color-bullish)",
                 marginBottom: "10px",
-                textShadow: "0 0 20px rgba(34,211,166,0.4)",
+                textShadow: "0 0 20px color-mix(in srgb, var(--color-bullish) 40%, transparent)",
                 letterSpacing: "-0.02em",
               }}
             >
@@ -590,7 +592,7 @@ function TradeDesk() {
                       background:
                         direction === "long"
                           ? `${"var(--color-bullish)"}20`
-                          : "rgba(99,102,241,0.06)",
+                          : "color-mix(in srgb, var(--color-primary) 6%, transparent)",
                       border: `1px solid ${
                         direction === "long" ? `${"var(--color-bullish)"}66` : "var(--color-border)"
                       }`,
@@ -610,7 +612,7 @@ function TradeDesk() {
                       background:
                         direction === "short"
                           ? `${"var(--color-bearish)"}20`
-                          : "rgba(99,102,241,0.06)",
+                          : "color-mix(in srgb, var(--color-primary) 6%, transparent)",
                       border: `1px solid ${
                         direction === "short"
                           ? `${"var(--color-bearish)"}66`
@@ -654,9 +656,9 @@ function TradeDesk() {
                   background:
                     entryPrice && !saveMutation.isPending
                       ? saveSuccess
-                        ? `rgba(34,211,166,0.19)`
+                        ? `color-mix(in srgb, var(--color-bullish) 19%, transparent)`
                         : "var(--color-bullish)"
-                      : "rgba(99,102,241,0.06)",
+                      : "color-mix(in srgb, var(--color-primary) 6%, transparent)",
                   color: saveSuccess
                     ? "var(--color-bullish)"
                     : entryPrice && !saveMutation.isPending
@@ -689,9 +691,11 @@ function TradeDesk() {
                 style={{
                   background: entryPrice
                     ? "linear-gradient(135deg, var(--color-bullish), rgba(34,211,166,0.70))"
-                    : "rgba(99,102,241,0.06)",
+                    : "color-mix(in srgb, var(--color-primary) 6%, transparent)",
                   color: entryPrice ? "var(--color-foreground)" : "var(--color-muted-foreground)",
-                  boxShadow: entryPrice ? "0 2px 12px rgba(34,211,166,0.30)" : "none",
+                  boxShadow: entryPrice
+                    ? "0 2px 12px color-mix(in srgb, var(--color-bullish) 30%, transparent)"
+                    : "none",
                   opacity: !entryPrice ? 0.5 : 1,
                   border: "none",
                 }}
@@ -711,7 +715,9 @@ function TradeDesk() {
                 disabled={!entryPrice}
                 className="flex items-center justify-center gap-1 h-10 px-3 rounded-lg text-xs font-bold transition-all flex-1"
                 style={{
-                  background: showCoach ? `${"var(--color-info)"}20` : "rgba(99,102,241,0.06)",
+                  background: showCoach
+                    ? `${"var(--color-info)"}20`
+                    : "color-mix(in srgb, var(--color-primary) 6%, transparent)",
                   border: `1px solid ${showCoach ? `${"var(--color-info)"}66` : "var(--color-border)"}`,
                   color: showCoach ? "var(--color-info)" : "var(--color-muted-foreground)",
                   opacity: !entryPrice ? 0.5 : 1,
@@ -731,7 +737,7 @@ function TradeDesk() {
                 style={{
                   background: showGovernor
                     ? `${"var(--color-neutral-wait)"}20`
-                    : "rgba(99,102,241,0.06)",
+                    : "color-mix(in srgb, var(--color-primary) 6%, transparent)",
                   border: `1px solid ${showGovernor ? `${"var(--color-neutral-wait)"}66` : "var(--color-border)"}`,
                   color: showGovernor
                     ? "var(--color-neutral-wait)"
@@ -779,8 +785,8 @@ function TradeDesk() {
                       flexShrink: 0,
                       background:
                         trade.direction === "long"
-                          ? `rgba(34,211,166,0.10)`
-                          : `rgba(251,70,103,0.10)`,
+                          ? `color-mix(in srgb, var(--color-bullish) 10%, transparent)`
+                          : `color-mix(in srgb, var(--color-bearish) 10%, transparent)`,
                     }}
                   >
                     {trade.direction === "long" ? (
@@ -892,7 +898,7 @@ function TradeDesk() {
             style={{
               position: "absolute",
               inset: 0,
-              background: "rgba(0, 0, 0, 0.7)",
+              background: "color-mix(in srgb, var(--color-background) 30%, transparent)",
               backdropFilter: "blur(4px)",
             }}
           />
@@ -907,7 +913,7 @@ function TradeDesk() {
               border: `1px solid ${"var(--color-border)"}`,
               borderRadius: "16px",
               overflow: "hidden",
-              boxShadow: "0 24px 48px rgba(0, 0, 0, 0.5)",
+              boxShadow: "0 24px 48px color-mix(in srgb, var(--color-background) 50%, transparent)",
             }}
           >
             {/* Header */}
@@ -929,7 +935,9 @@ function TradeDesk() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: isPaperMode ? `rgba(245,166,35,0.15)` : `rgba(34,211,166,0.15)`,
+                    background: isPaperMode
+                      ? `color-mix(in srgb, var(--color-neutral-wait) 15%, transparent)`
+                      : `color-mix(in srgb, var(--color-bullish) 15%, transparent)`,
                   }}
                 >
                   <Zap
@@ -964,7 +972,7 @@ function TradeDesk() {
                     height: "28px",
                     borderRadius: "8px",
                     border: "none",
-                    background: "rgba(99,102,241,0.06)",
+                    background: "color-mix(in srgb, var(--color-primary) 6%, transparent)",
                     color: "var(--color-muted-foreground)",
                     cursor: "pointer",
                     display: "flex",
@@ -1158,7 +1166,7 @@ function TradeDesk() {
                       gap: "6px",
                       padding: "8px 10px",
                       borderRadius: "8px",
-                      background: isPaperMode ? `rgba(245,166,35,0.08)` : `rgba(34,211,166,0.08)`,
+                      background: isPaperMode ? `var(--neutral-wait-bg)` : `var(--bullish-bg)`,
                       marginBottom: "16px",
                     }}
                   >
@@ -1234,7 +1242,7 @@ function TradeDesk() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          background: `rgba(34,211,166,0.15)`,
+                          background: `color-mix(in srgb, var(--color-bullish) 15%, transparent)`,
                         }}
                       >
                         <CheckCircle className="size-6" style={{ color: "var(--color-bullish)" }} />
@@ -1319,7 +1327,7 @@ function TradeDesk() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          background: `rgba(251,70,103,0.15)`,
+                          background: `color-mix(in srgb, var(--color-bearish) 15%, transparent)`,
                         }}
                       >
                         <AlertCircle className="size-6" style={{ color: "var(--color-bearish)" }} />
@@ -1364,7 +1372,7 @@ function TradeDesk() {
                   onClick={handleCloseDialog}
                   className="flex-1 h-11 rounded-xl text-xs font-bold transition-all"
                   style={{
-                    background: "rgba(99,102,241,0.06)",
+                    background: "color-mix(in srgb, var(--color-primary) 6%, transparent)",
                     border: `1px solid ${"var(--color-border)"}`,
                     color: "var(--color-muted-foreground)",
                   }}

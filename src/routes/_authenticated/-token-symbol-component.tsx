@@ -567,7 +567,9 @@ export function TokenPage() {
                     height: "36px",
                     borderRadius: "8px",
                     border: `1px solid var(--color-border)`,
-                    background: isWatched ? "rgba(34,211,166,0.12)" : "var(--color-card)",
+                    background: isWatched
+                      ? "color-mix(in srgb, var(--color-bullish) 12%, transparent)"
+                      : "var(--color-card)",
                     color: isWatched ? "var(--color-bullish)" : "var(--color-muted-foreground)",
                     display: "flex",
                     alignItems: "center",
@@ -678,7 +680,7 @@ export function TokenPage() {
                 fontWeight: 700,
                 fontSize: "13px",
                 letterSpacing: "0.04em",
-                background: "rgba(99,102,241,0.10)",
+                background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
                 color: "var(--color-primary)",
                 transition: "all 0.15s",
                 display: "flex",
@@ -690,7 +692,8 @@ export function TokenPage() {
                 (e.target as HTMLElement).style.background = "rgba(99,102,241,0.18)";
               }}
               onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.background = "rgba(99,102,241,0.10)";
+                (e.target as HTMLElement).style.background =
+                  "color-mix(in srgb, var(--color-primary) 10%, transparent)";
               }}
             >
               <span style={{ fontSize: "16px" }}>⚡</span>
@@ -822,7 +825,7 @@ export function TokenPage() {
                       fontWeight: 700,
                       padding: "2px 5px",
                       borderRadius: "3px",
-                      background: "rgba(34,211,166,0.15)",
+                      background: "color-mix(in srgb, var(--color-bullish) 15%, transparent)",
                       color: "var(--color-bullish)",
                       letterSpacing: "0.04em",
                       lineHeight: 1,
@@ -881,7 +884,9 @@ export function TokenPage() {
                   height: "36px",
                   borderRadius: "8px",
                   border: `1px solid var(--color-border)`,
-                  background: isWatched ? "rgba(34,211,166,0.12)" : "var(--color-card)",
+                  background: isWatched
+                    ? "color-mix(in srgb, var(--color-bullish) 12%, transparent)"
+                    : "var(--color-card)",
                   color: isWatched ? "var(--color-bullish)" : "var(--color-muted-foreground)",
                   display: "flex",
                   alignItems: "center",
@@ -1087,7 +1092,10 @@ export function TokenPage() {
                     border: `1px solid ${
                       leverage === lev ? "var(--color-primary)" : "var(--color-border)"
                     }`,
-                    background: leverage === lev ? "rgba(99,102,241,0.15)" : "var(--color-card)",
+                    background:
+                      leverage === lev
+                        ? "color-mix(in srgb, var(--color-primary) 15%, transparent)"
+                        : "var(--color-card)",
                     color:
                       leverage === lev ? "var(--color-primary)" : "var(--color-muted-foreground)",
                     cursor: "pointer",
@@ -1491,7 +1499,7 @@ export function TokenPage() {
               fontWeight: 700,
               fontSize: "13px",
               letterSpacing: "0.04em",
-              background: "rgba(99,102,241,0.10)",
+              background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
               color: "var(--color-primary)",
               transition: "all 0.15s",
               display: "flex",
@@ -1503,7 +1511,8 @@ export function TokenPage() {
               (e.target as HTMLElement).style.background = "rgba(99,102,241,0.18)";
             }}
             onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.background = "rgba(99,102,241,0.10)";
+              (e.target as HTMLElement).style.background =
+                "color-mix(in srgb, var(--color-primary) 10%, transparent)";
             }}
           >
             <span style={{ fontSize: "16px" }}>⚡</span>
@@ -1813,7 +1822,7 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
                 padding: "10px 12px",
                 borderRadius: "8px",
                 background: "var(--bearish-bg)",
-                border: `1px solid rgba(251,70,103,0.25)`,
+                border: `1px solid color-mix(in srgb, var(--color-bearish) 25%, transparent)`,
               }}
             >
               <span style={{ fontSize: "14px" }}>🚫</span>
@@ -1842,8 +1851,8 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
                 gap: "8px",
                 padding: "10px 12px",
                 borderRadius: "8px",
-                background: "rgba(240,185,11,0.12)",
-                border: `1px solid rgba(240,185,11,0.25)`,
+                background: "color-mix(in srgb, var(--color-gold) 0.12%, transparent)",
+                border: `1px solid color-mix(in srgb, var(--color-gold) 0.25%, transparent)`,
               }}
             >
               <span style={{ fontSize: "14px" }}>💧</span>
@@ -1872,8 +1881,8 @@ function MemeSections({ tokenData }: { tokenData: TokenItem | null }) {
                 gap: "8px",
                 padding: "10px 12px",
                 borderRadius: "8px",
-                background: "rgba(34,211,166,0.08)",
-                border: `1px solid rgba(34,211,166,0.20)`,
+                background: "var(--bullish-bg)",
+                border: `1px solid var(--bullish-border)`,
               }}
             >
               <span style={{ fontSize: "14px" }}>✓</span>
@@ -2123,19 +2132,19 @@ function ForexSections({ symbol }: { symbol: string }) {
     switch (impact) {
       case "high":
         return {
-          bg: "rgba(251,70,103,0.15)",
+          bg: "color-mix(in srgb, var(--color-bearish) 15%, transparent)",
           border: "var(--color-bearish)",
           color: "var(--color-bearish)",
         };
       case "medium":
         return {
-          bg: "rgba(240,185,11,0.15)",
+          bg: "color-mix(in srgb, var(--color-gold) 0.15%, transparent)",
           border: "var(--color-gold)",
           color: "var(--color-gold)",
         };
       default:
         return {
-          bg: "rgba(34,211,166,0.15)",
+          bg: "color-mix(in srgb, var(--color-bullish) 15%, transparent)",
           border: "var(--color-bullish)",
           color: "var(--color-bullish)",
         };
@@ -2313,7 +2322,9 @@ function ForexSections({ symbol }: { symbol: string }) {
                     gap: "8px",
                     padding: isRelevant ? "6px 8px" : "4px 8px",
                     borderRadius: "6px",
-                    background: isRelevant ? "rgba(99,102,241,0.10)" : "transparent",
+                    background: isRelevant
+                      ? "color-mix(in srgb, var(--color-primary) 10%, transparent)"
+                      : "transparent",
                   }}
                 >
                   <span
@@ -2622,7 +2633,7 @@ function QuickCalcRow({
         justifyContent: "space-between",
         alignItems: "center",
         padding: "4px 0",
-        borderBottom: `1px solid rgba(99,102,241,0.04)`,
+        borderBottom: `1px solid color-mix(in srgb, var(--color-primary) 4%, transparent)`,
       }}
     >
       <span

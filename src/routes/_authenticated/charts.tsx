@@ -82,7 +82,7 @@ function ChartsPage() {
               border: "none",
               cursor: "pointer",
               whiteSpace: "nowrap",
-              transition: "all 0.15s ease",
+              transition: "all var(--transition-fast)",
               marginBottom: "-1px",
             }}
           >
@@ -122,7 +122,7 @@ function ChartsPage() {
               border: "none",
               cursor: "pointer",
               whiteSpace: "nowrap",
-              transition: "all 0.15s ease",
+              transition: "all var(--transition-fast)",
               marginBottom: "-1px",
             }}
           >

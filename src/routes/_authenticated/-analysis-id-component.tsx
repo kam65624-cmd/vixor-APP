@@ -107,7 +107,7 @@ function highlightSMC(text: string): React.ReactNode[] {
           style={{
             color: "var(--color-bullish)",
             fontWeight: 700,
-            background: `rgba(34,211,166,0.10)`,
+            background: `color-mix(in srgb, var(--color-bullish) 10%, transparent)`,
             padding: "0 2px",
             borderRadius: "2px",
           }}
@@ -200,7 +200,9 @@ function ChartCanvasOverlay({
           const rect = getRect(ob.box || ob);
           if (!rect) return;
           const isBullish = ob.type === "bullish" || ob.direction === "up";
-          ctx.fillStyle = isBullish ? "rgba(34,211,166,0.15)" : "rgba(251,70,103,0.15)";
+          ctx.fillStyle = isBullish
+            ? "color-mix(in srgb, var(--color-bullish) 15%, transparent)"
+            : "color-mix(in srgb, var(--color-bearish) 15%, transparent)";
           ctx.strokeStyle = isBullish ? "rgba(34,211,166,1)" : "rgba(251,70,103,1)";
           ctx.lineWidth = 2;
           ctx.setLineDash([5, 5]);
@@ -447,7 +449,10 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
       const color = fvg.type === "bullish" ? "var(--color-bullish)" : "var(--color-bearish)";
 
       // Fill box
-      ctx.fillStyle = fvg.type === "bullish" ? "rgba(34,211,166,0.12)" : "rgba(251,70,103,0.12)";
+      ctx.fillStyle =
+        fvg.type === "bullish"
+          ? "color-mix(in srgb, var(--color-bullish) 12%, transparent)"
+          : "color-mix(in srgb, var(--color-bearish) 12%, transparent)";
       ctx.fillRect(0, rectY, W, rectH);
 
       // Top border
@@ -472,7 +477,10 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
       const rectY = Math.min(y1, y2);
       const color = ob.type === "bullish" ? "var(--color-primary)" : "#F59E0B";
 
-      ctx.fillStyle = ob.type === "bullish" ? "rgba(99,102,241,0.15)" : "rgba(245,166,35,0.15)";
+      ctx.fillStyle =
+        ob.type === "bullish"
+          ? "color-mix(in srgb, var(--color-primary) 15%, transparent)"
+          : "color-mix(in srgb, var(--color-neutral-wait) 15%, transparent)";
       ctx.fillRect(0, rectY, W, rectH);
 
       // Left accent bar
@@ -554,7 +562,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
       ctx.moveTo(0, ey);
       ctx.lineTo(W, ey);
       ctx.stroke();
-      ctx.fillStyle = "rgba(99,102,241,0.15)";
+      ctx.fillStyle = "color-mix(in srgb, var(--color-primary) 15%, transparent)";
       ctx.fillRect(W - 54, ey - 9, 50, 16);
       ctx.fillStyle = "var(--color-primary)";
       ctx.font = "bold 9px monospace";
@@ -676,7 +684,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
               borderRadius: 20,
               padding: "3px 10px",
               cursor: "pointer",
-              transition: "all 0.2s ease",
+              transition: "all var(--transition-base)",
             }}
           >
             {showAnnotations ? "Hide Zones" : "Show Zones"}
@@ -835,8 +843,8 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
               width: 40,
               height: 40,
               borderRadius: "50%",
-              background: "rgba(99,102,241,0.10)",
-              border: "1px solid rgba(99,102,241,0.20)",
+              background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -1009,7 +1017,7 @@ export function AnalysisResult() {
               ...CARD,
               padding: "32px",
               textAlign: "center",
-              borderColor: "rgba(251,70,103,0.30)",
+              borderColor: "color-mix(in srgb, var(--color-bearish) 30%, transparent)",
             }}
           >
             <div
@@ -1017,7 +1025,7 @@ export function AnalysisResult() {
                 width: "64px",
                 height: "64px",
                 borderRadius: "50%",
-                background: "rgba(251,70,103,0.10)",
+                background: "color-mix(in srgb, var(--color-bearish) 10%, transparent)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -1080,20 +1088,20 @@ export function AnalysisResult() {
                 overflow: "hidden",
                 margin: "0 16px 16px",
                 borderColor: isBullish
-                  ? "rgba(34,211,166,0.50)"
+                  ? "color-mix(in srgb, var(--color-bullish) 50%, transparent)"
                   : isBearish
                     ? "rgba(251,70,103,0.50)"
                     : "rgba(245,166,35,0.40)",
                 boxShadow: isBullish
-                  ? "0 0 40px rgba(34,211,166,0.20)"
+                  ? "0 0 40px var(--bullish-border)"
                   : isBearish
-                    ? "0 0 40px rgba(251,70,103,0.20)"
-                    : "0 0 30px rgba(245,166,35,0.15)",
+                    ? "0 0 40px color-mix(in srgb, var(--color-bearish) 20%, transparent)"
+                    : "0 0 30px color-mix(in srgb, var(--color-neutral-wait) 15%, transparent)",
                 background: isBullish
-                  ? `linear-gradient(to bottom right, rgba(34,211,166,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`
+                  ? `linear-gradient(to bottom right, var(--bullish-bg), ${"var(--color-card)"}, ${"var(--color-card)"})`
                   : isBearish
-                    ? `linear-gradient(to bottom right, rgba(251,70,103,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`
-                    : `linear-gradient(to bottom right, rgba(245,166,35,0.08), ${"var(--color-card)"}, ${"var(--color-card)"})`,
+                    ? `linear-gradient(to bottom right, var(--bearish-bg), ${"var(--color-card)"}, ${"var(--color-card)"})`
+                    : `linear-gradient(to bottom right, var(--neutral-wait-bg), ${"var(--color-card)"}, ${"var(--color-card)"})`,
               }}
             >
               {/* Animated top bar */}
@@ -1214,14 +1222,14 @@ export function AnalysisResult() {
                         ? "rgba(251,70,103,0.06)"
                         : "rgba(245,166,35,0.06)",
                     borderColor: isBullish
-                      ? "rgba(34,211,166,0.30)"
+                      ? "color-mix(in srgb, var(--color-bullish) 30%, transparent)"
                       : isBearish
-                        ? "rgba(251,70,103,0.30)"
+                        ? "color-mix(in srgb, var(--color-bearish) 30%, transparent)"
                         : "rgba(245,166,35,0.30)",
                     boxShadow: isBullish
-                      ? "0 0 20px rgba(34,211,166,0.30)"
+                      ? "0 0 20px color-mix(in srgb, var(--color-bullish) 30%, transparent)"
                       : isBearish
-                        ? "0 0 20px rgba(251,70,103,0.30)"
+                        ? "0 0 20px color-mix(in srgb, var(--color-bearish) 30%, transparent)"
                         : "none",
                   }}
                 >
@@ -1268,7 +1276,7 @@ export function AnalysisResult() {
                       background: "rgba(251,70,103,0.05)",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: "1px solid rgba(251,70,103,0.30)",
+                      border: "1px solid color-mix(in srgb, var(--color-bearish) 30%, transparent)",
                       textAlign: "center",
                     }}
                   >
@@ -1292,7 +1300,7 @@ export function AnalysisResult() {
                       background: "rgba(34,211,166,0.05)",
                       padding: "12px",
                       borderRadius: "12px",
-                      border: "1px solid rgba(34,211,166,0.30)",
+                      border: "1px solid color-mix(in srgb, var(--color-bullish) 30%, transparent)",
                       textAlign: "center",
                     }}
                   >
@@ -1332,9 +1340,9 @@ export function AnalysisResult() {
                           ? "rgba(251,70,103,0.06)"
                           : "rgba(245,166,35,0.06)",
                       borderColor: isBullish
-                        ? "rgba(34,211,166,0.30)"
+                        ? "color-mix(in srgb, var(--color-bullish) 30%, transparent)"
                         : isBearish
-                          ? "rgba(251,70,103,0.30)"
+                          ? "color-mix(in srgb, var(--color-bearish) 30%, transparent)"
                           : "rgba(245,166,35,0.30)",
                     }}
                   >
@@ -1389,7 +1397,9 @@ export function AnalysisResult() {
                       padding: "10px 20px",
                       borderRadius: "10px",
                       border: "none",
-                      background: trackMutation.isSuccess ? "rgba(34,211,166,0.15)" : GREEN_GRAD,
+                      background: trackMutation.isSuccess
+                        ? "color-mix(in srgb, var(--color-bullish) 15%, transparent)"
+                        : GREEN_GRAD,
                       color: "#fff",
                       fontWeight: 700,
                       fontSize: "13px",
@@ -1473,7 +1483,8 @@ export function AnalysisResult() {
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
                       textDecoration: "none",
-                      boxShadow: "0 4px 12px rgba(34,211,166,0.25)",
+                      boxShadow:
+                        "0 4px 12px color-mix(in srgb, var(--color-bullish) 25%, transparent)",
                       transition: "transform 0.15s ease",
                     }}
                   >
@@ -1517,8 +1528,8 @@ export function AnalysisResult() {
                     width: "40px",
                     height: "40px",
                     borderRadius: "50%",
-                    background: "rgba(99,102,241,0.10)",
-                    border: "1px solid rgba(99,102,241,0.20)",
+                    background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
+                    border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -1677,7 +1688,9 @@ export function AnalysisResult() {
                           padding: "16px",
                           borderLeft: `4px solid ${border}`,
                           background: bg,
-                          boxShadow: glow ? "0 0 20px rgba(34,211,166,0.12)" : undefined,
+                          boxShadow: glow
+                            ? "0 0 20px color-mix(in srgb, var(--color-bullish) 12%, transparent)"
+                            : undefined,
                         }}
                       >
                         <div
@@ -1762,7 +1775,8 @@ export function AnalysisResult() {
                               background: "rgba(251,70,103,0.05)",
                               padding: "10px",
                               borderRadius: "12px",
-                              border: "1px solid rgba(251,70,103,0.20)",
+                              border:
+                                "1px solid color-mix(in srgb, var(--color-bearish) 20%, transparent)",
                             }}
                           >
                             <div
@@ -1791,7 +1805,7 @@ export function AnalysisResult() {
                               background: "rgba(34,211,166,0.05)",
                               padding: "10px",
                               borderRadius: "12px",
-                              border: "1px solid rgba(34,211,166,0.20)",
+                              border: "1px solid var(--bullish-border)",
                             }}
                           >
                             <div
@@ -1865,7 +1879,8 @@ export function AnalysisResult() {
                             key={i}
                             style={{
                               background: "rgba(251,70,103,0.05)",
-                              border: "1px solid rgba(251,70,103,0.20)",
+                              border:
+                                "1px solid color-mix(in srgb, var(--color-bearish) 20%, transparent)",
                               padding: "8px 12px",
                               borderRadius: "8px",
                               ...MONO,
@@ -1896,7 +1911,7 @@ export function AnalysisResult() {
                             key={i}
                             style={{
                               background: "rgba(34,211,166,0.05)",
-                              border: "1px solid rgba(34,211,166,0.20)",
+                              border: "1px solid var(--bullish-border)",
                               padding: "8px 12px",
                               borderRadius: "8px",
                               ...MONO,
@@ -1942,7 +1957,7 @@ export function AnalysisResult() {
                             padding: "12px",
                             borderRadius: "12px",
                             background: "rgba(34,211,166,0.05)",
-                            border: "1px solid rgba(34,211,166,0.20)",
+                            border: "1px solid var(--bullish-border)",
                           }}
                         >
                           <span
@@ -1970,7 +1985,8 @@ export function AnalysisResult() {
                             padding: "12px",
                             borderRadius: "12px",
                             background: "rgba(251,70,103,0.05)",
-                            border: "1px solid rgba(251,70,103,0.20)",
+                            border:
+                              "1px solid color-mix(in srgb, var(--color-bearish) 20%, transparent)",
                           }}
                         >
                           <span
@@ -2041,8 +2057,12 @@ export function AnalysisResult() {
                             padding: "12px",
                             borderRadius: "12px",
                             border: "1px solid",
-                            background: danger ? "rgba(251,70,103,0.10)" : "var(--color-card)",
-                            borderColor: danger ? "rgba(251,70,103,0.30)" : "var(--color-border)",
+                            background: danger
+                              ? "color-mix(in srgb, var(--color-bearish) 10%, transparent)"
+                              : "var(--color-card)",
+                            borderColor: danger
+                              ? "color-mix(in srgb, var(--color-bearish) 30%, transparent)"
+                              : "var(--color-border)",
                           }}
                         >
                           <span
@@ -2157,7 +2177,7 @@ export function AnalysisResult() {
                       ...CARD,
                       padding: "20px",
                       marginBottom: "16px",
-                      borderColor: "rgba(251,70,103,0.20)",
+                      borderColor: "color-mix(in srgb, var(--color-bearish) 20%, transparent)",
                     }}
                   >
                     <h3
@@ -2213,7 +2233,7 @@ export function AnalysisResult() {
                     gap: "12px",
                     padding: "16px",
                     borderRadius: "12px",
-                    background: "rgba(245,166,35,0.10)",
+                    background: "color-mix(in srgb, var(--color-neutral-wait) 10%, transparent)",
                     border: "1px solid rgba(245,166,35,0.20)",
                   }}
                 >
@@ -2351,9 +2371,9 @@ function NewsImpactSection({ newsImpact }: { newsImpact: NewsImpact | null }) {
                   ? "rgba(251,70,103,0.06)"
                   : "rgba(245,166,35,0.06)",
               borderColor: isBullish
-                ? "rgba(34,211,166,0.30)"
+                ? "color-mix(in srgb, var(--color-bullish) 30%, transparent)"
                 : isBearish
-                  ? "rgba(251,70,103,0.30)"
+                  ? "color-mix(in srgb, var(--color-bearish) 30%, transparent)"
                   : "rgba(245,166,35,0.30)",
             }}
           >
@@ -2786,7 +2806,7 @@ function AnalysisNotesSection({ analysisId, pair }: { analysisId: string; pair: 
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                borderColor: "rgba(251,70,103,0.30)",
+                borderColor: "color-mix(in srgb, var(--color-bearish) 30%, transparent)",
                 background: "rgba(251,70,103,0.05)",
               }}
             >

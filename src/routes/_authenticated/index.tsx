@@ -139,9 +139,9 @@ function FeatureCard({
         <span
           className="absolute top-3 right-3 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest"
           style={{
-            background: `${accent}15`,
+            background: `color-mix(in srgb, ${accent} 8%, transparent)`,
             color: accent,
-            border: `1px solid ${accent}30`,
+            border: `1px solid color-mix(in srgb, ${accent} 19%, transparent)`,
           }}
         >
           {badge}
@@ -149,7 +149,10 @@ function FeatureCard({
       )}
       <div
         className="w-9 h-9 rounded-xl flex items-center justify-center"
-        style={{ background: `${accent}18`, border: `1px solid ${accent}33` }}
+        style={{
+          background: `color-mix(in srgb, ${accent} 9%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${accent} 20%, transparent)`,
+        }}
       >
         <Icon size={17} style={{ color: accent }} />
       </div>
@@ -176,13 +179,21 @@ function SignalRow({
   const isBuy = signal.type === "BUY" || signal.type === "STRONG_BUY";
   const isSell = signal.type === "SELL" || signal.type === "STRONG_SELL";
   const color = isBuy ? "var(--color-bullish)" : isSell ? "var(--color-bearish)" : "#6b7280";
-  const bg = isBuy ? "var(--bullish-bg)" : isSell ? "var(--bearish-bg)" : "rgba(255,255,255,0.05)";
+  const bg = isBuy
+    ? "var(--bullish-bg)"
+    : isSell
+      ? "var(--bearish-bg)"
+      : "color-mix(in srgb, var(--color-foreground) 5%, transparent)";
 
   return (
     <div className="flex items-center gap-3 py-3 border-b border-white/5 last:border-0">
       <div
         className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-bold"
-        style={{ background: bg, color, border: "1px solid rgba(255,255,255,0.08)" }}
+        style={{
+          background: bg,
+          color,
+          border: "1px solid color-mix(in srgb, var(--color-foreground) 8%, transparent)",
+        }}
       >
         {signal.type === "WAIT" ? "—" : isBuy ? "B" : "S"}
       </div>
@@ -221,7 +232,7 @@ function FearGreedGauge({ fearGreed }: { fearGreed: HomeMarketData["fearGreedInd
         <path
           d="M 10 60 A 50 50 0 0 1 110 60"
           fill="none"
-          stroke="rgba(255,255,255,0.06)"
+          stroke="color-mix(in srgb, var(--color-foreground) 6%, transparent)"
           strokeWidth="8"
           strokeLinecap="round"
         />
@@ -382,8 +393,8 @@ function HomePage() {
           className="vx-card vx-card-interactive vx-card-hover group relative w-full p-5 text-left"
           style={{
             background:
-              "linear-gradient(135deg, rgba(34,211,166,0.12), var(--color-bullish), #1a8f7f)",
-            border: "1px solid rgba(34,211,166,0.25)",
+              "linear-gradient(135deg, color-mix(in srgb, var(--color-bullish) 12%, transparent), var(--color-bullish), #1a8f7f)",
+            border: "1px solid color-mix(in srgb, var(--color-bullish) 25%, transparent)",
           }}
         >
           <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-muted group-hover:scale-110 transition-transform duration-500" />

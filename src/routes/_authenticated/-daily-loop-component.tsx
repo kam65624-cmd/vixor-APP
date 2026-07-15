@@ -47,10 +47,10 @@ const GREEN_DARK = "#059669";
 const CSS_VARS: React.CSSProperties = {
   "--color-primary": "var(--color-bullish)",
   "--color-primary-foreground": "var(--color-foreground)",
-  "--color-muted": "rgba(255,255,255,0.05)",
+  "--color-muted": "color-mix(in srgb, var(--color-foreground) 5%, transparent)",
   "--color-muted-foreground": "var(--color-muted-foreground)",
   "--color-card": "var(--color-card)",
-  "--color-card-hover": "rgba(99,102,241,0.06)",
+  "--color-card-hover": "color-mix(in srgb, var(--color-primary) 6%, transparent)",
   "--color-border": "var(--color-border)",
   "--color-bullish": "var(--color-bullish)",
   "--color-bearish": "var(--color-bearish)",
@@ -476,7 +476,7 @@ function TodayTab({
           style={{
             height: 10,
             borderRadius: 9999,
-            background: "rgba(255,255,255,0.05)",
+            background: "color-mix(in srgb, var(--color-foreground) 5%, transparent)",
             overflow: "hidden",
             marginBottom: 12,
           }}
@@ -671,7 +671,7 @@ function StreakWidget({
                   ? `${"var(--color-bullish)"}99`
                   : day.completion >= 33
                     ? `${"var(--color-bullish)"}4D`
-                    : "rgba(255,255,255,0.05)";
+                    : "color-mix(in srgb, var(--color-foreground) 5%, transparent)";
             return (
               <div
                 key={day.date}
@@ -697,7 +697,12 @@ function StreakWidget({
         >
           <span style={{ fontSize: 8, color: "var(--color-muted-foreground)" }}>Less</span>
           <div
-            style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(255,255,255,0.05)" }}
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 3,
+              background: "color-mix(in srgb, var(--color-foreground) 5%, transparent)",
+            }}
           />
           <div
             style={{
@@ -837,7 +842,7 @@ function MorningPrepPhase({
                       background: isSelected ? colors.bg : "var(--color-card)",
                       color: isSelected ? colors.text : "var(--color-muted-foreground)",
                       cursor: "pointer",
-                      transition: "all 0.15s ease",
+                      transition: "all var(--transition-fast)",
                     }}
                   >
                     <span>{opt.emoji}</span>
@@ -1074,7 +1079,7 @@ function SessionCard({
             background: localTraded ? `${"var(--color-bullish)"}26` : "var(--color-card)",
             color: localTraded ? "var(--color-bullish)" : "var(--color-muted-foreground)",
             cursor: "pointer",
-            transition: "all 0.15s ease",
+            transition: "all var(--transition-fast)",
           }}
         >
           {localTraded ? "✓ Yes" : "No"}
@@ -1113,7 +1118,7 @@ function SessionCard({
           border: `1px solid ${"var(--color-border)"}`,
           color: "var(--color-foreground)",
           cursor: isSaving ? "not-allowed" : "pointer",
-          transition: "all 0.15s ease",
+          transition: "all var(--transition-fast)",
           opacity: isSaving ? 0.5 : 1,
         }}
       >
@@ -1381,7 +1386,7 @@ function EodReviewPhase({
                       background: isSelected ? state.color.bg : "var(--color-card)",
                       color: isSelected ? state.color.text : "var(--color-muted-foreground)",
                       cursor: "pointer",
-                      transition: "all 0.15s ease",
+                      transition: "all var(--transition-fast)",
                     }}
                   >
                     <span>{state.emoji}</span>
@@ -1536,7 +1541,10 @@ function HistoryTab({
               ? { bg: `${"var(--color-bullish)"}26`, text: "var(--color-bullish)" }
               : loop.completion_percentage >= 50
                 ? { bg: `${"var(--color-bullish)"}26`, text: "var(--color-bullish)" }
-                : { bg: "rgba(255,255,255,0.05)", text: "var(--color-muted-foreground)" };
+                : {
+                    bg: "color-mix(in srgb, var(--color-foreground) 5%, transparent)",
+                    text: "var(--color-muted-foreground)",
+                  };
 
           return (
             <div key={loop.id} style={{ ...CARD_STYLE, overflow: "hidden" }}>

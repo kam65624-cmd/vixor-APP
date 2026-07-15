@@ -93,10 +93,10 @@ const SORT_OPTIONS = [
 type SortKey = (typeof SORT_OPTIONS)[number]["key"];
 type CategoryKey = (typeof CATEGORY_TABS)[number]["key"];
 
-// ── Gold accent colour (static RGBA for Safari compat) ───────────────────
-const GOLD_COLOR = "#D4A843";
-const GOLD_BG = "rgba(212,168,67,0.12)";
-const GOLD_BORDER = "rgba(212,168,67,0.25)";
+// ── Gold accent colour — uses design token ───────────────────────────────
+const GOLD_COLOR = "var(--color-gold)";
+const GOLD_BG = "color-mix(in srgb, var(--color-gold) 12%, transparent)";
+const GOLD_BORDER = "color-mix(in srgb, var(--color-gold) 20%, transparent)";
 
 // ── Formatters ───────────────────────────────────────────────────────────────
 
@@ -244,7 +244,9 @@ function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void 
       : "var(--color-bearish)";
   const isGold = item.type === "gold";
   const accentColor = isGold ? GOLD_COLOR : color;
-  const badgeBg = isGold ? GOLD_BG : "rgba(163,163,163,0.15)";
+  const badgeBg = isGold
+    ? GOLD_BG
+    : "color-mix(in srgb, var(--color-muted-foreground) 0.15%, transparent)";
   const badgeColor = isGold ? GOLD_COLOR : "var(--color-muted-foreground)";
   const hasSparkline = item.sparkline && item.sparkline.length >= 2;
 
@@ -269,18 +271,19 @@ function ForexPairRow({ item, onClick }: { item: ForexPair; onClick: () => void 
         transition: "background 0.12s",
         ...(isGold
           ? {
-              background: "linear-gradient(90deg, rgba(212,168,67,0.04) 0%, transparent 60%)",
+              background:
+                "linear-gradient(90deg, color-mix(in srgb, var(--color-gold) 0.04%, transparent) 0%, transparent 60%)",
             }
           : {}),
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = isGold
-          ? "linear-gradient(90deg, rgba(212,168,67,0.08) 0%, var(--color-card-hover) 60%)"
+          ? "linear-gradient(90deg, color-mix(in srgb, var(--color-gold) 0.08%, transparent) 0%, var(--color-card-hover) 60%)"
           : "var(--color-card-hover)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = isGold
-          ? "linear-gradient(90deg, rgba(212,168,67,0.04) 0%, transparent 60%)"
+          ? "linear-gradient(90deg, color-mix(in srgb, var(--color-gold) 0.04%, transparent) 0%, transparent 60%)"
           : "transparent";
       }}
     >
@@ -447,7 +450,7 @@ function NewBadge() {
         padding: "1px 4px",
         borderRadius: "3px",
         background: "var(--color-bullish)",
-        color: "#04150D",
+        color: "var(--color-buy-text)",
         letterSpacing: "0.04em",
         lineHeight: 1,
         animation: "pulse-dot 2s ease-in-out infinite",
@@ -513,7 +516,8 @@ function TokenRow({
         transition: "background 0.15s ease",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = "rgba(99,102,241,0.06)";
+        e.currentTarget.style.background =
+          "color-mix(in srgb, var(--color-primary) 6%, transparent)";
         e.currentTarget.style.transform = "translateX(2px)";
       }}
       onMouseLeave={(e) => {
@@ -572,7 +576,7 @@ function TokenRow({
                 fontWeight: 600,
                 padding: "1px 6px",
                 borderRadius: "4px",
-                background: "rgba(163,163,163,0.12)",
+                background: "color-mix(in srgb, var(--color-muted-foreground) 0.12%, transparent)",
                 color: "var(--color-muted-foreground)",
               }}
             >
@@ -585,8 +589,8 @@ function TokenRow({
                   fontWeight: 700,
                   padding: "1px 6px",
                   borderRadius: "4px",
-                  background: "rgba(239,68,68,0.15)",
-                  color: "#ef4444",
+                  background: "color-mix(in srgb, var(--color-bearish) 15%, transparent)",
+                  color: "var(--color-bearish)",
                 }}
               >
                 ⚠ HONEYPOT
@@ -742,8 +746,8 @@ function FilterPanel({
           border: "1px solid var(--color-border)",
           cursor: "pointer",
           background: isOpen ? "var(--color-primary)" : "var(--color-card)",
-          color: isOpen ? "#000" : "var(--color-muted-foreground)",
-          transition: "all 0.15s ease",
+          color: isOpen ? "var(--primary-foreground)" : "var(--color-muted-foreground)",
+          transition: "all var(--transition-fast)",
           fontFamily: "var(--font-sans)",
         }}
       >
@@ -765,7 +769,7 @@ function FilterPanel({
               width: "6px",
               height: "6px",
               borderRadius: "50%",
-              background: isOpen ? "#000" : "var(--color-bullish)",
+              background: isOpen ? "var(--color-primary)" : "var(--color-bullish)",
             }}
           />
         )}
@@ -861,7 +865,7 @@ function FilterPanel({
                   borderRadius: "6px",
                   border: `1px solid ${filters.honeypotOnly ? "var(--color-bearish)" : "var(--color-border)"}`,
                   background: filters.honeypotOnly
-                    ? "rgba(251, 70, 103, 0.15)"
+                    ? "color-mix(in srgb, var(--color-bearish) 15%, transparent)"
                     : "var(--color-card)",
                   color: filters.honeypotOnly
                     ? "var(--color-bearish)"
@@ -870,7 +874,7 @@ function FilterPanel({
                   fontWeight: 600,
                   cursor: "pointer",
                   fontFamily: "var(--font-sans)",
-                  transition: "all 0.15s ease",
+                  transition: "all var(--transition-fast)",
                 }}
               >
                 {filters.honeypotOnly ? "ON" : "OFF"}
@@ -952,7 +956,7 @@ function FilterPanel({
                 border: "none",
                 cursor: "pointer",
                 background: "var(--color-primary)",
-                color: "#000",
+                color: "var(--primary-foreground)",
                 fontFamily: "var(--font-sans)",
                 transition: "all 0.12s ease",
               }}
@@ -1333,7 +1337,7 @@ function DiscoverPage() {
                 color: isActive
                   ? "var(--color-primary-foreground)"
                   : "var(--color-muted-foreground)",
-                transition: "all 0.15s ease",
+                transition: "all var(--transition-fast)",
                 whiteSpace: "nowrap",
                 display: "flex",
                 alignItems: "center",
@@ -1410,7 +1414,7 @@ function DiscoverPage() {
                 alignItems: "center",
                 justifyContent: "center",
                 padding: 0,
-                transition: "all 0.15s ease",
+                transition: "all var(--transition-fast)",
                 flexShrink: 0,
               }}
             >
@@ -1776,12 +1780,12 @@ function DiscoverPage() {
                             padding: "10px 14px",
                             borderRadius: "10px",
                             background: "var(--color-card)",
-                            border: `1px solid ${isUp ? "rgba(34,211,166,0.25)" : "rgba(251,70,103,0.25)"}`,
+                            border: `1px solid ${isUp ? "color-mix(in srgb, var(--color-bullish) 25%, transparent)" : "color-mix(in srgb, var(--color-bearish) 25%, transparent)"}`,
                             cursor: "pointer",
                             textAlign: "left",
                             minWidth: "100px",
                             backdropFilter: "blur(8px)",
-                            transition: "all 0.15s ease",
+                            transition: "all var(--transition-fast)",
                             boxShadow: "var(--shadow-card)",
                           }}
                           onMouseEnter={(e) => {

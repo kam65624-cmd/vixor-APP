@@ -304,8 +304,8 @@ function Analyze() {
           <div
             style={{
               padding: 12,
-              background: "rgba(251,70,103,0.10)",
-              border: "1px solid rgba(251,70,103,0.30)",
+              background: "color-mix(in srgb, var(--color-bearish) 10%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--color-bearish) 30%, transparent)",
               color: "var(--color-bearish)",
               fontSize: 12,
               fontWeight: 700,
@@ -345,27 +345,30 @@ function Analyze() {
                 width: "100%",
                 aspectRatio: "4/3",
                 borderRadius: 16,
-                border: "2px dashed rgba(255, 255, 255, 0.15)",
-                background: "rgba(255, 255, 255, 0.02)",
+                border: "2px dashed color-mix(in srgb, var(--color-foreground) 15%, transparent)",
+                background: "color-mix(in srgb, var(--color-foreground) 2%, transparent)",
                 backdropFilter: "blur(12px)",
                 WebkitBackdropFilter: "blur(12px)",
                 cursor: "pointer",
                 position: "relative",
                 overflow: "hidden",
                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: "inset 0 0 40px rgba(0, 0, 0, 0.3)",
+                boxShadow: "inset 0 0 40px var(--overlay)",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--color-primary)";
-                e.currentTarget.style.background = "rgba(99, 102, 241, 0.08)";
+                e.currentTarget.style.background =
+                  "color-mix(in srgb, var(--color-primary) 8%, transparent)";
                 e.currentTarget.style.boxShadow =
-                  "inset 0 0 60px rgba(99, 102, 241, 0.15), 0 8px 30px -4px rgba(0, 0, 0, 0.6)";
+                  "inset 0 0 60px color-mix(in srgb, var(--color-primary) 15%, transparent), 0 8px 30px -4px var(--overlay-secondary)";
                 e.currentTarget.style.transform = "translateY(-2px)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)";
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.02)";
-                e.currentTarget.style.boxShadow = "inset 0 0 40px rgba(0, 0, 0, 0.3)";
+                e.currentTarget.style.borderColor =
+                  "color-mix(in srgb, var(--color-foreground) 15%, transparent)";
+                e.currentTarget.style.background =
+                  "color-mix(in srgb, var(--color-foreground) 2%, transparent)";
+                e.currentTarget.style.boxShadow = "inset 0 0 40px var(--overlay)";
                 e.currentTarget.style.transform = "translateY(0)";
               }}
             >
@@ -388,14 +391,14 @@ function Analyze() {
                     height: 80,
                     borderRadius: 24,
                     background:
-                      "linear-gradient(135deg, rgba(34,211,166,0.15), rgba(34,211,166,0.05))",
+                      "linear-gradient(135deg, color-mix(in srgb, var(--color-bullish) 15%, transparent), rgba(34,211,166,0.05))",
                     border: "1px solid rgba(34,211,166,0.2)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     marginBottom: 24,
                     boxShadow:
-                      "0 12px 32px rgba(34,211,166,0.15), inset 0 2px 0 rgba(255,255,255,0.1)",
+                      "0 12px 32px color-mix(in srgb, var(--color-bullish) 15%, transparent), inset 0 2px 0 rgba(255,255,255,0.1)",
                   }}
                 >
                   <Upload style={{ width: 36, height: 36, color: "var(--color-bullish)" }} />
@@ -407,7 +410,8 @@ function Analyze() {
                     color: "var(--color-foreground)",
                     marginBottom: 8,
                     letterSpacing: "-0.01em",
-                    textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+                    textShadow:
+                      "0 2px 10px color-mix(in srgb, var(--color-background) 50%, transparent)",
                   }}
                 >
                   {t("analyze.tapToUpload") || "Tap to Upload Chart"}
@@ -448,7 +452,7 @@ function Analyze() {
                     ...inputStyle,
                     fontFamily: "var(--font-mono)",
                     height: 48,
-                    background: "rgba(255,255,255,0.03)",
+                    background: "color-mix(in srgb, var(--color-foreground) 3%, transparent)",
                     border: "1px solid rgba(255,255,255,0.1)",
                     borderRadius: 12,
                   }}
@@ -495,8 +499,8 @@ function Analyze() {
                     gap: 8,
                     padding: "10px 14px",
                     borderRadius: 10,
-                    background: "rgba(34,211,166,0.08)",
-                    border: "1px solid rgba(34,211,166,0.20)",
+                    background: "var(--bullish-bg)",
+                    border: "1px solid var(--bullish-border)",
                   }}
                 >
                   <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
@@ -535,8 +539,8 @@ function Analyze() {
                   justifyContent: "center",
                   gap: 6,
                   cursor: "pointer",
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "color-mix(in srgb, var(--color-foreground) 3%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--color-foreground) 8%, transparent)",
                 }}
               >
                 <ImageIcon style={{ width: 22, height: 22, color: "var(--color-primary-glow)" }} />
@@ -565,8 +569,8 @@ function Analyze() {
                   justifyContent: "center",
                   gap: 6,
                   cursor: "pointer",
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "color-mix(in srgb, var(--color-foreground) 3%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--color-foreground) 8%, transparent)",
                 }}
               >
                 <Camera style={{ width: 22, height: 22, color: "var(--color-primary-glow)" }} />
@@ -596,8 +600,8 @@ function Analyze() {
                   justifyContent: "center",
                   gap: 6,
                   cursor: "pointer",
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "color-mix(in srgb, var(--color-foreground) 3%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--color-foreground) 8%, transparent)",
                 }}
               >
                 <Clipboard style={{ width: 22, height: 22, color: "var(--color-primary-glow)" }} />
@@ -647,7 +651,7 @@ function Analyze() {
                   width: 32,
                   height: 32,
                   borderRadius: "50%",
-                  background: "rgba(0,0,0,0.6)",
+                  background: "var(--overlay-secondary)",
                   backdropFilter: "blur(4px)",
                   display: "flex",
                   alignItems: "center",
@@ -736,8 +740,8 @@ function Analyze() {
                       gap: 6,
                       padding: "8px 12px",
                       borderRadius: 8,
-                      background: "rgba(34,211,166,0.10)",
-                      border: "1px solid rgba(34,211,166,0.20)",
+                      background: "color-mix(in srgb, var(--color-bullish) 10%, transparent)",
+                      border: "1px solid var(--bullish-border)",
                     }}
                   >
                     <Crosshair style={{ width: 14, height: 14, color: "var(--color-bullish)" }} />
@@ -778,9 +782,13 @@ function Analyze() {
                         gap: 6,
                         cursor: "pointer",
                         background:
-                          tradingStyle === s.id ? "rgba(34,211,166,0.15)" : "var(--color-card)",
+                          tradingStyle === s.id
+                            ? "color-mix(in srgb, var(--color-bullish) 15%, transparent)"
+                            : "var(--color-card)",
                         borderColor:
-                          tradingStyle === s.id ? "rgba(34,211,166,0.30)" : "var(--color-border)",
+                          tradingStyle === s.id
+                            ? "color-mix(in srgb, var(--color-bullish) 30%, transparent)"
+                            : "var(--color-border)",
                         color:
                           tradingStyle === s.id
                             ? "var(--color-primary)"
@@ -825,7 +833,7 @@ function Analyze() {
                         padding: "10px 12px",
                         background:
                           analysisTechnique === t.id
-                            ? "rgba(99,102,241,0.15)"
+                            ? "color-mix(in srgb, var(--color-primary) 15%, transparent)"
                             : "var(--color-card)",
                         borderColor:
                           analysisTechnique === t.id
@@ -865,7 +873,7 @@ function Analyze() {
                   padding: 12,
                   borderRadius: 8,
                   background: "rgba(34,211,166,0.05)",
-                  border: "1px solid rgba(34,211,166,0.15)",
+                  border: "1px solid color-mix(in srgb, var(--color-bullish) 15%, transparent)",
                 }}
               >
                 <Info
@@ -920,7 +928,7 @@ function Analyze() {
                     style={{
                       marginLeft: 8,
                       fontSize: 12,
-                      background: "rgba(0,0,0,0.2)",
+                      background: "color-mix(in srgb, var(--color-background) 80%, transparent)",
                       padding: "2px 8px",
                       borderRadius: "50px",
                     }}
@@ -950,7 +958,7 @@ function Analyze() {
                   position: "absolute",
                   inset: 0,
                   borderRadius: 12,
-                  background: "rgba(34,211,166,0.20)",
+                  background: "var(--bullish-border)",
                   animation: "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite",
                 }}
               />

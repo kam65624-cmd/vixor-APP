@@ -1043,8 +1043,8 @@ const PointsBadge = memo(function PointsBadge() {
       className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-mono font-bold"
       style={{
         color: "var(--color-primary)",
-        background: "rgba(99,102,241,0.08)",
-        border: "1px solid rgba(99,102,241,0.15)",
+        background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
+        border: "1px solid color-mix(in srgb, var(--color-primary) 15%, transparent)",
         textDecoration: "none",
         minWidth: "44px",
         minHeight: "44px",
@@ -1269,7 +1269,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
               color: "var(--primary-foreground)",
               border: "none",
               borderRadius: "8px",
-              boxShadow: "0 2px 8px rgba(99,102,241,0.25)",
+              boxShadow: "0 2px 8px color-mix(in srgb, var(--color-primary) 25%, transparent)",
               height: "30px",
               cursor: "pointer",
               textDecoration: "none",
@@ -1359,7 +1359,7 @@ const BottomBar = memo(function BottomBar({
               style={{
                 opacity: isActive ? 1 : 0.45,
                 transform: isActive ? "scale(1.05)" : "scale(1)",
-                transition: "all 0.2s ease",
+                transition: "all var(--transition-base)",
               }}
             >
               <span
@@ -1388,7 +1388,7 @@ const BottomBar = memo(function BottomBar({
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
                   letterSpacing: "0.02em",
-                  transition: "all 0.2s ease",
+                  transition: "all var(--transition-base)",
                 }}
               >
                 {item.label}
@@ -1594,7 +1594,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
                         color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
                         fontSize: "12px",
                         fontWeight: isActive ? 600 : 500,
-                        transition: "all 0.2s ease",
+                        transition: "all var(--transition-base)",
                       }}
                     >
                       <span
