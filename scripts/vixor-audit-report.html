@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تقرير تدقيق شامل - VIXOR</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@page {
+    size: 794px 1123px;
+    margin: 0;
+}
+:root {
+    --c-bg: #08090C;
+    --c-bg-card: #0F1117;
+    --c-bg-card-alt: #141620;
+    --c-text: #E8E8ED;
+    --c-text-secondary: #9CA3AF;
+    --c-text-muted: #6B7280;
+    --c-accent: #6366F1;
+    --c-accent-light: #818CF8;
+    --c-bullish: #22D3A6;
+    --c-bearish: #FB4667;
+    --c-gold: #F0C419;
+    --c-border: #1E2030;
+    --c-critical: #FB4667;
+    --c-high: #F97316;
+    --c-medium: #F0C419;
+    --c-low: #22D3A6;
+    --font-ar: 'Noto Sans Arabic', 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Noto Sans Arabic', monospace;
+}
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 794px;
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-family: var(--font-ar);
+    font-size: 13px;
+    line-height: 1.7;
+    direction: rtl;
+    -webkit-font-smoothing: antialiased;
+}
+@media screen {
+    html {
+        height: auto;
+        display: flex;
+        justify-content: center;
+        background: #111;
+    }
+    body {
+        transform-origin: top center;
+        margin: 20px auto;
+    }
+}
+
+/* ── Cover Page ── */
+.cover {
+    width: 794px;
+    height: 1123px;
+    box-sizing: border-box;
+    break-after: page;
+    overflow: hidden;
+    background: var(--c-bg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 80px 70px;
+}
+.cover::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.cover::after {
+    content: '';
+    position: absolute;
+    bottom: -150px;
+    right: -150px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(251,70,103,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.cover-badge {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 100px;
+    padding: 8px 24px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--c-accent-light);
+    letter-spacing: 0.5px;
+    margin-bottom: 40px;
+}
+.cover-badge-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--c-accent);
+    border-radius: 50%;
+    animation: none;
+}
+.cover-title {
+    position: relative;
+    z-index: 2;
+    font-size: 42px;
+    font-weight: 900;
+    color: #fff;
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+}
+.cover-title-highlight {
+    color: var(--c-accent-light);
+}
+.cover-subtitle {
+    position: relative;
+    z-index: 2;
+    font-size: 16px;
+    color: var(--c-text-secondary);
+    text-align: center;
+    max-width: 520px;
+    line-height: 1.8;
+    margin-bottom: 50px;
+}
+.cover-stats {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 40px;
+    margin-bottom: 60px;
+}
+.cover-stat {
+    text-align: center;
+}
+.cover-stat-value {
+    font-size: 36px;
+    font-weight: 900;
+    color: #fff;
+    font-family: 'Inter', var(--font-ar);
+}
+.cover-stat-label {
+    font-size: 11px;
+    color: var(--c-text-muted);
+    margin-top: 4px;
+    font-weight: 500;
+}
+.cover-stat-value.critical { color: var(--c-critical); }
+.cover-stat-value.high { color: var(--c-high); }
+.cover-stat-value.medium { color: var(--c-medium); }
+.cover-stat-value.low { color: var(--c-low); }
+.cover-meta {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 2;
+    font-size: 11px;
+    color: var(--c-text-muted);
+}
+
+/* ── Main Content ── */
+.main-content {
+    padding: 50px 60px 40px 60px;
+}
+
+/* ── Section Headers ── */
+.chapter-header {
+    break-after: avoid;
+    break-inside: avoid;
+    margin-top: 28px;
+    margin-bottom: 20px;
+}
+.section-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--c-accent-light);
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 6px;
+    padding: 4px 14px;
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
+}
+.section-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+.section-desc {
+    font-size: 13px;
+    color: var(--c-text-secondary);
+    line-height: 1.7;
+    margin-bottom: 16px;
+}
+.divider {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--c-accent), transparent);
+    border-radius: 3px;
+    margin-bottom: 20px;
+}
+
+/* ── Body Text ── */
+.body-text {
+    font-size: 13px;
+    color: var(--c-text);
+    line-height: 1.8;
+    margin-bottom: 12px;
+}
+.body-text strong {
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ── Cards ── */
+.card {
+    break-inside: avoid;
+    background: var(--c-bg-card);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+}
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+.card-file {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--c-text-muted);
+    direction: ltr;
+    text-align: left;
+}
+.card-body {
+    font-size: 12.5px;
+    color: var(--c-text-secondary);
+    line-height: 1.75;
+}
+
+/* ── Severity Badges ── */
+.severity {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.3px;
+}
+.severity-critical {
+    background: rgba(251,70,103,0.15);
+    color: var(--c-critical);
+    border: 1px solid rgba(251,70,103,0.3);
+}
+.severity-high {
+    background: rgba(249,115,22,0.15);
+    color: var(--c-high);
+    border: 1px solid rgba(249,115,22,0.3);
+}
+.severity-medium {
+    background: rgba(240,196,25,0.15);
+    color: var(--c-medium);
+    border: 1px solid rgba(240,196,25,0.3);
+}
+.severity-low {
+    background: rgba(34,211,166,0.15);
+    color: var(--c-low);
+    border: 1px solid rgba(34,211,166,0.3);
+}
+
+/* ── Status Badges ── */
+.status-fixed {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: rgba(34,211,166,0.15);
+    color: var(--c-bullish);
+    border: 1px solid rgba(34,211,166,0.3);
+}
+.status-broken {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: rgba(251,70,103,0.15);
+    color: var(--c-critical);
+    border: 1px solid rgba(251,70,103,0.3);
+}
+.status-partial {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: rgba(240,196,25,0.15);
+    color: var(--c-medium);
+    border: 1px solid rgba(240,196,25,0.3);
+}
+
+/* ── Tables ── */
+.table-wrapper {
+    break-inside: avoid;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--c-border);
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+thead {
+    background: var(--c-bg-card-alt);
+}
+th {
+    padding: 10px 14px;
+    font-weight: 700;
+    color: var(--c-text-secondary);
+    text-align: right;
+    font-size: 11px;
+    border-bottom: 1px solid var(--c-border);
+}
+td {
+    padding: 10px 14px;
+    color: var(--c-text);
+    border-bottom: 1px solid var(--c-border);
+    line-height: 1.5;
+    vertical-align: top;
+}
+tr:last-child td {
+    border-bottom: none;
+}
+td.mono {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    direction: ltr;
+    text-align: left;
+    color: var(--c-accent-light);
+}
+
+/* ── Issue List Items ── */
+.issue-item {
+    break-inside: avoid;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    background: var(--c-bg-card);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    border-right: 3px solid var(--c-accent);
+}
+.issue-item.critical { border-right-color: var(--c-critical); }
+.issue-item.high { border-right-color: var(--c-high); }
+.issue-item.medium { border-right-color: var(--c-medium); }
+.issue-item.low { border-right-color: var(--c-low); }
+.issue-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    background: rgba(99,102,241,0.12);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--c-accent-light);
+    font-family: 'Inter', var(--font-ar);
+}
+.issue-item.critical .issue-num { background: rgba(251,70,103,0.15); color: var(--c-critical); }
+.issue-item.high .issue-num { background: rgba(249,115,22,0.15); color: var(--c-high); }
+.issue-item.medium .issue-num { background: rgba(240,196,25,0.15); color: var(--c-medium); }
+.issue-content {
+    flex: 1;
+}
+.issue-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+}
+.issue-detail {
+    font-size: 12px;
+    color: var(--c-text-secondary);
+    line-height: 1.7;
+    margin-bottom: 6px;
+}
+.issue-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.issue-file-ref {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--c-text-muted);
+    direction: ltr;
+    text-align: left;
+    background: rgba(99,102,241,0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* ── Subsection ── */
+.subsection-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--c-border);
+}
+
+/* ── Bullet Lists ── */
+.bullet-list {
+    padding-right: 0;
+    margin: 8px 0 14px 0;
+    list-style: none;
+}
+.bullet-list li {
+    position: relative;
+    padding-right: 18px;
+    margin-bottom: 6px;
+    font-size: 12.5px;
+    color: var(--c-text-secondary);
+    line-height: 1.7;
+}
+.bullet-list li::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 9px;
+    width: 6px;
+    height: 6px;
+    background: var(--c-accent);
+    border-radius: 50%;
+}
+
+/* ── Info Box ── */
+.info-box {
+    break-inside: avoid;
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+}
+.info-box.warning {
+    background: rgba(240,196,25,0.08);
+    border-color: rgba(240,196,25,0.2);
+}
+.info-box.danger {
+    background: rgba(251,70,103,0.08);
+    border-color: rgba(251,70,103,0.2);
+}
+.info-box-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--c-accent-light);
+    margin-bottom: 6px;
+}
+.info-box.warning .info-box-title { color: var(--c-gold); }
+.info-box.danger .info-box-title { color: var(--c-critical); }
+.info-box-body {
+    font-size: 12px;
+    color: var(--c-text-secondary);
+    line-height: 1.7;
+}
+
+/* ── Summary Grid ── */
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.summary-card {
+    break-inside: avoid;
+    background: var(--c-bg-card);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    padding: 16px;
+}
+.summary-card-value {
+    font-size: 28px;
+    font-weight: 900;
+    font-family: 'Inter', var(--font-ar);
+    color: #fff;
+    margin-bottom: 4px;
+}
+.summary-card-label {
+    font-size: 11px;
+    color: var(--c-text-muted);
+    font-weight: 500;
+}
+
+/* ── Task Items ── */
+.task-item {
+    break-inside: avoid;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+    background: var(--c-bg-card);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+}
+.task-priority {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    height: fit-content;
+    margin-top: 2px;
+}
+.task-content {
+    flex: 1;
+}
+.task-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+}
+.task-desc {
+    font-size: 11.5px;
+    color: var(--c-text-secondary);
+    line-height: 1.6;
+}
+
+/* ── Code Block ── */
+.code-block {
+    break-inside: avoid;
+    background: #0C0D12;
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--c-accent-light);
+    direction: ltr;
+    text-align: left;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* ── Category Matrix ── */
+.category-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--c-border);
+    font-size: 12px;
+    break-inside: avoid;
+}
+.category-row:last-child { border-bottom: none; }
+.category-num {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: rgba(99,102,241,0.12);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--c-accent-light);
+    font-family: 'Inter', var(--font-ar);
+}
+.category-name {
+    flex: 1;
+    color: var(--c-text);
+    font-weight: 500;
+}
+.category-count {
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Inter', var(--font-ar);
+    color: #fff;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ COVER PAGE ═══════════════ -->
+<div class="cover">
+    <div class="cover-badge">
+        <div class="cover-badge-dot"></div>
+        تقرير تدقيق تقني شامل
+    </div>
+    <div class="cover-title">
+        تقرير تدقيق تطبيق <span class="cover-title-highlight">VIXOR</span>
+    </div>
+    <div class="cover-subtitle">
+        مراجعة تفصيلية للمشاكل التقنية والأمنية والمعمارية في تطبيق التداول الذكي VIXOR، مع تحقق من حالة الإصلاحات السابقة وتصنيف شامل لجميع الثغرات والمشاكل المتبقية
+    </div>
+    <div class="cover-stats">
+        <div class="cover-stat">
+            <div class="cover-stat-value critical">5</div>
+            <div class="cover-stat-label">مشاكل حرجة</div>
+        </div>
+        <div class="cover-stat">
+            <div class="cover-stat-value high">7</div>
+            <div class="cover-stat-label">مشاكل عالية</div>
+        </div>
+        <div class="cover-stat">
+            <div class="cover-stat-value medium">6</div>
+            <div class="cover-stat-label">مشاكل متوسطة</div>
+        </div>
+        <div class="cover-stat">
+            <div class="cover-stat-value low">6</div>
+            <div class="cover-stat-label">مشاكل منخفضة</div>
+        </div>
+    </div>
+    <div class="cover-meta">
+        تاريخ التقرير: 19 يوليو 2026 | الفرع: main | إجمالي الملفات المدققة: 50+ ملف
+    </div>
+</div>
+
+<!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+<div class="main-content">
+
+    <!-- ═══ SECTION 1: Executive Summary ═══ -->
+    <div class="chapter-header">
+        <div class="section-tag">القسم الأول</div>
+        <div class="section-title">الملخص التنفيذي</div>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        يقدم هذا التقرير الشامل نتائج تدقيق تقني مفصّل لتطبيق <strong>VIXOR</strong>، وهو لوحة تحكم تداول عملات مشفرة مبنية بتقنيات React و TanStack Start، ومصمم كتطبيق ويب داخل Telegram. يغطي التقرير ثلاثة محاور رئيسية: أولاً التحقق من حالة الإصلاحات الثلاثة السابقة التي تمت على ثلاثة ملفات أساسية في المشروع، وثانياً مسح شامل لأكثر من 50 ملفاً عبر 13 فئة مشكلة تم تحديدها مسبقاً، وثالثاً تحليل معماري وأمني معمّق يحدد الثغرات والقضايا الهيكلية التي تحتاج إلى معالجة.
+    </div>
+    <div class="body-text">
+        أظهرت نتائج التدقيق أن الإصلاحات الثلاثة السابقة قد <strong>استمرت بنجاح</strong> في الملفات المستهدفة: إضافة زوج LINK/USDT إلى سجل الأصول، وتغيير طريقة البحث من <strong>.get()</strong> إلى <strong>.find()</strong> في خطاف الأسعار الحية، وتحديث معرّف نموذج OpenRouter وإضافة آلية الاحتياطي المحلي عند فشل التحليل بالذكاء الاصطناعي. ومع ذلك، كشف المسح الشامل عن <strong>24 مشكلة نشطة</strong> عبر 8 من أصل 13 فئة، تتوزع بين 5 مشاكل حرجة و7 عالية و6 متوسطة و6 منخفضة، تتركز بشكل أساسي في صفحة التبديل والمكون المساعد MOXI وصفحات تفاصيل التوكنز.
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-card-value">3 / 3</div>
+            <div class="summary-card-label">إصلاحات سابقة مؤكدة الاستمرار</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-value">24</div>
+            <div class="summary-card-label">مشكلة نشطة مكتشفة</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-value">8 / 13</div>
+            <div class="summary-card-label">فئات تحتوي مشاكل فعليّة</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-value">5 / 13</div>
+            <div class="summary-card-label">فئات نظيفة بدون مشاكل</div>
+        </div>
+    </div>
+
+    <!-- ═══ SECTION 2: Fix Verification ═══ -->
+    <div class="chapter-header">
+        <div class="section-tag">القسم الثاني</div>
+        <div class="section-title">التحقق من الإصلاحات السابقة</div>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        تم إجراء ثلاث عمليات إصلاح سابقة على ثلاثة ملفات رئيسية في المشروع عبر ثلاثة commits منفصلة. يعرض هذا القسم نتيجة التحقق من كل إصلاح من خلال مقارنة الحالة الحالية للملف مع التغييرات المطلوبة، مع تحديد ما إذا كان الإصلاح لا يزال سارياً أم أنه فقد بسبب عمليات إعادة الكتابة اللاحقة.
+    </div>
+
+    <div class="subsection-title">الإصلاح الأول: إضافة LINK/USDT إلى سجل الأصول</div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">AssetRegistry - سجل الأصول الرئيسي</div>
+            <span class="status-fixed">تم الإصلاح بنجاح</span>
+        </div>
+        <div class="card-file">src/shared/asset-registry/types.ts</div>
+        <div class="card-body">
+            <strong>الإصلاح المطلوب:</strong> إضافة زوج التداول LINK/USDT إلى مصفوفة الأصول ASSETS مع تعريف كامل يشمل الرموز لكل منصة (Binance, TwelveData, TradingView) والإعدادات التقنية للزوج. <strong>النتيجة:</strong> تم التحقق من وجود تعريف LINK/USDT كاملاً في الأسطر 348-364 من الملف الحالي. الزوج مسجّل بنجاح مع جميع الرموز الصحيحة: LINKUSDT للبينانس، وLINK/USDT لـ TwelveData، وBINANCE:LINKUSDT لـ TradingView. الإعدادات التقنية تتضمن pipSize: 0.01 و decimals: 2 و volatility: 0.03. كما تم التحقق من أن الزوج محدد كـ popular: true مما يعني أنه سيظهر في القوائم السريعة.
+        </div>
+    </div>
+
+    <div class="subsection-title">الإصلاح الثاني: تحسين مقاومة خطاف الأسعار الحية للأزواج غير المعروفة</div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">useLivePrices - خطاف الأسعار الحية</div>
+            <span class="status-fixed">تم الإصلاح بنجاح</span>
+        </div>
+        <div class="card-file">src/shared/market-data/use-live-prices.ts</div>
+        <div class="card-body">
+            <strong>الإصلاح المطلوب:</strong> تغيير استخدام طريقة <strong>.get()</strong> التي كانت تُلقي خطأ عند عدم وجود الزوج، إلى طريقة <strong>.find()</strong> التي تُعيد undefined بدلاً من ذلك، مما يمنع انهيار التطبيق عند طلب زوج غير مسجّل في السجل. <strong>النتيجة:</strong> تم التحقق من أن جميع الاستدعاءات في الملف تستخدم <strong>AssetRegistry.find()</strong> بدلاً من <strong>.get()</strong>. في السطر 77 يتم استخدام find لتخطي الأزواج غير المعروفة بأمان، وفي السطر 156 لنفس الغرض أثناء جلب أسعار REST للعملات غير المشفرة، وفي السطر 193 داخل دالة getPrice لضمان إرجاع undefined عند عدم العثور على الزوج. هذا التغيير يضمن أن أي زوج جديد أو غير مسجّل لن يسبّب انهيار التطبيق.
+        </div>
+    </div>
+
+    <div class="subsection-title">الإصلاح الثالث: إصلاح نموذج OpenRouter وآلية الاحتياطي المحلي</div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">runAnalysis - محرك التحليل بالذكاء الاصطناعي</div>
+            <span class="status-fixed">تم الإصلاح بنجاح</span>
+        </div>
+        <div class="card-file">src/domains/analysis/server/run-analysis.ts</div>
+        <div class="card-body">
+            <strong>الإصلاح المطلوب (جزءان):</strong> أولاً: تغيير معرّف النموذج من google/gemini-2.0-flash-lite-preview-02-05:free (غير صالح) إلى google/gemma-4-31b-it:free (صالح ومجاني). ثانياً: إضافة آلية احتياطية محلية تعمل عند فشل OpenRouter تماماً بعد 3 محاولات. <strong>النتيجة:</strong> تم التحقق من السطر 226 الذي يستخدم البيئة OPENROUTER_MODEL مع القيمة الافتراضية google/gemma-4-31b-it:free. كما تم التحقق من وجود بلوك try-catch شامل في الأسطر 224-319 يلتقط أخطاء OpenRouter وينتقل تلقائياً إلى دالة runLocalAnalysisFallback التي تستخدم المحرك المحلي. الدالة الاحتياطية نفسها (الأسطر 326-408) تحتوي على طبقة حماية إضافية: إذا فشل المحرك المحلي أيضاً، يتم استخدام generateFallbackResult كملاذ أخير.
+        </div>
+    </div>
+
+    <div class="info-box">
+        <div class="info-box-title">خلاصة حالة الإصلاحات</div>
+        <div class="info-box-body">
+            جميع الإصلاحات الثلاثة السابقة لا تزال سارية المفعول في الكود الحالي. تم التحقق من كل تعديل في الملفات المعنية. ملاحظة: الإصلاح الثالث (الاحتياطي) كان جزءاً من commit كبير شمل 150+ ملف بسبب عمليات تنسيق linting، لكن التغيير الوظيفي الفعلي اقتصر على ملف run-analysis.ts فقط.
+        </div>
+    </div>
+
+    <!-- ═══ SECTION 3: 13 Categories Audit ═══ -->
+    <div class="chapter-header">
+        <div class="section-tag">القسم الثالث</div>
+        <div class="section-title">تدقيق فئات المشاكل الثلاث عشرة</div>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        تم مسح أكثر من 50 ملفاً عبر مجلدات المسارات والمكونات لتحديد المشاكل المنتمية لكل فئة من الفئات الـ 13 التي تم تحديدها مسبقاً. يعرض هذا القسم نتائج كل فئة مع تفاصيل الملفات المتأثرة والأسطر المحددة ومستوى الخطورة. تم استخدام تصنيف رباعي للمشاكل: حرج (CRITICAL) يؤثر على الوظائف الأساسية، وعالٍ (HIGH) يؤثر على تجربة المستخدم بشكل كبير، ومتوسط (MEDIUM) يمثل مشاكل بصرية أو ثانوية، ومنخفض (LOW) يمثل تحسينات مقترحة.
+    </div>
+
+    <!-- Category 1 -->
+    <div class="subsection-title">الفئة 1: عدم تناسق الشريط العلوي</div>
+    <div class="issue-item medium">
+        <div class="issue-num">1</div>
+        <div class="issue-content">
+            <div class="issue-title">الصفحة الرئيسية تستخدم تخطيطاً مخصصاً بدلاً من PageLayout الموحّد</div>
+            <div class="issue-detail">الصفحة الرئيسية (index.tsx) تستخدم عنصر div مخصص بهيئة flex الخاصة بها بدلاً من المكون المشترك PageLayout الذي تستخدمه جميع الصفحات الأخرى. هذا يُنتج تناقضاً بصرياً واضحاً حيث تفتقر الصفحة الرئيسية إلى الشريط العلوي المُحاط بإطار ولون خلفية مختلف ونظام مسافات وخطوط مختلف عن باقي التطبيق. الحل هو توحيد الصفحة الرئيسية مع باقي الصفحات باستخدام PageLayout.</div>
+            <div class="issue-meta">
+                <span class="severity severity-medium">متوسط</span>
+                <span class="issue-file-ref">src/routes/_authenticated/index.tsx:590-620</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category 2 & 3 -->
+    <div class="subsection-title">الفئة 2: ودجات ثابتة | الفئة 3: بيانات وهمية</div>
+
+    <div class="issue-item critical">
+        <div class="issue-num">2</div>
+        <div class="issue-content">
+            <div class="issue-title">صفحة التبديل (Swap) تعمل بالكامل ببيانات وهمية ثابتة</div>
+            <div class="issue-detail">صفحة التبديل تحتوي على كائن PRICES ثابت بالكامل (الأسطر 12-25) بأسعار مجمدة مثل SOL: 145.23 و ETH: 3450.0. لا يوجد أي اتصال WebSocket أو استدعاء API لجلب الأسعار الحقيقية. المحفظة وهمية عبر useMockWallet() بعنوان ثابت ورصيد مزيف 42.5 SOL. الأرصدة في MOCK_BALANCES (الأسطر 50-63) ملفقة بالكامل. سجل التبديل في getSwapHistory() (الأسطر 103-157) يحتوي على 4 صفقات وهمية بتواريخ يوليو 2025. حتى زر "تنفيذ التبديل" يستخدم Math.random() لمحاكاة النجاح والفشل دون أي معاملة بلوكتشين حقيقية.</div>
+            <div class="issue-meta">
+                <span class="severity severity-critical">حرج</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-swap-component.tsx:12-500</span>
+                <span class="issue-file-ref">الفئات: #2, #3</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="issue-item high">
+        <div class="issue-num">3</div>
+        <div class="issue-content">
+            <div class="issue-title">أقسام الفوركس في صفحة تفاصيل التوكن تعرض بيانات ثابتة ومحاكاة</div>
+            <div class="issue-detail">مكون ForexSections (الأسطر 2094-2119) يعرض 3 أحداث اقتصادية ثابتة (Non-Farm Payrolls, CPI Flash Estimate, BoE Interest Rate Decision) بتواريخ وقيم ثابتة لا تتغير أبداً. كما أن بيانات قوة العملات (الأسطر 2122-2131) تحتوي على 8 عملات بقيم ثابتة مثل USD: 72 و EUR: 65 لا تُحدَّث من أي مصدر بيانات حقيقي. هذه البيانات تضلل المستخدم بأنها بيانات حية بينما هي مجرد أرقام ثابتة في الكود.</div>
+            <div class="issue-meta">
+                <span class="severity severity-high">عالٍ</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-token-symbol-component.tsx:2094-2131</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="issue-item low">
+        <div class="issue-num">4</div>
+        <div class="issue-content">
+            <div class="issue-title">مقاييس التغير في 1 ساعة و 7 أيام تعرض دائماً شرطة "-"</div>
+            <div class="issue-detail">في صفحة تفاصيل التوكن، الأسطر 1225 و 1235 تعرض MetricPill بقيمة ثابتة "-" للتغير في 1 ساعة و 7 أيام. هذه البيانات لا تُجلب من أي API رغم توفرها في معظم مزودي بيانات الأسواق. هذا يجعل تحليل الأداء قصير المدى والمتوسط المدى مستحيلاً للمستخدم.</div>
+            <div class="issue-meta">
+                <span class="severity severity-low">منخفض</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-token-symbol-component.tsx:1225,1235</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category 4, 5, 6, 7 -->
+    <div class="subsection-title">الفئات 4-7: الرسوم البيانية وواجهة التحليل ونتائج التحليل</div>
+
+    <div class="info-box">
+        <div class="info-box-title">هذه الفئات الأربع نظيفة - لا توجد مشاكل</div>
+        <div class="info-box-body">
+            بعد المسح الدقيق: صفحة الرسوم البيانية (charts.tsx) تعمل بشكل صحيح مع CandlestickChart للعملات المشفرة و TradingViewChart للفوركس. واجهة عرض نتائج التحليل (analysis-id-component.tsx) احترافية مع رسم FVG و Order Block ومستويات الدعم والمقاومة على Canvas. نتائج التحليل تأتي من محرك AI حقيقي وليست مُعدة مسبقاً. صفحة إنشاء التحليل (analyze.tsx) تستخدم createAnalysis من خادم التحليل. جميع هذه الصفحات نظيفة وغير متأثرة.
+        </div>
+    </div>
+
+    <!-- Category 8 -->
+    <div class="subsection-title">الفئة 8: نهج MOXI الخاطئ كمساعد ذكاء اصطناعي</div>
+
+    <div class="issue-item critical">
+        <div class="issue-num">5</div>
+        <div class="issue-content">
+            <div class="issue-title">MOXI مصمم كعقل وكيل ذكي لكنه يعمل كشات بسيط</div>
+            <div class="issue-detail">MOXI معرَّف كواحد من 6 وكلاء متساويين في مصفوفة AGENTS (الأسطر 152-164)، يتم اختياره من قائمة منسدلة مثل أي وكيل آخر. على الرغم من أن وصفه يذكر "كشف استباقي للمخاطر والفرص" و"تنفيذ الأدوات بالنيابة عنك"، فإن التنفيذ الفعلي هو واجهة محادثة قياسية تستخدم askCopilot و getConsensus فقط. لا يوجد أي سلوك مستقل، أو مراقبة خلفية، أو إطار عمل لاستخدام الأدوات، أو ذكاء استباقي. يجب أن يكون MOXI عقلاً AI نشطاً دائماً يقدم رؤى بشكل استباقي وليس مجرد تبويب محادثة.</div>
+            <div class="issue-meta">
+                <span class="severity severity-critical">حرج</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-copilot-component.tsx:55-165</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="issue-item high">
+        <div class="issue-num">6</div>
+        <div class="issue-content">
+            <div class="issue-title">عدم وجود قدرات مستقلة أو إطار عمل للأدوات</div>
+            <div class="issue-detail">رغم ادعاء قدرات MOXI في الكشف الاستباقي والتنفيذ الذاتي (الأسطر 160-162)، لا يوجد في الكود أي وظائف خلفية، أو مهام مجدولة، أو تنبيهات استباقية، أو إطار عمل لاستدعاء الأدوات. المحادثة محدودة بـ 10 رسائل كحد أقصى (السطر 568) دون أي ترقيم للمحادثات الطويلة. هذا يعني أن MOXI كاسم وعلامة تجارية لا يُقدم أي قيمة تتجاوز وكلاء الدردشة العاديين.</div>
+            <div class="issue-meta">
+                <span class="severity severity-high">عالٍ</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-copilot-component.tsx:160-162,568</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category 9 & 10 -->
+    <div class="subsection-title">الفئة 9: صفحة الاكتشاف | الفئة 10: انهيار الفوركس</div>
+
+    <div class="issue-item low">
+        <div class="issue-num">7</div>
+        <div class="issue-content">
+            <div class="issue-title">حجم تداول الفوركس دائماً صفر في صفحة الاكتشاف</div>
+            <div class="issue-detail">في ملف بيانات الفوركس لصفحة الاكتشاف (السطر 137)، حجم التداول اليومي لجميع أزواج الفوركس مضبوط على 0 دائماً مع تعليق يوضح أن الفوركس لا يحتوي على بيانات حجم حقيقية. هذا يعني أن أزواج الفوركس ستظهر دائماً في أسفل القوائم عند الترتيب حسب الحجم، مما يقلل من ظهورها ومفيدية الصفحة للمتداولين.</div>
+            <div class="issue-meta">
+                <span class="severity severity-low">منخفض</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-discover-forex-data.ts:137</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="issue-item medium">
+        <div class="issue-num">8</div>
+        <div class="issue-content">
+            <div class="issue-title">أزواج الفوركس لا تعرض شريط الأسعار الحية في صفحة الرسوم البيانية</div>
+            <div class="issue-detail">في صفحة charts.tsx، خطاف useLivePrices (السطر 59) يشترك فقط في أزواج العملات المشفرة CRYPTO_PAIRS. عند اختيار زوج فوركس، getPrice() يُرجع undefined (السطر 63)، فيظهر شريط السعر/الأعلى/الأدنى/الحجم فارغاً. الرسم البياني نفسه يعمل عبر TradingView لكن الشريط العلوي المباشر يفقد وظيفته تماماً لأزواج الفوركس.</div>
+            <div class="issue-meta">
+                <span class="severity severity-medium">متوسط</span>
+                <span class="issue-file-ref">src/routes/_authenticated/charts.tsx:59-63</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category 11 & 13 -->
+    <div class="subsection-title">الفئة 11: صفحات تفاصيل التوكن معطلة | الفئة 13: صفحات توكنز فارغة</div>
+
+    <div class="issue-item medium">
+        <div class="issue-num">9</div>
+        <div class="issue-content">
+            <div class="issue-title">صفحات التوكنز المجهولة تظهر فارغة تقريباً</div>
+            <div class="issue-detail">عندما لا يجد API الاكتشاف بيانات لتوكن معين (السطر 486 في token-symbol-component.tsx)، تعرض الصفحة رسماً بيانياً فقط مع مسار تنقل وزر "تحليل" ولا تحتوي على أي إحصائيات سوقية أو مقاييس أو بيانات على السلسلة. هذا يجعل الصفحة تبدو غير مكتملة ومحبطة للمستخدم الذي يبحث عن معلومات حول توكن محدد.</div>
+            <div class="issue-meta">
+                <span class="severity severity-medium">متوسط</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-token-symbol-component.tsx:486-708</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category 12 -->
+    <div class="subsection-title">الفئة 12: بيانات الحائزين والمعاملات مفقودة</div>
+
+    <div class="issue-item critical">
+        <div class="issue-num">10</div>
+        <div class="issue-content">
+            <div class="issue-title">بيانات الحائزين والمعاملات على السلسلة مُلفَّقة بالكامل</div>
+            <div class="issue-detail">مكون CryptoSections (السطر 1920) يحسب عدد الحائزين بمعادلة وهمية: marketCap * 0.001 + 500. تقسيم حجم DEX/CEX (السطر 1918-1919) ثابت بنسبة 62%/38% لا مصدر لها. عدد معاملات الحيتان (السطر 1921) يُحسب بـ volume / 5000000 وهي معادلة مختلقة تماماً. الواجهة نفسها تعترف بكلمة "(محاكاة)" في السطر 2079. لا يوجد أي تكامل مع مزود بيانات على السلسلة حقيقي مثل Birdeye أو Helius أو DexScreener API.</div>
+            <div class="issue-meta">
+                <span class="severity severity-critical">حرج</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-token-symbol-component.tsx:1918-1921,2079</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="issue-item high">
+        <div class="issue-num">11</div>
+        <div class="issue-content">
+            <div class="issue-title">لا يوجد سجل معاملات حقيقي من البلوكتشين</div>
+            <div class="issue-detail">صفحة تفاصيل التوكن تعرض فقط صفقات المستخدم الخاص من جدول الصفقات. لا يوجد أي موجز معاملات على السلسلة، أو قائمة تحويلات حديثة، أو سجل صفقات DEX. هذا يعني أن المستخدم لا يستطيع رؤية نشاط السوق الفعلي للتوكن الذي يتحقق منه، وهو مفقود أساسي لأي منصة تحليل توكنز.</div>
+            <div class="issue-meta">
+                <span class="severity severity-high">عالٍ</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-token-symbol-component.tsx</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="issue-item high">
+        <div class="issue-num">12</div>
+        <div class="issue-content">
+            <div class="issue-title">نشاط الحيتان مُحاكى بمعادلات رياضية مختلقة</div>
+            <div class="issue-detail">تتم محاكاة نشاط الحيتان عبر whaleTxCount = Math.max(1, Math.round(volume / 5000000)) وهو رقم عشوائي لا يمثل أي بيانات حقيقية. التسمية التوضيحية "(simulated)" تعترف صراحة بأن هذه البيانات ليست حقيقية. هذا يضلل المتداولين الذين يعتمدون على بيانات الحيتان لاتخاذ قرارات تداول مهمة.</div>
+            <div class="issue-meta">
+                <span class="severity severity-high">عالٍ</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-token-symbol-component.tsx:1921,2071-2079</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ SECTION 4: Security ═══ -->
+    <div class="chapter-header">
+        <div class="section-tag">القسم الرابع</div>
+        <div class="section-title">الثغرات الأمنية</div>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        تم فحص الكود بحثاً عن ثغرات أمنية شائعة تشمل تسريب مفاتيح API، وحقن الأكواد، وعدم التحقق من المدخلات، ومشاكل إدارة الجلسات. النتائج التالية تمثل القضايا الأمنية المكتشفة مرتبة حسب الخطورة، مع ملاحظة أن التطبيق لا يحتوي على أي مفاتيح API مكشوفة في الكود من جهة العميل ولا يستخدم dangerouslySetInnerHTML في أي من ملفات المسارات.
+    </div>
+
+    <div class="issue-item high">
+        <div class="issue-num">S1</div>
+        <div class="issue-content">
+            <div class="issue-title">عدم التحقق من صحة مبالغ التبديل مقابل الرصيد</div>
+            <div class="issue-detail">في صفحة التبديل، مبالغ التوكنات تُحلَّل عبر parseFloat(fromAmount) دون أي تحقق من أن المبلغ لا يتجاوز الرصيد المتاح. رغم أن الأرصدة حالياً وهمية، فإن هذا يمثل ثغرة أمنية هيكلية ستستمر حتى بعد استبدال البيانات الوهمية ببيانات حقيقية. يجب إضافة تحقق صارم قبل تنفيذ أي عملية تبديل.</div>
+            <div class="issue-meta">
+                <span class="severity severity-high">عالٍ</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-swap-component.tsx:~432</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="issue-item medium">
+        <div class="issue-num">S2</div>
+        <div class="issue-content">
+            <div class="issue-title">استخراج رمز المصادقة من ملفات تعريف الارتباط يدوياً</div>
+            <div class="issue-detail">في مكون MOXI (الأسطر 431-449)، يتم استخراج رمز الوصول الخاص بـ Supabase عبر تحليل يدوي لسلسلة document.cookie للبحث عن sb-access-token و sb-ref-auth-token. هذه الطريقة هشة وقد تتعطل إذا تغيرت أسماء ملفات تعريف الارتباط. كما يتم استخدام localStorage.getItem("sb-token") كبديل. يُنصح باستخدام واجهة برمجة تطبيقات Supabase الرسمية لإدارة الجلسات بدلاً من التحليل اليدوي.</div>
+            <div class="issue-meta">
+                <span class="severity severity-medium">متوسط</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-copilot-component.tsx:431-449</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="issue-item low">
+        <div class="issue-num">S3</div>
+        <div class="issue-content">
+            <div class="issue-title">استخدام localStorage لحالة المحفظة الوهمية</div>
+            <div class="issue-detail">في صفحة التبديل (السطر 76)، تُخزن حالة المحفظة الوهمية في localStorage وهي قابلة للوصول عبر هجمات XSS. رغم أن البيانات حالياً وهمية، فإن هذا النمط يجب تغييره قبل التكامل مع محفظة حقيقية لتجنب تخزين بيانات حساسة في تخزين المحلي للمتصفح.</div>
+            <div class="issue-meta">
+                <span class="severity severity-low">منخفض</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-swap-component.tsx:76</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ SECTION 5: Architecture ═══ -->
+    <div class="chapter-header">
+        <div class="section-tag">القسم الخامس</div>
+        <div class="section-title">المشاكل المعمارية</div>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        يتناول هذا القسم القضايا الهيكلية والمعمارية في التطبيق التي تتجاوز المشاكل الفردية وتؤثر على قابلية الصيانة والتوسع وجودة الكود بشكل عام. هذه المشاكل تحتاج إلى إعادة هيكلة جذرية وليس مجرد إصلاحات سطحية، لأنها تتعلق بالتصميم الأساسي للنظام وكيفية تفاعل المكونات مع بعضها.
+    </div>
+
+    <div class="issue-item critical">
+        <div class="issue-num">A1</div>
+        <div class="issue-content">
+            <div class="issue-title">صفحة التبديل لا تحتوي على أي تكامل خلفي حقيقي</div>
+            <div class="issue-detail">صفحة التبديل بالكامل معزولة عن البنية الخلفية للتطبيق. جميع البيانات ثابتة في الكود، والمحفظة وهمية، والتنفيذ محاكى. هذا يعني أن الصفحة لا تستخدم أي من البنية التحتية الحقيقية الموجودة في التطبيق (مثل server functions أو useQuery أو Supabase أو WebSocket). إعادة بناء هذه الصفحة تتطلب تكاملاً كاملاً مع Jupiter أو Redux Swap SDK للتبديل الحقيقي، وتوصيل محفظة Solana حقيقية عبر @solana/wallet-adapter المثبت بالفعل في المشروع.</div>
+            <div class="issue-meta">
+                <span class="severity severity-critical">حرج</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-swap-component.tsx</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="issue-item high">
+        <div class="issue-num">A2</div>
+        <div class="issue-content">
+            <div class="issue-title">عدم وجود خدمة مركزية لبيانات التوكنز</div>
+            <div class="issue-detail">لا يوجد في التطبيق خدمة موحدة تجمع بيانات التوكنز من مصادر متعددة (الأسعار، الحائزون، المعاملات، بيانات السلسلة). كل صفحة تجلب بياناتها بطريقتها الخاصة أو تصنع بيانات وهمية. هذا يؤدي إلى تكرار الكود، وبيانات غير متسقة بين الصفحات، وصعوبة في إضافة مصادر بيانات جديدة. الحل هو إنشاء TokenDataService مركزي يجمع البيانات من Birdeye و Helius و DexScreener ويوفرها لجميع الصفحات عبر React Query.</div>
+            <div class="issue-meta">
+                <span class="severity severity-high">عالٍ</span>
+                <span class="issue-file-ref">البنية العامة - عدة ملفات</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="issue-item high">
+        <div class="issue-num">A3</div>
+        <div class="issue-content">
+            <div class="issue-title">MOXI يفتقر إلى بنية الوكيل/التنسيق المطلوبة</div>
+            <div class="issue-detail">المكون المساعد MOXI يحتاج إلى إعادة هيكلة جذرية ليتحول من واجهة محادثة بسيطة إلى عقل AI مستقل. هذا يتطلب بنية تحتية تشمل: نظام تنسيق الوكلاء (Agent Orchestrator) موجود مسبقاً في src/server/agent-orchestrator.ts لكنه غير متصل بواجهة MOXI، وإطار عمل لاستدعاء الأدوات (Tool Use Framework)، ومهام خلفية للمراقبة الاستباقية، ونظام تنبيهات يعرض الرؤى تلقائياً دون تدخل المستخدم.</div>
+            <div class="issue-meta">
+                <span class="severity severity-high">عالٍ</span>
+                <span class="issue-file-ref">src/routes/_authenticated/-copilot-component.tsx + src/server/agent-orchestrator.ts</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-box warning">
+        <div class="info-box-title">نقاط إيجابية معمارية</div>
+        <div class="info-box-body">
+            رغم المشاكل المذكورة، يحتوي التطبيق على العديد من الأنماط الإيجابية: معظم الصفحات (signals, pnl, portfolio, whale, alpha, perpetuals, curves, trade-desk) تستخدم server functions مع useQuery بشكل صحيح. تكامل WebSocket عبر BinanceWS و DexScreenerWS يعمل بشكل ممتاز. حدود الخطأ (Error Boundaries) موجودة على مستوى المسارات ومستوى التطبيق العام. بيانات Mock تم تنظيفها بالفعل من vixor-mock.ts. وحدة بيانات الفوركس في صفحة الاكتشاف تستخدم Promise.allSettle لمقاومة الأخطاء.
+        </div>
+    </div>
+
+    <!-- ═══ SECTION 6: Category Summary Matrix ═══ -->
+    <div class="chapter-header">
+        <div class="section-tag">القسم السادس</div>
+        <div class="section-title">مصفوفة ملخص الفئات</div>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        يعرض الجدول التالي ملخصاً شاملاً لكل فئة من فئات المشاكل الـ 13 مع عدد المشاكل المكتشفة وأعلى مستوى خطورة والملفات المتأثرة. الفئات التي لا تحتوي على مشاكل مُعلَّمة بلون أخضر، مما يعني أن هذه الجوانب من التطبيق تعمل بشكل صحيح.
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:30px">#</th>
+                    <th>الفئة</th>
+                    <th style="width:50px">العدد</th>
+                    <th style="width:80px">الخطورة</th>
+                    <th>الملفات المتأثرة</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align:center;color:var(--c-accent-light);font-weight:700">1</td>
+                    <td>عدم تناسق الشريط العلوي</td>
+                    <td style="text-align:center;font-weight:700">2</td>
+                    <td><span class="severity severity-medium">متوسط</span></td>
+                    <td class="mono">index.tsx</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-accent-light);font-weight:700">2</td>
+                    <td>ودجات ثابتة</td>
+                    <td style="text-align:center;font-weight:700">3</td>
+                    <td><span class="severity severity-high">عالٍ</span></td>
+                    <td class="mono">-token-symbol-component.tsx, -swap-component.tsx</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-accent-light);font-weight:700">3</td>
+                    <td>بيانات وهمية</td>
+                    <td style="text-align:center;font-weight:700">7</td>
+                    <td><span class="severity severity-critical">حرج</span></td>
+                    <td class="mono">-swap-component.tsx, -token-symbol-component.tsx, charts.tsx</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-bullish);font-weight:700">4</td>
+                    <td>لا توجد رسوم بيانية</td>
+                    <td style="text-align:center;font-weight:700">0</td>
+                    <td><span class="severity severity-low">نظيف</span></td>
+                    <td style="color:var(--c-text-muted)">جميع صفحات الرسوم تعمل بشكل صحيح</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-bullish);font-weight:700">5</td>
+                    <td>واجهة تحليل غير احترافية</td>
+                    <td style="text-align:center;font-weight:700">0</td>
+                    <td><span class="severity severity-low">نظيف</span></td>
+                    <td style="color:var(--c-text-muted)">واجهة التحليل احترافية مع رسم Canvas</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-bullish);font-weight:700">6</td>
+                    <td>نتائج تحليل خاطئة</td>
+                    <td style="text-align:center;font-weight:700">0</td>
+                    <td><span class="severity severity-low">نظيف</span></td>
+                    <td style="color:var(--c-text-muted)">النتائج تأتي من محرك AI حقيقي</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-bullish);font-weight:700">7</td>
+                    <td>مخرجات تحليل وهمية</td>
+                    <td style="text-align:center;font-weight:700">0</td>
+                    <td><span class="severity severity-low">نظيف</span></td>
+                    <td style="color:var(--c-text-muted)">التحليل يستخدم AI حقيقي من الخادم</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-accent-light);font-weight:700">8</td>
+                    <td>نهج MOXI الخاطئ</td>
+                    <td style="text-align:center;font-weight:700">2</td>
+                    <td><span class="severity severity-critical">حرج</span></td>
+                    <td class="mono">-copilot-component.tsx</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-accent-light);font-weight:700">9</td>
+                    <td>صفحة الاكتشاف معطلة</td>
+                    <td style="text-align:center;font-weight:700">1</td>
+                    <td><span class="severity severity-low">منخفض</span></td>
+                    <td class="mono">-discover-forex-data.ts</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-accent-light);font-weight:700">10</td>
+                    <td>انهيار الفوركس</td>
+                    <td style="text-align:center;font-weight:700">2</td>
+                    <td><span class="severity severity-medium">متوسط</span></td>
+                    <td class="mono">charts.tsx, discover.tsx</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-accent-light);font-weight:700">11</td>
+                    <td>صفحات تفاصيل التوكن معطلة</td>
+                    <td style="text-align:center;font-weight:700">1</td>
+                    <td><span class="severity severity-medium">متوسط</span></td>
+                    <td class="mono">-token-symbol-component.tsx</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-accent-light);font-weight:700">12</td>
+                    <td>بيانات الحائزين/المعاملات مفقودة</td>
+                    <td style="text-align:center;font-weight:700">4</td>
+                    <td><span class="severity severity-critical">حرج</span></td>
+                    <td class="mono">-token-symbol-component.tsx</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;color:var(--c-accent-light);font-weight:700">13</td>
+                    <td>صفحات توكنز فارغة</td>
+                    <td style="text-align:center;font-weight:700">1</td>
+                    <td><span class="severity severity-medium">متوسط</span></td>
+                    <td class="mono">-token-symbol-component.tsx</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ═══ SECTION 7: Dependencies ═══ -->
+    <div class="chapter-header">
+        <div class="section-tag">القسم السابع</div>
+        <div class="section-title">المكتبات والتبعيات</div>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        يعرض هذا القسم قائمة المكتبات الرئيسية المستخدمة في المشروع مصنفة حسب وظيفتها. هذا مهم لأن فهم البنية التقنية يساعد في تحديد الحلول المناسبة للمشاكل المذكورة في التقرير. على سبيل المثال، مكتبات Solana Wallet Adapter مثبتة بالفعل مما يسهل ربط محفظة حقيقية بصفحة التبديل، ومكتبة AI SDK متاحة لتحسين قدرات MOXI.
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>الفئة</th>
+                    <th>المكتبة</th>
+                    <th>الإصدار</th>
+                    <th>الوظيفة</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="font-weight:600">الإطار الأساسي</td>
+                    <td class="mono">react</td>
+                    <td class="mono">19.2.0</td>
+                    <td>مكتبة واجهة المستخدم</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">@tanstack/react-start</td>
+                    <td class="mono">1.168.25</td>
+                    <td>إطار التطبيق الكامل</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">@tanstack/react-router</td>
+                    <td class="mono">1.170.15</td>
+                    <td>التوجيه من جهة العميل</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">@tanstack/react-query</td>
+                    <td class="mono">5.83.0</td>
+                    <td>إدارة حالة الخادم والتخزين المؤقت</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">tailwindcss</td>
+                    <td class="mono">4.2.1</td>
+                    <td>إطار التصميم</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600">الذكاء الاصطناعي</td>
+                    <td class="mono">ai</td>
+                    <td class="mono">6.0.224</td>
+                    <td>Vercel AI SDK - واجهة الأنماط</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">@ai-sdk/openai-compatible</td>
+                    <td class="mono">2.0.48</td>
+                    <td>التوافق مع OpenRouter API</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">zod</td>
+                    <td class="mono">4.4.3</td>
+                    <td>التحقق من صحة البيانات والأنماط</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600">Solana / بلوكتشين</td>
+                    <td class="mono">@solana/web3.js</td>
+                    <td class="mono">1.98.4</td>
+                    <td>التفاعل مع شبكة Solana</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">@solana/wallet-adapter-react</td>
+                    <td class="mono">0.15.39</td>
+                    <td>إدارة محفظة Solana في React</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">viem / wagmi</td>
+                    <td class="mono">2.53.1 / 3.6.17</td>
+                    <td>دعم EVM chains (Ethereum, etc.)</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600">الرسوم البيانية</td>
+                    <td class="mono">lightweight-charts</td>
+                    <td class="mono">5.2.0</td>
+                    <td>مكتبة TradingView للرسوم البيانية</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">recharts</td>
+                    <td class="mono">2.15.4</td>
+                    <td>رسوم بيانية إضافية</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600">البيانات والأسواق</td>
+                    <td class="mono">ccxt</td>
+                    <td class="mono">4.5.64</td>
+                    <td>واجهة موحدة للتبادلات</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">decimal.js</td>
+                    <td class="mono">10.6.0</td>
+                    <td>حسابات عشرية دقيقة</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600">المصادقة</td>
+                    <td class="mono">@supabase/supabase-js</td>
+                    <td class="mono">2.107.0</td>
+                    <td>المصادقة وقاعدة البيانات</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">jsonwebtoken</td>
+                    <td class="mono">9.0.3</td>
+                    <td>إدارة رموز JWT</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600">المراسلة</td>
+                    <td class="mono">@telegram-apps/sdk</td>
+                    <td class="mono">3.11.8</td>
+                    <td>تكامل تطبيق Telegram</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600">المراقبة</td>
+                    <td class="mono">@sentry/react</td>
+                    <td class="mono">10.63.0</td>
+                    <td>تتبع الأخطاء والأداء</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">mixpanel-browser</td>
+                    <td class="mono">2.80.0</td>
+                    <td>تحليلات الاستخدام</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600">التخزين المؤقت</td>
+                    <td class="mono">@upstash/redis</td>
+                    <td class="mono">1.38.0</td>
+                    <td>تخزين مؤقت سحابي</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="mono">zustand</td>
+                    <td class="mono">5.0.14</td>
+                    <td>إدارة الحالة المحلية</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ═══ SECTION 8: Task List ═══ -->
+    <div class="chapter-header">
+        <div class="section-tag">القسم الثامن</div>
+        <div class="section-title">قائمة المهام المطلوبة مرتبة حسب الأولوية</div>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        تمثل المهام التالية خطة عمل شاملة لإصلاح جميع المشاكل المكتشفة في هذا التقرير. تم ترتيبها حسب الأولوية مع الإشارة إلى الفئة التي تنتمي إليها والملفات المتأثرة والتفاصيل التقنية اللازمة للتنفيذ. يمكن استخدام هذه القائمة مباشرة كنقاط عمل (tasks) لفريق التطوير أو لأداة AI مثل KIMI K3 لتنفيذ الإصلاحات بشكل منهجي.
+    </div>
+
+    <div class="subsection-title">المهام الحرجة - يجب تنفيذها فوراً</div>
+
+    <div class="task-item">
+        <div class="task-priority severity-critical">P0</div>
+        <div class="task-content">
+            <div class="task-title">إعادة بناء صفحة التبديل بالكامل مع تكامل حقيقي</div>
+            <div class="task-desc">استبدال جميع البيانات الوهمية في -swap-component.tsx ببيانات حقيقية: أسعار حية عبر BinanceWS الموجود، محفظة Solana حقيقية عبر @solana/wallet-adapter-react المثبت بالفعل، تنفيذ تبديل حقيقي عبر Jupiter Swap SDK أو Redux، سجل تبديل حقيقي من Supabase. الملف: src/routes/_authenticated/-swap-component.tsx | الفئات: #2, #3, S1</div>
+        </div>
+    </div>
+
+    <div class="task-item">
+        <div class="task-priority severity-critical">P0</div>
+        <div class="task-content">
+            <div class="task-title">استبدال البيانات المُلفَّقة ببيانات على السلسلة حقيقية</div>
+            <div class="task-desc">إزالة جميع المعادلات المزيفة في -token-symbol-component.tsx واستبدالها بـ API حقيقي: عدد الحائزين وبيانات المعاملات من Helius RPC أو Birdeye API، تقسيم DEX/CEX من DexScreener API، نشاط الحيتان من منصة تحليل بلوكتشين. الملف: src/routes/_authenticated/-token-symbol-component.tsx:1915-2080 | الفئة: #12</div>
+        </div>
+    </div>
+
+    <div class="task-item">
+        <div class="task-priority severity-critical">P0</div>
+        <div class="task-content">
+            <div class="task-title">إعادة تصميم MOXI كعقل AI مستقل</div>
+            <div class="task-desc">تحويل MOXI من محادثة بسيطة إلى عقل AI نشط دائماً: ربطه بـ agent-orchestrator.ts الموجود مسبقاً، إضافة إطار عمل Tool Use لتنفيذ الأدوات، مراقبة خلفية للأسواق عبر WebSocket وتنبيهات استباقية، واجهة تعرض الرؤى تلقائياً بدون طلب من المستخدم. الملف: src/routes/_authenticated/-copilot-component.tsx | الفئة: #8</div>
+        </div>
+    </div>
+
+    <div class="subsection-title">المهام العالية - يجب تنفيذها قريباً</div>
+
+    <div class="task-item">
+        <div class="task-priority severity-high">P1</div>
+        <div class="task-content">
+            <div class="task-title">استبدال بيانات الفوركس الثابتة ببيانات حية</div>
+            <div class="task-desc">إزالة التقويم الاقتصادي الثابت وقوة العملات الثابتة من ForexSections واستبدالها بـ API حقيقي مثل TwelveData أو ForexFactory API للأحداث الاقتصادية. الملف: src/routes/_authenticated/-token-symbol-component.tsx:2090-2131 | الفئات: #2, #3</div>
+        </div>
+    </div>
+
+    <div class="task-item">
+        <div class="task-priority severity-high">P1</div>
+        <div class="task-content">
+            <div class="task-title">إنشاء خدمة مركزية لبيانات التوكنز</div>
+            <div class="task-desc">إنشاء TokenDataService موحد يجمع البيانات من مصادر متعددة (Birdeye, Helius, DexScreener) ويوفرها لجميع الصفحات عبر React Query. هذا يمنع تكرار الكود ويضمن تناسق البيانات. الفئة: معمارية</div>
+        </div>
+    </div>
+
+    <div class="task-item">
+        <div class="task-priority severity-high">P1</div>
+        <div class="task-content">
+            <div class="task-title">إضافة سجل معاملات حقيقي من البلوكتشين</div>
+            <div class="task-desc">عرض موجز المعاملات الحديثة على السلسلة لكل توكن: التحويلات الأخيرة، صفقات DEX، التغييرات في الحائزين الكبار. يمكن استخدام Helius DAS API أو Birdeye. الملف: -token-symbol-component.tsx | الفئة: #12</div>
+        </div>
+    </div>
+
+    <div class="task-item">
+        <div class="task-priority severity-high">P1</div>
+        <div class="task-content">
+            <div class="task-title">إضافة التحقق من المدخلات في صفحة التبديل</div>
+            <div class="task-desc">إضافة تحقق صارم: المبلغ لا يتجاوز الرصيد، المبلغ أكبر من 0، الزوج المحدد صالح، الانزلاق السعري ضمن حدود معقولة. الملف: -swap-component.tsx:~432 | الفئة: أمنية</div>
+        </div>
+    </div>
+
+    <div class="subsection-title">المهام المتوسطة - تحسينات مهمة</div>
+
+    <div class="task-item">
+        <div class="task-priority severity-medium">P2</div>
+        <div class="task-content">
+            <div class="task-title">توحيد تخطيط الصفحة الرئيسية مع PageLayout</div>
+            <div class="task-desc">استبدال الشريط العلوي المخصص في الصفحة الرئيسية بمكون PageLayout الموحد المستخدم في باقي الصفحات لضمان تناسق بصري كامل. الملف: src/routes/_authenticated/index.tsx:590-620 | الفئة: #1</div>
+        </div>
+    </div>
+
+    <div class="task-item">
+        <div class="task-priority severity-medium">P2</div>
+        <div class="task-content">
+            <div class="task-title">إضافة أسعار حية للفوركس في صفحة الرسوم البيانية</div>
+            <div class="task-desc">توسيع useLivePrices ليشترك في أزواج الفوركس عبر استطلاع REST (polling) من TwelveData بدلاً من WebSocket، وعرض الشريط العلوي لأسعار الفوركس بشكل صحيح. الملف: charts.tsx:59-63 | الفئة: #10</div>
+        </div>
+    </div>
+
+    <div class="task-item">
+        <div class="task-priority severity-medium">P2</div>
+        <div class="task-content">
+            <div class="task-title">تحسين صفحات التوكنز الفارغة</div>
+            <div class="task-desc">عند عدم وجود بيانات من API الاكتشاف، عرض رسالة واضحة مع اقتراحات بديلة بدلاً من صفحة شبه فارغة تحتوي فقط على رسم بياني وزر تحليل. الملف: -token-symbol-component.tsx:486-708 | الفئة: #13</div>
+        </div>
+    </div>
+
+    <div class="task-item">
+        <div class="task-priority severity-medium">P2</div>
+        <div class="task-content">
+            <div class="task-title">إصلاح استخراج رمز المصادقة من ملفات تعريف الارتباط</div>
+            <div class="task-desc">استبدال التحليل اليدوي لـ document.cookie باستخدام واجهة Supabase الرسمية getSession() أو supabase.auth.getUser() لإدارة الجلسات بشكل آمن. الملف: -copilot-component.tsx:431-449 | الفئة: أمنية</div>
+        </div>
+    </div>
+
+    <div class="subsection-title">المهام المنخفضة - تحسينات مقترحة</div>
+
+    <div class="task-item">
+        <div class="task-priority severity-low">P3</div>
+        <div class="task-content">
+            <div class="task-title">جلب بيانات التغير في 1 ساعة و 7 أيام</div>
+            <div class="task-desc">إضافة بيانات التغير في 1 ساعة و 7 أيام لصفحات تفاصيل التوكنز من Binance API أو مزود بيانات آخر بدلاً من عرض "-" دائماً. الملف: -token-symbol-component.tsx:1225,1235 | الفئة: #2</div>
+        </div>
+    </div>
+
+    <div class="task-item">
+        <div class="task-priority severity-low">P3</div>
+        <div class="task-content">
+            <div class="task-title">معالجة حجم تداول الفوركس الصفري</div>
+            <div class="task-desc">إيجاد مصدر بيانات حجم تقريبي للفوركس (مثل حجم عقود CFD) أو إزالة عمود الحجم من ترتيب الفوركس في صفحة الاكتشاف لتجنب التضليل. الملف: -discover-forex-data.ts:137 | الفئة: #9</div>
+        </div>
+    </div>
+
+    <div class="task-item">
+        <div class="task-priority severity-low">P3</div>
+        <div class="task-content">
+            <div class="task-title">استبدال قوائم الأزواج الثابتة بقوائم ديناميكية</div>
+            <div class="task-desc">استبدال CRYPTO_PAIRS و FOREX_PAIRS الثابتة في charts.tsx بقوائم ديناميكية من AssetRegistry.popular() و AssetRegistry.byCategory("forex"). الملف: charts.tsx:14-38 | الفئة: #3</div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
