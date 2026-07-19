@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "The image does not show an error page. It displays a cryptocurrency analytics dashboard with key metrics (price change, volume/market cap, smart money score, discovery score), community sentiment metrics (social score, hype level, smart money percentage), and a risk flag for low liquidity. There is no error message or indication of a system failure. Since no error is present, questions about the error type, cause, or error handling professionalism are not applicable.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1784435169,
+  "id": "20260719122607a00b49ab2eb74825",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260719122607a00b49ab2eb74825",
+  "usage": {
+    "completion_tokens": 93,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 481,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 574
+  }
+}
