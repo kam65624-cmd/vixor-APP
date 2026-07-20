@@ -1,14 +1,14 @@
 import { defineEventHandler, getMethod, getHeader, createError, setResponseStatus } from "h3";
 import { supabaseAdmin } from "@/shared/supabase/client.server";
-import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
+import { withRateLimit } from "../utils/with-rate-limit";
+import { handlePreflight, validateAdminKey } from "./_security";
 import { fetchBinanceKlines, fetchTwelveDataKlines } from "@/domains/market/server/price-fetcher";
 import { runLocalAnalysis } from "@/domains/analysis/engine/engine";
 import { AssetRegistry } from "@/shared/asset-registry";
 import { VixorEvents } from "@/shared/events";
 
-export default defineEventHandler(async (event) => {
+const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
 
   const method = getMethod(event);
 
@@ -108,3 +108,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: "Internal server error" });
   }
 });
+
+export default withRateLimit(handler, { maxRequests: 10, windowSec: 60 });

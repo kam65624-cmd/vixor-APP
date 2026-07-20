@@ -10,7 +10,8 @@
 // ============================================================================
 
 import { defineEventHandler, getQuery, getHeader, createError, setResponseStatus } from "h3";
-import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
+import { withRateLimit } from "../utils/with-rate-limit";
+import { handlePreflight, validateAdminKey } from "./_security";
 
 // Ensure P1 Intelligence Layer is active in this API handler context.
 // In Vercel serverless, API handlers run in separate contexts from SSR.
@@ -20,9 +21,8 @@ import { configureEventPersistence } from "../../src/shared/events/persist";
 // Configure event persistence for this handler context
 configureEventPersistence();
 
-export default defineEventHandler(async (event) => {
+const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
 
   const query = getQuery(event) as Record<string, string>;
 
@@ -328,3 +328,5 @@ export default defineEventHandler(async (event) => {
     errors: errors.length > 0 ? errors : undefined,
   };
 });
+
+export default withRateLimit(handler, { maxRequests: 10, windowSec: 60 });

@@ -1,10 +1,10 @@
 import { defineEventHandler, getMethod, getHeader, createError, setResponseStatus } from "h3";
 import { checkMigrations, getPendingMigrationsSQL } from "@/shared/migrate.server";
-import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
+import { withRateLimit } from "../utils/with-rate-limit";
+import { handlePreflight, validateAdminKey } from "./_security";
 
-export default defineEventHandler(async (event) => {
+const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
 
   const method = getMethod(event);
 
@@ -43,3 +43,5 @@ export default defineEventHandler(async (event) => {
 
   throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
 });
+
+export default withRateLimit(handler, { maxRequests: 10, windowSec: 60 });

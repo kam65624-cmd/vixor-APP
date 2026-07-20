@@ -4,52 +4,60 @@ import {
   readBody,
   createError,
   setResponseStatus,
-  getHeader,
+  setResponseHeader,
+  getRequestIP,
 } from "h3";
-import { SlidingWindowLimiter } from "@/shared/resilience/rate-limiter";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/shared/supabase/types";
-import { handlePreflight, rateLimit, requireAuth } from "./_security";
+import { handlePreflight, authenticateRequest } from "./_security";
+import {
+  RedisRateLimiter,
+  globalApiRateLimiter,
+  initRateLimiters,
+} from "@/shared/resilience/redis-rate-limiter";
 
-// Rate limit: max 20 streaming requests per user per minute
-const streamLimiter = new SlidingWindowLimiter({
+// Per-user streaming rate limit: max 20 streaming requests per user per minute
+// Uses Redis-backed limiter (falls back to in-memory when Redis is unavailable)
+const streamLimiter = new RedisRateLimiter({
   maxRequests: 20,
-  windowMs: 60_000,
+  windowSec: 60,
+  keyPrefix: "vixor:rl:stream:",
 });
 
-/** Extract user ID + authenticated Supabase client from Bearer token */
-async function authenticateRequest(
-  event: ReturnType<typeof defineEventHandler> extends (...args: any[]) => Promise<any>
-    ? any
-    : never,
-): Promise<{ userId: string; supabase: ReturnType<typeof createClient<Database>> } | null> {
-  const authHeader = getHeader(event, "authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
-
-  const token = authHeader.replace("Bearer ", "");
-  if (!token) return null;
-
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
-  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
-
-  const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-  });
-
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error || !data?.user) return null;
-  return { userId: data.user.id, supabase };
+let rateLimitersInitialized = false;
+async function ensureRateLimiters() {
+  if (!rateLimitersInitialized) {
+    await initRateLimiters().catch(() => {
+      // Redis not available — in-memory fallback will be used
+    });
+    // Also set Redis cache on the per-stream limiter
+    try {
+      const { cache } = await import("@/shared/cache");
+      streamLimiter.setCache(cache);
+    } catch {
+      // in-memory fallback
+    }
+    rateLimitersInitialized = true;
+  }
 }
 
 export default defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
 
-  if (!requireAuth(event)) {
-    setResponseStatus(event, 401);
-    return { error: "Unauthorized" };
+  // Ensure Redis rate limiters are initialized
+  await ensureRateLimiters();
+
+  // Global IP-based rate limit (Redis-backed, works on serverless)
+  const ip = getRequestIP(event, { xForwardedFor: true }) || "unknown";
+  const globalResult = await globalApiRateLimiter.check(ip);
+  setResponseHeader(event, "X-RateLimit-Limit", String(globalResult.limit));
+  setResponseHeader(event, "X-RateLimit-Remaining", String(globalResult.remaining));
+  setResponseHeader(event, "X-RateLimit-Reset", String(globalResult.resetAt));
+  if (!globalResult.allowed) {
+    setResponseHeader(
+      event,
+      "Retry-After",
+      String(Math.ceil((globalResult.retryAfterMs ?? 60000) / 1000)),
+    );
+    throw createError({ statusCode: 429, statusMessage: "Too many requests" });
   }
 
   const method = getMethod(event);
@@ -57,15 +65,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
 
-  // Auth check
+  // Authenticate request (validates JWT via Supabase)
   const authResult = await authenticateRequest(event);
   if (!authResult) {
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
   }
   const { userId, supabase } = authResult;
 
-  // Rate limit check per user
-  if (!streamLimiter.tryAcquire(userId)) {
+  // Per-user streaming rate limit (Redis-backed)
+  const streamResult = await streamLimiter.check(userId);
+  if (!streamResult.allowed) {
+    setResponseHeader(
+      event,
+      "Retry-After",
+      String(Math.ceil((streamResult.retryAfterMs ?? 60000) / 1000)),
+    );
     throw createError({ statusCode: 429, statusMessage: "RATE_LIMITED" });
   }
 
@@ -123,9 +137,21 @@ export default defineEventHandler(async (event) => {
       .maybeSingle(),
     (async () => {
       try {
+        // Defense-in-depth: explicitly filter by user's own watchlists
+        // (RLS also enforces this, but explicit filtering prevents leakage
+        //  if RLS is ever disabled or service-role key is accidentally used)
+        const { data: userWatchlists } = await supabase
+          .from("watchlists")
+          .select("id")
+          .eq("user_id", userId);
+        const watchlistIds = (userWatchlists || []).map((w: { id: string }) => w.id);
+
+        if (watchlistIds.length === 0) return [];
+
         const { data: wlItems } = await supabase
           .from("watchlist_items")
           .select("pair,notes,category")
+          .in("watchlist_id", watchlistIds)
           .limit(20);
         return wlItems || [];
       } catch {

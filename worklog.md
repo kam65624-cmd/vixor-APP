@@ -1,103 +1,57 @@
+# VIXOR Remediation Worklog
+
 ---
 Task ID: 1.1
 Agent: main
-Task: V5 Design Tokens — CSS Variables + Tailwind Config
+Task: Fix Auth Bypass vulnerability in server/api/_security.ts
 
 Work Log:
-- Updated all color tokens in styles.css (background, surfaces, primary, bullish, bearish, text)
-- Updated radius tokens (sm:8, md:12, lg:16, xl:20)
-- Updated spacing tokens (added md:12, 2xl:32, 3xl:48)
-- Added motion tokens (instant:100ms, fast:180ms, base:240ms, slow:400ms)
-- Added easing curves (standard, decelerate, accelerate)
-- Added 8-level typography scale
-- Added Berkeley Mono for financial numbers
-- Added shadow system (resting, elevated, floating, glow-primary, glow-bullish)
-- Updated all 8-digit hex color references
+- Added `authenticateRequest()` async function that validates JWT tokens via Supabase `getUser()`
+- Returns `AuthResult { userId, email, supabase }` or null on failure
+- Deprecated old `requireAuth()` with `@deprecated` JSDoc tag and warning comments
+- Added deprecation warning to in-memory `rateLimit()` function
 
 Stage Summary:
-- Background: #0A0A0D → #08090C, Primary: #5B6EF5 → #6366F1
-- Bullish: #2ECC71 → #22D3A6 (teal), Bearish: #F0384E → #FB4667
-- Border: solid hex → rgba(255,255,255,0.08) hairline
-- 100+ color references updated across styles.css
-- Commit: abc3b03
+- Auth bypass fixed: any endpoint using `authenticateRequest()` now properly validates JWT
+- Old `requireAuth()` kept for backward compatibility but marked deprecated
+- No TypeScript or ESLint errors introduced
 
 ---
 Task ID: 1.2
 Agent: main
-Task: V5 Component Library — Button, Badge, Card, Skeleton, TokenCard, Dialog/Sheet
+Task: Fix Watchlist Data Leak + Rate Limiting in copilot-stream.ts
 
 Work Log:
-- Upgraded Button: bullish/destructive gradient variants, rounded-xl, glow shadows, active:scale
-- Upgraded Badge: 8 variants (default/bullish/bearish/wait/secondary/destructive/outline/gold/muted)
-- Created Card: new unified component (default/elevated/glass/accent/interactive/terminal)
-- Upgraded Skeleton: V5 styling + SkeletonCard + SkeletonRow presets
-- Created TokenCard: unified clickable token component (compact/expanded modes)
-- Updated Dialog/Sheet: V5 overlay with backdrop-blur, rounded-2xl
+- Replaced local `authenticateRequest` with shared one from `_security.ts`
+- Removed imports of `SlidingWindowLimiter`, `createClient`, `Database`, `requireAuth`, `rateLimit`
+- Replaced in-memory `rateLimit(event)` with Redis-backed `globalApiRateLimiter.check(ip)`
+- Replaced in-memory `SlidingWindowLimiter` with Redis-backed `RedisRateLimiter` for per-user streaming
+- Fixed watchlist query: added explicit user_id filter via JOIN through watchlists table
+- Added `ensureRateLimiters()` to initialize Redis on first request
 
 Stage Summary:
-- 7 files changed, new card.tsx and token-card.tsx created
-- All components inherit V5 Design Tokens automatically
-- Commit: 7d3a5a5
+- Watchlist data leak fixed: explicit user_id filtering (defense-in-depth alongside RLS)
+- Rate limiting fixed: both global (IP-based) and per-user now use Redis
+- Auth: uses shared `authenticateRequest()` from security module
 
 ---
 Task ID: 1.3
 Agent: main
-Task: AppShell Sidebar — 5 Architectural Layers
+Task: Fix broken in-memory rate limiting across all 13 server API endpoints
 
 Work Log:
-- Replaced 5 flat categories with 5 architectural layers
-- Layer 1 (Core Loop): Signals, Trade Desk, Daily Loop, Alpha, Predictions
-- Layer 2 (Data & Markets): Charts, Pulse & Whale, Radar, Bonding Curves
-- Layer 3 (Performance): Portfolio, PnL, Journal, Strategy Lab, Vision AI, Bags
-- Layer 4 (AI & Automation): Copilot, Perpetuals, Trackers
-- Layer 5 (Platform): Settings, Profile, Premium, Rewards, Brokers, Referral
-- Removed: wallet-web3, swap, notifications, yield, communities from sidebar
-- Net reduction: 25 → 22 items
+- Category A (4 files, already had withRateLimit wrapper - removed redundant inner rateLimit):
+  - sol-price.ts, market-overview.ts, stars-webhook.ts, telegram-webhook.ts
+- Category B (7 admin/cron files - added withRateLimit wrapper):
+  - health.ts (30/min), reanalysis-cron.ts (30/min), metrics.ts (30/min)
+  - migrate.ts (10/min), check-alerts.ts (30/min), generate-signals.ts (10/min)
+  - p1-validate.ts (10/min)
+- Category C (2 user-facing wallet files - added withRateLimit wrapper):
+  - wallet/session.ts (60/min), wallet/connect.ts (30/min)
+- discover.ts was already correct (had withRateLimit, no rateLimit import)
+- Verified zero files still import `rateLimit` from `_security`
 
 Stage Summary:
-- 101 insertions, 173 deletions
-- Commit: 063b584
-
----
-Task ID: 2-partial
-Agent: main
-Task: Phase 2 — Core Loop Pages V5 Token Migration + Hardcoded Color Cleanup
-
-Work Log:
-- Applied V5 semantic colors to Home page (index.tsx)
-- Replaced all text-emerald-400 → text-bullish, text-red-400 → text-bearish
-- Updated Feature card accents, FearGreedGauge, CTA gradients
-- Batch-fixed remaining hardcoded colors in CoachOverlay, GovernorRiskPanel
-- Verified zero hardcoded old hex colors remain in any TSX file
-
-Stage Summary:
-- All src/ TSX files now use V5 semantic tokens
-- 3 commits: ce7e038, f82b3f9
-- Phase 1 (Foundation) COMPLETE
-- Phase 2 Core Loop pages: Home V5 applied, remaining pages need full redesign
-
----
-Task ID: 3
-Agent: main
-Task: Phase 3 Data Layer — Live market data integration, Home/Charts redesign, premium UI
-
-Work Log:
-- Analyzed full project structure (290+ source files, 46 routes, 95 domain files)
-- Identified root cause: Home page depended on Supabase user data (trades/signals) which new users don't have
-- Identified getHomeMarketData only fetched 3 coins via asset registry
-- Expanded getHomeMarketData to directly call Binance API for 8 coins (BTC, ETH, SOL, BNB, XRP, DOGE, ADA, AVAX)
-- Added marketOverview to HomeMarketData: totalVolume, topGainers, topLosers
-- Redesigned Home page: market stats bar, top gainers/losers, expanded ticker (8 coins), 6 feature cards
-- Gated portfolio section on hasTrades so new users see rich market content
-- Redesigned Charts page: added live price bar with Binance WS, H/L/Vol stats, Tailwind pair selector
-- Added BNB, XRP, DOGE to Charts crypto pairs
-- Added live BTC price indicator to AppShell navbar
-- All inline styles in Charts converted to Tailwind classes
-- Full production build passes, TypeScript clean, ESLint clean
-
-Stage Summary:
-- 3 commits pushed: 92b8fe6, b0bfe41, 5c0869a
-- App now shows real live data from Binance on Home, Charts, and Navbar
-- New users see 8 live coins + market overview even without trades/signals
-- Charts page shows real-time prices via Binance WebSocket
-- Build verified: `pnpm run build` successful in 22.88s
+- All 13 server API endpoints now use Redis-backed rate limiting via `withRateLimit` wrapper
+- In-memory `rateLimit()` from `_security.ts` is no longer imported by any file
+- All files pass: TypeScript (0 errors in server/api/), ESLint (0 errors/warnings), Prettier (all pass)

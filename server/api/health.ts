@@ -1,5 +1,6 @@
 import { defineEventHandler, getMethod, getHeader, createError } from "h3";
-import { handlePreflight, rateLimit } from "./_security";
+import { withRateLimit } from "../utils/with-rate-limit";
+import { handlePreflight } from "./_security";
 
 /**
  * GET /api/health
@@ -11,9 +12,8 @@ import { handlePreflight, rateLimit } from "./_security";
  *
  * Auth: same gate as other /api routes — Vercel Cron header OR CRON_SECRET OR HEALTH_TOKEN.
  */
-export default defineEventHandler(async (event) => {
+const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
 
   const method = getMethod(event).toUpperCase();
   if (method !== "GET" && method !== "HEAD") {
@@ -123,3 +123,5 @@ export default defineEventHandler(async (event) => {
     deployment: process.env.VERCEL_ENV || process.env.NODE_ENV || "unknown",
   };
 });
+
+export default withRateLimit(handler, { maxRequests: 30, windowSec: 60 });

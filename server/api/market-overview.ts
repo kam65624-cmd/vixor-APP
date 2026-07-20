@@ -9,7 +9,7 @@
 import { defineEventHandler } from "h3";
 import { cache, CACHE_TTL } from "@/shared/cache";
 import { withRateLimit } from "../utils/with-rate-limit";
-import { handlePreflight, rateLimit } from "./_security";
+import { handlePreflight } from "./_security";
 
 const CACHE_KEY = "market-overview";
 
@@ -149,7 +149,6 @@ async function fetchFromCoinGecko() {
 // ── Main handler with Redis cache ────────────────────────────────────
 const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
 
   // 1. Check Redis cache first
   const cached = await cache.get(CACHE_KEY);

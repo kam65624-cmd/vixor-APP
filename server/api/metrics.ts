@@ -7,7 +7,8 @@ import {
   setResponseStatus,
 } from "h3";
 import { getMetricsStore } from "../_metrics-store";
-import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
+import { withRateLimit } from "../utils/with-rate-limit";
+import { handlePreflight, validateAdminKey } from "./_security";
 
 /**
  * GET /api/metrics
@@ -15,9 +16,8 @@ import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
  *
  * Auth: CRON_SECRET or HEALTH_TOKEN (Bearer).
  */
-export default defineEventHandler((event) => {
+const handler = defineEventHandler((event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
 
   const method = getMethod(event).toUpperCase();
   if (method !== "GET") {
@@ -91,3 +91,5 @@ export default defineEventHandler((event) => {
   setHeader(event, "Content-Type", "text/plain; version=0.0.4; charset=utf-8");
   return lines.join("\n");
 });
+
+export default withRateLimit(handler, { maxRequests: 30, windowSec: 60 });

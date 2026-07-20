@@ -1,6 +1,7 @@
 import { defineEventHandler, getMethod, getHeader, createError, setResponseStatus } from "h3";
 import { reanalyzeAllActiveAnalysisSignals } from "@/domains/analysis/reanalysis";
-import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
+import { withRateLimit } from "../utils/with-rate-limit";
+import { handlePreflight, validateAdminKey } from "./_security";
 
 /**
  * Vercel Cron endpoint for re-analyzing tracked analysis signals.
@@ -18,9 +19,8 @@ import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
  * Idempotent: Safe to run multiple times. In-memory cooldown prevents
  * re-analyzing the same signal more than once per 5 minutes.
  */
-export default defineEventHandler(async (event) => {
+const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
 
   const method = getMethod(event);
 
@@ -75,3 +75,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: "Internal server error" });
   }
 });
+
+export default withRateLimit(handler, { maxRequests: 30, windowSec: 60 });

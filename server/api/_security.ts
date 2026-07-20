@@ -7,6 +7,8 @@ import {
   getRequestURL,
   getQuery,
 } from "h3";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/shared/supabase/types";
 
 // --- CORS ---
 const ALLOWED_ORIGINS = [
@@ -51,6 +53,10 @@ export function handlePreflight(event: H3Event): boolean {
 }
 
 // --- Rate Limiting (in-memory sliding window) ---
+// ⚠️ DEPRECATED: This in-memory rate limiter does NOT work on Vercel Serverless
+// because each function invocation gets a fresh process. Use the Redis-backed
+// `withRateLimit` wrapper from `@/server/utils/with-rate-limit` or the
+// `globalApiRateLimiter` from `@/shared/resilience/redis-rate-limiter` instead.
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const MAX_REQUESTS = 60;
 const WINDOW_MS = 60_000;
@@ -92,8 +98,65 @@ export function validateAdminKey(event: H3Event): boolean {
   return false;
 }
 
+/**
+ * Result of a successful authentication.
+ */
+export interface AuthResult {
+  userId: string;
+  email: string | null;
+  supabase: ReturnType<typeof createClient<Database>>;
+}
+
+/**
+ * Validate the Bearer token against Supabase and return user info.
+ * Returns null if the token is missing, malformed, or invalid.
+ *
+ * This replaces the old `requireAuth` which only checked the "Bearer " prefix
+ * and never validated the JWT — a critical auth bypass vulnerability.
+ */
+export async function authenticateRequest(event: H3Event): Promise<AuthResult | null> {
+  const authHeader = getHeader(event, "authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+
+  const token = authHeader.replace("Bearer ", "");
+  if (!token) return null;
+
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    console.error("[Security] SUPABASE_URL or SUPABASE_KEY not configured");
+    return null;
+  }
+
+  const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+  });
+
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data?.user) {
+    if (error) {
+      console.warn("[Security] Token validation failed:", error.message);
+    }
+    return null;
+  }
+
+  return {
+    userId: data.user.id,
+    email: data.user.email,
+    supabase,
+  };
+}
+
+/**
+ * @deprecated Use `authenticateRequest` instead.
+ * This function only checks the "Bearer " prefix without validating the JWT.
+ * Kept for backward compatibility but should not be used for security decisions.
+ */
 export function requireAuth(event: H3Event): boolean {
   const auth = getHeader(event, "authorization");
   if (!auth?.startsWith("Bearer ")) return false;
+  // ⚠️ DEPRECATED: This does NOT validate the JWT token.
+  // Use `authenticateRequest()` for actual authentication.
   return true;
 }

@@ -1,10 +1,10 @@
 import { defineEventHandler, getMethod, getHeader, createError, setResponseStatus } from "h3";
 import { checkAllAlerts } from "@/domains/trading/server/alert-checker";
-import { handlePreflight, rateLimit, validateAdminKey } from "./_security";
+import { withRateLimit } from "../utils/with-rate-limit";
+import { handlePreflight, validateAdminKey } from "./_security";
 
-export default defineEventHandler(async (event) => {
+const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
 
   const method = getMethod(event);
 
@@ -44,3 +44,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: "Internal server error" });
   }
 });
+
+export default withRateLimit(handler, { maxRequests: 30, windowSec: 60 });

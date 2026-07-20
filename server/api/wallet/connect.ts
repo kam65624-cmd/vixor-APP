@@ -2,7 +2,8 @@ import { defineEventHandler, getMethod, getHeader, createError, readBody } from 
 import { connectWallet, generateNonce, generateChallengeMessage } from "@/domains/wallet/server";
 import { isValidWalletAddress } from "@/domains/wallet";
 import { getSupabaseOrNull } from "@/shared/supabase/client";
-import { handlePreflight, rateLimit } from "../_security";
+import { withRateLimit } from "../utils/with-rate-limit";
+import { handlePreflight } from "../_security";
 
 // ============================================================================
 // POST /api/wallet/connect
@@ -19,9 +20,8 @@ import { handlePreflight, rateLimit } from "../_security";
 // Auth: Requires Supabase session (user must be logged in)
 // ============================================================================
 
-export default defineEventHandler(async (event) => {
+const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
-  if (!rateLimit(event)) return;
 
   const method = getMethod(event);
   if (method === "GET") {
@@ -155,3 +155,5 @@ async function handleConnect(event: Parameters<typeof defineEventHandler>[0]) {
     throw createError({ statusCode: 403, statusMessage: message });
   }
 }
+
+export default withRateLimit(handler, { maxRequests: 30, windowSec: 60 });
