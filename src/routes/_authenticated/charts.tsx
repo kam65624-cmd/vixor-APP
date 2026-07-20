@@ -55,9 +55,9 @@ function ChartsPage() {
   const [selectedPair, setSelectedPair] = useState<string>("BTC/USDT");
   const [selectedInterval, setSelectedInterval] = useState<string>("4H");
 
-  // Get live prices for price bar
+  // Get live prices for price bar — include forex pairs for REST polling
   const { getPrice } = useLivePrices({
-    pairs: [...CRYPTO_PAIRS],
+    pairs: [...CRYPTO_PAIRS, ...FOREX_PAIRS],
   });
 
   const liveData = getPrice(selectedPair);

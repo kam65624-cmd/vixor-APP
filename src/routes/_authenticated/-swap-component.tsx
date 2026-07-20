@@ -7,9 +7,10 @@ import {
   SectionTitle,
   PageScrollArea,
 } from "@/components/vixor/PageLayout";
+import { useLivePrices } from "@/shared/market-data";
 
-// ── Static Price Map (Simulation) ──────────────────────────────────────────
-const PRICES: Record<string, number> = {
+// ── Fallback prices used only when live feed is unavailable ─────────────
+const FALLBACK_PRICES: Record<string, number> = {
   SOL: 145.23,
   USDT: 1.0,
   USDC: 1.0,
@@ -23,6 +24,20 @@ const PRICES: Record<string, number> = {
   PYTH: 0.45,
   BOME: 0.0089,
 };
+
+// Map swap token symbols to Binance pair names for useLivePrices
+const SWAP_PAIRS = [
+  "SOL/USDT",
+  "ETH/USDT",
+  "BONK/USDT",
+  "JUP/USDT",
+  "RAY/USDT",
+  "ORCA/USDT",
+  "WIF/USDT",
+  "JTO/USDT",
+  "PYTH/USDT",
+  "BOME/USDT",
+] as const;
 
 // ── Token Definitions ───────────────────────────────────────────────────────
 interface TokenDef {
@@ -177,7 +192,9 @@ function formatUSD(value: number): string {
 }
 
 function formatAmount(value: number, symbol: string): string {
-  const decimals = PRICES[symbol] >= 1 ? 4 : PRICES[symbol] >= 0.01 ? 6 : 0;
+  // Use fallback prices only for decimal precision (formatting helper, not price display)
+  const price = FALLBACK_PRICES[symbol] || 1;
+  const decimals = price >= 1 ? 4 : price >= 0.01 ? 6 : 0;
   if (value === 0) return "0";
   const formatted = value.toLocaleString("en-US", {
     minimumFractionDigits: 0,
@@ -399,7 +416,9 @@ function TokenSelectorModal({
                   {formatBalance(MOCK_BALANCES[token.symbol] || 0, token.symbol)}
                 </div>
                 <div style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
-                  {formatUSD((MOCK_BALANCES[token.symbol] || 0) * PRICES[token.symbol])}
+                  {formatUSD(
+                    (MOCK_BALANCES[token.symbol] || 0) * (FALLBACK_PRICES[token.symbol] || 0),
+                  )}
                 </div>
               </div>
             </button>
@@ -414,6 +433,21 @@ function TokenSelectorModal({
 export function SwapPage() {
   const navigate = useNavigate();
   const wallet = useMockWallet();
+
+  // ── Live Prices (replaces static PRICES map) ──
+  const { getPrice: getLivePrice } = useLivePrices({ pairs: [...SWAP_PAIRS] });
+
+  /** Get price for a swap token symbol, with fallback */
+  const getTokenPrice = useCallback(
+    (symbol: string): number => {
+      // Stablecoins always $1
+      if (symbol === "USDT" || symbol === "USDC") return 1;
+      const live = getLivePrice(`${symbol}/USDT`);
+      if (live?.price) return live.price;
+      return FALLBACK_PRICES[symbol] || 0;
+    },
+    [getLivePrice],
+  );
 
   // ── State ──
   const [fromToken, setFromToken] = useState<TokenDef>(TOKENS[0]); // SOL
@@ -432,15 +466,15 @@ export function SwapPage() {
     const inputNum = parseFloat(fromAmount);
     if (!inputNum || inputNum <= 0) return { output: 0, priceImpact: 0, rate: "" };
 
-    const fromPrice = PRICES[fromToken.symbol] || 0;
-    const toPrice = PRICES[toToken.symbol] || 0;
+    const fromPrice = getTokenPrice(fromToken.symbol);
+    const toPrice = getTokenPrice(toToken.symbol);
     if (!fromPrice || !toPrice) return { output: 0, priceImpact: 0, rate: "" };
 
     const rate = fromPrice / toPrice;
     const rawOutput = inputNum * rate;
 
     // Simulate price impact (larger for lower-liquidity tokens)
-    const isLowLiq = PRICES[fromToken.symbol] < 0.1 || PRICES[toToken.symbol] < 0.1;
+    const isLowLiq = fromPrice < 0.1 || toPrice < 0.1;
     const impactMultiplier = isLowLiq ? 0.003 : 0.001;
     const simulatedImpact = Math.min(inputNum * impactMultiplier, 5);
 
@@ -455,7 +489,7 @@ export function SwapPage() {
       fromUSD: inputNum * fromPrice,
       toUSD: output * toPrice,
     };
-  }, [fromAmount, fromToken, toToken, slippage]);
+  }, [fromAmount, fromToken, toToken, slippage, getTokenPrice]);
 
   // ── Price Impact Color ──
   const impactColor = useMemo(() => {

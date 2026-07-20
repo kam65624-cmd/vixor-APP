@@ -2,6 +2,7 @@ import { useParams, useSearch, Link, useNavigate } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query";
 import { memo, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { getTradeHistory, getRecentAnalyses, getWatchlistData } from "@/shared/data";
+import { getEconomicCalendar } from "@/domains/market/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { BinanceWS, type LivePrice } from "@/shared/market-data/binance-ws";
 import { DexScreenerWS } from "@/shared/market-data/dexscreener-ws";
@@ -2090,33 +2091,30 @@ function CryptoSections({ tokenData }: { tokenData: TokenItem | null }) {
 function ForexSections({ symbol }: { symbol: string }) {
   const pair = symbol.toUpperCase();
 
-  // Simulated economic events
-  const events = [
-    {
-      time: "14:30",
-      currency: "USD",
-      event: "Non-Farm Payrolls",
-      impact: "high" as const,
-      forecast: "180K",
-      previous: "175K",
-    },
-    {
-      time: "10:00",
-      currency: "EUR",
-      event: "CPI Flash Estimate",
-      impact: "high" as const,
-      forecast: "2.4%",
-      previous: "2.6%",
-    },
-    {
-      time: "19:00",
-      currency: "GBP",
-      event: "BoE Interest Rate Decision",
-      impact: "medium" as const,
-      forecast: "5.25%",
-      previous: "5.25%",
-    },
-  ];
+  // Fetch real economic events from server API
+  const fetchCalendar = useStableServerFn(async () => {
+    return getEconomicCalendar({ data: { days: 7 } });
+  });
+
+  const calendarQuery = useQuery({
+    queryKey: ["forex-economic-calendar"],
+    queryFn: fetchCalendar,
+    staleTime: 300_000, // 5 min
+  });
+
+  const events = Array.isArray(calendarQuery.data)
+    ? calendarQuery.data
+        .filter((e: any) => e && e.event && e.impact)
+        .slice(0, 8)
+        .map((e: any) => ({
+          time: e.time || "",
+          currency: e.currency || "USD",
+          event: e.event || "Unknown",
+          impact: (e.impact || "medium").toLowerCase() as "high" | "medium" | "low",
+          forecast: e.forecast || "—",
+          previous: e.previous || "—",
+        }))
+    : [];
 
   // Simulated currency strength (0-100)
   const strengthData: Record<string, number> = {
@@ -2202,7 +2200,9 @@ function ForexSections({ symbol }: { symbol: string }) {
           }}
         >
           📅 Economic Calendar{" "}
-          <span style={{ fontSize: "10px", fontWeight: 500, opacity: 0.6 }}>(simulated)</span>
+          {events.length === 0 && (
+            <span style={{ fontSize: "10px", fontWeight: 500, opacity: 0.6 }}>(no data)</span>
+          )}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>

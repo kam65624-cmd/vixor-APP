@@ -22,7 +22,7 @@ export interface ForexPair {
   price: number | null;
   /** 24h change in percent (null when unavailable) */
   change24h: number | null;
-  /** 24h volume — always 0 for forex (no real volume data) */
+  /** 24h tick volume from TwelveData (activity indicator, not real traded volume) */
   volume24h: number;
   /** "major" | "minor" | "gold" */
   type: "major" | "minor" | "gold";
@@ -86,7 +86,7 @@ export const FOREX_TOTAL_COUNT = FOREX_PAIRS_CONFIG.length;
  * TwelveData time_series for 20-bar 1h sparklines.
  *
  * Returns ForexPair[] with null prices/changes when APIs fail — never fakes data.
- * Volume is always 0 since forex has no real volume like crypto.
+ * Tick volume from TwelveData is used as an activity indicator (forex has no real volume).
  */
 export const getLiveForexDiscoverData = createServerFn({ method: "GET" }).handler(
   async (): Promise<ForexPair[]> => {
@@ -129,12 +129,19 @@ export const getLiveForexDiscoverData = createServerFn({ method: "GET" }).handle
         }
       }
 
+      // Compute tick volume from klines (forex has no real exchange volume,
+      // but TwelveData provides tick volume = number of price updates per interval)
+      let volume24h = 0;
+      if (klineResults[i].status === "fulfilled") {
+        volume24h = klineResults[i].value.reduce((sum, bar) => sum + (bar.volume || 0), 0);
+      }
+
       return {
         pair: config.pair,
         name: config.name,
         price,
         change24h,
-        volume24h: 0,
+        volume24h,
         type: config.type,
         badge: config.badge,
         sparkline,
