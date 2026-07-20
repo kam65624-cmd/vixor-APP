@@ -55,3 +55,23 @@ Stage Summary:
 - All 13 server API endpoints now use Redis-backed rate limiting via `withRateLimit` wrapper
 - In-memory `rateLimit()` from `_security.ts` is no longer imported by any file
 - All files pass: TypeScript (0 errors in server/api/), ESLint (0 errors/warnings), Prettier (all pass)
+---
+Task ID: 2.1
+Agent: main
+Task: Upgrade analysis engine to grounded data-driven prompts (Phase 2 — Analysis Engine)
+
+Work Log:
+- Explored full analysis engine codebase (14 files, 4000+ lines)
+- Created `src/domains/analysis/server/market-snapshot.ts` — MarketSnapshot builder with real OHLCV + computed indicators
+- Rewrote `src/domains/analysis/server/run-analysis.ts` with grounded system prompt, data quality gate (<30 candles → no AI call), sourceField validation
+- Updated `src/domains/analysis/functions.ts` to persist new fields (analysis_source, reasoning_trail, data_quality)
+- Updated `src/routes/_authenticated/-analysis-id-component.tsx` with source badge, data quality indicator, and reasoning trail UI
+- Fixed all TypeScript errors (0 new), all ESLint errors (0), all Prettier issues
+- Committed as `f6814aa`
+
+Stage Summary:
+- 4 files changed, 769 insertions, 117 deletions
+- Key: DATA QUALITY GATE prevents AI fabrication when candleCount < 30
+- Key: sourceField validation catches hallucinated data references
+- Key: UI now shows analysis source (AI/Local/Limited) + reasoning trail with field citations
+- All new fields gracefully degrade — stored in raw_ai_response if DB columns don't exist
