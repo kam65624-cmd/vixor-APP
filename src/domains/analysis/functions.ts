@@ -220,6 +220,7 @@ export const createAnalysis = createServerFn({ method: "POST" })
         data.analysisStyle,
       );
 
+      // Base update data (columns that exist in the DB schema)
       const updateData = {
         status: "complete" as const,
         pair: result.pair,
@@ -245,24 +246,37 @@ export const createAnalysis = createServerFn({ method: "POST" })
         raw_ai_response: result as any,
       };
 
+      // New grounded analysis v2 fields — stored in raw_ai_response
+      // and attempted as top-level columns (graceful fallback if columns don't exist)
+      const newFields = {
+        analysis_source: (result as any).analysis_source ?? null,
+        reasoning_trail: (result as any).reasoning_trail ?? null,
+        data_quality: (result as any).data_quality ?? null,
+      };
+
       try {
+        // New columns (analysis_source, reasoning_trail, data_quality) may not exist
+        // in DB yet. They're always available in raw_ai_response as fallback.
         await supabaseAdmin
           .from("analyses")
           .update({
             ...updateData,
             signal_badge: (result as any).signal_badge as any,
             vixor_message: (result as any).vixor_message as any,
-          })
+            // new columns may not exist in DB — stored in raw_ai_response as fallback
+            ...(Object.keys(newFields).length ? newFields : {}),
+          } as any)
           .eq("id", row.id)
           .throwOnError();
       } catch (colErr: any) {
         if (
           String(colErr?.message || "").includes("signal_badge") ||
-          String(colErr?.message || "").includes("vixor_message")
+          String(colErr?.message || "").includes("vixor_message") ||
+          String(colErr?.message || "").includes("analysis_source") ||
+          String(colErr?.message || "").includes("reasoning_trail") ||
+          String(colErr?.message || "").includes("data_quality")
         ) {
-          console.warn(
-            "[Vixor] signal_badge/vixor_message columns not found, storing in raw_ai_response only",
-          );
+          console.warn("[Vixor] New columns not found in DB, storing in raw_ai_response only");
           await supabaseAdmin.from("analyses").update(updateData).eq("id", row.id).throwOnError();
         } else {
           throw colErr;

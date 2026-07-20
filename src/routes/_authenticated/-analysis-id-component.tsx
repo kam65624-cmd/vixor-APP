@@ -967,6 +967,19 @@ export function AnalysisResult() {
       }),
   });
 
+  // ── Analysis source & data quality (grounded analysis v2) ──
+  const analysisSource = (a?.analysis_source ?? raw.analysis_source ?? null) as
+    "openrouter" | "local_engine" | "local_fallback" | null;
+  const dataQuality = (a?.data_quality ?? raw.data_quality ?? null) as {
+    candleCount: number;
+    dataSource: string;
+    usedRealData: boolean;
+  } | null;
+  const reasoningTrail = (a?.reasoning_trail ?? raw.reasoning_trail ?? null) as Array<{
+    claim: string;
+    sourceField: string;
+  }> | null;
+
   const recColor = isBullish
     ? "var(--color-bullish)"
     : isBearish
@@ -1384,6 +1397,69 @@ export function AnalysisResult() {
                 </div>
               </div>
 
+              {/* ── Analysis Source Badge + Data Quality ── */}
+              {(analysisSource || dataQuality) && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginTop: "12px",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    background: "color-mix(in srgb, var(--color-primary) 5%, transparent)",
+                    border: "1px solid color-mix(in srgb, var(--color-primary) 12%, transparent)",
+                    fontSize: "11px",
+                    color: "var(--color-muted-foreground)",
+                  }}
+                >
+                  {analysisSource && (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        padding: "2px 8px",
+                        borderRadius: "6px",
+                        fontWeight: 700,
+                        fontSize: "10px",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        background:
+                          analysisSource === "openrouter"
+                            ? "color-mix(in srgb, var(--color-info) 15%, transparent)"
+                            : "color-mix(in srgb, var(--color-muted-foreground) 10%, transparent)",
+                        color:
+                          analysisSource === "openrouter"
+                            ? "var(--color-info)"
+                            : "var(--color-muted-foreground)",
+                      }}
+                    >
+                      {analysisSource === "openrouter" ? (
+                        <>
+                          <BrainCircuit size={12} /> AI Analysis
+                        </>
+                      ) : analysisSource === "local_engine" ? (
+                        <>
+                          <Activity size={12} /> Local Engine
+                        </>
+                      ) : (
+                        <>
+                          <AlertTriangle size={12} /> Limited Data
+                        </>
+                      )}
+                    </span>
+                  )}
+                  {dataQuality && (
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px" }}>
+                      {dataQuality.candleCount} candles
+                      {dataQuality.usedRealData ? "" : " (simulated)"}
+                      {dataQuality.dataSource !== "none" ? ` · ${dataQuality.dataSource}` : ""}
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* Track as Signal button — only for BUY/SELL */}
               {!isWait && (
                 <div style={{ marginTop: "16px" }}>
@@ -1641,6 +1717,86 @@ export function AnalysisResult() {
                       </li>
                     ))}
                   </ul>
+
+                  {/* ── Reasoning Trail (grounded analysis v2) ── */}
+                  {reasoningTrail && reasoningTrail.length > 0 && (
+                    <div
+                      style={{
+                        marginTop: "16px",
+                        paddingTop: "16px",
+                        borderTop: "1px solid var(--color-border)",
+                      }}
+                    >
+                      <h3
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          color: "var(--color-muted-foreground)",
+                          marginBottom: "10px",
+                          marginLeft: "4px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <BarChart2 size={14} /> Data Reasoning Trail
+                      </h3>
+                      <ul
+                        style={{
+                          listStyle: "none",
+                          padding: 0,
+                          margin: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                        }}
+                      >
+                        {reasoningTrail.map((r, i) => (
+                          <li
+                            key={i}
+                            style={{
+                              display: "flex",
+                              alignItems: "flex-start",
+                              gap: "10px",
+                              fontSize: "13px",
+                              padding: "6px 10px",
+                              borderRadius: "8px",
+                              background:
+                                "color-mix(in srgb, var(--color-primary) 4%, transparent)",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: "10px",
+                                padding: "2px 6px",
+                                borderRadius: "4px",
+                                background:
+                                  "color-mix(in srgb, var(--color-info) 15%, transparent)",
+                                color: "var(--color-info)",
+                                fontWeight: 600,
+                                flexShrink: 0,
+                                marginTop: "1px",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {r.sourceField}
+                            </span>
+                            <span
+                              style={{
+                                color:
+                                  "color-mix(in srgb, var(--color-foreground) 85%, transparent)",
+                              }}
+                            >
+                              {r.claim}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 {scenarios && (
