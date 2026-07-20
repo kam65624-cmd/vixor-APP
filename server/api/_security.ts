@@ -148,15 +148,4 @@ export async function authenticateRequest(event: H3Event): Promise<AuthResult | 
   };
 }
 
-/**
- * @deprecated Use `authenticateRequest` instead.
- * This function only checks the "Bearer " prefix without validating the JWT.
- * Kept for backward compatibility but should not be used for security decisions.
- */
-export function requireAuth(event: H3Event): boolean {
-  const auth = getHeader(event, "authorization");
-  if (!auth?.startsWith("Bearer ")) return false;
-  // ⚠️ DEPRECATED: This does NOT validate the JWT token.
-  // Use `authenticateRequest()` for actual authentication.
-  return true;
-}
+

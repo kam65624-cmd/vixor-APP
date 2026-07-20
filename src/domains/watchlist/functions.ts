@@ -116,7 +116,28 @@ export const removeFromWatchlist = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => z.object({ itemId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("watchlist_items").delete().eq("id", data.itemId);
+    const { userId, supabase } = context;
+
+    // Verify ownership: item must belong to a watchlist owned by this user
+    const { data: ownership, error: ownErr } = await supabase
+      .from("watchlist_items")
+      .select("id, watchlist_id")
+      .eq("id", data.itemId)
+      .single();
+    if (ownErr || !ownership) throw new Error("Item not found");
+
+    const { data: wl, error: wlErr } = await supabase
+      .from("watchlists")
+      .select("id")
+      .eq("id", ownership.watchlist_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (wlErr || !wl) throw new Error("UNAUTHORIZED");
+
+    const { error } = await supabase
+      .from("watchlist_items")
+      .delete()
+      .eq("id", data.itemId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -133,11 +154,28 @@ export const updateWatchlistItem = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
     const update: { notes?: string; sort_order?: number } = {};
     if (data.notes !== undefined) update.notes = data.notes;
     if (data.sortOrder !== undefined) update.sort_order = data.sortOrder;
 
-    const { error } = await context.supabase
+    // Verify ownership: item must belong to a watchlist owned by this user
+    const { data: ownership, error: ownErr } = await supabase
+      .from("watchlist_items")
+      .select("id, watchlist_id")
+      .eq("id", data.itemId)
+      .single();
+    if (ownErr || !ownership) throw new Error("Item not found");
+
+    const { data: wl, error: wlErr } = await supabase
+      .from("watchlists")
+      .select("id")
+      .eq("id", ownership.watchlist_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (wlErr || !wl) throw new Error("UNAUTHORIZED");
+
+    const { error } = await supabase
       .from("watchlist_items")
       .update(update)
       .eq("id", data.itemId);
@@ -155,9 +193,32 @@ export const reorderWatchlist = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+    const { userId, supabase } = context;
+
+    // Get user's own watchlist IDs for ownership verification
+    const { data: userWatchlists, error: wlErr } = await supabase
+      .from("watchlists")
+      .select("id")
+      .eq("user_id", userId);
+    if (wlErr) throw new Error(wlErr.message);
+    const userWlIds = (userWatchlists || []).map((w: { id: string }) => w.id);
+
+    // Verify all items belong to this user's watchlists
+    const { data: existingItems, error: itemsErr } = await supabase
+      .from("watchlist_items")
+      .select("id, watchlist_id")
+      .in("id", data.items.map((i) => i.id));
+    if (itemsErr) throw new Error(itemsErr.message);
+
+    for (const item of existingItems || []) {
+      if (!userWlIds.includes(item.watchlist_id)) {
+        throw new Error("UNAUTHORIZED: item does not belong to your watchlist");
+      }
+    }
+
+    // Perform updates using user-scoped client (not supabaseAdmin)
     for (const item of data.items) {
-      await supabaseAdmin
+      await supabase
         .from("watchlist_items")
         .update({ sort_order: item.sortOrder })
         .eq("id", item.id);

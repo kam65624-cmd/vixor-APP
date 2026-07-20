@@ -579,7 +579,7 @@ export function SwapPage() {
             letterSpacing: "0.03em",
           }}
         >
-          ⚠ DEMO MODE — No real transactions are executed. Prices are simulated.
+          ⚠ DEMO MODE — Prices and balances are simulated. No real transactions are executed.
         </div>
       }
     >
@@ -744,7 +744,7 @@ export function SwapPage() {
                     fontFamily: "var(--font-mono)",
                   }}
                 >
-                  Balance: {formatBalance(MOCK_BALANCES[fromToken.symbol] || 0, fromToken.symbol)}
+                  Balance (Simulated): {formatBalance(MOCK_BALANCES[fromToken.symbol] || 0, fromToken.symbol)}
                 </span>
               </div>
 
@@ -926,7 +926,7 @@ export function SwapPage() {
                     fontFamily: "var(--font-mono)",
                   }}
                 >
-                  Balance: {formatBalance(MOCK_BALANCES[toToken.symbol] || 0, toToken.symbol)}
+                  Balance (Simulated): {formatBalance(MOCK_BALANCES[toToken.symbol] || 0, toToken.symbol)}
                 </span>
               </div>
 

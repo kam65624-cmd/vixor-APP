@@ -613,7 +613,7 @@ export function SwapPage() {
             letterSpacing: "0.03em",
           }}
         >
-          ⚠ DEMO MODE — No real transactions are executed. Prices are simulated.
+          ⚠ وضع تجريبي — الأسعار حية لكن المحفظة والأرصدة محاكاة. لا يتم تنفيذ أي معاملة حقيقية.
         </div>
       }
     >
@@ -778,7 +778,7 @@ export function SwapPage() {
                     fontFamily: "var(--font-mono)",
                   }}
                 >
-                  Balance: {formatBalance(MOCK_BALANCES[fromToken.symbol] || 0, fromToken.symbol)}
+                  Balance (Simulated): {formatBalance(MOCK_BALANCES[fromToken.symbol] || 0, fromToken.symbol)}
                 </span>
               </div>
 
@@ -960,7 +960,7 @@ export function SwapPage() {
                     fontFamily: "var(--font-mono)",
                   }}
                 >
-                  Balance: {formatBalance(MOCK_BALANCES[toToken.symbol] || 0, toToken.symbol)}
+                  Balance (Simulated): {formatBalance(MOCK_BALANCES[toToken.symbol] || 0, toToken.symbol)}
                 </span>
               </div>
 
@@ -1282,7 +1282,7 @@ export function SwapPage() {
                       Swapping...
                     </>
                   ) : (
-                    `[Demo] Swap ${fromToken.symbol} → ${toToken.symbol}`
+                    `[Demo Simulation] Swap ${fromToken.symbol} → ${toToken.symbol}`
                   )}
                 </button>
               )}
@@ -1311,7 +1311,7 @@ export function SwapPage() {
                   gap: "6px",
                 }}
               >
-                <span>🕐</span> Demo Swaps (not real)
+                <span>⚠</span> Demo Swaps — No real transactions
               </div>
               <div style={{ maxHeight: "240px", overflowY: "auto" }}>
                 {swapHistory.map((record) => {

@@ -315,10 +315,11 @@ export const getWatchlistData = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
-    // watchlist_items doesn't have user_id — join via watchlists
+    // watchlist_items doesn't have user_id — join via watchlists to enforce ownership
     const { data: items } = await supabase
       .from("watchlist_items")
       .select("*")
+      .in("watchlist_id", (watchlists || []).map((w: { id: string }) => w.id))
       .order("added_at", { ascending: false })
       .limit(100);
 
