@@ -134,10 +134,7 @@ export const removeFromWatchlist = createServerFn({ method: "POST" })
       .maybeSingle();
     if (wlErr || !wl) throw new Error("UNAUTHORIZED");
 
-    const { error } = await supabase
-      .from("watchlist_items")
-      .delete()
-      .eq("id", data.itemId);
+    const { error } = await supabase.from("watchlist_items").delete().eq("id", data.itemId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -175,10 +172,7 @@ export const updateWatchlistItem = createServerFn({ method: "POST" })
       .maybeSingle();
     if (wlErr || !wl) throw new Error("UNAUTHORIZED");
 
-    const { error } = await supabase
-      .from("watchlist_items")
-      .update(update)
-      .eq("id", data.itemId);
+    const { error } = await supabase.from("watchlist_items").update(update).eq("id", data.itemId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -207,7 +201,10 @@ export const reorderWatchlist = createServerFn({ method: "POST" })
     const { data: existingItems, error: itemsErr } = await supabase
       .from("watchlist_items")
       .select("id, watchlist_id")
-      .in("id", data.items.map((i) => i.id));
+      .in(
+        "id",
+        data.items.map((i) => i.id),
+      );
     if (itemsErr) throw new Error(itemsErr.message);
 
     for (const item of existingItems || []) {

@@ -319,7 +319,10 @@ export const getWatchlistData = createServerFn({ method: "GET" })
     const { data: items } = await supabase
       .from("watchlist_items")
       .select("*")
-      .in("watchlist_id", (watchlists || []).map((w: { id: string }) => w.id))
+      .in(
+        "watchlist_id",
+        (watchlists || []).map((w: { id: string }) => w.id),
+      )
       .order("added_at", { ascending: false })
       .limit(100);
 

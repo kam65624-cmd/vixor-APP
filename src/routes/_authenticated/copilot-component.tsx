@@ -53,12 +53,7 @@ const alpha = (hex: string, pct: number) => {
 // ─── Types ───
 
 type AgentId =
-  | "market_analyst"
-  | "risk_manager"
-  | "news_analyst"
-  | "strategy_builder"
-  | "auto"
-  | "moxi";
+  "market_analyst" | "risk_manager" | "news_analyst" | "strategy_builder" | "auto" | "moxi";
 
 interface ChatMessage {
   id: string;
@@ -751,8 +746,7 @@ export function CopilotPage() {
   const currentAgentConfig = AGENTS.find((a) => a.id === activeAgent)!;
   const isPending = copilotMutation.isPending || consensusMutation.isPending;
   const conversationsRaw = conversationsQuery.data as
-    | { items: ConversationSummary[]; total: number; hasMore: boolean }
-    | undefined;
+    { items: ConversationSummary[]; total: number; hasMore: boolean } | undefined;
   const conversations = conversationsRaw?.items ?? [];
   const conversationsTotal = conversationsRaw?.total ?? 0;
 

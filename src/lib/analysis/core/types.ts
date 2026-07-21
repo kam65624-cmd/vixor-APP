@@ -15,11 +15,7 @@ export interface OHLCVBar {
 // Market structure types
 export type TrendDirection = "BULLISH" | "BEARISH" | "NEUTRAL";
 export type MarketStructureType =
-  | "HIGHER_HIGHS"
-  | "HIGHER_LOW"
-  | "LOWER_HIGHS"
-  | "LOWER_LOW"
-  | "CONSOLIDATION";
+  "HIGHER_HIGHS" | "HIGHER_LOW" | "LOWER_HIGHS" | "LOWER_LOW" | "CONSOLIDATION";
 export type RecommendationType = "BUY" | "SELL" | "WAIT";
 export type RiskLevel = "LOW" | "MEDIUM" | "HIGH";
 

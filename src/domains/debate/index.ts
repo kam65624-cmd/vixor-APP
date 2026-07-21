@@ -4,6 +4,7 @@ export interface DebateResult {
   confidence: number;
   summary: string;
   agents: Array<{ name: string; opinion: string; weight: number }>;
+  riskOverride?: boolean;
 }
 
 export class DebateEngine {

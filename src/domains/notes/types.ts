@@ -13,3 +13,25 @@ export interface TradingNote {
 }
 
 export type Mood = "bullish" | "bearish" | "neutral" | "confident" | "cautious" | "anxious";
+
+export interface CreateNoteInput {
+  analysisId: string;
+  content: string;
+  mood?: Mood;
+  title?: string;
+  pair?: string;
+  tags?: string[];
+}
+
+export interface UpdateNoteInput {
+  noteId: string;
+  content?: string;
+  mood?: Mood;
+  title?: string | null;
+  tags?: string[];
+  is_pinned?: boolean;
+}
+
+export interface ListNotesFilters {
+  analysisId: string;
+}

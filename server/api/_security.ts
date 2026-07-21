@@ -147,5 +147,3 @@ export async function authenticateRequest(event: H3Event): Promise<AuthResult | 
     supabase,
   };
 }
-
-
