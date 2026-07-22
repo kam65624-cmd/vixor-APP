@@ -1,7 +1,7 @@
 import { defineEventHandler, getMethod, createError, readBody } from "h3";
 import { disconnectWallet, getWalletSessions } from "@/domains/wallet/server";
 import { getSupabaseOrNull } from "@/shared/supabase/client";
-import { withRateLimit } from "../utils/with-rate-limit";
+import { withRateLimit } from "../../utils/with-rate-limit";
 import { handlePreflight } from "../_security";
 
 // ============================================================================

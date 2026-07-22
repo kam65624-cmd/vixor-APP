@@ -2,7 +2,7 @@ import { defineEventHandler, getMethod, getHeader, createError, readBody } from 
 import { connectWallet, generateNonce, generateChallengeMessage } from "@/domains/wallet/server";
 import { isValidWalletAddress } from "@/domains/wallet";
 import { getSupabaseOrNull } from "@/shared/supabase/client";
-import { withRateLimit } from "../utils/with-rate-limit";
+import { withRateLimit } from "../../utils/with-rate-limit";
 import { handlePreflight } from "../_security";
 
 // ============================================================================
