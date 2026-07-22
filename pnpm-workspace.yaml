@@ -1,3 +1,5 @@
+packages: []
+
 allowBuilds:
   '@stellar/stellar-sdk': set this to true or false
   blake-hash: set this to true or false
