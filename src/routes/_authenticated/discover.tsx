@@ -18,6 +18,10 @@ import {
   FOREX_MINOR_COUNT,
   type ForexPair,
 } from "./-discover-forex-data";
+import {
+  getDiscoverCryptoData,
+  type EnrichedToken,
+} from "@/domains/discover/discover-crypto-data";
 
 // ── Route definition with typed search params ───────────────────────────────
 
@@ -125,6 +129,15 @@ function fmtTimeAgo(seconds: number): string {
   if (seconds < 5) return "just now";
   if (seconds < 60) return `${Math.floor(seconds)}s ago`;
   return `${Math.floor(seconds / 60)}m ago`;
+}
+
+/** Format freshness based on server `fetchedAt` timestamp. */
+function fmtFreshness(fetchedAt: number): string {
+  const diffSec = Math.floor((Date.now() - fetchedAt) / 1000);
+  if (diffSec < 0) return "just now";
+  if (diffSec < 60) return `appeared ${diffSec}s ago`;
+  if (diffSec < 3600) return `appeared ${Math.floor(diffSec / 60)}m ago`;
+  return `appeared ${Math.floor(diffSec / 3600)}h ago`;
 }
 
 // ── Inline SVG Sparkline ────────────────────────────────────────────────────
@@ -1006,12 +1019,56 @@ function DiscoverPage() {
 
   const isForexMode = category === "FOREX";
 
+  // ── DexScreener New + Boosted tokens (real-time discover feed) ──
+  const isSearching = Boolean(search.search?.trim());
+  const cryptoFn = useStableServerFn(getDiscoverCryptoData);
+  const {
+    data: cryptoData,
+    isLoading: cryptoLoading,
+    error: cryptoError,
+    refetch: cryptoRefetch,
+  } = useQuery({
+    queryKey: ["discover-crypto", "dexscreener"],
+    queryFn: () => cryptoFn(),
+    refetchInterval: 60_000,
+    staleTime: 45_000,
+    enabled: !isForexMode && !isSearching,
+  });
+
+  // Merge new + boosted tokens into a flat list for the main view
+  const dexTokens = useMemo<TokenItem[]>(() => {
+    if (!cryptoData) return [];
+    const all: EnrichedToken[] = [
+      ...cryptoData.newTokens,
+      ...cryptoData.boostedTokens,
+    ];
+    return all.map((t) => ({
+      symbol: t.symbol,
+      name: t.name,
+      price: t.priceUsd,
+      change24h: t.change24h,
+      volume24h: t.volume24h ?? 0,
+      liquidity: t.liquidityUsd ?? 0,
+      chain: t.chainId.charAt(0).toUpperCase() + t.chainId.slice(1),
+      chainId: t.chainId,
+      marketCap: t.marketCap ?? 0,
+      discoveryScore: t.isBoosted ? 80 + (t.boostAmount ?? 0) : 50,
+      socialScore: 0,
+      liquidityScore: 0,
+      logoUrl: t.icon ?? undefined,
+      address: t.tokenAddress,
+      pairAddress: t.pairAddress ?? undefined,
+      dexUrl: t.url,
+      category: t.isBoosted ? "TRENDING" : "NEW",
+    }));
+  }, [cryptoData]);
+
+  // ── Legacy API query (used only for search) ──
   const {
     data: resp,
-    isLoading,
-    isRefetching,
-    error,
-    refetch,
+    isLoading: legacyLoading,
+    error: legacyError,
+    refetch: legacyRefetch,
   } = useQuery<DiscoverResponse>({
     queryKey: [
       "discover",
@@ -1030,13 +1087,18 @@ function DiscoverPage() {
     },
     refetchInterval: 5_000,
     staleTime: 3_000,
-    enabled: !isForexMode,
+    enabled: !isForexMode && isSearching,
   });
 
+  // Use dexTokens when not searching, fallback to API tokens for search
   const tokens = useMemo(() => {
-    if (!resp?.data) return [];
-    return resp.data;
-  }, [resp]);
+    if (isSearching) return resp?.data ?? [];
+    return dexTokens;
+  }, [isSearching, resp, dexTokens]);
+
+  const effectiveLoading = isSearching ? legacyLoading : cryptoLoading;
+  const effectiveError = isSearching ? legacyError : cryptoError;
+  const effectiveRefetch = isSearching ? legacyRefetch : cryptoRefetch;
 
   // ── Live Price Overlay (Binance WS + DexScreener polling) ──
   const liveTokens = useMemo(
@@ -1287,11 +1349,11 @@ function DiscoverPage() {
   }, [sortBy, search.search, forexQuery.data]);
 
   const handleManualRefresh = useCallback(() => {
-    refetch();
-  }, [refetch]);
+    effectiveRefetch();
+  }, [effectiveRefetch]);
 
   // Pull-to-refresh
-  const pullToRefresh = usePullToRefresh(() => refetch());
+  const pullToRefresh = usePullToRefresh(() => effectiveRefetch());
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -1300,7 +1362,7 @@ function DiscoverPage() {
       title="Discover"
       badge="LIVE"
       badgeColor="var(--color-bullish)"
-      loading={isLoading}
+      loading={effectiveLoading}
       loadingColor="var(--color-bullish)"
     >
       {/* Stats */}
@@ -1400,7 +1462,7 @@ function DiscoverPage() {
             {/* Manual refresh button */}
             <button
               onClick={handleManualRefresh}
-              disabled={isRefetching}
+              disabled={effectiveLoading}
               aria-label="Refresh data"
               style={{
                 width: "26px",
@@ -1409,7 +1471,7 @@ function DiscoverPage() {
                 border: "1px solid var(--color-border)",
                 background: "var(--color-card)",
                 color: "var(--color-muted-foreground)",
-                cursor: isRefetching ? "wait" : "pointer",
+                cursor: effectiveLoading ? "wait" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -1421,7 +1483,7 @@ function DiscoverPage() {
               <RefreshCw
                 size={12}
                 style={{
-                  animation: isRefetching ? "spin 0.7s linear infinite" : undefined,
+                  animation: effectiveLoading ? "spin 0.7s linear infinite" : undefined,
                   transition: "transform 0.2s ease",
                 }}
               />
@@ -1737,29 +1799,43 @@ function DiscoverPage() {
         {/* ── CRYPTO TOKEN LIST ── */}
         {!isForexMode && (
           <div style={{ padding: "4px 0" }}>
-            {/* Top Movers Section */}
-            {!isLoading && tokens.length > 0 && (
+            {/* Top Movers / Trending Section — DexScreener live data */}
+            {!effectiveLoading && dexTokens.length > 0 && (
               <div style={{ padding: "12px 14px 8px" }}>
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "6px",
+                    justifyContent: "space-between",
                     marginBottom: "10px",
                   }}
                 >
-                  <span style={{ fontSize: "10px" }}>⚡</span>
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                      color: "var(--color-muted-foreground)",
-                    }}
-                  >
-                    Top Movers
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ fontSize: "10px" }}>⚡</span>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        color: "var(--color-muted-foreground)",
+                      }}
+                    >
+                      {isSearching ? "Top Movers" : "New & Trending"}
+                    </span>
+                  </div>
+                  {cryptoData?.fetchedAt && !isSearching && (
+                    <span
+                      style={{
+                        fontSize: "9px",
+                        fontFamily: "var(--font-mono)",
+                        color: "var(--color-muted-foreground)",
+                        opacity: 0.7,
+                      }}
+                    >
+                      via DexScreener · {fmtFreshness(cryptoData.fetchedAt)}
+                    </span>
+                  )}
                 </div>
                 <div
                   className="scrollbar-hide"
@@ -1771,6 +1847,7 @@ function DiscoverPage() {
                     .map((t) => {
                       const isUp = (t.change24h ?? 0) >= 0;
                       const col = isUp ? "var(--color-bullish)" : "var(--color-bearish)";
+                      const isNew = t.category === "NEW";
                       return (
                         <button
                           key={t.symbol + t.chain}
@@ -1797,15 +1874,31 @@ function DiscoverPage() {
                             e.currentTarget.style.boxShadow = "var(--shadow-card)";
                           }}
                         >
-                          <div
-                            style={{
-                              fontSize: "12px",
-                              fontWeight: 800,
-                              color: "var(--color-foreground)",
-                              marginBottom: "4px",
-                            }}
-                          >
-                            {t.symbol}
+                          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                            <div
+                              style={{
+                                fontSize: "12px",
+                                fontWeight: 800,
+                                color: "var(--color-foreground)",
+                              }}
+                            >
+                              {t.symbol}
+                            </div>
+                            {isNew && (
+                              <span
+                                style={{
+                                  fontSize: "7px",
+                                  fontWeight: 700,
+                                  color: "var(--color-gold)",
+                                  background: GOLD_BG,
+                                  padding: "1px 4px",
+                                  borderRadius: "3px",
+                                  lineHeight: 1,
+                                }}
+                              >
+                                NEW
+                              </span>
+                            )}
                           </div>
                           <div
                             style={{
@@ -1836,11 +1929,11 @@ function DiscoverPage() {
             )}
 
             {/* Divider */}
-            {!isLoading && tokens.length > 0 && (
+            {!effectiveLoading && tokens.length > 0 && (
               <div style={{ height: "1px", background: "var(--color-border)", margin: "4px 0" }} />
             )}
 
-            {isLoading
+            {effectiveLoading
               ? Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} style={{ padding: "6px 12px" }}>
                     <SkeletonRow />
@@ -1855,15 +1948,23 @@ function DiscoverPage() {
                       livePrice={liveOverlay[token.symbol]}
                     />
                   ))
-                : !error &&
+                : !effectiveError &&
                   tokens.length === 0 && (
                     <EmptyState
-                      icon="🔍"
-                      title="No Tokens Found"
+                      icon={cryptoError ? "⚠" : "🔍"}
+                      title={cryptoError ? "Connection Error" : "No Tokens Found"}
                       message={
-                        search.search
+                        isSearching
                           ? `No results for "${search.search}". Try a different search term.`
-                          : "Token scan is in progress. Check back in a moment."
+                          : "No new tokens right now, monitoring for new listings..."
+                      }
+                      action={
+                        cryptoError
+                          ? {
+                              label: "Retry",
+                              onClick: () => effectiveRefetch(),
+                            }
+                          : undefined
                       }
                     />
                   )}
@@ -1871,7 +1972,7 @@ function DiscoverPage() {
         )}
 
         {/* Footer info (crypto only) */}
-        {!isForexMode && resp?.scanDurationMs && tokens.length > 0 && (
+        {!isForexMode && tokens.length > 0 && (
           <div
             style={{
               padding: "8px 12px",
@@ -1882,11 +1983,12 @@ function DiscoverPage() {
               fontFamily: "var(--font-mono)",
             }}
           >
-            Scanned {resp.total} tokens in {(resp.scanDurationMs / 1000).toFixed(1)}s
-            {resp.filteredOut !== undefined && resp.filteredOut > 0 && (
-              <span> · {resp.filteredOut} filtered out</span>
+            {isSearching && resp?.scanDurationMs
+              ? `Scanned ${resp.total} tokens in ${(resp.scanDurationMs / 1000).toFixed(1)}s`
+              : `${tokens.length} tokens via DexScreener`}
+            {cryptoData?.fetchedAt && !isSearching && (
+              <span> · {fmtFreshness(cryptoData.fetchedAt)}</span>
             )}
-            {resp.source && <span> · via {resp.source}</span>}
           </div>
         )}
       </div>
