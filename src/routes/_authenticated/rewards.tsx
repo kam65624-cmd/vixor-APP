@@ -180,7 +180,7 @@ const RewardItem = memo(function RewardItem({
       <div
         style={{
           fontSize: 11,
-          fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
+          fontFamily: "var(--font-mono)",
           fontWeight: 600,
           color: canAfford ? "var(--color-neutral-wait)" : "var(--color-bearish)",
         }}
@@ -437,7 +437,7 @@ function RewardsPage() {
           style={{
             fontSize: 42,
             fontWeight: 800,
-            fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
+            fontFamily: "var(--font-mono)",
             color: "var(--color-neutral-wait)",
             margin: "6px 0",
           }}
@@ -583,7 +583,7 @@ function RewardsPage() {
             style={{
               flex: 1,
               fontSize: 12,
-              fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
+              fontFamily: "var(--font-mono)",
               color: "var(--color-muted-foreground)",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -767,7 +767,7 @@ function RewardsPage() {
                     style={{
                       fontSize: 13,
                       fontWeight: 700,
-                      fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Code', monospace",
+                      fontFamily: "var(--font-mono)",
                       color: "var(--color-primary)",
                     }}
                   >

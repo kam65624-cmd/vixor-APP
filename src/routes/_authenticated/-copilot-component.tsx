@@ -1066,7 +1066,7 @@ export function CopilotPage() {
                             {agent.capabilities.slice(0, 4).map((cap, i) => (
                               <span
                                 key={i}
-                                className="text-[9px] px-1.5 py-0.5 rounded-md"
+                                className="text-[11px] px-1.5 py-0.5 rounded-md"
                                 style={{
                                   background: "var(--color-card)",
                                   border: `1px solid ${"var(--color-border)"}`,
@@ -1252,7 +1252,7 @@ export function CopilotPage() {
               </form>
               <div className="mt-1.5 text-center">
                 <span
-                  className="text-[9px]"
+                  className="text-[11px]"
                   style={{ color: alpha("var(--color-muted-foreground)", 50) }}
                 >
                   AI responses may not always be accurate. Always verify with your own analysis.
@@ -1514,7 +1514,7 @@ function ConversationSidebar({
                           {conv.title}
                         </div>
                         <div
-                          className="text-[9px]"
+                          className="text-[11px]"
                           style={{ color: "var(--color-muted-foreground)" }}
                         >
                           {formatRelativeTime(conv.updated_at)}
@@ -1850,7 +1850,7 @@ function MessageBubble({
         )}
 
         <div
-          className="text-[9px] mt-2"
+          className="text-[11px] mt-2"
           style={{
             color: alpha("var(--color-muted-foreground)", 50),
             textAlign: isUser ? "right" : "left",
@@ -1986,7 +1986,7 @@ function ConsensusBubble({
       </div>
 
       <div
-        className="text-[9px] mt-2 ml-11"
+        className="text-[11px] mt-2 ml-11"
         style={{ color: alpha("var(--color-muted-foreground)", 50) }}
       >
         {new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

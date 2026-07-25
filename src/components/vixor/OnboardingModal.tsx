@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Sparkles, Upload, Calculator, Gift, ChevronRight } from "lucide-react";
 
 const slides = [
@@ -31,6 +31,7 @@ export function OnboardingModal({ onClose }: { onClose: () => void }) {
   const s = slides[i];
   const Icon = s.icon;
   const last = i === slides.length - 1;
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   // ── Safety net: check localStorage directly in the modal ──
   // If onboarding was already completed (e.g. onClose set the key), don't render.
@@ -44,6 +45,15 @@ export function OnboardingModal({ onClose }: { onClose: () => void }) {
     }
   });
 
+  const handleClose = useCallback(() => {
+    try {
+      localStorage.setItem(ONBOARDING_DONE_KEY, "1");
+    } catch {
+      // localStorage might be unavailable in private browsing
+    }
+    onClose();
+  }, [onClose]);
+
   // Also check on mount in case localStorage was set between SSR and hydration
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -56,20 +66,53 @@ export function OnboardingModal({ onClose }: { onClose: () => void }) {
     }
   }, []);
 
+  // Focus trap + Escape key
+  useEffect(() => {
+    if (dismissed) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleClose();
+        return;
+      }
+      // Focus trap: keep focus within dialog
+      if (e.key === "Tab" && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const lastFocusable = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          lastFocusable.focus();
+        } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleClose, dismissed]);
+
   if (dismissed) return null;
 
-  const handleClose = () => {
-    try {
-      localStorage.setItem(ONBOARDING_DONE_KEY, "1");
-    } catch {
-      // localStorage might be unavailable in private browsing
-    }
-    onClose();
-  };
-
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-      <div className="vixor-card w-full max-w-md p-6 space-y-6 animate-in slide-in-from-bottom-4">
+    <div
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
+      role="presentation"
+    >
+      <div
+        ref={dialogRef}
+        className="vixor-card w-full max-w-md p-6 space-y-6 animate-in slide-in-from-bottom-4"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Onboarding walkthrough"
+      >
         <div className="flex justify-between items-center">
           <div className="flex gap-1.5">
             {slides.map((_, idx) => (

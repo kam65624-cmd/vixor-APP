@@ -475,7 +475,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
       const y2 = priceToY(ob.bottom);
       const rectH = Math.abs(y2 - y1);
       const rectY = Math.min(y1, y2);
-      const color = ob.type === "bullish" ? "var(--color-primary)" : "#F59E0B";
+      const color = ob.type === "bullish" ? "var(--color-primary)" : "var(--color-neutral-wait)";
 
       ctx.fillStyle =
         ob.type === "bullish"
@@ -589,7 +589,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
     }
 
     if (hasPrice && tps) {
-      const tpColors = ["var(--color-bullish)", "#34D399", "#6EE7B7"];
+      const tpColors = ["var(--color-bullish)", "var(--color-tp2)", "var(--color-tp3)"];
       (tps as number[]).forEach((tp, i) => {
         if (typeof tp !== "number") return;
         const ty = priceToY(tp);
@@ -695,7 +695,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
       {/* Image + Canvas overlay */}
       <div
         ref={containerRef}
-        style={{ position: "relative", cursor: "pointer", background: "#000" }}
+        style={{ position: "relative", cursor: "pointer", background: "var(--color-foreground)" }}
         onClick={() => setImgZoomLocal(true)}
       >
         <img
@@ -759,7 +759,7 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
                   width: 10,
                   height: 10,
                   background: "color-mix(in srgb, var(--color-bullish) 30%, transparent)",
-                  border: "1px dashed #0ECB81",
+                  border: "1px dashed var(--color-bullish)",
                   display: "inline-block",
                   borderRadius: 2,
                 }}
@@ -805,8 +805,8 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
                 style={{
                   width: 12,
                   height: 1,
-                  background: "#F59E0B",
-                  borderTop: "1px dotted #F59E0B",
+                  background: "var(--color-neutral-wait)",
+                  borderTop: "1px dotted var(--color-neutral-wait)",
                   display: "inline-block",
                 }}
               />
@@ -1476,7 +1476,7 @@ export function AnalysisResult() {
                       background: trackMutation.isSuccess
                         ? "color-mix(in srgb, var(--color-bullish) 15%, transparent)"
                         : GREEN_GRAD,
-                      color: "#fff",
+                      color: "var(--color-background)",
                       fontWeight: 700,
                       fontSize: "13px",
                       cursor:

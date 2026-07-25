@@ -98,7 +98,7 @@ const TickerItem = memo(function TickerItem({
         {fmtPrice(price)}
       </span>
       <span
-        className={`text-[10px] font-bold font-mono flex items-center gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}
+        className={`text-[11px] font-bold font-mono flex items-center gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}
       >
         {isUp ? "+" : ""}
         {change24h.toFixed(2)}%
@@ -238,9 +238,9 @@ const CryptoListItem = memo(function CryptoListItem({
       <div className="flex-1 min-w-0">
         <div className="text-[13px] font-bold text-foreground group-hover:text-white transition-colors">
           {item.symbol}
-          <span className="text-[10px] text-foreground/30 font-normal ml-1.5">/USDT</span>
+          <span className="text-[11px] text-foreground/30 font-normal ml-1.5">/USDT</span>
         </div>
-        <div className="text-[10px] text-foreground/35 font-mono mt-0.5">
+        <div className="text-[11px] text-foreground/35 font-mono mt-0.5">
           Vol {formatVolume(item.volume24h || 0)}
         </div>
       </div>
@@ -287,7 +287,7 @@ function MoverCard({
     >
       <div>
         <div className="text-[13px] font-bold text-foreground">{item.symbol}</div>
-        <div className="text-[10px] text-muted-foreground font-mono">{fmtPrice(price)}</div>
+        <div className="text-[11px] text-muted-foreground font-mono">{fmtPrice(price)}</div>
       </div>
       <div
         className={`text-[13px] font-bold font-mono flex items-center gap-0.5 ${
@@ -321,7 +321,7 @@ function SignalRow({
   return (
     <div className="flex items-center gap-3 py-3 border-b border-white/5 last:border-0">
       <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-bold"
+        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold"
         style={{
           background: bg,
           color,
@@ -340,7 +340,7 @@ function SignalRow({
         <div className="text-[13px] font-bold font-mono leading-none mb-1" style={{ color }}>
           {signal.confidence}%
         </div>
-        <div className="text-[10px] text-foreground/40 font-mono leading-none">{signal.price}</div>
+        <div className="text-[11px] text-foreground/40 font-mono leading-none">{signal.price}</div>
       </div>
     </div>
   );
@@ -388,12 +388,12 @@ function FearGreedGauge({ fearGreed }: { fearGreed: HomeMarketData["fearGreedInd
         <div className="text-xl font-black font-mono" style={{ color }}>
           {value}
         </div>
-        <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color }}>
+        <div className="text-[11px] font-bold uppercase tracking-widest" style={{ color }}>
           {label}
         </div>
         {change !== 0 && (
           <div
-            className={`text-[10px] font-mono mt-0.5 ${change > 0 ? "text-bullish" : "text-bearish"}`}
+            className={`text-[11px] font-mono mt-0.5 ${change > 0 ? "text-bullish" : "text-bearish"}`}
           >
             {change > 0 ? "+" : ""}
             {change} vs yesterday
@@ -452,7 +452,7 @@ function FeatureCard({
         <div className="text-[13px] font-bold text-foreground group-hover:text-white transition-colors">
           {title}
         </div>
-        <div className="text-[10px] text-foreground/45 mt-0.5 leading-relaxed">{desc}</div>
+        <div className="text-[11px] text-foreground/45 mt-0.5 leading-relaxed">{desc}</div>
       </div>
     </button>
   );
@@ -473,11 +473,11 @@ function StatCard({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground/35">
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/35">
         {label}
       </span>
       <span className={`text-[15px] font-bold font-mono ${color}`}>{value}</span>
-      {subtext && <span className="text-[10px] text-foreground/30 font-mono">{subtext}</span>}
+      {subtext && <span className="text-[11px] text-foreground/30 font-mono">{subtext}</span>}
     </div>
   );
 }
@@ -591,7 +591,7 @@ function HomePage() {
       {/* ── Section 1: Top Header ─────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div>
-          <div className="text-[10px] text-foreground/35 font-semibold uppercase tracking-widest">
+          <div className="text-[11px] text-foreground/35 font-semibold uppercase tracking-widest">
             {getGreeting()}
           </div>
           <div className="text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
@@ -942,7 +942,7 @@ function HomePage() {
               <div key={i} className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-2.5">
                   <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold ${
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold ${
                       a.type === "buy" ? "bg-bullish/10 text-bullish" : "bg-bearish/10 text-bearish"
                     }`}
                   >
@@ -960,7 +960,7 @@ function HomePage() {
                       {a.pnl}
                     </div>
                   )}
-                  <div className="text-[10px] text-foreground/30">{a.time}</div>
+                  <div className="text-[11px] text-foreground/30">{a.time}</div>
                 </div>
               </div>
             ))}

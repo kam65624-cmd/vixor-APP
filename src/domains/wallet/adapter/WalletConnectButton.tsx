@@ -130,7 +130,7 @@ export function WalletConnectButton({
             {/* Menu */}
             <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-xl bg-card border border-border shadow-[var(--shadow-elevated)] p-1">
               <div className="px-3 py-2 border-b border-border">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
+                <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold">
                   Connected Wallet
                 </p>
                 <p className="text-xs font-mono text-foreground mt-0.5">
@@ -178,7 +178,7 @@ export function WalletConnectButton({
         >
           <span className="text-xs font-medium text-bearish">Retry</span>
         </button>
-        <span className="text-[10px] text-bearish/70 max-w-[120px] truncate" title={error}>
+        <span className="text-[11px] text-bearish/70 max-w-[120px] truncate" title={error}>
           {error}
         </span>
       </div>

@@ -169,7 +169,7 @@ export function SetupStrengthBadge({
       ? "px-4 py-2 text-sm gap-2"
       : size === "md"
         ? "px-3 py-1.5 text-xs gap-1.5"
-        : "px-2 py-1 text-[10px] gap-1";
+        : "px-2 py-1 text-[11px] gap-1";
   const iconSize = size === "lg" ? "size-5" : size === "md" ? "size-4" : "size-3";
 
   return (
@@ -380,7 +380,7 @@ export function EducationLayer({ terms }: { terms: string[] }) {
     <div className="terminal-card p-4">
       <div className="flex items-center gap-2 mb-3">
         <BookOpen className="size-4 text-primary" />
-        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
           SMC Glossary
         </span>
       </div>

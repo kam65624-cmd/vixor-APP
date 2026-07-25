@@ -448,7 +448,7 @@ function RootComponent() {
               style: {
                 background: "var(--card)",
                 border: "1px solid var(--color-border)",
-                color: "#E4E5E9",
+                color: "var(--color-foreground)",
               },
             }}
           />

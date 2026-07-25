@@ -18,10 +18,7 @@ import {
   FOREX_MINOR_COUNT,
   type ForexPair,
 } from "./-discover-forex-data";
-import {
-  getDiscoverCryptoData,
-  type EnrichedToken,
-} from "@/domains/discover/discover-crypto-data";
+import { getDiscoverCryptoData, type EnrichedToken } from "@/domains/discover/discover-crypto-data";
 
 // ── Route definition with typed search params ───────────────────────────────
 
@@ -1038,10 +1035,7 @@ function DiscoverPage() {
   // Merge new + boosted tokens into a flat list for the main view
   const dexTokens = useMemo<TokenItem[]>(() => {
     if (!cryptoData) return [];
-    const all: EnrichedToken[] = [
-      ...cryptoData.newTokens,
-      ...cryptoData.boostedTokens,
-    ];
+    const all: EnrichedToken[] = [...cryptoData.newTokens, ...cryptoData.boostedTokens];
     return all.map((t) => ({
       symbol: t.symbol,
       name: t.name,
@@ -1643,7 +1637,7 @@ function DiscoverPage() {
       )}
 
       {/* Error state — subtle, not alarming (crypto only) */}
-      {error && !isForexMode && (
+      {cryptoError && !isForexMode && (
         <EmptyState
           icon="📡"
           title="Unable to Load"

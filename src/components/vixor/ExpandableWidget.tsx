@@ -182,7 +182,7 @@ export function ExpandableWidget({
                 cfg.badgeBg,
                 cfg.badgeBorder,
                 cfg.textColor,
-                compact ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-[11px]",
+                compact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-0.5 text-[11px]",
               )}
             >
               {badge}
@@ -200,7 +200,7 @@ export function ExpandableWidget({
                 {metric}
               </span>
               {metricLabel && (
-                <span className="text-[10px] text-muted-foreground leading-tight">
+                <span className="text-[11px] text-muted-foreground leading-tight">
                   {metricLabel}
                 </span>
               )}
@@ -219,7 +219,7 @@ export function ExpandableWidget({
       <div
         className={cn(
           "transition-[max-height,opacity] duration-300 ease-in-out",
-          isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0 overflow-hidden",
+          isExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0 overflow-hidden",
         )}
         aria-hidden={!isExpanded}
       >

@@ -86,7 +86,7 @@ async function enrichToken(
     tokenAddress: token.tokenAddress,
     symbol: best?.baseToken?.symbol ?? extractSymbol(token),
     name: best?.baseToken?.name ?? extractName(token),
-    icon: (token.icon ?? best?.baseToken) ? null : null,
+    icon: token.icon ?? best?.info?.imageUrl ?? null,
     description: token.description ?? null,
     url: token.url,
     priceUsd: best?.priceUsd ? parseFloat(best.priceUsd) : null,
