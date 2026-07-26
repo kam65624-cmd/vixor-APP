@@ -173,7 +173,7 @@ export function NoteEditorDialog({
         <div className="space-y-4">
           {/* Title */}
           <div>
-            <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">
+            <label className="text-xs uppercase font-bold text-muted-foreground mb-1.5 block">
               Title
             </label>
             <input
@@ -188,7 +188,7 @@ export function NoteEditorDialog({
 
           {/* Content */}
           <div>
-            <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">
+            <label className="text-xs uppercase font-bold text-muted-foreground mb-1.5 block">
               Content
             </label>
             <textarea
@@ -203,7 +203,7 @@ export function NoteEditorDialog({
 
           {/* Pair */}
           <div>
-            <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">
+            <label className="text-xs uppercase font-bold text-muted-foreground mb-1.5 block">
               Pair (optional)
             </label>
             <div className="flex gap-2">
@@ -235,7 +235,7 @@ export function NoteEditorDialog({
 
           {/* Mood */}
           <div>
-            <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">
+            <label className="text-xs uppercase font-bold text-muted-foreground mb-1.5 block">
               Mood
             </label>
             <div className="flex gap-1.5">
@@ -258,7 +258,7 @@ export function NoteEditorDialog({
 
           {/* Tags */}
           <div>
-            <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">
+            <label className="text-xs uppercase font-bold text-muted-foreground mb-1.5 block">
               Tags
             </label>
             <div className="flex flex-wrap gap-1.5 mb-2">
@@ -266,7 +266,7 @@ export function NoteEditorDialog({
                 <button
                   key={tag}
                   onClick={() => togglePresetTag(tag)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                     tags.includes(tag)
                       ? "bg-primary/15 text-primary border border-primary/30"
                       : "bg-muted text-muted-foreground hover:bg-card-hover"
@@ -299,7 +299,7 @@ export function NoteEditorDialog({
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-bold flex items-center gap-1"
+                    className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-bold flex items-center gap-1"
                   >
                     {tag}
                     <button

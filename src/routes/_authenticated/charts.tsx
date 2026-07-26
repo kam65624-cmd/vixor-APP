@@ -96,7 +96,7 @@ function ChartsPage() {
           )}
         </div>
         {liveData && (
-          <div className="flex items-center gap-4 text-[10px] font-mono text-muted-foreground">
+          <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground">
             <span>
               H{" "}
               <span className="text-foreground font-semibold">{formatPrice(liveData.high24h)}</span>
@@ -117,7 +117,7 @@ function ChartsPage() {
 
       {/* Pair Selector */}
       <div className="flex items-center gap-px border-b border-border bg-muted/30 overflow-x-auto scrollbar-hide flex-shrink-0">
-        <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 shrink-0">
+        <div className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 shrink-0">
           Crypto
         </div>
         {CRYPTO_PAIRS.map((pair) => {
@@ -136,7 +136,7 @@ function ChartsPage() {
             </button>
           );
         })}
-        <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 shrink-0 border-l border-border">
+        <div className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 shrink-0 border-l border-border">
           Forex
         </div>
         {FOREX_PAIRS.map((pair) => {

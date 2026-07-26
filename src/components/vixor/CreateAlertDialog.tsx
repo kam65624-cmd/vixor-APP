@@ -118,7 +118,7 @@ export function CreateAlertDialog({
           {/* Current price display */}
           <div className="vixor-card p-3 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 Current Price
               </div>
               <div className="text-xl font-bold font-mono text-foreground">
@@ -136,7 +136,7 @@ export function CreateAlertDialog({
 
           {/* Condition select */}
           <div>
-            <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">
+            <label className="text-xs uppercase font-bold text-muted-foreground mb-1.5 block">
               Condition
             </label>
             <Select value={condition} onValueChange={setCondition}>
@@ -155,7 +155,7 @@ export function CreateAlertDialog({
 
           {/* Target price input */}
           <div>
-            <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">
+            <label className="text-xs uppercase font-bold text-muted-foreground mb-1.5 block">
               Target Price
             </label>
             <input
@@ -181,7 +181,7 @@ export function CreateAlertDialog({
 
           {/* Timeframe */}
           <div>
-            <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">
+            <label className="text-xs uppercase font-bold text-muted-foreground mb-1.5 block">
               Timeframe
             </label>
             <div className="flex gap-1.5">
@@ -203,7 +203,7 @@ export function CreateAlertDialog({
 
           {/* Note */}
           <div>
-            <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">
+            <label className="text-xs uppercase font-bold text-muted-foreground mb-1.5 block">
               Note (optional)
             </label>
             <input

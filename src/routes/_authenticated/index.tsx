@@ -93,12 +93,12 @@ const TickerItem = memo(function TickerItem({
   const isUp = change24h >= 0;
   return (
     <div className="flex items-center gap-2 px-4 py-2.5 shrink-0">
-      <span className="text-[11px] font-bold text-foreground/70 tracking-wide">{symbol}</span>
-      <span className="text-[11px] font-mono font-semibold text-foreground/90">
+      <span className="text-xs font-bold text-foreground/70 tracking-wide">{symbol}</span>
+      <span className="text-xs font-mono font-semibold text-foreground/90">
         {fmtPrice(price)}
       </span>
       <span
-        className={`text-[11px] font-bold font-mono flex items-center gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}
+        className={`text-xs font-bold font-mono flex items-center gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}
       >
         {isUp ? "+" : ""}
         {change24h.toFixed(2)}%
@@ -180,7 +180,7 @@ function MarketStatPill({
         <Icon size={14} style={{ color: accent }} />
       </div>
       <div className="min-w-0">
-        <div className="text-[9px] font-semibold uppercase tracking-wider text-foreground/35">
+        <div className="text-xs font-semibold uppercase tracking-wider text-foreground/35">
           {label}
         </div>
         {isLoading ? (
@@ -218,13 +218,13 @@ const CryptoListItem = memo(function CryptoListItem({
       className="vx-card vx-card-interactive w-full flex items-center gap-3 p-3 text-left group"
     >
       {/* Rank */}
-      <span className="text-[11px] font-mono text-foreground/25 w-5 text-right shrink-0">
+      <span className="text-xs font-mono text-foreground/25 w-5 text-right shrink-0">
         {rank}
       </span>
 
       {/* Icon placeholder */}
       <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-[11px] font-bold"
+        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold"
         style={{
           background: isUp ? "var(--bullish-bg)" : "var(--bearish-bg)",
           color: isUp ? "var(--color-bullish)" : "var(--color-bearish)",
@@ -238,9 +238,9 @@ const CryptoListItem = memo(function CryptoListItem({
       <div className="flex-1 min-w-0">
         <div className="text-[13px] font-bold text-foreground group-hover:text-white transition-colors">
           {item.symbol}
-          <span className="text-[11px] text-foreground/30 font-normal ml-1.5">/USDT</span>
+          <span className="text-xs text-foreground/30 font-normal ml-1.5">/USDT</span>
         </div>
-        <div className="text-[11px] text-foreground/35 font-mono mt-0.5">
+        <div className="text-xs text-foreground/35 font-mono mt-0.5">
           Vol {formatVolume(item.volume24h || 0)}
         </div>
       </div>
@@ -249,7 +249,7 @@ const CryptoListItem = memo(function CryptoListItem({
       <div className="text-right shrink-0">
         <div className="text-[13px] font-bold font-mono text-foreground/90">{fmtPrice(price)}</div>
         <div
-          className={`text-[11px] font-bold font-mono mt-0.5 flex items-center justify-end gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}
+          className={`text-xs font-bold font-mono mt-0.5 flex items-center justify-end gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}
         >
           {isUp ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
           {isUp ? "+" : ""}
@@ -287,7 +287,7 @@ function MoverCard({
     >
       <div>
         <div className="text-[13px] font-bold text-foreground">{item.symbol}</div>
-        <div className="text-[11px] text-muted-foreground font-mono">{fmtPrice(price)}</div>
+        <div className="text-xs text-muted-foreground font-mono">{fmtPrice(price)}</div>
       </div>
       <div
         className={`text-[13px] font-bold font-mono flex items-center gap-0.5 ${
@@ -321,7 +321,7 @@ function SignalRow({
   return (
     <div className="flex items-center gap-3 py-3 border-b border-white/5 last:border-0">
       <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold"
+        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold"
         style={{
           background: bg,
           color,
@@ -332,7 +332,7 @@ function SignalRow({
       </div>
       <div className="flex-1 min-w-0 pr-2">
         <div className="text-[13px] font-bold text-foreground">{signal.token}</div>
-        <div className="text-[11px] text-foreground/50 whitespace-normal leading-snug mt-0.5">
+        <div className="text-xs text-foreground/50 whitespace-normal leading-snug mt-0.5">
           {signal.reason}
         </div>
       </div>
@@ -340,7 +340,7 @@ function SignalRow({
         <div className="text-[13px] font-bold font-mono leading-none mb-1" style={{ color }}>
           {signal.confidence}%
         </div>
-        <div className="text-[11px] text-foreground/40 font-mono leading-none">{signal.price}</div>
+        <div className="text-xs text-foreground/40 font-mono leading-none">{signal.price}</div>
       </div>
     </div>
   );
@@ -388,12 +388,12 @@ function FearGreedGauge({ fearGreed }: { fearGreed: HomeMarketData["fearGreedInd
         <div className="text-xl font-black font-mono" style={{ color }}>
           {value}
         </div>
-        <div className="text-[11px] font-bold uppercase tracking-widest" style={{ color }}>
+        <div className="text-xs font-bold uppercase tracking-widest" style={{ color }}>
           {label}
         </div>
         {change !== 0 && (
           <div
-            className={`text-[11px] font-mono mt-0.5 ${change > 0 ? "text-bullish" : "text-bearish"}`}
+            className={`text-xs font-mono mt-0.5 ${change > 0 ? "text-bullish" : "text-bearish"}`}
           >
             {change > 0 ? "+" : ""}
             {change} vs yesterday
@@ -429,7 +429,7 @@ function FeatureCard({
     >
       {badge && (
         <span
-          className="absolute top-2.5 right-2.5 text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-widest"
+          className="absolute top-2.5 right-2.5 text-xs font-bold px-1.5 py-0.5 rounded-full uppercase tracking-widest"
           style={{
             background: `color-mix(in srgb, ${accent} 10%, transparent)`,
             color: accent,
@@ -452,7 +452,7 @@ function FeatureCard({
         <div className="text-[13px] font-bold text-foreground group-hover:text-white transition-colors">
           {title}
         </div>
-        <div className="text-[11px] text-foreground/45 mt-0.5 leading-relaxed">{desc}</div>
+        <div className="text-xs text-foreground/45 mt-0.5 leading-relaxed">{desc}</div>
       </div>
     </button>
   );
@@ -473,11 +473,11 @@ function StatCard({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/35">
+      <span className="text-xs font-semibold uppercase tracking-wider text-foreground/35">
         {label}
       </span>
       <span className={`text-[15px] font-bold font-mono ${color}`}>{value}</span>
-      {subtext && <span className="text-[11px] text-foreground/30 font-mono">{subtext}</span>}
+      {subtext && <span className="text-xs text-foreground/30 font-mono">{subtext}</span>}
     </div>
   );
 }
@@ -511,7 +511,7 @@ function SectionHeader({
       {action && onAction && (
         <button
           onClick={onAction}
-          className="flex items-center gap-1 text-[11px] text-foreground/35 hover:text-foreground/60 transition-colors font-medium"
+          className="flex items-center gap-1 text-xs text-foreground/35 hover:text-foreground/60 transition-colors font-medium"
         >
           {action} <ChevronRight size={11} />
         </button>
@@ -591,7 +591,7 @@ function HomePage() {
       {/* ── Section 1: Top Header ─────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div>
-          <div className="text-[11px] text-foreground/35 font-semibold uppercase tracking-widest">
+          <div className="text-xs text-foreground/35 font-semibold uppercase tracking-widest">
             {getGreeting()}
           </div>
           <div className="text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
@@ -601,7 +601,7 @@ function HomePage() {
               <>
                 {user?.profile?.display_name || user?.profile?.username || "Trader"}
                 {user?.isPremium && (
-                  <span className="text-[9px] font-bold bg-gold/10 text-gold border border-gold/20 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-bold bg-gold/10 text-gold border border-gold/20 px-2 py-0.5 rounded-full">
                     PRO
                   </span>
                 )}
@@ -662,7 +662,7 @@ function HomePage() {
           />
           <div className="grid grid-cols-2 gap-2.5">
             <div className="vx-card p-3">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-bullish mb-2 flex items-center gap-1.5">
+              <div className="text-xs font-bold uppercase tracking-widest text-bullish mb-2 flex items-center gap-1.5">
                 <ArrowUpRight size={10} />
                 Gainers
               </div>
@@ -678,7 +678,7 @@ function HomePage() {
               </div>
             </div>
             <div className="vx-card p-3">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-bearish mb-2 flex items-center gap-1.5">
+              <div className="text-xs font-bold uppercase tracking-widest text-bearish mb-2 flex items-center gap-1.5">
                 <ArrowDownRight size={10} />
                 Losers
               </div>
@@ -742,7 +742,7 @@ function HomePage() {
             <p className="text-[12px] text-foreground/40">Unable to load market data</p>
             <button
               onClick={() => marketQuery.refetch()}
-              className="text-[11px] text-primary font-semibold mt-2 hover:underline"
+              className="text-xs text-primary font-semibold mt-2 hover:underline"
             >
               Retry
             </button>
@@ -755,21 +755,21 @@ function HomePage() {
         <div className="mx-4 mt-4">
           <div className="vx-card p-4 flex items-center justify-between gap-4">
             <div className="flex-1">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-foreground/35 mb-1">
+              <div className="text-xs font-bold uppercase tracking-widest text-foreground/35 mb-1">
                 Market Sentiment
               </div>
               <div className="text-[13px] font-bold text-foreground/70 mb-1.5">
                 Fear & Greed Index
               </div>
-              <div className="text-[11px] text-foreground/35">
+              <div className="text-xs text-foreground/35">
                 Updated daily · measures market emotion
               </div>
               {marketData.fearGreedIndex.value >= 60 ? (
-                <div className="mt-2 text-[11px] text-bullish font-semibold">
+                <div className="mt-2 text-xs text-bullish font-semibold">
                   Greed is high — consider taking profits
                 </div>
               ) : marketData.fearGreedIndex.value <= 30 ? (
-                <div className="mt-2 text-[11px] text-bearish font-semibold">
+                <div className="mt-2 text-xs text-bearish font-semibold">
                   Extreme fear — potential buying opportunity
                 </div>
               ) : null}
@@ -844,14 +844,14 @@ function HomePage() {
                 <span className="text-xs font-bold text-primary uppercase tracking-widest">
                   AI Vision Analysis
                 </span>
-                <span className="text-[8px] font-bold bg-primary/10 text-primary border border-primary/15 px-1.5 py-0.5 rounded-full">
+                <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/15 px-1.5 py-0.5 rounded-full">
                   SMC/ICT
                 </span>
               </div>
               <div className="text-[15px] font-extrabold text-white leading-tight">
                 Upload a chart. Get AI-powered analysis.
               </div>
-              <div className="mt-2.5 flex items-center gap-1.5 text-primary text-[11px] font-bold">
+              <div className="mt-2.5 flex items-center gap-1.5 text-primary text-xs font-bold">
                 Start analyzing{" "}
                 <ChevronRight
                   size={12}
@@ -942,7 +942,7 @@ function HomePage() {
               <div key={i} className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-2.5">
                   <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold ${
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
                       a.type === "buy" ? "bg-bullish/10 text-bullish" : "bg-bearish/10 text-bearish"
                     }`}
                   >
@@ -960,7 +960,7 @@ function HomePage() {
                       {a.pnl}
                     </div>
                   )}
-                  <div className="text-[11px] text-foreground/30">{a.time}</div>
+                  <div className="text-xs text-foreground/30">{a.time}</div>
                 </div>
               </div>
             ))}
@@ -973,7 +973,7 @@ function HomePage() {
         <div className="mx-4 mt-4 vx-card p-6 text-center">
           <AlertCircle size={24} className="text-foreground/20 mx-auto mb-3" />
           <p className="text-[13px] text-foreground/50 font-medium">Unable to load market data</p>
-          <p className="text-[11px] text-foreground/30 mt-1">
+          <p className="text-xs text-foreground/30 mt-1">
             Check your internet connection and try again
           </p>
           <button

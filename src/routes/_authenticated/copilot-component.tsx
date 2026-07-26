@@ -994,7 +994,7 @@ export function CopilotPage() {
                       {t("copilot.consensusMode") || "Multi-Agent Consensus"}
                     </div>
                     <p
-                      className="text-[10px] mt-0.5"
+                      className="text-xs mt-0.5"
                       style={{ color: "var(--color-muted-foreground)" }}
                     >
                       {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
@@ -1057,7 +1057,7 @@ export function CopilotPage() {
                             )}
                           </div>
                           <div
-                            className="text-[10px] mb-1.5"
+                            className="text-xs mb-1.5"
                             style={{ color: "var(--color-muted-foreground)" }}
                           >
                             {agent.desc}
@@ -1066,7 +1066,7 @@ export function CopilotPage() {
                             {agent.capabilities.slice(0, 4).map((cap, i) => (
                               <span
                                 key={i}
-                                className="text-[11px] px-1.5 py-0.5 rounded-md"
+                                className="text-xs px-1.5 py-0.5 rounded-md"
                                 style={{
                                   background: "var(--color-card)",
                                   border: `1px solid ${"var(--color-border)"}`,
@@ -1165,7 +1165,7 @@ export function CopilotPage() {
                       {AGENTS.filter((a) => a.id !== "auto").map((agent, i) => (
                         <div
                           key={agent.id}
-                          className="flex items-center gap-1.5 text-[10px] animate-pulse"
+                          className="flex items-center gap-1.5 text-xs animate-pulse"
                           style={{
                             color: "var(--color-muted-foreground)",
                             animationDelay: `${i * 300}ms`,
@@ -1253,7 +1253,7 @@ export function CopilotPage() {
               </form>
               <div className="mt-1.5 text-center">
                 <span
-                  className="text-[11px]"
+                  className="text-xs"
                   style={{ color: alpha("var(--color-muted-foreground)", 50) }}
                 >
                   AI responses may not always be accurate. Always verify with your own analysis.
@@ -1437,7 +1437,7 @@ function ConversationSidebar({
                 ) : isConfirmingDelete ? (
                   <div className="p-2">
                     <p
-                      className="text-[10px] mb-1.5 truncate"
+                      className="text-xs mb-1.5 truncate"
                       style={{ color: "var(--color-muted-foreground)" }}
                     >
                       Delete &quot;{conv.title}&quot;?
@@ -1445,7 +1445,7 @@ function ConversationSidebar({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => onDelete(conv.id)}
-                        className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg transition-colors"
+                        className="flex-1 text-xs font-bold px-2 py-1 rounded-lg transition-colors"
                         style={{
                           background: alpha("var(--color-bearish)", 10),
                           color: "var(--color-bearish)",
@@ -1461,7 +1461,7 @@ function ConversationSidebar({
                       </button>
                       <button
                         onClick={() => setDeleteConfirmId(null)}
-                        className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg transition-colors"
+                        className="flex-1 text-xs font-bold px-2 py-1 rounded-lg transition-colors"
                         style={{
                           background: "var(--color-card)",
                           border: `1px solid ${"var(--color-border)"}`,
@@ -1515,7 +1515,7 @@ function ConversationSidebar({
                           {conv.title}
                         </div>
                         <div
-                          className="text-[11px]"
+                          className="text-xs"
                           style={{ color: "var(--color-muted-foreground)" }}
                         >
                           {formatRelativeTime(conv.updated_at)}
@@ -1675,7 +1675,7 @@ function ChatWelcome({
           </span>
         </div>
         <p
-          className="text-[10px] mt-1 text-center"
+          className="text-xs mt-1 text-center"
           style={{ color: "var(--color-muted-foreground)" }}
         >
           {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
@@ -1707,7 +1707,7 @@ function ChatWelcome({
               <div className="flex items-center gap-2 mb-1">
                 <Icon size={14} style={{ color: agentConfig?.color || "var(--color-bullish)" }} />
                 <span
-                  className="text-[10px] font-bold uppercase tracking-wider transition-colors"
+                  className="text-xs font-bold uppercase tracking-wider transition-colors"
                   style={{ color: "var(--color-muted-foreground)" }}
                 >
                   {agentConfig?.label}
@@ -1825,7 +1825,7 @@ function MessageBubble({
                 <button
                   key={hAgent}
                   onClick={() => onConsultAgent(hAgent)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all"
                   style={{
                     background: "var(--color-card)",
                     border: `1px solid ${"var(--color-border)"}`,
@@ -1851,7 +1851,7 @@ function MessageBubble({
         )}
 
         <div
-          className="text-[11px] mt-2"
+          className="text-xs mt-2"
           style={{
             color: alpha("var(--color-muted-foreground)", 50),
             textAlign: isUser ? "right" : "left",
@@ -1939,7 +1939,7 @@ function ConsensusBubble({
                   <AIcon size={12} style={{ color: agentConfig.color }} />
                 </div>
                 <span
-                  className="text-[10px] font-bold uppercase tracking-widest"
+                  className="text-xs font-bold uppercase tracking-widest"
                   style={{ color: agentConfig.color }}
                 >
                   {agentConfig.label}
@@ -1961,7 +1961,7 @@ function ConsensusBubble({
                   </div>
                   <button
                     onClick={() => onConsultAgent(r.agent)}
-                    className="mt-2 flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all"
+                    className="mt-2 flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all"
                     style={{
                       background: "var(--color-card)",
                       border: `1px solid ${"var(--color-border)"}`,
@@ -1987,7 +1987,7 @@ function ConsensusBubble({
       </div>
 
       <div
-        className="text-[11px] mt-2 ml-11"
+        className="text-xs mt-2 ml-11"
         style={{ color: alpha("var(--color-muted-foreground)", 50) }}
       >
         {new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

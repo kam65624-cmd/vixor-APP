@@ -1046,11 +1046,11 @@ const LivePriceIndicator = memo(function LivePriceIndicator() {
             : "color-mix(in srgb, var(--color-bearish) 12%, transparent)"),
       }}
     >
-      <span className="text-[10px] font-bold" style={{ color: "var(--color-muted-foreground)" }}>
+      <span className="text-xs font-bold" style={{ color: "var(--color-muted-foreground)" }}>
         BTC
       </span>
       <span
-        className="text-[11px] font-bold"
+        className="text-xs font-bold"
         style={{ fontFamily: "var(--font-mono)", color: "var(--color-foreground)" }}
       >
         $
@@ -1059,7 +1059,7 @@ const LivePriceIndicator = memo(function LivePriceIndicator() {
           : btc.price.toFixed(2)}
       </span>
       <span
-        className="text-[10px] font-bold"
+        className="text-xs font-bold"
         style={{
           fontFamily: "var(--font-mono)",
           color: isUp ? "var(--color-bullish)" : "var(--color-bearish)",
@@ -1295,7 +1295,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
 
           {/* SOL Global Price — compact */}
           <div
-            className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold"
+            className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono font-bold"
             style={{
               color: (solChange ?? 0) >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
             }}
@@ -1316,7 +1316,7 @@ const TopNav = memo(function TopNav({ solPrice, solChange, isTg, onWalletClick }
           {/* Wallet — shows balance when connected, opens modal when disconnected */}
           <button
             onClick={onWalletClick}
-            className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded text-[11px] sm:text-[12px] font-bold"
+            className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded text-xs sm:text-[12px] font-bold"
             style={{
               background: "var(--gradient-primary)",
               color: "var(--primary-foreground)",

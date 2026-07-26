@@ -72,7 +72,7 @@ const TokenCard = memo(function TokenCard({
             </span>
             {verifiedIcon}
           </div>
-          <div className="truncate text-[11px] text-[var(--text-tertiary)]">
+          <div className="truncate text-xs text-[var(--text-tertiary)]">
             {token.name || token.symbol}
           </div>
         </div>
@@ -85,7 +85,7 @@ const TokenCard = memo(function TokenCard({
 
       {/* Value row */}
       <div className="flex items-center justify-between mt-1.5">
-        <span className="text-[11px] text-[var(--text-secondary)]">
+        <span className="text-xs text-[var(--text-secondary)]">
           {token.valueUsd ? formatCurrency(token.valueUsd) : `— ${chainLabel}`}
         </span>
       </div>
@@ -231,7 +231,7 @@ function WalletWeb3Page() {
                 {unverifiedCount} unverified token{unverifiedCount > 1 ? "s" : ""} detected
               </span>
             </div>
-            <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+            <p className="mt-1 text-xs text-[var(--text-secondary)]">
               Always DYOR. Unverified tokens may be honeypots or scams. Verify before trading.
             </p>
           </div>

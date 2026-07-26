@@ -246,7 +246,7 @@ export function CoachOverlay({
           <Badge
             variant="outline"
             className={cn(
-              "gap-1.5 text-[11px] font-semibold px-2 py-0.5",
+              "gap-1.5 text-xs font-semibold px-2 py-0.5",
               sentimentStyle.bg,
               sentimentStyle.border,
               sentimentStyle.text,
@@ -260,7 +260,7 @@ export function CoachOverlay({
           <Badge
             variant="outline"
             className={cn(
-              "gap-1 text-[11px] font-semibold px-2 py-0.5",
+              "gap-1 text-xs font-semibold px-2 py-0.5",
               riskStyle.bg,
               riskStyle.border,
               riskStyle.text,
@@ -273,7 +273,7 @@ export function CoachOverlay({
           <TooltipTrigger asChild>
             <Badge
               variant="outline"
-              className="ml-auto text-[11px] text-muted-foreground px-2 py-0.5"
+              className="ml-auto text-xs text-muted-foreground px-2 py-0.5"
             >
               {Math.round(response.confidence * 100)}% conf.
             </Badge>
@@ -289,7 +289,7 @@ export function CoachOverlay({
 
       {/* ── Comment ── */}
       <div className="mb-4">
-        <h4 className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground mb-1.5">
+        <h4 className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-1.5">
           Analysis
         </h4>
         <p className="text-sm text-primary leading-relaxed">{response.comment}</p>
@@ -299,7 +299,7 @@ export function CoachOverlay({
 
       {/* ── Suggestion ── */}
       <div className="mb-4">
-        <h4 className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground mb-1.5">
+        <h4 className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-1.5">
           Suggestion
         </h4>
         <p className="text-sm text-secondary leading-relaxed">{response.suggestion}</p>

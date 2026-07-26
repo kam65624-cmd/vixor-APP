@@ -275,7 +275,7 @@ export function GovernorRiskPanel({
             <span className={cn("text-xl font-bold font-mono", getRiskScoreColor(riskScore ?? 0))}>
               {riskScore ?? 0}
             </span>
-            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">
               {getRiskLabel(riskScore ?? 0)}
             </span>
           </div>
@@ -290,7 +290,7 @@ export function GovernorRiskPanel({
             <Badge
               variant="outline"
               className={cn(
-                "gap-1.5 text-[11px] font-semibold px-2.5 py-0.5",
+                "gap-1.5 text-xs font-semibold px-2.5 py-0.5",
                 decisionStyle.bg,
                 decisionStyle.border,
                 decisionStyle.text,
@@ -300,7 +300,7 @@ export function GovernorRiskPanel({
               {decisionStyle.label}
             </Badge>
           )}
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             Confidence: {Math.round(response.confidence * 100)}%
           </div>
         </div>
@@ -310,7 +310,7 @@ export function GovernorRiskPanel({
 
       {/* ── Reason ── */}
       <div className="mb-3">
-        <h4 className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground mb-1.5">
+        <h4 className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-1.5">
           Reason
         </h4>
         <p className="text-sm text-primary leading-relaxed">{response.reason}</p>
@@ -318,7 +318,7 @@ export function GovernorRiskPanel({
 
       {/* ── Suggestion ── */}
       <div className="mb-4">
-        <h4 className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground mb-1.5">
+        <h4 className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-1.5">
           Suggestion
         </h4>
         <p className="text-sm text-secondary leading-relaxed">{response.suggestion}</p>
@@ -327,7 +327,7 @@ export function GovernorRiskPanel({
       {/* ── Risk Profile Summary ── */}
       {response.riskProfile && (
         <div className="rounded-lg bg-muted/40 border border-border/30 p-3 mb-4">
-          <h4 className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground mb-2">
+          <h4 className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-2">
             Your Risk Profile
           </h4>
           <div className="grid grid-cols-2 gap-2 text-xs">

@@ -118,7 +118,7 @@ export function WalletConnectButton({
           <span className="text-xs font-medium text-foreground">
             {truncateAddress(wallet.address)}
           </span>
-          <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground px-1.5 py-0.5 rounded-md bg-muted">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1.5 py-0.5 rounded-md bg-muted">
             {wallet.chain}
           </span>
         </button>
@@ -130,7 +130,7 @@ export function WalletConnectButton({
             {/* Menu */}
             <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-xl bg-card border border-border shadow-[var(--shadow-elevated)] p-1">
               <div className="px-3 py-2 border-b border-border">
-                <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold">
                   Connected Wallet
                 </p>
                 <p className="text-xs font-mono text-foreground mt-0.5">
@@ -178,7 +178,7 @@ export function WalletConnectButton({
         >
           <span className="text-xs font-medium text-bearish">Retry</span>
         </button>
-        <span className="text-[11px] text-bearish/70 max-w-[120px] truncate" title={error}>
+        <span className="text-xs text-bearish/70 max-w-[120px] truncate" title={error}>
           {error}
         </span>
       </div>

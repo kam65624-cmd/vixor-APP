@@ -260,6 +260,7 @@ function JournalPage() {
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" style={{ marginBottom: 12 }}>
               <input
+                aria-label="Journal title"
                 placeholder="Title (e.g. SOL long analysis)"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -267,6 +268,7 @@ function JournalPage() {
                 style={{ ...inputBase, width: "100%" }}
               />
               <input
+                aria-label="Trading pair"
                 placeholder="Pair (e.g. SOL/USDT)"
                 value={formData.pair}
                 onChange={(e) => setFormData({ ...formData, pair: e.target.value })}
@@ -274,6 +276,7 @@ function JournalPage() {
               />
             </div>
             <textarea
+              aria-label="Journal content"
               placeholder="Write your journal entry here..."
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
@@ -314,6 +317,7 @@ function JournalPage() {
                 <option value="anxious">😰 Anxious</option>
               </select>
               <input
+                aria-label="Tags"
                 placeholder="Tags (comma separated)"
                 value={formData.tags}
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}

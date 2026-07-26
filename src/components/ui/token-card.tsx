@@ -82,7 +82,7 @@ export function TokenCard({
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-foreground truncate">{token.symbol}</span>
             {token.category && (
-              <Badge variant="muted" className="text-[10px] px-1.5 py-0">
+              <Badge variant="muted" className="text-xs px-1.5 py-0">
                 {token.category}
               </Badge>
             )}

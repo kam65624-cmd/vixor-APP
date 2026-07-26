@@ -721,24 +721,32 @@ function ChartWithAnnotations({ imageUrl, analysis, isBullish, isBearish }: Anno
           }}
         />
         {/* Expand button */}
-        <div
+        <button
+          type="button"
+          aria-label="Zoom chart"
+          onClick={(e) => {
+            e.stopPropagation();
+            setImgZoomLocal(true);
+          }}
           style={{
             position: "absolute",
             bottom: 8,
             right: 8,
-            width: 32,
-            height: 32,
-            borderRadius: 8,
+            width: 44,
+            height: 44,
+            borderRadius: 10,
             background: "var(--overlay)",
             backdropFilter: "blur(8px)",
             color: "var(--color-foreground)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            border: "none",
+            cursor: "pointer",
           }}
         >
-          <Maximize2 size={16} />
-        </div>
+          <Maximize2 size={20} />
+        </button>
       </div>
 
       {/* Legend */}

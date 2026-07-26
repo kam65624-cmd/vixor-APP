@@ -143,7 +143,7 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm font-mono">{alert.pair}</span>
                         <span
-                          className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                          className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase ${
                             alert.condition === "above" || alert.condition === "crosses_up"
                               ? "bg-bullish/10 text-bullish"
                               : "bg-bearish/10 text-bearish"
@@ -203,7 +203,7 @@ export function AlertsList({ pair, onRefresh }: AlertsListProps) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm font-mono">{alert.pair}</span>
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-primary/10 text-primary">
+                      <span className="px-1.5 py-0.5 rounded text-xs font-bold uppercase bg-primary/10 text-primary">
                         Triggered
                       </span>
                     </div>

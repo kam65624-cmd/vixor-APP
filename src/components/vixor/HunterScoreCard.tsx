@@ -282,7 +282,7 @@ export function HunterScoreCard({
             <span className={cn("text-xl font-bold font-mono", getScoreColor(score ?? 0))}>
               {score ?? 0}
             </span>
-            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">
               {getScoreLabel(score ?? 0)}
             </span>
           </div>
@@ -293,7 +293,7 @@ export function HunterScoreCard({
             <Badge
               variant="outline"
               className={cn(
-                "gap-1.5 text-[11px] font-semibold px-2.5 py-0.5",
+                "gap-1.5 text-xs font-semibold px-2.5 py-0.5",
                 signalStyle.bg,
                 signalStyle.border,
                 signalStyle.text,
@@ -303,7 +303,7 @@ export function HunterScoreCard({
               {signalStyle.label}
             </Badge>
           )}
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             Confidence: {Math.round(response.confidence * 100)}%
           </div>
         </div>
@@ -313,7 +313,7 @@ export function HunterScoreCard({
 
       {/* ── Reasoning ── */}
       <div className="mb-3">
-        <h4 className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground mb-1.5">
+        <h4 className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-1.5">
           Analysis
         </h4>
         <p className="text-sm text-primary leading-relaxed">{response.reasoning}</p>
@@ -322,7 +322,7 @@ export function HunterScoreCard({
       {/* ── Wallets List ── */}
       {response.wallets.length > 0 && (
         <div className="mb-4">
-          <h4 className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground mb-2">
+          <h4 className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-2">
             <Wallet className="size-3 inline mr-1 -mt-0.5" />
             Smart Wallets Detected ({response.wallets.length})
           </h4>
@@ -331,7 +331,7 @@ export function HunterScoreCard({
               <Badge
                 key={index}
                 variant="outline"
-                className="text-[11px] font-mono text-muted-foreground px-2 py-0.5"
+                className="text-xs font-mono text-muted-foreground px-2 py-0.5"
               >
                 {wallet.length > 12 ? `${wallet.slice(0, 6)}...${wallet.slice(-4)}` : wallet}
               </Badge>

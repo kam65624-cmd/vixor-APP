@@ -82,7 +82,7 @@ export function AnalystReportPanel({ onRefresh }: AnalystReportPanelProps) {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Icon className="size-3.5 text-muted-foreground" />
-          <h4 className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground">
+          <h4 className="text-xs uppercase tracking-widest font-bold text-muted-foreground">
             {title}
           </h4>
         </div>
@@ -183,7 +183,7 @@ export function AnalystReportPanel({ onRefresh }: AnalystReportPanelProps) {
           <span className="text-sm font-semibold text-primary">Weekly Behavioral Report</span>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-muted-foreground">AI-generated insights</span>
-            <Badge variant="outline" className="text-[11px] text-muted-foreground px-1.5 py-0">
+            <Badge variant="outline" className="text-xs text-muted-foreground px-1.5 py-0">
               {Math.round(response.confidence * 100)}% conf.
             </Badge>
           </div>
@@ -207,13 +207,13 @@ export function AnalystReportPanel({ onRefresh }: AnalystReportPanelProps) {
       {/* ── Tabbed Content ── */}
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="mb-4 h-8 bg-muted/50">
-          <TabsTrigger value="overview" className="text-[11px] px-3 h-7">
+          <TabsTrigger value="overview" className="text-xs px-3 h-7">
             Overview
           </TabsTrigger>
-          <TabsTrigger value="patterns" className="text-[11px] px-3 h-7">
+          <TabsTrigger value="patterns" className="text-xs px-3 h-7">
             Patterns
           </TabsTrigger>
-          <TabsTrigger value="resources" className="text-[11px] px-3 h-7">
+          <TabsTrigger value="resources" className="text-xs px-3 h-7">
             Resources
           </TabsTrigger>
         </TabsList>

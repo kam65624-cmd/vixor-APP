@@ -322,7 +322,7 @@ function AuthPage() {
                 </div>
                 <div>
                   <div className="text-xs font-semibold">{label}</div>
-                  <div className="text-[10px] text-muted-foreground">{desc}</div>
+                  <div className="text-xs text-muted-foreground">{desc}</div>
                 </div>
               </div>
             ))}
@@ -390,7 +390,7 @@ function AuthPage() {
 
               {/* Helpful hint when widget fails to load (usually because BotFather domain isn't set) */}
               {widgetTimedOut && (
-                <p className="text-[10px] text-muted-foreground text-center leading-relaxed px-2">
+                <p className="text-xs text-muted-foreground text-center leading-relaxed px-2">
                   If the Telegram button above doesn't appear, open Vixor directly inside the
                   Telegram app — tap the link above, then tap{" "}
                   <strong className="text-foreground">START</strong> to launch Vixor and sign in
@@ -510,7 +510,7 @@ function AuthPage() {
           </div>
 
           {/* Footer note */}
-          <p className="text-[10px] text-center text-muted-foreground leading-relaxed">
+          <p className="text-xs text-center text-muted-foreground leading-relaxed">
             By continuing you agree to our Terms of Service.
             <br />
             {tgStatus === "webapp"

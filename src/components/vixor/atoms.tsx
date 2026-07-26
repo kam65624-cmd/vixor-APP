@@ -77,7 +77,7 @@ export function RecBadge({ rec, size = "sm" }: { rec: Recommendation; size?: "sm
         s.bg,
         s.border,
         s.text,
-        size === "lg" ? "px-3 py-1.5 text-sm" : "px-2 py-0.5 text-[11px]",
+        size === "lg" ? "px-3 py-1.5 text-sm" : "px-2 py-0.5 text-xs",
       )}
     >
       <Icon className={size === "lg" ? "size-4" : "size-3"} strokeWidth={2.5} />
@@ -125,7 +125,7 @@ export function Stat({
           : "text-foreground";
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
       <span className={cn("text-mono text-sm font-semibold", acc)}>{value}</span>
     </div>
   );
@@ -169,7 +169,7 @@ export function SetupStrengthBadge({
       ? "px-4 py-2 text-sm gap-2"
       : size === "md"
         ? "px-3 py-1.5 text-xs gap-1.5"
-        : "px-2 py-1 text-[11px] gap-1";
+        : "px-2 py-1 text-xs gap-1";
   const iconSize = size === "lg" ? "size-5" : size === "md" ? "size-4" : "size-3";
 
   return (
@@ -380,7 +380,7 @@ export function EducationLayer({ terms }: { terms: string[] }) {
     <div className="terminal-card p-4">
       <div className="flex items-center gap-2 mb-3">
         <BookOpen className="size-4 text-primary" />
-        <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
           SMC Glossary
         </span>
       </div>
@@ -390,7 +390,7 @@ export function EducationLayer({ terms }: { terms: string[] }) {
             key={term}
             onClick={() => setExpanded(expanded === term ? null : term)}
             className={cn(
-              "px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-all duration-150",
+              "px-2.5 py-1 rounded-md text-xs font-semibold border transition-all duration-150",
               expanded === term
                 ? "term-highlight border-primary/30"
                 : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-primary/20",

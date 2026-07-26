@@ -166,7 +166,7 @@ export function ExpandableWidget({
               {title}
             </span>
             {subtitle && (
-              <span className="block text-[11px] text-muted-foreground leading-tight mt-0.5 truncate">
+              <span className="block text-xs text-muted-foreground leading-tight mt-0.5 truncate">
                 {subtitle}
               </span>
             )}
@@ -182,7 +182,7 @@ export function ExpandableWidget({
                 cfg.badgeBg,
                 cfg.badgeBorder,
                 cfg.textColor,
-                compact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-0.5 text-[11px]",
+                compact ? "px-1.5 py-0.5 text-xs" : "px-2 py-0.5 text-xs",
               )}
             >
               {badge}
@@ -200,7 +200,7 @@ export function ExpandableWidget({
                 {metric}
               </span>
               {metricLabel && (
-                <span className="text-[11px] text-muted-foreground leading-tight">
+                <span className="text-xs text-muted-foreground leading-tight">
                   {metricLabel}
                 </span>
               )}
@@ -275,7 +275,7 @@ export function MiniWidget({
       }}
     >
       {Icon && <Icon className={cn("size-3.5 shrink-0", cfg.textColor)} />}
-      <span className="text-[11px] text-muted-foreground truncate flex-1">{title}</span>
+      <span className="text-xs text-muted-foreground truncate flex-1">{title}</span>
       <span className={cn("text-xs font-mono font-bold text-mono shrink-0", cfg.textColor)}>
         {value}
       </span>

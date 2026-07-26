@@ -30,8 +30,8 @@ export const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(function
       }}
     >
       <div className="mb-1.5 flex items-center gap-1.5" style={{ color: "var(--text-secondary)" }}>
-        {icon && <span className="text-[11px]">{icon}</span>}
-        <span className="text-[11px] font-medium uppercase tracking-wide">{label}</span>
+        {icon && <span className="text-xs">{icon}</span>}
+        <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
         {live && <LiveDot color="bull" />}
       </div>
       <div
@@ -48,7 +48,7 @@ export const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(function
           </span>
         )}
         {sub && (
-          <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
             {sub}
           </span>
         )}

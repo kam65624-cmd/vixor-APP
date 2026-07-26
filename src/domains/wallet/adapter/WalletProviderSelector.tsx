@@ -272,7 +272,7 @@ export function WalletProviderSelector() {
                   role="radio"
                   aria-checked={selectedEvmChain === c.id}
                 >
-                  <div className="text-[11px] font-bold uppercase tracking-wider">{c.symbol}</div>
+                  <div className="text-xs font-bold uppercase tracking-wider">{c.symbol}</div>
                   <div className="text-xs">{c.label}</div>
                 </button>
               ))}
@@ -296,23 +296,23 @@ export function WalletProviderSelector() {
                   {connecting === p.id ? (
                     <div className="size-5 rounded-full border-2 border-[var(--text-secondary)] border-t-transparent animate-spin" />
                   ) : p.id === "TELEGRAM" && p.available ? (
-                    <span className="rounded-lg bg-[#2AABEE]/15 px-2.5 py-1 text-[11px] font-bold text-[#2AABEE]">
+                    <span className="rounded-lg bg-[#2AABEE]/15 px-2.5 py-1 text-xs font-bold text-[#2AABEE]">
                       RECOMMENDED
                     </span>
                   ) : p.id === "TELEGRAM" && !p.available ? (
-                    <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-bold text-[var(--neutral-wait)]">
+                    <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-xs font-bold text-[var(--neutral-wait)]">
                       OPEN IN TG
                     </span>
                   ) : p.id === "WALLETCONNECT" ? (
-                    <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-bold text-[var(--neutral-wait)]">
+                    <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-xs font-bold text-[var(--neutral-wait)]">
                       COMING SOON
                     </span>
                   ) : p.available ? (
-                    <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-bold text-[var(--bullish)]">
+                    <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-xs font-bold text-[var(--bullish)]">
                       DETECTED
                     </span>
                   ) : (
-                    <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-bold text-[var(--neutral-wait)]">
+                    <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-xs font-bold text-[var(--neutral-wait)]">
                       INSTALL
                     </span>
                   )}
@@ -326,7 +326,7 @@ export function WalletProviderSelector() {
               </div>
             )}
 
-            <p className="mt-4 text-[11px] text-[var(--text-tertiary)] leading-relaxed">
+            <p className="mt-4 text-xs text-[var(--text-tertiary)] leading-relaxed">
               By connecting, you sign a message proving wallet ownership. We never store private
               keys.
             </p>

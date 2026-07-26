@@ -81,7 +81,7 @@ export function WorkspaceSwitcher({ className, onWorkspaceChange }: WorkspaceSwi
         aria-expanded={open}
       >
         <span className="size-2 rounded-full" style={{ backgroundColor: current.color }} />
-        <span className="text-[10px] font-bold uppercase tracking-wider text-foreground">
+        <span className="text-xs font-bold uppercase tracking-wider text-foreground">
           {current.shortLabel}
         </span>
         <svg
@@ -100,7 +100,7 @@ export function WorkspaceSwitcher({ className, onWorkspaceChange }: WorkspaceSwi
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-xl bg-card border border-border shadow-[var(--shadow-elevated)] p-1">
             <div className="px-2.5 py-1.5 border-b border-border mb-1">
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold">
                 Workspace
               </p>
             </div>

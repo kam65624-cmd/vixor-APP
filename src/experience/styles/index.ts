@@ -1,3 +1,9 @@
+// ── Platform-specific Experience Styles ─────────────────────────────────
+// These files define workspace themes for external platforms (Axiom, BullX, OpenSea).
+// They use their own token namespace (--ws-*) intentionally, as each platform
+// has a distinct brand identity that should NOT override VIXOR's main design tokens.
+// If integrating a new platform, create a new file here following the same pattern.
+// ────────────────────────────────────────────────────────────────────────────
 // ============================================================================
 // VIXOR Experience — Design Tokens Barrel Export
 // ============================================================================

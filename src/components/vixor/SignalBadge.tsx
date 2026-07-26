@@ -58,8 +58,8 @@ interface SignalBadgeProps {
 }
 
 const SIZE_CLASSES = {
-  sm: "text-[10px] px-1.5 py-0.5",
-  md: "text-[11px] px-2 py-[3px]",
+  sm: "text-xs px-1.5 py-0.5",
+  md: "text-xs px-2 py-[3px]",
   lg: "text-sm px-2.5 py-1",
 };
 
