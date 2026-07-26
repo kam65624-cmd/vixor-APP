@@ -271,10 +271,7 @@ export function CoachOverlay({
         )}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge
-              variant="outline"
-              className="ml-auto text-xs text-muted-foreground px-2 py-0.5"
-            >
+            <Badge variant="outline" className="ml-auto text-xs text-muted-foreground px-2 py-0.5">
               {Math.round(response.confidence * 100)}% conf.
             </Badge>
           </TooltipTrigger>

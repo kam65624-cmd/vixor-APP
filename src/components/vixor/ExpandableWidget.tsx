@@ -200,9 +200,7 @@ export function ExpandableWidget({
                 {metric}
               </span>
               {metricLabel && (
-                <span className="text-xs text-muted-foreground leading-tight">
-                  {metricLabel}
-                </span>
+                <span className="text-xs text-muted-foreground leading-tight">{metricLabel}</span>
               )}
             </div>
           )}

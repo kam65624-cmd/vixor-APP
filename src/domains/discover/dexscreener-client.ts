@@ -111,10 +111,7 @@ export type DexPair = z.infer<typeof DexPairPriceSchema>;
 
 // ── Internal fetch with rate limiting + Zod validation ─────────────────────
 
-async function dexFetch<T extends z.ZodTypeAny>(
-  path: string,
-  schema: T,
-): Promise<z.infer<T>[]> {
+async function dexFetch<T extends z.ZodTypeAny>(path: string, schema: T): Promise<z.infer<T>[]> {
   await Limiters.dexscreener.wait();
   try {
     const res = await fetch(`${BASE_URL}${path}`, {

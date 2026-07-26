@@ -1514,10 +1514,7 @@ function ConversationSidebar({
                         >
                           {conv.title}
                         </div>
-                        <div
-                          className="text-xs"
-                          style={{ color: "var(--color-muted-foreground)" }}
-                        >
+                        <div className="text-xs" style={{ color: "var(--color-muted-foreground)" }}>
                           {formatRelativeTime(conv.updated_at)}
                         </div>
                       </div>
@@ -1674,10 +1671,7 @@ function ChatWelcome({
             {t("copilot.getConsensus") || "Get Multi-Agent Consensus"}
           </span>
         </div>
-        <p
-          className="text-xs mt-1 text-center"
-          style={{ color: "var(--color-muted-foreground)" }}
-        >
+        <p className="text-xs mt-1 text-center" style={{ color: "var(--color-muted-foreground)" }}>
           {t("copilot.consensusDesc") || "Get perspectives from all 4 AI agents"}
         </p>
       </button>

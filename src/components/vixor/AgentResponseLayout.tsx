@@ -72,9 +72,7 @@ export function AgentResponseLayout({
       {/* ── Score ── */}
       {score != null && (
         <div className="flex items-end gap-3">
-          <span className={`text-2xl font-bold font-mono ${scoreColor ?? ""}`}>
-            {score}
-          </span>
+          <span className={`text-2xl font-bold font-mono ${scoreColor ?? ""}`}>{score}</span>
           {scoreLabel && (
             <span className="text-xs uppercase tracking-widest text-muted-foreground mb-0.5">
               {scoreLabel}

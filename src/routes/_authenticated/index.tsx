@@ -94,9 +94,7 @@ const TickerItem = memo(function TickerItem({
   return (
     <div className="flex items-center gap-2 px-4 py-2.5 shrink-0">
       <span className="text-xs font-bold text-foreground/70 tracking-wide">{symbol}</span>
-      <span className="text-xs font-mono font-semibold text-foreground/90">
-        {fmtPrice(price)}
-      </span>
+      <span className="text-xs font-mono font-semibold text-foreground/90">{fmtPrice(price)}</span>
       <span
         className={`text-xs font-bold font-mono flex items-center gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}
       >
@@ -218,9 +216,7 @@ const CryptoListItem = memo(function CryptoListItem({
       className="vx-card vx-card-interactive w-full flex items-center gap-3 p-3 text-left group"
     >
       {/* Rank */}
-      <span className="text-xs font-mono text-foreground/25 w-5 text-right shrink-0">
-        {rank}
-      </span>
+      <span className="text-xs font-mono text-foreground/25 w-5 text-right shrink-0">{rank}</span>
 
       {/* Icon placeholder */}
       <div
