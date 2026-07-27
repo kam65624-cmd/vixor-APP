@@ -1,4 +1,12 @@
-<!DOCTYPE html>
+#!/usr/bin/env python3
+"""Generate VIXOR comprehensive review PDF via HTML"""
+import subprocess, os
+
+PDF_SKILL_DIR = "/home/z/my-project/skills/pdf"
+HTML_PATH = "/home/z/my-project/scripts/vixor-review.html"
+PDF_PATH = "/home/z/my-project/download/VIXOR_Comprehensive_Review.pdf"
+
+html = r'''<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -805,4 +813,10 @@ tbody tr:nth-child(even) { background: #0f1118; }
 </div>
 
 </body>
-</html>
+</html>'''
+
+with open(HTML_PATH, 'w', encoding='utf-8') as f:
+    f.write(html)
+
+print(f'HTML written to {HTML_PATH}')
+print(f'HTML size: {len(html)} chars')
