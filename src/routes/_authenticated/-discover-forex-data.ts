@@ -90,62 +90,66 @@ export const FOREX_TOTAL_COUNT = FOREX_PAIRS_CONFIG.length;
  */
 export const getLiveForexDiscoverData = createServerFn({ method: "GET" }).handler(
   async (): Promise<ForexPair[]> => {
-    // Fetch prices and klines in parallel for all pairs
-    const pairNames = FOREX_PAIRS_CONFIG.map((c) => c.pair);
+    try {
+      const pairNames = FOREX_PAIRS_CONFIG.map((c) => c.pair);
 
-    const priceResults = await Promise.allSettled(pairNames.map((p) => fetchPrice(p)));
-    const klineResults = await Promise.allSettled(
-      pairNames.map((p) => fetchTwelveDataKlines(p, "1h", 20)),
-    );
+      const priceResults = await Promise.allSettled(pairNames.map((p) => fetchPrice(p)));
+      const klineResults = await Promise.allSettled(
+        pairNames.map((p) => fetchTwelveDataKlines(p, "1h", 20)),
+      );
 
-    return FOREX_PAIRS_CONFIG.map((config, i) => {
-      // Extract price result
-      const priceResult = priceResults[i].status === "fulfilled" ? priceResults[i].value : null;
+      return FOREX_PAIRS_CONFIG.map((config, i) => {
+        const priceResult = priceResults[i].status === "fulfilled" ? priceResults[i].value : null;
 
-      // Extract sparkline (close prices from klines, in chronological order)
-      let sparkline: number[] = [];
-      if (klineResults[i].status === "fulfilled" && klineResults[i].value.length >= 2) {
-        sparkline = klineResults[i].value.map((bar) => bar.close);
-      }
-
-      // Determine price and change24h
-      let price: number | null = null;
-      let change24h: number | null = null;
-
-      if (priceResult) {
-        price = priceResult.price;
-
-        // Use change24h from the price-fetcher if available
-        if (priceResult.change24h !== undefined && priceResult.change24h !== null) {
-          change24h = priceResult.change24h;
+        let sparkline: number[] = [];
+        if (klineResults[i].status === "fulfilled" && klineResults[i].value.length >= 2) {
+          sparkline = klineResults[i].value.map((bar) => bar.close);
         }
-        // Otherwise compute from sparkline if available
-        else if (sparkline.length >= 2) {
-          const first = sparkline[0];
-          const last = sparkline[sparkline.length - 1];
-          if (first > 0) {
-            change24h = ((last - first) / first) * 100;
+
+        let price: number | null = null;
+        let change24h: number | null = null;
+
+        if (priceResult) {
+          price = priceResult.price;
+          if (priceResult.change24h !== undefined && priceResult.change24h !== null) {
+            change24h = priceResult.change24h;
+          } else if (sparkline.length >= 2) {
+            const first = sparkline[0];
+            const last = sparkline[sparkline.length - 1];
+            if (first > 0) {
+              change24h = ((last - first) / first) * 100;
+            }
           }
         }
-      }
 
-      // Compute tick volume from klines (forex has no real exchange volume,
-      // but TwelveData provides tick volume = number of price updates per interval)
-      let volume24h = 0;
-      if (klineResults[i].status === "fulfilled") {
-        volume24h = klineResults[i].value.reduce((sum, bar) => sum + (bar.volume || 0), 0);
-      }
+        let volume24h = 0;
+        if (klineResults[i].status === "fulfilled") {
+          volume24h = klineResults[i].value.reduce((sum, bar) => sum + (bar.volume || 0), 0);
+        }
 
-      return {
+        return {
+          pair: config.pair,
+          name: config.name,
+          price,
+          change24h,
+          volume24h,
+          type: config.type,
+          badge: config.badge,
+          sparkline,
+        };
+      });
+    } catch {
+      // Safe fallback if server fetch fails
+      return FOREX_PAIRS_CONFIG.map((config) => ({
         pair: config.pair,
         name: config.name,
-        price,
-        change24h,
-        volume24h,
+        price: null,
+        change24h: null,
+        volume24h: 0,
         type: config.type,
         badge: config.badge,
-        sparkline,
-      };
-    });
+        sparkline: [],
+      }));
+    }
   },
 );

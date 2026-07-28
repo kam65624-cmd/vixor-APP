@@ -1027,8 +1027,8 @@ function DiscoverPage() {
   } = useQuery({
     queryKey: ["discover-crypto", "dexscreener"],
     queryFn: () => cryptoFn(),
-    refetchInterval: 60_000,
-    staleTime: 45_000,
+    refetchInterval: 15_000,
+    staleTime: 10_000,
     enabled: !isForexMode && !isSearching,
   });
 
@@ -1297,13 +1297,11 @@ function DiscoverPage() {
     [navigate],
   );
 
-  // Forex pair click — show "connect broker" toast via Telegram WebApp
-  const [brokerToast, setBrokerToast] = useState<string | null>(null);
-  const brokerToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  // Forex pair click
   const handleForexClick = useCallback(
     (pair: ForexPair) => {
-      navigate({ to: "/token/$symbol", params: { symbol: pair.pair } } as any);
+      const cleanSymbol = pair.pair.replace("/", "-");
+      navigate({ to: "/token/$symbol", params: { symbol: cleanSymbol } } as any);
     },
     [navigate],
   );
@@ -1313,8 +1311,8 @@ function DiscoverPage() {
   const forexQuery = useQuery({
     queryKey: ["live-forex-discover-data"],
     queryFn: () => fetchForexDiscover(),
-    staleTime: 60_000,
-    refetchInterval: 120_000,
+    staleTime: 15_000,
+    refetchInterval: 30_000,
   });
 
   // Sorted forex pairs (live data from server)
@@ -1354,31 +1352,32 @@ function DiscoverPage() {
   return (
     <PageLayout
       title="Discover"
-      badge="LIVE"
-      badgeColor="var(--color-bullish)"
+      badge={isForexMode ? "MARKETS" : "ON-CHAIN"}
+      badgeColor={isForexMode ? GOLD_COLOR : "var(--color-bullish)"}
       loading={effectiveLoading}
-      loadingColor="var(--color-bullish)"
+      loadingColor={isForexMode ? GOLD_COLOR : "var(--color-bullish)"}
     >
-      {/* ── Workspace Switcher ── */}
+      {/* ── Workspace Switcher Bar ── */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "12px 14px 8px",
+          padding: "10px 14px 6px",
           flexShrink: 0,
         }}
       >
         <span
           style={{
-            fontSize: "18px",
-            fontWeight: 800,
-            color: "var(--color-foreground)",
-            letterSpacing: "-0.02em",
+            fontSize: "11px",
+            fontWeight: 700,
+            color: "var(--color-muted-foreground)",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
             fontFamily: "var(--font-sans)",
           }}
         >
-          Discover
+          Market Mode
         </span>
 
         {/* Switcher pill */}
@@ -1388,18 +1387,18 @@ function DiscoverPage() {
             alignItems: "center",
             background: "var(--color-card)",
             border: "1px solid var(--color-border)",
-            borderRadius: "12px",
-            padding: "3px",
+            borderRadius: "10px",
+            padding: "2px",
             gap: "2px",
           }}
         >
           <button
             onClick={() => handleCategoryChange("ALL")}
             style={{
-              padding: "5px 14px",
-              borderRadius: "9px",
+              padding: "4px 12px",
+              borderRadius: "8px",
               border: "none",
-              fontSize: "12px",
+              fontSize: "11px",
               fontWeight: 700,
               cursor: "pointer",
               transition: "all 0.18s ease",
@@ -1412,19 +1411,19 @@ function DiscoverPage() {
               fontFamily: "var(--font-sans)",
               display: "flex",
               alignItems: "center",
-              gap: "5px",
+              gap: "4px",
             }}
           >
-            <span style={{ fontSize: "12px" }}>⛓</span>
+            <span style={{ fontSize: "11px" }}>⚡</span>
             On-Chain
           </button>
           <button
             onClick={() => handleCategoryChange("FOREX")}
             style={{
-              padding: "5px 14px",
-              borderRadius: "9px",
+              padding: "4px 12px",
+              borderRadius: "8px",
               border: "none",
-              fontSize: "12px",
+              fontSize: "11px",
               fontWeight: 700,
               cursor: "pointer",
               transition: "all 0.18s ease",
@@ -1435,10 +1434,10 @@ function DiscoverPage() {
               fontFamily: "var(--font-sans)",
               display: "flex",
               alignItems: "center",
-              gap: "5px",
+              gap: "4px",
             }}
           >
-            <span style={{ fontSize: "12px" }}>📈</span>
+            <span style={{ fontSize: "11px" }}>📈</span>
             Markets
           </button>
         </div>
