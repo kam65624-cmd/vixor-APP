@@ -981,9 +981,11 @@ function FilterPanel({
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 
-function DiscoverPage() {
+export function DiscoverPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/_authenticated/discover" });
+
+  const [brokerToast, setBrokerToast] = useState<string | null>(null);
 
   // Local filter state (for the filter panel UI — before applying)
   const [filterState, setFilterState] = useState({
@@ -2173,10 +2175,7 @@ function DiscoverPage() {
           >
             {isSearching
               ? `Found ${tokens.length} tokens via DexScreener`
-              : `${tokens.length} tokens via DexScreener`}
-            {cryptoData?.fetchedAt && !isSearching && (
-              <span> · {fmtFreshness(cryptoData.fetchedAt)}</span>
-            )}
+              : `${tokens.length} live tokens via DexScreener`}
           </div>
         )}
       </div>

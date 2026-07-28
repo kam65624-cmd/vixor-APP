@@ -281,6 +281,6 @@ export class BinanceWS {
   destroy(): void {
     this.isDestroyed = true;
     this.close();
-    BinanceWS.instance = null;
+    binanceWSInstance = null;
   }
 }

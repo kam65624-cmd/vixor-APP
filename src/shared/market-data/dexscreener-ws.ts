@@ -261,6 +261,6 @@ export class DexScreenerWS {
   destroy(): void {
     this.isDestroyed = true;
     this.close();
-    DexScreenerWS.instance = null;
+    dexScreenerWSInstance = null;
   }
 }

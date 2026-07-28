@@ -218,12 +218,6 @@ export function TokenPage() {
   const search = useSearch({ from: "/_authenticated/token/$symbol" });
   const navigate = useNavigate();
 
-  const dexUrl = search.dexUrl || tokenData?.url;
-  const pairAddress = search.pairAddress || tokenData?.pairAddress;
-  const chainFromDiscover = search.chain || tokenData?.chainId;
-  const isContractAddress = symbol.length >= 25 || /^[0-9a-zA-Z]{32,}$/.test(symbol);
-  const isDexToken = !!(chainFromDiscover && pairAddress) || assetType === "meme" || isContractAddress;
-
   const fetchTrades = useStableServerFn(getTradeHistory);
   const fetchAnalyses = useStableServerFn(getRecentAnalyses);
   const fetchWatchlist = useStableServerFn(getWatchlistData);
@@ -284,6 +278,32 @@ export function TokenPage() {
     staleTime: 60_000,
   });
 
+  // Find matching discovery token
+  const tokenData = useMemo(() => {
+    if (!discoveryQuery.data?.length) return null;
+    const upper = symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    return (
+      discoveryQuery.data.find(
+        (t: any) => t.symbol.toUpperCase().replace(/[^A-Z0-9]/g, "") === upper,
+      ) ||
+      discoveryQuery.data[0] ||
+      null
+    );
+  }, [discoveryQuery.data, symbol]);
+
+  // Detect asset type
+  const assetType = useMemo(
+    () => detectAssetType(symbol, tokenData?.chain),
+    [symbol, tokenData?.chain],
+  );
+  const assetBadge = getAssetTypeBadge(assetType);
+
+  const dexUrl = search.dexUrl || tokenData?.url;
+  const pairAddress = search.pairAddress || tokenData?.pairAddress;
+  const chainFromDiscover = search.chain || tokenData?.chainId;
+  const isContractAddress = symbol.length >= 25 || /^[0-9a-zA-Z]{32,}$/.test(symbol);
+  const isDexToken = !!(chainFromDiscover && pairAddress) || assetType === "meme" || isContractAddress;
+
   // ── Derived Data ──
 
   const allTrades = tradesQuery.data?.trades ?? [];
@@ -298,19 +318,6 @@ export function TokenPage() {
           (closedTrades.filter((t: any) => (t.pnl || 0) > 0).length / closedTrades.length) * 100,
         )
       : 0;
-
-  // Find matching discovery token
-  const tokenData = useMemo(() => {
-    if (!discoveryQuery.data?.length) return null;
-    const upper = symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
-    return (
-      discoveryQuery.data.find(
-        (t) => t.symbol.toUpperCase().replace(/[^A-Z0-9]/g, "") === upper,
-      ) ||
-      discoveryQuery.data[0] ||
-      null
-    );
-  }, [discoveryQuery.data, symbol]);
 
   // Filter analyses that mention this symbol
   const relatedAnalyses = useMemo(() => {
