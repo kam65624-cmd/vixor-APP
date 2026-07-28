@@ -1307,12 +1307,15 @@ function DiscoverPage() {
   );
 
   // Live forex data query (prices, change24h, sparklines from real APIs)
+  // Only enabled when user is in Markets mode to avoid server fn TDZ crash on init
   const fetchForexDiscover = useStableServerFn(getLiveForexDiscoverData);
   const forexQuery = useQuery({
     queryKey: ["live-forex-discover-data"],
     queryFn: () => fetchForexDiscover(),
     staleTime: 15_000,
     refetchInterval: 30_000,
+    enabled: isForexMode,
+    retry: 1,
   });
 
   // Sorted forex pairs (live data from server)
