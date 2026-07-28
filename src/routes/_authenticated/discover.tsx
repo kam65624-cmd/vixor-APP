@@ -1182,7 +1182,7 @@ function DiscoverPage() {
     return [
       {
         label: "Tokens",
-        value: String(resp?.total ?? tokens.length),
+        value: String(tokens.length),
         color: "var(--color-primary)",
         icon: "🔍",
       },
@@ -1206,27 +1206,21 @@ function DiscoverPage() {
       },
     ];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokens, resp, isForexMode]);
+  }, [tokens, isForexMode]);
 
   // Category counts
   const categoryCounts = useMemo(() => {
-    const base = resp?.categoryCounts || {};
     return {
-      ALL: resp?.total ?? tokens.length,
-      MEME:
-        base.MEME ??
-        tokens.filter((t) => t.category === "MEME" || t.chain === "sol" || t.chain === "eth")
-          .length,
-      CRYPTO:
-        base.CRYPTO ??
-        tokens.filter(
-          (t) =>
-            t.category === "CRYPTO" ||
-            ["eth", "btc", "sol", "bnb"].includes(t.symbol.toLowerCase()),
-        ).length,
+      ALL: tokens.length,
+      MEME: tokens.filter((t) => t.category === "MEME" || t.chain === "sol" || t.chain === "eth").length,
+      CRYPTO: tokens.filter(
+        (t) =>
+          t.category === "CRYPTO" ||
+          ["eth", "btc", "sol", "bnb"].includes(t.symbol.toLowerCase()),
+      ).length,
       FOREX: FOREX_TOTAL_COUNT,
     };
-  }, [resp, tokens]);
+  }, [tokens]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -2101,8 +2095,8 @@ function DiscoverPage() {
               fontFamily: "var(--font-mono)",
             }}
           >
-            {isSearching && resp?.scanDurationMs
-              ? `Scanned ${resp.total} tokens in ${(resp.scanDurationMs / 1000).toFixed(1)}s`
+            {isSearching
+              ? `Found ${tokens.length} tokens via DexScreener`
               : `${tokens.length} tokens via DexScreener`}
             {cryptoData?.fetchedAt && !isSearching && (
               <span> · {fmtFreshness(cryptoData.fetchedAt)}</span>
