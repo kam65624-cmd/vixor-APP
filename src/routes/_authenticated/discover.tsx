@@ -1057,38 +1057,47 @@ function DiscoverPage() {
     }));
   }, [cryptoData]);
 
-  // ── Legacy API query (used only for search) ──
+  // ── DexScreener search query (supports symbols AND contract addresses) ──
+  const searchFn = useStableServerFn(searchDexTokens);
   const {
-    data: resp,
+    data: searchResults,
     isLoading: legacyLoading,
     error: legacyError,
     refetch: legacyRefetch,
-  } = useQuery<DiscoverResponse>({
-    queryKey: [
-      "discover",
-      sortBy,
-      search.search,
-      category,
-      search.minLiquidity,
-      search.minVolume,
-      search.honeypotOnly,
-      search.smartMoneyMin,
-    ],
-    queryFn: async () => {
-      const res = await fetch(`/api/discover?${queryParams}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-    refetchInterval: 5_000,
-    staleTime: 3_000,
+  } = useQuery({
+    queryKey: ["discover-search", search.search],
+    queryFn: () => searchFn({ data: search.search!.trim() }),
     enabled: !isForexMode && isSearching,
   });
 
-  // Use dexTokens when not searching, fallback to API tokens for search
+  const searchTokens = useMemo<TokenItem[]>(() => {
+    if (!searchResults) return [];
+    return searchResults.map((t) => ({
+      symbol: t.symbol,
+      name: t.name,
+      price: t.priceUsd,
+      change24h: t.change24h,
+      volume24h: t.volume24h ?? 0,
+      liquidity: t.liquidityUsd ?? 0,
+      chain: t.chainId.charAt(0).toUpperCase() + t.chainId.slice(1),
+      chainId: t.chainId,
+      marketCap: t.marketCap ?? 0,
+      discoveryScore: 75,
+      socialScore: 0,
+      liquidityScore: 0,
+      logoUrl: t.icon ?? undefined,
+      address: t.tokenAddress,
+      pairAddress: t.pairAddress ?? undefined,
+      dexUrl: t.url,
+      category: "DEX",
+    }));
+  }, [searchResults]);
+
+  // Use searchTokens when searching, fallback to dexTokens for live discover feed
   const tokens = useMemo(() => {
-    if (isSearching) return resp?.data ?? [];
+    if (isSearching) return searchTokens;
     return dexTokens;
-  }, [isSearching, resp, dexTokens]);
+  }, [isSearching, searchTokens, dexTokens]);
 
   const effectiveLoading = isSearching ? legacyLoading : cryptoLoading;
   const effectiveError = isSearching ? legacyError : cryptoError;

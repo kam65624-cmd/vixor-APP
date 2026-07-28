@@ -8,6 +8,7 @@ import { BinanceWS, type LivePrice } from "@/shared/market-data/binance-ws";
 import { DexScreenerWS } from "@/shared/market-data/dexscreener-ws";
 import { DexChart } from "@/components/vixor/DexChart";
 import { TradingViewChart } from "@/components/vixor/TradingViewChart";
+import { searchDexTokens } from "@/domains/discover/discover-crypto-data";
 import {
   PageLayout,
   StatsRow,
@@ -218,10 +219,11 @@ export function TokenPage() {
   const search = useSearch({ from: "/_authenticated/token/$symbol" });
   const navigate = useNavigate();
 
-  const dexUrl = search.dexUrl;
-  const pairAddress = search.pairAddress;
-  const chainFromDiscover = search.chain;
-  const isDexToken = !!(chainFromDiscover && pairAddress);
+  const dexUrl = search.dexUrl || tokenData?.url;
+  const pairAddress = search.pairAddress || tokenData?.pairAddress;
+  const chainFromDiscover = search.chain || tokenData?.chainId;
+  const isContractAddress = symbol.length >= 25 || /^[0-9a-zA-Z]{32,}$/.test(symbol);
+  const isDexToken = !!(chainFromDiscover && pairAddress) || assetType === "meme" || isContractAddress;
 
   const fetchTrades = useStableServerFn(getTradeHistory);
   const fetchAnalyses = useStableServerFn(getRecentAnalyses);
@@ -247,17 +249,12 @@ export function TokenPage() {
     staleTime: 30_000,
   });
 
-  // Fetch discovery data via the API route
-  const discoveryQuery = useQuery<DiscoverResponse>({
+  // Fetch DEX token data via DexScreener search server function
+  const searchFn = useStableServerFn(searchDexTokens);
+  const discoveryQuery = useQuery({
     queryKey: ["token-discovery", symbol],
-    queryFn: async () => {
-      const params = new URLSearchParams({ search: symbol, limit: "5" });
-      const res = await fetch(`/api/discover?${params}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
+    queryFn: () => searchFn({ data: symbol }),
     staleTime: 60_000,
-    refetchInterval: 60_000,
   });
 
   // ── Derived Data ──
@@ -277,13 +274,13 @@ export function TokenPage() {
 
   // Find matching discovery token
   const tokenData = useMemo(() => {
-    if (!discoveryQuery.data?.data?.length) return null;
+    if (!discoveryQuery.data?.length) return null;
     const upper = symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
     return (
-      discoveryQuery.data.data.find(
+      discoveryQuery.data.find(
         (t) => t.symbol.toUpperCase().replace(/[^A-Z0-9]/g, "") === upper,
       ) ||
-      discoveryQuery.data.data[0] ||
+      discoveryQuery.data[0] ||
       null
     );
   }, [discoveryQuery.data, symbol]);
@@ -611,11 +608,21 @@ export function TokenPage() {
             </div>
           </div>
 
-          {isDexToken && pairAddress && chainFromDiscover ? (
+          {pairAddress && chainFromDiscover ? (
             <DexChart
               chainId={chainFromDiscover}
               pairAddress={pairAddress}
               height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+            />
+          ) : isDexToken || isContractAddress ? (
+            <iframe
+              src={`https://dexscreener.com/${chainFromDiscover || "solana"}/${pairAddress || symbol}?embed=1&theme=dark&trades=0&info=0`}
+              style={{
+                width: "100%",
+                height: typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px",
+                border: "none",
+              }}
+              title={`${symbol} chart`}
             />
           ) : (
             <TradingViewChart
@@ -950,11 +957,21 @@ export function TokenPage() {
         {/* ════════════════════════════════════════════════════════════════════
             2. CHART — Native DexChart for DEX, TradingView for majors
         ════════════════════════════════════════════════════════════════════ */}
-        {isDexToken && pairAddress && chainFromDiscover ? (
+        {pairAddress && chainFromDiscover ? (
           <DexChart
             chainId={chainFromDiscover}
             pairAddress={pairAddress}
             height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+          />
+        ) : isDexToken || isContractAddress ? (
+          <iframe
+            src={`https://dexscreener.com/${chainFromDiscover || "solana"}/${pairAddress || symbol}?embed=1&theme=dark&trades=0&info=0`}
+            style={{
+              width: "100%",
+              height: typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px",
+              border: "none",
+            }}
+            title={`${symbol} chart`}
           />
         ) : (
           <TradingViewChart
