@@ -246,47 +246,20 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
         </div>
       )}
 
-      {/* Error overlay */}
+      {/* Error / Fallback overlay — fallback to DexScreener embed iframe so chart ALWAYS works */}
       {error && !loading && (
-        <div
+        <iframe
+          src={`https://dexscreener.com/${chainId}/${pairAddress}?embed=1&theme=dark&trades=0&info=0`}
           style={{
             position: "absolute",
             inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(11,13,16,0.9)",
-            zIndex: 5,
-            gap: "8px",
+            width: "100%",
+            height: "100%",
+            border: "none",
+            zIndex: 10,
           }}
-        >
-          <span style={{ fontSize: "24px" }}>📊</span>
-          <span
-            style={{
-              fontSize: "11px",
-              color: "var(--color-muted-foreground)",
-              fontFamily: "var(--font-sans)",
-            }}
-          >
-            {error}
-          </span>
-          <button
-            onClick={() => loadData(activeInterval)}
-            style={{
-              padding: "5px 14px",
-              borderRadius: "6px",
-              border: "1px solid var(--color-border)",
-              background: "var(--color-card)",
-              color: "var(--color-foreground)",
-              fontSize: "10px",
-              cursor: "pointer",
-              fontFamily: "var(--font-sans)",
-            }}
-          >
-            Retry
-          </button>
-        </div>
+          title="DexScreener Chart"
+        />
       )}
 
       <div ref={containerRef} style={{ width: "100%", height: "100%" }} />

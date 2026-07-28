@@ -836,16 +836,21 @@ class AssetRegistryClass {
 
 export const AssetRegistry = new AssetRegistryClass();
 
-// ── Re-export for convenience ───────────────────────────────────────────────
+// ── Lazy Exports to prevent TDZ initialization errors ───────────────────────
 
 /** Popular pairs in the format expected by price-fetcher.ts */
-export const POPULAR_PAIRS = AssetRegistry.popular().map((a) => ({
-  pair: a.pair,
-  icon: a.icon,
-}));
+export const POPULAR_PAIRS = [
+  { pair: "BTC/USDT", icon: "₿" },
+  { pair: "ETH/USDT", icon: "Ξ" },
+  { pair: "SOL/USDT", icon: "◎" },
+  { pair: "XAU/USD", icon: "Au" },
+  { pair: "EUR/USD", icon: "€" },
+  { pair: "GBP/JPY", icon: "£" },
+  { pair: "LINK/USDT", icon: "⬡" },
+];
 
 /** All known pairs for cache invalidation */
-export const ALL_KNOWN_PAIRS = AssetRegistry.cacheablePairs();
+export const ALL_KNOWN_PAIRS = ASSETS.filter((a) => a.active).map((a) => a.pair);
 
 /** Pair configs in the format expected by the analysis engine */
 export const PAIR_CONFIGS: Record<string, AssetConfig> = Object.fromEntries(
