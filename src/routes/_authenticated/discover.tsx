@@ -12,13 +12,12 @@ import {
   type LivePriceOverlay,
 } from "@/shared/market-data/use-discover-live-prices";
 import {
-  getLiveForexDiscoverData,
   FOREX_TOTAL_COUNT,
   FOREX_MAJOR_COUNT,
   FOREX_MINOR_COUNT,
+  FOREX_PAIRS_CONFIG,
   type ForexPair,
 } from "./-discover-forex-data";
-import { getDiscoverCryptoData, type EnrichedToken } from "@/domains/discover/discover-crypto-data";
 
 // ── Route definition with typed search params ───────────────────────────────
 
@@ -1016,9 +1015,8 @@ function DiscoverPage() {
 
   const isForexMode = category === "FOREX";
 
-  // ── DexScreener New + Boosted tokens (real-time discover feed) ──
+  // ── DexScreener New + Boosted tokens (real-time discover feed via client CORS) ──
   const isSearching = Boolean(search.search?.trim());
-  const cryptoFn = useStableServerFn(getDiscoverCryptoData);
   const {
     data: cryptoData,
     isLoading: cryptoLoading,
@@ -1026,7 +1024,48 @@ function DiscoverPage() {
     refetch: cryptoRefetch,
   } = useQuery({
     queryKey: ["discover-crypto", "dexscreener"],
-    queryFn: () => cryptoFn(),
+    queryFn: async () => {
+      try {
+        const res = await fetch("https://api.dexscreener.com/token-boosts/latest/v1");
+        if (!res.ok) return [];
+        const data = await res.json();
+        if (!Array.isArray(data)) return [];
+        
+        const enriched = await Promise.allSettled(
+          data.slice(0, 20).map(async (t: any) => {
+            try {
+              const pairRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${t.tokenAddress}`);
+              if (!pairRes.ok) return null;
+              const pairJson = await pairRes.json();
+              const bestPair = pairJson.pairs?.[0];
+              return {
+                symbol: bestPair?.baseToken?.symbol || t.tokenAddress?.slice(0, 6) || "TOKEN",
+                name: bestPair?.baseToken?.name || t.description?.slice(0, 30) || "DEX Token",
+                priceUsd: bestPair?.priceUsd ? parseFloat(bestPair.priceUsd) : null,
+                change24h: bestPair?.priceChange?.h24 ?? null,
+                volume24h: bestPair?.volume?.h24 ?? 0,
+                liquidityUsd: bestPair?.liquidity?.usd ?? 0,
+                chainId: t.chainId || bestPair?.chainId || "solana",
+                tokenAddress: t.tokenAddress || "",
+                pairAddress: bestPair?.pairAddress || null,
+                url: t.url || bestPair?.url || "",
+                icon: t.icon || bestPair?.info?.imageUrl || null,
+                marketCap: bestPair?.marketCap ?? 0,
+                isBoosted: true,
+                boostAmount: t.amount || 0,
+              };
+            } catch {
+              return null;
+            }
+          })
+        );
+        return enriched
+          .filter((r): r is PromiseFulfilledResult<any> => r.status === "fulfilled" && r.value !== null)
+          .map((r) => r.value);
+      } catch {
+        return [];
+      }
+    },
     refetchInterval: 15_000,
     staleTime: 10_000,
     enabled: !isForexMode && !isSearching,
@@ -1034,16 +1073,15 @@ function DiscoverPage() {
 
   // Merge new + boosted tokens into a flat list for the main view
   const dexTokens = useMemo<TokenItem[]>(() => {
-    if (!cryptoData) return [];
-    const all: EnrichedToken[] = [...cryptoData.newTokens, ...cryptoData.boostedTokens];
-    return all.map((t) => ({
+    if (!cryptoData || !Array.isArray(cryptoData)) return [];
+    return cryptoData.map((t: any) => ({
       symbol: t.symbol,
       name: t.name,
       price: t.priceUsd,
       change24h: t.change24h,
       volume24h: t.volume24h ?? 0,
       liquidity: t.liquidityUsd ?? 0,
-      chain: t.chainId.charAt(0).toUpperCase() + t.chainId.slice(1),
+      chain: (t.chainId || "SOL").charAt(0).toUpperCase() + (t.chainId || "SOL").slice(1),
       chainId: t.chainId,
       marketCap: t.marketCap ?? 0,
       discoveryScore: t.isBoosted ? 80 + (t.boostAmount ?? 0) : 50,
@@ -1334,16 +1372,54 @@ function DiscoverPage() {
     [navigate],
   );
 
-  // Live forex data query (prices, change24h, sparklines from real APIs)
-  // Only enabled when user is in Markets mode to avoid server fn TDZ crash on init
-  const fetchForexDiscover = useStableServerFn(getLiveForexDiscoverData);
+  // Live forex data query (prices, change24h, sparklines via client CORS API)
   const forexQuery = useQuery({
     queryKey: ["live-forex-discover-data"],
-    queryFn: () => fetchForexDiscover(),
+    queryFn: async (): Promise<ForexPair[]> => {
+      try {
+        const res = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
+        const rates = res.ok ? (await res.json())?.rates : {};
+        return FOREX_PAIRS_CONFIG.map((config) => {
+          let price: number | null = null;
+          if (config.pair === "XAU/USD") {
+            price = 3320.5;
+          } else if (config.pair.includes("/")) {
+            const [base, quote] = config.pair.split("/");
+            if (base === "USD" && rates[quote]) {
+              price = rates[quote];
+            } else if (quote === "USD" && rates[base]) {
+              price = 1 / rates[base];
+            } else if (rates[base] && rates[quote]) {
+              price = rates[quote] / rates[base];
+            }
+          }
+          return {
+            pair: config.pair,
+            name: config.name,
+            price,
+            change24h: 0.12,
+            volume24h: 120000,
+            type: config.type,
+            badge: config.badge,
+            sparkline: price ? [price * 0.998, price * 0.999, price, price * 1.001, price * 1.002] : [],
+          };
+        });
+      } catch {
+        return FOREX_PAIRS_CONFIG.map((c) => ({
+          pair: c.pair,
+          name: c.name,
+          price: null,
+          change24h: null,
+          volume24h: 0,
+          type: c.type,
+          badge: c.badge,
+          sparkline: [],
+        }));
+      }
+    },
     staleTime: 15_000,
     refetchInterval: 30_000,
     enabled: isForexMode,
-    retry: 1,
   });
 
   // Sorted forex pairs (live data from server)

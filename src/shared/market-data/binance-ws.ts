@@ -49,8 +49,9 @@ const PING_INTERVAL_MS = 30000;
  *   ws.subscribe(['BTCUSDT', 'ETHUSDT'], (prices) => { ... });
  *   ws.unsubscribe();
  */
+let binanceWSInstance: BinanceWS | null = null;
+
 export class BinanceWS {
-  private static instance: BinanceWS | null = null;
   private ws: WebSocket | null = null;
   private subscriptions = new Map<string, boolean>();
   private priceCallbacks = new Set<PriceCallback>();
@@ -65,10 +66,10 @@ export class BinanceWS {
   private constructor() {}
 
   static getInstance(): BinanceWS {
-    if (!BinanceWS.instance) {
-      BinanceWS.instance = new BinanceWS();
+    if (!binanceWSInstance) {
+      binanceWSInstance = new BinanceWS();
     }
-    return BinanceWS.instance;
+    return binanceWSInstance;
   }
 
   /**

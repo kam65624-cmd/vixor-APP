@@ -135,23 +135,54 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
     };
   }, []);
 
-  // Load data
+  // Load data via direct GeckoTerminal CORS API with proper aggregate parameters
   const loadData = useCallback(
-    async (interval: string) => {
+    async (intervalKey: string) => {
       if (!candleRef.current) return;
       setLoading(true);
       setError(null);
 
       try {
-        const data: KlineBar[] = await fetchDexOHLCV({
-          data: { chainId, pairAddress, interval, limit: 200 },
-        });
+        const networkMap: Record<string, string> = {
+          ethereum: "eth",
+          solana: "sol",
+          base: "base",
+          arbitrum: "arbitrum",
+          polygon: "polygon",
+          bsc: "bsc",
+          avalanche: "avalanche",
+        };
+        const network = networkMap[chainId.toLowerCase()] || chainId.toLowerCase();
 
-        if (!data || data.length === 0) {
-          setError("No chart data available");
-          setLoading(false);
-          return;
+        const tfMap: Record<string, { tf: string; agg: number }> = {
+          minute: { tf: "minute", agg: 1 },
+          "5minute": { tf: "minute", agg: 5 },
+          "15minute": { tf: "minute", agg: 15 },
+          hour: { tf: "hour", agg: 1 },
+          "4hour": { tf: "hour", agg: 4 },
+          day: { tf: "day", agg: 1 },
+        };
+        const cfg = tfMap[intervalKey] || { tf: "hour", agg: 1 };
+
+        const url = `https://api.geckoterminal.com/api/v2/networks/${network}/pools/${pairAddress}/ohlcv/${cfg.tf}?aggregate=${cfg.agg}&limit=200`;
+
+        const res = await fetch(url, { headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error("GeckoTerminal API non-200");
+
+        const json = await res.json();
+        const rawBars = json?.data;
+        if (!rawBars || !Array.isArray(rawBars) || rawBars.length === 0) {
+          throw new Error("No GeckoTerminal bars");
         }
+
+        const data: KlineBar[] = rawBars.map((c: any) => ({
+          time: c.attributes.time,
+          open: c.attributes.open,
+          high: c.attributes.high,
+          low: c.attributes.low,
+          close: c.attributes.close,
+          volume: c.attributes.volume || 0,
+        })).sort((a: any, b: any) => a.time - b.time);
 
         const candles: CandlestickData[] = data.map((k) => ({
           time: k.time as unknown as import("lightweight-charts").Time,
@@ -171,11 +202,12 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
         volRef.current?.setData(volumes);
         chartRef.current?.timeScale().fitContent();
       } catch (err) {
-        setError("Failed to load chart data");
+        // Fallback to DexScreener iframe embed when GeckoTerminal data is unavailable
+        setError("fallback");
       }
       setLoading(false);
     },
-    [chainId, pairAddress, fetchDexOHLCV],
+    [chainId, pairAddress],
   );
 
   useEffect(() => {

@@ -37,8 +37,9 @@ const MAX_RECONNECT_DELAY_MS = 30000;
  *   );
  *   // later: unsub();
  */
+let dexScreenerWSInstance: DexScreenerWS | null = null;
+
 export class DexScreenerWS {
-  private static instance: DexScreenerWS | null = null;
   private ws: WebSocket | null = null;
   private pairs = new Map<string, { chainId: string; pairAddress: string }>();
   private priceCallbacks = new Set<PriceCallback>();
@@ -53,10 +54,10 @@ export class DexScreenerWS {
   private constructor() {}
 
   static getInstance(): DexScreenerWS {
-    if (!DexScreenerWS.instance) {
-      DexScreenerWS.instance = new DexScreenerWS();
+    if (!dexScreenerWSInstance) {
+      dexScreenerWSInstance = new DexScreenerWS();
     }
-    return DexScreenerWS.instance;
+    return dexScreenerWSInstance;
   }
 
   /**
