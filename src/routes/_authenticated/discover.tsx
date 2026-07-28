@@ -1359,76 +1359,194 @@ function DiscoverPage() {
       loading={effectiveLoading}
       loadingColor="var(--color-bullish)"
     >
-      {/* Stats */}
-      <StatsRow stats={stats} />
-
-      {/* Category Tabs */}
+      {/* ── Workspace Switcher ── */}
       <div
-        className="scrollbar-hide"
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "3px",
-          padding: "8px 10px",
-          overflowX: "auto",
+          justifyContent: "space-between",
+          padding: "12px 14px 8px",
           flexShrink: 0,
-          borderBottom: "1px solid var(--color-border)",
         }}
       >
-        {CATEGORY_TABS.map((tab) => {
-          const isActive = category === tab.key;
-          const count = categoryCounts[tab.key];
-          return (
-            <button
-              key={tab.key}
-              onClick={() => handleCategoryChange(tab.key)}
-              style={{
-                fontSize: "13px",
-                fontWeight: isActive ? 700 : 500,
-                padding: "6px 14px",
-                borderRadius: "8px",
-                border: isActive ? "1px solid var(--color-primary)" : "1px solid transparent",
-                cursor: "pointer",
-                background: isActive ? "var(--color-primary)" : "transparent",
-                color: isActive
-                  ? "var(--color-primary-foreground)"
-                  : "var(--color-muted-foreground)",
-                transition: "all var(--transition-fast)",
-                whiteSpace: "nowrap",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                fontFamily: "var(--font-sans)",
-              }}
-            >
-              {tab.label}
-              <span
+        <span
+          style={{
+            fontSize: "18px",
+            fontWeight: 800,
+            color: "var(--color-foreground)",
+            letterSpacing: "-0.02em",
+            fontFamily: "var(--font-sans)",
+          }}
+        >
+          Discover
+        </span>
+
+        {/* Switcher pill */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            background: "var(--color-card)",
+            border: "1px solid var(--color-border)",
+            borderRadius: "12px",
+            padding: "3px",
+            gap: "2px",
+          }}
+        >
+          <button
+            onClick={() => handleCategoryChange("ALL")}
+            style={{
+              padding: "5px 14px",
+              borderRadius: "9px",
+              border: "none",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.18s ease",
+              background: !isForexMode
+                ? "var(--color-primary)"
+                : "transparent",
+              color: !isForexMode
+                ? "var(--color-primary-foreground)"
+                : "var(--color-muted-foreground)",
+              fontFamily: "var(--font-sans)",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <span style={{ fontSize: "12px" }}>⛓</span>
+            On-Chain
+          </button>
+          <button
+            onClick={() => handleCategoryChange("FOREX")}
+            style={{
+              padding: "5px 14px",
+              borderRadius: "9px",
+              border: "none",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.18s ease",
+              background: isForexMode
+                ? `linear-gradient(135deg, ${GOLD_COLOR}, color-mix(in srgb, ${GOLD_COLOR} 70%, #f97316))`
+                : "transparent",
+              color: isForexMode ? "#000" : "var(--color-muted-foreground)",
+              fontFamily: "var(--font-sans)",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <span style={{ fontSize: "12px" }}>📈</span>
+            Markets
+          </button>
+        </div>
+      </div>
+
+      {/* ── Compact Stats Bar ── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          padding: "0 14px 10px",
+          flexShrink: 0,
+          flexWrap: "nowrap",
+          overflowX: "auto",
+        }}
+        className="scrollbar-hide"
+      >
+        {stats.map((s) => (
+          <div
+            key={s.label}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              padding: "4px 10px",
+              borderRadius: "8px",
+              background: "var(--color-card)",
+              border: "1px solid var(--color-border)",
+              flexShrink: 0,
+            }}
+          >
+            <span style={{ fontSize: "10px", color: s.color, fontWeight: 800, fontFamily: "var(--font-mono)" }}>
+              {s.value}
+            </span>
+            <span style={{ fontSize: "10px", color: "var(--color-muted-foreground)", fontWeight: 500 }}>
+              {s.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Category Sub-Tabs — only shown when in On-Chain mode */}
+      {!isForexMode && (
+        <div
+          className="scrollbar-hide"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "3px",
+            padding: "0 10px 8px",
+            overflowX: "auto",
+            flexShrink: 0,
+            borderBottom: "1px solid var(--color-border)",
+          }}
+        >
+          {CATEGORY_TABS.filter((t) => t.key !== "FOREX").map((tab) => {
+            const isActive = category === tab.key;
+            const count = categoryCounts[tab.key as keyof typeof categoryCounts];
+            return (
+              <button
+                key={tab.key}
+                onClick={() => handleCategoryChange(tab.key)}
                 style={{
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  padding: "0 5px",
+                  fontSize: "12px",
+                  fontWeight: isActive ? 700 : 500,
+                  padding: "5px 12px",
                   borderRadius: "8px",
-                  background: isActive ? "rgba(0,0,0,0.18)" : "var(--color-card)",
+                  border: isActive ? "1px solid var(--color-primary)" : "1px solid transparent",
+                  cursor: "pointer",
+                  background: isActive ? "var(--color-primary)" : "transparent",
                   color: isActive
                     ? "var(--color-primary-foreground)"
                     : "var(--color-muted-foreground)",
-                  fontFamily: "var(--font-mono)",
-                  lineHeight: "18px",
+                  transition: "all var(--transition-fast)",
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  fontFamily: "var(--font-sans)",
                 }}
               >
-                {count}
-              </span>
-            </button>
-          );
-        })}
+                {tab.label}
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    padding: "0 5px",
+                    borderRadius: "6px",
+                    background: isActive ? "rgba(0,0,0,0.18)" : "var(--color-card)",
+                    color: isActive
+                      ? "var(--color-primary-foreground)"
+                      : "var(--color-muted-foreground)",
+                    fontFamily: "var(--font-mono)",
+                    lineHeight: "18px",
+                  }}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
 
-        {/* Spacer */}
-        <div style={{ flex: 1 }} />
+          {/* Spacer */}
+          <div style={{ flex: 1 }} />
 
-        {/* Live indicator + last updated (hidden in forex — static data) */}
-        {!isForexMode && (
+          {/* Live indicator + refresh button */}
           <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
-            {/* Pulsing green dot */}
             <span
               style={{
                 width: "6px",
@@ -1452,8 +1570,6 @@ function DiscoverPage() {
             >
               LIVE
             </span>
-
-            {/* Manual refresh button */}
             <button
               onClick={handleManualRefresh}
               disabled={effectiveLoading}
@@ -1483,36 +1599,8 @@ function DiscoverPage() {
               />
             </button>
           </div>
-        )}
-        {isForexMode && (
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
-            <span
-              style={{
-                fontSize: "9px",
-                color: GOLD_COLOR,
-                fontFamily: "var(--font-mono)",
-                whiteSpace: "nowrap",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              <span
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "50%",
-                  background: GOLD_COLOR,
-                  display: "inline-block",
-                  opacity: 0.7,
-                  flexShrink: 0,
-                }}
-              />
-              Mock data
-            </span>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Search + Sort Bar */}
       <div
