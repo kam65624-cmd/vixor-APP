@@ -8,7 +8,6 @@ import { BinanceWS, type LivePrice } from "@/shared/market-data/binance-ws";
 import { DexScreenerWS } from "@/shared/market-data/dexscreener-ws";
 import { DexChart } from "@/components/vixor/DexChart";
 import { TradingViewChart } from "@/components/vixor/TradingViewChart";
-import { searchDexTokens } from "@/domains/discover/discover-crypto-data";
 import {
   PageLayout,
   StatsRow,
@@ -249,11 +248,39 @@ export function TokenPage() {
     staleTime: 30_000,
   });
 
-  // Fetch DEX token data via DexScreener search server function
-  const searchFn = useStableServerFn(searchDexTokens);
+  // Fetch DEX token data via direct client-side DexScreener CORS search API
   const discoveryQuery = useQuery({
     queryKey: ["token-discovery", symbol],
-    queryFn: () => searchFn({ data: symbol }),
+    queryFn: async () => {
+      if (!symbol?.trim()) return [];
+      try {
+        const res = await fetch(
+          `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(symbol.trim())}`,
+        );
+        if (!res.ok) return [];
+        const data = await res.json();
+        if (!data.pairs || !Array.isArray(data.pairs)) return [];
+        return data.pairs.slice(0, 10).map((p: any) => ({
+          symbol: p.baseToken?.symbol || "UNKNOWN",
+          name: p.baseToken?.name || p.baseToken?.symbol || "Unknown Token",
+          priceUsd: p.priceUsd ? parseFloat(p.priceUsd) : null,
+          change24h: p.priceChange?.h24 ?? null,
+          volume24h: p.volume?.h24 ?? 0,
+          liquidityUsd: p.liquidity?.usd ?? 0,
+          chainId: p.chainId || "solana",
+          tokenAddress: p.baseToken?.address || "",
+          pairAddress: p.pairAddress || null,
+          url: p.url || `https://dexscreener.com/${p.chainId}/${p.pairAddress}`,
+          icon: p.info?.imageUrl || null,
+          marketCap: p.marketCap ?? 0,
+          price: p.priceUsd ? parseFloat(p.priceUsd) : null,
+          chain: p.chainId || "solana",
+          liquidity: p.liquidity?.usd ?? 0,
+        }));
+      } catch {
+        return [];
+      }
+    },
     staleTime: 60_000,
   });
 

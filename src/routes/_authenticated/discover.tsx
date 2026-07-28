@@ -1057,8 +1057,7 @@ function DiscoverPage() {
     }));
   }, [cryptoData]);
 
-  // ── DexScreener search query (supports symbols AND contract addresses) ──
-  const searchFn = useStableServerFn(searchDexTokens);
+  // ── Direct client-side search via DexScreener public CORS API ──
   const {
     data: searchResults,
     isLoading: legacyLoading,
@@ -1066,20 +1065,46 @@ function DiscoverPage() {
     refetch: legacyRefetch,
   } = useQuery({
     queryKey: ["discover-search", search.search],
-    queryFn: () => searchFn({ data: search.search!.trim() }),
+    queryFn: async () => {
+      const q = search.search?.trim();
+      if (!q) return [];
+      try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        if (!data.pairs || !Array.isArray(data.pairs)) return [];
+        return data.pairs.slice(0, 25).map((p: any) => ({
+          symbol: p.baseToken?.symbol || "UNKNOWN",
+          name: p.baseToken?.name || p.baseToken?.symbol || "Unknown Token",
+          priceUsd: p.priceUsd ? parseFloat(p.priceUsd) : null,
+          change24h: p.priceChange?.h24 ?? null,
+          volume24h: p.volume?.h24 ?? 0,
+          liquidityUsd: p.liquidity?.usd ?? 0,
+          chainId: p.chainId || "solana",
+          tokenAddress: p.baseToken?.address || "",
+          pairAddress: p.pairAddress || null,
+          url: p.url || `https://dexscreener.com/${p.chainId}/${p.pairAddress}`,
+          icon: p.info?.imageUrl || null,
+          marketCap: p.marketCap ?? 0,
+        }));
+      } catch {
+        return [];
+      }
+    },
     enabled: !isForexMode && isSearching,
+    staleTime: 30_000,
   });
 
   const searchTokens = useMemo<TokenItem[]>(() => {
     if (!searchResults) return [];
-    return searchResults.map((t) => ({
+    return searchResults.map((t: any) => ({
       symbol: t.symbol,
       name: t.name,
       price: t.priceUsd,
       change24h: t.change24h,
       volume24h: t.volume24h ?? 0,
       liquidity: t.liquidityUsd ?? 0,
-      chain: t.chainId.charAt(0).toUpperCase() + t.chainId.slice(1),
+      chain: (t.chainId || "SOL").charAt(0).toUpperCase() + (t.chainId || "SOL").slice(1),
       chainId: t.chainId,
       marketCap: t.marketCap ?? 0,
       discoveryScore: 75,
