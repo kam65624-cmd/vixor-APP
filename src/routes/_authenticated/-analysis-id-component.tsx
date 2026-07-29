@@ -977,7 +977,10 @@ export function AnalysisResult() {
 
   // ── Analysis source & data quality (grounded analysis v2) ──
   const analysisSource = (a?.analysis_source ?? raw.analysis_source ?? null) as
-    "openrouter" | "local_engine" | "local_fallback" | null;
+    | "openrouter"
+    | "local_engine"
+    | "local_fallback"
+    | null;
   const dataQuality = (a?.data_quality ?? raw.data_quality ?? null) as {
     candleCount: number;
     dataSource: string;

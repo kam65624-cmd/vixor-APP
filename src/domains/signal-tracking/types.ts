@@ -3,7 +3,14 @@
 // ============================================================================
 
 export type SignalStatus =
-  "pending" | "active" | "tp1_hit" | "tp2_hit" | "tp3_hit" | "sl_hit" | "expired" | "cancelled";
+  | "pending"
+  | "active"
+  | "tp1_hit"
+  | "tp2_hit"
+  | "tp3_hit"
+  | "sl_hit"
+  | "expired"
+  | "cancelled";
 
 export type SignalSourceType = "daily_signal" | "analysis";
 

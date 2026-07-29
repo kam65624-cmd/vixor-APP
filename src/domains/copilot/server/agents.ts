@@ -3,7 +3,11 @@
 // ═══════════════════════════════════════════════════════════
 
 export type AgentId =
-  "market_analyst" | "risk_manager" | "news_analyst" | "strategy_builder" | "moxi";
+  | "market_analyst"
+  | "risk_manager"
+  | "news_analyst"
+  | "strategy_builder"
+  | "moxi";
 
 export interface AgentDefinition {
   id: AgentId;

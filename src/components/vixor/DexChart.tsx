@@ -175,14 +175,16 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
           throw new Error("No GeckoTerminal bars");
         }
 
-        const data: KlineBar[] = rawBars.map((c: any) => ({
-          time: c.attributes.time,
-          open: c.attributes.open,
-          high: c.attributes.high,
-          low: c.attributes.low,
-          close: c.attributes.close,
-          volume: c.attributes.volume || 0,
-        })).sort((a: any, b: any) => a.time - b.time);
+        const data: KlineBar[] = rawBars
+          .map((c: any) => ({
+            time: c.attributes.time,
+            open: c.attributes.open,
+            high: c.attributes.high,
+            low: c.attributes.low,
+            close: c.attributes.close,
+            volume: c.attributes.volume || 0,
+          }))
+          .sort((a: any, b: any) => a.time - b.time);
 
         const candles: CandlestickData[] = data.map((k) => ({
           time: k.time as unknown as import("lightweight-charts").Time,

@@ -302,7 +302,8 @@ export function TokenPage() {
   const pairAddress = search.pairAddress || tokenData?.pairAddress;
   const chainFromDiscover = search.chain || tokenData?.chainId;
   const isContractAddress = symbol.length >= 25 || /^[0-9a-zA-Z]{32,}$/.test(symbol);
-  const isDexToken = !!(chainFromDiscover && pairAddress) || assetType === "meme" || isContractAddress;
+  const isDexToken =
+    !!(chainFromDiscover && pairAddress) || assetType === "meme" || isContractAddress;
 
   // ── Derived Data ──
 
@@ -646,7 +647,8 @@ export function TokenPage() {
               src={`https://dexscreener.com/${chainFromDiscover || "solana"}/${pairAddress || symbol}?embed=1&theme=dark&trades=0&info=0`}
               style={{
                 width: "100%",
-                height: typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px",
+                height:
+                  typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px",
                 border: "none",
               }}
               title={`${symbol} chart`}

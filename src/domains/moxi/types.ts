@@ -24,7 +24,14 @@ export interface MoxiPersona {
 
 /** Avatar visual variants — each maps to a distinct 2.5D look */
 export type MoxiAvatarVariant =
-  "default" | "bull" | "bear" | "crystal" | "flame" | "ocean" | "phantom" | "nova";
+  | "default"
+  | "bull"
+  | "bear"
+  | "crystal"
+  | "flame"
+  | "ocean"
+  | "phantom"
+  | "nova";
 
 /** MOXI's response from the server */
 export interface MoxiResponse {

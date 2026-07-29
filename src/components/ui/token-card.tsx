@@ -146,7 +146,6 @@ export function TokenCard({
         to="/token/$symbol"
         params={{ symbol: token.symbol }}
         className="block no-underline"
-
         search={{} as any}
       >
         {content}

@@ -73,7 +73,9 @@ export async function connectPhantom(): Promise<{
         const bs58 = bs58Module.default || bs58Module;
         return bs58.encode(signature);
       } catch {
-        return Array.from(signature).map(b => b.toString(16).padStart(2, "0")).join("");
+        return Array.from(signature)
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
       }
     },
     disconnect: async () => {

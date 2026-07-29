@@ -1,7 +1,7 @@
 // Production-only Mixpanel wrapper
 // All functions are no-ops in development or if VITE_MIXPANEL_TOKEN is missing
 
-let mp: any = null;
+const mp: any = null;
 let initialized = false;
 
 async function ensure() {

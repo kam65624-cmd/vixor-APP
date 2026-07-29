@@ -1032,11 +1032,13 @@ export function DiscoverPage() {
         if (!res.ok) return [];
         const data = await res.json();
         if (!Array.isArray(data)) return [];
-        
+
         const enriched = await Promise.allSettled(
           data.slice(0, 20).map(async (t: any) => {
             try {
-              const pairRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${t.tokenAddress}`);
+              const pairRes = await fetch(
+                `https://api.dexscreener.com/latest/dex/tokens/${t.tokenAddress}`,
+              );
               if (!pairRes.ok) return null;
               const pairJson = await pairRes.json();
               const bestPair = pairJson.pairs?.[0];
@@ -1059,10 +1061,12 @@ export function DiscoverPage() {
             } catch {
               return null;
             }
-          })
+          }),
         );
         return enriched
-          .filter((r): r is PromiseFulfilledResult<any> => r.status === "fulfilled" && r.value !== null)
+          .filter(
+            (r): r is PromiseFulfilledResult<any> => r.status === "fulfilled" && r.value !== null,
+          )
           .map((r) => r.value);
       } catch {
         return [];
@@ -1109,7 +1113,9 @@ export function DiscoverPage() {
       const q = search.search?.trim();
       if (!q) return [];
       try {
-        const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`);
+        const res = await fetch(
+          `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`,
+        );
         if (!res.ok) return [];
         const data = await res.json();
         if (!data.pairs || !Array.isArray(data.pairs)) return [];
@@ -1252,11 +1258,11 @@ export function DiscoverPage() {
   const categoryCounts = useMemo(() => {
     return {
       ALL: tokens.length,
-      MEME: tokens.filter((t) => t.category === "MEME" || t.chain === "sol" || t.chain === "eth").length,
+      MEME: tokens.filter((t) => t.category === "MEME" || t.chain === "sol" || t.chain === "eth")
+        .length,
       CRYPTO: tokens.filter(
         (t) =>
-          t.category === "CRYPTO" ||
-          ["eth", "btc", "sol", "bnb"].includes(t.symbol.toLowerCase()),
+          t.category === "CRYPTO" || ["eth", "btc", "sol", "bnb"].includes(t.symbol.toLowerCase()),
       ).length,
       FOREX: FOREX_TOTAL_COUNT,
     };
@@ -1403,7 +1409,9 @@ export function DiscoverPage() {
             volume24h: 120000,
             type: config.type,
             badge: config.badge,
-            sparkline: price ? [price * 0.998, price * 0.999, price, price * 1.001, price * 1.002] : [],
+            sparkline: price
+              ? [price * 0.998, price * 0.999, price, price * 1.001, price * 1.002]
+              : [],
           };
         });
       } catch {
@@ -1511,9 +1519,7 @@ export function DiscoverPage() {
               fontWeight: 700,
               cursor: "pointer",
               transition: "all 0.18s ease",
-              background: !isForexMode
-                ? "var(--color-primary)"
-                : "transparent",
+              background: !isForexMode ? "var(--color-primary)" : "transparent",
               color: !isForexMode
                 ? "var(--color-primary-foreground)"
                 : "var(--color-muted-foreground)",
@@ -1579,10 +1585,19 @@ export function DiscoverPage() {
               flexShrink: 0,
             }}
           >
-            <span style={{ fontSize: "10px", color: s.color, fontWeight: 800, fontFamily: "var(--font-mono)" }}>
+            <span
+              style={{
+                fontSize: "10px",
+                color: s.color,
+                fontWeight: 800,
+                fontFamily: "var(--font-mono)",
+              }}
+            >
               {s.value}
             </span>
-            <span style={{ fontSize: "10px", color: "var(--color-muted-foreground)", fontWeight: 500 }}>
+            <span
+              style={{ fontSize: "10px", color: "var(--color-muted-foreground)", fontWeight: 500 }}
+            >
               {s.label}
             </span>
           </div>
@@ -2014,7 +2029,6 @@ export function DiscoverPage() {
                       {isSearching ? "Top Movers" : "New & Trending"}
                     </span>
                   </div>
-
                 </div>
                 <div
                   className="scrollbar-hide"

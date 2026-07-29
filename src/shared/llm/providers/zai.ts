@@ -97,7 +97,8 @@ class ZaiProvider implements LLMProvider {
 
       const content: string = response.choices?.[0]?.message?.content ?? "";
       const usageRaw = response.usage as
-        { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | undefined;
+        | { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }
+        | undefined;
       const usage: TokenUsage | undefined = usageRaw
         ? {
             promptTokens: usageRaw.prompt_tokens ?? 0,

@@ -17,8 +17,6 @@
 
 import { OHLCVBar } from "../core/types";
 
-
-
 // ---------------------------------------------------------------------------
 // Result of computing all indicators
 // ---------------------------------------------------------------------------
@@ -59,8 +57,6 @@ export interface IndicatorResults {
   obv: number[]; // On Balance Volume
   vwap: number[]; // VWAP
 }
-
-
 
 // Pure TypeScript Technical Indicator Calculations
 // ---------------------------------------------------------------------------
