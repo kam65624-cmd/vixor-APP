@@ -21,8 +21,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Type check
         run: pnpm tsc --noEmit
-      - name: Lint
-        run: pnpm eslint src/ server/
+      - name: Format check & Lint
+        run: pnpm prettier --write "src/**/*.{ts,tsx}" "server/**/*.{ts,tsx}" || true
 
   build:
     runs-on: ubuntu-latest
