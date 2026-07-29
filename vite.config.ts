@@ -90,14 +90,7 @@ export default defineConfig({
     // is 500KB. After P0/P1 code-splitting optimizations, the index chunk is
     // at ~500KB (down from 635KB) with all reducible modules already lazy-loaded.
     chunkSizeWarningLimit: 700,
-    rollupOptions: {
-      // CCXT is a Node.js-only library (uses http, https, ws, etc.).
-      // It must never be bundled into the client — it's only used inside
-      // TanStack Start server functions (createServerFn).
-      // Externalizing prevents Rollup from trying to resolve Node built-ins
-      // like "http-proxy-agent" that don't exist in the browser.
-      external: ["ccxt"],
-    },
+
   },
   server: {
     host: "::",

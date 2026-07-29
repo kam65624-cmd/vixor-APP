@@ -1,51 +1,33 @@
 // ── Formatters — Shared formatting utilities for all pages ────────────────
-// Uses: numbro, d3-format, date-fns, decimal.js
-import numbro from "numbro";
+// Native JS formatting without external dependencies
 import { formatDistanceToNow } from "date-fns";
-import Decimal from "decimal.js";
-
-// Configure numbro for crypto defaults
-numbro.setDefaults({
-  thousandSeparated: true,
-  mantissa: 2,
-  trimMantissa: false,
-});
 
 // ── Currency ──────────────────────────────────────────────────────────────
 
 /** Format as currency: $1,234.56 */
-export function formatCurrency(value: number | string | Decimal, decimals?: number): string {
-  const n =
-    typeof value === "string"
-      ? parseFloat(value)
-      : value instanceof Decimal
-        ? value.toNumber()
-        : value;
-  if (!isFinite(n) || isNaN(n)) return "\u2014";
+export function formatCurrency(value: number | string, decimals?: number): string {
+  const n = typeof value === "string" ? parseFloat(value) : value;
+  if (!isFinite(n) || isNaN(n)) return "—";
   const abs = Math.abs(n);
   const prefix = n < 0 ? "-$" : "$";
 
-  if (abs >= 1_000_000_000)
-    return `${prefix}${numbro(abs).format({ average: true, totalLength: 4 })}B`;
-  if (abs >= 1_000_000) return `${prefix}${numbro(abs).format({ average: true, totalLength: 4 })}M`;
-  if (abs >= 10_000)
-    return `${prefix}${numbro(abs).format({ thousandSeparated: true, mantissa: 0 })}`;
-  if (abs >= 1)
-    return `${prefix}${numbro(abs).format({ mantissa: decimals ?? 2, trimMantissa: true })}`;
-  if (abs >= 0.01)
-    return `${prefix}${numbro(abs).format({ mantissa: decimals ?? 4, trimMantissa: true })}`;
-  return `${prefix}${numbro(abs).format({ mantissa: decimals ?? 6, trimMantissa: true })}`;
+  if (abs >= 1_000_000_000) return `${prefix}${(abs / 1_000_000_000).toFixed(2)}B`;
+  if (abs >= 1_000_000) return `${prefix}${(abs / 1_000_000).toFixed(2)}M`;
+  if (abs >= 10_000) return `${prefix}${abs.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  if (abs >= 1) return `${prefix}${abs.toFixed(decimals ?? 2)}`;
+  if (abs >= 0.01) return `${prefix}${abs.toFixed(decimals ?? 4)}`;
+  return `${prefix}${abs.toFixed(decimals ?? 6)}`;
 }
 
 /** Format PnL: +$1,234.56 or -$1,234.56 */
 export function formatPnL(value: number): string {
-  if (!isFinite(value) || isNaN(value)) return "\u2014";
+  if (!isFinite(value) || isNaN(value)) return "—";
   return `${value >= 0 ? "+" : "-"}${formatCurrency(Math.abs(value))}`;
 }
 
 /** Compact value: $1.2M, $345K, $89 */
 export function formatCompact(value: number): string {
-  if (!isFinite(value) || isNaN(value)) return "\u2014";
+  if (!isFinite(value) || isNaN(value)) return "—";
   const abs = Math.abs(value);
   const prefix = value < 0 ? "-$" : "$";
   if (abs >= 1_000_000_000) return `${prefix}${(abs / 1_000_000_000).toFixed(1)}B`;
@@ -58,13 +40,13 @@ export function formatCompact(value: number): string {
 
 /** Format percentage: +85.3% */
 export function formatPercent(value: number, decimals = 1): string {
-  if (!isFinite(value) || isNaN(value)) return "\u2014";
+  if (!isFinite(value) || isNaN(value)) return "—";
   return `${value >= 0 ? "+" : ""}${value.toFixed(decimals)}%`;
 }
 
 /** Raw percent: 85.3% (no +/- prefix) */
 export function formatPercentRaw(value: number, decimals = 1): string {
-  if (!isFinite(value) || isNaN(value)) return "\u2014";
+  if (!isFinite(value) || isNaN(value)) return "—";
   return `${value.toFixed(decimals)}%`;
 }
 
@@ -72,22 +54,22 @@ export function formatPercentRaw(value: number, decimals = 1): string {
 
 /** Format large numbers with commas: 1,234,567 */
 export function formatNumber(value: number, decimals?: number): string {
-  if (!isFinite(value) || isNaN(value)) return "\u2014";
-  return numbro(value).format({ thousandSeparated: true, mantissa: decimals ?? 0 });
+  if (!isFinite(value) || isNaN(value)) return "—";
+  return value.toLocaleString("en-US", { maximumFractionDigits: decimals ?? 0 });
 }
 
 /** Format a quantity with smart decimals */
 export function formatQuantity(value: number): string {
-  if (!isFinite(value) || isNaN(value)) return "\u2014";
+  if (!isFinite(value) || isNaN(value)) return "—";
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(2)}K`;
-  if (value >= 1) return numbro(value).format({ mantissa: 2, trimMantissa: true });
-  return numbro(value).format({ mantissa: 4, trimMantissa: true });
+  if (value >= 1) return value.toFixed(2);
+  return value.toFixed(4);
 }
 
 /** Format R-multiple: +2.3R or -0.5R */
 export function formatRMultiple(value: number): string {
-  if (!isFinite(value) || isNaN(value)) return "\u2014";
+  if (!isFinite(value) || isNaN(value)) return "—";
   return `${value >= 0 ? "+" : ""}${value.toFixed(1)}R`;
 }
 
@@ -97,7 +79,7 @@ export function formatRMultiple(value: number): string {
 export function formatTimeAgo(dateStr: string | Date): string {
   try {
     const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
-    if (isNaN(date.getTime())) return "\u2014";
+    if (isNaN(date.getTime())) return "—";
     const diff = Date.now() - date.getTime();
     const secs = Math.floor(diff / 1000);
     if (secs < 60) return `${secs}s ago`;
@@ -109,7 +91,7 @@ export function formatTimeAgo(dateStr: string | Date): string {
     if (days < 30) return `${days}d ago`;
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   } catch {
-    return "\u2014";
+    return "—";
   }
 }
 
@@ -117,10 +99,10 @@ export function formatTimeAgo(dateStr: string | Date): string {
 export function formatDateShort(dateStr: string | Date): string {
   try {
     const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
-    if (isNaN(date.getTime())) return "\u2014";
+    if (isNaN(date.getTime())) return "—";
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   } catch {
-    return "\u2014";
+    return "—";
   }
 }
 
@@ -128,10 +110,10 @@ export function formatDateShort(dateStr: string | Date): string {
 export function formatDateFull(dateStr: string | Date): string {
   try {
     const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
-    if (isNaN(date.getTime())) return "\u2014";
+    if (isNaN(date.getTime())) return "—";
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   } catch {
-    return "\u2014";
+    return "—";
   }
 }
 
@@ -139,10 +121,10 @@ export function formatDateFull(dateStr: string | Date): string {
 export function formatRelative(dateStr: string | Date): string {
   try {
     const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
-    if (isNaN(date.getTime())) return "\u2014";
+    if (isNaN(date.getTime())) return "—";
     return formatDistanceToNow(date, { addSuffix: true });
   } catch {
-    return "\u2014";
+    return "—";
   }
 }
 
@@ -150,11 +132,11 @@ export function formatRelative(dateStr: string | Date): string {
 
 /** Smart price formatting based on magnitude */
 export function formatPrice(price: number): string {
-  if (!isFinite(price) || isNaN(price)) return "\u2014";
-  if (price >= 1000) return `$${numbro(price).format({ mantissa: 2, trimMantissa: true })}`;
-  if (price >= 1) return `$${numbro(price).format({ mantissa: 2, trimMantissa: true })}`;
-  if (price >= 0.01) return `$${numbro(price).format({ mantissa: 4, trimMantissa: true })}`;
-  return `$${numbro(price).format({ mantissa: 6, trimMantissa: true })}`;
+  if (!isFinite(price) || isNaN(price)) return "—";
+  if (price >= 1000) return `$${price.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  if (price >= 1) return `$${price.toFixed(2)}`;
+  if (price >= 0.01) return `$${price.toFixed(4)}`;
+  return `$${price.toFixed(6)}`;
 }
 
 // ── Precision Math ────────────────────────────────────────────────────────
@@ -172,21 +154,22 @@ export function calcPnlPercent(entry: number, exit: number, direction: "long" | 
   return ((entry - exit) / entry) * 100;
 }
 
-// ── Decimal.js precision math ────────────────────────────────────────────
+// ── Native Precision Math ──────────────────────────────────────────────────
 
 export function preciseAdd(a: number | string, b: number | string): string {
-  return new Decimal(a).plus(new Decimal(b)).toFixed();
+  return String(Number(a) + Number(b));
 }
 
 export function preciseSub(a: number | string, b: number | string): string {
-  return new Decimal(a).minus(new Decimal(b)).toFixed();
+  return String(Number(a) - Number(b));
 }
 
 export function preciseMul(a: number | string, b: number | string): string {
-  return new Decimal(a).times(new Decimal(b)).toFixed();
+  return String(Number(a) * Number(b));
 }
 
 export function preciseDiv(a: number | string, b: number | string, dp = 8): string {
-  if (new Decimal(b).isZero()) return "0";
-  return new Decimal(a).div(new Decimal(b)).toFixed(dp);
+  const numB = Number(b);
+  if (!numB) return "0";
+  return (Number(a) / numB).toFixed(dp);
 }

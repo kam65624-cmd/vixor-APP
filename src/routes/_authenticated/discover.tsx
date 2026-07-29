@@ -2014,18 +2014,7 @@ export function DiscoverPage() {
                       {isSearching ? "Top Movers" : "New & Trending"}
                     </span>
                   </div>
-                  {cryptoData?.fetchedAt && !isSearching && (
-                    <span
-                      style={{
-                        fontSize: "9px",
-                        fontFamily: "var(--font-mono)",
-                        color: "var(--color-muted-foreground)",
-                        opacity: 0.7,
-                      }}
-                    >
-                      via DexScreener · {fmtFreshness(cryptoData.fetchedAt)}
-                    </span>
-                  )}
+
                 </div>
                 <div
                   className="scrollbar-hide"

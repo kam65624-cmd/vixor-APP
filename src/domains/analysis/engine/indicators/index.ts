@@ -17,21 +17,7 @@
 
 import { OHLCVBar } from "../core/types";
 
-// ---------------------------------------------------------------------------
-// Package imports — lightweight-charts-indicators
-// ---------------------------------------------------------------------------
-import {
-  RSI as _RSI,
-  MACD as _MACD,
-  BollingerBands as _BB,
-  EMA as _EMA,
-  SMA as _SMA,
-  StochRSI as _StochRSI,
-  ATR as _ATR,
-  ADX as _ADX,
-  CCI as _CCI,
-  OBV as _OBV,
-} from "lightweight-charts-indicators";
+
 
 // ---------------------------------------------------------------------------
 // Result of computing all indicators
@@ -74,39 +60,138 @@ export interface IndicatorResults {
   vwap: number[]; // VWAP
 }
 
+
+
+// Pure TypeScript Technical Indicator Calculations
 // ---------------------------------------------------------------------------
-// Helper: extract a number[] from a TimeValue[] plot, converting null/undefined
-// to NaN. The package returns arrays already the same length as input bars.
-// ---------------------------------------------------------------------------
-function plotToNumbers(
-  plot: Array<{ time: number; value: number | null | undefined }> | undefined,
-  length: number,
-): number[] {
-  if (!plot || plot.length === 0) {
-    return new Array<number>(length).fill(NaN);
+
+function computeSMA(prices: number[], length: number): number[] {
+  const res: number[] = new Array(prices.length).fill(NaN);
+  let sum = 0;
+  for (let i = 0; i < prices.length; i++) {
+    sum += prices[i];
+    if (i >= length) sum -= prices[i - length];
+    if (i >= length - 1) res[i] = sum / length;
   }
-  // The plot should already be the same length as input; if shorter, pad with NaN
-  const result: number[] = [];
-  for (let i = 0; i < length; i++) {
-    if (i < plot.length) {
-      const v = plot[i].value;
-      result.push(v === null || v === undefined ? NaN : v);
-    } else {
-      result.push(NaN);
-    }
-  }
-  return result;
+  return res;
 }
 
-// ---------------------------------------------------------------------------
-// Pure TypeScript implementation of VWAP (not available in the package)
-// ---------------------------------------------------------------------------
+function computeEMA(prices: number[], length: number): number[] {
+  const res: number[] = new Array(prices.length).fill(NaN);
+  if (prices.length < length) return res;
+  const k = 2 / (length + 1);
+  let sum = 0;
+  for (let i = 0; i < length; i++) sum += prices[i];
+  let ema = sum / length;
+  res[length - 1] = ema;
+  for (let i = length; i < prices.length; i++) {
+    ema = prices[i] * k + ema * (1 - k);
+    res[i] = ema;
+  }
+  return res;
+}
+
+function computeRSI(prices: number[], length = 14): number[] {
+  const res: number[] = new Array(prices.length).fill(NaN);
+  if (prices.length <= length) return res;
+
+  let avgGain = 0;
+  let avgLoss = 0;
+  for (let i = 1; i <= length; i++) {
+    const change = prices[i] - prices[i - 1];
+    if (change > 0) avgGain += change;
+    else avgLoss += Math.abs(change);
+  }
+  avgGain /= length;
+  avgLoss /= length;
+
+  res[length] = avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss);
+
+  for (let i = length + 1; i < prices.length; i++) {
+    const change = prices[i] - prices[i - 1];
+    const gain = change > 0 ? change : 0;
+    const loss = change < 0 ? Math.abs(change) : 0;
+    avgGain = (avgGain * (length - 1) + gain) / length;
+    avgLoss = (avgLoss * (length - 1) + loss) / length;
+    res[i] = avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss);
+  }
+  return res;
+}
+
+function computeMACD(prices: number[], fast = 12, slow = 26, signal = 9) {
+  const emaFast = computeEMA(prices, fast);
+  const emaSlow = computeEMA(prices, slow);
+  const macdLine: number[] = new Array(prices.length).fill(NaN);
+  for (let i = 0; i < prices.length; i++) {
+    if (!isNaN(emaFast[i]) && !isNaN(emaSlow[i])) {
+      macdLine[i] = emaFast[i] - emaSlow[i];
+    }
+  }
+  const validMacd = macdLine.filter((v) => !isNaN(v));
+  const signalValues = computeEMA(validMacd, signal);
+  const signalLine: number[] = new Array(prices.length).fill(NaN);
+  const histogram: number[] = new Array(prices.length).fill(NaN);
+
+  let validIdx = 0;
+  for (let i = 0; i < prices.length; i++) {
+    if (!isNaN(macdLine[i])) {
+      signalLine[i] = signalValues[validIdx] ?? NaN;
+      if (!isNaN(signalLine[i])) {
+        histogram[i] = macdLine[i] - signalLine[i];
+      }
+      validIdx++;
+    }
+  }
+
+  return { macd: macdLine, signal: signalLine, histogram };
+}
+
+function computeBollingerBands(prices: number[], length = 20, mult = 2) {
+  const middle = computeSMA(prices, length);
+  const upper: number[] = new Array(prices.length).fill(NaN);
+  const lower: number[] = new Array(prices.length).fill(NaN);
+
+  for (let i = length - 1; i < prices.length; i++) {
+    const slice = prices.slice(i - length + 1, i + 1);
+    const mean = middle[i];
+    const stdDev = Math.sqrt(slice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / length);
+    upper[i] = mean + mult * stdDev;
+    lower[i] = mean - mult * stdDev;
+  }
+
+  return { upper, middle, lower };
+}
+
+function computeATR(bars: OHLCVBar[], length = 14): number[] {
+  const tr: number[] = new Array(bars.length).fill(NaN);
+  if (bars.length === 0) return tr;
+  tr[0] = bars[0].high - bars[0].low;
+  for (let i = 1; i < bars.length; i++) {
+    const h = bars[i].high;
+    const l = bars[i].low;
+    const prevC = bars[i - 1].close;
+    tr[i] = Math.max(h - l, Math.abs(h - prevC), Math.abs(l - prevC));
+  }
+  return computeEMA(tr, length);
+}
+
+function computeOBV(bars: OHLCVBar[]): number[] {
+  const res: number[] = new Array(bars.length).fill(0);
+  if (bars.length === 0) return res;
+  for (let i = 1; i < bars.length; i++) {
+    if (bars[i].close > bars[i - 1].close) res[i] = res[i - 1] + bars[i].volume;
+    else if (bars[i].close < bars[i - 1].close) res[i] = res[i - 1] - bars[i].volume;
+    else res[i] = res[i - 1];
+  }
+  return res;
+}
+
 function computeVWAP(bars: OHLCVBar[]): number[] {
   const result: number[] = new Array(bars.length).fill(NaN);
   if (bars.length === 0) return result;
 
-  let cumulativeTPV = 0; // cumulative (typical price * volume)
-  let cumulativeVol = 0; // cumulative volume
+  let cumulativeTPV = 0;
+  let cumulativeVol = 0;
 
   for (let i = 0; i < bars.length; i++) {
     const bar = bars[i];
@@ -118,7 +203,6 @@ function computeVWAP(bars: OHLCVBar[]): number[] {
     if (cumulativeVol > 0) {
       result[i] = cumulativeTPV / cumulativeVol;
     }
-    // If cumulativeVol is 0 (first bar with 0 volume), result stays NaN
   }
 
   return result;
@@ -130,23 +214,13 @@ function computeVWAP(bars: OHLCVBar[]): number[] {
 export function computeIndicators(bars: OHLCVBar[]): IndicatorResults {
   const n = bars.length;
 
-  // Edge case: no data
   if (n === 0) {
     const emptyArr = (): number[] => [];
     return {
       rsi: emptyArr(),
       macd: { macd: emptyArr(), signal: emptyArr(), histogram: emptyArr() },
-      bollingerBands: {
-        upper: emptyArr(),
-        middle: emptyArr(),
-        lower: emptyArr(),
-      },
-      ema: {
-        ema9: emptyArr(),
-        ema21: emptyArr(),
-        ema50: emptyArr(),
-        ema200: emptyArr(),
-      },
+      bollingerBands: { upper: emptyArr(), middle: emptyArr(), lower: emptyArr() },
+      ema: { ema9: emptyArr(), ema21: emptyArr(), ema50: emptyArr(), ema200: emptyArr() },
       sma: { sma20: emptyArr(), sma50: emptyArr() },
       stochRSI: { k: emptyArr(), d: emptyArr() },
       atr: emptyArr(),
@@ -157,87 +231,33 @@ export function computeIndicators(bars: OHLCVBar[]): IndicatorResults {
     };
   }
 
-  // The package's Bar type is structurally compatible with OHLCVBar
-  // (time, open, high, low, close, volume) — no conversion needed.
+  const closes = bars.map((b) => b.close);
 
-  // ---- RSI(14) ----
-  const rsiResult = _RSI.calculate(bars, { length: 14, src: "close" });
-  const rsi = plotToNumbers(rsiResult.plots.plot0, n);
+  const rsi = computeRSI(closes, 14);
+  const macd = computeMACD(closes, 12, 26, 9);
+  const bollingerBands = computeBollingerBands(closes, 20, 2);
 
-  // ---- MACD(12, 26, 9) ----
-  const macdResult = _MACD.calculate(bars, {
-    fastLength: 12,
-    slowLength: 26,
-    signalLength: 9,
-    src: "close",
-  });
-  const macdLine = plotToNumbers(macdResult.plots.plot0, n);
-  const macdSignal = plotToNumbers(macdResult.plots.plot1, n);
-  const macdHistogram = plotToNumbers(macdResult.plots.plot2, n);
+  const ema9 = computeEMA(closes, 9);
+  const ema21 = computeEMA(closes, 21);
+  const ema50 = computeEMA(closes, 50);
+  const ema200 = computeEMA(closes, 200);
 
-  // ---- Bollinger Bands(20, 2) ----
-  const bbResult = _BB.calculate(bars, { length: 20, mult: 2, src: "close" });
-  const bbUpper = plotToNumbers(bbResult.plots.plot0, n);
-  const bbMiddle = plotToNumbers(bbResult.plots.plot1, n);
-  const bbLower = plotToNumbers(bbResult.plots.plot2, n);
+  const sma20 = computeSMA(closes, 20);
+  const sma50 = computeSMA(closes, 50);
 
-  // ---- EMAs ----
-  const ema9Result = _EMA.calculate(bars, { length: 9, src: "close" });
-  const ema21Result = _EMA.calculate(bars, { length: 21, src: "close" });
-  const ema50Result = _EMA.calculate(bars, { length: 50, src: "close" });
-  const ema200Result = _EMA.calculate(bars, { length: 200, src: "close" });
-  const ema9 = plotToNumbers(ema9Result.plots.plot0, n);
-  const ema21 = plotToNumbers(ema21Result.plots.plot0, n);
-  const ema50 = plotToNumbers(ema50Result.plots.plot0, n);
-  const ema200 = plotToNumbers(ema200Result.plots.plot0, n);
+  const stochK = computeRSI(rsi, 14);
+  const stochD = computeSMA(stochK, 3);
 
-  // ---- SMAs ----
-  const sma20Result = _SMA.calculate(bars, { len: 20, src: "close" });
-  const sma50Result = _SMA.calculate(bars, { len: 50, src: "close" });
-  const sma20 = plotToNumbers(sma20Result.plots.plot0, n);
-  const sma50 = plotToNumbers(sma50Result.plots.plot0, n);
-
-  // ---- Stochastic RSI ----
-  const stochResult = _StochRSI.calculate(bars, {
-    smoothK: 3,
-    smoothD: 3,
-    lengthRSI: 14,
-    lengthStoch: 14,
-  });
-  const stochK = plotToNumbers(stochResult.plots.plot0, n);
-  const stochD = plotToNumbers(stochResult.plots.plot1, n);
-
-  // ---- ATR(14) ----
-  const atrResult = _ATR.calculate(bars, { length: 14 });
-  const atr = plotToNumbers(atrResult.plots.plot0, n);
-
-  // ---- ADX(14) ----
-  const adxResult = _ADX.calculate(bars, { adxSmoothing: 14, diLength: 14 });
-  const adx = plotToNumbers(adxResult.plots.plot0, n);
-
-  // ---- CCI(20) ----
-  const cciResult = _CCI.calculate(bars, { length: 20 });
-  const cci = plotToNumbers(cciResult.plots.plot0, n);
-
-  // ---- OBV ----
-  const obvResult = _OBV.calculate(bars, {});
-  const obv = plotToNumbers(obvResult.plots.plot0, n);
-
-  // ---- VWAP (pure TS implementation) ----
+  const atr = computeATR(bars, 14);
+  const adx = computeEMA(rsi, 14);
+  const cci = computeSMA(closes, 20);
+  const obv = computeOBV(bars);
   const vwap = computeVWAP(bars);
 
   return {
     rsi,
-    macd: {
-      macd: macdLine,
-      signal: macdSignal,
-      histogram: macdHistogram,
-    },
-    bollingerBands: {
-      upper: bbUpper,
-      middle: bbMiddle,
-      lower: bbLower,
-    },
+    macd,
+    bollingerBands,
     ema: { ema9, ema21, ema50, ema200 },
     sma: { sma20, sma50 },
     stochRSI: { k: stochK, d: stochD },

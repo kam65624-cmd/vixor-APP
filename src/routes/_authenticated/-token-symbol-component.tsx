@@ -340,13 +340,6 @@ export function TokenPage() {
     );
   }, [watchlistQuery.data, symbol]);
 
-  // Detect asset type
-  const assetType = useMemo(
-    () => detectAssetType(symbol, tokenData?.chain),
-    [symbol, tokenData?.chain],
-  );
-  const assetBadge = getAssetTypeBadge(assetType);
-
   // ── Live Binance price for this token (if listed) ──
   const binanceSymbol = useMemo(() => {
     const clean = symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");

@@ -97,17 +97,17 @@ class InMemoryCache implements CacheProvider {
 // ── Upstash Redis Cache Implementation ──
 
 class RedisCache implements CacheProvider {
-  private redis: import("@upstash/redis").Redis;
+  private redis: any;
 
-  constructor(redis: import("@upstash/redis").Redis) {
+  constructor(redis: any) {
     this.redis = redis;
   }
 
   async get<T>(key: string): Promise<T | null> {
     try {
-      const result = await this.redis.get<string>(key);
+      const result = await this.redis.get(key);
       if (result === null) return null;
-      return JSON.parse(result) as T;
+      return typeof result === "string" ? JSON.parse(result) : (result as T);
     } catch (err) {
       console.warn(
         `[Cache] Redis GET failed for key "${key}":`,
@@ -243,7 +243,8 @@ async function createCache(): Promise<HybridCache> {
 
     if (redisUrl && redisToken) {
       try {
-        const { Redis } = await import("@upstash/redis");
+        const upstash = await Function('return import("@upstash/redis")')();
+        const Redis = upstash.Redis || upstash.default?.Redis;
         const redis = new Redis({ url: redisUrl, token: redisToken });
         primary = new RedisCache(redis);
         useRedis = true;

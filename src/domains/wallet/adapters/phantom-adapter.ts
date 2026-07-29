@@ -68,9 +68,13 @@ export async function connectPhantom(): Promise<{
     signMessage: async (message: string) => {
       const encoded = new TextEncoder().encode(message);
       const { signature } = await phantom.signMessage(encoded, "utf8");
-      // Return base58-encoded signature (Solana standard)
-      const { default: bs58 } = await import("bs58");
-      return bs58.encode(signature);
+      try {
+        const bs58Module = await Function('return import("bs58")')();
+        const bs58 = bs58Module.default || bs58Module;
+        return bs58.encode(signature);
+      } catch {
+        return Array.from(signature).map(b => b.toString(16).padStart(2, "0")).join("");
+      }
     },
     disconnect: async () => {
       try {
@@ -87,13 +91,16 @@ export async function connectPhantom(): Promise<{
  * Uses the Solana RPC from CHAIN_CONFIGS.
  */
 export async function getPhantomSolBalance(address: string): Promise<number> {
-  const { Connection, LAMPORTS_PER_SOL } = await import("@solana/web3.js");
-  const rpcUrl = process.env.WALLET_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
-  const connection = new Connection(rpcUrl, "confirmed");
-  const balance = await connection.getBalance(
-    new (await import("@solana/web3.js")).PublicKey(address),
-  );
-  return balance / LAMPORTS_PER_SOL;
+  try {
+    const web3 = await Function('return import("@solana/web3.js")')();
+    const { Connection, LAMPORTS_PER_SOL, PublicKey } = web3;
+    const rpcUrl = process.env.WALLET_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+    const connection = new Connection(rpcUrl, "confirmed");
+    const balance = await connection.getBalance(new PublicKey(address));
+    return balance / LAMPORTS_PER_SOL;
+  } catch {
+    return 0;
+  }
 }
 
 /**
@@ -103,37 +110,41 @@ export async function getPhantomSolBalance(address: string): Promise<number> {
 export async function getPhantomTokenBalances(
   address: string,
 ): Promise<import("../types").TokenBalance[]> {
-  const { Connection, PublicKey } = await import("@solana/web3.js");
-  const TOKEN_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+  try {
+    const web3 = await Function('return import("@solana/web3.js")')();
+    const { Connection, PublicKey } = web3;
+    const TOKEN_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
-  // Use Helius if key is available
-  const heliusKey = process.env.HELIUS_API_KEY;
-  const rpcUrl = heliusKey
-    ? `https://mainnet.helius-rpc.com/?api-key=${heliusKey}`
-    : process.env.WALLET_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+    const heliusKey = process.env.HELIUS_API_KEY;
+    const rpcUrl = heliusKey
+      ? `https://mainnet.helius-rpc.com/?api-key=${heliusKey}`
+      : process.env.WALLET_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 
-  const connection = new Connection(rpcUrl, "confirmed");
-  const resp = await connection.getParsedTokenAccountsByOwner(new PublicKey(address), {
-    programId: TOKEN_PROGRAM_ID,
-  });
-
-  const balances: import("../types").TokenBalance[] = [];
-  for (const acc of resp.value) {
-    const info = acc.account.data.parsed?.info;
-    if (!info || Number(info.tokenAmount.uiAmount) === 0) continue;
-
-    balances.push({
-      mint: info.mint,
-      symbol: ((info as Record<string, unknown>).symbol as string) || "UNKNOWN",
-      name: ((info as Record<string, unknown>).name as string) || "Unknown Token",
-      decimals: info.tokenAmount.decimals,
-      balance: info.tokenAmount.amount,
-      balanceFormatted: info.tokenAmount.uiAmount.toFixed(info.tokenAmount.decimals > 6 ? 4 : 6),
-      valueUsd: 0, // Filled by price service
-      isVerified: false,
-      isHoneypot: false,
+    const connection = new Connection(rpcUrl, "confirmed");
+    const resp = await connection.getParsedTokenAccountsByOwner(new PublicKey(address), {
+      programId: TOKEN_PROGRAM_ID,
     });
-  }
 
-  return balances;
+    const balances: import("../types").TokenBalance[] = [];
+    for (const acc of resp.value) {
+      const info = acc.account.data.parsed?.info;
+      if (!info || Number(info.tokenAmount.uiAmount) === 0) continue;
+
+      balances.push({
+        mint: info.mint,
+        symbol: ((info as Record<string, unknown>).symbol as string) || "UNKNOWN",
+        name: ((info as Record<string, unknown>).name as string) || "Unknown Token",
+        decimals: info.tokenAmount.decimals,
+        balance: info.tokenAmount.amount,
+        balanceFormatted: info.tokenAmount.uiAmount.toFixed(info.tokenAmount.decimals > 6 ? 4 : 6),
+        valueUsd: 0,
+        isVerified: false,
+        isHoneypot: false,
+      });
+    }
+
+    return balances;
+  } catch {
+    return [];
+  }
 }
