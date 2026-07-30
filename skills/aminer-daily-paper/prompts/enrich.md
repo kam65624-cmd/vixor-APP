@@ -9,6 +9,7 @@ For each paper in the `papers` array that is missing a Chinese summary (i.e., th
 3. **comment** — If the paper's venue is a well-known conference/journal, annotate its tier, e.g., "已发表在 AAAI（CCF-A）". Leave empty if unknown.
 
 Rules:
+
 - Do NOT fabricate information not present in the paper's title/abstract.
 - Do NOT generate or modify `famous_authors`.
 - If the abstract is missing or too short to summarize, write "摘要信息不足，请查看原文。"

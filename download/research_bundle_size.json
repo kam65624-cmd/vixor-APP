@@ -69,10 +69,7 @@
     "httpStatusText": "OK",
     "metadata": {
       "apple-mobile-web-app-title": "Bundlephobia",
-      "application-name": [
-        "Bundlephobia",
-        "Bundlephobia"
-      ],
+      "application-name": ["Bundlephobia", "Bundlephobia"],
       "description": "Size of lightweight-charts v5.2.0 is 186.3 kB (minified), and 59.6 kB when compressed using GZIP. Bundlephobia helps you find the performance impact of npm packages.",
       "google-site-verification": "XizU-iXvsrtQJG5G4DWEGhD57SRRA8x3Y9FnSwk53X0",
       "lang": "en",

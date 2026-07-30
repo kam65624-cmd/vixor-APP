@@ -24,6 +24,7 @@ description: Import, extract, normalize, or persist a reusable DESIGN.md from an
 ## Workflow
 
 ### 1. 判断模式
+
 分类为 Import / Extraction / Persistence；多个适用时以用户明确请求为准。
 
 ---
@@ -42,6 +43,7 @@ description: Import, extract, normalize, or persist a reusable DESIGN.md from an
 好的设计系统不盲目保留每个细节。把决策分为：**核心规则**（未来都重复）、**可选母题**（有用但非处处必需）、**一次性细节**（只属于当前产物）、**应避免**（不该重复）。
 
 例：
+
 ```text
 核心规则：项目年份/角色/状态用紧凑等宽元数据标签。
 可选母题：项目多时，列表用 hover 预览图。
@@ -62,8 +64,10 @@ description: Import, extract, normalize, or persist a reusable DESIGN.md from an
 **1. Visual Theme & Atmosphere** — 整体气质：情绪、精致度、密度、视觉温度、个性、受众、头 2 秒的感受。**用一个具体参照物锚定主题，而非一串形容词**——"现代/干净/高级/可信"什么都没指定，模型只会做出落在这些词中心的平庸结果；形容词描述一个「区域」，一个具体参照（某类实物/场景/年代，如"1970 年代某老牌大学的研究生讲义"）描述一个「点」，一句话带出配色/字体/留白/有无装饰，还自带「它不是什么」。若一定要用形容词，定义它在本系统里的具体含义。
 
 **2. Color Palette & Roles** — 按**角色**而非清单记录颜色，说明每个用在哪、哪些不该滥用，强调克制 accent，没可见值不臆造、推断的标注：
+
 ```md
 ### Core Palette
+
 - Background `#F7F3EA` — 暖调编辑感底色，页面背景。
 - Text Primary `#171717` — 高对比正文与标题。
 - Text Muted `#73706A` — 元数据、说明、次要细节。
@@ -82,18 +86,19 @@ description: Import, extract, normalize, or persist a reusable DESIGN.md from an
 **7. Responsive Behavior** — 断点、移动端如何重排、触控友好、各视口可读性。
 
 **8. Do's and Don'ts** — 写具体规则。**注意：又长又啰嗦的 Don'ts 往往说明主题描述太模糊（足够具体的参照会自带大部分负向约束）；一个具体参照 + 一份刻意的 Do/Don't 才是最佳组合。**
+
 ```text
 Do：作品为主要佐证；保持强层级；元数据标签克制一致；限制 accent 数量；用一个难忘的结构/交互主意；有精确值就复用。
 Don't：假评价/假指标/假 logo；通用区块填空；照抄品牌素材/专有 UI；无目的的装饰渐变/emoji；每个区块一样响；可发布产物里有死链/失效点击；把一次性 hero 效果当通用规则。
 ```
 
 **9. Agent Prompt Guide** — 写给未来 agent 的、直接可操作的生成指令：
+
 ```md
 在本系统里生成新页面时：从作品优先结构开始；角色/年份/类别用紧凑元数据标签；accent 保留给主操作与激活态；尽早展示真实作品、别先放长 bio；用一个大胆结构动作、其余区块安静；除非用户要简单版避免通用卡片网格；保留响应式与触控友好。
 ```
 
 ---
-
 
 ## Lightweight Tokens
 
@@ -137,6 +142,7 @@ Do not include fake precision. If values are inferred, state that they are infer
 ## 各模式补充（避免项）
 
 三模式的核心行为已在前面「三种模式」给出。各自要避免：
+
 - **Extraction**：别把原始 CSS 倒进 DESIGN.md、别臆造没有的值、别把一次性细节当系统规则、别漏掉响应式/交互。
 - **Persistence**：别过拟合当前页、别把占位内容当设计规则、别把临时实验固化成永久系统、别忽略用户已认可的风格决定。
 - **Import**：输出可以是更新版/规范化版/缺口分析+建议/兼容性说明；不删用户规则除非冲突或重复。

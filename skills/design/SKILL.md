@@ -148,6 +148,7 @@ description: Route design-related HTML artifact tasks (landing pages, portfolios
 **例外——有源材料的任务（见 Content Read）：** 用户附带源材料、或要呈现真实主体时，不要直接跳去做初版，先读内容、提架构、再确认。"默认动手"管的是抽象/创意请求；有源材料的任务深度来自先读透。
 
 ---
+
 ## Content Read（内容研读）
 
 这是第 1 步的「内容轴」——与 Creative Context（风格轴）和 Routing（场景轴）平级。流程里点名了三条轴（content / scenario / style）；这里就是内容轴真正落实的地方。它**只适用于「有源材料」的任务**，定义为：
@@ -242,6 +243,7 @@ design 任务的下一步抓手，按情形选：
 它把「失联空等」变成「知情等待」，还顺带再对齐一次方向（看出不对可当场喊停）。**「开始做了，稍等片刻」不满足要求**——预告必须有具体内容（区块+呈现+配色字体+耗时）。几秒就完成的小改动不必预告。
 
 ---
+
 ## Creative Context Completion（创意语境补全）
 
 **定方向的方法：用一个具体参照物，而不是一串形容词。** "现代/干净/可信/高级"什么都没指定——模型只会做出落在这些词中心的东西，通常平庸；形容词描述的是一个「区域」，一个具体参照描述的是一个「点」。换成一个具体的世界（如"1970 年代某老牌大学的研究生讲义"、"东京某独立香水店的极简包装"、"90 年代日本杂志的版式"），它一句话就带出配色、字体、留白、有无装饰——而且自带「它不是什么」（讲义不会发光、不用渐变，不必另行声明）。所以创意定位优先落到一个具体参照，再由它推导细节。
@@ -287,7 +289,6 @@ Visual commitment（仅表达型场景）
 
 一个完全居中、对称、静态、没有主元素的页面，就是默认的「平庸」结果——对表达型场景，这意味着承诺没被兑现。逐项执行。动效细节 → `horizontal-craft/animation-discipline.md`。
 
-
 ## 为抽象请求补全内容骨架（不捏造事实）
 
 抽象请求（"做个读书会活动页"）要的是可编辑的**起点**而非空壳：用具体可信的示例内容把场景所需框架搭全（一个几乎空白的页面即便技术正确也是失败），写具体示范文案（像真的活动名、三个具体议程项）而非 `Lorem ipsum` 或空占位。**骨架只用于无源材料的抽象请求**——有源材料/真实主体的，区块和内容来自 Content Read 并经确认。
@@ -295,6 +296,7 @@ Visual commitment（仅表达型场景）
 **这不是捏造，分界：** 可自由填（结构性/示范性：区块结构、卖点文案、议程、FAQ、示例产品名、标注清楚的占位图坑位）；**绝不捏造**（事实性/凭证性：具体指标、具名客户 logo、用户评价、奖项、媒体报道、评分——任何断言现实事实的东西，没真实凭证就用标注清楚的占位，绝不编造）。
 
 ---
+
 # 2. 路由 —— 决定做什么
 
 先定形态与意图，再定产出格式与风格来源。
@@ -307,16 +309,16 @@ Visual commitment（仅表达型场景）
 
 为一个具体设计产物，精确挑选一个主 artifact skill。该 artifact skill 定义形态、结构、输出机制和编辑预期。
 
-| Artifact skill | 当用户想要…… | 默认 output target |
-|---|---|---|
-| `landing-page.md` | 产品落地页、首页、SaaS 站、营销页、waitlist、服务页 | `responsive-html` |
-| `portfolio.md` | 个人站、作品集、创作者主页、简历式页面、项目展示 | `responsive-html` |
-| `prototype.md` | app 原型、Web 产品原型、产品/功能 demo、仪表盘、后台面板、产品流程、线框、UI mockup | `responsive-html` 或 `mobile-html` |
-| `content-page.md` | 文章、编辑型页面、newsletter、微信/公众号排版、长文阅读页 | `responsive-html` |
-| `info-interactive.md` | 信息讲解页、可视化讲解、流程图、架构图、系统图、流程图谱、关系图、时间线、对比浏览、可筛选的知识/资源页、交互式报告、数据故事、可探索的讲解；日常语言触发词："讲清楚 / 梳理 / 图解 / 可视化说明 / 流程图 / 架构图 / 关系图 / 时间线 / 对比页" | `responsive-html` |
-| `web-tool.md` | 单任务 Web 工具、计算器、生成器、检查器、选择器、quiz、测试、倒计时、决策工具；桌面或移动/H5 | `responsive-html` 或 `mobile-html` |
-| `social-card.md` | 社交媒体封面/卡片、小红书、微信/抖音封面、长图卡片序列、固定尺寸社交图 | `fixed-image` |
-| `deck.md` | 幻灯片、演示、pitch deck、报告 deck、策略 deck、工作坊 deck、教学 deck | `html-slide-deck` |
+| Artifact skill        | 当用户想要……                                                                                                                                                                                                                                  | 默认 output target                 |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `landing-page.md`     | 产品落地页、首页、SaaS 站、营销页、waitlist、服务页                                                                                                                                                                                           | `responsive-html`                  |
+| `portfolio.md`        | 个人站、作品集、创作者主页、简历式页面、项目展示                                                                                                                                                                                              | `responsive-html`                  |
+| `prototype.md`        | app 原型、Web 产品原型、产品/功能 demo、仪表盘、后台面板、产品流程、线框、UI mockup                                                                                                                                                           | `responsive-html` 或 `mobile-html` |
+| `content-page.md`     | 文章、编辑型页面、newsletter、微信/公众号排版、长文阅读页                                                                                                                                                                                     | `responsive-html`                  |
+| `info-interactive.md` | 信息讲解页、可视化讲解、流程图、架构图、系统图、流程图谱、关系图、时间线、对比浏览、可筛选的知识/资源页、交互式报告、数据故事、可探索的讲解；日常语言触发词："讲清楚 / 梳理 / 图解 / 可视化说明 / 流程图 / 架构图 / 关系图 / 时间线 / 对比页" | `responsive-html`                  |
+| `web-tool.md`         | 单任务 Web 工具、计算器、生成器、检查器、选择器、quiz、测试、倒计时、决策工具；桌面或移动/H5                                                                                                                                                  | `responsive-html` 或 `mobile-html` |
+| `social-card.md`      | 社交媒体封面/卡片、小红书、微信/抖音封面、长图卡片序列、固定尺寸社交图                                                                                                                                                                        | `fixed-image`                      |
+| `deck.md`             | 幻灯片、演示、pitch deck、报告 deck、策略 deck、工作坊 deck、教学 deck                                                                                                                                                                        | `html-slide-deck`                  |
 
 ### 歧义词：demo
 
@@ -326,26 +328,26 @@ Visual commitment（仅表达型场景）
 
 用它定技术形态、尺寸、导出行为和支撑参考（由 artifact skill + 用户请求推导，不是路由层）：
 
-| Output target | 含义 | 常见支撑参考 |
-|---|---|---|
-| `responsive-html` | 可滚动或可交互的浏览器页面 | `canvas-and-device.md`, `horizontal-craft/accessibility.md` |
-| `mobile-html` | 移动优先的交互页、H5 或移动 Web 工具 | `canvas-and-device.md`, `horizontal-craft/state-coverage.md`, `horizontal-craft/form-validation.md` |
-| `html-slide-deck` | 一屏一页的 HTML 演示 | `deck.md`, `design-templates/`, `canvas-and-device.md` |
-| `fixed-image` | 社交卡片、封面、海报、长图或图片导出的固定尺寸导出面 | `social-card.md`, `canvas-and-device.md` |
-| `design-system-spec` | 可复用的 `DESIGN.md` / token / 组件规则 | `design-system-generation.md` |
-| `package` | ZIP/PDF/PPTX/图片/导出交付 | `export.md` |
+| Output target        | 含义                                                 | 常见支撑参考                                                                                        |
+| -------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `responsive-html`    | 可滚动或可交互的浏览器页面                           | `canvas-and-device.md`, `horizontal-craft/accessibility.md`                                         |
+| `mobile-html`        | 移动优先的交互页、H5 或移动 Web 工具                 | `canvas-and-device.md`, `horizontal-craft/state-coverage.md`, `horizontal-craft/form-validation.md` |
+| `html-slide-deck`    | 一屏一页的 HTML 演示                                 | `deck.md`, `design-templates/`, `canvas-and-device.md`                                              |
+| `fixed-image`        | 社交卡片、封面、海报、长图或图片导出的固定尺寸导出面 | `social-card.md`, `canvas-and-device.md`                                                            |
+| `design-system-spec` | 可复用的 `DESIGN.md` / token / 组件规则              | `design-system-generation.md`                                                                       |
+| `package`            | ZIP/PDF/PPTX/图片/导出交付                           | `export.md`                                                                                         |
 
 ## Style Routing（风格路由；决定一个风格线索怎么处理）
 
 请求常带一个风格线索。在动用参考库之前，先给线索分类——**大多数线索都不是一次参考查找**。这能防止两种失败：把一个普通形容词当成库查找，以及把"读一份规范"和"写一份规范"搞混。
 
-| 用户的风格线索是…… | 当作…… | 它去哪里 |
-|---|---|---|
-| 一个形容词 / 情绪词（"科技感"、"简洁"、"高级感"） | 按界面类/创意类分流 | 见「风格的两条路」核心原则（界面类→映射 style-skill；创意类→当创意方向） |
-| 一个具名品牌（"Apple style"、"like Stripe"、"苹果风格"）——**任意场景** | 一个**品牌参考** | `skills/design/design-system-reference.md` → `design-systems/brand-inspiration/`（网站/品牌级；读该品牌的 DESIGN.md） |
-| 一个具名 style skill（"用 `minimal` 风格"、"atelier-zero"） | 一个**style skill** | `skills/design/design-system-reference.md` → `design-systems/style-skills/` |
-| 一个要遵循的现有系统（上传的 DESIGN.md、截图、之前的产物、"和我们产品一致"） | 一个**提供的参考** | `skills/design/design-system-reference.md`（与给定来源保持一致） |
-| "提取 / 定义 / 产出一份可复用的 DESIGN.md" | 一个**生成任务** | `design-system-generation.md` |
+| 用户的风格线索是……                                                           | 当作……              | 它去哪里                                                                                                              |
+| ---------------------------------------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 一个形容词 / 情绪词（"科技感"、"简洁"、"高级感"）                            | 按界面类/创意类分流 | 见「风格的两条路」核心原则（界面类→映射 style-skill；创意类→当创意方向）                                              |
+| 一个具名品牌（"Apple style"、"like Stripe"、"苹果风格"）——**任意场景**       | 一个**品牌参考**    | `skills/design/design-system-reference.md` → `design-systems/brand-inspiration/`（网站/品牌级；读该品牌的 DESIGN.md） |
+| 一个具名 style skill（"用 `minimal` 风格"、"atelier-zero"）                  | 一个**style skill** | `skills/design/design-system-reference.md` → `design-systems/style-skills/`                                           |
+| 一个要遵循的现有系统（上传的 DESIGN.md、截图、之前的产物、"和我们产品一致"） | 一个**提供的参考**  | `skills/design/design-system-reference.md`（与给定来源保持一致）                                                      |
+| "提取 / 定义 / 产出一份可复用的 DESIGN.md"                                   | 一个**生成任务**    | `design-system-generation.md`                                                                                         |
 
 关键区分（两点，①已见核心原则不赘述）：② **品牌词总是命中 brand-inspiration**（官方外观，最适合营销/创意页）。③ **读 vs 写 DESIGN.md**——"用 Apple 风格"是把品牌当参考读、交付物仍是该页面；只有"产出一份可复用 DESIGN.md"才用 `design-system-generation.md` 写新规范。
 
@@ -389,6 +391,7 @@ horizontal-craft/link-and-proof.md           → 链接、CTA、引用、客户 
 horizontal-craft/visual-explanation.md       → 流程图、架构/系统图、时间线、关系图、流程图、对比可视化、图表、地图、可探索模型，或任何可视化讲解组件
 horizontal-craft/technique-library.md        → 超出纯 CSS 的效果能服务于目标（动效 / 3D / 数据可视化）
 ```
+
 读了参考还不够——规则必须真正改变产物。除非 HTML/CSS/JS 里真的包含实现，否则不要声称某个门禁已应用。
 
 ### 交付前（阻塞）
@@ -398,6 +401,7 @@ horizontal-craft/technique-library.md        → 超出纯 CSS 的效果能服�
 [ ] 交互产物有 :focus-visible；有动效时有 reduced-motion
 [ ] 没有假凭证、emoji 当图标、死链、占位逻辑或缺失素材
 ```
+
 若某个门禁过不了，修复产物或明确标出未解决的问题——绝不默默忽略。
 
 ### 每一轮，不只是第一轮（多轮规则）
@@ -424,9 +428,13 @@ horizontal-craft/technique-library.md        → 超出纯 CSS 的效果能服�
 把生成的 HTML 组织成便于后续编辑——稳定的 section id / data 属性：
 
 ```html
-<section id="hero" data-section="hero">      <!-- pages: hero/work/about/contact -->
-<section class="slide" data-slide="cover">   <!-- decks -->
-<section data-screen="dashboard">            <!-- prototypes: + data-state, data-component -->
+<section id="hero" data-section="hero">
+  <!-- pages: hero/work/about/contact -->
+  <section class="slide" data-slide="cover">
+    <!-- decks -->
+    <section data-screen="dashboard"><!-- prototypes: + data-state, data-component --></section>
+  </section>
+</section>
 ```
 
 - 让 section / slide / screen / component / state 保持可识别，便于选区编辑

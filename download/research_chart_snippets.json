@@ -102,10 +102,7 @@
       "route-pattern": "/:user_id/:repository",
       "theme-color": "#1e2327",
       "turbo-body-classes": "logged-out env-production page-responsive",
-      "turbo-cache-control": [
-        "no-preview",
-        "no-cache"
-      ],
+      "turbo-cache-control": ["no-preview", "no-cache"],
       "twitter:card": "summary_large_image",
       "twitter:description": "💹 Simple HTML Snippets to create Tickers / Charts of Cryptocurrencies with the TradingView API 💹 - IDouble/HTML-Crypto-Currency-Chart-Snippets",
       "twitter:image": "https://repository-images.githubusercontent.com/191119716/67c9c138-da7e-4270-bc0f-03b10ceeb2ef",

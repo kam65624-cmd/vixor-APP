@@ -102,10 +102,7 @@
       "route-pattern": "/:user_id/:repository",
       "theme-color": "#1e2327",
       "turbo-body-classes": "logged-out env-production page-responsive",
-      "turbo-cache-control": [
-        "no-preview",
-        "no-cache"
-      ],
+      "turbo-cache-control": ["no-preview", "no-cache"],
       "twitter:card": "summary_large_image",
       "twitter:description": "A cryptocurrency trading API with more than 100 exchanges in JavaScript / TypeScript / Python / C# / PHP / Go / Java  - ccxt/ccxt",
       "twitter:image": "https://repository-images.githubusercontent.com/91253698/ea8e3c00-171a-11ea-9a81-e79b426fe455",

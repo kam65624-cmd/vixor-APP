@@ -3,6 +3,7 @@
 ## Files Created/Modified
 
 ### 1. `src/routes/_authenticated/discover.tsx` — **REPLACED** (Axiom Grid Style)
+
 - Memecoin discovery page with filters sidebar (chain, sort by)
 - Token card grid: 1 col mobile → 2 cols sm → 3 cols lg → 4 cols xl
 - Each card: symbol, name, price, 24h change, volume, liquidity, smart money %, risk badge
@@ -13,6 +14,7 @@
 - All components memoized with React.memo
 
 ### 2. `src/routes/_authenticated/token.$symbol.tsx` — **CREATED** (BullX Terminal Style)
+
 - 3-column layout: Chart (60%) | Order Book + Order Entry (20%) | Side Panel (20%)
 - Top bar: token symbol, price, 24h change, volume, liquidity
 - Chart placeholder with fake candlestick bars
@@ -24,6 +26,7 @@
 - Uses `useParams` for symbol from URL
 
 ### 3. `src/routes/_authenticated/communities.tsx` — **CREATED** (OpenSea Collection Style)
+
 - 5 tabs: Overview, Twitter, Telegram, Discord, Reddit
 - Collection header with cover gradient + token name + stats
 - Sentiment heatmap (24h) with color-coded grid
@@ -32,6 +35,7 @@
 - Non-Overview tabs show "Coming soon in Phase C" placeholder
 
 ### 4. `src/routes/_authenticated/wallet-web3.tsx` — **CREATED** (OpenSea Portfolio Style)
+
 - Wallet header: truncated address, chain badge, total balance
 - Send/Receive/Swap buttons
 - Holdings tab: 5 token cards with symbol, balance, value, 24h change
@@ -39,6 +43,7 @@
 - Achievements tab: 6 badges (common/rare/legendary) with unlock states
 
 ### 5. `src/routes/_authenticated/activity-web3.tsx` — **CREATED** (OpenSea Feed Style)
+
 - Filter bar: All | Trades | Transfers | Learning | AI Decisions
 - 10 mock activity items in a vertical timeline feed
 - Each item: icon, title, description, timestamp, amount/value
@@ -47,11 +52,13 @@
 - Export to CSV button (placeholder)
 
 ### 6. `src/components/vixor/AppShell.tsx` — **MODIFIED**
+
 - Added lazy import for WorkspaceSwitcher from `@/experience/components/WorkspaceSwitcher`
 - Added WorkspaceSwitcher to Header, between logo and notification/wallet buttons
 - Wrapped in `<Suspense fallback={null}>` for code splitting
 
 ## Key Design Decisions
+
 - All pages use `"use client"` directive
 - All sub-components wrapped in `React.memo`
 - Event handlers wrapped in `useCallback`

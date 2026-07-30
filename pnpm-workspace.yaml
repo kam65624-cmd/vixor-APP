@@ -1,7 +1,7 @@
 packages: []
 
 allowBuilds:
-  '@stellar/stellar-sdk': set this to true or false
+  "@stellar/stellar-sdk": set this to true or false
   blake-hash: set this to true or false
   bufferutil: set this to true or false
   ccxt: set this to true or false

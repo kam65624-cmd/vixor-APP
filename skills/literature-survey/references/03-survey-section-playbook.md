@@ -18,6 +18,7 @@ A survey paper is not a longer research paper. The sections look superficially s
 **Length:** 200–300 words. **Citations:** 4–8.
 
 **Structure (one paragraph):**
+
 1. **Domain & importance** (1 sentence).
 2. **Why a survey now** (1 sentence): why is this the moment, what was missed by prior surveys.
 3. **Scope** (1–2 sentences): what's in, what's out.
@@ -26,6 +27,7 @@ A survey paper is not a longer research paper. The sections look superficially s
 6. **What's next** (1 sentence): open challenges teaser.
 
 **Anti-patterns:**
+
 - Marketing prose ("This survey provides a comprehensive overview…").
 - No quantitative anchor (number of papers covered, time span).
 - Spillover into Related Work.
@@ -55,6 +57,7 @@ For a survey, "contributions" become "what this survey does" — namely, the tax
 **¶5 — Reading order.** Brief paragraph telling readers how to traverse the paper.
 
 **Anti-patterns:**
+
 - "Many works have addressed this~\cite{a, b, c, d}" — prose without distinction.
 - Not citing prior surveys.
 - Promising sub-areas not delivered later.
@@ -66,6 +69,7 @@ For a survey, "contributions" become "what this survey does" — namely, the tax
 This section is the survey's pedagogical foundation. Define notation, recall the prerequisites, give the canonical formulation of the problem, and present the canonical baseline / first solution.
 
 **Subsections to consider:**
+
 - Problem definition with notation
 - Canonical baseline formulation (e.g., recurrent / linear / classical)
 - Evaluation conventions in the field
@@ -74,6 +78,7 @@ This section is the survey's pedagogical foundation. Define notation, recall the
 End the section by referencing the taxonomy figure: "In the rest of the survey, we organise the literature according to Figure~\ref{fig:taxonomy}."
 
 **Anti-patterns:**
+
 - Skipping background under the assumption the reader knows the field — surveys are read by people new to it.
 - Notation that doesn't match later sections.
 
@@ -84,6 +89,7 @@ End the section by referencing the taxonomy figure: "In the rest of the survey, 
 This is the survey's central section. Each branch of the taxonomy gets a `\paragraph{}` (or even a `\subsection{}` when it's large enough), in roughly the order shown in Figure~\ref{fig:taxonomy}.
 
 **Per-branch structure:**
+
 1. **Premise** (1 sentence): the architectural / theoretical commitment that defines this branch.
 2. **Canonical works** (3–5 papers cited individually with prose distinguishing them).
 3. **Refinements / extensions** (3–8 follow-up papers grouped 2–3 per claim).
@@ -96,6 +102,7 @@ End with a comparison paragraph that ties the branch back to the taxonomy and th
 **Tables:** in this section a "method × property" comparison table (see `04-layout-discipline.md`) is often valuable.
 
 **Anti-patterns:**
+
 - Chronological dump within a branch ("In 2019, X… In 2020, Y…").
 - Branches that don't connect back to the taxonomy.
 - Branches with no critique — every architectural commitment has trade-offs; surveys should name them.
@@ -104,9 +111,10 @@ End with a comparison paragraph that ties the branch back to the taxonomy and th
 
 **Length:** 3–5 `\paragraph{}` subsections (~800–1500 words). **Citations:** 10–18.
 
-Discussion is the survey's *judgment*. It synthesises across the methods covered.
+Discussion is the survey's _judgment_. It synthesises across the methods covered.
 
 **Subsections to consider:**
+
 - **Cross-cutting trends.** Patterns visible across branches (e.g., "all of patching, inversion, and decomposition are forms of inductive bias re-injection").
 - **Empirical maturity.** What has been measured well, what hasn't.
 - **Coverage matrix.** Reference Fig~\ref{fig:capability_matrix}; what does the matrix tell us?
@@ -114,6 +122,7 @@ Discussion is the survey's *judgment*. It synthesises across the methods covered
 - **Engineering vs. science gaps.**
 
 **Anti-patterns:**
+
 - Restating Methods without adding judgment.
 - Avoiding controversy (e.g., refusing to acknowledge a debate that exists).
 
@@ -130,6 +139,7 @@ Discussion is the survey's *judgment*. It synthesises across the methods covered
 **¶3 — Outlook.** Where the field is likely heading. This is forecast, not fact — write it as such (using "may" / "is likely to" rather than "will").
 
 **Anti-patterns:**
+
 - Repeating the abstract.
 - Vague open challenges ("future work will explore extensions").
 - Predictions stated as facts.
@@ -141,17 +151,20 @@ Discussion is the survey's *judgment*. It synthesises across the methods covered
 In a survey, "Related Work" specifically means **other surveys** on the same or adjacent topics. This is short and deliberate.
 
 **Structure:**
+
 - Cite each prior survey by name (`Wen et al.~\cite{wen2023survey}`), with prose stating its scope and how yours differs.
 - 5–10 prior surveys.
 - 1 paragraph at the end discussing tutorials, blog series, and book chapters that complement the surveys.
 
 **Anti-patterns:**
+
 - Confusing "Related Work" with the methodology survey (Methods).
 - Including every paper instead of just other surveys.
 
 ## Cross-section discipline
 
 A survey's promises are made in the Introduction:
+
 - "We organise the field according to Figure~\ref{fig:taxonomy}" → Methods must follow that taxonomy exactly.
 - "We argue X" → Discussion must argue X explicitly.
 - "We identify N open challenges" → Conclusion must list N.

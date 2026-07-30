@@ -11,14 +11,14 @@ End-to-end literature survey builder. **Single stage, full quality from the star
 
 The substantive work is decomposed into reference playbooks under `references/`:
 
-| Reference | Topic |
-|---|---|
-| `references/00-incremental-execution.md` | how to actually do this without losing work: batch sizes, persistence, resume — **read first** |
-| `references/01-bibliography-expansion.md` | grow `bibliography.bib` to 60+ real entries (100+ recommended) via WebFetch (no memory) |
-| `references/02-survey-figures.md` | taxonomy / timeline / coverage-matrix / area-map figures |
-| `references/03-survey-section-playbook.md` | per-section structure for survey-shaped papers |
-| `references/04-layout-discipline.md` | tables, figures, floats, cross-refs, author + disclosure footnote |
-| `references/05-quality-gate.md` | self-check before delivery |
+| Reference                                  | Topic                                                                                          |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `references/00-incremental-execution.md`   | how to actually do this without losing work: batch sizes, persistence, resume — **read first** |
+| `references/01-bibliography-expansion.md`  | grow `bibliography.bib` to 60+ real entries (100+ recommended) via WebFetch (no memory)        |
+| `references/02-survey-figures.md`          | taxonomy / timeline / coverage-matrix / area-map figures                                       |
+| `references/03-survey-section-playbook.md` | per-section structure for survey-shaped papers                                                 |
+| `references/04-layout-discipline.md`       | tables, figures, floats, cross-refs, author + disclosure footnote                              |
+| `references/05-quality-gate.md`            | self-check before delivery                                                                     |
 
 **Read the relevant reference _before_ writing, not after.** The full pass does not fit in a single turn — `references/00-incremental-execution.md` is the only execution mode that completes.
 
@@ -71,7 +71,7 @@ Open `references/00-incremental-execution.md` first. Then carry out the five tra
 
 **Open:** `references/01-bibliography-expansion.md`.
 
-**First (§0 of that reference): read the topic's temporal/scope intent and pick a search posture.** If the topic names a year or says "latest/recent" (e.g. "OpenSource LLM **2026**"), go *recency-led* — date-sorted arXiv queries carrying the explicit year, canon only as context. Otherwise span the timeline. This is what prevents "asked for 2026, got all 2024".
+**First (§0 of that reference): read the topic's temporal/scope intent and pick a search posture.** If the topic names a year or says "latest/recent" (e.g. "OpenSource LLM **2026**"), go _recency-led_ — date-sorted arXiv queries carrying the explicit year, canon only as context. Otherwise span the timeline. This is what prevents "asked for 2026, got all 2024".
 
 Then plan **12–20** query angles, weighted by the posture. For each angle, use **AMiner academic search first, web search as supplement**:
 

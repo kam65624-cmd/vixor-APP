@@ -13,7 +13,7 @@ python make_fig_04_ablation.py
 
 These are illustrative templates — copy and adapt for your data. They were
 extracted from a successful enrichment run of the `paper-writer` skill on
-the topic *Transformer-based time-series forecasting* (May 2026); the data
+the topic _Transformer-based time-series forecasting_ (May 2026); the data
 embedded inline are simulated and meant only to illustrate the formatting.
 
 Start by filling `FIGURE_CONTRACT_TEMPLATE.md` for the figure you are about to make.
@@ -21,6 +21,7 @@ Then reuse `style_kit.py` so exports, palette, panel labels, and simulated
 watermarks stay consistent across the experiment package.
 
 ## Style summary
+
 - Shared `style_kit.py` with editable SVG text and PDF font embedding
 - Explicit color palette (no default cycle)
 - Removed top/right spines

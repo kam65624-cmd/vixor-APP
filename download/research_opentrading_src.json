@@ -102,10 +102,7 @@
       "route-pattern": "/:user_id/:repository/tree/*name(/*path)",
       "theme-color": "#1e2327",
       "turbo-body-classes": "logged-out env-production page-responsive",
-      "turbo-cache-control": [
-        "no-preview",
-        "no-cache"
-      ],
+      "turbo-cache-control": ["no-preview", "no-cache"],
       "twitter:card": "summary_large_image",
       "twitter:description": "The Open Trading Platform UI is a front-end module for trading across 5 crypto currency exchanges allowing both spot and margin trading. The UI needs to be used with the API repo. - blocknomic-tech...",
       "twitter:image": "https://repository-images.githubusercontent.com/191919418/e6f0b200-986a-11e9-9c20-2cea6909ba38",

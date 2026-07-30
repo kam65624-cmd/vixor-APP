@@ -339,10 +339,7 @@
       "og:title": "Free Charting Library by TradingView",
       "og:type": "website",
       "og:url": "https://www.tradingview.com/free-charting-libraries/",
-      "theme-color": [
-        "#F9F9F9",
-        "#262626"
-      ],
+      "theme-color": ["#F9F9F9", "#262626"],
       "twitter:card": "summary_large_image",
       "twitter:description": "Free Charting Library for your website or mobile app. TradingView Charting Library comes with API to show your own data. Customizable and easy to install.",
       "twitter:image": "https://s.tradingview.com/static/images/illustrations/compare-libraries.jpg",

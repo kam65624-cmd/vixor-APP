@@ -1,693 +1,1572 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تقرير تدقيق شامل - VIXOR</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-@page { size: 794px 1123px; margin: 0; }
-:root {
-    --c-bg: #08090C;
-    --c-bg-card: #0F1117;
-    --c-bg-card-alt: #141620;
-    --c-text: #E8E8ED;
-    --c-text-sec: #9CA3AF;
-    --c-text-muted: #6B7280;
-    --c-accent: #6366F1;
-    --c-accent-lt: #818CF8;
-    --c-bullish: #22D3A6;
-    --c-bearish: #FB4667;
-    --c-gold: #F0C419;
-    --c-border: #1E2030;
-    --font-ar: 'Noto Sans Arabic', 'Inter', sans-serif;
-    --font-mono: 'JetBrains Mono', 'Noto Sans Arabic', monospace, sans-serif;
-}
-*, *::before, *::after { box-sizing: border-box; }
-html, body {
-    margin: 0; padding: 0; width: 794px;
-    background: var(--c-bg); color: var(--c-text);
-    font-family: var(--font-ar), sans-serif; font-size: 13px; line-height: 1.7;
-    direction: rtl; -webkit-font-smoothing: antialiased;
-}
-@media screen {
-    html { height: auto; display: flex; justify-content: center; background: #111; }
-    body { transform-origin: top center; margin: 20px auto; }
-}
-.cover {
-    width: 794px; height: 1123px; box-sizing: border-box;
-    break-after: page; overflow: hidden; background: var(--c-bg);
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    position: relative; padding: 80px 70px;
-}
-.cover::before {
-    content: ''; position: absolute; top: 0; left: 0;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%);
-    border-radius: 50%;
-}
-.cover::after {
-    content: ''; position: absolute; bottom: 0; right: 0;
-    width: 350px; height: 350px;
-    background: radial-gradient(circle, rgba(251,70,103,0.06) 0%, transparent 70%);
-    border-radius: 50%;
-}
-.cover-badge {
-    position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3);
-    border-radius: 100px; padding: 8px 24px; font-size: 12px; font-weight: 600;
-    color: var(--c-accent-lt); letter-spacing: 0.5px; margin-bottom: 36px;
-}
-.cover-dot { width: 8px; height: 8px; background: var(--c-accent); border-radius: 50%; }
-.cover-title {
-    position: relative; z-index: 2; font-size: 40px; font-weight: 900;
-    color: #fff; text-align: center; line-height: 1.3; margin-bottom: 14px;
-}
-.cover-hl { color: var(--c-accent-lt); }
-.cover-sub {
-    position: relative; z-index: 2; font-size: 15px; color: var(--c-text-sec);
-    text-align: center; max-width: 520px; line-height: 1.8; margin-bottom: 44px;
-}
-.cover-stats { position: relative; z-index: 2; display: flex; gap: 36px; margin-bottom: 50px; }
-.c-stat { text-align: center; }
-.c-stat-v { font-size: 34px; font-weight: 900; font-family: 'Inter', var(--font-ar), sans-serif; color: #fff; }
-.c-stat-l { font-size: 11px; color: var(--c-text-muted); margin-top: 4px; font-weight: 500; }
-.c-stat-v.crit { color: var(--c-bearish); }
-.c-stat-v.hi { color: #F97316; }
-.c-stat-v.med { color: var(--c-gold); }
-.c-stat-v.lo { color: var(--c-bullish); }
-.cover-meta { position: absolute; bottom: 36px; left: 0; right: 0; text-align: center; z-index: 2; font-size: 11px; color: var(--c-text-muted); }
-.main-content { padding: 48px 58px 36px 58px; }
-.ch-hdr { break-after: avoid; break-inside: avoid; margin-top: 26px; margin-bottom: 18px; }
-.sec-tag {
-    display: inline-block; font-size: 11px; font-weight: 700;
-    color: var(--c-accent-lt); background: rgba(99,102,241,0.12);
-    border: 1px solid rgba(99,102,241,0.2); border-radius: 6px;
-    padding: 4px 14px; margin-bottom: 8px;
-}
-.sec-title { font-size: 21px; font-weight: 800; color: #fff; margin-bottom: 6px; line-height: 1.4; }
-.sec-desc { font-size: 13px; color: var(--c-text-sec); line-height: 1.7; margin-bottom: 14px; }
-.divider { width: 55px; height: 3px; background: linear-gradient(90deg, var(--c-accent), transparent); border-radius: 3px; margin-bottom: 18px; }
-.body-text { font-size: 13px; color: var(--c-text); line-height: 1.8; margin-bottom: 10px; }
-.body-text strong { color: #fff; font-weight: 600; }
-.card {
-    break-inside: avoid; background: var(--c-bg-card);
-    border: 1px solid var(--c-border); border-radius: 10px;
-    padding: 16px 18px; margin-bottom: 10px;
-}
-.card-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
-.card-title { font-size: 13.5px; font-weight: 700; color: #fff; }
-.card-file { font-size: 10.5px; font-family: var(--font-mono), sans-serif; color: var(--c-text-muted); direction: ltr; text-align: left; }
-.card-body { font-size: 12px; color: var(--c-text-sec); line-height: 1.75; }
-.sev { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
-.sev-crit { background: rgba(251,70,103,0.15); color: var(--c-bearish); border: 1px solid rgba(251,70,103,0.3); }
-.sev-hi { background: rgba(249,115,22,0.15); color: #F97316; border: 1px solid rgba(249,115,22,0.3); }
-.sev-med { background: rgba(240,196,25,0.15); color: var(--c-gold); border: 1px solid rgba(240,196,25,0.3); }
-.sev-lo { background: rgba(34,211,166,0.15); color: var(--c-bullish); border: 1px solid rgba(34,211,166,0.3); }
-.st-fixed { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: rgba(34,211,166,0.15); color: var(--c-bullish); border: 1px solid rgba(34,211,166,0.3); }
-.st-clear { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: rgba(34,211,166,0.1); color: var(--c-bullish); border: 1px solid rgba(34,211,166,0.2); }
-.tbl-wrap { break-inside: avoid; margin-bottom: 14px; border-radius: 10px; overflow: hidden; border: 1px solid var(--c-border); }
-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
-thead { background: var(--c-bg-card-alt); }
-th { padding: 9px 12px; font-weight: 700; color: var(--c-text-sec); text-align: right; font-size: 10.5px; border-bottom: 1px solid var(--c-border); }
-td { padding: 9px 12px; color: var(--c-text); border-bottom: 1px solid var(--c-border); line-height: 1.5; vertical-align: top; }
-tr:last-child td { border-bottom: none; }
-td.mono { font-family: var(--font-mono), sans-serif; font-size: 10.5px; direction: ltr; text-align: left; color: var(--c-accent-lt); }
-.iss {
-    break-inside: avoid; display: flex; gap: 12px; margin-bottom: 10px;
-    padding: 12px 14px; background: var(--c-bg-card); border: 1px solid var(--c-border);
-    border-radius: 10px; border-right: 3px solid var(--c-accent);
-}
-.iss.crit { border-right-color: var(--c-bearish); }
-.iss.hi { border-right-color: #F97316; }
-.iss.med { border-right-color: var(--c-gold); }
-.iss.lo { border-right-color: var(--c-bullish); }
-.iss-n {
-    flex-shrink: 0; width: 26px; height: 26px; background: rgba(99,102,241,0.12);
-    border-radius: 7px; display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: var(--c-accent-lt); font-family: 'Inter', var(--font-ar), sans-serif;
-}
-.iss.crit .iss-n { background: rgba(251,70,103,0.15); color: var(--c-bearish); }
-.iss.hi .iss-n { background: rgba(249,115,22,0.15); color: #F97316; }
-.iss.med .iss-n { background: rgba(240,196,25,0.15); color: var(--c-gold); }
-.iss.lo .iss-n { background: rgba(34,211,166,0.15); color: var(--c-bullish); }
-.iss-c { flex: 1; }
-.iss-t { font-size: 12.5px; font-weight: 700; color: #fff; margin-bottom: 5px; }
-.iss-d { font-size: 11.5px; color: var(--c-text-sec); line-height: 1.7; margin-bottom: 5px; }
-.iss-m { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.iss-f {
-    font-size: 10px; font-family: var(--font-mono), sans-serif; color: var(--c-text-muted);
-    direction: ltr; text-align: left; background: rgba(99,102,241,0.08); padding: 3px 8px; border-radius: 4px;
-}
-.sub-t { font-size: 15px; font-weight: 700; color: #fff; margin-top: 22px; margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--c-border); }
-.info-box {
-    break-inside: avoid; background: rgba(99,102,241,0.08);
-    border: 1px solid rgba(99,102,241,0.2); border-radius: 10px;
-    padding: 14px 16px; margin-bottom: 12px;
-}
-.info-box.warn { background: rgba(240,196,25,0.08); border-color: rgba(240,196,25,0.2); }
-.info-box.good { background: rgba(34,211,166,0.08); border-color: rgba(34,211,166,0.2); }
-.info-box.danger { background: rgba(251,70,103,0.08); border-color: rgba(251,70,103,0.2); }
-.info-box-t { font-size: 11.5px; font-weight: 700; color: var(--c-accent-lt); margin-bottom: 5px; }
-.info-box.warn .info-box-t { color: var(--c-gold); }
-.info-box.good .info-box-t { color: var(--c-bullish); }
-.info-box.danger .info-box-t { color: var(--c-bearish); }
-.info-box-b { font-size: 11.5px; color: var(--c-text-sec); line-height: 1.7; }
-.sgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-.scard { break-inside: avoid; background: var(--c-bg-card); border: 1px solid var(--c-border); border-radius: 10px; padding: 14px; }
-.scard-v { font-size: 26px; font-weight: 900; font-family: 'Inter', var(--font-ar), sans-serif; color: #fff; margin-bottom: 3px; }
-.scard-l { font-size: 10.5px; color: var(--c-text-muted); font-weight: 500; }
-.task {
-    break-inside: avoid; display: flex; gap: 10px; margin-bottom: 8px;
-    padding: 11px 13px; background: var(--c-bg-card); border: 1px solid var(--c-border); border-radius: 8px;
-}
-.task-p { flex-shrink: 0; font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; height: fit-content; margin-top: 2px; }
-.task-c { flex: 1; }
-.task-t { font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 3px; }
-.task-d { font-size: 11px; color: var(--c-text-sec); line-height: 1.6; }
-.code-block {
-    break-inside: avoid; background: #0C0D12; border: 1px solid var(--c-border);
-    border-radius: 8px; padding: 10px 14px; margin-bottom: 10px;
-    font-family: var(--font-mono), sans-serif; font-size: 10.5px; color: var(--c-accent-lt);
-    direction: ltr; text-align: left; line-height: 1.6; white-space: pre-wrap; word-break: break-all;
-}
-</style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تقرير تدقيق شامل - VIXOR</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @page {
+        size: 794px 1123px;
+        margin: 0;
+      }
+      :root {
+        --c-bg: #08090c;
+        --c-bg-card: #0f1117;
+        --c-bg-card-alt: #141620;
+        --c-text: #e8e8ed;
+        --c-text-sec: #9ca3af;
+        --c-text-muted: #6b7280;
+        --c-accent: #6366f1;
+        --c-accent-lt: #818cf8;
+        --c-bullish: #22d3a6;
+        --c-bearish: #fb4667;
+        --c-gold: #f0c419;
+        --c-border: #1e2030;
+        --font-ar: "Noto Sans Arabic", "Inter", sans-serif;
+        --font-mono: "JetBrains Mono", "Noto Sans Arabic", monospace, sans-serif;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 794px;
+        background: var(--c-bg);
+        color: var(--c-text);
+        font-family: var(--font-ar), sans-serif;
+        font-size: 13px;
+        line-height: 1.7;
+        direction: rtl;
+        -webkit-font-smoothing: antialiased;
+      }
+      @media screen {
+        html {
+          height: auto;
+          display: flex;
+          justify-content: center;
+          background: #111;
+        }
+        body {
+          transform-origin: top center;
+          margin: 20px auto;
+        }
+      }
+      .cover {
+        width: 794px;
+        height: 1123px;
+        box-sizing: border-box;
+        break-after: page;
+        overflow: hidden;
+        background: var(--c-bg);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        padding: 80px 70px;
+      }
+      .cover::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+      }
+      .cover::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(251, 70, 103, 0.06) 0%, transparent 70%);
+        border-radius: 50%;
+      }
+      .cover-badge {
+        position: relative;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(99, 102, 241, 0.15);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 100px;
+        padding: 8px 24px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--c-accent-lt);
+        letter-spacing: 0.5px;
+        margin-bottom: 36px;
+      }
+      .cover-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--c-accent);
+        border-radius: 50%;
+      }
+      .cover-title {
+        position: relative;
+        z-index: 2;
+        font-size: 40px;
+        font-weight: 900;
+        color: #fff;
+        text-align: center;
+        line-height: 1.3;
+        margin-bottom: 14px;
+      }
+      .cover-hl {
+        color: var(--c-accent-lt);
+      }
+      .cover-sub {
+        position: relative;
+        z-index: 2;
+        font-size: 15px;
+        color: var(--c-text-sec);
+        text-align: center;
+        max-width: 520px;
+        line-height: 1.8;
+        margin-bottom: 44px;
+      }
+      .cover-stats {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        gap: 36px;
+        margin-bottom: 50px;
+      }
+      .c-stat {
+        text-align: center;
+      }
+      .c-stat-v {
+        font-size: 34px;
+        font-weight: 900;
+        font-family: "Inter", var(--font-ar), sans-serif;
+        color: #fff;
+      }
+      .c-stat-l {
+        font-size: 11px;
+        color: var(--c-text-muted);
+        margin-top: 4px;
+        font-weight: 500;
+      }
+      .c-stat-v.crit {
+        color: var(--c-bearish);
+      }
+      .c-stat-v.hi {
+        color: #f97316;
+      }
+      .c-stat-v.med {
+        color: var(--c-gold);
+      }
+      .c-stat-v.lo {
+        color: var(--c-bullish);
+      }
+      .cover-meta {
+        position: absolute;
+        bottom: 36px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        z-index: 2;
+        font-size: 11px;
+        color: var(--c-text-muted);
+      }
+      .main-content {
+        padding: 48px 58px 36px 58px;
+      }
+      .ch-hdr {
+        break-after: avoid;
+        break-inside: avoid;
+        margin-top: 26px;
+        margin-bottom: 18px;
+      }
+      .sec-tag {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--c-accent-lt);
+        background: rgba(99, 102, 241, 0.12);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 6px;
+        padding: 4px 14px;
+        margin-bottom: 8px;
+      }
+      .sec-title {
+        font-size: 21px;
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 6px;
+        line-height: 1.4;
+      }
+      .sec-desc {
+        font-size: 13px;
+        color: var(--c-text-sec);
+        line-height: 1.7;
+        margin-bottom: 14px;
+      }
+      .divider {
+        width: 55px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--c-accent), transparent);
+        border-radius: 3px;
+        margin-bottom: 18px;
+      }
+      .body-text {
+        font-size: 13px;
+        color: var(--c-text);
+        line-height: 1.8;
+        margin-bottom: 10px;
+      }
+      .body-text strong {
+        color: #fff;
+        font-weight: 600;
+      }
+      .card {
+        break-inside: avoid;
+        background: var(--c-bg-card);
+        border: 1px solid var(--c-border);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 10px;
+      }
+      .card-hdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .card-title {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #fff;
+      }
+      .card-file {
+        font-size: 10.5px;
+        font-family: var(--font-mono), sans-serif;
+        color: var(--c-text-muted);
+        direction: ltr;
+        text-align: left;
+      }
+      .card-body {
+        font-size: 12px;
+        color: var(--c-text-sec);
+        line-height: 1.75;
+      }
+      .sev {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 100px;
+      }
+      .sev-crit {
+        background: rgba(251, 70, 103, 0.15);
+        color: var(--c-bearish);
+        border: 1px solid rgba(251, 70, 103, 0.3);
+      }
+      .sev-hi {
+        background: rgba(249, 115, 22, 0.15);
+        color: #f97316;
+        border: 1px solid rgba(249, 115, 22, 0.3);
+      }
+      .sev-med {
+        background: rgba(240, 196, 25, 0.15);
+        color: var(--c-gold);
+        border: 1px solid rgba(240, 196, 25, 0.3);
+      }
+      .sev-lo {
+        background: rgba(34, 211, 166, 0.15);
+        color: var(--c-bullish);
+        border: 1px solid rgba(34, 211, 166, 0.3);
+      }
+      .st-fixed {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 100px;
+        background: rgba(34, 211, 166, 0.15);
+        color: var(--c-bullish);
+        border: 1px solid rgba(34, 211, 166, 0.3);
+      }
+      .st-clear {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 100px;
+        background: rgba(34, 211, 166, 0.1);
+        color: var(--c-bullish);
+        border: 1px solid rgba(34, 211, 166, 0.2);
+      }
+      .tbl-wrap {
+        break-inside: avoid;
+        margin-bottom: 14px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--c-border);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11.5px;
+      }
+      thead {
+        background: var(--c-bg-card-alt);
+      }
+      th {
+        padding: 9px 12px;
+        font-weight: 700;
+        color: var(--c-text-sec);
+        text-align: right;
+        font-size: 10.5px;
+        border-bottom: 1px solid var(--c-border);
+      }
+      td {
+        padding: 9px 12px;
+        color: var(--c-text);
+        border-bottom: 1px solid var(--c-border);
+        line-height: 1.5;
+        vertical-align: top;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      td.mono {
+        font-family: var(--font-mono), sans-serif;
+        font-size: 10.5px;
+        direction: ltr;
+        text-align: left;
+        color: var(--c-accent-lt);
+      }
+      .iss {
+        break-inside: avoid;
+        display: flex;
+        gap: 12px;
+        margin-bottom: 10px;
+        padding: 12px 14px;
+        background: var(--c-bg-card);
+        border: 1px solid var(--c-border);
+        border-radius: 10px;
+        border-right: 3px solid var(--c-accent);
+      }
+      .iss.crit {
+        border-right-color: var(--c-bearish);
+      }
+      .iss.hi {
+        border-right-color: #f97316;
+      }
+      .iss.med {
+        border-right-color: var(--c-gold);
+      }
+      .iss.lo {
+        border-right-color: var(--c-bullish);
+      }
+      .iss-n {
+        flex-shrink: 0;
+        width: 26px;
+        height: 26px;
+        background: rgba(99, 102, 241, 0.12);
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--c-accent-lt);
+        font-family: "Inter", var(--font-ar), sans-serif;
+      }
+      .iss.crit .iss-n {
+        background: rgba(251, 70, 103, 0.15);
+        color: var(--c-bearish);
+      }
+      .iss.hi .iss-n {
+        background: rgba(249, 115, 22, 0.15);
+        color: #f97316;
+      }
+      .iss.med .iss-n {
+        background: rgba(240, 196, 25, 0.15);
+        color: var(--c-gold);
+      }
+      .iss.lo .iss-n {
+        background: rgba(34, 211, 166, 0.15);
+        color: var(--c-bullish);
+      }
+      .iss-c {
+        flex: 1;
+      }
+      .iss-t {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 5px;
+      }
+      .iss-d {
+        font-size: 11.5px;
+        color: var(--c-text-sec);
+        line-height: 1.7;
+        margin-bottom: 5px;
+      }
+      .iss-m {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .iss-f {
+        font-size: 10px;
+        font-family: var(--font-mono), sans-serif;
+        color: var(--c-text-muted);
+        direction: ltr;
+        text-align: left;
+        background: rgba(99, 102, 241, 0.08);
+        padding: 3px 8px;
+        border-radius: 4px;
+      }
+      .sub-t {
+        font-size: 15px;
+        font-weight: 700;
+        color: #fff;
+        margin-top: 22px;
+        margin-bottom: 10px;
+        padding-bottom: 7px;
+        border-bottom: 1px solid var(--c-border);
+      }
+      .info-box {
+        break-inside: avoid;
+        background: rgba(99, 102, 241, 0.08);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+      }
+      .info-box.warn {
+        background: rgba(240, 196, 25, 0.08);
+        border-color: rgba(240, 196, 25, 0.2);
+      }
+      .info-box.good {
+        background: rgba(34, 211, 166, 0.08);
+        border-color: rgba(34, 211, 166, 0.2);
+      }
+      .info-box.danger {
+        background: rgba(251, 70, 103, 0.08);
+        border-color: rgba(251, 70, 103, 0.2);
+      }
+      .info-box-t {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--c-accent-lt);
+        margin-bottom: 5px;
+      }
+      .info-box.warn .info-box-t {
+        color: var(--c-gold);
+      }
+      .info-box.good .info-box-t {
+        color: var(--c-bullish);
+      }
+      .info-box.danger .info-box-t {
+        color: var(--c-bearish);
+      }
+      .info-box-b {
+        font-size: 11.5px;
+        color: var(--c-text-sec);
+        line-height: 1.7;
+      }
+      .sgrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .scard {
+        break-inside: avoid;
+        background: var(--c-bg-card);
+        border: 1px solid var(--c-border);
+        border-radius: 10px;
+        padding: 14px;
+      }
+      .scard-v {
+        font-size: 26px;
+        font-weight: 900;
+        font-family: "Inter", var(--font-ar), sans-serif;
+        color: #fff;
+        margin-bottom: 3px;
+      }
+      .scard-l {
+        font-size: 10.5px;
+        color: var(--c-text-muted);
+        font-weight: 500;
+      }
+      .task {
+        break-inside: avoid;
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+        padding: 11px 13px;
+        background: var(--c-bg-card);
+        border: 1px solid var(--c-border);
+        border-radius: 8px;
+      }
+      .task-p {
+        flex-shrink: 0;
+        font-size: 9.5px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 4px;
+        height: fit-content;
+        margin-top: 2px;
+      }
+      .task-c {
+        flex: 1;
+      }
+      .task-t {
+        font-size: 12px;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 3px;
+      }
+      .task-d {
+        font-size: 11px;
+        color: var(--c-text-sec);
+        line-height: 1.6;
+      }
+      .code-block {
+        break-inside: avoid;
+        background: #0c0d12;
+        border: 1px solid var(--c-border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 10px;
+        font-family: var(--font-mono), sans-serif;
+        font-size: 10.5px;
+        color: var(--c-accent-lt);
+        direction: ltr;
+        text-align: left;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cover">
+      <div class="cover-badge">
+        <div class="cover-dot"></div>
+        تقرير تدقيق تقني شامل
+      </div>
+      <div class="cover-title">تقرير تدقيق تطبيق <span class="cover-hl">VIXOR</span></div>
+      <div class="cover-sub">
+        مراجعة تفصيلية للمشاكل التقنية والأمنية والمعمارية مع خطة عمل عملية متكاملة لإصلاح جميع
+        الثغرات وتقوية البنية التحتية
+      </div>
+      <div class="cover-stats">
+        <div class="c-stat">
+          <div class="c-stat-v crit">5</div>
+          <div class="c-stat-l">حرج</div>
+        </div>
+        <div class="c-stat">
+          <div class="c-stat-v hi">8</div>
+          <div class="c-stat-l">عالٍ</div>
+        </div>
+        <div class="c-stat">
+          <div class="c-stat-v med">6</div>
+          <div class="c-stat-l">متوسط</div>
+        </div>
+        <div class="c-stat">
+          <div class="c-stat-v lo">6</div>
+          <div class="c-stat-l">منخفض</div>
+        </div>
+      </div>
+      <div class="cover-meta">
+        19 يوليو 2026 | الفرع: main | 50+ ملف مدقّق | React + TanStack Start + Supabase
+      </div>
+    </div>
 
-<div class="cover">
-    <div class="cover-badge"><div class="cover-dot"></div>تقرير تدقيق تقني شامل</div>
-    <div class="cover-title">تقرير تدقيق تطبيق <span class="cover-hl">VIXOR</span></div>
-    <div class="cover-sub">مراجعة تفصيلية للمشاكل التقنية والأمنية والمعمارية مع خطة عمل عملية متكاملة لإصلاح جميع الثغرات وتقوية البنية التحتية</div>
-    <div class="cover-stats">
-        <div class="c-stat"><div class="c-stat-v crit">5</div><div class="c-stat-l">حرج</div></div>
-        <div class="c-stat"><div class="c-stat-v hi">8</div><div class="c-stat-l">عالٍ</div></div>
-        <div class="c-stat"><div class="c-stat-v med">6</div><div class="c-stat-l">متوسط</div></div>
-        <div class="c-stat"><div class="c-stat-v lo">6</div><div class="c-stat-l">منخفض</div></div>
-    </div>
-    <div class="cover-meta">19 يوليو 2026 | الفرع: main | 50+ ملف مدقّق | React + TanStack Start + Supabase</div>
-</div>
+    <div class="main-content">
+      <!-- ═══ 1. الملخص التنفيذي ═══ -->
+      <div class="ch-hdr">
+        <div class="sec-tag">القسم الأول</div>
+        <div class="sec-title">الملخص التنفيذي</div>
+        <div class="divider"></div>
+      </div>
+      <div class="body-text">
+        يقدم هذا التقرير الشامل نتائج تدقيق تقني مفصّل لتطبيق <strong>VIXOR</strong>، لوحة تحكم
+        تداول عملات مشفرة مبنية بتقنيات React و TanStack Start ومتكاملة مع Binance و TwelveData و
+        OpenRouter AI و Supabase. يغطي التقرير ثلاثة محاور: التحقق من حالة الإصلاحات السابقة، مسح
+        شامل لأكثر من 50 ملف عبر 13 فئة مشكلة، وتحليل أمني ومعماري معمّق مع خطة عمل عملية متكاملة.
+      </div>
+      <div class="body-text">
+        أظهرت النتائج أن الإصلاحات الثلاثة السابقة <strong>استمرت بنجاح</strong> في الملفات
+        المستهدفة. ومع ذلك، كشف المسح عن <strong>25 مشكلة نشطة</strong> عبر 8 من أصل 13 فئة. الجدير
+        بالملاحظة أن <strong>نظام المصادقة مُنفَّذ بشكل صحيح</strong> عبر requireSupabaseAuth الذي
+        يتحقق من صحة JWT عبر Supabase، وأن جميع دوال الخادم في جميع النطاقات تستخدم هذا
+        المiddleware. كما أن نظام تحديد المعدل متقدم ويستخدم Redis مع احتياطي في الذاكرة.
+      </div>
+      <div class="sgrid">
+        <div class="scard">
+          <div class="scard-v">3 / 3</div>
+          <div class="scard-l">إصلاحات سابقة مؤكدة</div>
+        </div>
+        <div class="scard">
+          <div class="scard-v">25</div>
+          <div class="scard-l">مشكلة نشطة مكتشفة</div>
+        </div>
+        <div class="scard">
+          <div class="scard-v">8 / 13</div>
+          <div class="scard-l">فئات تحتوي مشاكل</div>
+        </div>
+        <div class="scard">
+          <div class="scard-v">170</div>
+          <div class="scard-l">حالة as any في 46 ملف</div>
+        </div>
+      </div>
 
-<div class="main-content">
+      <!-- ═══ 2. التحقق من الإصلاحات ═══ -->
+      <div class="ch-hdr">
+        <div class="sec-tag">القسم الثاني</div>
+        <div class="sec-title">التحقق من الإصلاحات السابقة</div>
+        <div class="divider"></div>
+      </div>
+      <div class="body-text">
+        تم إجراء ثلاث عمليات إصلاح سابقة عبر ثلاثة commits منفصلة. النتيجة:
+        <strong>جميع الإصلاحات الثلاثة لا تزال سارية</strong> ولم تفقد بسبب أي عمليات لاحقة.
+      </div>
 
-<!-- ═══ 1. الملخص التنفيذي ═══ -->
-<div class="ch-hdr">
-    <div class="sec-tag">القسم الأول</div>
-    <div class="sec-title">الملخص التنفيذي</div>
-    <div class="divider"></div>
-</div>
-<div class="body-text">يقدم هذا التقرير الشامل نتائج تدقيق تقني مفصّل لتطبيق <strong>VIXOR</strong>، لوحة تحكم تداول عملات مشفرة مبنية بتقنيات React و TanStack Start ومتكاملة مع Binance و TwelveData و OpenRouter AI و Supabase. يغطي التقرير ثلاثة محاور: التحقق من حالة الإصلاحات السابقة، مسح شامل لأكثر من 50 ملف عبر 13 فئة مشكلة، وتحليل أمني ومعماري معمّق مع خطة عمل عملية متكاملة.</div>
-<div class="body-text">أظهرت النتائج أن الإصلاحات الثلاثة السابقة <strong>استمرت بنجاح</strong> في الملفات المستهدفة. ومع ذلك، كشف المسح عن <strong>25 مشكلة نشطة</strong> عبر 8 من أصل 13 فئة. الجدير بالملاحظة أن <strong>نظام المصادقة مُنفَّذ بشكل صحيح</strong> عبر requireSupabaseAuth الذي يتحقق من صحة JWT عبر Supabase، وأن جميع دوال الخادم في جميع النطاقات تستخدم هذا المiddleware. كما أن نظام تحديد المعدل متقدم ويستخدم Redis مع احتياطي في الذاكرة.</div>
-<div class="sgrid">
-    <div class="scard"><div class="scard-v">3 / 3</div><div class="scard-l">إصلاحات سابقة مؤكدة</div></div>
-    <div class="scard"><div class="scard-v">25</div><div class="scard-l">مشكلة نشطة مكتشفة</div></div>
-    <div class="scard"><div class="scard-v">8 / 13</div><div class="scard-l">فئات تحتوي مشاكل</div></div>
-    <div class="scard"><div class="scard-v">170</div><div class="scard-l">حالة as any في 46 ملف</div></div>
-</div>
+      <div class="sub-t">الإصلاح 1: إضافة LINK/USDT إلى سجل الأصول</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">AssetRegistry - إضافة زوج LINK/USDT كامل</div>
+          <span class="st-fixed">تم الإصلاح</span>
+        </div>
+        <div class="card-file">src/shared/asset-registry/types.ts:348-364</div>
+        <div class="card-body">
+          تم التحقق من وجود تعريف LINK/USDT كاملاً مع جميع الرموز الصحيحة: LINKUSDT للبينانس، و
+          LINK/USDT لـ TwelveData، و BINANCE:LINKUSDT لـ TradingView. الزوج محدد كـ popular: true
+          مما يعني ظهوره في القوائم السريعة. كما تم التحقق من وجود طريقة
+          <strong>.find()</strong> آمنة بجانب <strong>.get()</strong> التي تُلقي خطأ.
+        </div>
+      </div>
 
-<!-- ═══ 2. التحقق من الإصلاحات ═══ -->
-<div class="ch-hdr">
-    <div class="sec-tag">القسم الثاني</div>
-    <div class="sec-title">التحقق من الإصلاحات السابقة</div>
-    <div class="divider"></div>
-</div>
-<div class="body-text">تم إجراء ثلاث عمليات إصلاح سابقة عبر ثلاثة commits منفصلة. النتيجة: <strong>جميع الإصلاحات الثلاثة لا تزال سارية</strong> ولم تفقد بسبب أي عمليات لاحقة.</div>
+      <div class="sub-t">الإصلاح 2: مقاومة خطاف الأسعار الحية للأزواج غير المعروفة</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">useLivePrices - استخدام .find() بدلاً من .get()</div>
+          <span class="st-fixed">تم الإصلاح</span>
+        </div>
+        <div class="card-file">src/shared/market-data/use-live-prices.ts:77,156,193</div>
+        <div class="card-body">
+          جميع الاستدعاءات تستخدم <strong>AssetRegistry.find()</strong> الذي يُعيد undefined بدلاً
+          من إلقاء خطأ. السطر 77 يتخطى الأزواج غير المعروفة بأمان، والسطر 156 لنفس الغرض أثناء جلب
+          أسعار REST، والسطر 193 داخل دالة getPrice. هذا يمنع انهيار التطبيق عند طلب أي زوج غير
+          مسجّل.
+        </div>
+      </div>
 
-<div class="sub-t">الإصلاح 1: إضافة LINK/USDT إلى سجل الأصول</div>
-<div class="card">
-    <div class="card-hdr">
-        <div class="card-title">AssetRegistry - إضافة زوج LINK/USDT كامل</div>
-        <span class="st-fixed">تم الإصلاح</span>
-    </div>
-    <div class="card-file">src/shared/asset-registry/types.ts:348-364</div>
-    <div class="card-body">تم التحقق من وجود تعريف LINK/USDT كاملاً مع جميع الرموز الصحيحة: LINKUSDT للبينانس، و LINK/USDT لـ TwelveData، و BINANCE:LINKUSDT لـ TradingView. الزوج محدد كـ popular: true مما يعني ظهوره في القوائم السريعة. كما تم التحقق من وجود طريقة <strong>.find()</strong> آمنة بجانب <strong>.get()</strong> التي تُلقي خطأ.</div>
-</div>
+      <div class="sub-t">الإصلاح 3: إصلاح نموذج OpenRouter + آلية الاحتياطي المحلي</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">runAnalysis - نموذج صالح + احتياطي محلي ثلاثي الطبقات</div>
+          <span class="st-fixed">تم الإصلاح</span>
+        </div>
+        <div class="card-file">src/domains/analysis/server/run-analysis.ts:226,307-348</div>
+        <div class="card-body">
+          السطر 226 يستخدم القيمة الافتراضية google/gemma-4-31b-it:free بدلاً من النموذج غير الصالح.
+          بلوك try-catch شامل (الأسطر 224-319) يلتقط أخطاء OpenRouter وينتقل إلى
+          runLocalAnalysisFallback. الدالة الاحتياطية نفسها تحتوي على طبقة حماية إضافية: إذا فشل
+          المحرك المحلي، يتم استخدام generateFallbackResult كملاذ أخير. كذلك تم التحقق من أن عدم
+          وجود OPENROUTER_API_KEY ينتقل مباشرة للاحتياطي المحلي (السطر 181-189).
+        </div>
+      </div>
 
-<div class="sub-t">الإصلاح 2: مقاومة خطاف الأسعار الحية للأزواج غير المعروفة</div>
-<div class="card">
-    <div class="card-hdr">
-        <div class="card-title">useLivePrices - استخدام .find() بدلاً من .get()</div>
-        <span class="st-fixed">تم الإصلاح</span>
-    </div>
-    <div class="card-file">src/shared/market-data/use-live-prices.ts:77,156,193</div>
-    <div class="card-body">جميع الاستدعاءات تستخدم <strong>AssetRegistry.find()</strong> الذي يُعيد undefined بدلاً من إلقاء خطأ. السطر 77 يتخطى الأزواج غير المعروفة بأمان، والسطر 156 لنفس الغرض أثناء جلب أسعار REST، والسطر 193 داخل دالة getPrice. هذا يمنع انهيار التطبيق عند طلب أي زوج غير مسجّل.</div>
-</div>
+      <div class="info-box good">
+        <div class="info-box-t">ملاحظة عن الإصلاح الثالث</div>
+        <div class="info-box-b">
+          الإصلاح الثالث كان جزءاً من commit كبير شمل أكثر من 150 ملف بسبب عمليات تنسيق linting
+          آلية. لكن التغيير الوظيفي الفعلي اقتصر على ملف run-analysis.ts فقط. جميع الملفات الأخرى في
+          ذلك Commit تم تعديلها فقط لأسباب تنسيقية (مسافات، فواصل منقوطة) وليس تغييرات وظيفية.
+        </div>
+      </div>
 
-<div class="sub-t">الإصلاح 3: إصلاح نموذج OpenRouter + آلية الاحتياطي المحلي</div>
-<div class="card">
-    <div class="card-hdr">
-        <div class="card-title">runAnalysis - نموذج صالح + احتياطي محلي ثلاثي الطبقات</div>
-        <span class="st-fixed">تم الإصلاح</span>
-    </div>
-    <div class="card-file">src/domains/analysis/server/run-analysis.ts:226,307-348</div>
-    <div class="card-body">السطر 226 يستخدم القيمة الافتراضية google/gemma-4-31b-it:free بدلاً من النموذج غير الصالح. بلوك try-catch شامل (الأسطر 224-319) يلتقط أخطاء OpenRouter وينتقل إلى runLocalAnalysisFallback. الدالة الاحتياطية نفسها تحتوي على طبقة حماية إضافية: إذا فشل المحرك المحلي، يتم استخدام generateFallbackResult كملاذ أخير. كذلك تم التحقق من أن عدم وجود OPENROUTER_API_KEY ينتقل مباشرة للاحتياطي المحلي (السطر 181-189).</div>
-</div>
+      <!-- ═══ 3. الأمان ═══ -->
+      <div class="ch-hdr">
+        <div class="sec-tag">القسم الثالث</div>
+        <div class="sec-title">تقييم الأمان والمصادقة</div>
+        <div class="divider"></div>
+      </div>
+      <div class="body-text">
+        تم فحص البنية الأمنية بالكامل. النتيجة الأساسية هي أن
+        <strong>نظام المصادقة قوي ومُنفَّذ بشكل صحيح</strong>، لكن هناك ثغرة محددة في وظيفة واحدة
+        تسمح بحذف عناصر لا يملكها المستخدم.
+      </div>
 
-<div class="info-box good">
-    <div class="info-box-t">ملاحظة عن الإصلاح الثالث</div>
-    <div class="info-box-b">الإصلاح الثالث كان جزءاً من commit كبير شمل أكثر من 150 ملف بسبب عمليات تنسيق linting آلية. لكن التغيير الوظيفي الفعلي اقتصر على ملف run-analysis.ts فقط. جميع الملفات الأخرى في ذلك Commit تم تعديلها فقط لأسباب تنسيقية (مسافات، فواصل منقوطة) وليس تغييرات وظيفية.</div>
-</div>
+      <div class="info-box good">
+        <div class="info-box-t">نقاط قوة أمنية مؤكدة</div>
+        <div class="info-box-b">
+          <strong>requireSupabaseAuth</strong> (src/shared/supabase/auth-middleware.ts) يتحقق فعلياً
+          من صحة JWT عبر <strong>supabase.auth.getUser(token)</strong> وليس فقط من صيغة الهيدر. جميع
+          دوال الخادم في جميع النطاقات (moxi, trading, watchlist, copilot, analysis, daily-loop,
+          backtest, broker, experiment, notes, user) تستخدم هذا المiddleware. لا توجد مفاتيح API
+          مكشوفة في الكود من جهة العميل. لا يوجد استخدام لـ dangerouslySetInnerHTML في أي ملف مسار.
+        </div>
+      </div>
 
-<!-- ═══ 3. الأمان ═══ -->
-<div class="ch-hdr">
-    <div class="sec-tag">القسم الثالث</div>
-    <div class="sec-title">تقييم الأمان والمصادقة</div>
-    <div class="divider"></div>
-</div>
-<div class="body-text">تم فحص البنية الأمنية بالكامل. النتيجة الأساسية هي أن <strong>نظام المصادقة قوي ومُنفَّذ بشكل صحيح</strong>، لكن هناك ثغرة محددة في وظيفة واحدة تسمح بحذف عناصر لا يملكها المستخدم.</div>
+      <div class="iss hi">
+        <div class="iss-n">S1</div>
+        <div class="iss-c">
+          <div class="iss-t">ثغرة: removeFromWatchlist تحذف بدون التحقق من الملكية</div>
+          <div class="iss-d">
+            في السطر 119 من watchlist/functions.ts، دالة الحذف تستخدم .eq("id", data.itemId) فقط دون
+            التحقق من أن العنصر ينتمي لقائمة مراقبة المستخدم الحالي. هذا يعني أن مستخدماً يعرف UUID
+            عنصر في قائمة مراقبة مستخدم آخر يمكنه حذفه. يجب إضافة التحقق عبر JOIN مع جدول watchlists
+            والتأكد من user_id.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-hi">عالٍ</span
+            ><span class="iss-f">src/domains/watchlist/functions.ts:119</span>
+          </div>
+        </div>
+      </div>
 
-<div class="info-box good">
-    <div class="info-box-t">نقاط قوة أمنية مؤكدة</div>
-    <div class="info-box-b"><strong>requireSupabaseAuth</strong> (src/shared/supabase/auth-middleware.ts) يتحقق فعلياً من صحة JWT عبر <strong>supabase.auth.getUser(token)</strong> وليس فقط من صيغة الهيدر. جميع دوال الخادم في جميع النطاقات (moxi, trading, watchlist, copilot, analysis, daily-loop, backtest, broker, experiment, notes, user) تستخدم هذا المiddleware. لا توجد مفاتيح API مكشوفة في الكود من جهة العميل. لا يوجد استخدام لـ dangerouslySetInnerHTML في أي ملف مسار.</div>
-</div>
+      <div class="iss med">
+        <div class="iss-n">S2</div>
+        <div class="iss-c">
+          <div class="iss-t">reorderWatchlist يستخدم supabaseAdmin الذي يتجاوز RLS</div>
+          <div class="iss-d">
+            في السطر 158، يتم استيراد supabaseAdmin (خدمة admin بدون قيود RLS) لتحديث ترتيب العناصر.
+            رغم أن العناصر يتم التعامل معها بمعرّفاتها فقط، فإن عدم التحقق من أن هذه العناصر تنتمي
+            للمستخدم الحالي يشكّل خطراً أمنياً. يجب التبديل لاستخدام context.supabase مع التحقق من
+            الملكية.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-med">متوسط</span
+            ><span class="iss-f">src/domains/watchlist/functions.ts:158</span>
+          </div>
+        </div>
+      </div>
 
-<div class="iss hi">
-    <div class="iss-n">S1</div>
-    <div class="iss-c">
-        <div class="iss-t">ثغرة: removeFromWatchlist تحذف بدون التحقق من الملكية</div>
-        <div class="iss-d">في السطر 119 من watchlist/functions.ts، دالة الحذف تستخدم .eq("id", data.itemId) فقط دون التحقق من أن العنصر ينتمي لقائمة مراقبة المستخدم الحالي. هذا يعني أن مستخدماً يعرف UUID عنصر في قائمة مراقبة مستخدم آخر يمكنه حذفه. يجب إضافة التحقق عبر JOIN مع جدول watchlists والتأكد من user_id.</div>
-        <div class="iss-m"><span class="sev sev-hi">عالٍ</span><span class="iss-f">src/domains/watchlist/functions.ts:119</span></div>
-    </div>
-</div>
+      <div class="iss med">
+        <div class="iss-n">S3</div>
+        <div class="iss-c">
+          <div class="iss-t">استخراج رمز المصادقة يدوياً من ملفات تعريف الارتباط في MOXI</div>
+          <div class="iss-d">
+            في مكون MOXI (الأسطر 431-449)، يتم تحليل document.cookie يدوياً للبحث عن رموز Supabase.
+            هذه الطريقة هشة وقد تتعطل إذا تغيرت أسماء ملفات تعريف الارتباط. يُنصح باستخدام واجهة
+            Supabase الرسمية لإدارة الجلسات.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-med">متوسط</span
+            ><span class="iss-f">-copilot-component.tsx:431-449</span>
+          </div>
+        </div>
+      </div>
 
-<div class="iss med">
-    <div class="iss-n">S2</div>
-    <div class="iss-c">
-        <div class="iss-t">reorderWatchlist يستخدم supabaseAdmin الذي يتجاوز RLS</div>
-        <div class="iss-d">في السطر 158، يتم استيراد supabaseAdmin (خدمة admin بدون قيود RLS) لتحديث ترتيب العناصر. رغم أن العناصر يتم التعامل معها بمعرّفاتها فقط، فإن عدم التحقق من أن هذه العناصر تنتمي للمستخدم الحالي يشكّل خطراً أمنياً. يجب التبديل لاستخدام context.supabase مع التحقق من الملكية.</div>
-        <div class="iss-m"><span class="sev sev-med">متوسط</span><span class="iss-f">src/domains/watchlist/functions.ts:158</span></div>
-    </div>
-</div>
+      <div class="sub-t">تقييم نظام تحديد المعدل (Rate Limiting)</div>
+      <div class="body-text">
+        عكس الادعاءات، نظام تحديد المعدل في VIXOR <strong>متقدم ومتعدد الطبقات</strong>. يتضمن:
+        <strong>SlidingWindowLimiter</strong> للتحقق لكل مستخدم (مُستخدم في MOXI و Copilot)، و
+        <strong>RateLimiter</strong> بفواصل زمنية دنيا لكل مزود بيانات خارجي (Finnhub, TwelveData,
+        Binance, DexScreener, Helius, Alchemy)، و <strong>RedisRateLimiter</strong> مدعوم بـ Upstash
+        Redis مع احتياطي InMemory للبيئات التي لا تتوفر فيها Redis. هذا النظام يُعد كافياً لمعظم
+        حالات الاستخدام الحالية.
+      </div>
 
-<div class="iss med">
-    <div class="iss-n">S3</div>
-    <div class="iss-c">
-        <div class="iss-t">استخراج رمز المصادقة يدوياً من ملفات تعريف الارتباط في MOXI</div>
-        <div class="iss-d">في مكون MOXI (الأسطر 431-449)، يتم تحليل document.cookie يدوياً للبحث عن رموز Supabase. هذه الطريقة هشة وقد تتعطل إذا تغيرت أسماء ملفات تعريف الارتباط. يُنصح باستخدام واجهة Supabase الرسمية لإدارة الجلسات.</div>
-        <div class="iss-m"><span class="sev sev-med">متوسط</span><span class="iss-f">-copilot-component.tsx:431-449</span></div>
-    </div>
-</div>
+      <!-- ═══ 4. فئات المشاكل الـ 13 ═══ -->
+      <div class="ch-hdr">
+        <div class="sec-tag">القسم الرابع</div>
+        <div class="sec-title">تدقيق فئات المشاكل الثلاث عشرة</div>
+        <div class="divider"></div>
+      </div>
+      <div class="body-text">
+        تم مسح أكثر من 50 ملف لتحديد المشاكل المنتمية لكل فئة. تم استخدام تصنيف رباعي: حرج يؤثر على
+        الوظائف الأساسية، وعالٍ يؤثر بشكل كبير على تجربة المستخدم، ومتوسط يمثل مشاكل بصرية أو
+        ثانوية، ومنخفض يمثل تحسينات مقترحة.
+      </div>
 
-<div class="sub-t">تقييم نظام تحديد المعدل (Rate Limiting)</div>
-<div class="body-text">عكس الادعاءات، نظام تحديد المعدل في VIXOR <strong>متقدم ومتعدد الطبقات</strong>. يتضمن: <strong>SlidingWindowLimiter</strong> للتحقق لكل مستخدم (مُستخدم في MOXI و Copilot)، و <strong>RateLimiter</strong> بفواصل زمنية دنيا لكل مزود بيانات خارجي (Finnhub, TwelveData, Binance, DexScreener, Helius, Alchemy)، و <strong>RedisRateLimiter</strong> مدعوم بـ Upstash Redis مع احتياطي InMemory للبيئات التي لا تتوفر فيها Redis. هذا النظام يُعد كافياً لمعظم حالات الاستخدام الحالية.</div>
+      <div class="sub-t">الفئات 1: عدم تناسق الشريط العلوي</div>
+      <div class="iss med">
+        <div class="iss-n">1</div>
+        <div class="iss-c">
+          <div class="iss-t">الصفحة الرئيسية تستخدم تخطيطاً مخصصاً بدلاً من PageLayout الموحّد</div>
+          <div class="iss-d">
+            الصفحة الرئيسية تستخدم عنصر div مخصص بهيئة flex خاصة بدلاً من المكون المشترك PageLayout.
+            هذا يُنتج تناقضاً بصرياً حيث تفتقر لعنصر الشريط العلوي المحاط بإطار والنظام المتسامل.
+            الحل: توحيد الصفحة مع PageLayout.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-med">متوسط</span><span class="iss-f">index.tsx:590-620</span>
+          </div>
+        </div>
+      </div>
 
-<!-- ═══ 4. فئات المشاكل الـ 13 ═══ -->
-<div class="ch-hdr">
-    <div class="sec-tag">القسم الرابع</div>
-    <div class="sec-title">تدقيق فئات المشاكل الثلاث عشرة</div>
-    <div class="divider"></div>
-</div>
-<div class="body-text">تم مسح أكثر من 50 ملف لتحديد المشاكل المنتمية لكل فئة. تم استخدام تصنيف رباعي: حرج يؤثر على الوظائف الأساسية، وعالٍ يؤثر بشكل كبير على تجربة المستخدم، ومتوسط يمثل مشاكل بصرية أو ثانوية، ومنخفض يمثل تحسينات مقترحة.</div>
+      <div class="sub-t">الفئتان 2 و 3: ودجات ثابتة وبيانات وهمية</div>
+      <div class="iss crit">
+        <div class="iss-n">2</div>
+        <div class="iss-c">
+          <div class="iss-t">صفحة التبديل (Swap) تعمل بالكامل ببيانات وهمية ثابتة</div>
+          <div class="iss-d">
+            كائن PRICES ثابت بأسعار مجمدة (SOL: 145.23). المحفظة وهمية بعنوان ثابت ورصيد مزيف 42.5
+            SOL. الأرصدة في MOCK_BALANCES ملفقة. سجل getSwapHistory() يحتوي 4 صفقات وهمية. حتى زر
+            "تنفيذ التبديل" يستخدم Math.random() لمحاكاة النجاح والفشل.
+            <strong>لا يوجد أي تكامل خلفي حقيقي في هذه الصفحة.</strong>
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-crit">حرج</span
+            ><span class="iss-f">-swap-component.tsx:12-500</span>
+          </div>
+        </div>
+      </div>
 
-<div class="sub-t">الفئات 1: عدم تناسق الشريط العلوي</div>
-<div class="iss med">
-    <div class="iss-n">1</div>
-    <div class="iss-c">
-        <div class="iss-t">الصفحة الرئيسية تستخدم تخطيطاً مخصصاً بدلاً من PageLayout الموحّد</div>
-        <div class="iss-d">الصفحة الرئيسية تستخدم عنصر div مخصص بهيئة flex خاصة بدلاً من المكون المشترك PageLayout. هذا يُنتج تناقضاً بصرياً حيث تفتقر لعنصر الشريط العلوي المحاط بإطار والنظام المتسامل. الحل: توحيد الصفحة مع PageLayout.</div>
-        <div class="iss-m"><span class="sev sev-med">متوسط</span><span class="iss-f">index.tsx:590-620</span></div>
-    </div>
-</div>
+      <div class="iss hi">
+        <div class="iss-n">3</div>
+        <div class="iss-c">
+          <div class="iss-t">أقسام الفوركس في صفحة تفاصيل التوكن تعرض بيانات ثابتة</div>
+          <div class="iss-d">
+            مكون ForexSections يعرض 3 أحداث اقتصادية ثابتة لا تتغير أبداً. بيانات قوة العملات تحتوي
+            على 8 عملات بقيم ثابتة (USD: 72, EUR: 65). لا يتم جلب أي بيانات من API حقيقي.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-hi">عالٍ</span
+            ><span class="iss-f">-token-symbol-component.tsx:2094-2131</span>
+          </div>
+        </div>
+      </div>
 
-<div class="sub-t">الفئتان 2 و 3: ودجات ثابتة وبيانات وهمية</div>
-<div class="iss crit">
-    <div class="iss-n">2</div>
-    <div class="iss-c">
-        <div class="iss-t">صفحة التبديل (Swap) تعمل بالكامل ببيانات وهمية ثابتة</div>
-        <div class="iss-d">كائن PRICES ثابت بأسعار مجمدة (SOL: 145.23). المحفظة وهمية بعنوان ثابت ورصيد مزيف 42.5 SOL. الأرصدة في MOCK_BALANCES ملفقة. سجل getSwapHistory() يحتوي 4 صفقات وهمية. حتى زر "تنفيذ التبديل" يستخدم Math.random() لمحاكاة النجاح والفشل. <strong>لا يوجد أي تكامل خلفي حقيقي في هذه الصفحة.</strong></div>
-        <div class="iss-m"><span class="sev sev-crit">حرج</span><span class="iss-f">-swap-component.tsx:12-500</span></div>
-    </div>
-</div>
+      <div class="iss lo">
+        <div class="iss-n">4</div>
+        <div class="iss-c">
+          <div class="iss-t">مقاييس التغير في 1 ساعة و 7 أيام تعرض دائماً شرطة "-"</div>
+          <div class="iss-d">
+            الأسطر 1225 و 1235 تعرض MetricPill بقيمة ثابتة "-" رغم توفر هذه البيانات في Binance API.
+            هذا يمنع تحليل الأداء قصير ومتوسط المدى.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-lo">منخفض</span
+            ><span class="iss-f">-token-symbol-component.tsx:1225,1235</span>
+          </div>
+        </div>
+      </div>
 
-<div class="iss hi">
-    <div class="iss-n">3</div>
-    <div class="iss-c">
-        <div class="iss-t">أقسام الفوركس في صفحة تفاصيل التوكن تعرض بيانات ثابتة</div>
-        <div class="iss-d">مكون ForexSections يعرض 3 أحداث اقتصادية ثابتة لا تتغير أبداً. بيانات قوة العملات تحتوي على 8 عملات بقيم ثابتة (USD: 72, EUR: 65). لا يتم جلب أي بيانات من API حقيقي.</div>
-        <div class="iss-m"><span class="sev sev-hi">عالٍ</span><span class="iss-f">-token-symbol-component.tsx:2094-2131</span></div>
-    </div>
-</div>
+      <div class="sub-t">الفئات 4-7: الرسوم البيانية والتحليل</div>
+      <div class="info-box good">
+        <div class="info-box-t">الفئات 4 و 5 و 6 و 7: نظيفة تماماً</div>
+        <div class="info-box-b">
+          صفحة الرسوم البيانية تعمل مع CandlestickChart للكريبتو و TradingViewChart للفوركس. واجهة
+          نتائج التحليل احترافية مع رسم FVG و Order Block على Canvas. النتائج تأتي من محرك AI حقيقي
+          (OpenRouter أو المحرك المحلي) وليست مُعدة مسبقاً. صفحة إنشاء التحليل تستخدم createAnalysis
+          من الخادم.
+        </div>
+      </div>
 
-<div class="iss lo">
-    <div class="iss-n">4</div>
-    <div class="iss-c">
-        <div class="iss-t">مقاييس التغير في 1 ساعة و 7 أيام تعرض دائماً شرطة "-"</div>
-        <div class="iss-d">الأسطر 1225 و 1235 تعرض MetricPill بقيمة ثابتة "-" رغم توفر هذه البيانات في Binance API. هذا يمنع تحليل الأداء قصير ومتوسط المدى.</div>
-        <div class="iss-m"><span class="sev sev-lo">منخفض</span><span class="iss-f">-token-symbol-component.tsx:1225,1235</span></div>
-    </div>
-</div>
+      <div class="sub-t">الفئة 8: نهج MOXI الخاطئ</div>
+      <div class="iss crit">
+        <div class="iss-n">5</div>
+        <div class="iss-c">
+          <div class="iss-t">MOXI مصمم كعقل AI لكنه يعمل كشات بسيط</div>
+          <div class="iss-d">
+            MOXI واحد من 6 وكلاء متساويين يتم اختياره من قائمة منسدلة. رغم ادعاء قدرات "كشف استباقي"
+            و"تنفيذ أدوات"، التنفيذ الفعلي واجهة محادثة قياسية فقط. لا يوجد سلوك مستقل أو مراقبة
+            خلفية أو إطار عمل للأدوات. يجب تحويله لعقل AI نشط دائماً يقدم رؤى استباقية.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-crit">حرج</span
+            ><span class="iss-f">-copilot-component.tsx:55-165</span>
+          </div>
+        </div>
+      </div>
+      <div class="iss hi">
+        <div class="iss-n">6</div>
+        <div class="iss-c">
+          <div class="iss-t">لا توجد قدرات مستقلة أو إطار عمل للأدوات في MOXI</div>
+          <div class="iss-d">
+            لا يوجد وظائف خلفية أو مهام مجدولة أو تنبيهات استباقية. المحادثة محدودة بـ 10 رسائل كحد
+            أقصى (السطر 568). ملف agent-orchestrator.ts موجود في الخادم لكنه غير متصل بواجهة MOXI.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-hi">عالٍ</span
+            ><span class="iss-f">-copilot-component.tsx:160-162,568</span>
+          </div>
+        </div>
+      </div>
 
-<div class="sub-t">الفئات 4-7: الرسوم البيانية والتحليل</div>
-<div class="info-box good">
-    <div class="info-box-t">الفئات 4 و 5 و 6 و 7: نظيفة تماماً</div>
-    <div class="info-box-b">صفحة الرسوم البيانية تعمل مع CandlestickChart للكريبتو و TradingViewChart للفوركس. واجهة نتائج التحليل احترافية مع رسم FVG و Order Block على Canvas. النتائج تأتي من محرك AI حقيقي (OpenRouter أو المحرك المحلي) وليست مُعدة مسبقاً. صفحة إنشاء التحليل تستخدم createAnalysis من الخادم.</div>
-</div>
+      <div class="sub-t">الفئتان 9 و 10: الاكتشاف والفوركس</div>
+      <div class="iss lo">
+        <div class="iss-n">7</div>
+        <div class="iss-c">
+          <div class="iss-t">حجم تداول الفوركس دائماً صفر في صفحة الاكتشاف</div>
+          <div class="iss-d">
+            volume24h: 0 دائماً مع تعليق "always 0 for forex". أزواج الفوركس ستظهر دائماً في أسفل
+            القوائم عند الترتيب حسب الحجم.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-lo">منخفض</span
+            ><span class="iss-f">-discover-forex-data.ts:137</span>
+          </div>
+        </div>
+      </div>
+      <div class="iss med">
+        <div class="iss-n">8</div>
+        <div class="iss-c">
+          <div class="iss-t">الفوركس لا يعرض شريط أسعار حية في صفحة الرسوم البيانية</div>
+          <div class="iss-d">
+            useLivePrices يشترك فقط في أزواج الكريبتو. عند اختيار فوركس، getPrice() يُرجع undefined
+            وشريط السعر فارغ.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-med">متوسط</span><span class="iss-f">charts.tsx:59-63</span>
+          </div>
+        </div>
+      </div>
 
-<div class="sub-t">الفئة 8: نهج MOXI الخاطئ</div>
-<div class="iss crit">
-    <div class="iss-n">5</div>
-    <div class="iss-c">
-        <div class="iss-t">MOXI مصمم كعقل AI لكنه يعمل كشات بسيط</div>
-        <div class="iss-d">MOXI واحد من 6 وكلاء متساويين يتم اختياره من قائمة منسدلة. رغم ادعاء قدرات "كشف استباقي" و"تنفيذ أدوات"، التنفيذ الفعلي واجهة محادثة قياسية فقط. لا يوجد سلوك مستقل أو مراقبة خلفية أو إطار عمل للأدوات. يجب تحويله لعقل AI نشط دائماً يقدم رؤى استباقية.</div>
-        <div class="iss-m"><span class="sev sev-crit">حرج</span><span class="iss-f">-copilot-component.tsx:55-165</span></div>
-    </div>
-</div>
-<div class="iss hi">
-    <div class="iss-n">6</div>
-    <div class="iss-c">
-        <div class="iss-t">لا توجد قدرات مستقلة أو إطار عمل للأدوات في MOXI</div>
-        <div class="iss-d">لا يوجد وظائف خلفية أو مهام مجدولة أو تنبيهات استباقية. المحادثة محدودة بـ 10 رسائل كحد أقصى (السطر 568). ملف agent-orchestrator.ts موجود في الخادم لكنه غير متصل بواجهة MOXI.</div>
-        <div class="iss-m"><span class="sev sev-hi">عالٍ</span><span class="iss-f">-copilot-component.tsx:160-162,568</span></div>
-    </div>
-</div>
+      <div class="sub-t">الفئتان 11 و 13: صفحات التوكنز</div>
+      <div class="iss med">
+        <div class="iss-n">9</div>
+        <div class="iss-c">
+          <div class="iss-t">صفحات التوكنز المجهولة تظهر شبه فارغة</div>
+          <div class="iss-d">
+            عند عدم وجود بيانات من API الاكتشاف، تعرض الصفحة رسم بياني فقط وزر تحليل بدون أي
+            إحصائيات سوقية.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-med">متوسط</span
+            ><span class="iss-f">-token-symbol-component.tsx:486-708</span>
+          </div>
+        </div>
+      </div>
 
-<div class="sub-t">الفئتان 9 و 10: الاكتشاف والفوركس</div>
-<div class="iss lo">
-    <div class="iss-n">7</div>
-    <div class="iss-c">
-        <div class="iss-t">حجم تداول الفوركس دائماً صفر في صفحة الاكتشاف</div>
-        <div class="iss-d">volume24h: 0 دائماً مع تعليق "always 0 for forex". أزواج الفوركس ستظهر دائماً في أسفل القوائم عند الترتيب حسب الحجم.</div>
-        <div class="iss-m"><span class="sev sev-lo">منخفض</span><span class="iss-f">-discover-forex-data.ts:137</span></div>
-    </div>
-</div>
-<div class="iss med">
-    <div class="iss-n">8</div>
-    <div class="iss-c">
-        <div class="iss-t">الفوركس لا يعرض شريط أسعار حية في صفحة الرسوم البيانية</div>
-        <div class="iss-d">useLivePrices يشترك فقط في أزواج الكريبتو. عند اختيار فوركس، getPrice() يُرجع undefined وشريط السعر فارغ.</div>
-        <div class="iss-m"><span class="sev sev-med">متوسط</span><span class="iss-f">charts.tsx:59-63</span></div>
-    </div>
-</div>
+      <div class="sub-t">الفئة 12: بيانات الحائزين والمعاملات</div>
+      <div class="iss crit">
+        <div class="iss-n">10</div>
+        <div class="iss-c">
+          <div class="iss-t">بيانات الحائزين والمعاملات على السلسلة مُلفقة بالكامل</div>
+          <div class="iss-d">
+            عدد الحائزين بمعادلة وهمية: marketCap * 0.001 + 500. تقسيم DEX/CEX ثابت 62%/38%. معاملات
+            الحيتان = volume / 5000000. الواجهة تعترف بكلمة "(simulated)" في السطر 2079. لا يوجد
+            تكامل مع أي مزود بيانات على السلسلة حقيقي.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-crit">حرج</span
+            ><span class="iss-f">-token-symbol-component.tsx:1918-1921,2079</span>
+          </div>
+        </div>
+      </div>
+      <div class="iss hi">
+        <div class="iss-n">11</div>
+        <div class="iss-c">
+          <div class="iss-t">لا يوجد سجل معاملات حقيقي من البلوكتشين</div>
+          <div class="iss-d">
+            صفحة التفاصيل تعرض فقط صفقات المستخدم الخاص. لا يوجد موجز معاملات أو قائمة تحويلات أو
+            سجل صفقات DEX حقيقي.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-hi">عالٍ</span
+            ><span class="iss-f">-token-symbol-component.tsx</span>
+          </div>
+        </div>
+      </div>
 
-<div class="sub-t">الفئتان 11 و 13: صفحات التوكنز</div>
-<div class="iss med">
-    <div class="iss-n">9</div>
-    <div class="iss-c">
-        <div class="iss-t">صفحات التوكنز المجهولة تظهر شبه فارغة</div>
-        <div class="iss-d">عند عدم وجود بيانات من API الاكتشاف، تعرض الصفحة رسم بياني فقط وزر تحليل بدون أي إحصائيات سوقية.</div>
-        <div class="iss-m"><span class="sev sev-med">متوسط</span><span class="iss-f">-token-symbol-component.tsx:486-708</span></div>
-    </div>
-</div>
+      <!-- ═══ 5. مصفوفة الفئات ═══ -->
+      <div class="ch-hdr">
+        <div class="sec-tag">القسم الخامس</div>
+        <div class="sec-title">مصفوفة ملخص الفئات الـ 13</div>
+        <div class="divider"></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 28px">#</th>
+              <th>الفئة</th>
+              <th style="width: 42px">العدد</th>
+              <th style="width: 72px">الخطورة</th>
+              <th>الملفات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center; color: var(--c-accent-lt); font-weight: 700">1</td>
+              <td>عدم تناسق الشريط العلوي</td>
+              <td style="text-align: center; font-weight: 700">1</td>
+              <td><span class="sev sev-med">متوسط</span></td>
+              <td class="mono">index.tsx</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-accent-lt); font-weight: 700">2</td>
+              <td>ودجات ثابتة</td>
+              <td style="text-align: center; font-weight: 700">3</td>
+              <td><span class="sev sev-hi">عالٍ</span></td>
+              <td class="mono">-token-symbol-component.tsx, -swap-component.tsx</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-accent-lt); font-weight: 700">3</td>
+              <td>بيانات وهمية</td>
+              <td style="text-align: center; font-weight: 700">7</td>
+              <td><span class="sev sev-crit">حرج</span></td>
+              <td class="mono">-swap-component.tsx, -token-symbol-component.tsx</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-bullish); font-weight: 700">4</td>
+              <td>لا توجد رسوم بيانية</td>
+              <td style="text-align: center; font-weight: 700">0</td>
+              <td><span class="sev sev-lo">نظيف</span></td>
+              <td style="color: var(--c-text-muted)">جميع صفحات الرسوم تعمل</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-bullish); font-weight: 700">5</td>
+              <td>واجهة تحليل غير احترافية</td>
+              <td style="text-align: center; font-weight: 700">0</td>
+              <td><span class="sev sev-lo">نظيف</span></td>
+              <td style="color: var(--c-text-muted)">واجهة احترافية مع Canvas</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-bullish); font-weight: 700">6</td>
+              <td>نتائج تحليل خاطئة</td>
+              <td style="text-align: center; font-weight: 700">0</td>
+              <td><span class="sev sev-lo">نظيف</span></td>
+              <td style="color: var(--c-text-muted)">محرك AI حقيقي</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-bullish); font-weight: 700">7</td>
+              <td>مخرجات تحليل وهمية</td>
+              <td style="text-align: center; font-weight: 700">0</td>
+              <td><span class="sev sev-lo">نظيف</span></td>
+              <td style="color: var(--c-text-muted)">AI حقيقي من الخادم</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-accent-lt); font-weight: 700">8</td>
+              <td>نهج MOXI الخاطئ</td>
+              <td style="text-align: center; font-weight: 700">2</td>
+              <td><span class="sev sev-crit">حرج</span></td>
+              <td class="mono">-copilot-component.tsx</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-accent-lt); font-weight: 700">9</td>
+              <td>صفحة الاكتشاف</td>
+              <td style="text-align: center; font-weight: 700">1</td>
+              <td><span class="sev sev-lo">منخفض</span></td>
+              <td class="mono">-discover-forex-data.ts</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-accent-lt); font-weight: 700">10</td>
+              <td>انهيار الفوركس</td>
+              <td style="text-align: center; font-weight: 700">2</td>
+              <td><span class="sev sev-med">متوسط</span></td>
+              <td class="mono">charts.tsx</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-accent-lt); font-weight: 700">11</td>
+              <td>صفحات التفاصيل معطلة</td>
+              <td style="text-align: center; font-weight: 700">1</td>
+              <td><span class="sev sev-med">متوسط</span></td>
+              <td class="mono">-token-symbol-component.tsx</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-accent-lt); font-weight: 700">12</td>
+              <td>بيانات الحائزين مفقودة</td>
+              <td style="text-align: center; font-weight: 700">4</td>
+              <td><span class="sev sev-crit">حرج</span></td>
+              <td class="mono">-token-symbol-component.tsx</td>
+            </tr>
+            <tr>
+              <td style="text-align: center; color: var(--c-accent-lt); font-weight: 700">13</td>
+              <td>صفحات توكنز فارغة</td>
+              <td style="text-align: center; font-weight: 700">1</td>
+              <td><span class="sev sev-med">متوسط</span></td>
+              <td class="mono">-token-symbol-component.tsx</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-<div class="sub-t">الفئة 12: بيانات الحائزين والمعاملات</div>
-<div class="iss crit">
-    <div class="iss-n">10</div>
-    <div class="iss-c">
-        <div class="iss-t">بيانات الحائزين والمعاملات على السلسلة مُلفقة بالكامل</div>
-        <div class="iss-d">عدد الحائزين بمعادلة وهمية: marketCap * 0.001 + 500. تقسيم DEX/CEX ثابت 62%/38%. معاملات الحيتان = volume / 5000000. الواجهة تعترف بكلمة "(simulated)" في السطر 2079. لا يوجد تكامل مع أي مزود بيانات على السلسلة حقيقي.</div>
-        <div class="iss-m"><span class="sev sev-crit">حرج</span><span class="iss-f">-token-symbol-component.tsx:1918-1921,2079</span></div>
-    </div>
-</div>
-<div class="iss hi">
-    <div class="iss-n">11</div>
-    <div class="iss-c">
-        <div class="iss-t">لا يوجد سجل معاملات حقيقي من البلوكتشين</div>
-        <div class="iss-d">صفحة التفاصيل تعرض فقط صفقات المستخدم الخاص. لا يوجد موجز معاملات أو قائمة تحويلات أو سجل صفقات DEX حقيقي.</div>
-        <div class="iss-m"><span class="sev sev-hi">عالٍ</span><span class="iss-f">-token-symbol-component.tsx</span></div>
-    </div>
-</div>
+      <!-- ═══ 6. المشاكل المعمارية ═══ -->
+      <div class="ch-hdr">
+        <div class="sec-tag">القسم السادس</div>
+        <div class="sec-title">تحليل المشاكل المعمارية</div>
+        <div class="divider"></div>
+      </div>
 
-<!-- ═══ 5. مصفوفة الفئات ═══ -->
-<div class="ch-hdr">
-    <div class="sec-tag">القسم الخامس</div>
-    <div class="sec-title">مصفوفة ملخص الفئات الـ 13</div>
-    <div class="divider"></div>
-</div>
-<div class="tbl-wrap">
-<table>
-<thead><tr><th style="width:28px">#</th><th>الفئة</th><th style="width:42px">العدد</th><th style="width:72px">الخطورة</th><th>الملفات</th></tr></thead>
-<tbody>
-<tr><td style="text-align:center;color:var(--c-accent-lt);font-weight:700">1</td><td>عدم تناسق الشريط العلوي</td><td style="text-align:center;font-weight:700">1</td><td><span class="sev sev-med">متوسط</span></td><td class="mono">index.tsx</td></tr>
-<tr><td style="text-align:center;color:var(--c-accent-lt);font-weight:700">2</td><td>ودجات ثابتة</td><td style="text-align:center;font-weight:700">3</td><td><span class="sev sev-hi">عالٍ</span></td><td class="mono">-token-symbol-component.tsx, -swap-component.tsx</td></tr>
-<tr><td style="text-align:center;color:var(--c-accent-lt);font-weight:700">3</td><td>بيانات وهمية</td><td style="text-align:center;font-weight:700">7</td><td><span class="sev sev-crit">حرج</span></td><td class="mono">-swap-component.tsx, -token-symbol-component.tsx</td></tr>
-<tr><td style="text-align:center;color:var(--c-bullish);font-weight:700">4</td><td>لا توجد رسوم بيانية</td><td style="text-align:center;font-weight:700">0</td><td><span class="sev sev-lo">نظيف</span></td><td style="color:var(--c-text-muted)">جميع صفحات الرسوم تعمل</td></tr>
-<tr><td style="text-align:center;color:var(--c-bullish);font-weight:700">5</td><td>واجهة تحليل غير احترافية</td><td style="text-align:center;font-weight:700">0</td><td><span class="sev sev-lo">نظيف</span></td><td style="color:var(--c-text-muted)">واجهة احترافية مع Canvas</td></tr>
-<tr><td style="text-align:center;color:var(--c-bullish);font-weight:700">6</td><td>نتائج تحليل خاطئة</td><td style="text-align:center;font-weight:700">0</td><td><span class="sev sev-lo">نظيف</span></td><td style="color:var(--c-text-muted)">محرك AI حقيقي</td></tr>
-<tr><td style="text-align:center;color:var(--c-bullish);font-weight:700">7</td><td>مخرجات تحليل وهمية</td><td style="text-align:center;font-weight:700">0</td><td><span class="sev sev-lo">نظيف</span></td><td style="color:var(--c-text-muted)">AI حقيقي من الخادم</td></tr>
-<tr><td style="text-align:center;color:var(--c-accent-lt);font-weight:700">8</td><td>نهج MOXI الخاطئ</td><td style="text-align:center;font-weight:700">2</td><td><span class="sev sev-crit">حرج</span></td><td class="mono">-copilot-component.tsx</td></tr>
-<tr><td style="text-align:center;color:var(--c-accent-lt);font-weight:700">9</td><td>صفحة الاكتشاف</td><td style="text-align:center;font-weight:700">1</td><td><span class="sev sev-lo">منخفض</span></td><td class="mono">-discover-forex-data.ts</td></tr>
-<tr><td style="text-align:center;color:var(--c-accent-lt);font-weight:700">10</td><td>انهيار الفوركس</td><td style="text-align:center;font-weight:700">2</td><td><span class="sev sev-med">متوسط</span></td><td class="mono">charts.tsx</td></tr>
-<tr><td style="text-align:center;color:var(--c-accent-lt);font-weight:700">11</td><td>صفحات التفاصيل معطلة</td><td style="text-align:center;font-weight:700">1</td><td><span class="sev sev-med">متوسط</span></td><td class="mono">-token-symbol-component.tsx</td></tr>
-<tr><td style="text-align:center;color:var(--c-accent-lt);font-weight:700">12</td><td>بيانات الحائزين مفقودة</td><td style="text-align:center;font-weight:700">4</td><td><span class="sev sev-crit">حرج</span></td><td class="mono">-token-symbol-component.tsx</td></tr>
-<tr><td style="text-align:center;color:var(--c-accent-lt);font-weight:700">13</td><td>صفحات توكنز فارغة</td><td style="text-align:center;font-weight:700">1</td><td><span class="sev sev-med">متوسط</span></td><td class="mono">-token-symbol-component.tsx</td></tr>
-</tbody>
-</table>
-</div>
+      <div class="sub-t">الجذر: نمط MVP تحوّل لإنتاج بدون تنظيف</div>
+      <div class="body-text">
+        الأنماط المكتشفة تشير بوضوح إلى أن التطبيق
+        <strong>بُني كنموذج أولي سريع ثم نُشر في الإنتاج دون تنظيف</strong>. صفحة السواب بالكامل
+        وهمية (أسعار ثابتة، محفظة مزيفة، تنفيذ محاكى) وهو نمط كلاسيكي لبروتوتيب يُعرض للمستثمرين.
+        المشكلة أن هذه الواجهة التجريبية بقيت في الإنتاج بدون توصيلها بالباك إند الحقيقي. رغم توفر
+        المكتبات اللازمة (Solana Wallet Adapter مثبت بالفعل)، لم يتم التكامل.
+      </div>
 
-<!-- ═══ 6. المشاكل المعمارية ═══ -->
-<div class="ch-hdr">
-    <div class="sec-tag">القسم السادس</div>
-    <div class="sec-title">تحليل المشاكل المعمارية</div>
-    <div class="divider"></div>
-</div>
+      <div class="iss crit">
+        <div class="iss-n">A1</div>
+        <div class="iss-c">
+          <div class="iss-t">ملف shared/data/index.ts ضخم بـ 1463 سطر ويجمع كل شيء</div>
+          <div class="iss-d">
+            هذا الملف يحتوي على عشرات دوال الخادم لنطاقات مختلفة (Portfolio, Watchlist, Signals,
+            Discovery, Whale, Alpha, PnL وغيرها). هذا يجعل المشاكل تضيع فيه ويصعب الصيانة. يجب
+            تقسيمه لملفات منفصلة لكل نطاق.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-crit">حرج</span
+            ><span class="iss-f">src/shared/data/index.ts (1463 سطر)</span>
+          </div>
+        </div>
+      </div>
 
-<div class="sub-t">الجذر: نمط MVP تحوّل لإنتاج بدون تنظيف</div>
-<div class="body-text">الأنماط المكتشفة تشير بوضوح إلى أن التطبيق <strong>بُني كنموذج أولي سريع ثم نُشر في الإنتاج دون تنظيف</strong>. صفحة السواب بالكامل وهمية (أسعار ثابتة، محفظة مزيفة، تنفيذ محاكى) وهو نمط كلاسيكي لبروتوتيب يُعرض للمستثمرين. المشكلة أن هذه الواجهة التجريبية بقيت في الإنتاج بدون توصيلها بالباك إند الحقيقي. رغم توفر المكتبات اللازمة (Solana Wallet Adapter مثبت بالفعل)، لم يتم التكامل.</div>
+      <div class="iss hi">
+        <div class="iss-n">A2</div>
+        <div class="iss-c">
+          <div class="iss-t">صفحة التبديل معزولة تماماً عن البنية الخلفية</div>
+          <div class="iss-d">
+            لا تستخدم أي من البنية التحتية الحقيقية (server functions, useQuery, Supabase,
+            WebSocket). إعادة بنائها تتطلب تكاملاً مع Jupiter أو Redux Swap SDK ومحفظة Solana حقيقية
+            عبر Wallet Adapter المثبت.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-hi">عالٍ</span><span class="iss-f">-swap-component.tsx</span>
+          </div>
+        </div>
+      </div>
 
-<div class="iss crit">
-    <div class="iss-n">A1</div>
-    <div class="iss-c">
-        <div class="iss-t">ملف shared/data/index.ts ضخم بـ 1463 سطر ويجمع كل شيء</div>
-        <div class="iss-d">هذا الملف يحتوي على عشرات دوال الخادم لنطاقات مختلفة (Portfolio, Watchlist, Signals, Discovery, Whale, Alpha, PnL وغيرها). هذا يجعل المشاكل تضيع فيه ويصعب الصيانة. يجب تقسيمه لملفات منفصلة لكل نطاق.</div>
-        <div class="iss-m"><span class="sev sev-crit">حرج</span><span class="iss-f">src/shared/data/index.ts (1463 سطر)</span></div>
-    </div>
-</div>
+      <div class="iss hi">
+        <div class="iss-n">A3</div>
+        <div class="iss-c">
+          <div class="iss-t">عدم وجود خدمة مركزية لبيانات التوكنز</div>
+          <div class="iss-d">
+            كل صفحة تجلب بياناتها بطريقتها الخاصة أو تصنع بيانات وهمية. الحل: إنشاء TokenDataService
+            مركزي يجمع من Birdeye و Helius و DexScreener ويوفرها عبر React Query.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-hi">عالٍ</span><span class="iss-f">البنية العامة</span>
+          </div>
+        </div>
+      </div>
 
-<div class="iss hi">
-    <div class="iss-n">A2</div>
-    <div class="iss-c">
-        <div class="iss-t">صفحة التبديل معزولة تماماً عن البنية الخلفية</div>
-        <div class="iss-d">لا تستخدم أي من البنية التحتية الحقيقية (server functions, useQuery, Supabase, WebSocket). إعادة بنائها تتطلب تكاملاً مع Jupiter أو Redux Swap SDK ومحفظة Solana حقيقية عبر Wallet Adapter المثبت.</div>
-        <div class="iss-m"><span class="sev sev-hi">عالٍ</span><span class="iss-f">-swap-component.tsx</span></div>
-    </div>
-</div>
+      <div class="iss hi">
+        <div class="iss-n">A4</div>
+        <div class="iss-c">
+          <div class="iss-t">170 حالة "as any" في 46 ملف تضعف Type Safety</div>
+          <div class="iss-d">
+            التركيز الأعلى في analysis-id-component.tsx (20 حالة)، و discover.tsx (8)، و index.tsx
+            (9)، و premium.tsx (5). هذه الحالات تتجاوز فحوصات TypeScript وتخفي أخطاء محتملة. يجب
+            استبدالها بأنواع صحيحة أو schemas Zod.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-hi">عالٍ</span><span class="iss-f">46 ملف عبر src/</span>
+          </div>
+        </div>
+      </div>
 
-<div class="iss hi">
-    <div class="iss-n">A3</div>
-    <div class="iss-c">
-        <div class="iss-t">عدم وجود خدمة مركزية لبيانات التوكنز</div>
-        <div class="iss-d">كل صفحة تجلب بياناتها بطريقتها الخاصة أو تصنع بيانات وهمية. الحل: إنشاء TokenDataService مركزي يجمع من Birdeye و Helius و DexScreener ويوفرها عبر React Query.</div>
-        <div class="iss-m"><span class="sev sev-hi">عالٍ</span><span class="iss-f">البنية العامة</span></div>
-    </div>
-</div>
+      <div class="iss hi">
+        <div class="iss-n">A5</div>
+        <div class="iss-c">
+          <div class="iss-t">MOXI يفتقر لبنية الوكيل/التنسيق رغم وجود البنية</div>
+          <div class="iss-d">
+            agent-orchestrator.ts موجود في الخادم لكنه غير متصل بواجهة MOXI. يحتاج إطار عمل Tool Use
+            ومهام خلفية للمراقبة الاستباقية ونظام تنبيهات يعرض الرؤى تلقائياً.
+          </div>
+          <div class="iss-m">
+            <span class="sev sev-hi">عالٍ</span
+            ><span class="iss-f">-copilot-component.tsx + agent-orchestrator.ts</span>
+          </div>
+        </div>
+      </div>
 
-<div class="iss hi">
-    <div class="iss-n">A4</div>
-    <div class="iss-c">
-        <div class="iss-t">170 حالة "as any" في 46 ملف تضعف Type Safety</div>
-        <div class="iss-d">التركيز الأعلى في analysis-id-component.tsx (20 حالة)، و discover.tsx (8)، و index.tsx (9)، و premium.tsx (5). هذه الحالات تتجاوز فحوصات TypeScript وتخفي أخطاء محتملة. يجب استبدالها بأنواع صحيحة أو schemas Zod.</div>
-        <div class="iss-m"><span class="sev sev-hi">عالٍ</span><span class="iss-f">46 ملف عبر src/</span></div>
-    </div>
-</div>
+      <div class="info-box warn">
+        <div class="info-box-t">نقاط معمارية إيجابية</div>
+        <div class="info-box-b">
+          معظم الصفحات (signals, pnl, portfolio, whale, alpha, perpetuals, curves, trade-desk)
+          تستخدم server functions + useQuery بشكل صحيح. تكامل WebSocket عبر BinanceWS ممتاز. Error
+          Boundaries موجودة. بيانات vixor-mock.ts تم تنظيفها. وحدة بيانات الفوركس تستخدم
+          Promise.allSettled لمقاومة الأخطاء. نظام Rate Limiting متعدد الطبقات (Redis + InMemory +
+          Sliding Window).
+        </div>
+      </div>
 
-<div class="iss hi">
-    <div class="iss-n">A5</div>
-    <div class="iss-c">
-        <div class="iss-t">MOXI يفتقر لبنية الوكيل/التنسيق رغم وجود البنية</div>
-        <div class="iss-d">agent-orchestrator.ts موجود في الخادم لكنه غير متصل بواجهة MOXI. يحتاج إطار عمل Tool Use ومهام خلفية للمراقبة الاستباقية ونظام تنبيهات يعرض الرؤى تلقائياً.</div>
-        <div class="iss-m"><span class="sev sev-hi">عالٍ</span><span class="iss-f">-copilot-component.tsx + agent-orchestrator.ts</span></div>
-    </div>
-</div>
+      <!-- ═══ 7. المكتبات ═══ -->
+      <div class="ch-hdr">
+        <div class="sec-tag">القسم السابع</div>
+        <div class="sec-title">المكتبات والتبعيات الرئيسية</div>
+        <div class="divider"></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>الفئة</th>
+              <th>المكتبة</th>
+              <th>الإصدار</th>
+              <th>الوظيفة في المشروع</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: 600">الإطار</td>
+              <td class="mono">react</td>
+              <td class="mono">19.2.0</td>
+              <td>مكتبة واجهة المستخدم</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">@tanstack/react-start</td>
+              <td class="mono">1.168.25</td>
+              <td>إطار التطبيق الكامل (SSR + routing)</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">@tanstack/react-query</td>
+              <td class="mono">5.83.0</td>
+              <td>إدارة حالة الخادم والتخزين المؤقت</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">tailwindcss</td>
+              <td class="mono">4.2.1</td>
+              <td>إطار التصميم والأنماط</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600">الذكاء الاصطناعي</td>
+              <td class="mono">ai (Vercel AI SDK)</td>
+              <td class="mono">6.0.224</td>
+              <td>واجهة أنماط AI و generateObject</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">@ai-sdk/openai-compatible</td>
+              <td class="mono">2.0.48</td>
+              <td>التوافق مع OpenRouter API</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">zod</td>
+              <td class="mono">4.4.3</td>
+              <td>التحقق من صحة البيانات والأنماط</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600">بلوكتشين</td>
+              <td class="mono">@solana/web3.js</td>
+              <td class="mono">1.98.4</td>
+              <td>التفاعل مع شبكة Solana</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">@solana/wallet-adapter-react</td>
+              <td class="mono">0.15.39</td>
+              <td>إدارة محفظة Solana (مثبت غير مُستخدم)</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">viem / wagmi</td>
+              <td class="mono">2.53 / 3.6</td>
+              <td>دعم EVM chains</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600">الرسوم البيانية</td>
+              <td class="mono">lightweight-charts</td>
+              <td class="mono">5.2.0</td>
+              <td>مكتبة TradingView للشموع اليابانية</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">recharts</td>
+              <td class="mono">2.15.4</td>
+              <td>رسوم بيانية إضافية</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600">الأسواق</td>
+              <td class="mono">ccxt</td>
+              <td class="mono">4.5.64</td>
+              <td>واجهة موحدة للتبادلات (Binance, OKX...)</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">decimal.js</td>
+              <td class="mono">10.6.0</td>
+              <td>حسابات عشرية دقيقة للأسعار</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600">المصادقة</td>
+              <td class="mono">@supabase/supabase-js</td>
+              <td class="mono">2.107.0</td>
+              <td>المصادقة وقاعدة البيانات و RLS</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">jsonwebtoken</td>
+              <td class="mono">9.0.3</td>
+              <td>إدارة رموز JWT</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600">Telegram</td>
+              <td class="mono">@telegram-apps/sdk</td>
+              <td class="mono">3.11.8</td>
+              <td>تكامل تطبيق Telegram Web App</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600">المراقبة</td>
+              <td class="mono">@sentry/react</td>
+              <td class="mono">10.63.0</td>
+              <td>تتبع الأخطاء والأداء</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">mixpanel-browser</td>
+              <td class="mono">2.80.0</td>
+              <td>تحليلات الاستخدام والسلوك</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600">التخزين</td>
+              <td class="mono">@upstash/redis</td>
+              <td class="mono">1.38.0</td>
+              <td>تخزين مؤقت سحابي + Rate Limiting</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="mono">zustand</td>
+              <td class="mono">5.0.14</td>
+              <td>إدارة الحالة المحلية الخفيفة</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-<div class="info-box warn">
-    <div class="info-box-t">نقاط معمارية إيجابية</div>
-    <div class="info-box-b">معظم الصفحات (signals, pnl, portfolio, whale, alpha, perpetuals, curves, trade-desk) تستخدم server functions + useQuery بشكل صحيح. تكامل WebSocket عبر BinanceWS ممتاز. Error Boundaries موجودة. بيانات vixor-mock.ts تم تنظيفها. وحدة بيانات الفوركس تستخدم Promise.allSettled لمقاومة الأخطاء. نظام Rate Limiting متعدد الطبقات (Redis + InMemory + Sliding Window).</div>
-</div>
+      <!-- ═══ 8. خطة العمل ═══ -->
+      <div class="ch-hdr">
+        <div class="sec-tag">القسم الثامن</div>
+        <div class="sec-title">خطة العمل المتكاملة (4 أنظمة)</div>
+        <div class="divider"></div>
+      </div>
+      <div class="body-text">
+        تمثل الخطة التالية منهجية شاملة لإصلاح جميع المشاكل ومنع تكرارها. مقسمة لـ 4 أنظمة: الأمان
+        الفوري، والصدق مع المستخدم، والبنية النظيفة، وطبقة الاختبار التلقائي. يمكن استخدامها مباشرة
+        كنقاط عمل لفريق التطوير أو لأداة AI مثل KIMI K3.
+      </div>
 
-<!-- ═══ 7. المكتبات ═══ -->
-<div class="ch-hdr">
-    <div class="sec-tag">القسم السابع</div>
-    <div class="sec-title">المكتبات والتبعيات الرئيسية</div>
-    <div class="divider"></div>
-</div>
-<div class="tbl-wrap">
-<table>
-<thead><tr><th>الفئة</th><th>المكتبة</th><th>الإصدار</th><th>الوظيفة في المشروع</th></tr></thead>
-<tbody>
-<tr><td style="font-weight:600">الإطار</td><td class="mono">react</td><td class="mono">19.2.0</td><td>مكتبة واجهة المستخدم</td></tr>
-<tr><td></td><td class="mono">@tanstack/react-start</td><td class="mono">1.168.25</td><td>إطار التطبيق الكامل (SSR + routing)</td></tr>
-<tr><td></td><td class="mono">@tanstack/react-query</td><td class="mono">5.83.0</td><td>إدارة حالة الخادم والتخزين المؤقت</td></tr>
-<tr><td></td><td class="mono">tailwindcss</td><td class="mono">4.2.1</td><td>إطار التصميم والأنماط</td></tr>
-<tr><td style="font-weight:600">الذكاء الاصطناعي</td><td class="mono">ai (Vercel AI SDK)</td><td class="mono">6.0.224</td><td>واجهة أنماط AI و generateObject</td></tr>
-<tr><td></td><td class="mono">@ai-sdk/openai-compatible</td><td class="mono">2.0.48</td><td>التوافق مع OpenRouter API</td></tr>
-<tr><td></td><td class="mono">zod</td><td class="mono">4.4.3</td><td>التحقق من صحة البيانات والأنماط</td></tr>
-<tr><td style="font-weight:600">بلوكتشين</td><td class="mono">@solana/web3.js</td><td class="mono">1.98.4</td><td>التفاعل مع شبكة Solana</td></tr>
-<tr><td></td><td class="mono">@solana/wallet-adapter-react</td><td class="mono">0.15.39</td><td>إدارة محفظة Solana (مثبت غير مُستخدم)</td></tr>
-<tr><td></td><td class="mono">viem / wagmi</td><td class="mono">2.53 / 3.6</td><td>دعم EVM chains</td></tr>
-<tr><td style="font-weight:600">الرسوم البيانية</td><td class="mono">lightweight-charts</td><td class="mono">5.2.0</td><td>مكتبة TradingView للشموع اليابانية</td></tr>
-<tr><td></td><td class="mono">recharts</td><td class="mono">2.15.4</td><td>رسوم بيانية إضافية</td></tr>
-<tr><td style="font-weight:600">الأسواق</td><td class="mono">ccxt</td><td class="mono">4.5.64</td><td>واجهة موحدة للتبادلات (Binance, OKX...)</td></tr>
-<tr><td></td><td class="mono">decimal.js</td><td class="mono">10.6.0</td><td>حسابات عشرية دقيقة للأسعار</td></tr>
-<tr><td style="font-weight:600">المصادقة</td><td class="mono">@supabase/supabase-js</td><td class="mono">2.107.0</td><td>المصادقة وقاعدة البيانات و RLS</td></tr>
-<tr><td></td><td class="mono">jsonwebtoken</td><td class="mono">9.0.3</td><td>إدارة رموز JWT</td></tr>
-<tr><td style="font-weight:600">Telegram</td><td class="mono">@telegram-apps/sdk</td><td class="mono">3.11.8</td><td>تكامل تطبيق Telegram Web App</td></tr>
-<tr><td style="font-weight:600">المراقبة</td><td class="mono">@sentry/react</td><td class="mono">10.63.0</td><td>تتبع الأخطاء والأداء</td></tr>
-<tr><td></td><td class="mono">mixpanel-browser</td><td class="mono">2.80.0</td><td>تحليلات الاستخدام والسلوك</td></tr>
-<tr><td style="font-weight:600">التخزين</td><td class="mono">@upstash/redis</td><td class="mono">1.38.0</td><td>تخزين مؤقت سحابي + Rate Limiting</td></tr>
-<tr><td></td><td class="mono">zustand</td><td class="mono">5.0.14</td><td>إدارة الحالة المحلية الخفيفة</td></tr>
-</tbody>
-</table>
-</div>
+      <div class="sub-t">النظام 1: أمان فوري (أسبوع واحد)</div>
+      <div class="task">
+        <div class="task-p sev-crit">P0</div>
+        <div class="task-c">
+          <div class="task-t">إصلاح ثغرة حذف عناصر Watchlist الخاصة بمستخدمين آخرين</div>
+          <div class="task-d">
+            في removeFromWatchlist أضف JOIN مع جدول watchlists وتأكد من user_id قبل الحذف. في
+            reorderWatchlist استبدل supabaseAdmin بـ context.supabase وأضف التحقق من الملكية. الملف:
+            src/domains/watchlist/functions.ts:119,158
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-hi">P1</div>
+        <div class="task-c">
+          <div class="task-t">استبدال تحليل document.cookie اليدوي بواجهة Supabase الرسمية</div>
+          <div class="task-d">
+            في مكون MOXI استبدل التحليل اليدوي لملفات تعريف الارتباط باستخدام getSession() أو
+            supabase.auth.getUser() من مكتبة Supabase الرسمية. الملف: -copilot-component.tsx:431-449
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-hi">P1</div>
+        <div class="task-c">
+          <div class="task-t">إضافة التحقق من المدخلات في صفحة التبديل</div>
+          <div class="task-d">
+            التحقق من أن المبلغ لا يتجاوز الرصيد، وأنه أكبر من 0، وأن الزوج المحدد صالح، والانزلاق
+            السعري ضمن حدود معقولة. الملف: -swap-component.tsx:~432
+          </div>
+        </div>
+      </div>
 
-<!-- ═══ 8. خطة العمل ═══ -->
-<div class="ch-hdr">
-    <div class="sec-tag">القسم الثامن</div>
-    <div class="sec-title">خطة العمل المتكاملة (4 أنظمة)</div>
-    <div class="divider"></div>
-</div>
-<div class="body-text">تمثل الخطة التالية منهجية شاملة لإصلاح جميع المشاكل ومنع تكرارها. مقسمة لـ 4 أنظمة: الأمان الفوري، والصدق مع المستخدم، والبنية النظيفة، وطبقة الاختبار التلقائي. يمكن استخدامها مباشرة كنقاط عمل لفريق التطوير أو لأداة AI مثل KIMI K3.</div>
+      <div class="sub-t">النظام 2: الصدق مع المستخدم (حرج للثقة)</div>
+      <div class="task">
+        <div class="task-p sev-crit">P0</div>
+        <div class="task-c">
+          <div class="task-t">إعادة بناء صفحة التبديل بالكامل أو وضع علامة Demo واضحة</div>
+          <div class="task-d">
+            خياران: (أ) تكامل حقيقي مع Jupiter DEX + محفظة Solana حقيقية عبر
+            @solana/wallet-adapter-react المثبت. (ب) وضع علامة "وضع تجريبي" واضحة على كل عنصر وتعطيل
+            زر التنفيذ. مفيش حل نص نص - ده موضوع ثقة المستخدم.
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-crit">P0</div>
+        <div class="task-c">
+          <div class="task-t">استبدال البيانات المُلفقة بيانات على السلسلة حقيقية</div>
+          <div class="task-d">
+            إزالة المعادلات الوهمية (الحائزون، DEX/CEX، الحيتان) واستبدالها بـ API حقيقي: Helius RPC
+            أو Birdeye API للحائزين والمعاملات، DexScreener API لتقسيم الحجم. الملف:
+            -token-symbol-component.tsx:1915-2080
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-hi">P1</div>
+        <div class="task-c">
+          <div class="task-t">استبدال بيانات الفوركس الثابتة ببيانات حية</div>
+          <div class="task-d">
+            إزالة التقويم الاقتصادي الثابت وقوة العملات واستبدالها بـ API حقيقي (TwelveData أو
+            ForexFactory). الملف: -token-symbol-component.tsx:2090-2131
+          </div>
+        </div>
+      </div>
 
-<div class="sub-t">النظام 1: أمان فوري (أسبوع واحد)</div>
-<div class="task">
-    <div class="task-p sev-crit">P0</div>
-    <div class="task-c">
-        <div class="task-t">إصلاح ثغرة حذف عناصر Watchlist الخاصة بمستخدمين آخرين</div>
-        <div class="task-d">في removeFromWatchlist أضف JOIN مع جدول watchlists وتأكد من user_id قبل الحذف. في reorderWatchlist استبدل supabaseAdmin بـ context.supabase وأضف التحقق من الملكية. الملف: src/domains/watchlist/functions.ts:119,158</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-hi">P1</div>
-    <div class="task-c">
-        <div class="task-t">استبدال تحليل document.cookie اليدوي بواجهة Supabase الرسمية</div>
-        <div class="task-d">في مكون MOXI استبدل التحليل اليدوي لملفات تعريف الارتباط باستخدام getSession() أو supabase.auth.getUser() من مكتبة Supabase الرسمية. الملف: -copilot-component.tsx:431-449</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-hi">P1</div>
-    <div class="task-c">
-        <div class="task-t">إضافة التحقق من المدخلات في صفحة التبديل</div>
-        <div class="task-d">التحقق من أن المبلغ لا يتجاوز الرصيد، وأنه أكبر من 0، وأن الزوج المحدد صالح، والانزلاق السعري ضمن حدود معقولة. الملف: -swap-component.tsx:~432</div>
-    </div>
-</div>
+      <div class="sub-t">النظام 3: بنية نظيفة تمنع تكرار المشكلة</div>
+      <div class="task">
+        <div class="task-p sev-crit">P0</div>
+        <div class="task-c">
+          <div class="task-t">تقسيم shared/data/index.ts (1463 سطر) لملفات منفصلة لكل نطاق</div>
+          <div class="task-d">
+            فكك الملف الضخم لـ: data/portfolio.ts, data/watchlist.ts, data/signals.ts,
+            data/whale.ts, data/alpha.ts, data/pnl.ts. كل ملف يستورد requireSupabaseAuth بشكل مستقل.
+            هذا يسهل المراجعة ويمنع اختفاء المشاكل في ملف ضخم.
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-hi">P1</div>
+        <div class="task-c">
+          <div class="task-t">نقل كل Mock Data لمجلد src/mocks/ مع Feature Flag</div>
+          <div class="task-d">
+            أنشئ مجلد src/mocks/ وانقل كل بيانات PRICES و MOCK_BALANCES و useMockWallet إليه. أضف
+            متغير بيئة VIXOR_DEMO_MODE واستخدمه شرطياً في الكود. أضف قاعدة ESLint تمنع استيراد mocks
+            في كود الإنتاج.
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-hi">P1</div>
+        <div class="task-c">
+          <div class="task-t">إعادة تصميم MOXI كعقل AI مستقل</div>
+          <div class="task-d">
+            ربط واجهة MOXI بـ agent-orchestrator.ts الموجود مسبقاً. إضافة إطار Tool Use، ومراقبة
+            خلفية للأسواق عبر WebSocket، وتنبيهات استباقية تعرض الرؤى تلقائياً. الملفات:
+            -copilot-component.tsx + server/agent-orchestrator.ts
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-hi">P1</div>
+        <div class="task-c">
+          <div class="task-t">إنشاء خدمة مركزية TokenDataService</div>
+          <div class="task-d">
+            خدمة موحدة تجمع من Birdeye و Helius و DexScreener وتوفرها لجميع الصفحات عبر React Query.
+            يمنع تكرار الكود ويضمن تناسق البيانات.
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-hi">P1</div>
+        <div class="task-c">
+          <div class="task-t">تقليل حالات "as any" من 170 إلى أقل من 20</div>
+          <div class="task-d">
+            البدء بالملفات الأكثر تضرراً: analysis-id-component.tsx (20)، index.tsx (9)،
+            discover.tsx (8)، premium.tsx (5). استبدال بأنواع TypeScript صحيحة أو schemas Zod.
+          </div>
+        </div>
+      </div>
 
-<div class="sub-t">النظام 2: الصدق مع المستخدم (حرج للثقة)</div>
-<div class="task">
-    <div class="task-p sev-crit">P0</div>
-    <div class="task-c">
-        <div class="task-t">إعادة بناء صفحة التبديل بالكامل أو وضع علامة Demo واضحة</div>
-        <div class="task-d">خياران: (أ) تكامل حقيقي مع Jupiter DEX + محفظة Solana حقيقية عبر @solana/wallet-adapter-react المثبت. (ب) وضع علامة "وضع تجريبي" واضحة على كل عنصر وتعطيل زر التنفيذ. مفيش حل نص نص - ده موضوع ثقة المستخدم.</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-crit">P0</div>
-    <div class="task-c">
-        <div class="task-t">استبدال البيانات المُلفقة بيانات على السلسلة حقيقية</div>
-        <div class="task-d">إزالة المعادلات الوهمية (الحائزون، DEX/CEX، الحيتان) واستبدالها بـ API حقيقي: Helius RPC أو Birdeye API للحائزين والمعاملات، DexScreener API لتقسيم الحجم. الملف: -token-symbol-component.tsx:1915-2080</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-hi">P1</div>
-    <div class="task-c">
-        <div class="task-t">استبدال بيانات الفوركس الثابتة ببيانات حية</div>
-        <div class="task-d">إزالة التقويم الاقتصادي الثابت وقوة العملات واستبدالها بـ API حقيقي (TwelveData أو ForexFactory). الملف: -token-symbol-component.tsx:2090-2131</div>
-    </div>
-</div>
+      <div class="sub-t">النظام 4: طبقة اختبار تلقائي (CI Gate)</div>
+      <div class="task">
+        <div class="task-p sev-hi">P1</div>
+        <div class="task-c">
+          <div class="task-t">إضافة اختبارات أمان تمنع رجوع الثغرات</div>
+          <div class="task-d">
+            اختبار 1: تأكيد أن requireAuth يرفض tokens غير صالحة. اختبار 2: تأكيد أن
+            getWatchlistData لا يُرجع بيانات مستخدمين آخرين. اختبار 3: تأكيد أن removeFromWatchlist
+            لا يستطيع حذف عنصر مستخدم آخر. إضافتها للـ CI بجانب eslint و tsc.
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-hi">P1</div>
+        <div class="task-c">
+          <div class="task-t">إضافة قاعدة ESLint تمنع استيراد mocks في الإنتاج</div>
+          <div class="task-d">
+            قاعدة no-restricted-imports تمنع استيراد أي شيء من src/mocks/ في ملفات الإنتاج. لو حد
+            استورد mock في component حقيقي، الـ lint هيفشل فوراً.
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-med">P2</div>
+        <div class="task-c">
+          <div class="task-t">تفعيل Branch Protection + PR Template</div>
+          <div class="task-d">
+            إغلاق الدمج المباشر على main. إضافة قالب PR يتضمن: لا mock من خارج src/mocks/، كل server
+            function جديدة فيها auth، لا as any من غير سبب موثق.
+          </div>
+        </div>
+      </div>
 
-<div class="sub-t">النظام 3: بنية نظيفة تمنع تكرار المشكلة</div>
-<div class="task">
-    <div class="task-p sev-crit">P0</div>
-    <div class="task-c">
-        <div class="task-t">تقسيم shared/data/index.ts (1463 سطر) لملفات منفصلة لكل نطاق</div>
-        <div class="task-d">فكك الملف الضخم لـ: data/portfolio.ts, data/watchlist.ts, data/signals.ts, data/whale.ts, data/alpha.ts, data/pnl.ts. كل ملف يستورد requireSupabaseAuth بشكل مستقل. هذا يسهل المراجعة ويمنع اختفاء المشاكل في ملف ضخم.</div>
+      <div class="sub-t">مهام تحسينية (P2-P3)</div>
+      <div class="task">
+        <div class="task-p sev-med">P2</div>
+        <div class="task-c">
+          <div class="task-t">توحيد تخطيط الصفحة الرئيسية مع PageLayout</div>
+          <div class="task-d">
+            استبدال الشريط العلوي المخصص في index.tsx بـ PageLayout الموحد. الملف: index.tsx:590-620
+            | الفئة: #1
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-med">P2</div>
+        <div class="task-c">
+          <div class="task-t">إضافة أسعار حية للفوركس في صفحة الرسوم البيانية</div>
+          <div class="task-d">
+            توسيع useLivePrices ليشترك في أزواج الفوركس عبر استطلاع REST من TwelveData. الملف:
+            charts.tsx:59-63
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-med">P2</div>
+        <div class="task-c">
+          <div class="task-t">تحسين صفحات التوكنز الفارغة</div>
+          <div class="task-d">
+            عند عدم وجود بيانات، عرض رسالة واضحة مع اقتراحات بديلة بدلاً من صفحة شبه فارغة. الملف:
+            -token-symbol-component.tsx:486-708
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-lo">P3</div>
+        <div class="task-c">
+          <div class="task-t">جلب بيانات التغير في 1 ساعة و 7 أيام</div>
+          <div class="task-d">
+            إضافة البيانات من Binance API بدلاً من "-" دائماً. الملف:
+            -token-symbol-component.tsx:1225,1235
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-lo">P3</div>
+        <div class="task-c">
+          <div class="task-t">استبدال قوائم الأزواج الثابتة بقوائم ديناميكية</div>
+          <div class="task-d">
+            استبدال CRYPTO_PAIRS و FOREX_PAIRS الثابتة بـ AssetRegistry.popular() و
+            byCategory("forex"). الملف: charts.tsx:14-38
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-p sev-lo">P3</div>
+        <div class="task-c">
+          <div class="task-t">معالجة حجم تداول الفوركس الصفري</div>
+          <div class="task-d">
+            إيجاد مصدر حجم تقريبي أو إزالة عمود الحجم من ترتيب الفوركس. الملف:
+            -discover-forex-data.ts:137
+          </div>
+        </div>
+      </div>
     </div>
-</div>
-<div class="task">
-    <div class="task-p sev-hi">P1</div>
-    <div class="task-c">
-        <div class="task-t">نقل كل Mock Data لمجلد src/mocks/ مع Feature Flag</div>
-        <div class="task-d">أنشئ مجلد src/mocks/ وانقل كل بيانات PRICES و MOCK_BALANCES و useMockWallet إليه. أضف متغير بيئة VIXOR_DEMO_MODE واستخدمه شرطياً في الكود. أضف قاعدة ESLint تمنع استيراد mocks في كود الإنتاج.</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-hi">P1</div>
-    <div class="task-c">
-        <div class="task-t">إعادة تصميم MOXI كعقل AI مستقل</div>
-        <div class="task-d">ربط واجهة MOXI بـ agent-orchestrator.ts الموجود مسبقاً. إضافة إطار Tool Use، ومراقبة خلفية للأسواق عبر WebSocket، وتنبيهات استباقية تعرض الرؤى تلقائياً. الملفات: -copilot-component.tsx + server/agent-orchestrator.ts</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-hi">P1</div>
-    <div class="task-c">
-        <div class="task-t">إنشاء خدمة مركزية TokenDataService</div>
-        <div class="task-d">خدمة موحدة تجمع من Birdeye و Helius و DexScreener وتوفرها لجميع الصفحات عبر React Query. يمنع تكرار الكود ويضمن تناسق البيانات.</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-hi">P1</div>
-    <div class="task-c">
-        <div class="task-t">تقليل حالات "as any" من 170 إلى أقل من 20</div>
-        <div class="task-d">البدء بالملفات الأكثر تضرراً: analysis-id-component.tsx (20)، index.tsx (9)، discover.tsx (8)، premium.tsx (5). استبدال بأنواع TypeScript صحيحة أو schemas Zod.</div>
-    </div>
-</div>
-
-<div class="sub-t">النظام 4: طبقة اختبار تلقائي (CI Gate)</div>
-<div class="task">
-    <div class="task-p sev-hi">P1</div>
-    <div class="task-c">
-        <div class="task-t">إضافة اختبارات أمان تمنع رجوع الثغرات</div>
-        <div class="task-d">اختبار 1: تأكيد أن requireAuth يرفض tokens غير صالحة. اختبار 2: تأكيد أن getWatchlistData لا يُرجع بيانات مستخدمين آخرين. اختبار 3: تأكيد أن removeFromWatchlist لا يستطيع حذف عنصر مستخدم آخر. إضافتها للـ CI بجانب eslint و tsc.</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-hi">P1</div>
-    <div class="task-c">
-        <div class="task-t">إضافة قاعدة ESLint تمنع استيراد mocks في الإنتاج</div>
-        <div class="task-d">قاعدة no-restricted-imports تمنع استيراد أي شيء من src/mocks/ في ملفات الإنتاج. لو حد استورد mock في component حقيقي، الـ lint هيفشل فوراً.</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-med">P2</div>
-    <div class="task-c">
-        <div class="task-t">تفعيل Branch Protection + PR Template</div>
-        <div class="task-d">إغلاق الدمج المباشر على main. إضافة قالب PR يتضمن: لا mock من خارج src/mocks/، كل server function جديدة فيها auth، لا as any من غير سبب موثق.</div>
-    </div>
-</div>
-
-<div class="sub-t">مهام تحسينية (P2-P3)</div>
-<div class="task">
-    <div class="task-p sev-med">P2</div>
-    <div class="task-c">
-        <div class="task-t">توحيد تخطيط الصفحة الرئيسية مع PageLayout</div>
-        <div class="task-d">استبدال الشريط العلوي المخصص في index.tsx بـ PageLayout الموحد. الملف: index.tsx:590-620 | الفئة: #1</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-med">P2</div>
-    <div class="task-c">
-        <div class="task-t">إضافة أسعار حية للفوركس في صفحة الرسوم البيانية</div>
-        <div class="task-d">توسيع useLivePrices ليشترك في أزواج الفوركس عبر استطلاع REST من TwelveData. الملف: charts.tsx:59-63</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-med">P2</div>
-    <div class="task-c">
-        <div class="task-t">تحسين صفحات التوكنز الفارغة</div>
-        <div class="task-d">عند عدم وجود بيانات، عرض رسالة واضحة مع اقتراحات بديلة بدلاً من صفحة شبه فارغة. الملف: -token-symbol-component.tsx:486-708</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-lo">P3</div>
-    <div class="task-c">
-        <div class="task-t">جلب بيانات التغير في 1 ساعة و 7 أيام</div>
-        <div class="task-d">إضافة البيانات من Binance API بدلاً من "-" دائماً. الملف: -token-symbol-component.tsx:1225,1235</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-lo">P3</div>
-    <div class="task-c">
-        <div class="task-t">استبدال قوائم الأزواج الثابتة بقوائم ديناميكية</div>
-        <div class="task-d">استبدال CRYPTO_PAIRS و FOREX_PAIRS الثابتة بـ AssetRegistry.popular() و byCategory("forex"). الملف: charts.tsx:14-38</div>
-    </div>
-</div>
-<div class="task">
-    <div class="task-p sev-lo">P3</div>
-    <div class="task-c">
-        <div class="task-t">معالجة حجم تداول الفوركس الصفري</div>
-        <div class="task-d">إيجاد مصدر حجم تقريبي أو إزالة عمود الحجم من ترتيب الفوركس. الملف: -discover-forex-data.ts:137</div>
-    </div>
-</div>
-
-</div>
-
-</body>
+  </body>
 </html>

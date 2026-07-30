@@ -104,10 +104,7 @@
       "route-pattern": "/:user_id/:repository",
       "theme-color": "#1e2327",
       "turbo-body-classes": "logged-out env-production page-responsive",
-      "turbo-cache-control": [
-        "no-preview",
-        "no-cache"
-      ],
+      "turbo-cache-control": ["no-preview", "no-cache"],
       "twitter:card": "summary_large_image",
       "twitter:description": "A .NET 10 WPF client and ASP.NET Core Web API platform for trading and running crypto currency pair strategies. - grantcolley/tradeview",
       "twitter:image": "https://opengraph.githubassets.com/1ec56a71ad46e340d8f1b4dfd9beaa490706aa6f7356fa85c4e709857fb04d27/grantcolley/tradeview",

@@ -104,10 +104,7 @@
       "route-pattern": "/:user_id/:repository",
       "theme-color": "#1e2327",
       "turbo-body-classes": "logged-out env-production page-responsive",
-      "turbo-cache-control": [
-        "no-preview",
-        "no-cache"
-      ],
+      "turbo-cache-control": ["no-preview", "no-cache"],
       "twitter:card": "summary_large_image",
       "twitter:description": "Gathers machine learning and deep learning models for Stock forecasting including trading bots and simulations - huseinzol05/Stock-Prediction-Models",
       "twitter:image": "https://opengraph.githubassets.com/52a186fd5713ffb423a28d5df647f5ba67008835f2618d3c75e3f1c74082b223/huseinzol05/Stock-Prediction-Models",

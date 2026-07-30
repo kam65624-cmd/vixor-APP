@@ -7,16 +7,16 @@
 
 ## تصحيح أخطاء في التقرير الأصلي (UX Architecture Report)
 
-| # | المذكور في التقرير | الواقع الفعلي | ملاحظة |
-|---|---|---|---|
-| 1 | Fonts غير محملة | خطوط Inter + JetBrains Mono محمّلة في `__root.tsx` سطر 197-202 | **غلط في التقرير** |
-| 2 | 4 أنظمة ألوان متعارضة | CSS vars هي الأساس، inline hex نادر | **مبالغة** |
-| 3 | 0 نقاط في البار العلوي (P0) | تم إصلاح query key mismatch | **تم حلها سابقاً** |
-| 4 | المحفظة غير موجودة في البار العلوي | زر Wallet + WalletNavLabel + WalletProviderSelector موجود | **غلط في التقرير** |
-| 5 | الصورة الرمزية "T" | TopNavAvatar يجلب photo_url من Telegram | **تم حلها** |
-| 6 | إشعارات بدون badge | NotificationBell مع unread count موجود | **غلط في التقرير** |
-| 7 | صفحات Stub 3 فقط | Charts, Arbitrage, Activity-Web3 فقط | **صحيح** |
-| 8 | 15+ silent catch blocks | يوجد silent catches بعضها مبرر | **صحيح جزئياً** |
+| #   | المذكور في التقرير                 | الواقع الفعلي                                                  | ملاحظة             |
+| --- | ---------------------------------- | -------------------------------------------------------------- | ------------------ |
+| 1   | Fonts غير محملة                    | خطوط Inter + JetBrains Mono محمّلة في `__root.tsx` سطر 197-202 | **غلط في التقرير** |
+| 2   | 4 أنظمة ألوان متعارضة              | CSS vars هي الأساس، inline hex نادر                            | **مبالغة**         |
+| 3   | 0 نقاط في البار العلوي (P0)        | تم إصلاح query key mismatch                                    | **تم حلها سابقاً** |
+| 4   | المحفظة غير موجودة في البار العلوي | زر Wallet + WalletNavLabel + WalletProviderSelector موجود      | **غلط في التقرير** |
+| 5   | الصورة الرمزية "T"                 | TopNavAvatar يجلب photo_url من Telegram                        | **تم حلها**        |
+| 6   | إشعارات بدون badge                 | NotificationBell مع unread count موجود                         | **غلط في التقرير** |
+| 7   | صفحات Stub 3 فقط                   | Charts, Arbitrage, Activity-Web3 فقط                           | **صحيح**           |
+| 8   | 15+ silent catch blocks            | يوجد silent catches بعضها مبرر                                 | **صحيح جزئياً**    |
 
 ---
 
@@ -26,6 +26,7 @@
 > و10 مشاكل حرجة تم تحديدها + تصميم مقترح بـ 10 أقسام
 
 ### HOME-P0: لا يوجد سياق سوقي (NO MARKET CONTEXT)
+
 - **ليه مهم؟** أول حاجة شافها المتداول في أي تطبيق هي الأسعار. دخول على "صحراء" بدون أي رقم = تجربة فاشلة
 - **المسبب:** الصفحة الحالية لا تعرض أي أسعار BTC/SOL/ETH أو market overview
 - **الحل:** إضافة Market Ticker Bar في أعلى الصفحة يعرض أسعار العملات الرئيسية مع التغير
@@ -33,6 +34,7 @@
 - **الحالة:** ✅ تم — `getHomeMarketData` API جديد + Market Ticker Bar في الصفحة
 
 ### HOME-P1: عرض المحفظة ضعيف جداً (PORTFOLIO DISPLAY)
+
 - **ليه مهم؟** المحفظة هي أهم رقم للمتداول. عرض "$0.00" كرقم واحد باهت بدون equity chart أو إحصائيات = محتوى بلا قيمة
 - **المسبب:** الصفحة الحالية تعرض رصيد واحد فقط بدون تاريخ أداء أو توزيع أصول
 - **الحل:** بطاقة Portfolio Hero مع: القيمة + equity curve mini chart + Win Rate + Trade Count + Sharpe Ratio
@@ -40,18 +42,21 @@
 - **الحالة:** ✅ تم — Portfolio Hero Card مع Win Rate + Trades + Assets + Avg PnL
 
 ### HOME-P2: Quick Actions كثيرة جداً (COGNITIVE OVERLOAD)
+
 - **ليه مهم؟** 6 أزرار في grid بتشتت دماغ المستخدم. زر Charts يودي لـ COMING SOON = إزعاج. زر Settings في الهوم مش منطقي
 - **المسبب:** التصميم الحالي يحاول يغطي كل حاجة في صفحة واحدة
 - **الحل:** تقليص لـ 1 Primary CTA (Analyze Chart) + 2 Secondary Actions (Discover, Copilot) فقط
 - **الحالة:** ✅ تم — تقليص لـ 3 أزرار فقط (Discover, Copilot, PnL Tracker)
 
 ### HOME-P3: AI CTA مدفون (CORE FEATURE مخفي)
+
 - **ليه مهم؟** Analyze Chart هو أهم feature في التطبيق (المميزة التنافسية). مدفون في card صغيرة = ضياع فرص استخدام
 - **المسبب:** كل الأقسام بنفس الحجم والشكل = مفيش visual hierarchy
 - **الحل:** زر Primary CTA كبير مع gradient أخضر + وصف واضح + icon
 - **الحالة:** ✅ تم — زر Primary CTA كبير بـ gradient + وصف + icon
 
 ### HOME-P4: لا يوجد إشارات فعّالة (NO ACTIVE SIGNALS)
+
 - **ليه مهم؟** المتداول يحتاج يعرف إذا فيه فرص جديدة. بدون عرض الإشارات = المستخدم بيفوت صفقات
 - **المسبب:** الصفحة لا تعرض أي signals رغم إن `getDailySignals` server function موجود
 - **الحل:** بطاقة Active Signals تظهر أول 2 signal مع confidence + entry/tp/sl + عرض الكل
@@ -59,6 +64,7 @@
 - **الحالة:** ✅ تم — Active Signals Section بـ SignalBadge + LiveDot + confidence + price
 
 ### HOME-P5: لا يوجد Watchlist
+
 - **ليه مهم؟** أي تداول بيبدأ بـ watchlist. غيابها = المستخدم لازم يفتح Discover كل مرة
 - **المسبب:** لا يوجد مكان في الهوم يعرض العملات اللي المستخدم بيتابعها
 - **الحل:** بطاقة Watchlist مع: الرمز + السعر + التغير 24h + sparkline + حجم التداول + القيمة السوقية
@@ -66,6 +72,7 @@
 - **الحالة:** ✅ تم — Watchlist Section مع آخر 5 عناصر من watchlist_items
 
 ### HOME-P6: لا يوجد Market Sentiment
+
 - **ليه مهم؟** Fear & Greed Index + BTC Dominance + 24h Volume هي أدوات أساسية لأي متداول احترافي
 - **المسبب:** الصفحة لا تعرض أي بيانات عن حالة السوق الكلية
 - **الحل:** بطاقة Market Sentiment بـ 3 أعمدة: Fear & Greed + BTC Dominance + 24h Volume
@@ -73,24 +80,28 @@
 - **الحالة:** ✅ تم — Market Sentiment Card بـ Fear & Greed Index + bar gauge
 
 ### HOME-P7: إحصائيات الحساب غير مفيدة (ACCOUNT STATS)
+
 - **ليه مهم؟** "Points, Trades, Status" مش actionable. المفروض Win Rate و Sharpe Ratio
 - **المسبب:** التصميم يعرض بيانات عامة بدل بيانات تداولية مفيدة
 - **الحل:** استبدال بـ Win Rate + Average Trade + Sharpe Ratio + Asset Count (جزء من Portfolio Hero Card)
 - **الحالة:** ✅ تم — Stats مدمجة في Portfolio Hero Card (Win Rate, Trades, Assets, Avg PnL)
 
 ### HOME-P8: تحية غير شخصية (NO CONTEXTUAL GREETING)
+
 - **ليه مهم؟** "Welcome back, Trader" عاملة وباردة. في تطبيقات مثل Binance و Robinhood التحية ذكية ومعلوماتية
 - **المسبب:** التحية ثابتة بدون وقت أو تاريخ أو سياق سوقي
 - **الحل:** "Good Morning/Afternoon/Evening, [Name]" + التاريخ + حالة السوق + عدد الإشارات الفعّالة
 - **الحالة:** ✅ تم — تحية ذكية حسب الوقت + التاريخ + عدد الإشارات الفعّالة
 
 ### HOME-P9: لا يوجد Recent Trades/Activity
+
 - **ليه مهم؟** عرض آخر الصفقات بيمكّن المستخدم يتابع أدائه بدون ما يفتح Journal
 - **المسبب:** القسم موجود بس فاضي دائماً
 - **الحل:** بطاقة Recent Trades تعرض آخر 3 صفقات مع pair + direction + entry/exit + PnL + time ago
 - **الحالة:** ✅ تم — Recent Trades Section مع آخر 3 صفقات + PnL + time
 
 ### HOME-P10: Layout مش متماسك (LAYOUT INCOHESIVE)
+
 - **ليه مهم؟** كل section لوحدها بدون flow منطقي. Padding = 8px بس = الصفحة ملزقة. Cards متشابهة = مفيش visual hierarchy
 - **المسبب:** التصميم الحالي مخصص بهيكل flat ومتشابه
 - **الحل:** إعادة هيكلة الصفحة بـ 10 أقسام متسلسلة مع padding مناسب (12-16px) و visual hierarchy واضح
@@ -98,21 +109,21 @@
 
 ### المكونات الجديدة المطلوبة للهوم
 
-| المكون | اللي بيعمله | هل موجود أصلاً؟ |
-|---|---|---|
+| المكون          | اللي بيعمله                                 | هل موجود أصلاً؟       |
+| --------------- | ------------------------------------------- | --------------------- |
 | `MiniSparkline` | Chart صغير inline للـ portfolio و watchlist | موجود بس محتاج verify |
-| `LiveDot` | نقطة متحركة (pulse) للـ active signals | موجود بس محتاج verify |
-| `SignalBadge` | شارة الإشارة (BUY/SELL/WAIT) مع ألوان | موجود بس محتاج verify |
-| `TrendArrow` | سهم الاتجاه (up/down/neutral) | ✅ تم إنشاؤه |
+| `LiveDot`       | نقطة متحركة (pulse) للـ active signals      | موجود بس محتاج verify |
+| `SignalBadge`   | شارة الإشارة (BUY/SELL/WAIT) مع ألوان       | موجود بس محتاج verify |
+| `TrendArrow`    | سهم الاتجاه (up/down/neutral)               | ✅ تم إنشاؤه          |
 
 ### APIs الجديدة المطلوبة للهوم
 
-| API | البيانات اللي بيرجعها | اللي موجود فعلاً |
-|---|---|---|
-| `getMarketOverview` | tickers (BTC/SOL/ETH) + sentiment (Fear&Greed) | ✅ `getHomeMarketData` تم إنشاؤه |
-| `getActiveSignals` | signals فعّالة مع confidence + entry/tp/sl | ✅ يتم استخدام `getDailySignals` + `liveSignals` من dashboard |
-| `getWatchlist` | قائمة المتابعة مع sparkline + price + volume | ✅ يتم استخدام `getWatchlistData` الموجود |
-| `getDashboardData` تحديث | إضافة assetCount, winRate | ✅ تم — أضيف winRate + assetCount |
+| API                      | البيانات اللي بيرجعها                          | اللي موجود فعلاً                                              |
+| ------------------------ | ---------------------------------------------- | ------------------------------------------------------------- |
+| `getMarketOverview`      | tickers (BTC/SOL/ETH) + sentiment (Fear&Greed) | ✅ `getHomeMarketData` تم إنشاؤه                              |
+| `getActiveSignals`       | signals فعّالة مع confidence + entry/tp/sl     | ✅ يتم استخدام `getDailySignals` + `liveSignals` من dashboard |
+| `getWatchlist`           | قائمة المتابعة مع sparkline + price + volume   | ✅ يتم استخدام `getWatchlistData` الموجود                     |
+| `getDashboardData` تحديث | إضافة assetCount, winRate                      | ✅ تم — أضيف winRate + assetCount                             |
 
 ---
 
@@ -121,6 +132,7 @@
 ### P0 — Blockers (مانعة للإطلاق)
 
 #### P0-1: أزواج الفوركس/الذهب لا تفتح صفحة التداول
+
 - **التأثير:** المستخدم يضغط على زوج في Discover ولا يحصل شيء
 - **المسبب:** صفحة `token/$symbol` مبنية للكريبتو فقط (DexScreener API). أزواج الفوركس غير مدعومة
 - **الحل المقترح:** إضافة TradingView widget للفوركس/الذهب أو صفحة منفصلة
@@ -128,6 +140,7 @@
 - **الحالة:** ✅ تم — الصفحة بتكشف `isTraditionalAsset` وبتعرض TradingView chart كامل لفوركس/ذهب + badge + trade history
 
 #### P0-2: عملات الميم مفيش بيانات حقيقية
+
 - **التأثير:** صفحة التوكن تفتح فاضية أو بموك بيانات
 - **المسبب:** `discover.tsx` يعتمد على DexScreener/Helius APIs. لو API مش بيرجع بيانات، الصفحة فاضية
 - **الحل المقترح:** تحسين fallback في API أو إضافة مصادر بيانات بديلة
@@ -135,6 +148,7 @@
 - **الحالة:** ✅ تم — إضافة TradingView chart fallback + Analyze CTA + watchlist button لما API بيرجع null
 
 #### P0-3: Charts, Arbitrage, Activity-Web3 صفحات فارغة (COMING SOON)
+
 - **التأثير:** 3 صفحات في الـ More Panel تعرض رسالة فقط
 - **المسبب:** الواجهات مكتوبة كـ stub. المحركات الخلفية موجودة خاصة arbitrage في `src/domains/arbitrage/`
 - **الحل المقترح:** ربط المحركات الموجودة بالواجهة أو إخفاء الصفحات من الـ nav
@@ -146,6 +160,7 @@
 ### P1 — High Priority (تؤثر على الاحتفاظ بالمستخدم)
 
 #### P1-1: نصوص صغيرة جداً (8-10px)
+
 - **التأثير:** 90% من المستخدمين مش هيقرأوا المحتوى على الموبايل
 - **الأماكن المحددة:**
   - AppShell Bottom Bar labels: `9px` (سطر 1403)
@@ -158,6 +173,7 @@
 - **الحالة:** ✅ تم — كل النصوص 11px كحد أدنى، Badge 10px (في 14px badge)، Bottom bar/More 11px
 
 #### P1-2: Empty States بدون CTA
+
 - **التأثير:** المستخدم يوصل لصفحة فاضية ولا يعرف ماذا يفعل
 - **المسبب:** مكون `EmptyState` لا يقبل prop للأزرار. 19+ صفحة تستخدمه بدون زر
 - **الحل المقترح:** إضافة optional `action` prop لـ EmptyState
@@ -165,6 +181,7 @@
 - **الحالة:** ✅ تم — إضافة action buttons لـ 8 صفحات (notifications, whale, predictions, communities, bags, curves, trackers, perpetuals)
 
 #### P1-3: Silent catch blocks (أخطاء تُبتلع بدون إشعار)
+
 - **التأثير:** أخطاء حقيقية تحصل والمستخدم لا يعرف
 - **الأماكن المحددة:**
   - `AppShell.tsx` سطر 41 (SOL price fetch)
@@ -178,6 +195,7 @@
 - **الحالة:** ✅ تم — SOL price: أضيف `console.warn`. باقي 7 catches متوقعة ومعالجة بالفعل
 
 #### P1-4: التنقل السفلي — Discover مش فيه
+
 - **التأثير:** المستخدم لازم يفتح More Panel عشان يوصل لاكتشاف العملات
 - **المسبب:** `bottomNavItems` فيه 4 عناصر فقط: Home, Analyze, Copilot, Signals
 - **التقرير يقترح:** إضافة Discover واستبدال Signals بـ Portfolio
@@ -185,6 +203,7 @@
 - **الحالة:** ✅ تم — Discover في البار السفلي محل Signals، Signals اتنتقلت لـ More Panel (Social)
 
 #### P1-5: DataRow غير accessible
+
 - **التأثير:** مستخدمو الكيبورد لا يستطيعون التنقل
 - **المسبب:** المكون مكتوب كـ `div` وليس `button`
 - **الحل المقترح:** تحويل لعناصر تفاعلية مع `role="button"` و `tabIndex`
@@ -196,24 +215,28 @@
 ### P2 — Medium Priority (تحسين التجربة)
 
 #### P2-1: Loading spinners بدل skeletons
+
 - **التأثير:** الشاشة غير مريحة بصرياً أثناء التحميل
 - **المسبب:** مكون `RouteLoading` يستخدم spinner
 - **الحل المقترح:** استخدام skeleton screens
 - **الحالة:** ✅ تم فعلاً — RouteLoading بيستخدم shimmer skeleton bars بـ animation
 
 #### P2-2: أزرار Settings ما بتشتغلش (بعضها)
+
 - **التأثير:** بعض الإعدادات تحفظ في localStorage فقط بدون sync مع السيرفر
 - **المسبب:** `settings.tsx` بعض الأقسام localStorage-only
 - **الحل المقترح:** sync مع السيرفر عبر `updateUserSettings`
 - **الحالة:** ✅ تم — Change Password (toast: Telegram-managed), Export Data (JSON download), Delete Account (2-step confirm)
 
 #### P2-3: OKX/Bybit adapters stubs
+
 - **التأثير:** مستخدم يحاول يربط Exchange ولا يشتغل
 - **المسبب:** Adapters في `src/domains/trading/` غير مكتملة
 - **ملاحظة:** يحتاج API keys حقيقية أولاً
 - **الحالة:** ✅ تم — `CcxtGenericAdapter` generic class + OKX/Bybit adapters تتعامل مع CCXT API فعلي. P2-3 محلول بالكامل.
 
 #### P2-4: Touch targets صغيرة
+
 - **التأثير:** أصابع المستخدم تضغط خطأ على الموبايل
 - **الأماكن المحددة:**
   - Notification bell: 26×26px (سطر 1025-1029)
@@ -223,24 +246,28 @@
 - **الحالة:** ✅ تم — Bell 26→30px+44px touch, Avatar 26→30px+44px touch, PointsBadge 44px touch
 
 #### P2-5: ألوان inline hex متفرقة
+
 - **التأثير:** صعوبة إعادة التكوين (rebranding)
 - **المسبب:** بعض الأماكن تستخدم hex مباشرة بدل CSS var
 - **الحل المقترح:** توحيد لمصدر واحد
 - **الحالة:** ✅ تم — AppShell rgba(14,203,129) → var(--bullish-bg) + color-mix
 
 #### P2-6: Badges في Profile hard-coded
+
 - **التأثير:** الأوسمة غير ديناميكية
 - **المسبب:** `profile.tsx` يستخدم `unlocked: true/false` ثابت
 - **الحل المقترح:** جلب الأوسمة من قاعدة البيانات
 - **الحالة:** ✅ تم فعلاً — Badges ديناميكية بـ `check: d => d.totalTrades >= 1` pattern، البيانات من 6 queries حقيقية
 
 #### P2-7: روابط Brokers affiliate وهمية
+
 - **التأثير:** الروابط تحتوي `affiliate_id=VIXOR` كـ placeholder
 - **المسبب:** `brokers.tsx` الروابط ليست حقيقية
 - **الحل المقترح:** استبدال بروابط فعلية
 - **الحالة:** ⬜ لم يبدأ (يحتاج روابط حقيقية منك)
 
 #### P2-8: Discover Forex data hard-coded
+
 - **التأثير:** بيانات الفوركس مختلطة مع بيانات API حقيقية
 - **المسبب:** ملف `discover-forex-data.ts` بيانات ثابتة
 - **الحل المقترح:** استخدام API حقيقي (TwelveData/Finnhub)
@@ -250,47 +277,47 @@
 
 ### P3 — Low Priority (لمسات نهائية)
 
-| # | التاسك | الحالة |
-|---|---|---|
-| P3-1 | Page transitions (تحريك سلس بين الصفحات) | ✅ تم — CSS fade+slide animation على `<main>` بـ `key={path}` + `vixor-page-enter` class |
-| P3-2 | Pull-to-refresh feedback | ✅ تم — `usePullToRefresh` hook مشترك + `PullIndicator` component مستخرجين من discover.tsx للاستخدام العام |
-| P3-3 | Keyboard navigation كامل | ✅ تم — DataRow بيدعم ArrowUp/ArrowDown للتنقل بين الـ rows في القوائم + `data-row-list` على الحاويات |
-| P3-4 | Offline states | ✅ تم — `useOnline` hook + banner أحمر في AppShell لما المستخدم أوفلاين |
-| P3-5 | تنظيف ملفات SQL عائمة في الجذر | ✅ تم — 3 ملفات SQL محذوفة |
-| P3-6 | تنظيف `src/lib/` (نسخة قديمة من الكود) | ✅ تم — vixor-mock.ts محذوف (لم يكن مستخدم) |
+| #    | التاسك                                   | الحالة                                                                                                     |
+| ---- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| P3-1 | Page transitions (تحريك سلس بين الصفحات) | ✅ تم — CSS fade+slide animation على `<main>` بـ `key={path}` + `vixor-page-enter` class                   |
+| P3-2 | Pull-to-refresh feedback                 | ✅ تم — `usePullToRefresh` hook مشترك + `PullIndicator` component مستخرجين من discover.tsx للاستخدام العام |
+| P3-3 | Keyboard navigation كامل                 | ✅ تم — DataRow بيدعم ArrowUp/ArrowDown للتنقل بين الـ rows في القوائم + `data-row-list` على الحاويات      |
+| P3-4 | Offline states                           | ✅ تم — `useOnline` hook + banner أحمر في AppShell لما المستخدم أوفلاين                                    |
+| P3-5 | تنظيف ملفات SQL عائمة في الجذر           | ✅ تم — 3 ملفات SQL محذوفة                                                                                 |
+| P3-6 | تنظيف `src/lib/` (نسخة قديمة من الكود)   | ✅ تم — vixor-mock.ts محذوف (لم يكن مستخدم)                                                                |
 
 ---
 
 ## ما تم إنجازه فعلاً (الجلسات السابقة)
 
-| # | التاسك | الحالة | التفاصيل |
-|---|---|---|---|
-| 1 | CI/CD GitHub Actions failure (lint/typecheck) | ✅ تم | إصلاح lint/typecheck errors |
-| 2 | نقاط لا تُضاف (auth token issue) | ✅ تم | تقسيم Supabase client لعميلين + fix env var priority |
-| 3 | النقاط تظهر 0 في البار العلوي | ✅ تم | إصلاح query key mismatch + invalidate كلا المفتاحين |
-| 4 | Redirect loop في rewards | ✅ تم | إزالة `window.location.assign("/auth")` |
-| 5 | "Invalid API key" من Supabase | ✅ تم | إزالة `global.headers.Authorization` من عميل getUser |
-| 6 | npm ci failing (missing from lock file) | ✅ تم | تحديث package-lock.json |
-| 7 | CI npm ci يفشل (npm version mismatch) | ✅ تم | استبدال `npm ci` بـ `npm install` في CI — npm 11 محلي vs npm 10 على GitHub CI |
-| 8 | Vercel deployment فاشل (Hobby plan cron limit) | ✅ تم | شلت cron `*/5 * * * *` — Hobby Plan مش بيسمح أقل من يومي. رجعت 2 crons يوميين |
-| 9 | إزالة كل Mock Data (فوركس، رادار، تحليلات) | ✅ تم + منشور | 10 ملفات +1063/-354 سطر — بيانات حية من Binance/TwelveData/Frankfurter APIs |
-| 10 | Copilot streaming بيرسل context فاضي | ✅ تم + منشور | كان بيرسل `{profile:{}, recentAnalyses:[], signals:[]}` بدل بيانات المستخدم الحقيقية |
-| 11 | MoxiAvatar broken import في AppShell | ✅ تم | شلت import و JSX usage لـ MoxiAvatar اللي كان سبب error |
-| 12 | Meme coin token page fallback | ✅ تم | TradingView chart + Analyze CTA + watchlist لما API بيرجع null |
-| 13 | EmptyState CTAs لـ 8 صفحات | ✅ تم | notifications, whale, predictions, communities, bags, curves, trackers, perpetuals |
-| 14 | Settings dead buttons (Password/Export/Delete) | ✅ تم | Password→toast, Export→JSON download, Delete→2-step confirm |
-| 15 | تنظيف ملفات عائمة (3 SQL + vixor-mock.ts) | ✅ تم | حذف 4 ملفات مش مستخدمة |
-| 16 | P1-4: إضافة Discover للـ Bottom Nav | ✅ تم | Discover محل Signals في البار السفلي، Signals في More Panel |
-| 17 | P3-1: Page transitions | ✅ تم | CSS fade+slide animation بـ `key={path}` على main content |
-| 18 | P3-2: Pull-to-refresh shared hook | ✅ تم | `usePullToRefresh` + `PullIndicator` مستخرجين لمكتبة مشتركة |
-| 19 | P3-3: Keyboard navigation | ✅ تم | ArrowUp/ArrowDown في DataRow + `data-row-list` containers |
-| 20 | P3-4: Offline states | ✅ تم | `useOnline` hook + offline banner أحمر في AppShell |
-| 21 | MOXI: DB migration `moxi_personas` | ✅ تم | جدول بـ RLS + trigger updated_at + constraints على 8 avatar variants |
-| 22 | MOXI: Streaming SSE support | ✅ تم | MOXI-specific path في `/api/copilot-stream` بـ context engine + persona + LLMRouter.stream() |
-| 23 | MOXI: Agent in orchestrator | ✅ تم | `"moxi"` في `AgentId` type + `moxiAgent` definition في `ALL_AGENTS` |
-| 24 | MOXI: Insights feed server function | ✅ تم | `getMoxiInsights` server function + re-export من `@/shared/data` |
-| 25 | MOXI: Insights UI section | ✅ تم | Section 10 في الهوم بـ MoxiAvatar + severity colors + timeAgo + clickable |
-| 26 | MOXI: MoxiAvatar in chat | ✅ تم | يظهر كـ avatar للرسائل من MOXI في Copilot بدل الـ icon |
+| #   | التاسك                                         | الحالة        | التفاصيل                                                                                     |
+| --- | ---------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------- |
+| 1   | CI/CD GitHub Actions failure (lint/typecheck)  | ✅ تم         | إصلاح lint/typecheck errors                                                                  |
+| 2   | نقاط لا تُضاف (auth token issue)               | ✅ تم         | تقسيم Supabase client لعميلين + fix env var priority                                         |
+| 3   | النقاط تظهر 0 في البار العلوي                  | ✅ تم         | إصلاح query key mismatch + invalidate كلا المفتاحين                                          |
+| 4   | Redirect loop في rewards                       | ✅ تم         | إزالة `window.location.assign("/auth")`                                                      |
+| 5   | "Invalid API key" من Supabase                  | ✅ تم         | إزالة `global.headers.Authorization` من عميل getUser                                         |
+| 6   | npm ci failing (missing from lock file)        | ✅ تم         | تحديث package-lock.json                                                                      |
+| 7   | CI npm ci يفشل (npm version mismatch)          | ✅ تم         | استبدال `npm ci` بـ `npm install` في CI — npm 11 محلي vs npm 10 على GitHub CI                |
+| 8   | Vercel deployment فاشل (Hobby plan cron limit) | ✅ تم         | شلت cron `*/5 * * * *` — Hobby Plan مش بيسمح أقل من يومي. رجعت 2 crons يوميين                |
+| 9   | إزالة كل Mock Data (فوركس، رادار، تحليلات)     | ✅ تم + منشور | 10 ملفات +1063/-354 سطر — بيانات حية من Binance/TwelveData/Frankfurter APIs                  |
+| 10  | Copilot streaming بيرسل context فاضي           | ✅ تم + منشور | كان بيرسل `{profile:{}, recentAnalyses:[], signals:[]}` بدل بيانات المستخدم الحقيقية         |
+| 11  | MoxiAvatar broken import في AppShell           | ✅ تم         | شلت import و JSX usage لـ MoxiAvatar اللي كان سبب error                                      |
+| 12  | Meme coin token page fallback                  | ✅ تم         | TradingView chart + Analyze CTA + watchlist لما API بيرجع null                               |
+| 13  | EmptyState CTAs لـ 8 صفحات                     | ✅ تم         | notifications, whale, predictions, communities, bags, curves, trackers, perpetuals           |
+| 14  | Settings dead buttons (Password/Export/Delete) | ✅ تم         | Password→toast, Export→JSON download, Delete→2-step confirm                                  |
+| 15  | تنظيف ملفات عائمة (3 SQL + vixor-mock.ts)      | ✅ تم         | حذف 4 ملفات مش مستخدمة                                                                       |
+| 16  | P1-4: إضافة Discover للـ Bottom Nav            | ✅ تم         | Discover محل Signals في البار السفلي، Signals في More Panel                                  |
+| 17  | P3-1: Page transitions                         | ✅ تم         | CSS fade+slide animation بـ `key={path}` على main content                                    |
+| 18  | P3-2: Pull-to-refresh shared hook              | ✅ تم         | `usePullToRefresh` + `PullIndicator` مستخرجين لمكتبة مشتركة                                  |
+| 19  | P3-3: Keyboard navigation                      | ✅ تم         | ArrowUp/ArrowDown في DataRow + `data-row-list` containers                                    |
+| 20  | P3-4: Offline states                           | ✅ تم         | `useOnline` hook + offline banner أحمر في AppShell                                           |
+| 21  | MOXI: DB migration `moxi_personas`             | ✅ تم         | جدول بـ RLS + trigger updated_at + constraints على 8 avatar variants                         |
+| 22  | MOXI: Streaming SSE support                    | ✅ تم         | MOXI-specific path في `/api/copilot-stream` بـ context engine + persona + LLMRouter.stream() |
+| 23  | MOXI: Agent in orchestrator                    | ✅ تم         | `"moxi"` في `AgentId` type + `moxiAgent` definition في `ALL_AGENTS`                          |
+| 24  | MOXI: Insights feed server function            | ✅ تم         | `getMoxiInsights` server function + re-export من `@/shared/data`                             |
+| 25  | MOXI: Insights UI section                      | ✅ تم         | Section 10 في الهوم بـ MoxiAvatar + severity colors + timeAgo + clickable                    |
+| 26  | MOXI: MoxiAvatar in chat                       | ✅ تم         | يظهر كـ avatar للرسائل من MOXI في Copilot بدل الـ icon                                       |
 
 ---
 
@@ -343,30 +370,30 @@ Sprint 4: التحسينات (يوم 11-14)
 
 ## المسببات الجذرية وكيفية عدم تكرارها
 
-| المشكلة | المسبب الجذري | كيفية المنع |
-|---|---|---|
-| صفحات فارغة في الـ nav | إضافة صفحات قبل إنهاء تنفيذها | لا تضف صفحة للـ nav إلا لما تكون شغالة 100% |
-| نصوص 8-10px | عدم وجود design tokens للـ font-size | CSS variables: `--text-min: 12px` مع `clamp()` |
-| silent catches | عادة سيئة في كتابة `catch {}` | كل catch لازم `console.warn` أو toast على الأقل |
-| query key mismatch | أسماء مختلفة لنفس البيانات | ملف مركزي: `src/shared/query-keys.ts` |
-| inline hex colors | كتابة الألوان مباشرة في JSX | ESLint rule مخصص |
-| hard-coded data | بيانات "temporary" ومنسية | `// TODO: Replace with API` + assert في CI |
-| Touch targets صغيرة | تصميم desktop يُنقل للموبايل بدون تعديل | كل `onClick` لازم يمر بـ `minTouchTarget` wrapper |
+| المشكلة                | المسبب الجذري                                             | كيفية المنع                                         |
+| ---------------------- | --------------------------------------------------------- | --------------------------------------------------- |
+| صفحات فارغة في الـ nav | إضافة صفحات قبل إنهاء تنفيذها                             | لا تضف صفحة للـ nav إلا لما تكون شغالة 100%         |
+| نصوص 8-10px            | عدم وجود design tokens للـ font-size                      | CSS variables: `--text-min: 12px` مع `clamp()`      |
+| silent catches         | عادة سيئة في كتابة `catch {}`                             | كل catch لازم `console.warn` أو toast على الأقل     |
+| query key mismatch     | أسماء مختلفة لنفس البيانات                                | ملف مركزي: `src/shared/query-keys.ts`               |
+| inline hex colors      | كتابة الألوان مباشرة في JSX                               | ESLint rule مخصص                                    |
+| hard-coded data        | بيانات "temporary" ومنسية                                 | `// TODO: Replace with API` + assert في CI          |
+| Touch targets صغيرة    | تصميم desktop يُنقل للموبايل بدون تعديل                   | كل `onClick` لازم يمر بـ `minTouchTarget` wrapper   |
 | Supabase auth conflict | `global.headers.Authorization` يتعارض مع `getUser(token)` | تعليق في `auth-middleware.ts` يشرح ليه بنعمل عميلين |
 
 ---
 
 ## إحصائيات المشروع الحالية
 
-| البُعد | القيمة |
-|---|---|
-| إجمالي الصفحات | 38 (+ /auth) |
-| صفحات شغالة ببيانات حقيقية | 35 |
-| صفحات Stub (COMING SOON) | 3 (Charts, Arbitrage, Activity-Web3) |
-| API Endpoints | 15+ |
-| المكونات | 62+ ملف |
-| Server Functions | 28+ في data/index.ts |
-| نطاقات الأعمال (domains) | 22 نطاق |
+| البُعد                     | القيمة                               |
+| -------------------------- | ------------------------------------ |
+| إجمالي الصفحات             | 38 (+ /auth)                         |
+| صفحات شغالة ببيانات حقيقية | 35                                   |
+| صفحات Stub (COMING SOON)   | 3 (Charts, Arbitrage, Activity-Web3) |
+| API Endpoints              | 15+                                  |
+| المكونات                   | 62+ ملف                              |
+| Server Functions           | 28+ في data/index.ts                 |
+| نطاقات الأعمال (domains)   | 22 نطاق                              |
 
 ---
 
@@ -376,6 +403,7 @@ Sprint 4: التحسينات (يوم 11-14)
 > **الحالة:** كل تاسكات MOXI مكتملة ✅
 
 ### وصف الرؤية
+
 - MOXI هو رفيق AI 2.5D NFT يكون "روح" التطبيق
 - بيشمل 4 agents كمخ: Analyst, Hunter, Coach, Governor
 - بيعوض نظام الإشعارات الحالي بـ proactive real-time awareness
@@ -383,6 +411,7 @@ Sprint 4: التحسينات (يوم 11-14)
 - Persona مع حقول: `{name, personality, expertise, communicationStyle, avatar, nftTokenId}`
 
 ### التاسكات الفرعية
+
 - [x] تصميم وبرمجة persona system (`src/domains/moxi/persona.ts`) — 8 avatar variants + CRUD
 - [x] بناء context engine (`src/domains/moxi/context-engine.ts`) — كان موجود، تم تحسينه
 - [x] System prompt builder (`src/domains/moxi/prompt.ts`) — MOXI unified prompt مع persona injection

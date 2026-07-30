@@ -8,13 +8,7 @@
 
 /** Supported blockchain networks for token discovery. */
 export type DiscoveryChain =
-  | "solana"
-  | "ethereum"
-  | "base"
-  | "arbitrum"
-  | "polygon"
-  | "bsc"
-  | "avalanche";
+  "solana" | "ethereum" | "base" | "arbitrum" | "polygon" | "bsc" | "avalanche";
 
 /** Risk level assigned by VIXOR AI to a discovered token. */
 export type RiskLevel = "low" | "medium" | "high";

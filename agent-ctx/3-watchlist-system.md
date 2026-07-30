@@ -1,6 +1,7 @@
 # Task 3: Build Complete User Watchlist System
 
 ## Agent: Watchlist System Developer
+
 ## Status: COMPLETED
 
 ## What Was Done
@@ -13,6 +14,7 @@
 6. Updated Supabase types to include watchlists and watchlist_items tables
 
 ## Key Files Modified
+
 - `supabase/migrations/004_watchlists.sql` (NEW)
 - `src/integrations/supabase/types.ts` (added watchlists + watchlist_items types)
 - `src/lib/vixor.functions.ts` (added 6 server functions)
@@ -22,9 +24,11 @@
 - `src/routes/_authenticated/index.tsx` (dashboard watchlist widget update)
 
 ## Pre-existing TS Errors (Not Introduced by This Task)
+
 - AppShell.tsx: Router type mismatch for /copilot route
-- engine.ts: newsImpact type mismatch  
+- engine.ts: newsImpact type mismatch
 - vixor.functions.ts: maxTokens property on AI SDK call
 
 ## Migration Note
+
 The SQL migration at `supabase/migrations/004_watchlists.sql` needs to be run manually in the Supabase Dashboard SQL Editor for the watchlist features to work.

@@ -79,20 +79,20 @@ Run a check below **only if the artifact actually contains that thing**. Don't r
 
 For the craft that actually applies, open that file and confirm its rules are visibly applied. Don't load files that don't apply.
 
-| Only if the artifact has… | Verify against |
-|---|---|
-| **(always, final pass)** the anti-slop core above | `horizontal-craft/anti-ai-slop.md` (full file, for the blocking §E check) |
-| Substantial Chinese text / typography-led titles/covers | `horizontal-craft/chinese-typography.md` (+ `reference/fonts.md` when font choice matters) |
-| Charts, diagrams, timelines, maps, explorable models | `horizontal-craft/visual-explanation.md` |
-| UI icons / pictograms / icon buttons | `horizontal-craft/icon-system.md` |
-| Forms / inputs / validation | `horizontal-craft/form-validation.md` |
-| Interactive states / dashboards / tools / prototypes | `horizontal-craft/state-coverage.md` |
-| Metrics / charts / tables / demo data / claims | `horizontal-craft/data-integrity.md` |
-| CTAs / links / proof / citations / logos | `horizontal-craft/link-and-proof.md` |
-| Unclear color direction / no design system | `horizontal-craft/color.md` |
-| Motion / transitions / animated charts | `horizontal-craft/animation-discipline.md` |
-| Pricing / onboarding / dashboards / H5 / conversion flows | `horizontal-craft/laws-of-ux.md` |
-| Advanced effects beyond plain CSS/SVG | `horizontal-craft/technique-library.md` |
+| Only if the artifact has…                                 | Verify against                                                                             |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **(always, final pass)** the anti-slop core above         | `horizontal-craft/anti-ai-slop.md` (full file, for the blocking §E check)                  |
+| Substantial Chinese text / typography-led titles/covers   | `horizontal-craft/chinese-typography.md` (+ `reference/fonts.md` when font choice matters) |
+| Charts, diagrams, timelines, maps, explorable models      | `horizontal-craft/visual-explanation.md`                                                   |
+| UI icons / pictograms / icon buttons                      | `horizontal-craft/icon-system.md`                                                          |
+| Forms / inputs / validation                               | `horizontal-craft/form-validation.md`                                                      |
+| Interactive states / dashboards / tools / prototypes      | `horizontal-craft/state-coverage.md`                                                       |
+| Metrics / charts / tables / demo data / claims            | `horizontal-craft/data-integrity.md`                                                       |
+| CTAs / links / proof / citations / logos                  | `horizontal-craft/link-and-proof.md`                                                       |
+| Unclear color direction / no design system                | `horizontal-craft/color.md`                                                                |
+| Motion / transitions / animated charts                    | `horizontal-craft/animation-discipline.md`                                                 |
+| Pricing / onboarding / dashboards / H5 / conversion flows | `horizontal-craft/laws-of-ux.md`                                                           |
+| Advanced effects beyond plain CSS/SVG                     | `horizontal-craft/technique-library.md`                                                    |
 
 ### On-demand: Template adaptation — only if a template/seed was used
 
@@ -118,6 +118,7 @@ For the craft that actually applies, open that file and confirm its rules are vi
 [ ] dangerous actions have confirm / undo / clear prevention
 [ ] keyboard and focus behavior are usable
 ```
+
 Reference: `horizontal-craft/state-coverage.md`, `horizontal-craft/form-validation.md`.
 
 ### On-demand: Visual explanation — only if charts / diagrams / timelines / maps / explorable models exist
@@ -129,6 +130,7 @@ Reference: `horizontal-craft/state-coverage.md`, `horizontal-craft/form-validati
 [ ] labels stay readable at target viewport / export scale
 [ ] it explains MORE than a clear paragraph or table would (if not, simplify)
 ```
+
 Reference: `horizontal-craft/visual-explanation.md`.
 
 ### On-demand: Accessibility — verify when it matters; NOT blocking for marketing/display artifacts
@@ -142,6 +144,7 @@ Design artifacts are mostly marketing/display, so accessibility is **not** a blo
 [ ] decorative icons aria-hidden; chart info not conveyed by color alone
 [ ] reduced-motion fallback when motion exists
 ```
+
 Reference: `horizontal-craft/accessibility.md`.
 
 ---

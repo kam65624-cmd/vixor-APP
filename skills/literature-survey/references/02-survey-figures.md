@@ -2,7 +2,7 @@
 
 ## Why this exists
 
-A research paper's figures tend to be experimental: tables of numbers, training curves, confusion matrices. A survey's figures are *organisational*: how is the field structured, when did things happen, who works on what. They are how a reader navigates the survey. Without good figures a survey is a long list of references; with them it becomes a map.
+A research paper's figures tend to be experimental: tables of numbers, training curves, confusion matrices. A survey's figures are _organisational_: how is the field structured, when did things happen, who works on what. They are how a reader navigates the survey. Without good figures a survey is a long list of references; with them it becomes a map.
 
 **Hard targets:** **6–10 figures** spanning these families:
 
@@ -17,17 +17,17 @@ A research paper's figures tend to be experimental: tables of numbers, training 
 
 Two real failures this playbook used to cause. Read both before you draw anything.
 
-**1. Template leakage (the worst over-fitting).** The worked examples below were written about *time-series Transformers*. A real "open-source LLM" survey produced from this playbook shipped a taxonomy whose leaves were `Informer`, `Autoformer`, `PatchTST`, `iTransformer`, `Moirai` — time-series forecasting models, completely off-topic — because the agent copied the *sample's content*, not just its shape. **Every code block here is a worked example of a principle, never content to reuse.** Replace 100% of the labels, branches, palette, and composition with what *your* topic and *your* gathered papers actually require. If a reader could guess which sample you started from, you over-templated. The figure should look like it was designed for this survey and no other.
+**1. Template leakage (the worst over-fitting).** The worked examples below were written about _time-series Transformers_. A real "open-source LLM" survey produced from this playbook shipped a taxonomy whose leaves were `Informer`, `Autoformer`, `PatchTST`, `iTransformer`, `Moirai` — time-series forecasting models, completely off-topic — because the agent copied the _sample's content_, not just its shape. **Every code block here is a worked example of a principle, never content to reuse.** Replace 100% of the labels, branches, palette, and composition with what _your_ topic and _your_ gathered papers actually require. If a reader could guess which sample you started from, you over-templated. The figure should look like it was designed for this survey and no other.
 
-**2. Generic look.** Default LaTeX/matplotlib output (Computer Modern *serif*, boxed axes, rainbow colours, one chart per figure) reads as a class assignment, not a journal. The target is **Nature / Science**: figures that are *designed*, not decorated.
+**2. Generic look.** Default LaTeX/matplotlib output (Computer Modern _serif_, boxed axes, rainbow colours, one chart per figure) reads as a class assignment, not a journal. The target is **Nature / Science**: figures that are _designed_, not decorated.
 
 ### What "Nature/Science" concretely means (not vibes)
 
 - **A figure is a composition, not a lone chart.** Top journals compose multi-panel figures (**a**, **b**, **c** …), each panel one sub-claim, together telling one story. Use `subfigure` / matplotlib `subplots`, with **bold lowercase panel labels in the top-left corner** of each panel.
 - **Sans-serif type.** Helvetica/Arial (both installed here), ~7 pt floor — never Computer Modern serif. matplotlib: `font.family:"sans-serif"`. TikZ/LaTeX diagrams: `\usepackage[scaled]{helvet}\renewcommand{\familydefault}{\sfdefault}` (or set the figure's nodes to `\sffamily`).
-- **Restrained, colour-blind-safe colour that *encodes something*.** Use the Wong palette (the one *Nature* recommends): `#000000 #E69F00 #56B4E9 #009E73 #F0E442 #0072B2 #D55E00 #CC79A7`. For ordinal data use a single-hue sequential map (`Blues`), never rainbow/`jet`. ≤ ~5 hues per figure; colour must mean something, not decorate.
+- **Restrained, colour-blind-safe colour that _encodes something_.** Use the Wong palette (the one _Nature_ recommends): `#000000 #E69F00 #56B4E9 #009E73 #F0E442 #0072B2 #D55E00 #CC79A7`. For ordinal data use a single-hue sequential map (`Blues`), never rainbow/`jet`. ≤ ~5 hues per figure; colour must mean something, not decorate.
 - **Maximise data-ink.** Despine top + right; ticks short and outward; axis lines ~0.6 pt; no gridlines (or very faint); **direct-label lines** instead of a legend box where possible. Banned: 3-D, pie charts, drop shadows, gradients, raster screenshots.
-- **Exact sizing.** *Nature* column width = **89 mm** single (≈ 3.5 in), **183 mm** double (≈ 7.2 in). Set matplotlib `figsize` to these in inches; in this single-column A4 template include at `width=\linewidth`.
+- **Exact sizing.** _Nature_ column width = **89 mm** single (≈ 3.5 in), **183 mm** double (≈ 7.2 in). Set matplotlib `figsize` to these in inches; in this single-column A4 template include at `width=\linewidth`.
 - **The caption states a finding.** Bold "Figure N." + one declarative sentence giving the takeaway, then detail. Not "Taxonomy of methods." but "Open-source LLM research splits into four lineages that diverge after the 2024 MoE shift."
 
 ### Nature-style matplotlib preamble — use this everywhere instead of the old serif block
@@ -52,9 +52,9 @@ mpl.rcParams.update({
 
 ### The design process — this is where flexibility lives
 
-Templates are rigid because they answer "what figure exists?" Design answers "what does *this* survey need to show?" For each figure, decide from scratch:
+Templates are rigid because they answer "what figure exists?" Design answers "what does _this_ survey need to show?" For each figure, decide from scratch:
 
-1. **What claim in this section must the reader *see* to believe it?** No claim → no figure (cut it; decoration fails the Nature bar).
+1. **What claim in this section must the reader _see_ to believe it?** No claim → no figure (cut it; decoration fails the Nature bar).
 2. **What is the shape of that evidence?** hierarchy → tree (`forest`); change over time → timeline / line; coverage or comparison → matrix / small-multiples; mechanism → schematic; distribution → strip/box. Let the data shape pick the form — don't force every survey into taxonomy+timeline+matrix.
 3. **What is the most reductive form that still makes the point?** One well-composed panel beats a busy one; merge weak figures, split overloaded ones.
 4. **Compose** with the Nature language above, then apply the mechanical floor below (vector, `forest`/`\resizebox`, zero overflow/overlap).
@@ -63,7 +63,7 @@ Steps 1–3 change with every topic — that is the flexible craft. The mechanic
 
 ## Fitting & overflow — the mechanical floor (read BEFORE drawing any figure)
 
-Most "ugly survey PDF" problems are not bad taste, they are **figures that overrun the column or overlap themselves** because the source used hand-tuned absolute sizes (`sibling distance=42mm`, `figsize=(7,…)`) that happen not to fit. The fix is to never hand-tune for fit — let the figure *adapt* to the available width.
+Most "ugly survey PDF" problems are not bad taste, they are **figures that overrun the column or overlap themselves** because the source used hand-tuned absolute sizes (`sibling distance=42mm`, `figsize=(7,…)`) that happen not to fit. The fix is to never hand-tune for fit — let the figure _adapt_ to the available width.
 
 **Know your column width first.** This template is **single-column** `article` on A4 with 1-inch margins → text width ≈ **159 mm (≈ 6.2 in)**. (`\documentclass{article}` is single-column; `figure*` does **not** widen anything here — it only spans columns in a genuinely two-column class such as IEEEtran. Don't reach for `figure*` to "get more room"; you don't have a second column.)
 
@@ -71,7 +71,7 @@ Most "ugly survey PDF" problems are not bad taste, they are **figures that overr
 
 ### Failure A — figure wider than the column (runs off the right margin)
 
-Fix: wrap the picture so its *rendered width* is clamped.
+Fix: wrap the picture so its _rendered width_ is clamped.
 
 - **TikZ:** wrap in `\resizebox{\linewidth}{!}{ … }`.
 - **Includes:** always `\includegraphics[width=\linewidth]{…}` (or `0.85–0.95\linewidth`), never a bare `\includegraphics{file}`. matplotlib `figsize` then only sets aspect ratio; keep its width ≤ 6.2 in so in-figure fonts aren't double-shrunk.
@@ -88,7 +88,7 @@ Fix: wrap the picture so its *rendered width* is clamped.
 
 ### Failure B — nodes overlapping each other (the real "ugly" problem)
 
-**`\resizebox` does NOT fix overlap.** It scales the *whole* picture uniformly, so two boxes that overlap at natural size still overlap after shrinking — you just get a smaller tangle. Overlap comes from hand-picked spacing (`sibling distance=42mm`) where adjacent sub-trees are wider than the gap between them. The fixes, in order of preference:
+**`\resizebox` does NOT fix overlap.** It scales the _whole_ picture uniformly, so two boxes that overlap at natural size still overlap after shrinking — you just get a smaller tangle. Overlap comes from hand-picked spacing (`sibling distance=42mm`) where adjacent sub-trees are wider than the gap between them. The fixes, in order of preference:
 
 1. **Use a layout engine that auto-spaces — `\usepackage{forest}`.** Forest computes sibling positions so children never collide, for any branch/leaf count. This is the default for taxonomies now (see Family 1). It removes the whole class of "magic mm that happens to overlap".
 2. **Pick orientation by size.** Few leaves (≲ 12) → top-down reads well. Many leaves → grow the tree **horizontally** (`grow'=east`) so leaves stack down the page (vertical space is plentiful, horizontal isn't).
@@ -96,7 +96,7 @@ Fix: wrap the picture so its *rendered width* is clamped.
 
 Then apply Failure-A's `\resizebox` on top as a width backstop. Order matters: forest (or real spacing) removes overlap; resizebox only then trims width.
 
-The quality gate (`05-quality-gate.md` G1 + S5) treats residual `Overfull \hbox` as a remediation loop, and reminds you that a figure shrunk to illegibility is *not* a pass — fold it instead.
+The quality gate (`05-quality-gate.md` G1 + S5) treats residual `Overfull \hbox` as a remediation loop, and reminds you that a figure shrunk to illegibility is _not_ a pass — fold it instead.
 
 ## File layout
 
@@ -106,7 +106,7 @@ Naming: `fig_<NN>_<short-slug>.pdf`. Numbers correspond to citation order.
 
 ## Family 1 — Taxonomy / classification diagrams (TikZ)
 
-The single most important survey figure. A taxonomy figure says: *here is how I cut the field*. Readers will refer back to it constantly.
+The single most important survey figure. A taxonomy figure says: _here is how I cut the field_. Readers will refer back to it constantly.
 
 ### Setup
 
@@ -283,6 +283,7 @@ For a survey, prefer **abstracted** architectural diagrams that show the pattern
 ## Family 5 — Quantitative trends (matplotlib)
 
 Examples that work in a survey:
+
 - Number of papers per year (publication trend)
 - Reported MSE on a single benchmark over time (the SOTA curve)
 - Compute requirements over time (size/cost trend)

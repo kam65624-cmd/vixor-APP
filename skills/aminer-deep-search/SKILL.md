@@ -11,12 +11,9 @@ metadata:
   {
     "openclaw":
       {
-        "requires": {
-          "bins": ["python3"],
-          "env": ["AMINER_API_KEY"]
-        },
-        "primaryEnv": "AMINER_API_KEY"
-      }
+        "requires": { "bins": ["python3"], "env": ["AMINER_API_KEY"] },
+        "primaryEnv": "AMINER_API_KEY",
+      },
   }
 ---
 

@@ -10,19 +10,13 @@ description: >
   Do NOT use this skill for simple lookups that free APIs can answer — such as checking a paper title, identifying a scholar by name, normalizing an institution or venue name, or scanning patent trends by keyword. For those, use aminer-free-academic instead.
   Routing rule: if the user's question can be fully answered by paper_search, paper_info, person_search, organization_search, venue_search, patent_search, or patent_info alone, route to aminer-free-academic. Otherwise use this skill.
 metadata:
-  {
-    "openclaw":
-      {
-        "requires": {"env": ["AMINER_API_KEY"] },
-        "primaryEnv": "AMINER_API_KEY"
-      }
-  }
-
+  { "openclaw": { "requires": { "env": ["AMINER_API_KEY"] }, "primaryEnv": "AMINER_API_KEY" } }
 ---
 
 # AMiner Open Platform Academic Data Query
 
 28 APIs + 5 workflows. Token required: set `AMINER_API_KEY` env var.
+
 - Docs: https://open.aminer.cn/open/docs | Console: https://open.aminer.cn/open/board?tab=control
 
 ---
@@ -38,6 +32,7 @@ metadata:
 7. **High-Cost Confirmation (≥ ¥5)**: Before executing a workflow or call chain whose estimated total cost is ¥5.00 or more, **stop and ask the user for confirmation** first. Show the planned call chain, estimated cost per step, and the total. Only proceed after the user explicitly agrees. This applies to both predefined workflows (e.g., Scholar Profile ~¥6.00) and ad-hoc multi-step plans.
 
 Entity URL templates (mandatory):
+
 - Paper: `https://www.aminer.cn/pub/{paper_id}`
 - Scholar: `https://www.aminer.cn/profile/{scholar_id}`
 - Patent: `https://www.aminer.cn/patent/{patent_id}`
@@ -72,14 +67,14 @@ Check `AMINER_API_KEY` exists before any API call. Never expose token in plain t
 
 When the user says "search for papers", determine the goal first:
 
-| API | Focus | Use Case | Cost |
-|---|---|---|---|
-| `paper_search` | Title search → `paper_id` | Known paper title, locate target | Free |
-| `paper_search_pro` | Multi-condition search (author/org/venue/keyword) | Topic search, sort by citations or year | ¥0.01 |
-| `paper_qa_search_pro` | Natural language Q&A + rich filters | **Default / prefer this** for semantic & filter search; card + cursor | ¥0.70 |
-| `paper_qa_search` | Legacy structured topic keywords | **Rarely**; only for `topic_high/middle/low` OR/AND | ¥0.05 |
-| `paper_list_by_keywords` | Multi-keyword batch retrieval | Batch thematic retrieval | ¥0.10 |
-| `paper_detail_by_condition` | Year + venue dimension | Journal annual monitoring | ¥0.20 |
+| API                         | Focus                                             | Use Case                                                              | Cost  |
+| --------------------------- | ------------------------------------------------- | --------------------------------------------------------------------- | ----- |
+| `paper_search`              | Title search → `paper_id`                         | Known paper title, locate target                                      | Free  |
+| `paper_search_pro`          | Multi-condition search (author/org/venue/keyword) | Topic search, sort by citations or year                               | ¥0.01 |
+| `paper_qa_search_pro`       | Natural language Q&A + rich filters               | **Default / prefer this** for semantic & filter search; card + cursor | ¥0.70 |
+| `paper_qa_search`           | Legacy structured topic keywords                  | **Rarely**; only for `topic_high/middle/low` OR/AND                   | ¥0.05 |
+| `paper_list_by_keywords`    | Multi-keyword batch retrieval                     | Batch thematic retrieval                                              | ¥0.10 |
+| `paper_detail_by_condition` | Year + venue dimension                            | Journal annual monitoring                                             | ¥0.20 |
 
 Default routing:
 
@@ -89,6 +84,7 @@ Default routing:
 4. **Journal annual analysis**: `venue_search -> venue_paper_relation -> paper_detail_by_condition`
 
 Key `paper_qa_search_pro` rules:
+
 - **Default choice** for natural-language paper search and multi-filter retrieval (`authors`/`author_ids`, `organizations`/`organization_ids`, `venues`/`venue_ids`, year/citation ranges, `all_terms`/`any_terms`/`exclude_terms`).
 - Page size is **fixed at 10**. Do not send `size`. Paginate with `next_cursor` → next request body is `{"cursor":"..."}` only.
 - `sort`: `relevance` / `balanced` / `recent` / `citation`. For “most cited” use `citation`; for “newest” use `recent`.
@@ -96,6 +92,7 @@ Key `paper_qa_search_pro` rules:
 - Always append `https://www.aminer.cn/pub/{paper_id}`.
 
 Legacy `paper_qa_search` — use sparingly:
+
 - Call **only** when `topic_high` / `topic_middle` / `topic_low` structured OR/AND is explicitly required; otherwise use Pro.
 - `query` and `topic_high/topic_middle/topic_low` are **mutually exclusive**; do not pass both.
 - Supports `sci_flag`, `force_citation_sort`, `force_year_sort`, `author_id`, `org_id`, `venue_ids`.
@@ -130,6 +127,7 @@ When the user's request falls outside the 5 workflows:
 **Cost note**: Full execution exceeds the ¥5 threshold → **must ask for user confirmation before proceeding** (Rule 7). Show the planned steps and cost. Confirm which sub-modules are needed; skip patents/projects if not requested.
 
 **Call Chain:**
+
 ```
 Scholar search (name → person_id)
     ↓
@@ -150,6 +148,7 @@ Fallback: if `paper_search` yields no results in sub-steps, fall back to `paper_
 **Use Case**: Full paper information and citation chain from a title or keyword.
 
 **Call Chain:**
+
 ```
 Paper search / Paper search pro (title/keyword → paper_id)
     ↓
@@ -169,6 +168,7 @@ Fallback: if `paper_search` yields no results, fall back to `paper_search_pro`.
 **Use Case**: Institution scholar size, paper output, patent count — for competitive research or partnership evaluation.
 
 **Call Chain:**
+
 ```
 Org disambiguation pro (raw string → org_id)  ¥0.05
     ↓
@@ -188,6 +188,7 @@ Parallel calls:
 **Use Case**: Track journal papers by year; useful for submission research or trend analysis.
 
 **Call Chain:**
+
 ```
 Venue search (name → venue_id)                          Free
     ↓
@@ -205,6 +206,7 @@ Venue papers (venue_id + year → paper_id list)          ¥0.10
 **Use Case**: Search patents in a technology domain, or retrieve a scholar's/institution's patent portfolio.
 
 **Call Chain (standalone search):**
+
 ```
 Patent search (query → patent_id)        Free
     ↓
@@ -212,6 +214,7 @@ Patent info / Patent details             Free / ¥0.01
 ```
 
 **Call Chain (via scholar/institution):**
+
 ```
 Scholar search → Scholar patents (patent_id list)
 Org disambiguation → Org patents (patent_id list)
@@ -225,36 +228,36 @@ Patent info / Patent details
 
 > Full parameter docs: read `references/api-catalog.md`
 
-| # | Title | Method | Price | API Path (Base: publicapi.chatglm.cn/chatglm_public/skill/aminer) |
-|---|------|------|------|------|
-| 1 | Paper QA Search Pro | POST | ¥0.70 | `/api/v3/paper/qa/searchPro` |
-| 2 | Paper QA Search (legacy) | POST | ¥0.05 | `/api/paper/qa/search` |
-| 3 | Scholar Search | POST | Free | `/api/person/search` |
-| 4 | Paper Search | GET | Free | `/api/paper/search` |
-| 5 | Paper Search Pro | GET | ¥0.01 | `/api/paper/search/pro` |
-| 6 | Patent Search | POST | Free | `/api/patent/search` |
-| 7 | Org Search | POST | Free | `/api/organization/search` |
-| 8 | Venue Search | POST | Free | `/api/venue/search` |
-| 9 | Scholar Details | GET | ¥1.00 | `/api/person/detail` |
-| 10 | Scholar Projects | GET | ¥1.50 | `/api/project/person/v3/open` |
-| 11 | Scholar Papers | GET | ¥1.50 | `/api/person/paper/relation` |
-| 12 | Scholar Patents | GET | ¥1.50 | `/api/person/patent/relation` |
-| 13 | Scholar Portrait | GET | ¥0.50 | `/api/person/figure` |
-| 14 | Paper Info | POST | Free | `/api/paper/info` |
-| 15 | Paper Details | GET | ¥0.01 | `/api/paper/detail` |
-| 16 | Paper Citations | GET | ¥0.10 | `/api/paper/relation` |
-| 17 | Patent Info | GET | Free | `/api/patent/info` |
-| 18 | Patent Details | GET | ¥0.01 | `/api/patent/detail` |
-| 19 | Org Details | POST | ¥0.01 | `/api/organization/detail` |
-| 20 | Org Patents | GET | ¥0.10 | `/api/organization/patent/relation` |
-| 21 | Org Scholars | GET | ¥0.50 | `/api/organization/person/relation` |
-| 22 | Org Papers | GET | ¥0.10 | `/api/organization/paper/relation` |
-| 23 | Venue Details | POST | ¥0.20 | `/api/venue/detail` |
-| 24 | Venue Papers | POST | ¥0.10 | `/api/venue/paper/relation` |
-| 25 | Org Disambiguation | POST | ¥0.01 | `/api/organization/na` |
-| 26 | Org Disambiguation Pro | POST | ¥0.05 | `/api/organization/na/pro` |
-| 27 | Paper Batch Query | GET | ¥0.10 | `/api/paper/list/citation/by/keywords` |
-| 28 | Paper Details by Year+Venue | GET | ¥0.20 | `/api/paper/platform/allpubs/more/detail/by/ts/org/venue` |
+| #   | Title                       | Method | Price | API Path (Base: publicapi.chatglm.cn/chatglm_public/skill/aminer) |
+| --- | --------------------------- | ------ | ----- | ----------------------------------------------------------------- |
+| 1   | Paper QA Search Pro         | POST   | ¥0.70 | `/api/v3/paper/qa/searchPro`                                      |
+| 2   | Paper QA Search (legacy)    | POST   | ¥0.05 | `/api/paper/qa/search`                                            |
+| 3   | Scholar Search              | POST   | Free  | `/api/person/search`                                              |
+| 4   | Paper Search                | GET    | Free  | `/api/paper/search`                                               |
+| 5   | Paper Search Pro            | GET    | ¥0.01 | `/api/paper/search/pro`                                           |
+| 6   | Patent Search               | POST   | Free  | `/api/patent/search`                                              |
+| 7   | Org Search                  | POST   | Free  | `/api/organization/search`                                        |
+| 8   | Venue Search                | POST   | Free  | `/api/venue/search`                                               |
+| 9   | Scholar Details             | GET    | ¥1.00 | `/api/person/detail`                                              |
+| 10  | Scholar Projects            | GET    | ¥1.50 | `/api/project/person/v3/open`                                     |
+| 11  | Scholar Papers              | GET    | ¥1.50 | `/api/person/paper/relation`                                      |
+| 12  | Scholar Patents             | GET    | ¥1.50 | `/api/person/patent/relation`                                     |
+| 13  | Scholar Portrait            | GET    | ¥0.50 | `/api/person/figure`                                              |
+| 14  | Paper Info                  | POST   | Free  | `/api/paper/info`                                                 |
+| 15  | Paper Details               | GET    | ¥0.01 | `/api/paper/detail`                                               |
+| 16  | Paper Citations             | GET    | ¥0.10 | `/api/paper/relation`                                             |
+| 17  | Patent Info                 | GET    | Free  | `/api/patent/info`                                                |
+| 18  | Patent Details              | GET    | ¥0.01 | `/api/patent/detail`                                              |
+| 19  | Org Details                 | POST   | ¥0.01 | `/api/organization/detail`                                        |
+| 20  | Org Patents                 | GET    | ¥0.10 | `/api/organization/patent/relation`                               |
+| 21  | Org Scholars                | GET    | ¥0.50 | `/api/organization/person/relation`                               |
+| 22  | Org Papers                  | GET    | ¥0.10 | `/api/organization/paper/relation`                                |
+| 23  | Venue Details               | POST   | ¥0.20 | `/api/venue/detail`                                               |
+| 24  | Venue Papers                | POST   | ¥0.10 | `/api/venue/paper/relation`                                       |
+| 25  | Org Disambiguation          | POST   | ¥0.01 | `/api/organization/na`                                            |
+| 26  | Org Disambiguation Pro      | POST   | ¥0.05 | `/api/organization/na/pro`                                        |
+| 27  | Paper Batch Query           | GET    | ¥0.10 | `/api/paper/list/citation/by/keywords`                            |
+| 28  | Paper Details by Year+Venue | GET    | ¥0.20 | `/api/paper/platform/allpubs/more/detail/by/ts/org/venue`         |
 
 ---
 

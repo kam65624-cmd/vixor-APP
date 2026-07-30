@@ -132,20 +132,21 @@ may differ from a production research setup.
 ```
 
 Auto-measured results carry the same weight as user-measured results for
-*correctness* (the code really ran), but the report should note the execution
+_correctness_ (the code really ran), but the report should note the execution
 environment when reporting wall-clock times or hardware-dependent metrics.
 
 The three provenance modes in order of reliability:
 
-| Mode | Source | Disclosure |
-| --- | --- | --- |
-| `simulated` | Agent-generated deterministic values | Must say "simulated" in every artifact |
-| `measured` (auto) | `sandbox_execute` or Jupyter MCP | Note execution environment |
-| `measured` (user) | User ran `train.py` themselves | Gold standard |
+| Mode              | Source                               | Disclosure                             |
+| ----------------- | ------------------------------------ | -------------------------------------- |
+| `simulated`       | Agent-generated deterministic values | Must say "simulated" in every artifact |
+| `measured` (auto) | `sandbox_execute` or Jupyter MCP     | Note execution environment             |
+| `measured` (user) | User ran `train.py` themselves       | Gold standard                          |
 
 ## Multi-seed rule
 
 Each metric/horizon cell should have:
+
 - `mean`, `std` over all seeds
 - `n_seeds` ≥ 3 (otherwise the std is meaningless)
 - Per-seed individual values stored under a separate top-level `runs` block if the user / reviewer wants them

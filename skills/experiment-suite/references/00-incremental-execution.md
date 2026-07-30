@@ -29,14 +29,14 @@ If any artefact looks thin, return to the relevant reference and expand.
 
 Batch granularity for this skill:
 
-| Operation | Batch size per turn | Total batches | Persistence |
-|---|---|---|---|
-| Data binding | 1 contract document | 1 turn | Write `data_contract.md` |
-| Design rewrite | 1 design document | 1 turn | Write `experiment_design.md` |
-| Code rewrite | 1 module per turn | 4–6 turns (model, data, train, evaluate, config, README) | Write each `experiment/<file>` |
-| Results curation | 1 results.json structure | 1 turn | Write `results.json` |
-| Figure generation | 1 figure per turn | 3–6 turns | Save script + render + manifest entry |
-| Report rewrite | 1–2 sections per turn | 4–6 turns | Edit `experiment_report.md` incrementally |
+| Operation         | Batch size per turn      | Total batches                                            | Persistence                               |
+| ----------------- | ------------------------ | -------------------------------------------------------- | ----------------------------------------- |
+| Data binding      | 1 contract document      | 1 turn                                                   | Write `data_contract.md`                  |
+| Design rewrite    | 1 design document        | 1 turn                                                   | Write `experiment_design.md`              |
+| Code rewrite      | 1 module per turn        | 4–6 turns (model, data, train, evaluate, config, README) | Write each `experiment/<file>`            |
+| Results curation  | 1 results.json structure | 1 turn                                                   | Write `results.json`                      |
+| Figure generation | 1 figure per turn        | 3–6 turns                                                | Save script + render + manifest entry     |
+| Report rewrite    | 1–2 sections per turn    | 4–6 turns                                                | Edit `experiment_report.md` incrementally |
 
 A turn that tries to write all the code in one shot truncates. A turn that tries 5 figures at once produces shallow figures. One per turn is the rhythm.
 

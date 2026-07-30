@@ -74,10 +74,7 @@
       "og:title": "Free AI Models on OpenRouter | OpenRouter",
       "og:url": "https://openrouter.ai",
       "openrouter:commit-sha": "0ccb0d9d4036b89722aa74524129cbaf7a2e379f",
-      "theme-color": [
-        "rgb(255, 255, 255)",
-        "rgb(9, 10, 11)"
-      ],
+      "theme-color": ["rgb(255, 255, 255)", "rgb(9, 10, 11)"],
       "twitter:card": "summary_large_image",
       "twitter:description": "Access powerful AI models at zero cost. Experiment, learn, and build with free AI models and LLMs. OpenRouter is committed to keeping AI accessible for everyone.",
       "twitter:image": "https://openrouter.ai/dynamic-og?title=Free+AI+Models+on+OpenRouter&description=Access+powerful+AI+models+at+zero+cost.+Experiment%2C+learn%2C+and+build+with+free+AI+models+and+LLMs.+OpenRouter+is+committed+to+keeping+AI+accessible+for+everyone.",

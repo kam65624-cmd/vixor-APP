@@ -1,391 +1,1019 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-@page { size: 720px 1020px; margin: 0; }
-:root {
-  --bg: #0B0D10; --card: #111418; --card2: #161A20; --border: rgba(124,155,196,0.12);
-  --text: #E8ECF1; --muted: #7C9BC4; --primary: #7C9BC4; --accent: #0ECB81;
-  --red: #F6465D; --yellow: #FCD535; --info: #5B8DEF;
-}
-*, *::before, *::after { box-sizing: border-box; }
-html, body { margin:0; padding:0; width:720px; background:var(--bg); color:var(--text); font-family:'Noto Sans Arabic',sans-serif; direction:rtl; }
-@media screen { html { height:auto; display:flex; justify-content:center; background:#222; } body { transform-origin:top center; margin:20px auto; } }
-.cover { width:720px; height:1020px; box-sizing:border-box; break-after:page; overflow:hidden; display:flex; flex-direction:column; justify-content:center; align-items:center; background:var(--bg); padding:60px; text-align:center; position:relative; }
-.cover::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg, var(--accent), var(--primary), var(--info)); }
-.cover-tag { font-size:11px; font-weight:700; color:var(--accent); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:20px; padding:6px 16px; border:1px solid rgba(14,203,129,0.25); border-radius:20px; }
-.cover-title { font-size:42px; font-weight:900; color:var(--text); line-height:1.2; margin-bottom:12px; }
-.cover-sub { font-size:15px; color:var(--muted); font-weight:400; line-height:1.6; max-width:480px; }
-.cover-meta { position:absolute; bottom:40px; font-size:11px; color:var(--muted); opacity:0.6; }
-.main-content { padding:50px 55px 40px 55px; }
-.section-tag { font-size:10px; font-weight:700; color:var(--accent); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px; }
-.section-title { font-size:22px; font-weight:800; color:var(--text); margin-bottom:8px; }
-.section-desc { font-size:13px; color:var(--muted); line-height:1.7; margin-bottom:16px; }
-.divider { height:1px; background:var(--border); margin-bottom:20px; }
-.chapter-header { break-after:avoid; break-inside:avoid; margin-top:28px; }
-.task-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; break-inside:avoid; }
-.task-card.p0 { border-right:3px solid var(--red); }
-.task-card.p1 { border-right:3px solid var(--yellow); }
-.task-card.p2 { border-right:3px solid var(--info); }
-.task-card.home { border-right:3px solid var(--accent); }
-.task-id { font-size:11px; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--muted); margin-bottom:6px; }
-.task-title { font-size:15px; font-weight:700; color:var(--text); margin-bottom:8px; }
-.task-row { display:flex; gap:8px; margin-bottom:4px; align-items:flex-start; }
-.task-label { font-size:11px; font-weight:600; color:var(--primary); min-width:80px; flex-shrink:0; }
-.task-value { font-size:12px; color:var(--text); line-height:1.6; }
-.status-done { color:var(--accent); font-weight:600; }
-.status-pending { color:var(--muted); font-weight:500; }
-.stat-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:20px; }
-.stat-box { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center; }
-.stat-num { font-size:22px; font-weight:800; font-family:'JetBrains Mono',monospace; }
-.stat-label { font-size:10px; color:var(--muted); margin-top:2px; }
-.table-wrap { overflow:hidden; border-radius:8px; border:1px solid var(--border); margin:12px 0; break-inside:avoid; }
-table { width:100%; border-collapse:collapse; font-size:11px; }
-th { background:var(--card2); padding:8px 10px; text-align:right; font-weight:600; color:var(--muted); border-bottom:1px solid var(--border); }
-td { padding:7px 10px; border-bottom:1px solid var(--border); color:var(--text); line-height:1.5; }
-.code-block { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:14px; font-family:'JetBrains Mono',monospace; font-size:10px; line-height:1.7; color:var(--muted); margin:12px 0; white-space:pre-wrap; word-break:break-word; direction:ltr; text-align:left; break-inside:avoid; }
-.priority-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; }
-.priority-badge.p0 { background:rgba(246,70,93,0.15); color:var(--red); }
-.priority-badge.p1 { background:rgba(252,213,53,0.15); color:var(--yellow); }
-.priority-badge.p2 { background:rgba(91,141,239,0.15); color:var(--info); }
-.priority-badge.home { background:rgba(14,203,129,0.15); color:var(--accent); }
-.ending { width:720px; height:1020px; box-sizing:border-box; break-before:page; overflow:hidden; display:flex; flex-direction:column; justify-content:center; align-items:center; background:var(--bg); text-align:center; }
-</style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @page {
+        size: 720px 1020px;
+        margin: 0;
+      }
+      :root {
+        --bg: #0b0d10;
+        --card: #111418;
+        --card2: #161a20;
+        --border: rgba(124, 155, 196, 0.12);
+        --text: #e8ecf1;
+        --muted: #7c9bc4;
+        --primary: #7c9bc4;
+        --accent: #0ecb81;
+        --red: #f6465d;
+        --yellow: #fcd535;
+        --info: #5b8def;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 720px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Noto Sans Arabic", sans-serif;
+        direction: rtl;
+      }
+      @media screen {
+        html {
+          height: auto;
+          display: flex;
+          justify-content: center;
+          background: #222;
+        }
+        body {
+          transform-origin: top center;
+          margin: 20px auto;
+        }
+      }
+      .cover {
+        width: 720px;
+        height: 1020px;
+        box-sizing: border-box;
+        break-after: page;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: var(--bg);
+        padding: 60px;
+        text-align: center;
+        position: relative;
+      }
+      .cover::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--primary), var(--info));
+      }
+      .cover-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        padding: 6px 16px;
+        border: 1px solid rgba(14, 203, 129, 0.25);
+        border-radius: 20px;
+      }
+      .cover-title {
+        font-size: 42px;
+        font-weight: 900;
+        color: var(--text);
+        line-height: 1.2;
+        margin-bottom: 12px;
+      }
+      .cover-sub {
+        font-size: 15px;
+        color: var(--muted);
+        font-weight: 400;
+        line-height: 1.6;
+        max-width: 480px;
+      }
+      .cover-meta {
+        position: absolute;
+        bottom: 40px;
+        font-size: 11px;
+        color: var(--muted);
+        opacity: 0.6;
+      }
+      .main-content {
+        padding: 50px 55px 40px 55px;
+      }
+      .section-tag {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--accent);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .section-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 8px;
+      }
+      .section-desc {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.7;
+        margin-bottom: 16px;
+      }
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin-bottom: 20px;
+      }
+      .chapter-header {
+        break-after: avoid;
+        break-inside: avoid;
+        margin-top: 28px;
+      }
+      .task-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 12px;
+        break-inside: avoid;
+      }
+      .task-card.p0 {
+        border-right: 3px solid var(--red);
+      }
+      .task-card.p1 {
+        border-right: 3px solid var(--yellow);
+      }
+      .task-card.p2 {
+        border-right: 3px solid var(--info);
+      }
+      .task-card.home {
+        border-right: 3px solid var(--accent);
+      }
+      .task-id {
+        font-size: 11px;
+        font-weight: 700;
+        font-family: "JetBrains Mono", monospace;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .task-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+      }
+      .task-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 4px;
+        align-items: flex-start;
+      }
+      .task-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary);
+        min-width: 80px;
+        flex-shrink: 0;
+      }
+      .task-value {
+        font-size: 12px;
+        color: var(--text);
+        line-height: 1.6;
+      }
+      .status-done {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .status-pending {
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+      .stat-box {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+      }
+      .stat-num {
+        font-size: 22px;
+        font-weight: 800;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .stat-label {
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .table-wrap {
+        overflow: hidden;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        margin: 12px 0;
+        break-inside: avoid;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+      th {
+        background: var(--card2);
+        padding: 8px 10px;
+        text-align: right;
+        font-weight: 600;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+      }
+      td {
+        padding: 7px 10px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+        line-height: 1.5;
+      }
+      .code-block {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        line-height: 1.7;
+        color: var(--muted);
+        margin: 12px 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        direction: ltr;
+        text-align: left;
+        break-inside: avoid;
+      }
+      .priority-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .priority-badge.p0 {
+        background: rgba(246, 70, 93, 0.15);
+        color: var(--red);
+      }
+      .priority-badge.p1 {
+        background: rgba(252, 213, 53, 0.15);
+        color: var(--yellow);
+      }
+      .priority-badge.p2 {
+        background: rgba(91, 141, 239, 0.15);
+        color: var(--info);
+      }
+      .priority-badge.home {
+        background: rgba(14, 203, 129, 0.15);
+        color: var(--accent);
+      }
+      .ending {
+        width: 720px;
+        height: 1020px;
+        box-sizing: border-box;
+        break-before: page;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: var(--bg);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cover">
+      <div class="cover-tag">VIXOR Terminal Trading</div>
+      <div class="cover-title">خريطة التاسكات والتحسينات</div>
+      <div class="cover-sub">
+        تقرير شامل لكل مهام التطوير مرتبة حسب الأهمية والتأثير مع تحليل المسببات الجذرية وخطة
+        التنفيذ
+      </div>
+      <div class="cover-meta">2026-07-06 | v2.0 | شامل تاسكات الصفحة الرئيسية</div>
+    </div>
 
-<div class="cover">
-  <div class="cover-tag">VIXOR Terminal Trading</div>
-  <div class="cover-title">خريطة التاسكات والتحسينات</div>
-  <div class="cover-sub">تقرير شامل لكل مهام التطوير مرتبة حسب الأهمية والتأثير مع تحليل المسببات الجذرية وخطة التنفيذ</div>
-  <div class="cover-meta">2026-07-06 | v2.0 | شامل تاسكات الصفحة الرئيسية</div>
-</div>
+    <div class="main-content">
+      <div class="section-tag">نظرة عامة</div>
+      <div class="section-title">إحصائيات المشروع</div>
+      <div class="divider"></div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-num" style="color: var(--accent)">35/38</div>
+          <div class="stat-label">صفحة شغالة</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color: var(--info)">15+</div>
+          <div class="stat-label">API Endpoint</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color: var(--primary)">22</div>
+          <div class="stat-label">نطاق عمل</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color: var(--yellow)">6</div>
+          <div class="stat-label">تم إنجازها</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color: var(--red)">3</div>
+          <div class="stat-label">صفحات فارغة</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color: var(--text)">10</div>
+          <div class="stat-label">تاسكات الهوم</div>
+        </div>
+      </div>
 
-<div class="main-content">
+      <div class="section-tag">المُنجز</div>
+      <div class="section-title">ما تم إنجازه في الجلسات السابقة</div>
+      <div class="divider"></div>
 
-<div class="section-tag">نظرة عامة</div>
-<div class="section-title">إحصائيات المشروع</div>
-<div class="divider"></div>
-<div class="stat-grid">
-  <div class="stat-box"><div class="stat-num" style="color:var(--accent)">35/38</div><div class="stat-label">صفحة شغالة</div></div>
-  <div class="stat-box"><div class="stat-num" style="color:var(--info)">15+</div><div class="stat-label">API Endpoint</div></div>
-  <div class="stat-box"><div class="stat-num" style="color:var(--primary)">22</div><div class="stat-label">نطاق عمل</div></div>
-  <div class="stat-box"><div class="stat-num" style="color:var(--yellow)">6</div><div class="stat-label">تم إنجازها</div></div>
-  <div class="stat-box"><div class="stat-num" style="color:var(--red)">3</div><div class="stat-label">صفحات فارغة</div></div>
-  <div class="stat-box"><div class="stat-num" style="color:var(--text)">10</div><div class="stat-label">تاسكات الهوم</div></div>
-</div>
+      <div class="task-card">
+        <div class="task-title">
+          <span class="status-done">&#x2713;</span> إصلاح نقاط لا تُضاف (Auth Token Issue)
+        </div>
+        <div class="task-row">
+          <span class="task-label">المشكلة:</span
+          ><span class="task-value"
+            >Supabase getUser(token) بيفشل بسبب global.headers.Authorization يتعارض مع الباراميتر
+            الداخلي. كمان SUPABASE_PUBLISHABLE_KEY كان بيأخذ أولوية غلط على SUPABASE_ANON_KEY.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >تقسيم Supabase client لعميلين منفصلين: واحد بدون global headers لـ getUser فقط، والتاني
+            مع headers لاستعلامات RLS. تغيير أولوية env vars.</span
+          >
+        </div>
+      </div>
 
-<div class="section-tag">المُنجز</div>
-<div class="section-title">ما تم إنجازه في الجلسات السابقة</div>
-<div class="divider"></div>
+      <div class="task-card">
+        <div class="task-title">
+          <span class="status-done">&#x2713;</span> إصلاح النقاط تظهر 0 في البار العلوي
+        </div>
+        <div class="task-row">
+          <span class="task-label">المشكلة:</span
+          ><span class="task-value"
+            >Query key mismatch: rewards.tsx كان بيعمل invalidate لـ ["user-points"] بس الـ navbar
+            بيستخدم ["user-points-nav"].</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >إضافة invalidate لكلا المفتاحين. تقليل staleTime من 60s لـ 30s وإضافة retry: 2.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card">
-  <div class="task-title"><span class="status-done">&#x2713;</span> إصلاح نقاط لا تُضاف (Auth Token Issue)</div>
-  <div class="task-row"><span class="task-label">المشكلة:</span><span class="task-value">Supabase getUser(token) بيفشل بسبب global.headers.Authorization يتعارض مع الباراميتر الداخلي. كمان SUPABASE_PUBLISHABLE_KEY كان بيأخذ أولوية غلط على SUPABASE_ANON_KEY.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">تقسيم Supabase client لعميلين منفصلين: واحد بدون global headers لـ getUser فقط، والتاني مع headers لاستعلامات RLS. تغيير أولوية env vars.</span></div>
-</div>
+      <div class="task-card">
+        <div class="task-title">
+          <span class="status-done">&#x2713;</span> إصلاح GitHub CI (npm ci + eslint + prettier)
+        </div>
+        <div class="task-row">
+          <span class="task-label">المشكلة:</span
+          ><span class="task-value"
+            >package-lock.json قديم وناقص باكيدج (zod, lru-cache, zugs). ESLint flat config مش
+            بيتجاهل node_modules. Prettier formatting errors.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >حذف وإعادة إنشاء lock file من الصفر. إضافة node_modules وكل المجلدات غير المصدرية لـ
+            ignores. تغيير ESLint scope لـ src/ server/ فقط.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card">
-  <div class="task-title"><span class="status-done">&#x2713;</span> إصلاح النقاط تظهر 0 في البار العلوي</div>
-  <div class="task-row"><span class="task-label">المشكلة:</span><span class="task-value">Query key mismatch: rewards.tsx كان بيعمل invalidate لـ ["user-points"] بس الـ navbar بيستخدم ["user-points-nav"].</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">إضافة invalidate لكلا المفتاحين. تقليل staleTime من 60s لـ 30s وإضافة retry: 2.</span></div>
-</div>
+      <div class="task-card">
+        <div class="task-title">
+          <span class="status-done">&#x2713;</span> إصلاح Redirect Loop في Rewards
+        </div>
+        <div class="task-row">
+          <span class="task-label">المشكلة:</span
+          ><span class="task-value"
+            >خطأ Auth كان بيعمل redirect لـ /auth اللي بيعمل auto-signin ويرجع تاني = loop.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >إزالة window.location.assign واستبداله برسالة "Session issue".</span
+          >
+        </div>
+      </div>
 
-<div class="task-card">
-  <div class="task-title"><span class="status-done">&#x2713;</span> إصلاح GitHub CI (npm ci + eslint + prettier)</div>
-  <div class="task-row"><span class="task-label">المشكلة:</span><span class="task-value">package-lock.json قديم وناقص باكيدج (zod, lru-cache, zugs). ESLint flat config مش بيتجاهل node_modules. Prettier formatting errors.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">حذف وإعادة إنشاء lock file من الصفر. إضافة node_modules وكل المجلدات غير المصدرية لـ ignores. تغيير ESLint scope لـ src/ server/ فقط.</span></div>
-</div>
+      <div class="chapter-header">
+        <div class="section-tag"><span class="priority-badge home">HOME</span> الجلسة الحالية</div>
+        <div class="section-title">إعادة تصميم الصفحة الرئيسية</div>
+        <div class="divider"></div>
+      </div>
 
-<div class="task-card">
-  <div class="task-title"><span class="status-done">&#x2713;</span> إصلاح Redirect Loop في Rewards</div>
-  <div class="task-row"><span class="task-label">المشكلة:</span><span class="task-value">خطأ Auth كان بيعمل redirect لـ /auth اللي بيعمل auto-signin ويرجع تاني = loop.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">إزالة window.location.assign واستبداله برسالة "Session issue".</span></div>
-</div>
+      <div class="section-desc">
+        تم إعداد تحليل مقارن شامل مع Binance و Coinbase و TradingView و Robinhood. التحليل حدد 10
+        مشاكل حرجة في الصفحة الرئيسية الحالية. كل مشكلة ليها مسبب واضح وحل مقترح. التصميم الجديد
+        يقترح 10 أقسام متسلسلة تحل كل المشاكل.
+      </div>
 
-<div class="chapter-header">
-<div class="section-tag"><span class="priority-badge home">HOME</span> الجلسة الحالية</div>
-<div class="section-title">إعادة تصميم الصفحة الرئيسية</div>
-<div class="divider"></div>
-</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P0 | لا يوجد سياق سوقي</div>
+        <div class="task-title">أول حاجة شافها المتداول هي الأسعار</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >دخول على "صحراء" بدون أي سعر أو رقم = تجربة فاشلة. كل تطبيقات التداول الكبرى تعرض
+            الأسعار مباشرة في الصفحة الرئيسية.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">المسبب:</span
+          ><span class="task-value"
+            >الصفحة الحالية لا تعرض أي أسعار BTC/SOL/ETH أو أي market overview رغم إن endpoint
+            market-overview.ts موجود في السيرفر.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >إضافة Market Ticker Bar أفقي في أعلى الصفحة يعرض أسعار العملات الرئيسية مع نسبة التغير
+            24 ساعة.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">التأثير:</span
+          ><span class="task-value">عالي جداً - أول انطباع للمستخدم</span>
+        </div>
+      </div>
 
-<div class="section-desc">تم إعداد تحليل مقارن شامل مع Binance و Coinbase و TradingView و Robinhood. التحليل حدد 10 مشاكل حرجة في الصفحة الرئيسية الحالية. كل مشكلة ليها مسبب واضح وحل مقترح. التصميم الجديد يقترح 10 أقسام متسلسلة تحل كل المشاكل.</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P1 | عرض المحفظة ضعيف</div>
+        <div class="task-title">من "$0.00" رقم واحد لبطاقة احترافية</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >المحفظة هي أهم رقم للمتداول. عرض رقم واحد بدون equity chart أو إحصائيات = محتوى بلا
+            قيمة. Binance و Robinhood بيعرضوا equity curve و stats فورية.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">المسبب:</span
+          ><span class="task-value"
+            >getDashboardData بيرجع القيمة بس بدون winRate أو sharpeRatio أو equitySparkline أو
+            recentTrades.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >بطاقة Portfolio Hero: القيمة + mini equity chart + Win Rate + Trade Count + Sharpe
+            Ratio. تحديث الـ API.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P0 | لا يوجد سياق سوقي</div>
-  <div class="task-title">أول حاجة شافها المتداول هي الأسعار</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">دخول على "صحراء" بدون أي سعر أو رقم = تجربة فاشلة. كل تطبيقات التداول الكبرى تعرض الأسعار مباشرة في الصفحة الرئيسية.</span></div>
-  <div class="task-row"><span class="task-label">المسبب:</span><span class="task-value">الصفحة الحالية لا تعرض أي أسعار BTC/SOL/ETH أو أي market overview رغم إن endpoint market-overview.ts موجود في السيرفر.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">إضافة Market Ticker Bar أفقي في أعلى الصفحة يعرض أسعار العملات الرئيسية مع نسبة التغير 24 ساعة.</span></div>
-  <div class="task-row"><span class="task-label">التأثير:</span><span class="task-value">عالي جداً - أول انطباع للمستخدم</span></div>
-</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P2 | Quick Actions كثيرة</div>
+        <div class="task-title">6 أزرار بتشتت دماغ المستخدم (Cognitive Overload)</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >أبحاث علمية بتقول إن المستخدم بيقدر يتعامل مع 3-4 خيارات كحد أقصى. 6 أزرار = تحميل
+            معرفي زائد. كمان زر Charts بيودي لـ COMING SOON!</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >1 Primary CTA (Analyze Chart) + 2 Secondary (Discover, Copilot) بس.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P1 | عرض المحفظة ضعيف</div>
-  <div class="task-title">من "$0.00" رقم واحد لبطاقة احترافية</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">المحفظة هي أهم رقم للمتداول. عرض رقم واحد بدون equity chart أو إحصائيات = محتوى بلا قيمة. Binance و Robinhood بيعرضوا equity curve و stats فورية.</span></div>
-  <div class="task-row"><span class="task-label">المسبب:</span><span class="task-value">getDashboardData بيرجع القيمة بس بدون winRate أو sharpeRatio أو equitySparkline أو recentTrades.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">بطاقة Portfolio Hero: القيمة + mini equity chart + Win Rate + Trade Count + Sharpe Ratio. تحديث الـ API.</span></div>
-</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P3 | AI CTA مدفون</div>
+        <div class="task-title">أهم feature في التطبيق مخفي في card صغيرة</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >Analyze Chart هو المميزة التنافسية الأساسية لـ VIXOR. لو مش واضح وبارز = المستخدم مش
+            هيشوفه ومش هيستخدمه.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >زر Primary CTA كبير بـ gradient أخضر مع وصف واضح "AI-Powered SMC/ICT Analysis in
+            Seconds".</span
+          >
+        </div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P2 | Quick Actions كثيرة</div>
-  <div class="task-title">6 أزرار بتشتت دماغ المستخدم (Cognitive Overload)</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">أبحاث علمية بتقول إن المستخدم بيقدر يتعامل مع 3-4 خيارات كحد أقصى. 6 أزرار = تحميل معرفي زائد. كمان زر Charts بيودي لـ COMING SOON!</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">1 Primary CTA (Analyze Chart) + 2 Secondary (Discover, Copilot) بس.</span></div>
-</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P4 | لا يوجد إشارات فعّالة</div>
+        <div class="task-title">المتداول مش شايف الفرص المتاحة</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >الإشارات هي أهم حاجة للتداول بعد الأسعار. بدون عرضها = المستخدم بيفوت صفقات
+            محتملة.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">المسبب:</span
+          ><span class="task-value"
+            >getDailySignals server function موجود بس الصفحة مش بتستخدمه.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >بطاقة Active Signals تعرض أول 2 signal مع confidence و entry/tp/sl.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P3 | AI CTA مدفون</div>
-  <div class="task-title">أهم feature في التطبيق مخفي في card صغيرة</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">Analyze Chart هو المميزة التنافسية الأساسية لـ VIXOR. لو مش واضح وبارز = المستخدم مش هيشوفه ومش هيستخدمه.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">زر Primary CTA كبير بـ gradient أخضر مع وصف واضح "AI-Powered SMC/ICT Analysis in Seconds".</span></div>
-</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P5 | لا يوجد Watchlist</div>
+        <div class="task-title">أي تداول بيبدأ بـ watchlist</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >Binance و TradingView بيعرضوا Watchlist في الصفحة الرئيسية. غيابها يعني المستخدم لازم
+            يفتح Discover كل مرة.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >بطاقة Watchlist مع sparkline وسعر وتغير وحجم تداول. لازم API جديد getWatchlist.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P4 | لا يوجد إشارات فعّالة</div>
-  <div class="task-title">المتداول مش شايف الفرص المتاحة</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">الإشارات هي أهم حاجة للتداول بعد الأسعار. بدون عرضها = المستخدم بيفوت صفقات محتملة.</span></div>
-  <div class="task-row"><span class="task-label">المسبب:</span><span class="task-value">getDailySignals server function موجود بس الصفحة مش بتستخدمه.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">بطاقة Active Signals تعرض أول 2 signal مع confidence و entry/tp/sl.</span></div>
-</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P6 | لا يوجد Market Sentiment</div>
+        <div class="task-title">Fear & Greed و BTC Dominance أدوات أساسية</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >Binance بيعرض Fear & Greed Index. بدونها المستخدم مش عارف حالة السوق الكلية
+            (bullish/bearish).</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >3 بطاقات: Fear & Greed Index + BTC Dominance + 24h Volume. جزء من getMarketOverview
+            API.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P5 | لا يوجد Watchlist</div>
-  <div class="task-title">أي تداول بيبدأ بـ watchlist</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">Binance و TradingView بيعرضوا Watchlist في الصفحة الرئيسية. غيابها يعني المستخدم لازم يفتح Discover كل مرة.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">بطاقة Watchlist مع sparkline وسعر وتغير وحجم تداول. لازم API جديد getWatchlist.</span></div>
-</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P7 | إحصائيات غير مفيدة</div>
+        <div class="task-title">"Points, Trades, Status" مش actionable</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >المستخدم محتاج بيانات تداولية مفيدة زي Win Rate و Sharpe Ratio مش بيانات عامة.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">استبدال الإحصائيات ضمن Portfolio Hero Card.</span>
+        </div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P6 | لا يوجد Market Sentiment</div>
-  <div class="task-title">Fear & Greed و BTC Dominance أدوات أساسية</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">Binance بيعرض Fear & Greed Index. بدونها المستخدم مش عارف حالة السوق الكلية (bullish/bearish).</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">3 بطاقات: Fear & Greed Index + BTC Dominance + 24h Volume. جزء من getMarketOverview API.</span></div>
-</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P8 | تحية غير شخصية</div>
+        <div class="task-title">"Welcome back, Trader" عاملة وباردة</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >Binance و Robinhood بيستخدموا تحية ذكية حسب الوقت + سياق السوق. التحية الشخصية بتخلي
+            المستخدم يحس بالانتماء.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >"Good Morning/Afternoon/Evening, [Name]" + التاريخ + حالة السوق + عدد الإشارات.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P7 | إحصائيات غير مفيدة</div>
-  <div class="task-title">"Points, Trades, Status" مش actionable</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">المستخدم محتاج بيانات تداولية مفيدة زي Win Rate و Sharpe Ratio مش بيانات عامة.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">استبدال الإحصائيات ضمن Portfolio Hero Card.</span></div>
-</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P9 | لا يوجد Recent Trades</div>
+        <div class="task-title">آخر الصفقات فاضية دائماً</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >عرض آخر الصفقات بيمكّن المستخدم يتابع أدائه بدون ما يفتح Journal. Binance و Coinbase
+            بيعملوا كده.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >بطاقة تعرض آخر 3 صفقات مع pair و direction و PnL و time ago.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P8 | تحية غير شخصية</div>
-  <div class="task-title">"Welcome back, Trader" عاملة وباردة</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">Binance و Robinhood بيستخدموا تحية ذكية حسب الوقت + سياق السوق. التحية الشخصية بتخلي المستخدم يحس بالانتماء.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">"Good Morning/Afternoon/Evening, [Name]" + التاريخ + حالة السوق + عدد الإشارات.</span></div>
-</div>
+      <div class="task-card home">
+        <div class="task-id">HOME-P10 | Layout مش متماسك</div>
+        <div class="task-title">Padding 8px و cards متشابهة بدون visual hierarchy</div>
+        <div class="task-row">
+          <span class="task-label">ليه مهم؟</span
+          ><span class="task-value"
+            >صفحة ملزقة بـ padding 8px وكل cards بنفس الشكل واللون = مفيش فرق بين قسم وتاني = تجربة
+            ممللة.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >إعادة هيكلة بـ 10 أقسام متسلسلة مع padding 12-16px و visual hierarchy واضح وألوان مميزة
+            لكل قسم.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P9 | لا يوجد Recent Trades</div>
-  <div class="task-title">آخر الصفقات فاضية دائماً</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">عرض آخر الصفقات بيمكّن المستخدم يتابع أدائه بدون ما يفتح Journal. Binance و Coinbase بيعملوا كده.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">بطاقة تعرض آخر 3 صفقات مع pair و direction و PnL و time ago.</span></div>
-</div>
+      <div class="chapter-header">
+        <div class="section-tag">المكونات والـ APIs</div>
+        <div class="section-title">ما يحتاج يتعمل عشان الصفحة الرئيسية</div>
+        <div class="divider"></div>
+      </div>
 
-<div class="task-card home">
-  <div class="task-id">HOME-P10 | Layout مش متماسك</div>
-  <div class="task-title">Padding 8px و cards متشابهة بدون visual hierarchy</div>
-  <div class="task-row"><span class="task-label">ليه مهم؟</span><span class="task-value">صفحة ملزقة بـ padding 8px وكل cards بنفس الشكل واللون = مفيش فرق بين قسم وتاني = تجربة ممللة.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">إعادة هيكلة بـ 10 أقسام متسلسلة مع padding 12-16px و visual hierarchy واضح وألوان مميزة لكل قسم.</span></div>
-</div>
+      <div class="table-wrap">
+        <table>
+          <tr>
+            <th>المكون / API</th>
+            <th>الوظيفة</th>
+            <th>الحالة</th>
+          </tr>
+          <tr>
+            <td>MiniSparkline</td>
+            <td>Chart صغير inline للـ portfolio و watchlist</td>
+            <td>موجود - محتاج verify</td>
+          </tr>
+          <tr>
+            <td>LiveDot</td>
+            <td>نقطة متحركة pulse للـ active signals</td>
+            <td>موجود - محتاج verify</td>
+          </tr>
+          <tr>
+            <td>SignalBadge</td>
+            <td>شارة الإشارة BUY/SELL/WAIT مع ألوان</td>
+            <td>موجود - محتاج verify</td>
+          </tr>
+          <tr>
+            <td>TrendArrow</td>
+            <td>سهم الاتجاه up/down/neutral</td>
+            <td>لازم إنشاء</td>
+          </tr>
+          <tr>
+            <td>getMarketOverview</td>
+            <td>tickers + sentiment (F&G, BTC Dom, Volume)</td>
+            <td>endpoint موجود - محتاج server function</td>
+          </tr>
+          <tr>
+            <td>getActiveSignals</td>
+            <td>إشارات فعّالة مع confidence</td>
+            <td>getDailySignals موجود - محتاج تعديل</td>
+          </tr>
+          <tr>
+            <td>getWatchlist</td>
+            <td>قائمة المتابعة مع sparkline</td>
+            <td>لازم إنشاء من الصفر</td>
+          </tr>
+          <tr>
+            <td>getDashboardData update</td>
+            <td>إضافة winRate, sharpeRatio, equitySparkline, recentTrades</td>
+            <td>موجود - محتاج update</td>
+          </tr>
+        </table>
+      </div>
 
-<div class="chapter-header">
-<div class="section-tag">المكونات والـ APIs</div>
-<div class="section-title">ما يحتاج يتعمل عشان الصفحة الرئيسية</div>
-<div class="divider"></div>
-</div>
+      <div class="chapter-header">
+        <div class="section-tag"><span class="priority-badge p0">P0</span> Blockers</div>
+        <div class="section-title">مشاكل مانعة للإطلاق</div>
+        <div class="divider"></div>
+      </div>
 
-<div class="table-wrap">
-<table>
-  <tr><th>المكون / API</th><th>الوظيفة</th><th>الحالة</th></tr>
-  <tr><td>MiniSparkline</td><td>Chart صغير inline للـ portfolio و watchlist</td><td>موجود - محتاج verify</td></tr>
-  <tr><td>LiveDot</td><td>نقطة متحركة pulse للـ active signals</td><td>موجود - محتاج verify</td></tr>
-  <tr><td>SignalBadge</td><td>شارة الإشارة BUY/SELL/WAIT مع ألوان</td><td>موجود - محتاج verify</td></tr>
-  <tr><td>TrendArrow</td><td>سهم الاتجاه up/down/neutral</td><td>لازم إنشاء</td></tr>
-  <tr><td>getMarketOverview</td><td>tickers + sentiment (F&G, BTC Dom, Volume)</td><td>endpoint موجود - محتاج server function</td></tr>
-  <tr><td>getActiveSignals</td><td>إشارات فعّالة مع confidence</td><td>getDailySignals موجود - محتاج تعديل</td></tr>
-  <tr><td>getWatchlist</td><td>قائمة المتابعة مع sparkline</td><td>لازم إنشاء من الصفر</td></tr>
-  <tr><td>getDashboardData update</td><td>إضافة winRate, sharpeRatio, equitySparkline, recentTrades</td><td>موجود - محتاج update</td></tr>
-</table>
-</div>
+      <div class="task-card p0">
+        <div class="task-id">P0-1 | أزواج الفوركس لا تفتح صفحة التداول</div>
+        <div class="task-row">
+          <span class="task-label">المسبب:</span
+          ><span class="task-value"
+            >صفحة token/$symbol مبنية للكريبتو فقط (DexScreener API). أزواج الفوركس غير مدعومة
+            إطلاقاً.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >إضافة TradingView widget للفوركس والذهب أو إنشاء صفحة منفصلة.</span
+          >
+        </div>
+      </div>
 
-<div class="chapter-header">
-<div class="section-tag"><span class="priority-badge p0">P0</span> Blockers</div>
-<div class="section-title">مشاكل مانعة للإطلاق</div>
-<div class="divider"></div>
-</div>
+      <div class="task-card p0">
+        <div class="task-id">P0-2 | عملات الميم مفيش بيانات حقيقية</div>
+        <div class="task-row">
+          <span class="task-label">المسبب:</span
+          ><span class="task-value"
+            >Discover يعتمد على DexScreener/Helius APIs. لو API مش بيرجع بيانات للتوكن، الصفحة تظهر
+            فاضية.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">تحسين fallback في API أو إضافة مصادر بيانات بديلة.</span>
+        </div>
+      </div>
 
-<div class="task-card p0">
-  <div class="task-id">P0-1 | أزواج الفوركس لا تفتح صفحة التداول</div>
-  <div class="task-row"><span class="task-label">المسبب:</span><span class="task-value">صفحة token/$symbol مبنية للكريبتو فقط (DexScreener API). أزواج الفوركس غير مدعومة إطلاقاً.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">إضافة TradingView widget للفوركس والذهب أو إنشاء صفحة منفصلة.</span></div>
-</div>
+      <div class="task-card p0">
+        <div class="task-id">P0-3 | 3 صفحات COMING SOON</div>
+        <div class="task-row">
+          <span class="task-label">المسبب:</span
+          ><span class="task-value"
+            >Charts و Arbitrage و Activity-Web3 مكتوبة كـ stub رغم إن المحركات الخلفية موجودة خاصة
+            arbitrage في src/domains/arbitrage/.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >ربط المحركات الموجودة بالواجهة أو إخفاء الصفحات من الـ nav.</span
+          >
+        </div>
+      </div>
 
-<div class="task-card p0">
-  <div class="task-id">P0-2 | عملات الميم مفيش بيانات حقيقية</div>
-  <div class="task-row"><span class="task-label">المسبب:</span><span class="task-value">Discover يعتمد على DexScreener/Helius APIs. لو API مش بيرجع بيانات للتوكن، الصفحة تظهر فاضية.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">تحسين fallback في API أو إضافة مصادر بيانات بديلة.</span></div>
-</div>
+      <div class="chapter-header">
+        <div class="section-tag"><span class="priority-badge p1">P1</span> High Priority</div>
+        <div class="section-title">تؤثر بشكل مباشر على الاحتفاظ بالمستخدم</div>
+        <div class="divider"></div>
+      </div>
 
-<div class="task-card p0">
-  <div class="task-id">P0-3 | 3 صفحات COMING SOON</div>
-  <div class="task-row"><span class="task-label">المسبب:</span><span class="task-value">Charts و Arbitrage و Activity-Web3 مكتوبة كـ stub رغم إن المحركات الخلفية موجودة خاصة arbitrage في src/domains/arbitrage/.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">ربط المحركات الموجودة بالواجهة أو إخفاء الصفحات من الـ nav.</span></div>
-</div>
+      <div class="task-card p1">
+        <div class="task-id">P1-1 | نصوص صغيرة جداً (8-10px)</div>
+        <div class="task-row">
+          <span class="task-label">الأماكن:</span
+          ><span class="task-value"
+            >Bottom Bar labels 9px / SOL price 10px / Notification badge 8px / More Panel titles
+            10px.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">رفع الكل لـ 12px كحد أدنى. إنشاء CSS variables للطباعة.</span>
+        </div>
+      </div>
 
-<div class="chapter-header">
-<div class="section-tag"><span class="priority-badge p1">P1</span> High Priority</div>
-<div class="section-title">تؤثر بشكل مباشر على الاحتفاظ بالمستخدم</div>
-<div class="divider"></div>
-</div>
+      <div class="task-card p1">
+        <div class="task-id">P1-2 | Empty States بدون CTA</div>
+        <div class="task-row">
+          <span class="task-label">المسبب:</span
+          ><span class="task-value"
+            >مكون EmptyState لا يقبل prop للأزرار. 19+ صفحة تستخدمه بدون زر action.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">إضافة optional action prop لكل EmptyState.</span>
+        </div>
+      </div>
 
-<div class="task-card p1">
-  <div class="task-id">P1-1 | نصوص صغيرة جداً (8-10px)</div>
-  <div class="task-row"><span class="task-label">الأماكن:</span><span class="task-value">Bottom Bar labels 9px / SOL price 10px / Notification badge 8px / More Panel titles 10px.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">رفع الكل لـ 12px كحد أدنى. إنشاء CSS variables للطباعة.</span></div>
-</div>
+      <div class="task-card p1">
+        <div class="task-id">P1-3 | Silent catch blocks</div>
+        <div class="task-row">
+          <span class="task-label">المسبب:</span
+          ><span class="task-value"
+            >catch {} فاضية في أماكن كتير. بعضها مبرر (Telegram SDK) وبعضها مش.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">الأخطاء المتوقعة silent مسموحة. الباقي لازم toast.</span>
+        </div>
+      </div>
 
-<div class="task-card p1">
-  <div class="task-id">P1-2 | Empty States بدون CTA</div>
-  <div class="task-row"><span class="task-label">المسبب:</span><span class="task-value">مكون EmptyState لا يقبل prop للأزرار. 19+ صفحة تستخدمه بدون زر action.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">إضافة optional action prop لكل EmptyState.</span></div>
-</div>
+      <div class="task-card p1">
+        <div class="task-id">P1-4 | Discover مش في Bottom Nav</div>
+        <div class="task-row">
+          <span class="task-label">المسبب:</span
+          ><span class="task-value"
+            >bottomNavItems فيه 4 عناصر فقط. المستخدم لازم يفتح More Panel عشان Discover.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >إضافة Discover واستبدال Signals بـ Portfolio (قرار تصميم).</span
+          >
+        </div>
+      </div>
 
-<div class="task-card p1">
-  <div class="task-id">P1-3 | Silent catch blocks</div>
-  <div class="task-row"><span class="task-label">المسبب:</span><span class="task-value">catch {} فاضية في أماكن كتير. بعضها مبرر (Telegram SDK) وبعضها مش.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">الأخطاء المتوقعة silent مسموحة. الباقي لازم toast.</span></div>
-</div>
+      <div class="task-card p1">
+        <div class="task-id">P1-5 | DataRow غير accessible</div>
+        <div class="task-row">
+          <span class="task-label">المسبب:</span
+          ><span class="task-value">المكون مكتوب كـ div وليس button.</span>
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">تحويل لعناصر تفاعلية مع role="button" و tabIndex.</span>
+        </div>
+      </div>
 
-<div class="task-card p1">
-  <div class="task-id">P1-4 | Discover مش في Bottom Nav</div>
-  <div class="task-row"><span class="task-label">المسبب:</span><span class="task-value">bottomNavItems فيه 4 عناصر فقط. المستخدم لازم يفتح More Panel عشان Discover.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">إضافة Discover واستبدال Signals بـ Portfolio (قرار تصميم).</span></div>
-</div>
+      <div class="chapter-header">
+        <div class="section-tag"><span class="priority-badge p2">P2</span> Medium Priority</div>
+        <div class="section-title">تحسينات في التجربة</div>
+        <div class="divider"></div>
+      </div>
 
-<div class="task-card p1">
-  <div class="task-id">P1-5 | DataRow غير accessible</div>
-  <div class="task-row"><span class="task-label">المسبب:</span><span class="task-value">المكون مكتوب كـ div وليس button.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">تحويل لعناصر تفاعلية مع role="button" و tabIndex.</span></div>
-</div>
+      <div class="task-card p2">
+        <div class="task-id">P2-1 | Loading spinners بدل skeletons</div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">استبدال مكون RouteLoading بـ skeleton screens.</span>
+        </div>
+      </div>
+      <div class="task-card p2">
+        <div class="task-id">P2-2 | Settings ما بتشتغلش</div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value"
+            >sync مع السيرفر عبر updateUserSettings بدل localStorage فقط.</span
+          >
+        </div>
+      </div>
+      <div class="task-card p2">
+        <div class="task-id">P2-3 | OKX/Bybit adapters stubs</div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">محظور حتى توفر API keys حقيقية.</span>
+        </div>
+      </div>
+      <div class="task-card p2">
+        <div class="task-id">P2-4 | Touch targets صغيرة (أقل من 44px)</div>
+        <div class="task-row">
+          <span class="task-label">الأماكن:</span
+          ><span class="task-value"
+            >Notification bell 26x26px / Avatar 26x26px / Points badge.</span
+          >
+        </div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">minimum 44x44px لكل عنصر تفاعلي.</span>
+        </div>
+      </div>
+      <div class="task-card p2">
+        <div class="task-id">P2-5 | ألوان inline hex متفرقة</div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">توحيد لـ CSS vars فقط.</span>
+        </div>
+      </div>
+      <div class="task-card p2">
+        <div class="task-id">P2-6 | Badges في Profile hard-coded</div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">جلب الأوسمة من قاعدة البيانات ديناميكياً.</span>
+        </div>
+      </div>
+      <div class="task-card p2">
+        <div class="task-id">P2-7 | روابط Brokers affiliate وهمية</div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">استبدال بروابط فعلية (يحتاج روابط منك).</span>
+        </div>
+      </div>
+      <div class="task-card p2">
+        <div class="task-id">P2-8 | Discover Forex data hard-coded</div>
+        <div class="task-row">
+          <span class="task-label">الحل:</span
+          ><span class="task-value">استخدام API حقيقي (TwelveData/Finnhub).</span>
+        </div>
+      </div>
 
-<div class="chapter-header">
-<div class="section-tag"><span class="priority-badge p2">P2</span> Medium Priority</div>
-<div class="section-title">تحسينات في التجربة</div>
-<div class="divider"></div>
-</div>
+      <div class="chapter-header">
+        <div class="section-tag">خريطة التنفيذ</div>
+        <div class="section-title">الترتيب الأمثل مع التبعيات</div>
+        <div class="divider"></div>
+      </div>
 
-<div class="task-card p2">
-  <div class="task-id">P2-1 | Loading spinners بدل skeletons</div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">استبدال مكون RouteLoading بـ skeleton screens.</span></div>
-</div>
-<div class="task-card p2">
-  <div class="task-id">P2-2 | Settings ما بتشتغلش</div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">sync مع السيرفر عبر updateUserSettings بدل localStorage فقط.</span></div>
-</div>
-<div class="task-card p2">
-  <div class="task-id">P2-3 | OKX/Bybit adapters stubs</div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">محظور حتى توفر API keys حقيقية.</span></div>
-</div>
-<div class="task-card p2">
-  <div class="task-id">P2-4 | Touch targets صغيرة (أقل من 44px)</div>
-  <div class="task-row"><span class="task-label">الأماكن:</span><span class="task-value">Notification bell 26x26px / Avatar 26x26px / Points badge.</span></div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">minimum 44x44px لكل عنصر تفاعلي.</span></div>
-</div>
-<div class="task-card p2">
-  <div class="task-id">P2-5 | ألوان inline hex متفرقة</div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">توحيد لـ CSS vars فقط.</span></div>
-</div>
-<div class="task-card p2">
-  <div class="task-id">P2-6 | Badges في Profile hard-coded</div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">جلب الأوسمة من قاعدة البيانات ديناميكياً.</span></div>
-</div>
-<div class="task-card p2">
-  <div class="task-id">P2-7 | روابط Brokers affiliate وهمية</div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">استبدال بروابط فعلية (يحتاج روابط منك).</span></div>
-</div>
-<div class="task-card p2">
-  <div class="task-id">P2-8 | Discover Forex data hard-coded</div>
-  <div class="task-row"><span class="task-label">الحل:</span><span class="task-value">استخدام API حقيقي (TwelveData/Finnhub).</span></div>
-</div>
+      <div class="code-block">
+        الجلسة الحالية: إعادة تصميم الصفحة الرئيسية ├── المرحلة 1: الأساس (المكونات + APIs) │ ├──
+        إنشاء/verify MiniSparkline, LiveDot, SignalBadge, TrendArrow │ ├── إنشاء getMarketOverview
+        API │ ├── إنشاء getActiveSignals API │ ├── إنشاء getWatchlist API │ └── تحديث
+        getDashboardData ├── المرحلة 2: بناء الصفحة الجديدة (10 أقسام) │ ├── كتابة الصفحة بالكامل │
+        ├── ربط كل sections بالـ data │ └── إضافة loading/empty/error states └── المرحلة 3: التلميع
+        (test + animation + performance) Sprint 1: الأساسيات (3 أيام) ├── P1-1: رفع النصوص لـ 12px+
+        ├── P2-4: Touch targets 44x44px+ ├── P1-3: إصلاح silent catches └── P2-5: توحيد الألوان
+        Sprint 2: المحتوى الفارغ (4 أيام) ├── P0-3: ربط Charts/Arbitrage/Activity ├── P1-2: إضافة
+        CTA لكل Empty State └── P0-1: صفحة فوركس بـ TradingView Sprint 3: البيانات الحقيقية (3 أيام)
+        ├── P0-2: توصيل عملات الميم ببيانات ├── P2-8: بيانات الفوركس من API └── P2-6: Badges
+        ديناميكية Sprint 4: التحسينات (4 أيام) ├── P2-1: Skeleton loading ├── P1-4: Discover في
+        Bottom Nav ├── P1-5: DataRow accessibility ├── P2-2: Settings sync ├── P2-7: روابط Brokers
+        حقيقية └── P2-3: OKX/Bybit adapters
+      </div>
 
-<div class="chapter-header">
-<div class="section-tag">خريطة التنفيذ</div>
-<div class="section-title">الترتيب الأمثل مع التبعيات</div>
-<div class="divider"></div>
-</div>
+      <div class="chapter-header">
+        <div class="section-tag">الوقاية</div>
+        <div class="section-title">المسببات الجذرية وكيفية عدم تكرارها</div>
+        <div class="divider"></div>
+      </div>
 
-<div class="code-block">الجلسة الحالية: إعادة تصميم الصفحة الرئيسية
-├── المرحلة 1: الأساس (المكونات + APIs)
-│   ├── إنشاء/verify MiniSparkline, LiveDot, SignalBadge, TrendArrow
-│   ├── إنشاء getMarketOverview API
-│   ├── إنشاء getActiveSignals API
-│   ├── إنشاء getWatchlist API
-│   └── تحديث getDashboardData
-├── المرحلة 2: بناء الصفحة الجديدة (10 أقسام)
-│   ├── كتابة الصفحة بالكامل
-│   ├── ربط كل sections بالـ data
-│   └── إضافة loading/empty/error states
-└── المرحلة 3: التلميع (test + animation + performance)
+      <div class="table-wrap">
+        <table>
+          <tr>
+            <th>المشكلة</th>
+            <th>المسبب الجذري</th>
+            <th>كيفية المنع</th>
+          </tr>
+          <tr>
+            <td>صفحات فارغة في nav</td>
+            <td>إضافة صفحات قبل إنهاء تنفيذها</td>
+            <td>لا تضف صفحة للـ nav إلا لما تكون شغالة 100%</td>
+          </tr>
+          <tr>
+            <td>نصوص 8-10px</td>
+            <td>عدم وجود design tokens</td>
+            <td>CSS variables: --text-min: 12px</td>
+          </tr>
+          <tr>
+            <td>silent catches</td>
+            <td>عادة سيئة في كتابة catch</td>
+            <td>كل catch لازم console.warn أو toast</td>
+          </tr>
+          <tr>
+            <td>query key mismatch</td>
+            <td>أسماء مختلفة لنفس البيانات</td>
+            <td>ملف مركزي: src/shared/query-keys.ts</td>
+          </tr>
+          <tr>
+            <td>inline hex</td>
+            <td>كتابة الألوان مباشرة في JSX</td>
+            <td>ESLint rule مخصص</td>
+          </tr>
+          <tr>
+            <td>hard-coded data</td>
+            <td>بيانات temporary منسية</td>
+            <td>TODO + assert في CI</td>
+          </tr>
+          <tr>
+            <td>Touch targets صغيرة</td>
+            <td>تصميم desktop يُنقل للموبايل</td>
+            <td>كل onClick لازم min 44x44px</td>
+          </tr>
+          <tr>
+            <td>Supabase auth conflict</td>
+            <td>global.headers يتعارض مع getUser</td>
+            <td>تعليق في auth-middleware.ts</td>
+          </tr>
+          <tr>
+            <td>lock file قديم</td>
+            <td>npm install --package-lock-only مش كافي</td>
+            <td>حذف lock + node_modules وإعادة install من الصفر</td>
+          </tr>
+          <tr>
+            <td>ESLint flat config</td>
+            <td>node_modules مش بيتم تجاهله تلقائياً</td>
+            <td>إضافة node_modules لقائمة ignores + تحديد scope</td>
+          </tr>
+        </table>
+      </div>
+    </div>
 
-Sprint 1: الأساسيات (3 أيام)
-├── P1-1: رفع النصوص لـ 12px+
-├── P2-4: Touch targets 44x44px+
-├── P1-3: إصلاح silent catches
-└── P2-5: توحيد الألوان
-
-Sprint 2: المحتوى الفارغ (4 أيام)
-├── P0-3: ربط Charts/Arbitrage/Activity
-├── P1-2: إضافة CTA لكل Empty State
-└── P0-1: صفحة فوركس بـ TradingView
-
-Sprint 3: البيانات الحقيقية (3 أيام)
-├── P0-2: توصيل عملات الميم ببيانات
-├── P2-8: بيانات الفوركس من API
-└── P2-6: Badges ديناميكية
-
-Sprint 4: التحسينات (4 أيام)
-├── P2-1: Skeleton loading
-├── P1-4: Discover في Bottom Nav
-├── P1-5: DataRow accessibility
-├── P2-2: Settings sync
-├── P2-7: روابط Brokers حقيقية
-└── P2-3: OKX/Bybit adapters</div>
-
-<div class="chapter-header">
-<div class="section-tag">الوقاية</div>
-<div class="section-title">المسببات الجذرية وكيفية عدم تكرارها</div>
-<div class="divider"></div>
-</div>
-
-<div class="table-wrap">
-<table>
-  <tr><th>المشكلة</th><th>المسبب الجذري</th><th>كيفية المنع</th></tr>
-  <tr><td>صفحات فارغة في nav</td><td>إضافة صفحات قبل إنهاء تنفيذها</td><td>لا تضف صفحة للـ nav إلا لما تكون شغالة 100%</td></tr>
-  <tr><td>نصوص 8-10px</td><td>عدم وجود design tokens</td><td>CSS variables: --text-min: 12px</td></tr>
-  <tr><td>silent catches</td><td>عادة سيئة في كتابة catch</td><td>كل catch لازم console.warn أو toast</td></tr>
-  <tr><td>query key mismatch</td><td>أسماء مختلفة لنفس البيانات</td><td>ملف مركزي: src/shared/query-keys.ts</td></tr>
-  <tr><td>inline hex</td><td>كتابة الألوان مباشرة في JSX</td><td>ESLint rule مخصص</td></tr>
-  <tr><td>hard-coded data</td><td>بيانات temporary منسية</td><td>TODO + assert في CI</td></tr>
-  <tr><td>Touch targets صغيرة</td><td>تصميم desktop يُنقل للموبايل</td><td>كل onClick لازم min 44x44px</td></tr>
-  <tr><td>Supabase auth conflict</td><td>global.headers يتعارض مع getUser</td><td>تعليق في auth-middleware.ts</td></tr>
-  <tr><td>lock file قديم</td><td>npm install --package-lock-only مش كافي</td><td>حذف lock + node_modules وإعادة install من الصفر</td></tr>
-  <tr><td>ESLint flat config</td><td>node_modules مش بيتم تجاهله تلقائياً</td><td>إضافة node_modules لقائمة ignores + تحديد scope</td></tr>
-</table>
-</div>
-
-</div>
-
-<div class="ending">
-  <div style="font-size:14px; color:var(--muted); max-width:400px; line-height:1.8;">
-    هذا التقرير شامل لكل التاسكات والتحسينات المطلوبة لتطبيق VIXOR Terminal Trading. الترتيب والأولويات قابلة للتعديل حسب احتياجات المشروع.
-  </div>
-</div>
-
-</body>
+    <div class="ending">
+      <div style="font-size: 14px; color: var(--muted); max-width: 400px; line-height: 1.8">
+        هذا التقرير شامل لكل التاسكات والتحسينات المطلوبة لتطبيق VIXOR Terminal Trading. الترتيب
+        والأولويات قابلة للتعديل حسب احتياجات المشروع.
+      </div>
+    </div>
+  </body>
 </html>

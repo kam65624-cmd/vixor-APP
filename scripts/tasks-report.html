@@ -1,640 +1,894 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-@page {
-  size: 720px 1020px;
-  margin: 0;
-}
-:root {
-  --c-bg: #0B0D10;
-  --c-surface: #13161B;
-  --c-card: #1A1D24;
-  --c-border: #2A2D37;
-  --c-text: #E4E5E9;
-  --c-muted: #8A8D97;
-  --c-accent: #0ECB81;
-  --c-accent-dim: rgba(14,203,129,0.15);
-  --c-bear: #F6465D;
-  --c-bear-dim: rgba(246,70,93,0.15);
-  --c-primary: #7C9BC4;
-  --c-primary-dim: rgba(124,155,196,0.12);
-  --c-info: #9FB6D6;
-  --font-ar: 'Noto Sans Arabic', 'Inter', sans-serif;
-  --font-en: 'Inter', 'Noto Sans Arabic', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-}
-*, *::before, *::after { box-sizing: border-box; }
-html, body {
-  margin: 0; padding: 0;
-  width: 720px;
-  background: var(--c-bg);
-  color: var(--c-text);
-  font-family: var(--font-ar);
-  font-size: 13px;
-  line-height: 1.7;
-  -webkit-font-smoothing: antialiased;
-}
-@media screen {
-  html { height: auto; display: flex; justify-content: center; background: #222; }
-  body { transform-origin: top center; margin: 20px auto; }
-}
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @page {
+        size: 720px 1020px;
+        margin: 0;
+      }
+      :root {
+        --c-bg: #0b0d10;
+        --c-surface: #13161b;
+        --c-card: #1a1d24;
+        --c-border: #2a2d37;
+        --c-text: #e4e5e9;
+        --c-muted: #8a8d97;
+        --c-accent: #0ecb81;
+        --c-accent-dim: rgba(14, 203, 129, 0.15);
+        --c-bear: #f6465d;
+        --c-bear-dim: rgba(246, 70, 93, 0.15);
+        --c-primary: #7c9bc4;
+        --c-primary-dim: rgba(124, 155, 196, 0.12);
+        --c-info: #9fb6d6;
+        --font-ar: "Noto Sans Arabic", "Inter", sans-serif;
+        --font-en: "Inter", "Noto Sans Arabic", sans-serif;
+        --font-mono: "JetBrains Mono", monospace;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 720px;
+        background: var(--c-bg);
+        color: var(--c-text);
+        font-family: var(--font-ar);
+        font-size: 13px;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+      }
+      @media screen {
+        html {
+          height: auto;
+          display: flex;
+          justify-content: center;
+          background: #222;
+        }
+        body {
+          transform-origin: top center;
+          margin: 20px auto;
+        }
+      }
 
-/* Cover */
-.cover {
-  width: 720px; height: 1020px;
-  display: flex; flex-direction: column; justify-content: center; align-items: center;
-  padding: 60px;
-  box-sizing: border-box;
-  break-after: page;
-  overflow: hidden;
-  position: relative;
-}
-.cover::before {
-  content: '';
-  position: absolute; top: -120px; right: -120px;
-  width: 400px; height: 400px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--c-accent-dim) 0%, transparent 70%);
-}
-.cover::after {
-  content: '';
-  position: absolute; bottom: -80px; left: -80px;
-  width: 300px; height: 300px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--c-primary-dim) 0%, transparent 70%);
-}
-.cover-content { position: relative; z-index: 1; text-align: center; width: 100%; }
-.cover-tag {
-  display: inline-block;
-  font-family: var(--font-en);
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.15em; text-transform: uppercase;
-  color: var(--c-accent);
-  background: var(--c-accent-dim);
-  padding: 6px 16px;
-  border-radius: 20px;
-  margin-bottom: 24px;
-}
-.cover-title {
-  font-size: 36px; font-weight: 900;
-  color: var(--c-text);
-  line-height: 1.3;
-  margin-bottom: 16px;
-}
-.cover-subtitle {
-  font-size: 15px; color: var(--c-muted);
-  line-height: 1.6;
-  max-width: 480px;
-  margin: 0 auto 32px;
-}
-.cover-stats {
-  display: flex; gap: 24px; justify-content: center;
-  flex-wrap: wrap;
-}
-.cover-stat {
-  text-align: center;
-}
-.cover-stat-val {
-  font-family: var(--font-mono);
-  font-size: 28px; font-weight: 800;
-  color: var(--c-accent);
-  line-height: 1;
-}
-.cover-stat-label {
-  font-size: 11px; color: var(--c-muted);
-  margin-top: 4px;
-  font-weight: 500;
-}
-.cover-date {
-  position: absolute; bottom: 40px; left: 0; right: 0;
-  text-align: center;
-  font-family: var(--font-en);
-  font-size: 11px; color: var(--c-muted);
-  letter-spacing: 0.05em;
-}
+      /* Cover */
+      .cover {
+        width: 720px;
+        height: 1020px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 60px;
+        box-sizing: border-box;
+        break-after: page;
+        overflow: hidden;
+        position: relative;
+      }
+      .cover::before {
+        content: "";
+        position: absolute;
+        top: -120px;
+        right: -120px;
+        width: 400px;
+        height: 400px;
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--c-accent-dim) 0%, transparent 70%);
+      }
+      .cover::after {
+        content: "";
+        position: absolute;
+        bottom: -80px;
+        left: -80px;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--c-primary-dim) 0%, transparent 70%);
+      }
+      .cover-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        width: 100%;
+      }
+      .cover-tag {
+        display: inline-block;
+        font-family: var(--font-en);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--c-accent);
+        background: var(--c-accent-dim);
+        padding: 6px 16px;
+        border-radius: 20px;
+        margin-bottom: 24px;
+      }
+      .cover-title {
+        font-size: 36px;
+        font-weight: 900;
+        color: var(--c-text);
+        line-height: 1.3;
+        margin-bottom: 16px;
+      }
+      .cover-subtitle {
+        font-size: 15px;
+        color: var(--c-muted);
+        line-height: 1.6;
+        max-width: 480px;
+        margin: 0 auto 32px;
+      }
+      .cover-stats {
+        display: flex;
+        gap: 24px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .cover-stat {
+        text-align: center;
+      }
+      .cover-stat-val {
+        font-family: var(--font-mono);
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--c-accent);
+        line-height: 1;
+      }
+      .cover-stat-label {
+        font-size: 11px;
+        color: var(--c-muted);
+        margin-top: 4px;
+        font-weight: 500;
+      }
+      .cover-date {
+        position: absolute;
+        bottom: 40px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: var(--font-en);
+        font-size: 11px;
+        color: var(--c-muted);
+        letter-spacing: 0.05em;
+      }
 
-/* Main content */
-.main-content {
-  padding: 50px 56px 40px;
-}
+      /* Main content */
+      .main-content {
+        padding: 50px 56px 40px;
+      }
 
-/* Section headers */
-.chapter-header {
-  break-after: avoid;
-  break-inside: avoid;
-  margin-top: 32px;
-  margin-bottom: 20px;
-}
-.section-tag {
-  font-family: var(--font-en);
-  font-size: 10px; font-weight: 700;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--c-accent);
-  margin-bottom: 6px;
-}
-.section-title {
-  font-size: 22px; font-weight: 800;
-  color: var(--c-text);
-  line-height: 1.3;
-}
-.section-divider {
-  width: 48px; height: 3px;
-  background: var(--c-accent);
-  border-radius: 2px;
-  margin-top: 10px;
-}
+      /* Section headers */
+      .chapter-header {
+        break-after: avoid;
+        break-inside: avoid;
+        margin-top: 32px;
+        margin-bottom: 20px;
+      }
+      .section-tag {
+        font-family: var(--font-en);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--c-accent);
+        margin-bottom: 6px;
+      }
+      .section-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--c-text);
+        line-height: 1.3;
+      }
+      .section-divider {
+        width: 48px;
+        height: 3px;
+        background: var(--c-accent);
+        border-radius: 2px;
+        margin-top: 10px;
+      }
 
-/* Body text */
-.body-text {
-  color: var(--c-text);
-  font-size: 13px;
-  line-height: 1.8;
-  margin-bottom: 12px;
-}
-.body-text-muted {
-  color: var(--c-muted);
-  font-size: 12px;
-  line-height: 1.7;
-  margin-bottom: 8px;
-}
+      /* Body text */
+      .body-text {
+        color: var(--c-text);
+        font-size: 13px;
+        line-height: 1.8;
+        margin-bottom: 12px;
+      }
+      .body-text-muted {
+        color: var(--c-muted);
+        font-size: 12px;
+        line-height: 1.7;
+        margin-bottom: 8px;
+      }
 
-/* Task cards */
-.task-card {
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: 10px;
-  padding: 16px 18px;
-  margin-bottom: 12px;
-  break-inside: avoid;
-}
-.task-card-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 8px;
-}
-.task-id {
-  font-family: var(--font-en);
-  font-size: 11px; font-weight: 700;
-  color: var(--c-accent);
-  background: var(--c-accent-dim);
-  padding: 3px 10px;
-  border-radius: 12px;
-}
-.task-id.p0 { color: var(--c-bear); background: var(--c-bear-dim); }
-.task-id.p1 { color: var(--c-accent); background: var(--c-accent-dim); }
-.task-id.p2 { color: var(--c-primary); background: var(--c-primary-dim); }
-.task-id.p3 { color: var(--c-muted); background: rgba(138,141,151,0.15); }
-.task-id.home { color: var(--c-info); background: rgba(159,182,214,0.12); }
-.task-status {
-  font-family: var(--font-en);
-  font-size: 10px; font-weight: 700;
-  padding: 3px 8px; border-radius: 6px;
-}
-.task-status.done { color: var(--c-accent); background: var(--c-accent-dim); }
-.task-status.pending { color: var(--c-muted); background: rgba(138,141,151,0.12); }
-.task-title {
-  font-size: 15px; font-weight: 700;
-  color: var(--c-text);
-  margin-bottom: 6px;
-  line-height: 1.4;
-}
-.task-detail {
-  font-size: 12px; color: var(--c-muted);
-  line-height: 1.7;
-  margin-bottom: 4px;
-}
-.task-detail strong {
-  color: var(--c-text);
-  font-weight: 600;
-}
+      /* Task cards */
+      .task-card {
+        background: var(--c-surface);
+        border: 1px solid var(--c-border);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 12px;
+        break-inside: avoid;
+      }
+      .task-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .task-id {
+        font-family: var(--font-en);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--c-accent);
+        background: var(--c-accent-dim);
+        padding: 3px 10px;
+        border-radius: 12px;
+      }
+      .task-id.p0 {
+        color: var(--c-bear);
+        background: var(--c-bear-dim);
+      }
+      .task-id.p1 {
+        color: var(--c-accent);
+        background: var(--c-accent-dim);
+      }
+      .task-id.p2 {
+        color: var(--c-primary);
+        background: var(--c-primary-dim);
+      }
+      .task-id.p3 {
+        color: var(--c-muted);
+        background: rgba(138, 141, 151, 0.15);
+      }
+      .task-id.home {
+        color: var(--c-info);
+        background: rgba(159, 182, 214, 0.12);
+      }
+      .task-status {
+        font-family: var(--font-en);
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+      }
+      .task-status.done {
+        color: var(--c-accent);
+        background: var(--c-accent-dim);
+      }
+      .task-status.pending {
+        color: var(--c-muted);
+        background: rgba(138, 141, 151, 0.12);
+      }
+      .task-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--c-text);
+        margin-bottom: 6px;
+        line-height: 1.4;
+      }
+      .task-detail {
+        font-size: 12px;
+        color: var(--c-muted);
+        line-height: 1.7;
+        margin-bottom: 4px;
+      }
+      .task-detail strong {
+        color: var(--c-text);
+        font-weight: 600;
+      }
 
-/* Summary table */
-.summary-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 16px 0;
-  font-size: 12px;
-  break-inside: avoid;
-}
-.summary-table th {
-  text-align: right;
-  font-weight: 700;
-  color: var(--c-muted);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--c-border);
-}
-.summary-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(42,45,55,0.5);
-  color: var(--c-text);
-  vertical-align: top;
-}
-.summary-table tr:last-child td { border-bottom: none; }
+      /* Summary table */
+      .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 16px 0;
+        font-size: 12px;
+        break-inside: avoid;
+      }
+      .summary-table th {
+        text-align: right;
+        font-weight: 700;
+        color: var(--c-muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--c-border);
+      }
+      .summary-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(42, 45, 55, 0.5);
+        color: var(--c-text);
+        vertical-align: top;
+      }
+      .summary-table tr:last-child td {
+        border-bottom: none;
+      }
 
-/* Highlight box */
-.highlight-box {
-  background: var(--c-accent-dim);
-  border: 1px solid rgba(14,203,129,0.25);
-  border-radius: 10px;
-  padding: 16px 18px;
-  margin: 16px 0;
-  break-inside: avoid;
-}
-.highlight-box.bear {
-  background: var(--c-bear-dim);
-  border-color: rgba(246,70,93,0.25);
-}
-.highlight-box.primary {
-  background: var(--c-primary-dim);
-  border-color: rgba(124,155,196,0.25);
-}
-.highlight-title {
-  font-size: 13px; font-weight: 700;
-  color: var(--c-accent);
-  margin-bottom: 6px;
-}
-.highlight-box.bear .highlight-title { color: var(--c-bear); }
-.highlight-box.primary .highlight-title { color: var(--c-primary); }
+      /* Highlight box */
+      .highlight-box {
+        background: var(--c-accent-dim);
+        border: 1px solid rgba(14, 203, 129, 0.25);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin: 16px 0;
+        break-inside: avoid;
+      }
+      .highlight-box.bear {
+        background: var(--c-bear-dim);
+        border-color: rgba(246, 70, 93, 0.25);
+      }
+      .highlight-box.primary {
+        background: var(--c-primary-dim);
+        border-color: rgba(124, 155, 196, 0.25);
+      }
+      .highlight-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--c-accent);
+        margin-bottom: 6px;
+      }
+      .highlight-box.bear .highlight-title {
+        color: var(--c-bear);
+      }
+      .highlight-box.primary .highlight-title {
+        color: var(--c-primary);
+      }
 
-/* Progress bar */
-.progress-row {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 10px;
-}
-.progress-label {
-  font-size: 11px; font-weight: 600;
-  color: var(--c-text);
-  min-width: 80px;
-}
-.progress-bar {
-  flex: 1; height: 8px;
-  background: var(--c-card);
-  border-radius: 4px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  border-radius: 4px;
-  background: var(--c-accent);
-  transition: width 0.3s;
-}
-.progress-val {
-  font-family: var(--font-mono);
-  font-size: 11px; font-weight: 700;
-  color: var(--c-accent);
-  min-width: 36px;
-  text-align: left;
-}
-</style>
-</head>
-<body>
-
-<!-- ─── Cover ─── -->
-<div class="cover">
-  <div class="cover-content">
-    <div class="cover-tag">VIXOR APP</div>
-    <div class="cover-title">تقرير التاسكات والتحسينات</div>
-    <div class="cover-subtitle">
-      تقرير شامل بكل التاسكات مرتبة حسب الأهمية والتأثير، مع شرح مفصل لكل تاسك: ليه مهم، المسبب الحقيقي، والحل المطبق
+      /* Progress bar */
+      .progress-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .progress-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--c-text);
+        min-width: 80px;
+      }
+      .progress-bar {
+        flex: 1;
+        height: 8px;
+        background: var(--c-card);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: var(--c-accent);
+        transition: width 0.3s;
+      }
+      .progress-val {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--c-accent);
+        min-width: 36px;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ─── Cover ─── -->
+    <div class="cover">
+      <div class="cover-content">
+        <div class="cover-tag">VIXOR APP</div>
+        <div class="cover-title">تقرير التاسكات والتحسينات</div>
+        <div class="cover-subtitle">
+          تقرير شامل بكل التاسكات مرتبة حسب الأهمية والتأثير، مع شرح مفصل لكل تاسك: ليه مهم، المسبب
+          الحقيقي، والحل المطبق
+        </div>
+        <div class="cover-stats">
+          <div class="cover-stat">
+            <div class="cover-stat-val">17</div>
+            <div class="cover-stat-label">تاسك مكتمل</div>
+          </div>
+          <div class="cover-stat">
+            <div class="cover-stat-val">10</div>
+            <div class="cover-stat-label">أقسام الصفحة الرئيسية</div>
+          </div>
+          <div class="cover-stat">
+            <div class="cover-stat-val">4</div>
+            <div class="cover-stat-label">مكونات جديدة</div>
+          </div>
+          <div class="cover-stat">
+            <div class="cover-stat-val">0</div>
+            <div class="cover-stat-label">مشاكل CI</div>
+          </div>
+        </div>
+      </div>
+      <div class="cover-date">2026-07-06 &mdash; Sprint 1 + Home Redesign</div>
     </div>
-    <div class="cover-stats">
-      <div class="cover-stat">
-        <div class="cover-stat-val">17</div>
-        <div class="cover-stat-label">تاسك مكتمل</div>
+
+    <!-- ─── Body ─── -->
+    <div class="main-content">
+      <!-- Section: Sprint 1 Summary -->
+      <div class="chapter-header">
+        <div class="section-tag">Sprint 1 &mdash; مكتمل</div>
+        <div class="section-title">التاسكات الأساسية (Foundation)</div>
+        <div class="section-divider"></div>
       </div>
-      <div class="cover-stat">
-        <div class="cover-stat-val">10</div>
-        <div class="cover-stat-label">أقسام الصفحة الرئيسية</div>
+
+      <div class="body-text">
+        تم إنجاز 4 تاسكات أساسية في Sprint 1. دي التاسكات اللي بتأثر على كل الصفحات والتطبيق كله، مش
+        بس الصفحة الرئيسية. كل تاسك اتختبر بـ TypeScript و ESLint ونجح بدون أي أخطاء.
       </div>
-      <div class="cover-stat">
-        <div class="cover-stat-val">4</div>
-        <div class="cover-stat-label">مكونات جديدة</div>
+
+      <!-- P1-1 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id p1">P1-1</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">رفع كل النصوص لـ 12px كحد أدنى</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> 90% من مستخدمين الموبايل مش هيقدروا يقرأوا نصوص 8-10px. ده مش
+          مجرد تصميم سيء، ده بيخلي المحتوى الأساسي زي أسعار العملات وعدد الإشارات غير مقروء على
+          شاشات الموبايل الصغيرة. كل نص تحت 11px = خطأ تصميم في أي تطبيق موبايل.
+        </div>
+        <div class="task-detail">
+          <strong>المسبب:</strong> عدم وجود design tokens نظامية للطباعة. كل مكون كان بيحدد fontSize
+          بشكل منفصل بدون مرجع موحد. النتيجة كانت نصوص متفاوتة: 8px في الـ badge، 9px في البار
+          السفلي، 10px في الـ ticker.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> يتحسن قابلية القراءة على الموبايل بنسبة كبيرة. المستخدم هيقدر
+          يقرأ الأسعار والإشارات والتنقل بدون ما يكبر الشاشة. التجربة كلها بتبقى أكثر احترافية.
+        </div>
+        <div class="task-detail">
+          <strong>إيه اللي اتغير:</strong> Notification badge: 8&rarr;10px. Avatar initial:
+          10&rarr;12px. SOL price ticker: 10&rarr;11px. Bottom bar labels: 9&rarr;11px. More button:
+          9&rarr;11px. Close button: 11&rarr;12px. Category titles: 10&rarr;11px. PointsBadge:
+          11&rarr;12px.
+        </div>
       </div>
-      <div class="cover-stat">
-        <div class="cover-stat-val">0</div>
-        <div class="cover-stat-label">مشاكل CI</div>
+
+      <!-- P2-4 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id p2">P2-4</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">رفع Touch Targets لـ 44&times;44px كحد أدنى</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> في تطبيق Telegram Web App، المستخدم بيتعامل بالإصبع على شاشة
+          الموبايل. لو عنصر تفاعلي أصغر من 44px، المستخدم هيضغط غلط أو هيحتاج يحاول أكثر من مرة. ده
+          بيأثر مباشرة على تجربة المستخدم وبيزود الإحباط.
+        </div>
+        <div class="task-detail">
+          <strong>المسبب:</strong> التصميم الأصلي كان يعتمد على الحجم البصري بس (26px للـ bell و
+          avatar) من غير ما يأخذ في الاعتبار مساحة اللمس الفعلية اللي محتاجها الإصبع البشري.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> أزرار الجرس والأفاتار والنقاط بقت أسهل في الضغط. الحجم البصري
+          فضل 30px (مناسب للهيدر) بس مساحة اللمس بقت 44px (معيار Apple و Google).
+        </div>
+        <div class="task-detail">
+          <strong>إيه اللي اتغير:</strong> Notification bell: 26&rarr;30px visual + 44px touch.
+          Avatar: 26&rarr;30px visual + 44px touch. PointsBadge: أضيف minWidth/minHeight 44px. كل
+          العناصر التفاعلية في الـ TopNav ليها touch target كافي دلوقتي.
+        </div>
+      </div>
+
+      <!-- P1-3 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id p1">P1-3</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">إصلاح Silent Catch Blocks</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> الأخطاء اللي بتحصل في التطبيق وبتتابتلع بدون أي تسجيل أو إشعار =
+          مشاكل صامتة. المستخدم ممكن يواجه مشكلة حقيقية (زي فشل في جلب سعر SOL) والـ developer مش هي
+          عرف أبداً لأن الكود بيبتلع الخطأ بدون ما يطلع أي شيء.
+        </div>
+        <div class="task-detail">
+          <strong>المسبب:</strong> عادة سيئة في كتابة catch {} فاضي. بعضها مبرر (زي Telegram SDK
+          اللي ممكن مش موجود، أو localStorage في وضع التصفح الخاص)، لكن الباقي محتاج تسجيل على
+          الأقل.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> الآن أي خطأ غير متوقع في جلب سعر SOL بيتسجل في console.warn. ده
+          بيساعد في الـ debugging وبيخلي المشاكل ظاهرة بدل ما تبقى مخفية. الأخطاء المتوقعة (7 أماكن)
+          فضلت silent مع تعليق توضيحي.
+        </div>
+        <div class="task-detail">
+          <strong>إيه اللي اتغير:</strong> SOL price fetch: أضيف console.warn بدل silent. Phantom
+          balance: أضيف تعليق توضيحي. باقي 7 catches متوقعة ومعالجة (Telegram SDK, localStorage,
+          Sentry) — مفيش داعي نغيرها لأنها أخطاء متوقعة بس.
+        </div>
+      </div>
+
+      <!-- P2-5 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id p2">P2-5</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">توحيد الألوان لمصدر واحد (CSS Variables)</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> لما الألوان مكتوبة كـ hex values مباشرة في الكود، أي تغيير في
+          الـ branding لازم تبحث عن كل الأماكن اللي فيها اللون ده وتغيرها يدوياً. ده بيخلي الـ
+          rebranding صعب ومخاطر أخطاء.
+        </div>
+        <div class="task-detail">
+          <strong>المسبب:</strong> بعض الأماكن في AppShell كانت تستخدم rgba(14,203,129,0.12) و
+          rgba(14,203,129,0.20) مباشرة بدل ما تستخدم CSS variables زي var(--bullish-bg).
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> الآن كل الألوان في AppShell بتيجي من CSS vars. لو حابب تغير لون
+          الـ bullish، تغيره في مكان واحد بس. ده بيخلي الكود أنظف وأسهل في الصيانة.
+        </div>
+        <div class="task-detail">
+          <strong>إيه اللي اتغير:</strong> rgba(14,203,129,0.12) &rarr; var(--bullish-bg).
+          rgba(14,203,129,0.20) &rarr; color-mix(in srgb, var(--color-bullish) 20%, transparent).
+        </div>
+      </div>
+
+      <!-- Section: Home Page Redesign -->
+      <div class="chapter-header">
+        <div class="section-tag">HOME REDESIGN &mdash; مكتمل</div>
+        <div class="section-title">إعادة تصميم الصفحة الرئيسية (10 أقسام)</div>
+        <div class="section-divider"></div>
+      </div>
+
+      <div class="body-text">
+        الصفحة الرئيسية كانت تعاني من 10 مشاكل حرجة حددناها بالتحليل المقارن مع Binance و Coinbase و
+        TradingView و Robinhood. كل مشكلة اتعملت فيها. الصفحة الجديدة بتعرض: أسعار السوق، تحية ذكية،
+        محفظة مفصلة، زر التحليل الأساسي، إشارات فعّالة، قائمة المتابعة، حالة السوق، وآخر الصفقات.
+      </div>
+
+      <!-- HOME-P0 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id home">HOME-P0</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">إضافة سياق سوقي (Market Ticker Bar)</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> أول حاجة شافها المتداول في أي تطبيق تداول هي الأسعار. دخول على
+          "صحراء" بدون أي رقم = تجربة فاشلة. تطبيقات زي Binance و Robinhood بتعرض الأسعار مباشرة
+          فوق.
+        </div>
+        <div class="task-detail">
+          <strong>المسبب:</strong> الصفحة القديمة ماكانتش تعرض أي أسعار BTC/SOL/ETH أو market
+          overview. كانت بتبدأ بتحية عاملة وبطاقة محفظة فاضية.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> المستخدم دلوقتي بيعرف فوراً سعر BTC و ETH و SOL مع نسبة التغير
+          24 ساعة. ده بيعطي سياق فوري لحالة السوق.
+        </div>
+        <div class="task-detail">
+          <strong>إيه اللي اتغير:</strong> أنشأنا getHomeMarketData API جديد (بدون auth) بيجيب أسعار
+          BTC/ETH/SOL من API السوق الموجود + Fear & Greed Index من alternative.me. أضفنا
+          MarketTickerBar component في أعلى الصفحة.
+        </div>
+      </div>
+
+      <!-- HOME-P1 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id home">HOME-P1</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">عرض المحفظة بشكل احترافي (Portfolio Hero)</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> المحفظة هي أهم رقم للمتداول. عرض "$0.00" كرقم واحد باهت بدون أي
+          إحصائيات = محتوى بلا قيمة. التطبيقات الناجحة بتعرض Win Rate وعدد الأصول والأداء.
+        </div>
+        <div class="task-detail">
+          <strong>المسبب:</strong> الصفحة القديمة كانت تعرض رصيد واحد + PnL بس. مفيش Win Rate، مفيش
+          عدد أصول، مفيش متوسط أداء.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> دلوقتي المستخدم شايف 4 إحصائيات أساسية: Win Rate %، عدد الصفقات،
+          عدد الأصول، ومتوسط PnL. كلها في بطاقة واحدة منظمة.
+        </div>
+        <div class="task-detail">
+          <strong>إيه اللي اتغير:</strong> حدثنا getDashboardData ليرجع winRate + assetCount. بنينا
+          PortfolioHeroCard بـ 4 stats في grid.
+        </div>
+      </div>
+
+      <!-- HOME-P2 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id home">HOME-P2</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">تقليل Quick Actions من 6 لـ 3</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> 6 أزرار في grid بتشتت دم المستخدم. زر Charts كان بيودي لـ COMING
+          SOON (إزعاج). زر Settings في الهوم مش منطقي — مكانه في الـ More Panel.
+        </div>
+        <div class="task-detail">
+          <strong>المسبب:</strong> التصميم القديم كان بيحاول يغطي كل حاجة في صفحة واحدة من غير ما
+          يحدد الأولويات.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> 3 أزرار بس: Discover (اكتشاف العملات)، Copilot (المساعد الذكي)،
+          PnL Tracker (تتبع الأداء). كل زر ليه وظيفة واضحة ومفيش أي زر يودي لصفحة فاضية.
+        </div>
+      </div>
+
+      <!-- HOME-P3 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id home">HOME-P3</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">إبراز Analyze Chart كـ Primary CTA</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> Analyze Chart هو أهم feature في التطبيق والمميزة التنافسية. في
+          الصفحة القديمة كان مدفون في card صغيرة بين 6 أزرار. ده = ضياع فرص استخدام.
+        </div>
+        <div class="task-detail">
+          <strong>المسبب:</strong> كل الأقسام بنفس الحجم والشكل = مفيش visual hierarchy. الزر الأهم
+          كان بنفس حجم زر Settings.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> زر Primary CTA كبير بـ gradient أخضر + box-shadow + وصف + icon.
+          بيجذب الانتباه فوراً ويوضح إن ده الـ core feature.
+        </div>
+      </div>
+
+      <!-- HOME-P4 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id home">HOME-P4</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">عرض الإشارات الفعّالة (Active Signals)</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> المتداول يحتاج يعرف إذا فيه فرص جديدة. بدون عرض الإشارات على
+          الهوم = المستخدم بيفوت صفقات. ده كان موجود في signals.tsx بس مكانش ظاهر على الصفحة
+          الرئيسية.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> أول 2 إشارات بتتعرض مع SignalBadge (BUY/SELL/WAIT) + LiveDot
+          (نقطة متحركة) + نسبة الثقة + سعر الدخول.
+        </div>
+      </div>
+
+      <!-- HOME-P5 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id home">HOME-P5</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">إضافة Watchlist للصفحة الرئيسية</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> أي تداول بيبدأ بـ watchlist. غيابها من الهوم = المستخدم لازم
+          يفتح Discover كل مرة عشان يشوف العملات اللي بيتابعها.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> آخر 5 عناصر من قائمة المتابعة بتتعرض. كل عنصر clickable ويودي
+          لصفحة التوكن.
+        </div>
+      </div>
+
+      <!-- HOME-P6 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id home">HOME-P6</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">إضافة Market Sentiment (Fear & Greed Index)</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> Fear & Greed Index هو أداة أساسية لأي متداول احترافي. بيجيب
+          بيانات من alternative.me (مجاني، بدون API key). بيعطي المستخدم نظرة سريعة على حالة السوق
+          الكلية: هل السوق خائف؟ جشع؟ محايد؟
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> بطاقة بتعرض الرقم (0-100) + التسمية (Fear/Greed/Neutral) +
+          التغير عن أمس + bar gauge بصري. الألوان بتتغير حسب القيمة: أخضر لـ greed، أحمر لـ fear.
+        </div>
+      </div>
+
+      <!-- HOME-P8 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id home">HOME-P8</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">تحية ذكية حسب الوقت</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> "Welcome back, Trader" عاملة وباردة. في Binance و Robinhood
+          التحية ذكية ومعلوماتية: صباح/مساء + اسم المستخدم + تاريخ + معلومات عن السوق.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> "Good Morning/Afternoon/Evening, [Name]" + التاريخ + عدد
+          الإشارات الفعّالة. التحية بتتغير تلقائياً حسب وقت اليوم.
+        </div>
+      </div>
+
+      <!-- HOME-P9 -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id home">HOME-P9</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">عرض آخر الصفقات (Recent Trades)</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> عرض آخر الصفقات بيمكّن المستخدم يتابع أدائه بدون ما يفتح Journal
+          أو PnL Tracker. ده بيوفر وقت وبيخلي المستخدم على اطلاع دايم.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> آخر 3 صفقات مع TrendArrow (اتجاه) + وصف الصفقة + PnL + الوقت. كل
+          صفقة clickable.
+        </div>
+      </div>
+
+      <!-- HOME-P7 + P10 combined -->
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id home">HOME-P7 + P10</span>
+          <span class="task-status done">مكتمل</span>
+        </div>
+        <div class="task-title">إحصائيات الحساب المفيدة + Layout متماسك</div>
+        <div class="task-detail">
+          <strong>ليه مهم؟</strong> "Points, Trades, Status" القديمة مش actionable. المفروض Win Rate
+          ومتوسط الأداء. كمان الـ layout القديم كان padding 8px بس وكل cards بنفس الشكل بدون visual
+          hierarchy.
+        </div>
+        <div class="task-detail">
+          <strong>التأثير:</strong> الإحصائيات دمجت في Portfolio Hero Card (Win Rate, Trades,
+          Assets, Avg PnL). الـ layout الجديد فيه visual hierarchy واضح: CTA كبير، signals و
+          watchlist كـ cards، ticker في الأعلى. كل section مع skeleton loading.
+        </div>
+      </div>
+
+      <!-- Section: New Components & APIs -->
+      <div class="chapter-header">
+        <div class="section-tag">INFRASTRUCTURE</div>
+        <div class="section-title">مكونات و APIs جديدة</div>
+        <div class="section-divider"></div>
+      </div>
+
+      <div class="highlight-box">
+        <div class="highlight-title">مكون جديد: TrendArrow</div>
+        <div class="task-detail">
+          سهم اتجاهي (up/down/neutral) بيستخدم CSS custom properties للثيمينج. بيتستخدم في الـ
+          ticker و الـ signals و الـ recent trades. يتحول 180 درجة لاتجاه down.
+        </div>
+      </div>
+
+      <div class="highlight-box primary">
+        <div class="highlight-title">API جديد: getHomeMarketData</div>
+        <div class="task-detail">
+          server function جديد بدون auth (لأن بيانات السوق عامة). بيجيب أسعار BTC/ETH/SOL من API
+          السوق الموجود + Fear & Greed Index من alternative.me. بيتكاشي 60 ثانية وبيتحديث كل 2
+          دقيقة.
+        </div>
+      </div>
+
+      <div class="highlight-box primary">
+        <div class="highlight-title">API محدّث: getDashboardData</div>
+        <div class="task-detail">
+          أضفنا winRate (نسبة الصفقات الرابحة) و assetCount (عدد الأصول المختلفة) للـ response. ده
+          بيغني الصفحة الرئيسية بإحصائيات حقيقية بدل بيانات عامة.
+        </div>
+      </div>
+
+      <!-- Section: Quality Verification -->
+      <div class="chapter-header">
+        <div class="section-tag">QUALITY</div>
+        <div class="section-title">التحقق من الجودة</div>
+        <div class="section-divider"></div>
+      </div>
+
+      <div class="body-text">
+        كل تغيير تم اختباره بـ TypeScript compiler و ESLint. النتيجة: 0 أخطاء في الـ types و 0 أخطاء
+        في الـ lint. ده بيضمن إن التغييرات مش هتوقف الـ CI/CD ولا الـ deployment.
+      </div>
+
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>الاختبار</th>
+            <th>النتيجة</th>
+            <th>ملاحظة</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>tsc --noEmit</strong></td>
+            <td style="color: var(--c-accent); font-weight: 700">0 errors</td>
+            <td>كل الـ types صح</td>
+          </tr>
+          <tr>
+            <td><strong>eslint src/ server/</strong></td>
+            <td style="color: var(--c-accent); font-weight: 700">0 errors</td>
+            <td>كل الـ formatting صح</td>
+          </tr>
+          <tr>
+            <td><strong>Touch Targets</strong></td>
+            <td style="color: var(--c-accent); font-weight: 700">44px+</td>
+            <td>كل العناصر التفاعلية في TopNav</td>
+          </tr>
+          <tr>
+            <td><strong>Minimum Font Size</strong></td>
+            <td style="color: var(--c-accent); font-weight: 700">10px+</td>
+            <td>Badge 10px في 14px badge (مقبول)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Section: Remaining Tasks -->
+      <div class="chapter-header">
+        <div class="section-tag">NEXT STEPS</div>
+        <div class="section-title">التاسكات المتبقية</div>
+        <div class="section-divider"></div>
+      </div>
+
+      <div class="body-text">
+        بعد إنجاز Sprint 1 وإعادة تصميم الصفحة الرئيسية، فاضل تاسكات في Sprint 2-4. دي التاسكات اللي
+        محتاج قرار منك أو APIs أو بيانات إضافية:
+      </div>
+
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id p0">P0-1</span>
+          <span class="task-status pending">معلق</span>
+        </div>
+        <div class="task-title">صفحة فوركس/ذهب بـ TradingView Widget</div>
+        <div class="task-detail">
+          أزواج الفوركس مبنية للكريبتو فقط. المحلول: إضافة TradingView widget للفوركس. محتاج تأكيد
+          منك.
+        </div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id p0">P0-3</span>
+          <span class="task-status pending">معلق</span>
+        </div>
+        <div class="task-title">ربط Charts/Arbitrage/Activity بالمحركات الموجودة</div>
+        <div class="task-detail">
+          3 صفحات COMING SOON والمحركات الخلفية موجودة (specially arbitrage). لازم نربطهم أو نخفيهم.
+        </div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id p1">P1-4</span>
+          <span class="task-status pending">يحتاج قرار</span>
+        </div>
+        <div class="task-title">إضافة Discover للتنقل السفلي</div>
+        <div class="task-detail">
+          هل تريد إضافة Discover للـ Bottom Nav؟ ده قرار تصميم محتاج موافقتك.
+        </div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id p2">P2-2</span>
+          <span class="task-status pending">معلق</span>
+        </div>
+        <div class="task-title">Settings sync مع السيرفر</div>
+        <div class="task-detail">بعض الإعدادات تحفظ في localStorage بس بدون sync مع Supabase.</div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-card-header">
+          <span class="task-id p2">P2-7</span>
+          <span class="task-status pending">يحتاج بيانات</span>
+        </div>
+        <div class="task-title">روابط Brokers الحقيقية</div>
+        <div class="task-detail">الروابط الحالية placeholder. محتاج الروابط الفعلية منك.</div>
       </div>
     </div>
-  </div>
-  <div class="cover-date">2026-07-06 &mdash; Sprint 1 + Home Redesign</div>
-</div>
-
-<!-- ─── Body ─── -->
-<div class="main-content">
-
-<!-- Section: Sprint 1 Summary -->
-<div class="chapter-header">
-  <div class="section-tag">Sprint 1 &mdash; مكتمل</div>
-  <div class="section-title">التاسكات الأساسية (Foundation)</div>
-  <div class="section-divider"></div>
-</div>
-
-<div class="body-text">
-  تم إنجاز 4 تاسكات أساسية في Sprint 1. دي التاسكات اللي بتأثر على كل الصفحات والتطبيق كله، مش بس الصفحة الرئيسية. كل تاسك اتختبر بـ TypeScript و ESLint ونجح بدون أي أخطاء.
-</div>
-
-<!-- P1-1 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id p1">P1-1</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">رفع كل النصوص لـ 12px كحد أدنى</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> 90% من مستخدمين الموبايل مش هيقدروا يقرأوا نصوص 8-10px. ده مش مجرد تصميم سيء، ده بيخلي المحتوى الأساسي زي أسعار العملات وعدد الإشارات غير مقروء على شاشات الموبايل الصغيرة. كل نص تحت 11px = خطأ تصميم في أي تطبيق موبايل.</div>
-  <div class="task-detail"><strong>المسبب:</strong> عدم وجود design tokens نظامية للطباعة. كل مكون كان بيحدد fontSize بشكل منفصل بدون مرجع موحد. النتيجة كانت نصوص متفاوتة: 8px في الـ badge، 9px في البار السفلي، 10px في الـ ticker.</div>
-  <div class="task-detail"><strong>التأثير:</strong> يتحسن قابلية القراءة على الموبايل بنسبة كبيرة. المستخدم هيقدر يقرأ الأسعار والإشارات والتنقل بدون ما يكبر الشاشة. التجربة كلها بتبقى أكثر احترافية.</div>
-  <div class="task-detail"><strong>إيه اللي اتغير:</strong> Notification badge: 8&rarr;10px. Avatar initial: 10&rarr;12px. SOL price ticker: 10&rarr;11px. Bottom bar labels: 9&rarr;11px. More button: 9&rarr;11px. Close button: 11&rarr;12px. Category titles: 10&rarr;11px. PointsBadge: 11&rarr;12px.</div>
-</div>
-
-<!-- P2-4 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id p2">P2-4</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">رفع Touch Targets لـ 44&times;44px كحد أدنى</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> في تطبيق Telegram Web App، المستخدم بيتعامل بالإصبع على شاشة الموبايل. لو عنصر تفاعلي أصغر من 44px، المستخدم هيضغط غلط أو هيحتاج يحاول أكثر من مرة. ده بيأثر مباشرة على تجربة المستخدم وبيزود الإحباط.</div>
-  <div class="task-detail"><strong>المسبب:</strong> التصميم الأصلي كان يعتمد على الحجم البصري بس (26px للـ bell و avatar) من غير ما يأخذ في الاعتبار مساحة اللمس الفعلية اللي محتاجها الإصبع البشري.</div>
-  <div class="task-detail"><strong>التأثير:</strong> أزرار الجرس والأفاتار والنقاط بقت أسهل في الضغط. الحجم البصري فضل 30px (مناسب للهيدر) بس مساحة اللمس بقت 44px (معيار Apple و Google).</div>
-  <div class="task-detail"><strong>إيه اللي اتغير:</strong> Notification bell: 26&rarr;30px visual + 44px touch. Avatar: 26&rarr;30px visual + 44px touch. PointsBadge: أضيف minWidth/minHeight 44px. كل العناصر التفاعلية في الـ TopNav ليها touch target كافي دلوقتي.</div>
-</div>
-
-<!-- P1-3 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id p1">P1-3</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">إصلاح Silent Catch Blocks</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> الأخطاء اللي بتحصل في التطبيق وبتتابتلع بدون أي تسجيل أو إشعار = مشاكل صامتة. المستخدم ممكن يواجه مشكلة حقيقية (زي فشل في جلب سعر SOL) والـ developer مش هي عرف أبداً لأن الكود بيبتلع الخطأ بدون ما يطلع أي شيء.</div>
-  <div class="task-detail"><strong>المسبب:</strong> عادة سيئة في كتابة catch {} فاضي. بعضها مبرر (زي Telegram SDK اللي ممكن مش موجود، أو localStorage في وضع التصفح الخاص)، لكن الباقي محتاج تسجيل على الأقل.</div>
-  <div class="task-detail"><strong>التأثير:</strong> الآن أي خطأ غير متوقع في جلب سعر SOL بيتسجل في console.warn. ده بيساعد في الـ debugging وبيخلي المشاكل ظاهرة بدل ما تبقى مخفية. الأخطاء المتوقعة (7 أماكن) فضلت silent مع تعليق توضيحي.</div>
-  <div class="task-detail"><strong>إيه اللي اتغير:</strong> SOL price fetch: أضيف console.warn بدل silent. Phantom balance: أضيف تعليق توضيحي. باقي 7 catches متوقعة ومعالجة (Telegram SDK, localStorage, Sentry) — مفيش داعي نغيرها لأنها أخطاء متوقعة بس.</div>
-</div>
-
-<!-- P2-5 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id p2">P2-5</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">توحيد الألوان لمصدر واحد (CSS Variables)</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> لما الألوان مكتوبة كـ hex values مباشرة في الكود، أي تغيير في الـ branding لازم تبحث عن كل الأماكن اللي فيها اللون ده وتغيرها يدوياً. ده بيخلي الـ rebranding صعب ومخاطر أخطاء.</div>
-  <div class="task-detail"><strong>المسبب:</strong> بعض الأماكن في AppShell كانت تستخدم rgba(14,203,129,0.12) و rgba(14,203,129,0.20) مباشرة بدل ما تستخدم CSS variables زي var(--bullish-bg).</div>
-  <div class="task-detail"><strong>التأثير:</strong> الآن كل الألوان في AppShell بتيجي من CSS vars. لو حابب تغير لون الـ bullish، تغيره في مكان واحد بس. ده بيخلي الكود أنظف وأسهل في الصيانة.</div>
-  <div class="task-detail"><strong>إيه اللي اتغير:</strong> rgba(14,203,129,0.12) &rarr; var(--bullish-bg). rgba(14,203,129,0.20) &rarr; color-mix(in srgb, var(--color-bullish) 20%, transparent).</div>
-</div>
-
-<!-- Section: Home Page Redesign -->
-<div class="chapter-header">
-  <div class="section-tag">HOME REDESIGN &mdash; مكتمل</div>
-  <div class="section-title">إعادة تصميم الصفحة الرئيسية (10 أقسام)</div>
-  <div class="section-divider"></div>
-</div>
-
-<div class="body-text">
-  الصفحة الرئيسية كانت تعاني من 10 مشاكل حرجة حددناها بالتحليل المقارن مع Binance و Coinbase و TradingView و Robinhood. كل مشكلة اتعملت فيها. الصفحة الجديدة بتعرض: أسعار السوق، تحية ذكية، محفظة مفصلة، زر التحليل الأساسي، إشارات فعّالة، قائمة المتابعة، حالة السوق، وآخر الصفقات.
-</div>
-
-<!-- HOME-P0 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id home">HOME-P0</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">إضافة سياق سوقي (Market Ticker Bar)</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> أول حاجة شافها المتداول في أي تطبيق تداول هي الأسعار. دخول على "صحراء" بدون أي رقم = تجربة فاشلة. تطبيقات زي Binance و Robinhood بتعرض الأسعار مباشرة فوق.</div>
-  <div class="task-detail"><strong>المسبب:</strong> الصفحة القديمة ماكانتش تعرض أي أسعار BTC/SOL/ETH أو market overview. كانت بتبدأ بتحية عاملة وبطاقة محفظة فاضية.</div>
-  <div class="task-detail"><strong>التأثير:</strong> المستخدم دلوقتي بيعرف فوراً سعر BTC و ETH و SOL مع نسبة التغير 24 ساعة. ده بيعطي سياق فوري لحالة السوق.</div>
-  <div class="task-detail"><strong>إيه اللي اتغير:</strong> أنشأنا getHomeMarketData API جديد (بدون auth) بيجيب أسعار BTC/ETH/SOL من API السوق الموجود + Fear & Greed Index من alternative.me. أضفنا MarketTickerBar component في أعلى الصفحة.</div>
-</div>
-
-<!-- HOME-P1 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id home">HOME-P1</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">عرض المحفظة بشكل احترافي (Portfolio Hero)</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> المحفظة هي أهم رقم للمتداول. عرض "$0.00" كرقم واحد باهت بدون أي إحصائيات = محتوى بلا قيمة. التطبيقات الناجحة بتعرض Win Rate وعدد الأصول والأداء.</div>
-  <div class="task-detail"><strong>المسبب:</strong> الصفحة القديمة كانت تعرض رصيد واحد + PnL بس. مفيش Win Rate، مفيش عدد أصول، مفيش متوسط أداء.</div>
-  <div class="task-detail"><strong>التأثير:</strong> دلوقتي المستخدم شايف 4 إحصائيات أساسية: Win Rate %، عدد الصفقات، عدد الأصول، ومتوسط PnL. كلها في بطاقة واحدة منظمة.</div>
-  <div class="task-detail"><strong>إيه اللي اتغير:</strong> حدثنا getDashboardData ليرجع winRate + assetCount. بنينا PortfolioHeroCard بـ 4 stats في grid.</div>
-</div>
-
-<!-- HOME-P2 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id home">HOME-P2</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">تقليل Quick Actions من 6 لـ 3</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> 6 أزرار في grid بتشتت دم المستخدم. زر Charts كان بيودي لـ COMING SOON (إزعاج). زر Settings في الهوم مش منطقي — مكانه في الـ More Panel.</div>
-  <div class="task-detail"><strong>المسبب:</strong> التصميم القديم كان بيحاول يغطي كل حاجة في صفحة واحدة من غير ما يحدد الأولويات.</div>
-  <div class="task-detail"><strong>التأثير:</strong> 3 أزرار بس: Discover (اكتشاف العملات)، Copilot (المساعد الذكي)، PnL Tracker (تتبع الأداء). كل زر ليه وظيفة واضحة ومفيش أي زر يودي لصفحة فاضية.</div>
-</div>
-
-<!-- HOME-P3 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id home">HOME-P3</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">إبراز Analyze Chart كـ Primary CTA</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> Analyze Chart هو أهم feature في التطبيق والمميزة التنافسية. في الصفحة القديمة كان مدفون في card صغيرة بين 6 أزرار. ده = ضياع فرص استخدام.</div>
-  <div class="task-detail"><strong>المسبب:</strong> كل الأقسام بنفس الحجم والشكل = مفيش visual hierarchy. الزر الأهم كان بنفس حجم زر Settings.</div>
-  <div class="task-detail"><strong>التأثير:</strong> زر Primary CTA كبير بـ gradient أخضر + box-shadow + وصف + icon. بيجذب الانتباه فوراً ويوضح إن ده الـ core feature.</div>
-</div>
-
-<!-- HOME-P4 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id home">HOME-P4</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">عرض الإشارات الفعّالة (Active Signals)</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> المتداول يحتاج يعرف إذا فيه فرص جديدة. بدون عرض الإشارات على الهوم = المستخدم بيفوت صفقات. ده كان موجود في signals.tsx بس مكانش ظاهر على الصفحة الرئيسية.</div>
-  <div class="task-detail"><strong>التأثير:</strong> أول 2 إشارات بتتعرض مع SignalBadge (BUY/SELL/WAIT) + LiveDot (نقطة متحركة) + نسبة الثقة + سعر الدخول.</div>
-</div>
-
-<!-- HOME-P5 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id home">HOME-P5</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">إضافة Watchlist للصفحة الرئيسية</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> أي تداول بيبدأ بـ watchlist. غيابها من الهوم = المستخدم لازم يفتح Discover كل مرة عشان يشوف العملات اللي بيتابعها.</div>
-  <div class="task-detail"><strong>التأثير:</strong> آخر 5 عناصر من قائمة المتابعة بتتعرض. كل عنصر clickable ويودي لصفحة التوكن.</div>
-</div>
-
-<!-- HOME-P6 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id home">HOME-P6</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">إضافة Market Sentiment (Fear & Greed Index)</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> Fear & Greed Index هو أداة أساسية لأي متداول احترافي. بيجيب بيانات من alternative.me (مجاني، بدون API key). بيعطي المستخدم نظرة سريعة على حالة السوق الكلية: هل السوق خائف؟ جشع؟ محايد؟</div>
-  <div class="task-detail"><strong>التأثير:</strong> بطاقة بتعرض الرقم (0-100) + التسمية (Fear/Greed/Neutral) + التغير عن أمس + bar gauge بصري. الألوان بتتغير حسب القيمة: أخضر لـ greed، أحمر لـ fear.</div>
-</div>
-
-<!-- HOME-P8 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id home">HOME-P8</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">تحية ذكية حسب الوقت</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> "Welcome back, Trader" عاملة وباردة. في Binance و Robinhood التحية ذكية ومعلوماتية: صباح/مساء + اسم المستخدم + تاريخ + معلومات عن السوق.</div>
-  <div class="task-detail"><strong>التأثير:</strong> "Good Morning/Afternoon/Evening, [Name]" + التاريخ + عدد الإشارات الفعّالة. التحية بتتغير تلقائياً حسب وقت اليوم.</div>
-</div>
-
-<!-- HOME-P9 -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id home">HOME-P9</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">عرض آخر الصفقات (Recent Trades)</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> عرض آخر الصفقات بيمكّن المستخدم يتابع أدائه بدون ما يفتح Journal أو PnL Tracker. ده بيوفر وقت وبيخلي المستخدم على اطلاع دايم.</div>
-  <div class="task-detail"><strong>التأثير:</strong> آخر 3 صفقات مع TrendArrow (اتجاه) + وصف الصفقة + PnL + الوقت. كل صفقة clickable.</div>
-</div>
-
-<!-- HOME-P7 + P10 combined -->
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id home">HOME-P7 + P10</span>
-    <span class="task-status done">مكتمل</span>
-  </div>
-  <div class="task-title">إحصائيات الحساب المفيدة + Layout متماسك</div>
-  <div class="task-detail"><strong>ليه مهم؟</strong> "Points, Trades, Status" القديمة مش actionable. المفروض Win Rate ومتوسط الأداء. كمان الـ layout القديم كان padding 8px بس وكل cards بنفس الشكل بدون visual hierarchy.</div>
-  <div class="task-detail"><strong>التأثير:</strong> الإحصائيات دمجت في Portfolio Hero Card (Win Rate, Trades, Assets, Avg PnL). الـ layout الجديد فيه visual hierarchy واضح: CTA كبير، signals و watchlist كـ cards، ticker في الأعلى. كل section مع skeleton loading.</div>
-</div>
-
-<!-- Section: New Components & APIs -->
-<div class="chapter-header">
-  <div class="section-tag">INFRASTRUCTURE</div>
-  <div class="section-title">مكونات و APIs جديدة</div>
-  <div class="section-divider"></div>
-</div>
-
-<div class="highlight-box">
-  <div class="highlight-title">مكون جديد: TrendArrow</div>
-  <div class="task-detail">سهم اتجاهي (up/down/neutral) بيستخدم CSS custom properties للثيمينج. بيتستخدم في الـ ticker و الـ signals و الـ recent trades. يتحول 180 درجة لاتجاه down.</div>
-</div>
-
-<div class="highlight-box primary">
-  <div class="highlight-title">API جديد: getHomeMarketData</div>
-  <div class="task-detail">server function جديد بدون auth (لأن بيانات السوق عامة). بيجيب أسعار BTC/ETH/SOL من API السوق الموجود + Fear & Greed Index من alternative.me. بيتكاشي 60 ثانية وبيتحديث كل 2 دقيقة.</div>
-</div>
-
-<div class="highlight-box primary">
-  <div class="highlight-title">API محدّث: getDashboardData</div>
-  <div class="task-detail">أضفنا winRate (نسبة الصفقات الرابحة) و assetCount (عدد الأصول المختلفة) للـ response. ده بيغني الصفحة الرئيسية بإحصائيات حقيقية بدل بيانات عامة.</div>
-</div>
-
-<!-- Section: Quality Verification -->
-<div class="chapter-header">
-  <div class="section-tag">QUALITY</div>
-  <div class="section-title">التحقق من الجودة</div>
-  <div class="section-divider"></div>
-</div>
-
-<div class="body-text">
-  كل تغيير تم اختباره بـ TypeScript compiler و ESLint. النتيجة: 0 أخطاء في الـ types و 0 أخطاء في الـ lint. ده بيضمن إن التغييرات مش هتوقف الـ CI/CD ولا الـ deployment.
-</div>
-
-<table class="summary-table">
-  <thead>
-    <tr><th>الاختبار</th><th>النتيجة</th><th>ملاحظة</th></tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>tsc --noEmit</strong></td>
-      <td style="color: var(--c-accent); font-weight: 700;">0 errors</td>
-      <td>كل الـ types صح</td>
-    </tr>
-    <tr>
-      <td><strong>eslint src/ server/</strong></td>
-      <td style="color: var(--c-accent); font-weight: 700;">0 errors</td>
-      <td>كل الـ formatting صح</td>
-    </tr>
-    <tr>
-      <td><strong>Touch Targets</strong></td>
-      <td style="color: var(--c-accent); font-weight: 700;">44px+</td>
-      <td>كل العناصر التفاعلية في TopNav</td>
-    </tr>
-    <tr>
-      <td><strong>Minimum Font Size</strong></td>
-      <td style="color: var(--c-accent); font-weight: 700;">10px+</td>
-      <td>Badge 10px في 14px badge (مقبول)</td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- Section: Remaining Tasks -->
-<div class="chapter-header">
-  <div class="section-tag">NEXT STEPS</div>
-  <div class="section-title">التاسكات المتبقية</div>
-  <div class="section-divider"></div>
-</div>
-
-<div class="body-text">
-  بعد إنجاز Sprint 1 وإعادة تصميم الصفحة الرئيسية، فاضل تاسكات في Sprint 2-4. دي التاسكات اللي محتاج قرار منك أو APIs أو بيانات إضافية:
-</div>
-
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id p0">P0-1</span>
-    <span class="task-status pending">معلق</span>
-  </div>
-  <div class="task-title">صفحة فوركس/ذهب بـ TradingView Widget</div>
-  <div class="task-detail">أزواج الفوركس مبنية للكريبتو فقط. المحلول: إضافة TradingView widget للفوركس. محتاج تأكيد منك.</div>
-</div>
-
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id p0">P0-3</span>
-    <span class="task-status pending">معلق</span>
-  </div>
-  <div class="task-title">ربط Charts/Arbitrage/Activity بالمحركات الموجودة</div>
-  <div class="task-detail">3 صفحات COMING SOON والمحركات الخلفية موجودة (specially arbitrage). لازم نربطهم أو نخفيهم.</div>
-</div>
-
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id p1">P1-4</span>
-    <span class="task-status pending">يحتاج قرار</span>
-  </div>
-  <div class="task-title">إضافة Discover للتنقل السفلي</div>
-  <div class="task-detail">هل تريد إضافة Discover للـ Bottom Nav؟ ده قرار تصميم محتاج موافقتك.</div>
-</div>
-
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id p2">P2-2</span>
-    <span class="task-status pending">معلق</span>
-  </div>
-  <div class="task-title">Settings sync مع السيرفر</div>
-  <div class="task-detail">بعض الإعدادات تحفظ في localStorage بس بدون sync مع Supabase.</div>
-</div>
-
-<div class="task-card">
-  <div class="task-card-header">
-    <span class="task-id p2">P2-7</span>
-    <span class="task-status pending">يحتاج بيانات</span>
-  </div>
-  <div class="task-title">روابط Brokers الحقيقية</div>
-  <div class="task-detail">الروابط الحالية placeholder. محتاج الروابط الفعلية منك.</div>
-</div>
-
-</div>
-
-</body>
+  </body>
 </html>

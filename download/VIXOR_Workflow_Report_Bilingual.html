@@ -1,1093 +1,1877 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=720">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans+Arabic:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-@page {
-  size: 720px 1020px;
-  margin: 0;
-}
-:root {
-  --page-bg: #121211;
-  --section-bg: #171714;
-  --card-bg: #1b1a18;
-  --table-stripe: #191816;
-  --header-fill: #534d39;
-  --cover-block: #3d3828;
-  --border: #6a6147;
-  --icon: #b8ac88;
-  --accent: #d2b251;
-  --accent-secondary: #7961c1;
-  --text-primary: #e6e5e3;
-  --text-muted: #97948e;
-  --semantic-success: #63b980;
-  --semantic-warning: #bba881;
-  --semantic-error: #bc8681;
-  --semantic-info: #7a9ec2;
-  --c-bg: #121211;
-  --c-accent: #d2b251;
-  --c-text: #e6e5e3;
-  --c-muted: #97948e;
-  --c-mid: #534d39;
-  --c-surface: #1b1a18;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  width: 720px;
-  margin: 0;
-  padding: 0;
-  background: var(--page-bg);
-  color: var(--text-primary);
-  font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-@media screen {
-  html { height: auto; display: flex; justify-content: center; background: #222; }
-  body { transform-origin: top center; margin: 20px auto; }
-}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=720" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans+Arabic:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @page {
+        size: 720px 1020px;
+        margin: 0;
+      }
+      :root {
+        --page-bg: #121211;
+        --section-bg: #171714;
+        --card-bg: #1b1a18;
+        --table-stripe: #191816;
+        --header-fill: #534d39;
+        --cover-block: #3d3828;
+        --border: #6a6147;
+        --icon: #b8ac88;
+        --accent: #d2b251;
+        --accent-secondary: #7961c1;
+        --text-primary: #e6e5e3;
+        --text-muted: #97948e;
+        --semantic-success: #63b980;
+        --semantic-warning: #bba881;
+        --semantic-error: #bc8681;
+        --semantic-info: #7a9ec2;
+        --c-bg: #121211;
+        --c-accent: #d2b251;
+        --c-text: #e6e5e3;
+        --c-muted: #97948e;
+        --c-mid: #534d39;
+        --c-surface: #1b1a18;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        width: 720px;
+        margin: 0;
+        padding: 0;
+        background: var(--page-bg);
+        color: var(--text-primary);
+        font-family: "Noto Sans Arabic", "Inter", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      @media screen {
+        html {
+          height: auto;
+          display: flex;
+          justify-content: center;
+          background: #222;
+        }
+        body {
+          transform-origin: top center;
+          margin: 20px auto;
+        }
+      }
 
-/* Cover */
-.cover {
-  width: 720px; height: 1020px;
-  position: relative; overflow: hidden;
-  break-after: page;
-  display: flex; flex-direction: column;
-  justify-content: center;
-  padding: 0 70px;
-  background: var(--page-bg);
-}
-.cover-layer-1 {
-  position: absolute; inset: 0; z-index: 1; overflow: hidden;
-}
-.cover-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(210,178,81,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(210,178,81,0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-}
-.cover-line {
-  position: absolute; right: 58px; top: 0; bottom: 0; width: 4px;
-  background: linear-gradient(180deg, var(--accent) 0%, transparent 100%);
-}
-.cover-layer-3 {
-  position: relative; z-index: 3;
-}
-.cover-tag {
-  font-family: 'Inter', sans-serif;
-  font-size: 13px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase;
-  color: var(--accent); opacity: 0.9;
-  margin-bottom: 24px;
-}
-.cover-title-ar {
-  font-size: 42px; font-weight: 900; line-height: 1.2;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-.cover-title-en {
-  font-family: 'Inter', sans-serif;
-  font-size: 28px; font-weight: 300; line-height: 1.3;
-  color: var(--text-muted);
-  margin-bottom: 28px;
-}
-.cover-divider {
-  width: 80px; height: 2px;
-  background: var(--accent);
-  margin-bottom: 28px;
-}
-.cover-summary {
-  font-size: 15px; line-height: 1.7; color: var(--text-muted);
-  max-width: 480px;
-}
-.cover-meta {
-  position: absolute; bottom: 50px; right: 70px; left: 70px;
-  display: flex; justify-content: space-between;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px; color: var(--text-muted); letter-spacing: 1px;
-}
+      /* Cover */
+      .cover {
+        width: 720px;
+        height: 1020px;
+        position: relative;
+        overflow: hidden;
+        break-after: page;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 70px;
+        background: var(--page-bg);
+      }
+      .cover-layer-1 {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        overflow: hidden;
+      }
+      .cover-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(210, 178, 81, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(210, 178, 81, 0.03) 1px, transparent 1px);
+        background-size: 60px 60px;
+      }
+      .cover-line {
+        position: absolute;
+        right: 58px;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, var(--accent) 0%, transparent 100%);
+      }
+      .cover-layer-3 {
+        position: relative;
+        z-index: 3;
+      }
+      .cover-tag {
+        font-family: "Inter", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent);
+        opacity: 0.9;
+        margin-bottom: 24px;
+      }
+      .cover-title-ar {
+        font-size: 42px;
+        font-weight: 900;
+        line-height: 1.2;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+      }
+      .cover-title-en {
+        font-family: "Inter", sans-serif;
+        font-size: 28px;
+        font-weight: 300;
+        line-height: 1.3;
+        color: var(--text-muted);
+        margin-bottom: 28px;
+      }
+      .cover-divider {
+        width: 80px;
+        height: 2px;
+        background: var(--accent);
+        margin-bottom: 28px;
+      }
+      .cover-summary {
+        font-size: 15px;
+        line-height: 1.7;
+        color: var(--text-muted);
+        max-width: 480px;
+      }
+      .cover-meta {
+        position: absolute;
+        bottom: 50px;
+        right: 70px;
+        left: 70px;
+        display: flex;
+        justify-content: space-between;
+        font-family: "Inter", sans-serif;
+        font-size: 12px;
+        color: var(--text-muted);
+        letter-spacing: 1px;
+      }
 
-/* Main Content */
-.main-content {
-  padding: 50px 60px 40px 60px;
-  direction: rtl;
-}
+      /* Main Content */
+      .main-content {
+        padding: 50px 60px 40px 60px;
+        direction: rtl;
+      }
 
-/* Language section toggle */
-.lang-ar { direction: rtl; text-align: right; }
-.lang-en { direction: ltr; text-align: left; font-family: 'Inter', sans-serif; }
+      /* Language section toggle */
+      .lang-ar {
+        direction: rtl;
+        text-align: right;
+      }
+      .lang-en {
+        direction: ltr;
+        text-align: left;
+        font-family: "Inter", sans-serif;
+      }
 
-/* Section headers */
-.chapter-header {
-  break-after: avoid;
-  break-inside: avoid;
-  margin-top: 28px;
-}
-.section-tag {
-  font-family: 'Inter', sans-serif;
-  font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 8px;
-}
-.section-title {
-  font-size: 24px; font-weight: 700; line-height: 1.3;
-  color: var(--text-primary);
-  margin-bottom: 6px;
-}
-.section-title-en {
-  font-family: 'Inter', sans-serif;
-  font-size: 18px; font-weight: 500; line-height: 1.4;
-  color: var(--text-muted);
-  margin-bottom: 14px;
-}
-.divider {
-  width: 100%; height: 1px;
-  background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
-  margin-bottom: 18px;
-}
+      /* Section headers */
+      .chapter-header {
+        break-after: avoid;
+        break-inside: avoid;
+        margin-top: 28px;
+      }
+      .section-tag {
+        font-family: "Inter", sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 8px;
+      }
+      .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+      }
+      .section-title-en {
+        font-family: "Inter", sans-serif;
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 1.4;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+      }
+      .divider {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+        margin-bottom: 18px;
+      }
 
-/* Body text */
-.body-text {
-  font-size: 14px; line-height: 1.75; color: var(--text-primary);
-  margin-bottom: 12px;
-  overflow-wrap: break-word;
-}
-.body-text-muted {
-  font-size: 14px; line-height: 1.75; color: var(--text-muted);
-  margin-bottom: 12px;
-}
+      /* Body text */
+      .body-text {
+        font-size: 14px;
+        line-height: 1.75;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+        overflow-wrap: break-word;
+      }
+      .body-text-muted {
+        font-size: 14px;
+        line-height: 1.75;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+      }
 
-/* Cards */
-.card {
-  break-inside: avoid;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px 20px;
-  margin-bottom: 12px;
-}
-.card-accent {
-  border-right: 3px solid var(--accent);
-}
-.card-error {
-  border-right: 3px solid var(--semantic-error);
-}
-.card-success {
-  border-right: 3px solid var(--semantic-success);
-}
-.card-info {
-  border-right: 3px solid var(--semantic-info);
-}
-.card-en {
-  border-right: none;
-  border-left: 3px solid var(--accent);
-}
+      /* Cards */
+      .card {
+        break-inside: avoid;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px 20px;
+        margin-bottom: 12px;
+      }
+      .card-accent {
+        border-right: 3px solid var(--accent);
+      }
+      .card-error {
+        border-right: 3px solid var(--semantic-error);
+      }
+      .card-success {
+        border-right: 3px solid var(--semantic-success);
+      }
+      .card-info {
+        border-right: 3px solid var(--semantic-info);
+      }
+      .card-en {
+        border-right: none;
+        border-left: 3px solid var(--accent);
+      }
 
-/* Subsection title */
-.sub-title {
-  font-size: 17px; font-weight: 700; line-height: 1.4;
-  color: var(--text-primary);
-  margin: 16px 0 8px 0;
-}
-.sub-title-en {
-  font-family: 'Inter', sans-serif;
-  font-size: 15px; font-weight: 600; line-height: 1.4;
-  color: var(--text-muted);
-  margin: 12px 0 6px 0;
-}
+      /* Subsection title */
+      .sub-title {
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.4;
+        color: var(--text-primary);
+        margin: 16px 0 8px 0;
+      }
+      .sub-title-en {
+        font-family: "Inter", sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: var(--text-muted);
+        margin: 12px 0 6px 0;
+      }
 
-/* Tables */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 14px;
-  font-size: 12.5px;
-  break-inside: avoid;
-}
-thead th {
-  background: var(--header-fill);
-  color: var(--text-primary);
-  font-weight: 600;
-  padding: 10px 12px;
-  text-align: right;
-  border-bottom: 1px solid var(--border);
-}
-thead th.en-th {
-  text-align: left;
-  font-family: 'Inter', sans-serif;
-}
-tbody td {
-  padding: 8px 12px;
-  border-bottom: 1px solid rgba(106,97,71,0.3);
-  color: var(--text-primary);
-  vertical-align: top;
-}
-tbody tr:nth-child(odd) {
-  background: var(--table-stripe);
-}
-td.en-td {
-  text-align: left;
-  font-family: 'Inter', sans-serif;
-}
+      /* Tables */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 14px;
+        font-size: 12.5px;
+        break-inside: avoid;
+      }
+      thead th {
+        background: var(--header-fill);
+        color: var(--text-primary);
+        font-weight: 600;
+        padding: 10px 12px;
+        text-align: right;
+        border-bottom: 1px solid var(--border);
+      }
+      thead th.en-th {
+        text-align: left;
+        font-family: "Inter", sans-serif;
+      }
+      tbody td {
+        padding: 8px 12px;
+        border-bottom: 1px solid rgba(106, 97, 71, 0.3);
+        color: var(--text-primary);
+        vertical-align: top;
+      }
+      tbody tr:nth-child(odd) {
+        background: var(--table-stripe);
+      }
+      td.en-td {
+        text-align: left;
+        font-family: "Inter", sans-serif;
+      }
 
-/* Tags/badges */
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
-}
-.badge-critical { background: rgba(188,134,129,0.2); color: var(--semantic-error); }
-.badge-high { background: rgba(187,168,129,0.2); color: var(--semantic-warning); }
-.badge-medium { background: rgba(122,158,194,0.2); color: var(--semantic-info); }
-.badge-success { background: rgba(99,185,128,0.2); color: var(--semantic-success); }
+      /* Tags/badges */
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-family: "Inter", sans-serif;
+        font-weight: 600;
+      }
+      .badge-critical {
+        background: rgba(188, 134, 129, 0.2);
+        color: var(--semantic-error);
+      }
+      .badge-high {
+        background: rgba(187, 168, 129, 0.2);
+        color: var(--semantic-warning);
+      }
+      .badge-medium {
+        background: rgba(122, 158, 194, 0.2);
+        color: var(--semantic-info);
+      }
+      .badge-success {
+        background: rgba(99, 185, 128, 0.2);
+        color: var(--semantic-success);
+      }
 
-/* Code inline */
-code {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  background: rgba(210,178,81,0.1);
-  color: var(--accent);
-  padding: 1px 6px;
-  border-radius: 3px;
-}
+      /* Code inline */
+      code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        background: rgba(210, 178, 81, 0.1);
+        color: var(--accent);
+        padding: 1px 6px;
+        border-radius: 3px;
+      }
 
-/* List */
-.task-list {
-  list-style: none;
-  padding: 0;
-}
-.task-list li {
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(106,97,71,0.15);
-  font-size: 13px;
-  line-height: 1.6;
-  display: flex;
-  gap: 10px;
-}
-.task-list li:last-child { border-bottom: none; }
-.task-id {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent);
-  min-width: 65px;
-  flex-shrink: 0;
-}
+      /* List */
+      .task-list {
+        list-style: none;
+        padding: 0;
+      }
+      .task-list li {
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(106, 97, 71, 0.15);
+        font-size: 13px;
+        line-height: 1.6;
+        display: flex;
+        gap: 10px;
+      }
+      .task-list li:last-child {
+        border-bottom: none;
+      }
+      .task-id {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent);
+        min-width: 65px;
+        flex-shrink: 0;
+      }
 
-/* Language separator */
-.lang-sep {
-  display: flex; align-items: center; gap: 12px;
-  margin: 20px 0 14px 0;
-  font-family: 'Inter', sans-serif;
-  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--text-muted);
-}
-.lang-sep::before, .lang-sep::after {
-  content: ''; flex: 1; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border), transparent);
-}
+      /* Language separator */
+      .lang-sep {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 20px 0 14px 0;
+        font-family: "Inter", sans-serif;
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .lang-sep::before,
+      .lang-sep::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--border), transparent);
+      }
 
-/* Metric boxes */
-.metric-row {
-  display: flex; gap: 10px; margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-.metric-box {
-  flex: 1; min-width: 120px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 16px;
-  text-align: center;
-  break-inside: avoid;
-}
-.metric-value {
-  font-family: 'Inter', sans-serif;
-  font-size: 26px; font-weight: 900;
-  color: var(--accent);
-  line-height: 1.1;
-}
-.metric-label {
-  font-size: 11px; color: var(--text-muted);
-  margin-top: 4px;
-}
+      /* Metric boxes */
+      .metric-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .metric-box {
+        flex: 1;
+        min-width: 120px;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px 16px;
+        text-align: center;
+        break-inside: avoid;
+      }
+      .metric-value {
+        font-family: "Inter", sans-serif;
+        font-size: 26px;
+        font-weight: 900;
+        color: var(--accent);
+        line-height: 1.1;
+      }
+      .metric-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 4px;
+      }
 
-/* Timeline */
-.timeline-item {
-  display: flex; gap: 14px; margin-bottom: 10px;
-  break-inside: avoid;
-}
-.timeline-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  margin-top: 5px;
-  flex-shrink: 0;
-}
-.timeline-content {
-  flex: 1;
-}
-.timeline-week {
-  font-family: 'Inter', sans-serif;
-  font-size: 12px; font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 2px;
-}
-.timeline-desc {
-  font-size: 13px; line-height: 1.6;
-  color: var(--text-primary);
-}
+      /* Timeline */
+      .timeline-item {
+        display: flex;
+        gap: 14px;
+        margin-bottom: 10px;
+        break-inside: avoid;
+      }
+      .timeline-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        margin-top: 5px;
+        flex-shrink: 0;
+      }
+      .timeline-content {
+        flex: 1;
+      }
+      .timeline-week {
+        font-family: "Inter", sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 2px;
+      }
+      .timeline-desc {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text-primary);
+      }
 
-/* Priority matrix mini */
-.priority-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.priority-cell {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 12px;
-  font-size: 12px;
-  line-height: 1.5;
-}
-.priority-cell-title {
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  font-size: 11px;
-  margin-bottom: 4px;
-}
+      /* Priority matrix mini */
+      .priority-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .priority-cell {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 10px 12px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .priority-cell-title {
+        font-family: "Inter", sans-serif;
+        font-weight: 700;
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
 
-/* Ending page */
-.ending {
-  width: 720px; height: 1020px;
-  box-sizing: border-box;
-  break-before: page;
-  overflow: hidden;
-  display: flex; flex-direction: column;
-  justify-content: center; align-items: center;
-  text-align: center;
-  padding: 60px;
-  background: var(--page-bg);
-}
-.ending-big {
-  font-size: 36px; font-weight: 900; line-height: 1.3;
-  color: var(--accent);
-  margin-bottom: 20px;
-}
-.ending-sub {
-  font-size: 15px; line-height: 1.7; color: var(--text-muted);
-  max-width: 400px;
-}
-</style>
-</head>
-<body>
-
-<!-- ============ COVER PAGE ============ -->
-<div class="cover">
-  <div class="cover-layer-1">
-    <div class="cover-grid"></div>
-    <div class="cover-line"></div>
-  </div>
-  <div class="cover-layer-3">
-    <div class="cover-tag">Workflow Agent Report</div>
-    <div class="cover-title-ar">تقرير وكيل العمل المفصل</div>
-    <div class="cover-title-en">VIXOR Platform - Comprehensive Workflow Report</div>
-    <div class="cover-divider"></div>
-    <div class="cover-summary">
-      تقرير شامل لتطبيق VIXOR للتداول يغطي جميع المشاكل الحالية، خطط الإصلاح، وجدول التنفيذ الكامل من التشخيص إلى الإطلاق.
-      يهدف هذا التقرير إلى تجهيز المنصة لاستقبال أكثر من 300 مستخدم يومي مع معايير احترافية عالية.
-    </div>
-  </div>
-  <div class="cover-meta">
-    <span>2026-06-30</span>
-    <span>kam65624-cmd/vixor-APP</span>
-    <span>vixor-app.vercel.app</span>
-  </div>
-</div>
-
-<!-- ============ MAIN CONTENT ============ -->
-<div class="main-content">
-
-  <!-- ====== SECTION 1: EXECUTIVE SUMMARY ====== -->
-  <div class="chapter-header">
-    <div class="section-tag">01 / EXECUTIVE SUMMARY</div>
-    <div class="section-title">الملخص التنفيذي</div>
-    <div class="section-title-en">Executive Summary</div>
-    <div class="divider"></div>
-  </div>
-
-  <div class="lang-ar">
-    <p class="body-text">
-      يقدم هذا التقرير تحليلاً شاملاً لحالة تطبيق VIXOR للتداول الذكي، وهو منصة مبنية على TanStack Start مع React 19 وSupabase وVite ومنشورة على Vercel Serverless. يعتمد التطبيق على معمارية DDD متقدمة تضم 16 نطاقاً متخصصاً و92 مكتبة تشغيلية و363 ملف TypeScript. على الرغم من هذه البنية القوية، يواجه التطبيق عدة مشاكل حرجة تمنعه من تقديم تجربة مستخدم احترافية.
-    </p>
-    <p class="body-text">
-      المشكلة الأكثر إلحاحاً هي تعطل ميزة تحليل الرسوم البيانية، وهي الميزة الأساسية التي يقوم عليها التطبيق. كما يعاني التصميم الحالي من نقص في العمق البصري والتفاعلية، حيث وصفه المستخدمون بأنه أشبه بـ "رين شبه ميت". توجد ثلاث صفحات فارغة تماماً بدون أي محتوى وظيفي، مما يعطي انطباعاً سيئاً عن جاهزية المنتج.
-    </p>
-    <p class="body-text">
-      يحدد هذا التقرير 42 مهمة محددة موزعة على 4 مراحل رئيسية: إصلاح الأخطاء الحرجة، إعادة تصميم نظام التصميم بالكامل، تقوية بيئة الإنتاج لدعم 300+ مستخدم يومي، وتنظيف الديون التقنية. الجدول الزمني المقدر هو 40-50 ساعة تطوير مركزة.
-    </p>
-  </div>
-
-  <div class="lang-sep">ENGLISH</div>
-
-  <div class="lang-en">
-    <p class="body-text">
-      This report presents a comprehensive analysis of the VIXOR smart trading platform, built on TanStack Start with React 19, Supabase, Vite, and deployed on Vercel Serverless. The application leverages an advanced DDD architecture comprising 16 specialized domains, 92 runtime libraries, and 363 TypeScript files. Despite this robust foundation, the platform faces several critical issues that prevent it from delivering a professional user experience.
-    </p>
-    <p class="body-text">
-      The most pressing issue is the broken chart analysis feature, which is the core functionality the entire application is built around. The current design system also suffers from a lack of visual depth and interactivity, with users describing it as looking like a "dead ruin." Three pages are completely empty stubs with no functional content, giving a poor impression of product readiness.
-    </p>
-    <p class="body-text">
-      This report identifies 42 specific tasks distributed across 4 main phases: fixing critical bugs, completely overhauling the design system, hardening the production environment for 300+ daily users, and cleaning up technical debt. The estimated timeline is 40-50 focused development hours spread across 8 weeks with parallel execution tracks.
-    </p>
-  </div>
-
-  <!-- Metrics -->
-  <div class="metric-row">
-    <div class="metric-box">
-      <div class="metric-value">363</div>
-      <div class="metric-label">TypeScript Files / ملفات</div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-value">16</div>
-      <div class="metric-label">Domains / نطاقات</div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-value">35</div>
-      <div class="metric-label">Routes / مسارات</div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-value">42</div>
-      <div class="metric-label">Tasks / مهام</div>
-    </div>
-  </div>
-
-  <!-- ====== SECTION 2: CHART ANALYSIS BUG ====== -->
-  <div class="chapter-header">
-    <div class="section-tag">02 / CRITICAL BUG DIAGNOSIS</div>
-    <div class="section-title">تشخيص عطل تحليل الرسوم البيانية</div>
-    <div class="section-title-en">Chart Analysis Bug Diagnosis</div>
-    <div class="divider"></div>
-  </div>
-
-  <div class="lang-ar">
-    <p class="body-text">
-      ميزة تحليل الرسوم البيانية هي الأساس الذي يقوم عليه تطبيق VIXOR بالكامل. عندما يقوم المستخدم برفع صورة رسم بياني، يفترض بالنظام استخراج زوج العملة والإطار الزمني ثم تشغيل محرك التحليل المحلي (SMC/ICT) لإنتاج تقرير تحليل شامل. حالياً هذه العملية بأكملها معطلة ولا تنتج أي نتائج للمستخدم.
-    </p>
-    <p class="body-text">
-      من خلال مراجعة شاملة لمحرك التحليل في الملف <code>src/domains/analysis/engine/engine.ts</code> (1115 سطر)، تبين أن المحرك نفسه مصمم بشكل جيد وهو يعمل بشكل صحيح من الناحية الحسابية. المحرك حتمي تماماً ولا يحتاج أي مفاتيح API خارجية، ويعتمد على بيانات OHLCV إما من المصدر أو من مولد بيانات اصطناعي داخلي. المشكلة الحقيقية ليست في المحرك نفسه بل في مسار الاستدعاء.
-    </p>
-    <p class="body-text">
-      السبب الجذري الأرجح هو أن استدعاء نموذج الرؤية (VLM) لاستخراج البيانات من الصورة يتجاوز المهلة الزمنية المحددة في Vercel وهي 10 ثوانٍ. عملية رفع الصورة ثم استدعاء VLM ثم استخراج البيانات ثم تمريرها للمحرك تستغرق وقتاً أطول من الحد المسموح به. بالإضافة إلى ذلك، يوجد عدم تطابق في تسمية متغيرات البيئة بين ملف <code>.env.example</code> والخزنة المركزية.
-    </p>
-  </div>
-
-  <div class="lang-sep">ENGLISH</div>
-
-  <div class="lang-en">
-    <p class="body-text">
-      The chart analysis feature is the foundational capability upon which the entire VIXOR application is built. When a user uploads a chart image, the system is expected to extract the trading pair and timeframe, then run the local SMC/ICT analysis engine to produce a comprehensive analysis report. Currently, this entire pipeline is broken and produces no results for users.
-    </p>
-    <p class="body-text">
-      Through a thorough review of the analysis engine in <code>src/domains/analysis/engine/engine.ts</code> (1,115 lines), it was determined that the engine itself is well-architected and computationally sound. It is fully deterministic, requires zero external API keys, and operates on either provided OHLCV bars or an internal synthetic data generator. The root problem is not in the engine itself, but in the invocation pipeline that feeds it data.
-    </p>
-    <p class="body-text">
-      The most likely root cause is that the Vision Language Model (VLM) call for extracting data from the uploaded image exceeds the Vercel serverless function timeout of 10 seconds. The full pipeline of image upload, VLM invocation, data extraction, and engine execution takes longer than the allowed limit. Additionally, a type mismatch was discovered where <code>entry</code> and <code>stop_loss</code> are formatted as strings via <code>formatPrice()</code> on lines 357-358, but the <code>LocalAnalysisResult</code> interface declares them as <code>number</code>, which could cause downstream runtime failures.
-    </p>
-  </div>
-
-  <!-- Bug findings table -->
-  <div class="lang-ar">
-    <table>
-      <thead>
-        <tr><th>#</th><th>المشكلة</th><th>الخطورة</th><th>الملف</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>1</td><td>انتهاء مهلة VLM على Vercel (10 ثوانٍ)</td><td><span class="badge badge-critical">حرجة</span></td><td><code>chart-vision.ts</code></td></tr>
-        <tr><td>2</td><td>عدم تطابق الأنواع: string بدل number</td><td><span class="badge badge-high">عالية</span></td><td><code>engine.ts:357-358</code></td></tr>
-        <tr><td>3</td><td>نموذج VLM مشفر بدون بديل عند الفشل</td><td><span class="badge badge-high">عالية</span></td><td><code>chart-vision.ts</code></td></tr>
-        <tr><td>4</td><td>مفتاح API غير معيّن = بيانات اصطناعية فقط</td><td><span class="badge badge-medium">متوسطة</span></td><td><code>price-fetcher.ts</code></td></tr>
-        <tr><td>5</td><td>عدم تطابق تسمية متغيرات البيئة</td><td><span class="badge badge-medium">متوسطة</span></td><td><code>.env.example</code> vs Vault</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="lang-en">
-    <table>
-      <thead>
-        <tr><th class="en-th">#</th><th class="en-th">Issue</th><th class="en-th">Severity</th><th class="en-th">File</th></tr>
-      </thead>
-      <tbody>
-        <tr><td class="en-td">1</td><td class="en-td">VLM timeout on Vercel (10s limit)</td><td class="en-td"><span class="badge badge-critical">Critical</span></td><td class="en-td"><code>chart-vision.ts</code></td></tr>
-        <tr><td class="en-td">2</td><td class="en-td">Type mismatch: string vs number</td><td class="en-td"><span class="badge badge-high">High</span></td><td class="en-td"><code>engine.ts:357-358</code></td></tr>
-        <tr><td class="en-td">3</td><td class="en-td">VLM model hardcoded, no fallback</td><td class="en-td"><span class="badge badge-high">High</span></td><td class="en-td"><code>chart-vision.ts</code></td></tr>
-        <tr><td class="en-td">4</td><td class="en-td">Missing API key = synthetic data only</td><td class="en-td"><span class="badge badge-medium">Medium</span></td><td class="en-td"><code>price-fetcher.ts</code></td></tr>
-        <tr><td class="en-td">5</td><td class="en-td">Env var naming mismatch</td><td class="en-td"><span class="badge badge-medium">Medium</span></td><td class="en-td"><code>.env.example</code> vs Vault</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Fix tasks -->
-  <div class="lang-ar">
-    <div class="sub-title">مهام الإصلاح (6 مهام - ساعتان)</div>
-    <ul class="task-list">
-      <li><span class="task-id">FIX-1</span><span>زيادة المهلة الزمنية في <code>vercel.json</code> من 10 إلى 30 ثانية</span></li>
-      <li><span class="task-id">FIX-2</span><span>إضافة logging تفصيلي حول استدعاء VLM في <code>chart-vision.ts</code></span></li>
-      <li><span class="task-id">FIX-3</span><span>إضافة نموذج بديل عند فشل النموذج الأساسي</span></li>
-      <li><span class="task-id">FIX-4</span><span>إصلاح عدم تطابق الأنواع string/number في المحرك</span></li>
-      <li><span class="task-id">FIX-5</span><span>التحقق من جميع مفاتيح API في Vercel Dashboard</span></li>
-      <li><span class="task-id">FIX-6</span><span>اختبار شامل end-to-end للتحليل الكامل</span></li>
-    </ul>
-  </div>
-
-  <div class="lang-en">
-    <div class="sub-title-en">Fix Tasks (6 tasks - 2 hours)</div>
-    <ul class="task-list">
-      <li><span class="task-id">FIX-1</span><span>Increase Vercel function timeout from 10s to 30s in <code>vercel.json</code></span></li>
-      <li><span class="task-id">FIX-2</span><span>Add detailed logging around VLM invocation in <code>chart-vision.ts</code></span></li>
-      <li><span class="task-id">FIX-3</span><span>Add fallback model when primary VLM model fails</span></li>
-      <li><span class="task-id">FIX-4</span><span>Fix type mismatch: ensure entry/stop_loss are numbers, not formatted strings</span></li>
-      <li><span class="task-id">FIX-5</span><span>Verify all API keys are set in Vercel Dashboard environment</span></li>
-      <li><span class="task-id">FIX-6</span><span>Comprehensive end-to-end test for the full analysis pipeline</span></li>
-    </ul>
-  </div>
-
-  <!-- ====== SECTION 3: EMPTY PAGES ====== -->
-  <div class="chapter-header">
-    <div class="section-tag">03 / EMPTY PAGES & DEAD ROUTES</div>
-    <div class="section-title">الصفحات الفارغة والمسارات المعطلة</div>
-    <div class="section-title-en">Empty Pages and Dead Routes</div>
-    <div class="divider"></div>
-  </div>
-
-  <div class="lang-ar">
-    <p class="body-text">
-      يوجد في التطبيق 3 مسارات فارغة تماماً لا تحتوي على أي محتوى وظيفي، تظهر فقط شارة "قريباً" مع مكون الحالة الفارغة. هذه الصفحات تعطي انطباعاً سيئاً جداً للمستخدم وتجعل التطبيق يبدو غير مكتمل. المسارات المتأثرة هي: <code>/charts</code> و<code>/arbitrage</code> و<code>/activity-web3</code>. المفارقة أن نطاق <code>arbitrage</code> يحتوي على محرك كامل في الواجهة الخلفية مع استراتيجيات ومنصات ونظام تنفيذ، لكن واجهة المستخدم الخاصة به فارغة تماماً.
-    </p>
-    <p class="body-text">
-      بالإضافة إلى ذلك، صفحة <code>/token/$symbol</code> تحتوي على قسم رسم بياني يعرض عنصراً نائباً مع شارة "قريباً" بدلاً من الرسم البياني الفعلي. الحل المقترح هو إما بناء هذه الصفحات بشكل كامل أو إخفاؤها من قائمة التنقل المؤقتاً حتى يتم تطويرها. يوصى بالخيار الثاني كإجراء سريع ثم بناء صفحات الرسوم البيانية و Arbitrage كأولوية عالية.
-    </p>
-  </div>
-
-  <div class="lang-sep">ENGLISH</div>
-
-  <div class="lang-en">
-    <p class="body-text">
-      The application contains 3 routes that are completely empty stubs with no functional content, showing only a "COMING SOON" badge with an EmptyState component. These pages create a very poor impression for users and make the application appear unfinished. The affected routes are: <code>/charts</code>, <code>/arbitrage</code>, and <code>/activity-web3</code>. Notably, the <code>arbitrage</code> domain contains a complete backend engine with strategies, exchange adapters, and an execution system, yet its UI is entirely empty.
-    </p>
-    <p class="body-text">
-      Additionally, the <code>/token/$symbol</code> page has a chart section that shows a placeholder with a "COMING SOON" badge instead of an actual chart. The recommended approach is to either build these pages fully or hide them from the navigation menu temporarily until they are developed. The second option is recommended as a quick fix, followed by building the Charts and Arbitrage pages as a high priority.
-    </p>
-  </div>
-
-  <div class="card card-error">
-    <div class="lang-ar">
-      <div class="sub-title" style="color:var(--semantic-error);">صفحات حرجة تحتاج إخفاء فوري</div>
-      <p class="body-text" style="font-size:13px;margin-bottom:0;">
-        <code>/charts</code> - صفحة الرسوم البيانية | <code>/arbitrage</code> - مراجحة الأسعار | <code>/activity-web3</code> - نشاط ويب 3
-      </p>
-    </div>
-    <div class="lang-en">
-      <div class="sub-title-en" style="color:var(--semantic-error);">Critical Pages Requiring Immediate Hiding</div>
-      <p class="body-text" style="font-size:13px;margin-bottom:0;">
-        <code>/charts</code> - Charts page | <code>/arbitrage</code> - Price arbitrage | <code>/activity-web3</code> - Web3 activity
-      </p>
-    </div>
-  </div>
-
-  <!-- ====== SECTION 4: DESIGN SYSTEM ====== -->
-  <div class="chapter-header">
-    <div class="section-tag">04 / DESIGN SYSTEM OVERHAUL</div>
-    <div class="section-title">خطة إعادة تصميم نظام التصميم</div>
-    <div class="section-title-en">UI/UX Design System Overhaul Plan</div>
-    <div class="divider"></div>
-  </div>
-
-  <div class="lang-ar">
-    <p class="body-text">
-      النظام الحالي يستخدم Tailwind CSS v4 مع تهيئة CSS-first بدون ملف إعدادات JavaScript. الألوان الحالية تعتمد على OKLCH مع تباين منخفض ينتج مظهراً مسطحاً يفتقر للعمق. خط Inter هو الخط الأساسي مع JetBrains Mono للنصوص البرمجية. يوجد دعم كامل لـ RTL وخصائص الحركة المخفضة وأنماط الطباعة.
-    </p>
-    <p class="body-text">
-      المشكلة الرئيسية هي أن النظام الحالي رغم تقنياً متكامل، إلا أنه يبدو "ميتاً" للمستخدم. الألوان منخفضة التباين، لا توجد رسوم متحركة أو تفاعلات عند التمرير، والبطاقات تبدو مسطحة بدون عمق بصري. الحل المقترح يشمل نظام ألوان جديد بتباين أعلى، وتدرجات لونية قابلة لإعادة الاستخدام، وتخطيط محسّن مع مسافات أفضل، وحالات فارغة احترافية مع أزرار إجراء، ومكونات تحميل هيكلي، وتفاعلات دقيقة عند التمرير.
-    </p>
-  </div>
-
-  <div class="lang-sep">ENGLISH</div>
-
-  <div class="lang-en">
-    <p class="body-text">
-      The current system uses Tailwind CSS v4 with a CSS-first configuration and no JavaScript config file. Colors use the OKLCH color space with low contrast, producing a flat appearance lacking depth. Inter is the primary typeface with JetBrains Mono for code. Full RTL support, reduced motion preferences, and print styles are already implemented.
-    </p>
-    <p class="body-text">
-      The main problem is that while technically complete, the current system looks "dead" to users. Colors have low contrast, there are no animations or hover interactions, and cards appear flat without visual depth. The proposed solution includes a new color system with higher contrast, reusable gradient classes, improved layout with better spacing, professional empty states with call-to-action buttons, skeleton loading components, and micro-interactions on hover.
-    </p>
-  </div>
-
-  <div class="lang-ar">
-    <div class="sub-title">نظام الألوان المقترح</div>
-    <table>
-      <thead><tr><th>الدور</th><th>القيمة الحالية</th><th>القيمة المقترحة</th></tr></thead>
-      <tbody>
-        <tr><td>الخلفية الرئيسية</td><td>oklch(0.16 0.012 260)</td><td>oklch(0.12 0.01 250) - أعمق</td></tr>
-        <tr><td>سطح البطاقات</td><td>oklch(0.205 0.014 260)</td><td>oklch(0.16 0.01 250) - بعمق</td></tr>
-        <tr><td>أخضر الصعود</td><td>oklch(0.72 0.17 162)</td><td>oklch(0.72 0.20 162) - أزهى</td></tr>
-        <tr><td>أحمر الهبوط</td><td>oklch(0.65 0.24 25)</td><td>oklch(0.50 0.18 25) - أعمق</td></tr>
-        <tr><td>النص الأساسي</td><td>oklch(0.97 0.005 250)</td><td>oklch(0.95 0.01 250) - أبيض نقي</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="lang-en">
-    <div class="sub-title-en">Proposed Color System</div>
-    <table>
-      <thead><tr><th class="en-th">Role</th><th class="en-th">Current Value</th><th class="en-th">Proposed Value</th></tr></thead>
-      <tbody>
-        <tr><td class="en-td">Main Background</td><td class="en-td">oklch(0.16 0.012 260)</td><td class="en-td">oklch(0.12 0.01 250) - deeper</td></tr>
-        <tr><td class="en-td">Card Surface</td><td class="en-td">oklch(0.205 0.014 260)</td><td class="en-td">oklch(0.16 0.01 250) - with depth</td></tr>
-        <tr><td class="en-td">Bullish Green</td><td class="en-td">oklch(0.72 0.17 162)</td><td class="en-td">oklch(0.72 0.20 162) - more vivid</td></tr>
-        <tr><td class="en-td">Bearish Red</td><td class="en-td">oklch(0.65 0.24 25)</td><td class="en-td">oklch(0.50 0.18 25) - deeper</td></tr>
-        <tr><td class="en-td">Primary Text</td><td class="en-td">oklch(0.97 0.005 250)</td><td class="en-td">oklch(0.95 0.01 250) - near-pure white</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- UI Tasks -->
-  <div class="lang-ar">
-    <div class="sub-title">مهام التصميم (15 مهمة - 20 ساعة)</div>
-    <ul class="task-list">
-      <li><span class="task-id">UI-1</span><span>إعادة كتابة نظام الألوان بالكامل في <code>styles.css</code> (2 ساعة)</span></li>
-      <li><span class="task-id">UI-2</span><span>إنشاء فئات gradients قابلة لإعادة الاستخدام (30 دقيقة)</span></li>
-      <li><span class="task-id">UI-3</span><span>تحديث تخطيط الصفحة في <code>PageLayout.tsx</code> مع مسافات محسّنة (3 ساعات)</span></li>
-      <li><span class="task-id">UI-4</span><span>تصميم حالات فارغة احترافية مع أزرار إجراء (1 ساعة)</span></li>
-      <li><span class="task-id">UI-5</span><span>بناء مكون SkeletonLoader لحالات التحميل (1 ساعة)</span></li>
-      <li><span class="task-id">UI-6</span><span>إضافة تفاعلات دقيقة عند التمرير (30 دقيقة)</span></li>
-      <li><span class="task-id">UI-7</span><span>دمج رسوم TradingView في صفحة الرسوم البيانية (2 ساعة)</span></li>
-      <li><span class="task-id">UI-8</span><span>إخفاء صفحات فارغة من قائمة التنقل (30 دقيقة)</span></li>
-      <li><span class="task-id">UI-9</span><span>تحسين واجهة رفع الصور في صفحة التحليل (2 ساعة)</span></li>
-      <li><span class="task-id">UI-10</span><span>إعادة تصميم صفحة نتائج التحليل (3 ساعات)</span></li>
-      <li><span class="task-id">UI-11</span><span>إعادة تصميم لوحة التحكم الرئيسية (3 ساعات)</span></li>
-      <li><span class="task-id">UI-12</span><span>تحسين بطاقات البيانات في جميع الصفحات (4 ساعات)</span></li>
-      <li><span class="task-id">UI-13</span><span>حذف الأكواد الميتة من أنظمة التصميم القديمة (30 دقيقة)</span></li>
-      <li><span class="task-id">UI-14</span><span>تصميم متجاوب للشاشات الكبيرة (2 ساعة)</span></li>
-      <li><span class="task-id">UI-15</span><span>إضافة حركات انتقالية بين الصفحات (30 دقيقة)</span></li>
-    </ul>
-  </div>
-
-  <div class="lang-en">
-    <div class="sub-title-en">Design Tasks (15 tasks - 20 hours)</div>
-    <ul class="task-list">
-      <li><span class="task-id">UI-1</span><span>Complete color system rewrite in <code>styles.css</code> (2h)</span></li>
-      <li><span class="task-id">UI-2</span><span>Create reusable gradient utility classes (30min)</span></li>
-      <li><span class="task-id">UI-3</span><span>Update page layout in <code>PageLayout.tsx</code> with improved spacing (3h)</span></li>
-      <li><span class="task-id">UI-4</span><span>Design professional empty states with CTAs (1h)</span></li>
-      <li><span class="task-id">UI-5</span><span>Build SkeletonLoader component for loading states (1h)</span></li>
-      <li><span class="task-id">UI-6</span><span>Add hover micro-interactions (30min)</span></li>
-      <li><span class="task-id">UI-7</span><span>Integrate TradingView charts into the charts page (2h)</span></li>
-      <li><span class="task-id">UI-8</span><span>Hide empty pages from navigation menu (30min)</span></li>
-      <li><span class="task-id">UI-9</span><span>Improve image upload UI in the analysis page (2h)</span></li>
-      <li><span class="task-id">UI-10</span><span>Redesign the analysis results page (3h)</span></li>
-      <li><span class="task-id">UI-11</span><span>Redesign the main dashboard (3h)</span></li>
-      <li><span class="task-id">UI-12</span><span>Improve data cards across all pages (4h)</span></li>
-      <li><span class="task-id">UI-13</span><span>Remove dead code from old design systems (30min)</span></li>
-      <li><span class="task-id">UI-14</span><span>Responsive design for large screens (2h)</span></li>
-      <li><span class="task-id">UI-15</span><span>Add page transition animations (30min)</span></li>
-    </ul>
-  </div>
-
-  <!-- ====== SECTION 5: PRODUCTION HARDENING ====== -->
-  <div class="chapter-header">
-    <div class="section-tag">05 / PRODUCTION HARDENING</div>
-    <div class="section-title">تقوية بيئة الإنتاج</div>
-    <div class="section-title-en">Production Environment Hardening</div>
-    <div class="divider"></div>
-  </div>
-
-  <div class="lang-ar">
-    <p class="body-text">
-      لدعم أكثر من 300 مستخدم يومي، يحتاج التطبيق إلى عدة تحسينات في البنية التحتية. التحديات الحالية تشمل: 236 عبارة console.log موزعة على 63 ملفاً مما يسبب تسرب معلومات في بيئة الإنتاج، و89 استخداماً لنوع any في 31 ملفاً مما يضعف أمان الأنواع، وغياب حدود المعدل على جميع الدوال، وعدم وجود اتصال مجمّع لقاعدة البيانات.
-    </p>
-    <p class="body-text">
-      الجانب الإيجابي هو أن نظام تحديد المعدل موجود بالفعل ويعمل بشكل جيد مع Redis ودعم احتياطي في الذاكرة. يوجد حد عام بقوة 120 طلباً في الدقيقة لكل عنوان IP، وحد خاص بـ 30 طلباً في الدقيقة لويب هوك Telegram. الحدود الجديدة المطلوبة تشمل: إضافة حدود معدل على جانب العميل لمنع النقر المزدوج، وتحسين تسخين Redis عند بدء التشغيل، وتقليل حجم الحزمة البرمجية، وإنشاء معالج أخطاء موحد، واستبدال جميع console.log بالمسجل المنظم الموجود مسبقاً.
-    </p>
-  </div>
-
-  <div class="lang-sep">ENGLISH</div>
-
-  <div class="lang-en">
-    <p class="body-text">
-      To support 300+ daily users, the application requires several infrastructure improvements. Current challenges include: 236 console.log statements scattered across 63 files causing information leaks in production, 89 <code>any</code> type usages across 31 files weakening type safety, missing rate limiting on all server functions, and no database connection pooling.
-    </p>
-    <p class="body-text">
-      On the positive side, the rate limiting system already exists and works well with Redis-backed sliding window and in-memory fallback. There is a global limit of 120 requests per 60 seconds per IP, and a specific limit of 30 requests per 60 seconds for Telegram webhooks. New requirements include: adding client-side rate limiting to prevent double-clicks, improving Redis cache warming on startup, reducing the client bundle size, creating a unified error handler, and replacing all console.log calls with the existing structured logger.
-    </p>
-  </div>
-
-  <div class="lang-ar">
-    <div class="sub-title">مهام الإنتاج (12 مهمة - 12 ساعة)</div>
-    <ul class="task-list">
-      <li><span class="task-id">PROD-1</span><span>زيادة المهلة الزمنية في إعدادات Vercel (10 دقائق)</span></li>
-      <li><span class="task-id">PROD-2</span><span>إضافة حد معدل شامل على جميع الدوال (2 ساعة)</span></li>
-      <li><span class="task-id">PROD-3</span><span>إضافة اتصال مجمّع لقاعدة البيانات (1 ساعة)</span></li>
-      <li><span class="task-id">PROD-4</span><span>بناء نظام طوابير للعمليات الطويلة (3 ساعات)</span></li>
-      <li><span class="task-id">PROD-5</span><span>تسخين Redis عند بدء التشغيل (30 دقيقة)</span></li>
-      <li><span class="task-id">PROD-6</span><span>تقليل حجم حزمة العميل (2 ساعة)</span></li>
-      <li><span class="task-id">PROD-7</span><span>إنشاء معالج أخطاء موحد (1.5 ساعة)</span></li>
-      <li><span class="task-id">PROD-8</span><span>استبدال console.log بالمسجل المنظم (2 ساعة)</span></li>
-      <li><span class="task-id">PROD-9</span><span>إصلاح نقطة نهاية سعر SOL (30 دقيقة)</span></li>
-      <li><span class="task-id">PROD-10</span><span>إنشاء نقطة فحص صحي (30 دقيقة)</span></li>
-      <li><span class="task-id">PROD-11</span><span>إعداد المراقبة والتنبيهات (30 دقيقة)</span></li>
-      <li><span class="task-id">PROD-12</span><span>ضغط الصور قبل الرفع (1 ساعة)</span></li>
-    </ul>
-  </div>
-
-  <div class="lang-en">
-    <div class="sub-title-en">Production Tasks (12 tasks - 12 hours)</div>
-    <ul class="task-list">
-      <li><span class="task-id">PROD-1</span><span>Increase Vercel function timeout settings (10min)</span></li>
-      <li><span class="task-id">PROD-2</span><span>Add comprehensive rate limiting to all functions (2h)</span></li>
-      <li><span class="task-id">PROD-3</span><span>Add database connection pooling (1h)</span></li>
-      <li><span class="task-id">PROD-4</span><span>Build queue system for long-running operations (3h)</span></li>
-      <li><span class="task-id">PROD-5</span><span>Redis cache warming on startup (30min)</span></li>
-      <li><span class="task-id">PROD-6</span><span>Reduce client bundle size (2h)</span></li>
-      <li><span class="task-id">PROD-7</span><span>Create unified error handler middleware (1.5h)</span></li>
-      <li><span class="task-id">PROD-8</span><span>Replace console.log with structured logger (2h)</span></li>
-      <li><span class="task-id">PROD-9</span><span>Fix SOL price endpoint bug (30min)</span></li>
-      <li><span class="task-id">PROD-10</span><span>Create health check endpoint (30min)</span></li>
-      <li><span class="task-id">PROD-11</span><span>Setup monitoring and alerting (30min)</span></li>
-      <li><span class="task-id">PROD-12</span><span>Add image compression before upload (1h)</span></li>
-    </ul>
-  </div>
-
-  <!-- ====== SECTION 6: SECURITY & CODE QUALITY ====== -->
-  <div class="chapter-header">
-    <div class="section-tag">06 / SECURITY & CODE QUALITY</div>
-    <div class="section-title">الأمان وجودة الكود</div>
-    <div class="section-title-en">Security and Code Quality</div>
-    <div class="divider"></div>
-  </div>
-
-  <div class="lang-ar">
-    <p class="body-text">
-      بما أن المستخدمين سيتعاملون بأموال حقيقية من خلال هذه المنصة، فإن الأمان ليس خياراً بل ضرورة. المشاكل الحالية تشمل: تسرب بيانات شخصية في معالج ويب هوك النجوم (stars-webhook PII leak)، وتسرب محتمل في دفق الكوبايلوت (copilot-stream leak)، وعدم وجود مصادقة ثنائية العامل (2FA)، وغياب سجل التدقيق (audit logging).
-    </p>
-    <p class="body-text">
-      من ناحية جودة الكود، التطبيق يحتاج إلى استبدال 89 استخداماً للنوع any بأنواع صحيحة، وإزالة 236 عبارة console.log، وإضافة توثيق JSDoc على جميع الدوال الحرجة. هذه التحسينات ليست تجميلية فقط بل تمنع أخطاء التشغيل وتسهل الصيانة المستقبلية. يوجد بالفعل مسجل منظم في <code>src/shared/structured-logger.ts</code> لكنه غير مستخدم في معظم الملفات.
-    </p>
-  </div>
-
-  <div class="lang-sep">ENGLISH</div>
-
-  <div class="lang-en">
-    <p class="body-text">
-      Since users will be dealing with real money through this platform, security is not optional but a necessity. Current issues include: personal data leaks in the stars webhook handler (PII exposure), a potential leak in the copilot stream, lack of two-factor authentication (2FA), and absence of audit logging. These are critical for a financial application.
-    </p>
-    <p class="body-text">
-      Regarding code quality, the application needs to replace 89 <code>any</code> type usages with proper types, remove 236 console.log statements, and add JSDoc documentation on all critical functions. These improvements are not merely cosmetic; they prevent runtime errors and facilitate future maintenance. A structured logger already exists at <code>src/shared/structured-logger.ts</code> but is underutilized across most files.
-    </p>
-  </div>
-
-  <div class="card card-accent">
-    <div class="lang-ar">
-      <div class="sub-title">ملخص المشاكل الحرجة</div>
-      <p class="body-text" style="font-size:13px;margin-bottom:0;">
-        <strong>تسرب البيانات:</strong> stars-webhook PII leak + copilot-stream leak<br>
-        <strong>أنواع ضعيفة:</strong> 89 استخدام any في 31 ملفاً<br>
-        <strong>تسجيل ضعيف:</strong> 236 console.log في 63 ملفاً<br>
-        <strong>أمان مفقود:</strong> بدون 2FA أو audit logs أو CSP headers
-      </p>
-    </div>
-    <div class="lang-en">
-      <div class="sub-title-en">Critical Issues Summary</div>
-      <p class="body-text" style="font-size:13px;margin-bottom:0;">
-        <strong>Data Leaks:</strong> stars-webhook PII leak + copilot-stream leak<br>
-        <strong>Weak Types:</strong> 89 any usages across 31 files<br>
-        <strong>Weak Logging:</strong> 236 console.log across 63 files<br>
-        <strong>Missing Security:</strong> No 2FA, audit logs, or CSP headers
-      </p>
-    </div>
-  </div>
-
-  <div class="lang-ar">
-    <div class="sub-title">مهام التنظيف والأمان (9 مهام - 8 ساعات)</div>
-    <ul class="task-list">
-      <li><span class="task-id">DEBT-1</span><span>استبدال 9 أنواع any الحرجة بأنواع صحيحة (2 ساعة)</span></li>
-      <li><span class="task-id">DEBT-2</span><span>حذف الأكواد الميتة من أنظمة التصميم (30 دقيقة)</span></li>
-      <li><span class="task-id">DEBT-3</span><span>إزالة جميع console.log واستبدالها بالمسجل المنظم (1 ساعة)</span></li>
-      <li><span class="task-id">DEBT-4</span><span>إصلاح تسرب البيانات الشخصية في webhook (30 دقيقة)</span></li>
-      <li><span class="task-id">DEBT-5</span><span>إصلاح التسرب في دفق الكوبايلوت (30 دقيقة)</span></li>
-      <li><span class="task-id">DEBT-6</span><span>مراجعة وإزالة التبعيات غير المستخدمة (1 ساعة)</span></li>
-      <li><span class="task-id">DEBT-7</span><span>إضافة توثيق JSDoc على جميع الدوال الحرجة (3 ساعات)</span></li>
-      <li><span class="task-id">SEC-1</span><span>إضافة مصادقة ثنائية العامل (2FA) (2 ساعة)</span></li>
-      <li><span class="task-id">SEC-2</span><span>إضافة رؤوس أمان CSP وX-Frame-Options (30 دقيقة)</span></li>
-    </ul>
-  </div>
-
-  <div class="lang-en">
-    <div class="sub-title-en">Cleanup and Security Tasks (9 tasks - 8 hours)</div>
-    <ul class="task-list">
-      <li><span class="task-id">DEBT-1</span><span>Replace 9 critical any types with proper types (2h)</span></li>
-      <li><span class="task-id">DEBT-2</span><span>Remove dead code from design systems (30min)</span></li>
-      <li><span class="task-id">DEBT-3</span><span>Remove all console.log, replace with structured logger (1h)</span></li>
-      <li><span class="task-id">DEBT-4</span><span>Fix PII data leak in webhook handler (30min)</span></li>
-      <li><span class="task-id">DEBT-5</span><span>Fix copilot stream leak (30min)</span></li>
-      <li><span class="task-id">DEBT-6</span><span>Audit and remove unused dependencies (1h)</span></li>
-      <li><span class="task-id">DEBT-7</span><span>Add JSDoc documentation to all critical functions (3h)</span></li>
-      <li><span class="task-id">SEC-1</span><span>Implement two-factor authentication (2FA) (2h)</span></li>
-      <li><span class="task-id">SEC-2</span><span>Add CSP and X-Frame-Options security headers (30min)</span></li>
-    </ul>
-  </div>
-
-  <!-- ====== SECTION 7: EXECUTION TIMELINE ====== -->
-  <div class="chapter-header">
-    <div class="section-tag">07 / EXECUTION TIMELINE</div>
-    <div class="section-title">الجدول الزمني للتنفيذ</div>
-    <div class="section-title-en">Execution Timeline and Schedule</div>
-    <div class="divider"></div>
-  </div>
-
-  <div class="lang-ar">
-    <p class="body-text">
-      يتم تنفيذ المشروع عبر 4 مسارات متوازية خلال 8 أسابيع. المسار الأول يركز على إصلاح الأخطاء الحرجة في الأسبوع الأول، والمسار الثاني يشمل إعادة تصميم الواجهة على 3 موجات، والمسار الثالث يعالج تقوية الإنتاج والأمان، والمسار الرابع يهتم بالتنظيف والتوثيق. هذا التنفيذ المتوازي يقلل الوقت الإجمالي من 12 أسبوعاً تتابعياً إلى 8 أسابيع فقط.
-    </p>
-  </div>
-
-  <div class="lang-sep">ENGLISH</div>
-
-  <div class="lang-en">
-    <p class="body-text">
-      The project is executed across 4 parallel tracks over 8 weeks. Track 1 focuses on fixing critical bugs in week 1, Track 2 covers the UI redesign in 3 waves, Track 3 handles production hardening and security, and Track 4 addresses cleanup and documentation. This parallel execution reduces the total timeline from 12 sequential weeks to just 8 weeks.
-    </p>
-  </div>
-
-  <div class="lang-ar">
-    <div class="timeline-item">
-      <div class="timeline-dot" style="background:var(--semantic-error);"></div>
-      <div class="timeline-content">
-        <div class="timeline-week">الاسبوع 1 - الاصلاح الحرج (6 ساعات)</div>
-        <div class="timeline-desc">FIX-1 إلى FIX-6: اصلاح تحليل الرسوم البيانية + اعداد Sentry + اعداد Mixpanel + فحص امني اولي. النتيجة: الميزة الاساسية تعمل.</div>
+      /* Ending page */
+      .ending {
+        width: 720px;
+        height: 1020px;
+        box-sizing: border-box;
+        break-before: page;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 60px;
+        background: var(--page-bg);
+      }
+      .ending-big {
+        font-size: 36px;
+        font-weight: 900;
+        line-height: 1.3;
+        color: var(--accent);
+        margin-bottom: 20px;
+      }
+      .ending-sub {
+        font-size: 15px;
+        line-height: 1.7;
+        color: var(--text-muted);
+        max-width: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============ COVER PAGE ============ -->
+    <div class="cover">
+      <div class="cover-layer-1">
+        <div class="cover-grid"></div>
+        <div class="cover-line"></div>
+      </div>
+      <div class="cover-layer-3">
+        <div class="cover-tag">Workflow Agent Report</div>
+        <div class="cover-title-ar">تقرير وكيل العمل المفصل</div>
+        <div class="cover-title-en">VIXOR Platform - Comprehensive Workflow Report</div>
+        <div class="cover-divider"></div>
+        <div class="cover-summary">
+          تقرير شامل لتطبيق VIXOR للتداول يغطي جميع المشاكل الحالية، خطط الإصلاح، وجدول التنفيذ
+          الكامل من التشخيص إلى الإطلاق. يهدف هذا التقرير إلى تجهيز المنصة لاستقبال أكثر من 300
+          مستخدم يومي مع معايير احترافية عالية.
+        </div>
+      </div>
+      <div class="cover-meta">
+        <span>2026-06-30</span>
+        <span>kam65624-cmd/vixor-APP</span>
+        <span>vixor-app.vercel.app</span>
       </div>
     </div>
-    <div class="timeline-item">
-      <div class="timeline-dot"></div>
-      <div class="timeline-content">
-        <div class="timeline-week">الاسبوع 2-3 - التصميم الموجة A (8 ساعات)</div>
-        <div class="timeline-desc">UI-1 إلى UI-6: نظام الالوان الجديد + التخطيط المحسن + الحالات الفارغة + مكونات التحميل. النتيجة: اساس تصميمي جديد.</div>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <div class="main-content">
+      <!-- ====== SECTION 1: EXECUTIVE SUMMARY ====== -->
+      <div class="chapter-header">
+        <div class="section-tag">01 / EXECUTIVE SUMMARY</div>
+        <div class="section-title">الملخص التنفيذي</div>
+        <div class="section-title-en">Executive Summary</div>
+        <div class="divider"></div>
+      </div>
+
+      <div class="lang-ar">
+        <p class="body-text">
+          يقدم هذا التقرير تحليلاً شاملاً لحالة تطبيق VIXOR للتداول الذكي، وهو منصة مبنية على
+          TanStack Start مع React 19 وSupabase وVite ومنشورة على Vercel Serverless. يعتمد التطبيق
+          على معمارية DDD متقدمة تضم 16 نطاقاً متخصصاً و92 مكتبة تشغيلية و363 ملف TypeScript. على
+          الرغم من هذه البنية القوية، يواجه التطبيق عدة مشاكل حرجة تمنعه من تقديم تجربة مستخدم
+          احترافية.
+        </p>
+        <p class="body-text">
+          المشكلة الأكثر إلحاحاً هي تعطل ميزة تحليل الرسوم البيانية، وهي الميزة الأساسية التي يقوم
+          عليها التطبيق. كما يعاني التصميم الحالي من نقص في العمق البصري والتفاعلية، حيث وصفه
+          المستخدمون بأنه أشبه بـ "رين شبه ميت". توجد ثلاث صفحات فارغة تماماً بدون أي محتوى وظيفي،
+          مما يعطي انطباعاً سيئاً عن جاهزية المنتج.
+        </p>
+        <p class="body-text">
+          يحدد هذا التقرير 42 مهمة محددة موزعة على 4 مراحل رئيسية: إصلاح الأخطاء الحرجة، إعادة تصميم
+          نظام التصميم بالكامل، تقوية بيئة الإنتاج لدعم 300+ مستخدم يومي، وتنظيف الديون التقنية.
+          الجدول الزمني المقدر هو 40-50 ساعة تطوير مركزة.
+        </p>
+      </div>
+
+      <div class="lang-sep">ENGLISH</div>
+
+      <div class="lang-en">
+        <p class="body-text">
+          This report presents a comprehensive analysis of the VIXOR smart trading platform, built
+          on TanStack Start with React 19, Supabase, Vite, and deployed on Vercel Serverless. The
+          application leverages an advanced DDD architecture comprising 16 specialized domains, 92
+          runtime libraries, and 363 TypeScript files. Despite this robust foundation, the platform
+          faces several critical issues that prevent it from delivering a professional user
+          experience.
+        </p>
+        <p class="body-text">
+          The most pressing issue is the broken chart analysis feature, which is the core
+          functionality the entire application is built around. The current design system also
+          suffers from a lack of visual depth and interactivity, with users describing it as looking
+          like a "dead ruin." Three pages are completely empty stubs with no functional content,
+          giving a poor impression of product readiness.
+        </p>
+        <p class="body-text">
+          This report identifies 42 specific tasks distributed across 4 main phases: fixing critical
+          bugs, completely overhauling the design system, hardening the production environment for
+          300+ daily users, and cleaning up technical debt. The estimated timeline is 40-50 focused
+          development hours spread across 8 weeks with parallel execution tracks.
+        </p>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metric-row">
+        <div class="metric-box">
+          <div class="metric-value">363</div>
+          <div class="metric-label">TypeScript Files / ملفات</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value">16</div>
+          <div class="metric-label">Domains / نطاقات</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value">35</div>
+          <div class="metric-label">Routes / مسارات</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value">42</div>
+          <div class="metric-label">Tasks / مهام</div>
+        </div>
+      </div>
+
+      <!-- ====== SECTION 2: CHART ANALYSIS BUG ====== -->
+      <div class="chapter-header">
+        <div class="section-tag">02 / CRITICAL BUG DIAGNOSIS</div>
+        <div class="section-title">تشخيص عطل تحليل الرسوم البيانية</div>
+        <div class="section-title-en">Chart Analysis Bug Diagnosis</div>
+        <div class="divider"></div>
+      </div>
+
+      <div class="lang-ar">
+        <p class="body-text">
+          ميزة تحليل الرسوم البيانية هي الأساس الذي يقوم عليه تطبيق VIXOR بالكامل. عندما يقوم
+          المستخدم برفع صورة رسم بياني، يفترض بالنظام استخراج زوج العملة والإطار الزمني ثم تشغيل
+          محرك التحليل المحلي (SMC/ICT) لإنتاج تقرير تحليل شامل. حالياً هذه العملية بأكملها معطلة
+          ولا تنتج أي نتائج للمستخدم.
+        </p>
+        <p class="body-text">
+          من خلال مراجعة شاملة لمحرك التحليل في الملف
+          <code>src/domains/analysis/engine/engine.ts</code> (1115 سطر)، تبين أن المحرك نفسه مصمم
+          بشكل جيد وهو يعمل بشكل صحيح من الناحية الحسابية. المحرك حتمي تماماً ولا يحتاج أي مفاتيح
+          API خارجية، ويعتمد على بيانات OHLCV إما من المصدر أو من مولد بيانات اصطناعي داخلي. المشكلة
+          الحقيقية ليست في المحرك نفسه بل في مسار الاستدعاء.
+        </p>
+        <p class="body-text">
+          السبب الجذري الأرجح هو أن استدعاء نموذج الرؤية (VLM) لاستخراج البيانات من الصورة يتجاوز
+          المهلة الزمنية المحددة في Vercel وهي 10 ثوانٍ. عملية رفع الصورة ثم استدعاء VLM ثم استخراج
+          البيانات ثم تمريرها للمحرك تستغرق وقتاً أطول من الحد المسموح به. بالإضافة إلى ذلك، يوجد
+          عدم تطابق في تسمية متغيرات البيئة بين ملف <code>.env.example</code> والخزنة المركزية.
+        </p>
+      </div>
+
+      <div class="lang-sep">ENGLISH</div>
+
+      <div class="lang-en">
+        <p class="body-text">
+          The chart analysis feature is the foundational capability upon which the entire VIXOR
+          application is built. When a user uploads a chart image, the system is expected to extract
+          the trading pair and timeframe, then run the local SMC/ICT analysis engine to produce a
+          comprehensive analysis report. Currently, this entire pipeline is broken and produces no
+          results for users.
+        </p>
+        <p class="body-text">
+          Through a thorough review of the analysis engine in
+          <code>src/domains/analysis/engine/engine.ts</code> (1,115 lines), it was determined that
+          the engine itself is well-architected and computationally sound. It is fully
+          deterministic, requires zero external API keys, and operates on either provided OHLCV bars
+          or an internal synthetic data generator. The root problem is not in the engine itself, but
+          in the invocation pipeline that feeds it data.
+        </p>
+        <p class="body-text">
+          The most likely root cause is that the Vision Language Model (VLM) call for extracting
+          data from the uploaded image exceeds the Vercel serverless function timeout of 10 seconds.
+          The full pipeline of image upload, VLM invocation, data extraction, and engine execution
+          takes longer than the allowed limit. Additionally, a type mismatch was discovered where
+          <code>entry</code> and <code>stop_loss</code> are formatted as strings via
+          <code>formatPrice()</code> on lines 357-358, but the
+          <code>LocalAnalysisResult</code> interface declares them as <code>number</code>, which
+          could cause downstream runtime failures.
+        </p>
+      </div>
+
+      <!-- Bug findings table -->
+      <div class="lang-ar">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>المشكلة</th>
+              <th>الخطورة</th>
+              <th>الملف</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>انتهاء مهلة VLM على Vercel (10 ثوانٍ)</td>
+              <td><span class="badge badge-critical">حرجة</span></td>
+              <td><code>chart-vision.ts</code></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>عدم تطابق الأنواع: string بدل number</td>
+              <td><span class="badge badge-high">عالية</span></td>
+              <td><code>engine.ts:357-358</code></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>نموذج VLM مشفر بدون بديل عند الفشل</td>
+              <td><span class="badge badge-high">عالية</span></td>
+              <td><code>chart-vision.ts</code></td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>مفتاح API غير معيّن = بيانات اصطناعية فقط</td>
+              <td><span class="badge badge-medium">متوسطة</span></td>
+              <td><code>price-fetcher.ts</code></td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>عدم تطابق تسمية متغيرات البيئة</td>
+              <td><span class="badge badge-medium">متوسطة</span></td>
+              <td><code>.env.example</code> vs Vault</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="lang-en">
+        <table>
+          <thead>
+            <tr>
+              <th class="en-th">#</th>
+              <th class="en-th">Issue</th>
+              <th class="en-th">Severity</th>
+              <th class="en-th">File</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="en-td">1</td>
+              <td class="en-td">VLM timeout on Vercel (10s limit)</td>
+              <td class="en-td"><span class="badge badge-critical">Critical</span></td>
+              <td class="en-td"><code>chart-vision.ts</code></td>
+            </tr>
+            <tr>
+              <td class="en-td">2</td>
+              <td class="en-td">Type mismatch: string vs number</td>
+              <td class="en-td"><span class="badge badge-high">High</span></td>
+              <td class="en-td"><code>engine.ts:357-358</code></td>
+            </tr>
+            <tr>
+              <td class="en-td">3</td>
+              <td class="en-td">VLM model hardcoded, no fallback</td>
+              <td class="en-td"><span class="badge badge-high">High</span></td>
+              <td class="en-td"><code>chart-vision.ts</code></td>
+            </tr>
+            <tr>
+              <td class="en-td">4</td>
+              <td class="en-td">Missing API key = synthetic data only</td>
+              <td class="en-td"><span class="badge badge-medium">Medium</span></td>
+              <td class="en-td"><code>price-fetcher.ts</code></td>
+            </tr>
+            <tr>
+              <td class="en-td">5</td>
+              <td class="en-td">Env var naming mismatch</td>
+              <td class="en-td"><span class="badge badge-medium">Medium</span></td>
+              <td class="en-td"><code>.env.example</code> vs Vault</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Fix tasks -->
+      <div class="lang-ar">
+        <div class="sub-title">مهام الإصلاح (6 مهام - ساعتان)</div>
+        <ul class="task-list">
+          <li>
+            <span class="task-id">FIX-1</span
+            ><span>زيادة المهلة الزمنية في <code>vercel.json</code> من 10 إلى 30 ثانية</span>
+          </li>
+          <li>
+            <span class="task-id">FIX-2</span
+            ><span>إضافة logging تفصيلي حول استدعاء VLM في <code>chart-vision.ts</code></span>
+          </li>
+          <li>
+            <span class="task-id">FIX-3</span><span>إضافة نموذج بديل عند فشل النموذج الأساسي</span>
+          </li>
+          <li>
+            <span class="task-id">FIX-4</span
+            ><span>إصلاح عدم تطابق الأنواع string/number في المحرك</span>
+          </li>
+          <li>
+            <span class="task-id">FIX-5</span
+            ><span>التحقق من جميع مفاتيح API في Vercel Dashboard</span>
+          </li>
+          <li>
+            <span class="task-id">FIX-6</span><span>اختبار شامل end-to-end للتحليل الكامل</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="lang-en">
+        <div class="sub-title-en">Fix Tasks (6 tasks - 2 hours)</div>
+        <ul class="task-list">
+          <li>
+            <span class="task-id">FIX-1</span
+            ><span
+              >Increase Vercel function timeout from 10s to 30s in <code>vercel.json</code></span
+            >
+          </li>
+          <li>
+            <span class="task-id">FIX-2</span
+            ><span>Add detailed logging around VLM invocation in <code>chart-vision.ts</code></span>
+          </li>
+          <li>
+            <span class="task-id">FIX-3</span
+            ><span>Add fallback model when primary VLM model fails</span>
+          </li>
+          <li>
+            <span class="task-id">FIX-4</span
+            ><span
+              >Fix type mismatch: ensure entry/stop_loss are numbers, not formatted strings</span
+            >
+          </li>
+          <li>
+            <span class="task-id">FIX-5</span
+            ><span>Verify all API keys are set in Vercel Dashboard environment</span>
+          </li>
+          <li>
+            <span class="task-id">FIX-6</span
+            ><span>Comprehensive end-to-end test for the full analysis pipeline</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- ====== SECTION 3: EMPTY PAGES ====== -->
+      <div class="chapter-header">
+        <div class="section-tag">03 / EMPTY PAGES & DEAD ROUTES</div>
+        <div class="section-title">الصفحات الفارغة والمسارات المعطلة</div>
+        <div class="section-title-en">Empty Pages and Dead Routes</div>
+        <div class="divider"></div>
+      </div>
+
+      <div class="lang-ar">
+        <p class="body-text">
+          يوجد في التطبيق 3 مسارات فارغة تماماً لا تحتوي على أي محتوى وظيفي، تظهر فقط شارة "قريباً"
+          مع مكون الحالة الفارغة. هذه الصفحات تعطي انطباعاً سيئاً جداً للمستخدم وتجعل التطبيق يبدو
+          غير مكتمل. المسارات المتأثرة هي: <code>/charts</code> و<code>/arbitrage</code>
+          و<code>/activity-web3</code>. المفارقة أن نطاق <code>arbitrage</code> يحتوي على محرك كامل
+          في الواجهة الخلفية مع استراتيجيات ومنصات ونظام تنفيذ، لكن واجهة المستخدم الخاصة به فارغة
+          تماماً.
+        </p>
+        <p class="body-text">
+          بالإضافة إلى ذلك، صفحة <code>/token/$symbol</code> تحتوي على قسم رسم بياني يعرض عنصراً
+          نائباً مع شارة "قريباً" بدلاً من الرسم البياني الفعلي. الحل المقترح هو إما بناء هذه
+          الصفحات بشكل كامل أو إخفاؤها من قائمة التنقل المؤقتاً حتى يتم تطويرها. يوصى بالخيار الثاني
+          كإجراء سريع ثم بناء صفحات الرسوم البيانية و Arbitrage كأولوية عالية.
+        </p>
+      </div>
+
+      <div class="lang-sep">ENGLISH</div>
+
+      <div class="lang-en">
+        <p class="body-text">
+          The application contains 3 routes that are completely empty stubs with no functional
+          content, showing only a "COMING SOON" badge with an EmptyState component. These pages
+          create a very poor impression for users and make the application appear unfinished. The
+          affected routes are: <code>/charts</code>, <code>/arbitrage</code>, and
+          <code>/activity-web3</code>. Notably, the <code>arbitrage</code> domain contains a
+          complete backend engine with strategies, exchange adapters, and an execution system, yet
+          its UI is entirely empty.
+        </p>
+        <p class="body-text">
+          Additionally, the <code>/token/$symbol</code> page has a chart section that shows a
+          placeholder with a "COMING SOON" badge instead of an actual chart. The recommended
+          approach is to either build these pages fully or hide them from the navigation menu
+          temporarily until they are developed. The second option is recommended as a quick fix,
+          followed by building the Charts and Arbitrage pages as a high priority.
+        </p>
+      </div>
+
+      <div class="card card-error">
+        <div class="lang-ar">
+          <div class="sub-title" style="color: var(--semantic-error)">
+            صفحات حرجة تحتاج إخفاء فوري
+          </div>
+          <p class="body-text" style="font-size: 13px; margin-bottom: 0">
+            <code>/charts</code> - صفحة الرسوم البيانية | <code>/arbitrage</code> - مراجحة الأسعار |
+            <code>/activity-web3</code> - نشاط ويب 3
+          </p>
+        </div>
+        <div class="lang-en">
+          <div class="sub-title-en" style="color: var(--semantic-error)">
+            Critical Pages Requiring Immediate Hiding
+          </div>
+          <p class="body-text" style="font-size: 13px; margin-bottom: 0">
+            <code>/charts</code> - Charts page | <code>/arbitrage</code> - Price arbitrage |
+            <code>/activity-web3</code> - Web3 activity
+          </p>
+        </div>
+      </div>
+
+      <!-- ====== SECTION 4: DESIGN SYSTEM ====== -->
+      <div class="chapter-header">
+        <div class="section-tag">04 / DESIGN SYSTEM OVERHAUL</div>
+        <div class="section-title">خطة إعادة تصميم نظام التصميم</div>
+        <div class="section-title-en">UI/UX Design System Overhaul Plan</div>
+        <div class="divider"></div>
+      </div>
+
+      <div class="lang-ar">
+        <p class="body-text">
+          النظام الحالي يستخدم Tailwind CSS v4 مع تهيئة CSS-first بدون ملف إعدادات JavaScript.
+          الألوان الحالية تعتمد على OKLCH مع تباين منخفض ينتج مظهراً مسطحاً يفتقر للعمق. خط Inter هو
+          الخط الأساسي مع JetBrains Mono للنصوص البرمجية. يوجد دعم كامل لـ RTL وخصائص الحركة المخفضة
+          وأنماط الطباعة.
+        </p>
+        <p class="body-text">
+          المشكلة الرئيسية هي أن النظام الحالي رغم تقنياً متكامل، إلا أنه يبدو "ميتاً" للمستخدم.
+          الألوان منخفضة التباين، لا توجد رسوم متحركة أو تفاعلات عند التمرير، والبطاقات تبدو مسطحة
+          بدون عمق بصري. الحل المقترح يشمل نظام ألوان جديد بتباين أعلى، وتدرجات لونية قابلة لإعادة
+          الاستخدام، وتخطيط محسّن مع مسافات أفضل، وحالات فارغة احترافية مع أزرار إجراء، ومكونات
+          تحميل هيكلي، وتفاعلات دقيقة عند التمرير.
+        </p>
+      </div>
+
+      <div class="lang-sep">ENGLISH</div>
+
+      <div class="lang-en">
+        <p class="body-text">
+          The current system uses Tailwind CSS v4 with a CSS-first configuration and no JavaScript
+          config file. Colors use the OKLCH color space with low contrast, producing a flat
+          appearance lacking depth. Inter is the primary typeface with JetBrains Mono for code. Full
+          RTL support, reduced motion preferences, and print styles are already implemented.
+        </p>
+        <p class="body-text">
+          The main problem is that while technically complete, the current system looks "dead" to
+          users. Colors have low contrast, there are no animations or hover interactions, and cards
+          appear flat without visual depth. The proposed solution includes a new color system with
+          higher contrast, reusable gradient classes, improved layout with better spacing,
+          professional empty states with call-to-action buttons, skeleton loading components, and
+          micro-interactions on hover.
+        </p>
+      </div>
+
+      <div class="lang-ar">
+        <div class="sub-title">نظام الألوان المقترح</div>
+        <table>
+          <thead>
+            <tr>
+              <th>الدور</th>
+              <th>القيمة الحالية</th>
+              <th>القيمة المقترحة</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>الخلفية الرئيسية</td>
+              <td>oklch(0.16 0.012 260)</td>
+              <td>oklch(0.12 0.01 250) - أعمق</td>
+            </tr>
+            <tr>
+              <td>سطح البطاقات</td>
+              <td>oklch(0.205 0.014 260)</td>
+              <td>oklch(0.16 0.01 250) - بعمق</td>
+            </tr>
+            <tr>
+              <td>أخضر الصعود</td>
+              <td>oklch(0.72 0.17 162)</td>
+              <td>oklch(0.72 0.20 162) - أزهى</td>
+            </tr>
+            <tr>
+              <td>أحمر الهبوط</td>
+              <td>oklch(0.65 0.24 25)</td>
+              <td>oklch(0.50 0.18 25) - أعمق</td>
+            </tr>
+            <tr>
+              <td>النص الأساسي</td>
+              <td>oklch(0.97 0.005 250)</td>
+              <td>oklch(0.95 0.01 250) - أبيض نقي</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="lang-en">
+        <div class="sub-title-en">Proposed Color System</div>
+        <table>
+          <thead>
+            <tr>
+              <th class="en-th">Role</th>
+              <th class="en-th">Current Value</th>
+              <th class="en-th">Proposed Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="en-td">Main Background</td>
+              <td class="en-td">oklch(0.16 0.012 260)</td>
+              <td class="en-td">oklch(0.12 0.01 250) - deeper</td>
+            </tr>
+            <tr>
+              <td class="en-td">Card Surface</td>
+              <td class="en-td">oklch(0.205 0.014 260)</td>
+              <td class="en-td">oklch(0.16 0.01 250) - with depth</td>
+            </tr>
+            <tr>
+              <td class="en-td">Bullish Green</td>
+              <td class="en-td">oklch(0.72 0.17 162)</td>
+              <td class="en-td">oklch(0.72 0.20 162) - more vivid</td>
+            </tr>
+            <tr>
+              <td class="en-td">Bearish Red</td>
+              <td class="en-td">oklch(0.65 0.24 25)</td>
+              <td class="en-td">oklch(0.50 0.18 25) - deeper</td>
+            </tr>
+            <tr>
+              <td class="en-td">Primary Text</td>
+              <td class="en-td">oklch(0.97 0.005 250)</td>
+              <td class="en-td">oklch(0.95 0.01 250) - near-pure white</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- UI Tasks -->
+      <div class="lang-ar">
+        <div class="sub-title">مهام التصميم (15 مهمة - 20 ساعة)</div>
+        <ul class="task-list">
+          <li>
+            <span class="task-id">UI-1</span
+            ><span>إعادة كتابة نظام الألوان بالكامل في <code>styles.css</code> (2 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-2</span
+            ><span>إنشاء فئات gradients قابلة لإعادة الاستخدام (30 دقيقة)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-3</span
+            ><span
+              >تحديث تخطيط الصفحة في <code>PageLayout.tsx</code> مع مسافات محسّنة (3 ساعات)</span
+            >
+          </li>
+          <li>
+            <span class="task-id">UI-4</span
+            ><span>تصميم حالات فارغة احترافية مع أزرار إجراء (1 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-5</span
+            ><span>بناء مكون SkeletonLoader لحالات التحميل (1 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-6</span><span>إضافة تفاعلات دقيقة عند التمرير (30 دقيقة)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-7</span
+            ><span>دمج رسوم TradingView في صفحة الرسوم البيانية (2 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-8</span
+            ><span>إخفاء صفحات فارغة من قائمة التنقل (30 دقيقة)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-9</span
+            ><span>تحسين واجهة رفع الصور في صفحة التحليل (2 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-10</span><span>إعادة تصميم صفحة نتائج التحليل (3 ساعات)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-11</span
+            ><span>إعادة تصميم لوحة التحكم الرئيسية (3 ساعات)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-12</span
+            ><span>تحسين بطاقات البيانات في جميع الصفحات (4 ساعات)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-13</span
+            ><span>حذف الأكواد الميتة من أنظمة التصميم القديمة (30 دقيقة)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-14</span><span>تصميم متجاوب للشاشات الكبيرة (2 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-15</span
+            ><span>إضافة حركات انتقالية بين الصفحات (30 دقيقة)</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="lang-en">
+        <div class="sub-title-en">Design Tasks (15 tasks - 20 hours)</div>
+        <ul class="task-list">
+          <li>
+            <span class="task-id">UI-1</span
+            ><span>Complete color system rewrite in <code>styles.css</code> (2h)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-2</span
+            ><span>Create reusable gradient utility classes (30min)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-3</span
+            ><span
+              >Update page layout in <code>PageLayout.tsx</code> with improved spacing (3h)</span
+            >
+          </li>
+          <li>
+            <span class="task-id">UI-4</span
+            ><span>Design professional empty states with CTAs (1h)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-5</span
+            ><span>Build SkeletonLoader component for loading states (1h)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-6</span><span>Add hover micro-interactions (30min)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-7</span
+            ><span>Integrate TradingView charts into the charts page (2h)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-8</span
+            ><span>Hide empty pages from navigation menu (30min)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-9</span
+            ><span>Improve image upload UI in the analysis page (2h)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-10</span><span>Redesign the analysis results page (3h)</span>
+          </li>
+          <li><span class="task-id">UI-11</span><span>Redesign the main dashboard (3h)</span></li>
+          <li>
+            <span class="task-id">UI-12</span><span>Improve data cards across all pages (4h)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-13</span
+            ><span>Remove dead code from old design systems (30min)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-14</span><span>Responsive design for large screens (2h)</span>
+          </li>
+          <li>
+            <span class="task-id">UI-15</span><span>Add page transition animations (30min)</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- ====== SECTION 5: PRODUCTION HARDENING ====== -->
+      <div class="chapter-header">
+        <div class="section-tag">05 / PRODUCTION HARDENING</div>
+        <div class="section-title">تقوية بيئة الإنتاج</div>
+        <div class="section-title-en">Production Environment Hardening</div>
+        <div class="divider"></div>
+      </div>
+
+      <div class="lang-ar">
+        <p class="body-text">
+          لدعم أكثر من 300 مستخدم يومي، يحتاج التطبيق إلى عدة تحسينات في البنية التحتية. التحديات
+          الحالية تشمل: 236 عبارة console.log موزعة على 63 ملفاً مما يسبب تسرب معلومات في بيئة
+          الإنتاج، و89 استخداماً لنوع any في 31 ملفاً مما يضعف أمان الأنواع، وغياب حدود المعدل على
+          جميع الدوال، وعدم وجود اتصال مجمّع لقاعدة البيانات.
+        </p>
+        <p class="body-text">
+          الجانب الإيجابي هو أن نظام تحديد المعدل موجود بالفعل ويعمل بشكل جيد مع Redis ودعم احتياطي
+          في الذاكرة. يوجد حد عام بقوة 120 طلباً في الدقيقة لكل عنوان IP، وحد خاص بـ 30 طلباً في
+          الدقيقة لويب هوك Telegram. الحدود الجديدة المطلوبة تشمل: إضافة حدود معدل على جانب العميل
+          لمنع النقر المزدوج، وتحسين تسخين Redis عند بدء التشغيل، وتقليل حجم الحزمة البرمجية، وإنشاء
+          معالج أخطاء موحد، واستبدال جميع console.log بالمسجل المنظم الموجود مسبقاً.
+        </p>
+      </div>
+
+      <div class="lang-sep">ENGLISH</div>
+
+      <div class="lang-en">
+        <p class="body-text">
+          To support 300+ daily users, the application requires several infrastructure improvements.
+          Current challenges include: 236 console.log statements scattered across 63 files causing
+          information leaks in production, 89 <code>any</code> type usages across 31 files weakening
+          type safety, missing rate limiting on all server functions, and no database connection
+          pooling.
+        </p>
+        <p class="body-text">
+          On the positive side, the rate limiting system already exists and works well with
+          Redis-backed sliding window and in-memory fallback. There is a global limit of 120
+          requests per 60 seconds per IP, and a specific limit of 30 requests per 60 seconds for
+          Telegram webhooks. New requirements include: adding client-side rate limiting to prevent
+          double-clicks, improving Redis cache warming on startup, reducing the client bundle size,
+          creating a unified error handler, and replacing all console.log calls with the existing
+          structured logger.
+        </p>
+      </div>
+
+      <div class="lang-ar">
+        <div class="sub-title">مهام الإنتاج (12 مهمة - 12 ساعة)</div>
+        <ul class="task-list">
+          <li>
+            <span class="task-id">PROD-1</span
+            ><span>زيادة المهلة الزمنية في إعدادات Vercel (10 دقائق)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-2</span
+            ><span>إضافة حد معدل شامل على جميع الدوال (2 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-3</span
+            ><span>إضافة اتصال مجمّع لقاعدة البيانات (1 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-4</span
+            ><span>بناء نظام طوابير للعمليات الطويلة (3 ساعات)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-5</span><span>تسخين Redis عند بدء التشغيل (30 دقيقة)</span>
+          </li>
+          <li><span class="task-id">PROD-6</span><span>تقليل حجم حزمة العميل (2 ساعة)</span></li>
+          <li><span class="task-id">PROD-7</span><span>إنشاء معالج أخطاء موحد (1.5 ساعة)</span></li>
+          <li>
+            <span class="task-id">PROD-8</span
+            ><span>استبدال console.log بالمسجل المنظم (2 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-9</span><span>إصلاح نقطة نهاية سعر SOL (30 دقيقة)</span>
+          </li>
+          <li><span class="task-id">PROD-10</span><span>إنشاء نقطة فحص صحي (30 دقيقة)</span></li>
+          <li>
+            <span class="task-id">PROD-11</span><span>إعداد المراقبة والتنبيهات (30 دقيقة)</span>
+          </li>
+          <li><span class="task-id">PROD-12</span><span>ضغط الصور قبل الرفع (1 ساعة)</span></li>
+        </ul>
+      </div>
+
+      <div class="lang-en">
+        <div class="sub-title-en">Production Tasks (12 tasks - 12 hours)</div>
+        <ul class="task-list">
+          <li>
+            <span class="task-id">PROD-1</span
+            ><span>Increase Vercel function timeout settings (10min)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-2</span
+            ><span>Add comprehensive rate limiting to all functions (2h)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-3</span><span>Add database connection pooling (1h)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-4</span
+            ><span>Build queue system for long-running operations (3h)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-5</span><span>Redis cache warming on startup (30min)</span>
+          </li>
+          <li><span class="task-id">PROD-6</span><span>Reduce client bundle size (2h)</span></li>
+          <li>
+            <span class="task-id">PROD-7</span
+            ><span>Create unified error handler middleware (1.5h)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-8</span
+            ><span>Replace console.log with structured logger (2h)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-9</span><span>Fix SOL price endpoint bug (30min)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-10</span><span>Create health check endpoint (30min)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-11</span><span>Setup monitoring and alerting (30min)</span>
+          </li>
+          <li>
+            <span class="task-id">PROD-12</span
+            ><span>Add image compression before upload (1h)</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- ====== SECTION 6: SECURITY & CODE QUALITY ====== -->
+      <div class="chapter-header">
+        <div class="section-tag">06 / SECURITY & CODE QUALITY</div>
+        <div class="section-title">الأمان وجودة الكود</div>
+        <div class="section-title-en">Security and Code Quality</div>
+        <div class="divider"></div>
+      </div>
+
+      <div class="lang-ar">
+        <p class="body-text">
+          بما أن المستخدمين سيتعاملون بأموال حقيقية من خلال هذه المنصة، فإن الأمان ليس خياراً بل
+          ضرورة. المشاكل الحالية تشمل: تسرب بيانات شخصية في معالج ويب هوك النجوم (stars-webhook PII
+          leak)، وتسرب محتمل في دفق الكوبايلوت (copilot-stream leak)، وعدم وجود مصادقة ثنائية العامل
+          (2FA)، وغياب سجل التدقيق (audit logging).
+        </p>
+        <p class="body-text">
+          من ناحية جودة الكود، التطبيق يحتاج إلى استبدال 89 استخداماً للنوع any بأنواع صحيحة، وإزالة
+          236 عبارة console.log، وإضافة توثيق JSDoc على جميع الدوال الحرجة. هذه التحسينات ليست
+          تجميلية فقط بل تمنع أخطاء التشغيل وتسهل الصيانة المستقبلية. يوجد بالفعل مسجل منظم في
+          <code>src/shared/structured-logger.ts</code> لكنه غير مستخدم في معظم الملفات.
+        </p>
+      </div>
+
+      <div class="lang-sep">ENGLISH</div>
+
+      <div class="lang-en">
+        <p class="body-text">
+          Since users will be dealing with real money through this platform, security is not
+          optional but a necessity. Current issues include: personal data leaks in the stars webhook
+          handler (PII exposure), a potential leak in the copilot stream, lack of two-factor
+          authentication (2FA), and absence of audit logging. These are critical for a financial
+          application.
+        </p>
+        <p class="body-text">
+          Regarding code quality, the application needs to replace 89 <code>any</code> type usages
+          with proper types, remove 236 console.log statements, and add JSDoc documentation on all
+          critical functions. These improvements are not merely cosmetic; they prevent runtime
+          errors and facilitate future maintenance. A structured logger already exists at
+          <code>src/shared/structured-logger.ts</code> but is underutilized across most files.
+        </p>
+      </div>
+
+      <div class="card card-accent">
+        <div class="lang-ar">
+          <div class="sub-title">ملخص المشاكل الحرجة</div>
+          <p class="body-text" style="font-size: 13px; margin-bottom: 0">
+            <strong>تسرب البيانات:</strong> stars-webhook PII leak + copilot-stream leak<br />
+            <strong>أنواع ضعيفة:</strong> 89 استخدام any في 31 ملفاً<br />
+            <strong>تسجيل ضعيف:</strong> 236 console.log في 63 ملفاً<br />
+            <strong>أمان مفقود:</strong> بدون 2FA أو audit logs أو CSP headers
+          </p>
+        </div>
+        <div class="lang-en">
+          <div class="sub-title-en">Critical Issues Summary</div>
+          <p class="body-text" style="font-size: 13px; margin-bottom: 0">
+            <strong>Data Leaks:</strong> stars-webhook PII leak + copilot-stream leak<br />
+            <strong>Weak Types:</strong> 89 any usages across 31 files<br />
+            <strong>Weak Logging:</strong> 236 console.log across 63 files<br />
+            <strong>Missing Security:</strong> No 2FA, audit logs, or CSP headers
+          </p>
+        </div>
+      </div>
+
+      <div class="lang-ar">
+        <div class="sub-title">مهام التنظيف والأمان (9 مهام - 8 ساعات)</div>
+        <ul class="task-list">
+          <li>
+            <span class="task-id">DEBT-1</span
+            ><span>استبدال 9 أنواع any الحرجة بأنواع صحيحة (2 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">DEBT-2</span
+            ><span>حذف الأكواد الميتة من أنظمة التصميم (30 دقيقة)</span>
+          </li>
+          <li>
+            <span class="task-id">DEBT-3</span
+            ><span>إزالة جميع console.log واستبدالها بالمسجل المنظم (1 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">DEBT-4</span
+            ><span>إصلاح تسرب البيانات الشخصية في webhook (30 دقيقة)</span>
+          </li>
+          <li>
+            <span class="task-id">DEBT-5</span
+            ><span>إصلاح التسرب في دفق الكوبايلوت (30 دقيقة)</span>
+          </li>
+          <li>
+            <span class="task-id">DEBT-6</span
+            ><span>مراجعة وإزالة التبعيات غير المستخدمة (1 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">DEBT-7</span
+            ><span>إضافة توثيق JSDoc على جميع الدوال الحرجة (3 ساعات)</span>
+          </li>
+          <li>
+            <span class="task-id">SEC-1</span><span>إضافة مصادقة ثنائية العامل (2FA) (2 ساعة)</span>
+          </li>
+          <li>
+            <span class="task-id">SEC-2</span
+            ><span>إضافة رؤوس أمان CSP وX-Frame-Options (30 دقيقة)</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="lang-en">
+        <div class="sub-title-en">Cleanup and Security Tasks (9 tasks - 8 hours)</div>
+        <ul class="task-list">
+          <li>
+            <span class="task-id">DEBT-1</span
+            ><span>Replace 9 critical any types with proper types (2h)</span>
+          </li>
+          <li>
+            <span class="task-id">DEBT-2</span
+            ><span>Remove dead code from design systems (30min)</span>
+          </li>
+          <li>
+            <span class="task-id">DEBT-3</span
+            ><span>Remove all console.log, replace with structured logger (1h)</span>
+          </li>
+          <li>
+            <span class="task-id">DEBT-4</span
+            ><span>Fix PII data leak in webhook handler (30min)</span>
+          </li>
+          <li><span class="task-id">DEBT-5</span><span>Fix copilot stream leak (30min)</span></li>
+          <li>
+            <span class="task-id">DEBT-6</span
+            ><span>Audit and remove unused dependencies (1h)</span>
+          </li>
+          <li>
+            <span class="task-id">DEBT-7</span
+            ><span>Add JSDoc documentation to all critical functions (3h)</span>
+          </li>
+          <li>
+            <span class="task-id">SEC-1</span
+            ><span>Implement two-factor authentication (2FA) (2h)</span>
+          </li>
+          <li>
+            <span class="task-id">SEC-2</span
+            ><span>Add CSP and X-Frame-Options security headers (30min)</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- ====== SECTION 7: EXECUTION TIMELINE ====== -->
+      <div class="chapter-header">
+        <div class="section-tag">07 / EXECUTION TIMELINE</div>
+        <div class="section-title">الجدول الزمني للتنفيذ</div>
+        <div class="section-title-en">Execution Timeline and Schedule</div>
+        <div class="divider"></div>
+      </div>
+
+      <div class="lang-ar">
+        <p class="body-text">
+          يتم تنفيذ المشروع عبر 4 مسارات متوازية خلال 8 أسابيع. المسار الأول يركز على إصلاح الأخطاء
+          الحرجة في الأسبوع الأول، والمسار الثاني يشمل إعادة تصميم الواجهة على 3 موجات، والمسار
+          الثالث يعالج تقوية الإنتاج والأمان، والمسار الرابع يهتم بالتنظيف والتوثيق. هذا التنفيذ
+          المتوازي يقلل الوقت الإجمالي من 12 أسبوعاً تتابعياً إلى 8 أسابيع فقط.
+        </p>
+      </div>
+
+      <div class="lang-sep">ENGLISH</div>
+
+      <div class="lang-en">
+        <p class="body-text">
+          The project is executed across 4 parallel tracks over 8 weeks. Track 1 focuses on fixing
+          critical bugs in week 1, Track 2 covers the UI redesign in 3 waves, Track 3 handles
+          production hardening and security, and Track 4 addresses cleanup and documentation. This
+          parallel execution reduces the total timeline from 12 sequential weeks to just 8 weeks.
+        </p>
+      </div>
+
+      <div class="lang-ar">
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--semantic-error)"></div>
+          <div class="timeline-content">
+            <div class="timeline-week">الاسبوع 1 - الاصلاح الحرج (6 ساعات)</div>
+            <div class="timeline-desc">
+              FIX-1 إلى FIX-6: اصلاح تحليل الرسوم البيانية + اعداد Sentry + اعداد Mixpanel + فحص
+              امني اولي. النتيجة: الميزة الاساسية تعمل.
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-week">الاسبوع 2-3 - التصميم الموجة A (8 ساعات)</div>
+            <div class="timeline-desc">
+              UI-1 إلى UI-6: نظام الالوان الجديد + التخطيط المحسن + الحالات الفارغة + مكونات
+              التحميل. النتيجة: اساس تصميمي جديد.
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-week">الاسبوع 4-5 - التصميم الموجة B + الانتاج (16 ساعة)</div>
+            <div class="timeline-desc">
+              UI-7 إلى UI-12: صفحات عالية الاستخدام + PROD-2 إلى PROD-7: تحديد المعدل + الطوابير +
+              معالج الاخطاء. النتيجة: تطبيق يبدو احترافي.
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--semantic-success)"></div>
+          <div class="timeline-content">
+            <div class="timeline-week">الاسبوع 6-7 - الامان واللمسة النهائية (12 ساعة)</div>
+            <div class="timeline-desc">
+              SEC-1 إلى SEC-2: الامان + DEBT-1 إلى DEBT-7: التنظيف + UI-13 إلى UI-15: اللمسة
+              النهائية. النتيجة: جاهز للاطلاق.
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--semantic-info)"></div>
+          <div class="timeline-content">
+            <div class="timeline-week">الاسبوع 8 - الاختبار والاطلاق (4 ساعات)</div>
+            <div class="timeline-desc">
+              اختبار شامل + فحص الاداء + اعداد المراقبة + دعوة 50 مستخدم تجريبي. النتيجة: VIXOR جاهز
+              للانتاج.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lang-en">
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--semantic-error)"></div>
+          <div class="timeline-content">
+            <div class="timeline-week">Week 1 - Critical Fix (6 hours)</div>
+            <div class="timeline-desc">
+              FIX-1 to FIX-6: Fix chart analysis + Setup Sentry + Setup Mixpanel + Initial security
+              audit. Result: Core feature working.
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-week">Week 2-3 - Design Wave A (8 hours)</div>
+            <div class="timeline-desc">
+              UI-1 to UI-6: New color system + improved layout + empty states + loading components.
+              Result: New design foundation.
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-week">Week 4-5 - Design Wave B + Production (16 hours)</div>
+            <div class="timeline-desc">
+              UI-7 to UI-12: High-traffic pages + PROD-2 to PROD-7: Rate limiting + queues + error
+              handler. Result: Professional-looking app.
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--semantic-success)"></div>
+          <div class="timeline-content">
+            <div class="timeline-week">Week 6-7 - Security and Polish (12 hours)</div>
+            <div class="timeline-desc">
+              SEC-1 to SEC-2: Security hardening + DEBT-1 to DEBT-7: Cleanup + UI-13 to UI-15: Final
+              polish. Result: Launch-ready.
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--semantic-info)"></div>
+          <div class="timeline-content">
+            <div class="timeline-week">Week 8 - Testing and Launch (4 hours)</div>
+            <div class="timeline-desc">
+              Comprehensive testing + Performance audit + Monitoring setup + Invite 50 beta users.
+              Result: VIXOR production-ready.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priority Matrix -->
+      <div class="chapter-header">
+        <div class="section-tag">08 / PRIORITY MATRIX</div>
+        <div class="section-title">مصفوفة الأولويات</div>
+        <div class="section-title-en">Priority Matrix</div>
+        <div class="divider"></div>
+      </div>
+
+      <div class="priority-grid">
+        <div class="card card-error">
+          <div class="priority-cell-title" style="color: var(--semantic-error)">MUST DO FIRST</div>
+          <div class="lang-ar">
+            <p style="font-size: 12px; color: var(--text-primary); margin: 0">
+              اصلاح تحليل الشارت + تحديد المعدل + المراقبة + الامان الاساسي
+            </p>
+          </div>
+          <div class="lang-en">
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0">
+              Fix chart bug + Rate limiting + Monitoring + Basic security
+            </p>
+          </div>
+        </div>
+        <div class="card card-accent">
+          <div class="priority-cell-title" style="color: var(--accent)">HIGH PRIORITY</div>
+          <div class="lang-ar">
+            <p style="font-size: 12px; color: var(--text-primary); margin: 0">
+              اعادة تصميم الواجهة + تحسين الاداء + نظام التخزين المؤقت
+            </p>
+          </div>
+          <div class="lang-en">
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0">
+              UI redesign + Performance optimization + Caching strategy
+            </p>
+          </div>
+        </div>
+        <div class="card card-info">
+          <div class="priority-cell-title" style="color: var(--semantic-info)">SHOULD DO</div>
+          <div class="lang-ar">
+            <p style="font-size: 12px; color: var(--text-primary); margin: 0">
+              التحليلات + نموذج الاشتراك + التوثيق + الاختبارات
+            </p>
+          </div>
+          <div class="lang-en">
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0">
+              Analytics + Subscription model + Documentation + Testing
+            </p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="priority-cell-title" style="color: var(--text-muted)">CAN WAIT</div>
+          <div class="lang-ar">
+            <p style="font-size: 12px; color: var(--text-primary); margin: 0">
+              تطبيق الموبايل + الاكواد البيضاء + التكاملات المتقدمة
+            </p>
+          </div>
+          <div class="lang-en">
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0">
+              Mobile app + White-label + Advanced integrations
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="chapter-header">
+        <div class="section-tag">09 / SUCCESS METRICS</div>
+        <div class="section-title">مقاييس النجاح</div>
+        <div class="section-title-en">Success Metrics and KPIs</div>
+        <div class="divider"></div>
+      </div>
+
+      <div class="lang-ar">
+        <p class="body-text">
+          لضمان قياس التقدم بشكل موضوعي، تم تحديد مقاييس أداء رئيسية لكل مرحلة. هذه المقاييس تغطي
+          الاداء التقني والعمل والمستخدم. الهدف هو تحقيق هذه المقاييس بحلول نهاية الشهر الثالث من
+          الاطلاق، مع تحميل اتجاه نمو مستدام يتجاوز 300 مستخدم نشط يومياً و5% معدل تحويل إلى الخطة
+          المدفوعة.
+        </p>
+      </div>
+
+      <div class="lang-sep">ENGLISH</div>
+
+      <div class="lang-en">
+        <p class="body-text">
+          To ensure objective progress measurement, key performance indicators have been defined for
+          each phase. These metrics cover technical performance, business outcomes, and user
+          engagement. The target is to achieve these metrics by the end of month 3 post-launch, with
+          a sustainable growth trajectory exceeding 300 daily active users and a 5% conversion rate
+          to the paid plan.
+        </p>
+      </div>
+
+      <div class="lang-ar">
+        <table>
+          <thead>
+            <tr>
+              <th>المقياس</th>
+              <th>بعد 4 اسابيع</th>
+              <th>بعد 8 اسابيع</th>
+              <th>بعد 3 اشهر</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>تحليل الشارت</td>
+              <td>يعمل</td>
+              <td>مستقر</td>
+              <td>محسّن</td>
+            </tr>
+            <tr>
+              <td>وقت تحميل الصفحة</td>
+              <td>ثانيتان</td>
+              <td>1.5 ثانية</td>
+              <td>أقل من ثانية</td>
+            </tr>
+            <tr>
+              <td>المستخدمون النشطون يومياً</td>
+              <td>50-100</td>
+              <td>150-300</td>
+              <td>500+</td>
+            </tr>
+            <tr>
+              <td>معدل الاخطاء</td>
+              <td>أقل من 2%</td>
+              <td>أقل من 1%</td>
+              <td>أقل من 0.5%</td>
+            </tr>
+            <tr>
+              <td>وقت الاستجابة</td>
+              <td>أقل من 500ms</td>
+              <td>أقل من 200ms</td>
+              <td>أقل من 100ms</td>
+            </tr>
+            <tr>
+              <td>الإيرادات الشهرية</td>
+              <td>0</td>
+              <td>100-300$</td>
+              <td>500-2000$</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="lang-en">
+        <table>
+          <thead>
+            <tr>
+              <th class="en-th">Metric</th>
+              <th class="en-th">After 4 Weeks</th>
+              <th class="en-th">After 8 Weeks</th>
+              <th class="en-th">After 3 Months</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="en-td">Chart Analysis</td>
+              <td class="en-td">Working</td>
+              <td class="en-td">Stable</td>
+              <td class="en-td">Optimized</td>
+            </tr>
+            <tr>
+              <td class="en-td">Page Load Time</td>
+              <td class="en-td">2 seconds</td>
+              <td class="en-td">1.5 seconds</td>
+              <td class="en-td">Under 1 second</td>
+            </tr>
+            <tr>
+              <td class="en-td">Daily Active Users</td>
+              <td class="en-td">50-100</td>
+              <td class="en-td">150-300</td>
+              <td class="en-td">500+</td>
+            </tr>
+            <tr>
+              <td class="en-td">Error Rate</td>
+              <td class="en-td">Under 2%</td>
+              <td class="en-td">Under 1%</td>
+              <td class="en-td">Under 0.5%</td>
+            </tr>
+            <tr>
+              <td class="en-td">Response Time</td>
+              <td class="en-td">Under 500ms</td>
+              <td class="en-td">Under 200ms</td>
+              <td class="en-td">Under 100ms</td>
+            </tr>
+            <tr>
+              <td class="en-td">Monthly Revenue</td>
+              <td class="en-td">$0</td>
+              <td class="en-td">$100-300</td>
+              <td class="en-td">$500-2,000</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Risk Management -->
+      <div class="chapter-header">
+        <div class="section-tag">10 / RISK MANAGEMENT</div>
+        <div class="section-title">إدارة المخاطر</div>
+        <div class="section-title-en">Risk Management</div>
+        <div class="divider"></div>
+      </div>
+
+      <div class="lang-ar">
+        <p class="body-text">
+          كل مشروع تطوير يواجه مخاطر محتملة يجب التخطيط لها مسبقاً. أكبر خطر هو استمرار تعطل تحليل
+          الشارت لفترة أطول مما هو متوقع، مما قد يؤدي إلى فقدان ثقة المستخدمين الأولين. الخطر الثاني
+          هو أن يستغرق التصميم وقتاً أطول من المقدر، وهو أمر شائع في مشاريع الواجهات. المخاطر
+          الأمنية موجودة دائماً في التطبيقات المالية وتتطلب يقظة مستمرة.
+        </p>
+      </div>
+
+      <div class="lang-sep">ENGLISH</div>
+
+      <div class="lang-en">
+        <p class="body-text">
+          Every development project faces potential risks that must be planned for in advance. The
+          biggest risk is the chart analysis remaining broken longer than expected, which could lead
+          to losing the trust of early adopters. The second risk is the design taking longer than
+          estimated, which is common in UI projects. Security risks are always present in financial
+          applications and require constant vigilance.
+        </p>
+      </div>
+
+      <div class="lang-ar">
+        <table>
+          <thead>
+            <tr>
+              <th>الخطر</th>
+              <th>الاحتمالية</th>
+              <th>التأثير</th>
+              <th>الحل الوقائي</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>مهلة VLM مستمرة</td>
+              <td>منخفضة</td>
+              <td>حرجة</td>
+              <td>FIX-1 يرفع المهلة + نموذج بديل</td>
+            </tr>
+            <tr>
+              <td>التصميم يستغرق وقتاً أطول</td>
+              <td>متوسطة</td>
+              <td>عالية</td>
+              <td>النشر الموجي: A ثم B ثم C</td>
+            </tr>
+            <tr>
+              <td>مشاكل الأداء</td>
+              <td>متوسطة</td>
+              <td>عالية</td>
+              <td>اختبار الحمل أسبوعياً</td>
+            </tr>
+            <tr>
+              <td>اختراق أمني</td>
+              <td>منخفضة</td>
+              <td>حرجة</td>
+              <td>2FA + سجل التدقيق + فحص الاختراق</td>
+            </tr>
+            <tr>
+              <td>فقدان المستخدمين</td>
+              <td>متوسطة</td>
+              <td>عالية</td>
+              <td>التحليلات + حلقة التغذية الراجعة</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="lang-en">
+        <table>
+          <thead>
+            <tr>
+              <th class="en-th">Risk</th>
+              <th class="en-th">Likelihood</th>
+              <th class="en-th">Impact</th>
+              <th class="en-th">Mitigation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="en-td">VLM timeout persists</td>
+              <td class="en-td">Low</td>
+              <td class="en-td">Critical</td>
+              <td class="en-td">FIX-1 raises timeout + fallback model</td>
+            </tr>
+            <tr>
+              <td class="en-td">Design takes longer</td>
+              <td class="en-td">Medium</td>
+              <td class="en-td">High</td>
+              <td class="en-td">Wave deployment: A then B then C</td>
+            </tr>
+            <tr>
+              <td class="en-td">Performance issues</td>
+              <td class="en-td">Medium</td>
+              <td class="en-td">High</td>
+              <td class="en-td">Weekly load testing</td>
+            </tr>
+            <tr>
+              <td class="en-td">Security breach</td>
+              <td class="en-td">Low</td>
+              <td class="en-td">Critical</td>
+              <td class="en-td">2FA + audit logs + penetration testing</td>
+            </tr>
+            <tr>
+              <td class="en-td">User churn</td>
+              <td class="en-td">Medium</td>
+              <td class="en-td">High</td>
+              <td class="en-td">Analytics + feedback loop</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-    <div class="timeline-item">
-      <div class="timeline-dot"></div>
-      <div class="timeline-content">
-        <div class="timeline-week">الاسبوع 4-5 - التصميم الموجة B + الانتاج (16 ساعة)</div>
-        <div class="timeline-desc">UI-7 إلى UI-12: صفحات عالية الاستخدام + PROD-2 إلى PROD-7: تحديد المعدل + الطوابير + معالج الاخطاء. النتيجة: تطبيق يبدو احترافي.</div>
+    <!-- end main-content -->
+
+    <!-- ============ ENDING PAGE ============ -->
+    <div class="ending">
+      <div class="ending-big">VIXOR</div>
+      <div class="ending-sub">
+        <div class="lang-ar" style="margin-bottom: 16px">
+          من تحليل شامل إلى منصة احترافية. اتبع الخطة، وقس كل شيء، واستمع للمستخدمين.
+        </div>
+        <div class="lang-en">
+          From comprehensive analysis to professional platform. Follow the plan, measure everything,
+          listen to users.
+        </div>
+      </div>
+      <div
+        style="
+          margin-top: 30px;
+          font-family: &quot;Inter&quot;, sans-serif;
+          font-size: 11px;
+          color: var(--text-muted);
+          letter-spacing: 1px;
+        "
+      >
+        kam65624-cmd/vixor-APP | vixor-app.vercel.app | 2026-06-30
       </div>
     </div>
-    <div class="timeline-item">
-      <div class="timeline-dot" style="background:var(--semantic-success);"></div>
-      <div class="timeline-content">
-        <div class="timeline-week">الاسبوع 6-7 - الامان واللمسة النهائية (12 ساعة)</div>
-        <div class="timeline-desc">SEC-1 إلى SEC-2: الامان + DEBT-1 إلى DEBT-7: التنظيف + UI-13 إلى UI-15: اللمسة النهائية. النتيجة: جاهز للاطلاق.</div>
-      </div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-dot" style="background:var(--semantic-info);"></div>
-      <div class="timeline-content">
-        <div class="timeline-week">الاسبوع 8 - الاختبار والاطلاق (4 ساعات)</div>
-        <div class="timeline-desc">اختبار شامل + فحص الاداء + اعداد المراقبة + دعوة 50 مستخدم تجريبي. النتيجة: VIXOR جاهز للانتاج.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="lang-en">
-    <div class="timeline-item">
-      <div class="timeline-dot" style="background:var(--semantic-error);"></div>
-      <div class="timeline-content">
-        <div class="timeline-week">Week 1 - Critical Fix (6 hours)</div>
-        <div class="timeline-desc">FIX-1 to FIX-6: Fix chart analysis + Setup Sentry + Setup Mixpanel + Initial security audit. Result: Core feature working.</div>
-      </div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-dot"></div>
-      <div class="timeline-content">
-        <div class="timeline-week">Week 2-3 - Design Wave A (8 hours)</div>
-        <div class="timeline-desc">UI-1 to UI-6: New color system + improved layout + empty states + loading components. Result: New design foundation.</div>
-      </div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-dot"></div>
-      <div class="timeline-content">
-        <div class="timeline-week">Week 4-5 - Design Wave B + Production (16 hours)</div>
-        <div class="timeline-desc">UI-7 to UI-12: High-traffic pages + PROD-2 to PROD-7: Rate limiting + queues + error handler. Result: Professional-looking app.</div>
-      </div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-dot" style="background:var(--semantic-success);"></div>
-      <div class="timeline-content">
-        <div class="timeline-week">Week 6-7 - Security and Polish (12 hours)</div>
-        <div class="timeline-desc">SEC-1 to SEC-2: Security hardening + DEBT-1 to DEBT-7: Cleanup + UI-13 to UI-15: Final polish. Result: Launch-ready.</div>
-      </div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-dot" style="background:var(--semantic-info);"></div>
-      <div class="timeline-content">
-        <div class="timeline-week">Week 8 - Testing and Launch (4 hours)</div>
-        <div class="timeline-desc">Comprehensive testing + Performance audit + Monitoring setup + Invite 50 beta users. Result: VIXOR production-ready.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Priority Matrix -->
-  <div class="chapter-header">
-    <div class="section-tag">08 / PRIORITY MATRIX</div>
-    <div class="section-title">مصفوفة الأولويات</div>
-    <div class="section-title-en">Priority Matrix</div>
-    <div class="divider"></div>
-  </div>
-
-  <div class="priority-grid">
-    <div class="card card-error">
-      <div class="priority-cell-title" style="color:var(--semantic-error);">MUST DO FIRST</div>
-      <div class="lang-ar"><p style="font-size:12px;color:var(--text-primary);margin:0;">اصلاح تحليل الشارت + تحديد المعدل + المراقبة + الامان الاساسي</p></div>
-      <div class="lang-en"><p style="font-size:12px;color:var(--text-muted);margin:0;">Fix chart bug + Rate limiting + Monitoring + Basic security</p></div>
-    </div>
-    <div class="card card-accent">
-      <div class="priority-cell-title" style="color:var(--accent);">HIGH PRIORITY</div>
-      <div class="lang-ar"><p style="font-size:12px;color:var(--text-primary);margin:0;">اعادة تصميم الواجهة + تحسين الاداء + نظام التخزين المؤقت</p></div>
-      <div class="lang-en"><p style="font-size:12px;color:var(--text-muted);margin:0;">UI redesign + Performance optimization + Caching strategy</p></div>
-    </div>
-    <div class="card card-info">
-      <div class="priority-cell-title" style="color:var(--semantic-info);">SHOULD DO</div>
-      <div class="lang-ar"><p style="font-size:12px;color:var(--text-primary);margin:0;">التحليلات + نموذج الاشتراك + التوثيق + الاختبارات</p></div>
-      <div class="lang-en"><p style="font-size:12px;color:var(--text-muted);margin:0;">Analytics + Subscription model + Documentation + Testing</p></div>
-    </div>
-    <div class="card">
-      <div class="priority-cell-title" style="color:var(--text-muted);">CAN WAIT</div>
-      <div class="lang-ar"><p style="font-size:12px;color:var(--text-primary);margin:0;">تطبيق الموبايل + الاكواد البيضاء + التكاملات المتقدمة</p></div>
-      <div class="lang-en"><p style="font-size:12px;color:var(--text-muted);margin:0;">Mobile app + White-label + Advanced integrations</p></div>
-    </div>
-  </div>
-
-  <!-- KPIs -->
-  <div class="chapter-header">
-    <div class="section-tag">09 / SUCCESS METRICS</div>
-    <div class="section-title">مقاييس النجاح</div>
-    <div class="section-title-en">Success Metrics and KPIs</div>
-    <div class="divider"></div>
-  </div>
-
-  <div class="lang-ar">
-    <p class="body-text">
-      لضمان قياس التقدم بشكل موضوعي، تم تحديد مقاييس أداء رئيسية لكل مرحلة. هذه المقاييس تغطي الاداء التقني والعمل والمستخدم. الهدف هو تحقيق هذه المقاييس بحلول نهاية الشهر الثالث من الاطلاق، مع تحميل اتجاه نمو مستدام يتجاوز 300 مستخدم نشط يومياً و5% معدل تحويل إلى الخطة المدفوعة.
-    </p>
-  </div>
-
-  <div class="lang-sep">ENGLISH</div>
-
-  <div class="lang-en">
-    <p class="body-text">
-      To ensure objective progress measurement, key performance indicators have been defined for each phase. These metrics cover technical performance, business outcomes, and user engagement. The target is to achieve these metrics by the end of month 3 post-launch, with a sustainable growth trajectory exceeding 300 daily active users and a 5% conversion rate to the paid plan.
-    </p>
-  </div>
-
-  <div class="lang-ar">
-    <table>
-      <thead><tr><th>المقياس</th><th>بعد 4 اسابيع</th><th>بعد 8 اسابيع</th><th>بعد 3 اشهر</th></tr></thead>
-      <tbody>
-        <tr><td>تحليل الشارت</td><td>يعمل</td><td>مستقر</td><td>محسّن</td></tr>
-        <tr><td>وقت تحميل الصفحة</td><td>ثانيتان</td><td>1.5 ثانية</td><td>أقل من ثانية</td></tr>
-        <tr><td>المستخدمون النشطون يومياً</td><td>50-100</td><td>150-300</td><td>500+</td></tr>
-        <tr><td>معدل الاخطاء</td><td>أقل من 2%</td><td>أقل من 1%</td><td>أقل من 0.5%</td></tr>
-        <tr><td>وقت الاستجابة</td><td>أقل من 500ms</td><td>أقل من 200ms</td><td>أقل من 100ms</td></tr>
-        <tr><td>الإيرادات الشهرية</td><td>0</td><td>100-300$</td><td>500-2000$</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="lang-en">
-    <table>
-      <thead><tr><th class="en-th">Metric</th><th class="en-th">After 4 Weeks</th><th class="en-th">After 8 Weeks</th><th class="en-th">After 3 Months</th></tr></thead>
-      <tbody>
-        <tr><td class="en-td">Chart Analysis</td><td class="en-td">Working</td><td class="en-td">Stable</td><td class="en-td">Optimized</td></tr>
-        <tr><td class="en-td">Page Load Time</td><td class="en-td">2 seconds</td><td class="en-td">1.5 seconds</td><td class="en-td">Under 1 second</td></tr>
-        <tr><td class="en-td">Daily Active Users</td><td class="en-td">50-100</td><td class="en-td">150-300</td><td class="en-td">500+</td></tr>
-        <tr><td class="en-td">Error Rate</td><td class="en-td">Under 2%</td><td class="en-td">Under 1%</td><td class="en-td">Under 0.5%</td></tr>
-        <tr><td class="en-td">Response Time</td><td class="en-td">Under 500ms</td><td class="en-td">Under 200ms</td><td class="en-td">Under 100ms</td></tr>
-        <tr><td class="en-td">Monthly Revenue</td><td class="en-td">$0</td><td class="en-td">$100-300</td><td class="en-td">$500-2,000</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Risk Management -->
-  <div class="chapter-header">
-    <div class="section-tag">10 / RISK MANAGEMENT</div>
-    <div class="section-title">إدارة المخاطر</div>
-    <div class="section-title-en">Risk Management</div>
-    <div class="divider"></div>
-  </div>
-
-  <div class="lang-ar">
-    <p class="body-text">
-      كل مشروع تطوير يواجه مخاطر محتملة يجب التخطيط لها مسبقاً. أكبر خطر هو استمرار تعطل تحليل الشارت لفترة أطول مما هو متوقع، مما قد يؤدي إلى فقدان ثقة المستخدمين الأولين. الخطر الثاني هو أن يستغرق التصميم وقتاً أطول من المقدر، وهو أمر شائع في مشاريع الواجهات. المخاطر الأمنية موجودة دائماً في التطبيقات المالية وتتطلب يقظة مستمرة.
-    </p>
-  </div>
-
-  <div class="lang-sep">ENGLISH</div>
-
-  <div class="lang-en">
-    <p class="body-text">
-      Every development project faces potential risks that must be planned for in advance. The biggest risk is the chart analysis remaining broken longer than expected, which could lead to losing the trust of early adopters. The second risk is the design taking longer than estimated, which is common in UI projects. Security risks are always present in financial applications and require constant vigilance.
-    </p>
-  </div>
-
-  <div class="lang-ar">
-    <table>
-      <thead><tr><th>الخطر</th><th>الاحتمالية</th><th>التأثير</th><th>الحل الوقائي</th></tr></thead>
-      <tbody>
-        <tr><td>مهلة VLM مستمرة</td><td>منخفضة</td><td>حرجة</td><td>FIX-1 يرفع المهلة + نموذج بديل</td></tr>
-        <tr><td>التصميم يستغرق وقتاً أطول</td><td>متوسطة</td><td>عالية</td><td>النشر الموجي: A ثم B ثم C</td></tr>
-        <tr><td>مشاكل الأداء</td><td>متوسطة</td><td>عالية</td><td>اختبار الحمل أسبوعياً</td></tr>
-        <tr><td>اختراق أمني</td><td>منخفضة</td><td>حرجة</td><td>2FA + سجل التدقيق + فحص الاختراق</td></tr>
-        <tr><td>فقدان المستخدمين</td><td>متوسطة</td><td>عالية</td><td>التحليلات + حلقة التغذية الراجعة</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="lang-en">
-    <table>
-      <thead><tr><th class="en-th">Risk</th><th class="en-th">Likelihood</th><th class="en-th">Impact</th><th class="en-th">Mitigation</th></tr></thead>
-      <tbody>
-        <tr><td class="en-td">VLM timeout persists</td><td class="en-td">Low</td><td class="en-td">Critical</td><td class="en-td">FIX-1 raises timeout + fallback model</td></tr>
-        <tr><td class="en-td">Design takes longer</td><td class="en-td">Medium</td><td class="en-td">High</td><td class="en-td">Wave deployment: A then B then C</td></tr>
-        <tr><td class="en-td">Performance issues</td><td class="en-td">Medium</td><td class="en-td">High</td><td class="en-td">Weekly load testing</td></tr>
-        <tr><td class="en-td">Security breach</td><td class="en-td">Low</td><td class="en-td">Critical</td><td class="en-td">2FA + audit logs + penetration testing</td></tr>
-        <tr><td class="en-td">User churn</td><td class="en-td">Medium</td><td class="en-td">High</td><td class="en-td">Analytics + feedback loop</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-</div><!-- end main-content -->
-
-<!-- ============ ENDING PAGE ============ -->
-<div class="ending">
-  <div class="ending-big">VIXOR</div>
-  <div class="ending-sub">
-    <div class="lang-ar" style="margin-bottom:16px;">
-      من تحليل شامل إلى منصة احترافية. اتبع الخطة، وقس كل شيء، واستمع للمستخدمين.
-    </div>
-    <div class="lang-en">
-      From comprehensive analysis to professional platform. Follow the plan, measure everything, listen to users.
-    </div>
-  </div>
-  <div style="margin-top:30px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text-muted);letter-spacing:1px;">
-    kam65624-cmd/vixor-APP | vixor-app.vercel.app | 2026-06-30
-  </div>
-</div>
-
-</body>
+  </body>
 </html>

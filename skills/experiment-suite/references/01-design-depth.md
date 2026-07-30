@@ -3,6 +3,7 @@
 ## Why this exists
 
 The pipeline emits a 5-line design stub like:
+
 ```
 **Task:** Transformer-based time series forecasting
 **Dataset:** Synthetic dataset
@@ -20,13 +21,14 @@ That's not a design — it's a placeholder. A real experiment design tells someo
 
 State the question precisely (one paragraph) and convert it into a falsifiable hypothesis. The hypothesis should name the expected effect direction and a rough magnitude.
 
-> *We test whether channel-independent patched attention reduces long-horizon MSE by ≥ 5% on ETT benchmarks compared to point-wise attention, while not increasing compute by more than 1.3×.*
+> _We test whether channel-independent patched attention reduces long-horizon MSE by ≥ 5% on ETT benchmarks compared to point-wise attention, while not increasing compute by more than 1.3×._
 
 If the question doesn't compress into a falsifiable form, weaken it until it does. Vague questions ("how does X work?") produce vague experiments.
 
 ### 2. Datasets
 
 For each dataset:
+
 - **Name** and **citation**
 - **Source route** — user-supplied, agent-discovered, reused public, controlled, or synthetic fallback
 - **Repository / accession / DOI / stable URL** when available
@@ -76,7 +78,7 @@ For each metric: name, units, direction (lower / higher better), why it matters 
 A method usually has 3–6 components. The ablation plan removes them one at a time on a representative dataset / horizon. List the planned ablations explicitly:
 
 | Ablation | What it removes | Expected effect direction | Why it tests our hypothesis |
-|---|---|---|---|
+| -------- | --------------- | ------------------------- | --------------------------- |
 
 Without an ablation plan, the headline number cannot be attributed to any component.
 
@@ -95,11 +97,11 @@ A design without limitations is a design that doesn't know its weaknesses.
 
 End with a small budget table:
 
-| Item | Per-config cost | Total |
-|---|---|---|
-| Method × seeds × hyperparameter trials | 30 min × 3 × 30 = 45 hrs | one-time |
-| Ablation re-runs | 30 min × 3 × 6 = 9 hrs | re-used datasets |
-| Total | ≈ 54 hrs on 1 A100 | ~ 2.5 days |
+| Item                                   | Per-config cost          | Total            |
+| -------------------------------------- | ------------------------ | ---------------- |
+| Method × seeds × hyperparameter trials | 30 min × 3 × 30 = 45 hrs | one-time         |
+| Ablation re-runs                       | 30 min × 3 × 6 = 9 hrs   | re-used datasets |
+| Total                                  | ≈ 54 hrs on 1 A100       | ~ 2.5 days       |
 
 This calibrates the user on the cost of running the experiment for real and supports the simulated-vs-measured choice in `references/03-results-protocol.md`.
 

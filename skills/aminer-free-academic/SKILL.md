@@ -10,13 +10,7 @@ description: >
   Do NOT use this skill for: full paper abstracts or keyword lists, multi-condition or semantic paper search, citation relationship analysis, scholar full profiles (bio, education, work history, honors), scholar paper / patent / project lists, institution scholar / paper / patent output analysis, venue paper lists by year, patent deep details (IPC/CPC, assignee, claims), or any task requiring paid APIs.
   Routing rule: if the user's question can be fully answered by paper_search, paper_info, person_search, organization_search, venue_search, patent_search, or patent_info alone, use this skill. Otherwise route to aminer-academic-search.
 metadata:
-  {
-    "openclaw":
-      {
-        "requires": {"env": ["AMINER_API_KEY"] },
-        "primaryEnv": "AMINER_API_KEY"
-      }
-  }
+  { "openclaw": { "requires": { "env": ["AMINER_API_KEY"] }, "primaryEnv": "AMINER_API_KEY" } }
 ---
 
 # AMiner Free Search
@@ -316,12 +310,15 @@ Prefer this structure:
 ## Free-tier result
 
 ### What we can answer now
+
 - ...
 
 ### Top candidates
+
 - ...
 
 ### Suggested next step
+
 - Stay free: ...
 - Upgrade to paid API only if you need: ...
 ```

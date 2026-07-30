@@ -6,11 +6,13 @@ Target output:
 Final size:
 
 Panel map:
+
 - a:
 - b:
 - c:
 
 Evidence hierarchy:
+
 - hero evidence:
 - validation evidence:
 - controls / robustness:

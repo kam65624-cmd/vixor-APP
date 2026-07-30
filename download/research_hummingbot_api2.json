@@ -104,10 +104,7 @@
       "route-pattern": "/:user_id/:repository",
       "theme-color": "#1e2327",
       "turbo-body-classes": "logged-out env-production page-responsive",
-      "turbo-cache-control": [
-        "no-preview",
-        "no-cache"
-      ],
+      "turbo-cache-control": ["no-preview", "no-cache"],
       "twitter:card": "summary_large_image",
       "twitter:description": "Backend API to orchestrate multiple bots. Contribute to hummingbot/hummingbot-api development by creating an account on GitHub.",
       "twitter:image": "https://opengraph.githubassets.com/0abcc858778959fa7093032108aaf2fdfb1ec9693146b4f19eea7133aca2a379/hummingbot/hummingbot-api",

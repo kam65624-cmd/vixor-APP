@@ -80,7 +80,7 @@ remediation until orphans reach 0, in this priority order:
 1. **Cite them in prose** (preferred). Most orphans are real on-topic
    papers you researched but skipped writing about. Go back to
    `03-survey-section-playbook.md` and add each to the appropriate
-   section with a one-to-three-sentence treatment. A survey *is* the
+   section with a one-to-three-sentence treatment. A survey _is_ the
    argument that every cited paper deserves citation. Re-run the gate.
 2. **Prune + lower scope.** If after honest effort you cannot extend prose
    to cover the orphans, lower the target toward the 60 floor (100+ recommended)
@@ -97,7 +97,7 @@ Only after `orphan_count == 0` may you proceed past this gate.
 
 ### G2.6 · Temporal coverage matches the stated intent
 
-If the topic named a year or recency window (the §0 *recency-led* posture in `01-bibliography-expansion.md`), the bib must actually contain real entries from it. This is the gate that catches "asked for 2026, delivered all 2024".
+If the topic named a year or recency window (the §0 _recency-led_ posture in `01-bibliography-expansion.md`), the bib must actually contain real entries from it. This is the gate that catches "asked for 2026, delivered all 2024".
 
 ```bash
 # Histogram the bib by year — eyeball it against the recorded posture.
@@ -107,7 +107,7 @@ grep -oE 'year[[:space:]]*=[[:space:]]*[{"]?[[:space:]]*(19|20)[0-9]{2}' bibliog
 
 There is **no universal threshold** — judge against the posture in `.bib_progress.txt`:
 
-- **Recency-led** (topic named year Y / "latest"): the bulk of entries fall in the window, and there is a meaningful count *from Y itself*. Zero entries from the named year is an automatic fail; a handful is a warning — search harder before shipping.
+- **Recency-led** (topic named year Y / "latest"): the bulk of entries fall in the window, and there is a meaningful count _from Y itself_. Zero entries from the named year is an automatic fail; a handful is a warning — search harder before shipping.
 - **Timeline-spanning / balanced**: the bib reaches the last ~6–12 months, not stopping 2 years short.
 
 **Detection is a remediation trigger, not a stop.** If coverage doesn't match intent, loop:
@@ -136,15 +136,15 @@ echo "TOTAL \\cite{} markers: $total"   # must be ≥ 60
 
 Per-section minimums:
 
-| Section | Min `\cite{` count |
-|---|---|
-| abstract | 3 |
-| introduction | 10 |
-| background | 6 |
-| methods | 25 |
-| discussion | 6 |
-| conclusion | 3 |
-| related_work | 5 |
+| Section      | Min `\cite{` count |
+| ------------ | ------------------ |
+| abstract     | 3                  |
+| introduction | 10                 |
+| background   | 6                  |
+| methods      | 25                 |
+| discussion   | 6                  |
+| conclusion   | 3                  |
+| related_work | 5                  |
 
 Methods carries most of the load — that is correct for a survey.
 
@@ -166,7 +166,7 @@ grep -l "fig:timeline" sections/*.tex
 grep -l "fig:capability\|fig:coverage" sections/*.tex
 ```
 
-(These three are the *common* survey figures, not a mandatory trio — per `02`'s design process, let the topic decide. The bar is "every figure makes a claim visible", not "fill these slots".)
+(These three are the _common_ survey figures, not a mandatory trio — per `02`'s design process, let the topic decide. The bar is "every figure makes a claim visible", not "fill these slots".)
 
 ### G5.5 · No template leakage; Nature/Science look
 
@@ -182,7 +182,7 @@ grep -rn 'font.family.*serif' figures/*.py 2>/dev/null   # expect empty (use the
 grep -rn 'sibling distance' sections/*.tex 2>/dev/null    # expect empty
 ```
 
-If any fires: redraw the offending figure for *this* topic with the Nature language in `02` (sans-serif, Wong palette, despined, panel labels, finding-first caption). This is a remediation trigger — fix and re-run, don't ship a leaked or generic-looking figure.
+If any fires: redraw the offending figure for _this_ topic with the Nature language in `02` (sans-serif, Wong palette, despined, panel labels, finding-first caption). This is a remediation trigger — fix and re-run, don't ship a leaked or generic-looking figure.
 
 ### G6 · Comparison table present
 
@@ -257,6 +257,7 @@ Unattended runs can't rely on a human opening the PDF, so this is now two layers
 **Machine check (always):** G1's overfull list above must be empty (or ≤ ~2pt). A figure that overruns the margin shows up there; a figure correctly wrapped in `\resizebox`/`width=\linewidth` cannot. If you have `pdftoppm`/ImageMagick, rasterize the figure pages (`pdftoppm -png -f <p> -l <p> main.pdf /tmp/chk`) and confirm no glyphs touch the page edge.
 
 **Taste check (when a reviewer is available):** open `main.pdf` and verify:
+
 - Taxonomy figure: leaves are readable (not shrunk to illegibility by `\resizebox` — if so, fold the tree); fits cleanly within the column.
 - Timeline: lane structure visible; labels not overlapping.
 - Coverage matrix: cell colors readable; legend explained.

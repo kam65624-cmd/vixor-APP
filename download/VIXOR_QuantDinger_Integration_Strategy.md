@@ -3,6 +3,7 @@
 > **المستند:** خطة استراتيجية لاست corásticoage الأساسيات الجاهزة والشغالة من QuantDinger في VIXOR MASTER V2 بدل بنائها من جديد
 > **التاريخ:** 2026-06-18
 > **المراجع:**
+>
 > - تقرير جرد QuantDinger الكامل: `/home/z/my-project/audit/quantdinger_inventory.md` (1,695 سطراً)
 > - تقرير تدقيق VIXOR الحالي: `/home/z/my-project/audit/vixor_current_state.md` (718 سطراً)
 > - مستودع QuantDinger: `/home/z/my-project/audit/QuantDinger/` (Apache-2.0)
@@ -15,6 +16,7 @@
 QuantDinger هو منصة **Python/Flask + Vue + Postgres + Redis** تطرح نفسها كنظام "AI Quant OS" متكامل، صدر الإصدار V3.1.0 منه مع **AI Agent Gateway** و **MCP server** و **experiment orchestration layer**. الكود مفتوح المصدر برخصة Apache-2.0، ومكتوب بأسلوب احترافي (safe_exec sandbox ثلاثي الطبقات، capability-scoped tokens، circuit breaker للـ data sources، backtest engine بـ 5K LOC).
 
 VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supabase** يطالب بنفس الطموح (Bloomberg Professional للـ SMC/ICT traders)، لكنه **معاق تشغيلياً** بسبب:
+
 - 13 متغير بيئة مفقود محلياً (Vercel production لديه معظمها)
 - `deep-no-op Proxy` يبتلع كل أخطاء Supabase بصمت
 - `newsMap` بأخبار وهمية مدمجة في المحرك تعرض للمستخدم كأنها تحليل حقيقي
@@ -52,39 +54,39 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 
 لكل ميزة رئيسية، نحدد: هل نبنيها من الصفر (BUILD)، أم نعيد استخدامها من QuantDinger (REUSE-PORT)، أم نحتفظ بما لدينا في VIXOR (KEEP)?
 
-| # | الميزة | الحالة في VIXOR | الحالة في QuantDinger | القرار | الجهد | الأولوية |
-|---|---|---|---|---|---|---|
-| 1 | **Safe code execution sandbox** | غير موجودة | `safe_exec.py` 470 LOC، 3 طبقات | **REUSE-PORT** | متوسط | P0 |
-| 2 | **Backtest engine** | غير موجودة | `backtest.py` 4974 LOC، MTF precision | **REUSE-PORT** (core only ~2000 LOC) | عالي | P1 |
-| 3 | **Strategy DSL (IndicatorStrategy)** | غير موجودة | `strategy_script_runtime.py` + `indicator_params.py` ~600 LOC | **REUSE-PORT** | متوسط | P1 |
-| 4 | **Agent Gateway (capability tokens)** | Copilot agent فقط | `agent_auth.py` + `agent_jobs.py` 810 LOC | **REUSE-PORT** (pattern) | متوسط | P2 |
-| 5 | **SSE progress streaming for jobs** | غير موجودة | `agent_jobs.py:stream_progress` + SSE endpoint | **REUSE-PORT** (pattern) | متوسط | P2 |
-| 6 | **Idempotency-Key with DB unique index** | غير موجودة | Postgres partial unique index pattern | **REUSE-PORT** (SQL only) | منخفض | P2 |
-| 7 | **Multi-provider LLM service** | ZAI SDK فقط | `llm.py` 629 LOC، 7 providers | **REUSE-PORT** | منخفض | P1 |
-| 8 | **Multi-channel notifier** | Telegram فقط | `signal_notifier.py` 912 LOC، 6 channels | **REUSE-PORT** | متوسط | P1 |
-| 9 | **Circuit breaker + rate limiter** | Hybrid cache فقط | `circuit_breaker.py` + `rate_limiter.py` + `cache_manager.py` ~600 LOC | **REUSE-PORT** | منخفض | P0 |
-| 10 | **Credential encryption (Fernet)** | غير موجودة | `credential_crypto.py` 50 LOC | **REUSE-PORT** (Node `crypto`) | منخفض | P0 |
-| 11 | **Crypto exchange adapters (REST)** | غير موجودة | 11 exchanges في `live_trading/` | **REUSE-PORT** (4 exchanges فقط: Binance, OKX, Bybit, Coinbase) | عالي | P2 |
-| 12 | **Experiment orchestration (AI tuning)** | غير موجودة | `app/services/experiment/` ~700 LOC | **REUSE-PORT** | متوسط | P2 |
-| 13 | **Market regime detector** | غير موجودة | `experiment/regime.py` 170 LOC، 5 regimes | **REUSE-PORT** | منخفض | P2 |
-| 14 | **Strategy scoring service** | غير موجودة | `experiment/scoring.py` 140 LOC | **REUSE-PORT** | منخفض | P2 |
-| 15 | **MCP server** | غير موجودة | `mcp_server/` 306 LOC | **SKIP** (لأن VIXOR لا يحتاج MCP) | — | — |
-| 16 | **SMC/ICT analysis engine** | `engine.ts` 1360 LOC ✅ | غير موجودة | **KEEP** (VIXOR متفوق) | — | — |
-| 17 | **Debate Engine (4 agents)** | `debate.engine.ts` ✅ | غير موجودة | **KEEP** | — | — |
-| 18 | **Chart Truth Layer** | `chart-truth/` ✅ | غير موجودة | **KEEP** | — | — |
-| 19 | **Chart Vision (VLM)** | `chart-vision.ts` ✅ (يحتاج ZAI_API_KEY) | غير موجودة | **KEEP + FIX ENV** | — | — |
-| 20 | **Telegram WebApp auth** | `auth.functions.ts` ✅ | غير موجودة | **KEEP + FIX ENV** | — | — |
-| 21 | **Risk Governor** | `risk-governor/` ✅ (غير متصل) | غير موجودة | **KEEP + WIRE** | — | — |
-| 22 | **Paper Trading engine** | `paper-trading/` ✅ (gated) | `paper_orders` table | **KEEP + UNGATE** | — | — |
-| 23 | **Memory store (user_memories)** | `memory/store.ts` ✅ | `analysis_memory` table | **KEEP** | — | — |
-| 24 | **Event bus + persistence** | `events/orchestrator.ts` ✅ | غير موجودة | **KEEP** | — | — |
-| 25 | **Tool registry** | `tool-registry/` ✅ (2 tools) | غير موجودة | **KEEP + EXPAND** | — | — |
-| 26 | **UI/UX (shadcn + custom)** | 38 + 10 components ✅ | Vue (private repo) | **KEEP + FIX** | — | — |
-| 27 | **i18n + RTL** | ✅ (EN + AR) | Vue i18n (غير متوفر) | **KEEP** | — | — |
-| 28 | **News integration** | أخبار وهمية مدمجة! ❌ | Finnhub + RSS في `news.py` | **REUSE-PORT** (Finnhub pattern) | منخفض | **P0** |
-| 29 | **Database migrations framework** | 12 SQL files يدوية | `init.sql` يدوي | **KEEP** | — | — |
-| 30 | **Pricing/payment (USDT-TRC20)** | Telegram Stars فقط | `usdt_payment_service.py` 830 LOC | **REUSE-PORT** (later) | عالي | P3 |
-| 31 | **OAuth (Google/GitHub)** | غير موجودة | `oauth_service.py` 715 LOC | **REUSE-PORT** (later) | متوسط | P3 |
+| #   | الميزة                                   | الحالة في VIXOR                          | الحالة في QuantDinger                                                  | القرار                                                          | الجهد | الأولوية |
+| --- | ---------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------- | ----- | -------- |
+| 1   | **Safe code execution sandbox**          | غير موجودة                               | `safe_exec.py` 470 LOC، 3 طبقات                                        | **REUSE-PORT**                                                  | متوسط | P0       |
+| 2   | **Backtest engine**                      | غير موجودة                               | `backtest.py` 4974 LOC، MTF precision                                  | **REUSE-PORT** (core only ~2000 LOC)                            | عالي  | P1       |
+| 3   | **Strategy DSL (IndicatorStrategy)**     | غير موجودة                               | `strategy_script_runtime.py` + `indicator_params.py` ~600 LOC          | **REUSE-PORT**                                                  | متوسط | P1       |
+| 4   | **Agent Gateway (capability tokens)**    | Copilot agent فقط                        | `agent_auth.py` + `agent_jobs.py` 810 LOC                              | **REUSE-PORT** (pattern)                                        | متوسط | P2       |
+| 5   | **SSE progress streaming for jobs**      | غير موجودة                               | `agent_jobs.py:stream_progress` + SSE endpoint                         | **REUSE-PORT** (pattern)                                        | متوسط | P2       |
+| 6   | **Idempotency-Key with DB unique index** | غير موجودة                               | Postgres partial unique index pattern                                  | **REUSE-PORT** (SQL only)                                       | منخفض | P2       |
+| 7   | **Multi-provider LLM service**           | ZAI SDK فقط                              | `llm.py` 629 LOC، 7 providers                                          | **REUSE-PORT**                                                  | منخفض | P1       |
+| 8   | **Multi-channel notifier**               | Telegram فقط                             | `signal_notifier.py` 912 LOC، 6 channels                               | **REUSE-PORT**                                                  | متوسط | P1       |
+| 9   | **Circuit breaker + rate limiter**       | Hybrid cache فقط                         | `circuit_breaker.py` + `rate_limiter.py` + `cache_manager.py` ~600 LOC | **REUSE-PORT**                                                  | منخفض | P0       |
+| 10  | **Credential encryption (Fernet)**       | غير موجودة                               | `credential_crypto.py` 50 LOC                                          | **REUSE-PORT** (Node `crypto`)                                  | منخفض | P0       |
+| 11  | **Crypto exchange adapters (REST)**      | غير موجودة                               | 11 exchanges في `live_trading/`                                        | **REUSE-PORT** (4 exchanges فقط: Binance, OKX, Bybit, Coinbase) | عالي  | P2       |
+| 12  | **Experiment orchestration (AI tuning)** | غير موجودة                               | `app/services/experiment/` ~700 LOC                                    | **REUSE-PORT**                                                  | متوسط | P2       |
+| 13  | **Market regime detector**               | غير موجودة                               | `experiment/regime.py` 170 LOC، 5 regimes                              | **REUSE-PORT**                                                  | منخفض | P2       |
+| 14  | **Strategy scoring service**             | غير موجودة                               | `experiment/scoring.py` 140 LOC                                        | **REUSE-PORT**                                                  | منخفض | P2       |
+| 15  | **MCP server**                           | غير موجودة                               | `mcp_server/` 306 LOC                                                  | **SKIP** (لأن VIXOR لا يحتاج MCP)                               | —     | —        |
+| 16  | **SMC/ICT analysis engine**              | `engine.ts` 1360 LOC ✅                  | غير موجودة                                                             | **KEEP** (VIXOR متفوق)                                          | —     | —        |
+| 17  | **Debate Engine (4 agents)**             | `debate.engine.ts` ✅                    | غير موجودة                                                             | **KEEP**                                                        | —     | —        |
+| 18  | **Chart Truth Layer**                    | `chart-truth/` ✅                        | غير موجودة                                                             | **KEEP**                                                        | —     | —        |
+| 19  | **Chart Vision (VLM)**                   | `chart-vision.ts` ✅ (يحتاج ZAI_API_KEY) | غير موجودة                                                             | **KEEP + FIX ENV**                                              | —     | —        |
+| 20  | **Telegram WebApp auth**                 | `auth.functions.ts` ✅                   | غير موجودة                                                             | **KEEP + FIX ENV**                                              | —     | —        |
+| 21  | **Risk Governor**                        | `risk-governor/` ✅ (غير متصل)           | غير موجودة                                                             | **KEEP + WIRE**                                                 | —     | —        |
+| 22  | **Paper Trading engine**                 | `paper-trading/` ✅ (gated)              | `paper_orders` table                                                   | **KEEP + UNGATE**                                               | —     | —        |
+| 23  | **Memory store (user_memories)**         | `memory/store.ts` ✅                     | `analysis_memory` table                                                | **KEEP**                                                        | —     | —        |
+| 24  | **Event bus + persistence**              | `events/orchestrator.ts` ✅              | غير موجودة                                                             | **KEEP**                                                        | —     | —        |
+| 25  | **Tool registry**                        | `tool-registry/` ✅ (2 tools)            | غير موجودة                                                             | **KEEP + EXPAND**                                               | —     | —        |
+| 26  | **UI/UX (shadcn + custom)**              | 38 + 10 components ✅                    | Vue (private repo)                                                     | **KEEP + FIX**                                                  | —     | —        |
+| 27  | **i18n + RTL**                           | ✅ (EN + AR)                             | Vue i18n (غير متوفر)                                                   | **KEEP**                                                        | —     | —        |
+| 28  | **News integration**                     | أخبار وهمية مدمجة! ❌                    | Finnhub + RSS في `news.py`                                             | **REUSE-PORT** (Finnhub pattern)                                | منخفض | **P0**   |
+| 29  | **Database migrations framework**        | 12 SQL files يدوية                       | `init.sql` يدوي                                                        | **KEEP**                                                        | —     | —        |
+| 30  | **Pricing/payment (USDT-TRC20)**         | Telegram Stars فقط                       | `usdt_payment_service.py` 830 LOC                                      | **REUSE-PORT** (later)                                          | عالي  | P3       |
+| 31  | **OAuth (Google/GitHub)**                | غير موجودة                               | `oauth_service.py` 715 LOC                                             | **REUSE-PORT** (later)                                          | متوسط | P3       |
 
 ### الإحصائيات
 
@@ -102,6 +104,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 **لماذا أولاً؟** لا فائدة من نقل modules جديدة على قاعدة مكسورة. هذه الإصلاحات تحل 70% من شكاوى المستخدم فوراً.
 
 #### 0.1 إصلاح متغيرات البيئة
+
 - **ملف:** `.env` (local) + Vercel project settings
 - **المتغيرات المطلوبة (13):**
   ```
@@ -123,16 +126,20 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **التحقق:** `node scripts/qa-test-runner.cjs` يجب أن ينتقل من 52→58 pass
 
 #### 0.2 استبدال `deep-no-op Proxy` بـ fail-fast
+
 - **ملف:** `src/shared/supabase/client.ts:48-61`
 - **التغيير:** حذف `deepNoOp()`، استبدالها بـ:
   ```typescript
   if (!url || !anonKey) {
-    throw new Error("Supabase browser client not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.");
+    throw new Error(
+      "Supabase browser client not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.",
+    );
   }
   ```
 - **لماذا:** المستخدم يرى "No data" بدلاً من رسالة خطأ واضحة. هذا هو السبب الجذري لشكوى "data display not smooth/professional".
 
 #### 0.3 حذف `newsMap` الوهمية من المحرك
+
 - **ملف:** `src/domains/analysis/engine/engine.ts:~1080-1116`
 - **التغيير:** حذف الـ `newsMap` كاملاً، استبدالها بـ:
   ```typescript
@@ -142,6 +149,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **لماذا:** أخبار وهمية تعرض للمستخدم كتحليل حقيقي — هذا يضر بثقة المستخدم.
 
 #### 0.4 إصلاح Layout (الـ dimensions من الأعلى)
+
 - **ملف:** `src/components/vixor/AppShell.tsx:99, 124, 200`
 - **التغيير:**
   ```typescript
@@ -158,11 +166,14 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **إضافة tablet breakpoint:**
   ```css
   /* styles.css */
-  @media (min-width: 768px) and (max-width: 1023px) { /* tablet */ }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    /* tablet */
+  }
   ```
 - **Desktop sidebar rail** (لـ lg+): شريط جانبي 64px بـ icons، يحل مشكلة "الصفحات مش مربوطه بشكل سلس"
 
 #### 0.5 إصلاح cron للم alerts
+
 - **ملف:** `vercel.json`
 - **التغيير:**
   ```json
@@ -176,16 +187,19 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **لماذا:** price alerts لا تطلق أبداً بدون هذا الـ cron.
 
 #### 0.6 حذف الـ dead code في chart-intelligence
+
 - **ملفات:**
   - `src/domains/chart-intelligence/chart-context.ts:133` — حذف `formatExtractionFailureMessage`
   - `src/domains/analysis/server/run-analysis.ts:36` — حذف `ChartExtractionRefusedError`
 - **لماذا:** الكود الميت يربك المطورين ويخفي الأخطاء الحقيقية.
 
 #### 0.7 حذف الملفات المكررة بـ ` (1)` suffix
+
 - **ملفات:** ~80 ملف في `/home/z/my-project/* (1).*`
 - **لماذا:** تربك الـ IDE وتبدو غير احترافية.
 
 #### 0.8 إصلاح `_authenticated/route.tsx` error swallowing
+
 - **ملف:** `src/routes/_authenticated/route.tsx:15-23`
 - **التغيير:**
   ```typescript
@@ -201,6 +215,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **لماذا:** أي خطأ server-side يسجل خروج المستخدم — يجعل التطبيق يبدو غير مستقر.
 
 #### 0.9 إصلاح settings toggles
+
 - **ملف:** `src/routes/_authenticated/settings.tsx:51-55`
 - **التغيير:** ربط الـ toggles بـ localStorage flags فعلياً، أو حذفها.
 
@@ -211,6 +226,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 ### المرحلة 1: نقل الـ infrastructure layers من QuantDinger (3-5 أيام) — **P0-P1**
 
 #### 1.1 نقل `safe_exec` sandbox إلى TypeScript (P0)
+
 - **المصدر:** `audit/QuantDinger/backend_api_python/app/utils/safe_exec.py` (470 LOC)
 - **الهدف:** `src/shared/safe-exec/index.ts` + `validator.ts` + `runner.ts`
 - **الـ approach:**
@@ -223,6 +239,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **الاستخدام في VIXOR:** تنفيذ استراتيجيات Python/JS المقدمة من المستخدم بأمان
 
 #### 1.2 نقل `circuit_breaker + rate_limiter + cache_manager` (P0)
+
 - **المصدر:**
   - `audit/QuantDinger/backend_api_python/app/data_sources/circuit_breaker.py`
   - `audit/QuantDinger/backend_api_python/app/data_sources/rate_limiter.py`
@@ -236,6 +253,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **الاستخدام في VIXOR:** حماية كل الـ external API calls (Binance, TwelveData, Finnhub, Telegram) من الـ cascading failures
 
 #### 1.3 نقل `credential_crypto` إلى Node.js `crypto` (P0)
+
 - **المصدر:** `audit/QuantDinger/backend_api_python/app/utils/credential_crypto.py` (50 LOC)
 - **الهدف:** `src/shared/crypto/credential-crypto.ts`
 - **الـ approach:**
@@ -267,6 +285,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **الاستخدام في VIXOR:** تشفير exchange API keys قبل تخزينها في Supabase
 
 #### 1.4 نقل `llm.py` (multi-provider LLM service) إلى TypeScript (P1)
+
 - **المصدر:** `audit/QuantDinger/backend_api_python/app/services/llm.py` (629 LOC)
 - **الهدف:** `src/shared/llm/index.ts` + `providers/*.ts`
 - **الـ approach:**
@@ -282,6 +301,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **الاستخدام في VIXOR:** السماح للمستخدم بإحضار مفتاحه الخاص لأي LLM — لا حصر على ZAI SDK
 
 #### 1.5 نقل `signal_notifier.py` إلى TypeScript (P1)
+
 - **المصدر:** `audit/QuantDinger/backend_api_python/app/services/signal_notifier.py` (912 LOC)
 - **الهدف:** `src/shared/notifications/index.ts` + `channels/*.ts`
 - **الـ approach:**
@@ -292,6 +312,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **الاستخدام في VIXOR:** إشعارات متعددة القنوات للـ signals و alerts — حالياً فقط Telegram
 
 #### 1.6 نقل `news.py` (Finnhub + RSS) إلى TypeScript (P0 — استبدال للأخبار الوهمية)
+
 - **المصدر:** `audit/QuantDinger/backend_api_python/app/data_providers/news.py`
 - **الهدف:** `src/domains/market/server/news.ts`
 - **الـ approach:**
@@ -299,7 +320,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
   // 1. Finnhub market news (already have FINNHUB_API_KEY)
   export async function getMarketNews(category: "general" | "forex" | "crypto" = "general") {
     const res = await fetch(
-      `https://finnhub.io/api/v1/news?category=${category}&token=${process.env.FINNHUB_API_KEY}`
+      `https://finnhub.io/api/v1/news?category=${category}&token=${process.env.FINNHUB_API_KEY}`,
     );
     return res.json();
   }
@@ -307,13 +328,15 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
   // 2. Company-specific news
   export async function getCompanyNews(symbol: string, from: string, to: string) {
     const res = await fetch(
-      `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${from}&to=${to}&token=${process.env.FINNHUB_API_KEY}`
+      `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${from}&to=${to}&token=${process.env.FINNHUB_API_KEY}`,
     );
     return res.json();
   }
 
   // 3. RSS fallback ( Investing.com, Reuters, FXStreet)
-  export async function getRSSFeeds(category: string) { /* parse RSS XML */ }
+  export async function getRSSFeeds(category: string) {
+    /* parse RSS XML */
+  }
   ```
 - **الجهد:** 1 يوم
 - **الاستخدام في VIXOR:** استبدال `newsMap` الوهمية بأخبار حقيقية في `engine.ts`
@@ -323,6 +346,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 ### المرحلة 2: نقل الـ engines الرئيسية (5-8 أيام) — **P1-P2**
 
 #### 2.1 نقل `backtest.py` core (P1)
+
 - **المصدر:** `audit/QuantDinger/backend_api_python/app/services/backtest.py` (4974 LOC)
 - **ننقل فقط:** الـ core simulation logic (~2000 LOC):
   - `_simulate_signals_with_mtf` — multi-timeframe simulation
@@ -340,6 +364,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **الاستخدام في VIXOR:** backtest لأي استراتيجية — ميزة كبرى مفقودة حالياً
 
 #### 2.2 نقل `strategy_script_runtime.py` + `indicator_params.py` (P1)
+
 - **المصدر:**
   - `audit/QuantDinger/backend_api_python/app/services/strategy_script_runtime.py`
   - `audit/QuantDinger/backend_api_python/app/services/indicator_params.py`
@@ -353,6 +378,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **الاستخدام في VIXOR:** السماح للمستخدم بكتابة استراتيجيات JavaScript/TypeScript وتشغيلها
 
 #### 2.3 نقل `experiment/regime.py` + `scoring.py` (P2)
+
 - **المصدر:**
   - `audit/QuantDinger/backend_api_python/app/services/experiment/regime.py` (170 LOC) — 5 regimes
   - `audit/QuantDinger/backend_api_python/app/services/experiment/scoring.py` (140 LOC) — multi-factor
@@ -364,6 +390,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
   - Scorer: يرتب الـ strategies في leaderboard بأربع درجات (A/B/C/D)
 
 #### 2.4 نقل `experiment/evolution.py` + `runner.py` (P2)
+
 - **المصدر:**
   - `audit/QuantDinger/backend_api_python/app/services/experiment/evolution.py` (123 LOC)
   - `audit/QuantDinger/backend_api_python/app/services/experiment/runner.py` (609 LOC)
@@ -380,6 +407,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 ### المرحلة 3: نقل الـ agent + trading adapters (8-12 يوم) — **P2-P3**
 
 #### 3.1 نقل Agent Gateway pattern (P2)
+
 - **المصدر:**
   - `audit/QuantDinger/backend_api_python/app/utils/agent_auth.py` (470 LOC)
   - `audit/QuantDinger/backend_api_python/app/utils/agent_jobs.py` (339 LOC)
@@ -398,6 +426,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **الاستخدام في VIXOR:** السماح لـ AI agents خارجية (Cursor, Claude Code) بالوصول لـ VIXOR بشكل آمن ومنظم
 
 #### 3.2 نقل 4 crypto exchange adapters (P2)
+
 - **المصدر:** `audit/QuantDinger/backend_api_python/app/services/live_trading/`
 - **ننقل فقط:**
   - `binance.py` (spot + futures) — مع broker ID `A2NAPZAC`/`HBpUbQjT`
@@ -414,6 +443,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **الاستخدام في VIXOR:** تنفيذ أوامر حقيقية (أو paper) من الـ strategies
 
 #### 3.3 نقل OAuth (Google + GitHub) (P3)
+
 - **المصدر:** `audit/QuantDinger/backend_api_python/app/services/oauth_service.py` (715 LOC)
 - **الهدف:** `src/domains/auth/oauth/`
 - **الـ approach:**
@@ -424,6 +454,7 @@ VIXOR MASTER V2 هو تطبيق **TanStack Start (TypeScript/React SSR) + Supaba
 - **الاستخدام في VIXOR:** بدائل للـ Telegram login (مفيد للمستخدمين بدون Telegram)
 
 #### 3.4 نقل USDT-TRC20 payment service (P3)
+
 - **المصدر:** `audit/QuantDinger/backend_api_python/app/services/usdt_payment_service.py` (830 LOC)
 - **الهدف:** `src/domains/payment/usdt-trc20/`
 - **الـ approach:**
@@ -622,14 +653,14 @@ ALTER TABLE daily_signals ADD COLUMN IF NOT EXISTS regime_confidence NUMERIC;
 ```json
 {
   "dependencies": {
-    "isolated-vm": "^5.0.0",     // للـ safe_exec sandbox
-    "acorn": "^8.11.0",          // للـ AST validation
-    "acorn-walk": "^8.3.0",      // للـ AST walk
-    "ws": "^8.16.0",             // للـ SSE progress streaming
-    "node-fetch": "^3.3.2",      // للـ HTTP calls لـ exchanges
-    "crypto-js": "^4.2.0",       // للـ HMAC signing لـ exchanges
-    "rss-parser": "^3.13.0",     // للـ RSS news fallback
-    "web-push": "^3.6.7"         // للـ browser push notifications
+    "isolated-vm": "^5.0.0", // للـ safe_exec sandbox
+    "acorn": "^8.11.0", // للـ AST validation
+    "acorn-walk": "^8.3.0", // للـ AST walk
+    "ws": "^8.16.0", // للـ SSE progress streaming
+    "node-fetch": "^3.3.2", // للـ HTTP calls لـ exchanges
+    "crypto-js": "^4.2.0", // للـ HMAC signing لـ exchanges
+    "rss-parser": "^3.13.0", // للـ RSS news fallback
+    "web-push": "^3.6.7" // للـ browser push notifications
   }
 }
 ```
@@ -640,36 +671,37 @@ ALTER TABLE daily_signals ADD COLUMN IF NOT EXISTS regime_confidence NUMERIC;
 
 ### مخاطر عالية (High Risk)
 
-| # | المخاطرة | التخفيف |
-|---|---|---|
-| 1 | **تعارض TypeScript decorators مع الـ compiler config** للـ `@strategy` / `@param` | استخدام `experimentalDecorators: true` + `emitDecoratorMetadata: true` في `tsconfig.json`. أو تبديلها بـ plain function calls (`strategy({...})` wrapper) |
-| 2 | **`isolated-vm` له native bindings** قد لا تعمل على Vercel serverless | استخدام `vm2` بدلاً منه (pure JS لكن أبطأ). أو تشغيل الـ strategy execution في worker منفصل. |
-| 3 | **Backtest engine مع 2000 LOC** قد يحمل bugs خفية من النقل | كتابة unit tests بـ نفس الـ fixtures من QuantDinger (`tests/test_three_minute_timeframe.py` يتحول لـ TS test) |
-| 4 | **Exchange adapters تحتاج HMAC signing دقيق** — خطأ واحد يكسر كل الطلبات | اختبار كل adapter ضد testnet أولاً. استخدام `crypto-js` بدلاً من `node:crypto` للـ portability |
-| 5 | **Agent Gateway + tokens** يضيف surface للهجوم | تشغيل الـ audit log دائماً. اختبار penetration للـ token issuance flow |
+| #   | المخاطرة                                                                          | التخفيف                                                                                                                                                   |
+| --- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **تعارض TypeScript decorators مع الـ compiler config** للـ `@strategy` / `@param` | استخدام `experimentalDecorators: true` + `emitDecoratorMetadata: true` في `tsconfig.json`. أو تبديلها بـ plain function calls (`strategy({...})` wrapper) |
+| 2   | **`isolated-vm` له native bindings** قد لا تعمل على Vercel serverless             | استخدام `vm2` بدلاً منه (pure JS لكن أبطأ). أو تشغيل الـ strategy execution في worker منفصل.                                                              |
+| 3   | **Backtest engine مع 2000 LOC** قد يحمل bugs خفية من النقل                        | كتابة unit tests بـ نفس الـ fixtures من QuantDinger (`tests/test_three_minute_timeframe.py` يتحول لـ TS test)                                             |
+| 4   | **Exchange adapters تحتاج HMAC signing دقيق** — خطأ واحد يكسر كل الطلبات          | اختبار كل adapter ضد testnet أولاً. استخدام `crypto-js` بدلاً من `node:crypto` للـ portability                                                            |
+| 5   | **Agent Gateway + tokens** يضيف surface للهجوم                                    | تشغيل الـ audit log دائماً. اختبار penetration للـ token issuance flow                                                                                    |
 
 ### مخاطر متوسطة (Medium Risk)
 
-| # | المخاطرة | التخفيف |
-|---|---|---|
-| 6 | **Migration حجمها كبير** (8 جداول جديدة) | تطبيقها على staging أولاً، ثم production. Backup قبل التطبيق. |
-| 7 | **Multi-provider LLM** يضيف 7 dependencies | استخدام `openai` SDK لكل الـ OpenAI-compatible providers (OpenRouter, DeepSeek, Grok, MiniMax, Custom). فقط Gemini و OpenAI الأصلي يحتاجون adapters خاصة. |
-| 8 | **`news.py` Finnhub** rate limit (60 calls/min) | استخدام الـ rate limiter المنقول (المرحلة 1.2). Cache 5 دقائق. |
-| 9 | **Experiment orchestration** يستهلك LLM tokens بكثرة | Hard cap per user per day. Early-stop عند score ≥ 82. |
+| #   | المخاطرة                                             | التخفيف                                                                                                                                                   |
+| --- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6   | **Migration حجمها كبير** (8 جداول جديدة)             | تطبيقها على staging أولاً، ثم production. Backup قبل التطبيق.                                                                                             |
+| 7   | **Multi-provider LLM** يضيف 7 dependencies           | استخدام `openai` SDK لكل الـ OpenAI-compatible providers (OpenRouter, DeepSeek, Grok, MiniMax, Custom). فقط Gemini و OpenAI الأصلي يحتاجون adapters خاصة. |
+| 8   | **`news.py` Finnhub** rate limit (60 calls/min)      | استخدام الـ rate limiter المنقول (المرحلة 1.2). Cache 5 دقائق.                                                                                            |
+| 9   | **Experiment orchestration** يستهلك LLM tokens بكثرة | Hard cap per user per day. Early-stop عند score ≥ 82.                                                                                                     |
 
 ### مخاطر منخفضة (Low Risk)
 
-| # | المخاطرة | التخفيف |
-|---|---|---|
-| 10 | **`credential_crypto` AES-256-GCM** في Node.js — قياسي ومختبر | فقط تأكد من أن `SECRET_KEY` قوي (32+ bytes) |
-| 11 | **Circuit breaker pattern** — معروف ومختبر | نقل مباشر من QuantDinger بلا تعديل |
-| 12 | **RSS parser** — مكتبة ناضجة | استخدام `rss-parser` المعروفة |
+| #   | المخاطرة                                                      | التخفيف                                     |
+| --- | ------------------------------------------------------------- | ------------------------------------------- |
+| 10  | **`credential_crypto` AES-256-GCM** في Node.js — قياسي ومختبر | فقط تأكد من أن `SECRET_KEY` قوي (32+ bytes) |
+| 11  | **Circuit breaker pattern** — معروف ومختبر                    | نقل مباشر من QuantDinger بلا تعديل          |
+| 12  | **RSS parser** — مكتبة ناضجة                                  | استخدام `rss-parser` المعروفة               |
 
 ---
 
 ## 7. الـ Acceptance Criteria لكل مرحلة
 
 ### المرحلة 0 (إصلاح VIXOR)
+
 - [ ] كل الـ 13 env vars مضبوطة في `.env` و Vercel
 - [ ] `npm run dev` يفتح التطبيق بدون أخطاء console
 - [ ] `/auth` يعمل (Telegram login widget يظهر بعد BotFather `/setdomain`)
@@ -681,6 +713,7 @@ ALTER TABLE daily_signals ADD COLUMN IF NOT EXISTS regime_confidence NUMERIC;
 - [ ] لا توجد ملفات ` (1)` في الـ root
 
 ### المرحلة 1 (infrastructure)
+
 - [ ] `safe-exec` يرفض كود فيه `import os` ويسمح بـ `import math`
 - [ ] `circuit-breaker` يفتح بعد 3 failures في 60s
 - [ ] `credential-crypto` يشفر ويفك تشفير JSON بنجاح
@@ -689,12 +722,14 @@ ALTER TABLE daily_signals ADD COLUMN IF NOT EXISTS regime_confidence NUMERIC;
 - [ ] `news` يجلب أخبار حقيقية من Finnhub
 
 ### المرحلة 2 (engines)
+
 - [ ] `backtest` ينتج equity curve لأي strategy
 - [ ] `strategy-runtime` ينفذ `on_bar` بشكل صحيح
 - [ ] `regime-detector` يصنف السوق كـ "trending" أو "ranging"
 - [ ] `experiment-runner` يحسن parameters ويرفع الـ score
 
 ### المرحلة 3 (agent + adapters)
+
 - [ ] `agent-tokens` يصدر token بـ scope `R` فقط
 - [ ] `agent-jobs` يبث SSE progress
 - [ ] `binance-adapter` يجلب balance من testnet
@@ -705,6 +740,7 @@ ALTER TABLE daily_signals ADD COLUMN IF NOT EXISTS regime_confidence NUMERIC;
 ## 8. الـ Agent Workflow للتطبيق
 
 ### Agent 1: Fixer Agent (المرحلة 0)
+
 ```
 Task ID: P0-FIXER
 Goal: تنفيذ كل إصلاحات المرحلة 0
@@ -723,6 +759,7 @@ Handoff:
 ```
 
 ### Agent 2: Infrastructure Porter (المرحلة 1)
+
 ```
 Task ID: P1-INFRA
 Goal: نقل 6 modules من QuantDinger
@@ -746,6 +783,7 @@ Handoff:
 ```
 
 ### Agent 3: Engine Porter (المرحلة 2)
+
 ```
 Task ID: P2-ENGINES
 Goal: نقل backtest + strategy runtime + experiment
@@ -766,6 +804,7 @@ Handoff:
 ```
 
 ### Agent 4: Agent Gateway + Adapters (المرحلة 3)
+
 ```
 Task ID: P3-AGENT-ADAPTERS
 Goal: نقل Agent Gateway + 4 exchange adapters + OAuth
@@ -790,35 +829,39 @@ Handoff:
 ## 9. الـ KPIs لقياس النجاح
 
 ### KPIs تقنية
-| KPI | الحالي | الهدف |
-|---|---|---|
-| QA test pass rate | 52/58 | 60/60 |
-| Bundle size (gzipped) | ~unknown | < 500 KB |
-| Time to first analysis | ~3s (when working) | < 2s |
-| Backtest execution (200 candles) | N/A | < 500ms |
-| Strategy compilation | N/A | < 100ms |
-| Agent token issuance | N/A | < 50ms |
-| SSE job progress latency | N/A | < 100ms |
+
+| KPI                              | الحالي             | الهدف    |
+| -------------------------------- | ------------------ | -------- |
+| QA test pass rate                | 52/58              | 60/60    |
+| Bundle size (gzipped)            | ~unknown           | < 500 KB |
+| Time to first analysis           | ~3s (when working) | < 2s     |
+| Backtest execution (200 candles) | N/A                | < 500ms  |
+| Strategy compilation             | N/A                | < 100ms  |
+| Agent token issuance             | N/A                | < 50ms   |
+| SSE job progress latency         | N/A                | < 100ms  |
 
 ### KPIs منتج
-| KPI | الحالي | الهدف |
-|---|---|---|
-| Features that work | ~60% | 95% |
-| Telegram login success rate | 0% (env missing) | 100% (after BotFather config) |
-| Real news in analysis | 0% (mock data) | 100% (Finnhub) |
-| User complaints | 5 (layout, flow, data, UI, features) | 0 |
-| Time on page (avg) | unknown | > 5 min |
-| Strategies created per user | 0 | > 2 |
+
+| KPI                         | الحالي                               | الهدف                         |
+| --------------------------- | ------------------------------------ | ----------------------------- |
+| Features that work          | ~60%                                 | 95%                           |
+| Telegram login success rate | 0% (env missing)                     | 100% (after BotFather config) |
+| Real news in analysis       | 0% (mock data)                       | 100% (Finnhub)                |
+| User complaints             | 5 (layout, flow, data, UI, features) | 0                             |
+| Time on page (avg)          | unknown                              | > 5 min                       |
+| Strategies created per user | 0                                    | > 2                           |
 
 ---
 
 ## 10. الخلاصة والتوصيات النهائية
 
 ### ما يجب عمله **الآن** (قبل أي شيء آخر)
+
 1. **المرحلة 0** كاملة (1-2 يوم) — هذا يحل 70% من شكاوى المستخدم
 2. لا تبدأ أي نقل من QuantDinger قبل إصلاح VIXOR
 
 ### أعلى قيمة من QuantDinger (ROI)
+
 1. **`safe_exec` sandbox** — يمكن تحويله لأي تنفيذ user code (strategies, indicators, custom alerts)
 2. **`backtest engine`** — ميزة كبرى مفقودة، تفتح أبواب monetization (Premium feature)
 3. **`multi-provider LLM`** — يحرر VIXOR من ZAI SDK فقط، يسمح بـ BYO-key
@@ -826,6 +869,7 @@ Handoff:
 5. **`circuit breaker + rate limiter`** — ضروري لأي تكامل مع external APIs
 
 ### ما **لا** يستحق النقل من QuantDinger
+
 1. **MCP server** — VIXOR لا يحتاج MCP
 2. **Vue frontend** — VIXOR يستخدم React، لا معنى لنقل Vue code
 3. **USDT payment service** — مؤجل للمرحلة 3 (P3)
@@ -833,6 +877,7 @@ Handoff:
 5. **CN/HK stock data sources** — VIXOR يركز على Forex + Crypto
 
 ### ما يجب **الاحتفاظ به** في VIXOR (لا نلمسه من QuantDinger)
+
 1. **SMC/ICT analysis engine** (`engine.ts` 1360 LOC) — VIXOR متفوق
 2. **Debate Engine** — VIXOR ينفرد بها
 3. **Chart Truth Layer** — VIXOR ينفرد بها
@@ -852,34 +897,35 @@ Handoff:
 
 ## الملحق أ: قائمة المصادر المرجعية لكل module منقول
 
-| Module | Source file in QuantDinger | Target file in VIXOR |
-|---|---|---|
-| safe_exec | `app/utils/safe_exec.py` (470 LOC) | `src/shared/safe-exec/{index,validator,runner}.ts` |
-| circuit_breaker | `app/data_sources/circuit_breaker.py` | `src/shared/resilience/circuit-breaker.ts` |
-| rate_limiter | `app/data_sources/rate_limiter.py` | `src/shared/resilience/rate-limiter.ts` |
-| cache_manager | `app/data_sources/cache_manager.py` | `src/shared/resilience/lru-cache.ts` |
-| credential_crypto | `app/utils/credential_crypto.py` (50 LOC) | `src/shared/crypto/credential-crypto.ts` |
-| llm | `app/services/llm.py` (629 LOC) | `src/shared/llm/{index,providers/*}.ts` |
-| signal_notifier | `app/services/signal_notifier.py` (912 LOC) | `src/shared/notifications/{index,channels/*}.ts` |
-| news | `app/data_providers/news.py` | `src/domains/market/server/news.ts` |
-| backtest (core) | `app/services/backtest.py` (4974 LOC, port ~2000) | `src/domains/backtest/engine/{simulator,state-machine,candle-path}.ts` |
-| strategy_runtime | `app/services/strategy_script_runtime.py` | `src/domains/strategy/runtime/{script-runtime,indicator-params}.ts` |
-| regime | `app/services/experiment/regime.py` (170 LOC) | `src/domains/analysis/engine/regime/regime-detector.ts` |
-| scoring | `app/services/experiment/scoring.py` (140 LOC) | `src/domains/analysis/engine/regime/strategy-scorer.ts` |
-| experiment | `app/services/experiment/{evolution,runner,prompts}.py` | `src/domains/experiment/{evolution,runner,prompts}.ts` |
-| agent_auth | `app/utils/agent_auth.py` (470 LOC) | `src/domains/agent-gateway/tokens.ts` |
-| agent_jobs | `app/utils/agent_jobs.py` (339 LOC) | `src/domains/agent-gateway/jobs.ts` |
-| agent_v1 routes | `app/routes/agent_v1/` (10 files) | `src/routes/api/agent-v1/*` |
-| binance adapter | `app/services/live_trading/binance.py` | `src/domains/broker-adapters/binance/` |
-| okx adapter | `app/services/live_trading/okx.py` | `src/domains/broker-adapters/okx/` |
-| bybit adapter | `app/services/live_trading/bybit.py` | `src/domains/broker-adapters/bybit/` |
-| coinbase adapter | `app/services/live_trading/coinbase_exchange.py` | `src/domains/broker-adapters/coinbase/` |
-| oauth | `app/services/oauth_service.py` (715 LOC) | `src/domains/auth/oauth/{google,github}.ts` |
-| usdt_payment | `app/services/usdt_payment_service.py` (830 LOC) | `src/domains/payment/usdt-trc20/` (P3, optional) |
+| Module            | Source file in QuantDinger                              | Target file in VIXOR                                                   |
+| ----------------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
+| safe_exec         | `app/utils/safe_exec.py` (470 LOC)                      | `src/shared/safe-exec/{index,validator,runner}.ts`                     |
+| circuit_breaker   | `app/data_sources/circuit_breaker.py`                   | `src/shared/resilience/circuit-breaker.ts`                             |
+| rate_limiter      | `app/data_sources/rate_limiter.py`                      | `src/shared/resilience/rate-limiter.ts`                                |
+| cache_manager     | `app/data_sources/cache_manager.py`                     | `src/shared/resilience/lru-cache.ts`                                   |
+| credential_crypto | `app/utils/credential_crypto.py` (50 LOC)               | `src/shared/crypto/credential-crypto.ts`                               |
+| llm               | `app/services/llm.py` (629 LOC)                         | `src/shared/llm/{index,providers/*}.ts`                                |
+| signal_notifier   | `app/services/signal_notifier.py` (912 LOC)             | `src/shared/notifications/{index,channels/*}.ts`                       |
+| news              | `app/data_providers/news.py`                            | `src/domains/market/server/news.ts`                                    |
+| backtest (core)   | `app/services/backtest.py` (4974 LOC, port ~2000)       | `src/domains/backtest/engine/{simulator,state-machine,candle-path}.ts` |
+| strategy_runtime  | `app/services/strategy_script_runtime.py`               | `src/domains/strategy/runtime/{script-runtime,indicator-params}.ts`    |
+| regime            | `app/services/experiment/regime.py` (170 LOC)           | `src/domains/analysis/engine/regime/regime-detector.ts`                |
+| scoring           | `app/services/experiment/scoring.py` (140 LOC)          | `src/domains/analysis/engine/regime/strategy-scorer.ts`                |
+| experiment        | `app/services/experiment/{evolution,runner,prompts}.py` | `src/domains/experiment/{evolution,runner,prompts}.ts`                 |
+| agent_auth        | `app/utils/agent_auth.py` (470 LOC)                     | `src/domains/agent-gateway/tokens.ts`                                  |
+| agent_jobs        | `app/utils/agent_jobs.py` (339 LOC)                     | `src/domains/agent-gateway/jobs.ts`                                    |
+| agent_v1 routes   | `app/routes/agent_v1/` (10 files)                       | `src/routes/api/agent-v1/*`                                            |
+| binance adapter   | `app/services/live_trading/binance.py`                  | `src/domains/broker-adapters/binance/`                                 |
+| okx adapter       | `app/services/live_trading/okx.py`                      | `src/domains/broker-adapters/okx/`                                     |
+| bybit adapter     | `app/services/live_trading/bybit.py`                    | `src/domains/broker-adapters/bybit/`                                   |
+| coinbase adapter  | `app/services/live_trading/coinbase_exchange.py`        | `src/domains/broker-adapters/coinbase/`                                |
+| oauth             | `app/services/oauth_service.py` (715 LOC)               | `src/domains/auth/oauth/{google,github}.ts`                            |
+| usdt_payment      | `app/services/usdt_payment_service.py` (830 LOC)        | `src/domains/payment/usdt-trc20/` (P3, optional)                       |
 
 ## الملحق ب: مرجع سريع لأهم الـ patterns في QuantDinger
 
 ### Pattern 1: Capability-class scoped tokens
+
 ```
 R = Read (markets, prices, klines, strategies, jobs)
 W = Write (create strategies, edit settings)
@@ -890,6 +936,7 @@ T = Trade (place orders — paper or live, gated by paper_only flag + AGENT_LIVE
 ```
 
 ### Pattern 2: SSE progress protocol
+
 ```
 event: snapshot
 data: {"job_id":"...","status":"running","progress":45}
@@ -905,6 +952,7 @@ data: {"status":"succeeded","result":{...}}
 ```
 
 ### Pattern 3: Idempotency-Key unique partial index
+
 ```sql
 CREATE UNIQUE INDEX idx_agent_jobs_idem
   ON qd_agent_jobs(agent_token_id, kind, idempotency_key)
@@ -912,6 +960,7 @@ CREATE UNIQUE INDEX idx_agent_jobs_idem
 ```
 
 ### Pattern 4: Three-layer safe execution
+
 ```
 Layer 1: Regex blacklist (os.system, subprocess, __import__, eval, exec, ...)
 Layer 2: AST walk (whitelist imports, reject dangerous calls)
@@ -921,14 +970,17 @@ Layer 3: Restricted __builtins__ (whitelist functions only)
 ```
 
 ### Pattern 5: Candle-path simulation
+
 ```
 Bullish bar (close > open): O → L → H → C (dip then rally)
 Bearish bar (close < open): O → H → L → C (rally then dip)
 Doji (close ≈ open): O → H → L → C (worst case)
 ```
+
 This lets SL/TP trigger intra-bar with realistic ordering.
 
 ### Pattern 6: Circuit breaker state machine
+
 ```
 CLOSED → (failures ≥ threshold) → OPEN
 OPEN → (after cooldown) → HALF_OPEN
@@ -937,6 +989,7 @@ HALF_OPEN → (failure) → OPEN
 ```
 
 ### Pattern 7: SaaS-mode issuance-time guard
+
 ```python
 if DEPLOYMENT_MODE in {'saas','shared','hosted','multitenant'}:
     if 'T' in scopes:

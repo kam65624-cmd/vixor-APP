@@ -102,10 +102,7 @@
       "route-pattern": "/:user_id/:repository",
       "theme-color": "#1e2327",
       "turbo-body-classes": "logged-out env-production page-responsive",
-      "turbo-cache-control": [
-        "no-preview",
-        "no-cache"
-      ],
+      "turbo-cache-control": ["no-preview", "no-cache"],
       "twitter:card": "summary_large_image",
       "twitter:description": "Open source software that helps you create and deploy high-frequency crypto trading bots - hummingbot/hummingbot",
       "twitter:image": "https://repository-images.githubusercontent.com/179163124/7fd92800-eb15-11ea-9c00-e48d8a17b594",

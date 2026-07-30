@@ -3,8 +3,10 @@
 ## New Components (Phase B)
 
 ### SignalBadge
+
 **File:** `SignalBadge.tsx`
 **Props:**
+
 - `signal: SignalKind` (required) — `STRONG_BUY` | `BUY` | `WAIT` | `SELL` | `STRONG_SELL`
 - `size?: "sm" | "md" | "lg"` — default: `md`
 - `variant?: "full" | "short" | "icon-only"` — default: `full`
@@ -18,8 +20,10 @@
 ```
 
 ### LiveDot
+
 **File:** `LiveDot.tsx`
 **Props:**
+
 - `color?: "bull" | "bear" | "neutral" | "info"` — default: `bull`
 - `size?: number` — default: `6`
 - `pulse?: boolean` — default: `true`
@@ -32,8 +36,10 @@
 ```
 
 ### StatCard
+
 **File:** `StatCard.tsx`
 **Props:**
+
 - `label: string` (required)
 - `value: string | number` (required)
 - `sub?: string` — secondary text
@@ -50,8 +56,10 @@
 ```
 
 ### EmptyState
+
 **File:** `EmptyState.tsx`
 **Props:**
+
 - `title: string` (required)
 - `description?: string`
 - `icon?: ReactNode`
@@ -67,24 +75,24 @@
 ```
 
 ### EquityChart
+
 **File:** `EquityChart.tsx` (`"use client"`)
 **Props:**
+
 - `data: { day: number | string; equity: number; pnl?: number }[]` (required)
 - `height?: number` — default: `240`
 - `showAxis?: boolean` — default: `true`
 - `className?: string`
 
 ```tsx
-<EquityChart
-  data={equityData}
-  height={200}
-  showAxis={false}
-/>
+<EquityChart data={equityData} height={200} showAxis={false} />
 ```
 
 ### MiniSparkline
+
 **File:** `MiniSparkline.tsx` (`"use client"`)
 **Props:**
+
 - `data: number[]` (required)
 - `color?: string` — CSS var, default: `var(--bullish)`
 - `width?: number` — default: `80`
@@ -96,8 +104,10 @@
 ```
 
 ### BaseFeaturePanel
+
 **File:** `BaseFeaturePanel.tsx`
 **Props:**
+
 - `title: string` (required)
 - `subtitle?: string`
 - `icon?: ReactNode`
@@ -124,30 +134,33 @@
 ## Existing Components (Pre-Phase B)
 
 ### PageLayout (`PageLayout.tsx`)
+
 Main layout wrapper for all 22 inner pages. Exports multiple sub-components:
 
-| Export | Note |
-|--------|------|
-| `PageLayout` | Main wrapper |
+| Export             | Note                                     |
+| ------------------ | ---------------------------------------- |
+| `PageLayout`       | Main wrapper                             |
 | `PageSectionTitle` | Renamed from `SectionTitle` (alias kept) |
-| `PageScrollArea` | Renamed from `ScrollArea` (alias kept) |
-| `PageEmptyState` | Renamed from `EmptyState` (alias kept) |
-| `PageBadge` | Renamed from `Badge` (alias kept) |
-| `DataRow` | Universal row |
-| `DataRowTwoLine` | Two-line row |
-| `StatsRow` | Stats bar |
-| `ProgressBar` | Horizontal progress |
-| `LabelValue` | Inline label+value |
-| `MiniBar` | Split bar |
-| `TableHeader` | Column headers |
-| `ProfileCard` | User profile |
-| `SkeletonRow` | Loading shimmer |
-| `THEME` | Legacy color constants (deprecated) |
+| `PageScrollArea`   | Renamed from `ScrollArea` (alias kept)   |
+| `PageEmptyState`   | Renamed from `EmptyState` (alias kept)   |
+| `PageBadge`        | Renamed from `Badge` (alias kept)        |
+| `DataRow`          | Universal row                            |
+| `DataRowTwoLine`   | Two-line row                             |
+| `StatsRow`         | Stats bar                                |
+| `ProgressBar`      | Horizontal progress                      |
+| `LabelValue`       | Inline label+value                       |
+| `MiniBar`          | Split bar                                |
+| `TableHeader`      | Column headers                           |
+| `ProfileCard`      | User profile                             |
+| `SkeletonRow`      | Loading shimmer                          |
+| `THEME`            | Legacy color constants (deprecated)      |
 
 ### atoms.tsx
+
 Shared atomic components: `SectionTitle`, `RecBadge`, `ConfidenceBar`, `Stat`, `SetupStrengthBadge`, `SetupStrengthBar`, `BiasIndicator`, `CollapsibleSection`, `EducationLayer`, `PriceCell`.
 
 ### Feature Panels
+
 - `HunterScoreCard.tsx` — Smart money scoring (372 lines, complex mutations)
 - `CoachOverlay.tsx` — Trade coaching (337 lines, complex mutations)
 - `GovernorRiskPanel.tsx` — Risk assessment (383 lines, complex mutations)
@@ -157,15 +170,15 @@ Shared atomic components: `SectionTitle`, `RecBadge`, `ConfidenceBar`, `Stat`, `
 
 All new components use CSS variables with fallbacks:
 
-| Variable | Purpose |
-|----------|---------|
-| `--bullish` / `--bullish-bg` | Buy/positive signals |
-| `--bearish` / `--bearish-bg` | Sell/negative signals |
-| `--neutral-wait` / `--neutral-wait-bg` | Hold/wait signals |
-| `--info` / `--info-bg` | Informational |
-| `--surface` / `--surface-2` | Backgrounds |
-| `--text-primary` / `--text-secondary` / `--text-tertiary` | Text hierarchy |
-| `--border` / `--border-hover` | Borders |
+| Variable                                                  | Purpose               |
+| --------------------------------------------------------- | --------------------- |
+| `--bullish` / `--bullish-bg`                              | Buy/positive signals  |
+| `--bearish` / `--bearish-bg`                              | Sell/negative signals |
+| `--neutral-wait` / `--neutral-wait-bg`                    | Hold/wait signals     |
+| `--info` / `--info-bg`                                    | Informational         |
+| `--surface` / `--surface-2`                               | Backgrounds           |
+| `--text-primary` / `--text-secondary` / `--text-tertiary` | Text hierarchy        |
+| `--border` / `--border-hover`                             | Borders               |
 
 ## Design Rules
 

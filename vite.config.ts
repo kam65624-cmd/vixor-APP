@@ -86,11 +86,7 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 700,
     rollupOptions: {
-      external: [
-        "ccxt",
-        "srvx",
-        "srvx/node",
-      ],
+      external: ["ccxt"],
     },
   },
   server: {

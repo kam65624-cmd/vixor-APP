@@ -101,21 +101,9 @@
         "https://github.githubassets.com/assets/github-mark-57519b92ca4e.png",
         "https://github.githubassets.com/assets/github-octocat-13c86b8b336d.png"
       ],
-      "og:image:height": [
-        "1200",
-        "620",
-        "620"
-      ],
-      "og:image:type": [
-        "image/png",
-        "image/png",
-        "image/png"
-      ],
-      "og:image:width": [
-        "1200",
-        "1200",
-        "1200"
-      ],
+      "og:image:height": ["1200", "620", "620"],
+      "og:image:type": ["image/png", "image/png", "image/png"],
+      "og:image:width": ["1200", "1200", "1200"],
       "og:site_name": "GitHub",
       "og:title": "Build software better, together",
       "og:url": "https://github.com",
