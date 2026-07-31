@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كتاب المكونات</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page {
+    size: 210mm 297mm;
+    margin: 0;
+}
+:root {
+    --bg-base: #08090C;
+    --bg-card: #101114;
+    --bg-elevated: #16171C;
+    --bg-code: #1A1B21;
+    --primary: #6366F1;
+    --primary-glow: #818CF8;
+    --bullish: #22D3A6;
+    --bearish: #FB4667;
+    --amber: #F5A623;
+    --gold: #F0C419;
+    --text-primary: #F0F0F2;
+    --text-secondary: #9498A8;
+    --text-muted: #565A66;
+    --border: rgba(255,255,255,0.08);
+    --border-subtle: rgba(255,255,255,0.04);
+    --font-ar: 'Noto Sans Arabic', 'Inter', sans-serif;
+    --font-en: 'Inter', 'Noto Sans Arabic', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-ar);
+    font-size: 11pt;
+    line-height: 1.75;
+    direction: rtl;
+    -webkit-font-smoothing: antialiased;
+}
+@media screen {
+    html { height: auto; display: flex; justify-content: center; background: #222; }
+    body { max-width: 210mm; margin: 20px auto; box-shadow: 0 0 60px rgba(0,0,0,0.5); }
+}
+
+/* ===== COVER ===== */
+.cover {
+    width: 100%;
+    height: 297mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    break-after: page;
+    background: var(--bg-base);
+    padding: 60px 50px;
+}
+.cover::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.cover::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    left: -80px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(34,211,166,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.cover-badge {
+    display: inline-block;
+    padding: 8px 24px;
+    border: 1px solid var(--primary);
+    border-radius: 100px;
+    color: var(--primary-glow);
+    font-family: var(--font-en);
+    font-size: 10pt;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+}
+.cover-doc-id {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+.cover-title {
+    font-size: 32pt;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+.cover-subtitle {
+    font-size: 13pt;
+    color: var(--text-secondary);
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+}
+.cover-line {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--bullish));
+    border-radius: 2px;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+}
+.cover-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--font-en);
+    font-size: 8pt;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+/* ===== TABLE OF CONTENTS ===== */
+.toc {
+    padding: 50px 60px 40px 60px;
+    break-after: page;
+}
+.toc-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 28px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+.toc-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 10.5pt;
+}
+.toc-item-tag {
+    color: var(--primary-glow);
+    font-family: var(--font-mono);
+    font-size: 8.5pt;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+.toc-item-title {
+    color: var(--text-primary);
+    flex-grow: 1;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    padding: 40px 60px 50px 60px;
+}
+.chapter-header {
+    break-after: avoid;
+    break-inside: avoid;
+    margin-top: 28px;
+}
+.section-tag {
+    font-family: var(--font-mono);
+    font-size: 8.5pt;
+    color: var(--primary-glow);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+.section-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+.divider {
+    width: 40px;
+    height: 2px;
+    background: var(--primary);
+    border-radius: 1px;
+    margin-bottom: 20px;
+}
+
+/* ===== BODY TEXT ===== */
+.body-text {
+    font-size: 11pt;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 14px;
+    text-align: justify;
+}
+.body-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+.body-text code {
+    font-family: var(--font-mono);
+    font-size: 9.5pt;
+    background: var(--bg-code);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--primary-glow);
+    direction: ltr;
+    display: inline-block;
+}
+
+/* ===== SUBSECTION ===== */
+.subsection {
+    margin-top: 22px;
+    margin-bottom: 12px;
+}
+.subsection-title {
+    font-size: 13pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    padding-right: 12px;
+    border-right: 3px solid var(--primary);
+}
+
+/* ===== CALLOUT ===== */
+.callout {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-right: 3px solid var(--primary);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    break-inside: avoid;
+}
+.callout-warn {
+    border-right-color: var(--amber);
+}
+.callout-danger {
+    border-right-color: var(--bearish);
+}
+.callout-success {
+    border-right-color: var(--bullish);
+}
+.callout-title {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.callout-body {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* ===== CARDS ===== */
+.card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+}
+.info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    break-inside: avoid;
+}
+.info-card-title {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--primary-glow);
+    margin-bottom: 6px;
+}
+.info-card-body {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* ===== TABLES ===== */
+.vixor-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 10pt;
+    break-inside: avoid;
+}
+.vixor-table thead th {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: right;
+    border-bottom: 2px solid var(--primary);
+    font-size: 9.5pt;
+}
+.vixor-table tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    vertical-align: top;
+}
+.vixor-table tbody tr:hover {
+    background: var(--bg-card);
+}
+.vixor-table code {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    background: var(--bg-code);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--primary-glow);
+    direction: ltr;
+    display: inline-block;
+}
+
+/* ===== LISTS ===== */
+.vixor-list {
+    padding-right: 20px;
+    margin: 10px 0 14px 0;
+}
+.vixor-list li {
+    font-size: 10.5pt;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 6px;
+}
+.vixor-list li strong {
+    color: var(--text-primary);
+}
+.vixor-list li code {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    background: var(--bg-code);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--primary-glow);
+    direction: ltr;
+    display: inline-block;
+}
+
+/* ===== NUMBERED LIST ===== */
+.vixor-ol {
+    padding-right: 20px;
+    margin: 10px 0 14px 0;
+    counter-reset: item;
+    list-style: none;
+}
+.vixor-ol li {
+    font-size: 10.5pt;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 6px;
+    counter-increment: item;
+    position: relative;
+    padding-right: 28px;
+}
+.vixor-ol li::before {
+    content: counter(item);
+    position: absolute;
+    right: 0;
+    color: var(--primary-glow);
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    font-weight: 600;
+}
+
+/* ===== CODE BLOCK ===== */
+.code-block {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    direction: ltr;
+    text-align: left;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    break-inside: avoid;
+}
+
+/* ===== ENDING PAGE ===== */
+.ending {
+    width: 100%;
+    height: 297mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    break-before: page;
+    overflow: hidden;
+    background: var(--bg-base);
+    position: relative;
+}
+.ending-text {
+    font-size: 14pt;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+.ending-brand {
+    font-family: var(--font-en);
+    font-size: 11pt;
+    color: var(--primary-glow);
+    margin-top: 12px;
+    font-weight: 600;
+}
+
+/* ===== FOOTER ===== */
+.page-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--font-en);
+    font-size: 7pt;
+    color: var(--text-muted);
+    padding: 8px 0;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-base);
+}
+
+/* Print adjustments */
+@media print {
+    .page-footer { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+    <div class="cover-doc-id">DOC-06</div>
+    <div class="cover-badge">VIXOR ENGINEERING BIBLE</div>
+    <div class="cover-line"></div>
+    <div class="cover-title">كتاب المكونات</div>
+    <div class="cover-subtitle">الوثيقة المرجعية الشاملة لجميع مكونات فيكسور</div>
+    <div class="cover-line"></div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+    <div class="toc-title">جدول المحتويات</div>
+    
+        <div class="toc-item">
+            <span class="toc-item-title">نظرة عامة على المكونات</span>
+            <span class="toc-item-tag">SEC-01</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">هيكل التطبيق (AppShell)</span>
+            <span class="toc-item-tag">SEC-02</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">تخطيط الصفحات (PageLayout)</span>
+            <span class="toc-item-tag">SEC-03</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات الرسم البياني</span>
+            <span class="toc-item-tag">SEC-04</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات التداول</span>
+            <span class="toc-item-tag">SEC-05</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات التنبيهات</span>
+            <span class="toc-item-tag">SEC-06</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات الذكاء الاصطناعي</span>
+            <span class="toc-item-tag">SEC-07</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات البيانات</span>
+            <span class="toc-item-tag">SEC-08</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات واجهة المستخدم الأساسية</span>
+            <span class="toc-item-tag">SEC-09</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات النماذج</span>
+            <span class="toc-item-tag">SEC-10</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات التنقل</span>
+            <span class="toc-item-tag">SEC-11</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات العرض</span>
+            <span class="toc-item-tag">SEC-12</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات التحميل والأخطاء</span>
+            <span class="toc-item-tag">SEC-13</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات الملاحظات</span>
+            <span class="toc-item-tag">SEC-14</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مكونات التفاعل</span>
+            <span class="toc-item-tag">SEC-15</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">العناصر الذرية (تفصيلي)</span>
+            <span class="toc-item-tag">SEC-16</span>
+        </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+        <div class="chapter-header">
+            <div class="section-tag">SEC-01</div>
+            <div class="section-title">نظرة عامة على المكونات</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+منظومة مكونات فيكسور تتكون من <strong>83 مكونًا</strong> مصنّفًا إلى فئتين رئيسيتين: <strong>36 مكون واجهة مستخدم أساسي</strong> مبني على مكتبة shadcn/ui بأسلوب New York، و <strong>47 مكون مخصص</strong> (Vixor Components) صُمّم خصيصًا لاحتياجات منصة التداول. هذا الفصل يقدم خريطة شاملة لجميع المكونات ويعرّف بتصنيفها المنهجي وطريقة تنظيمها داخل المشروع. كل مكون يتبع معايير صارمة للكود والتصميم تضمن الاتساق وقابلية الصيانة.
+</p>
+<div class="card-grid">
+    <div class="info-card">
+        <div class="info-card-title">مكونات واجهة المستخدم — 36 ملف</div>
+        <div class="info-card-body">مكونات أساسية من shadcn/ui تشمل: Button, Card, Dialog, Sheet, Drawer, Input, Select, Badge, Tabs, Tooltip, Form, Calendar, Checkbox, Radio, Switch, Slider, Textarea, Table, Sidebar, Breadcrumb, NavigationMenu, DropdownMenu, ContextMenu, Skeleton, Progress, ScrollArea, Resizable, Separator, AspectRatio, Accordion, AlertDialog, Collapsible, Command, HoverCard, Label, Menubar, Pagination, Popover, Carousel, Chart. تقع جميعها في <code>src/components/ui/</code> وتُستخدم كأساس لبناء المكونات المخصصة.</div>
+    </div>
+    <div class="info-card">
+        <div class="info-card-title">المكونات المخصصة — 47 ملف</div>
+        <div class="info-card-body">مكونات مبنية خصيصًا لفيكسور في <code>src/components/</code>، تشمل: AppShell (1688 سطرًا)، PageLayout (929 سطرًا)، 8 مكونات رسوم بيانية، 7 مكونات تداول، 3 مكونات تنبيهات، 3 مكونات ذكاء اصطناعي، 5 مكونات بيانات، ومكونات تحميل وأخطاء وتفاعل. كل مكون يتبع معايير صارمة للكود والتصميم.</div>
+    </div>
+</div>
+<div class="subsection">
+    <div class="subsection-title">التصنيف الوظيفي للمكونات</div>
+</div>
+<table class="vixor-table">
+<thead>
+<tr><th>الفئة</th><th>العدد</th><th>أمثلة</th></tr>
+</thead>
+<tbody>
+<tr><td>الهيكل والتخطيط</td><td>2</td><td>AppShell, PageLayout</td></tr>
+<tr><td>الرسوم البيانية</td><td>8</td><td>TradingViewChart, CandlestickChart, DexChart, MiniChart, EquityChart, Sparkline, TickerTape, TechAnalysis</td></tr>
+<tr><td>التداول والتحليل</td><td>7</td><td>SignalBadge, TrendArrow, LiveDot, HunterScoreCard, GovernorRiskPanel, CoachOverlay, AnalystReportPanel</td></tr>
+<tr><td>التنبيهات</td><td>3</td><td>AlertsList, CreateAlertDialog, EditAlertDialog</td></tr>
+<tr><td>الذكاء الاصطناعي</td><td>3</td><td>MoxiAvatar, AgentResponseLayout, ExpandableWidget</td></tr>
+<tr><td>البيانات والعرض</td><td>5</td><td>StatCard, MiniSparkline, CoinImage, PaginationBar, EquityChart</td></tr>
+<tr><td>النماذج والمدخلات</td><td>7</td><td>Form, Calendar, Checkbox, Radio, Switch, Slider, Textarea</td></tr>
+<tr><td>التنقل</td><td>5</td><td>Sidebar, Breadcrumb, NavigationMenu, DropdownMenu, ContextMenu</td></tr>
+<tr><td>التحميل والأخطاء</td><td>4</td><td>RouteLoading, RouteErrorBoundary, PullIndicator, OnboardingModal</td></tr>
+<tr><td>التفاعل والذرات</td><td>6</td><td>EngagementBar, BaseFeaturePanel, SectionTitle, RecBadge, ConfidenceBar, Stat</td></tr>
+</tbody>
+</table>
+<div class="callout callout-warn">
+    <div class="callout-title">قاعدة تنظيمية</div>
+    <div class="callout-body">جميع مكونات shadcn/ui تقع في <code>src/components/ui/</code> ولا يُسمح بتعديلها مباشرة. المكونات المخصصة في <code>src/components/</code> هي التي تُعدّل وتُوسّع. عند الحاجة لتخصيص مكون shadcn، يُنشأ مكون جديد يلفّه (Wrapper Pattern) ويضيف السلوك المطلوب.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-02</div>
+            <div class="section-title">هيكل التطبيق (AppShell)</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكون <code>AppShell</code> هو العمود الفقري البصري لتطبيق فيكسور بأكمله. بحجم <strong>1688 سطرًا</strong> من الكود، فهو أكبر مكون في المشروع وأكثرها تعقيدًا. يتولى مهام هيكلية أساسية تشمل: الشريط الجانبي (Sidebar) للتنقل الرئيسي، شريط التنقل السفلي (Bottom Nav) للأجهزة المحمولة، الرأسية (Header) مع عرض سعر SOL ومودال المحفظة، واكتشاف بيئة Telegram. المكون يُغلف (wraps) كل صفحة في التطبيق ويضمن تجربة متسقة عبر جميع الأجهزة والبيئات.
+</p>
+<div class="subsection">
+    <div class="subsection-title">المسؤوليات الوظيفية</div>
+</div>
+<ul class="vixor-list">
+<li><strong>الشريط الجانبي</strong>: يتضمن روابط التنقل الرئيسية مع أيقونات Lucide ونشط/غير نشط. يعرض شعار فيكسور واسم المستخدم والتبديل بين الوضع الداكن والفاتح. يتكامل مع مكون <code>Sidebar</code> من shadcn/ui.</li>
+<li><strong>شريط التنقل السفلي</strong>: ظاهر على الشاشات الصغيرة فقط (<code>md:hidden</code>)، يعرض 5 أيقونات تنقل أساسية مع مؤشر الصفحة النشطة بلون نيلي مميز.</li>
+<li><strong>الرأسية (Header)</strong>: تعرض سعر SOL الحالي مع نسبة التغير، زر ربط المحفظة، وإشعارات فورية. السعر يُحدّث عبر WebSocket في الوقت الحقيقي مع مؤشر <code>LiveDot</code>.</li>
+<li><strong>مودال المحفظة</strong>: نافذة منبثقة لربط المحفظة تدعم Phantom و Solflare وغيرها من محافظ Solana عبر <code>Dialog</code>.</li>
+<li><strong>اكتشاف Telegram</strong>: يكتشف تلقائيًا ما إذا كان التطبيق يعمل داخل Telegram Web App ويُعدّل الواجهة وفقًا لذلك — إخفاء الشريط الجانبي وتكييف الأبعاد.</li>
+</ul>
+<div class="subsection">
+    <div class="subsection-title">الحالات والحالات الخاصة</div>
+</div>
+<table class="vixor-table">
+<thead>
+<tr><th>الحالة</th><th>الوصف</th><th>السلوك</th></tr>
+</thead>
+<tbody>
+<tr><td>سطح المكتب</td><td>شاشة ≥ 768px</td><td>شريط جانبي + رأسية كاملة + محتوى واسع</td></tr>
+<tr><td>الجوال</td><td>شاشة &lt; 768px</td><td>شريط سفلي + رأسية مصغّرة + محتوى كامل العرض</td></tr>
+<tr><td>Telegram</td><td>تعمل داخل Telegram</td><td>إخفاء الشريط الجانبي، أبعاد مكيّفة، لا مودال خارجي</td></tr>
+<tr><td>التحميل الأولي</td><td>قبل تحميل البيانات</td><td>عرض Skeleton للرأسية والشريط الجانبي</td></tr>
+<tr><td>بدون محفظة</td><td>لم يربط المحفظة بعد</td><td>زر "ربط المحفظة" بارز في الرأسية</td></tr>
+</tbody>
+</table>
+<div class="callout callout-success">
+    <div class="callout-title">نمط الاستخدام الصحيح</div>
+    <div class="callout-body">لا تستخدم <code>AppShell</code> مباشرة — فهو يُطبّق تلقائيًا عبر Root Layout في <code>src/app/layout.tsx</code>. كل صفحة جديدة تُضاف داخل <code>AppShell</code> تلقائيًا. ركّز على بناء محتوى الصفحة فقط.</div>
+</div>
+<div class="callout callout-warn">
+    <div class="callout-title">نمط مضاد</div>
+    <div class="callout-body">لا تضف مكونات ثابتة (fixed/sticky) داخل محتوى الصفحات لأن <code>AppShell</code> يدير بالفعل التخطيط الثابت. تجنب استخدام <code>h-screen</code> أو <code>min-h-screen</code> في المكونات الفرعية لأن <code>AppShell</code> يتحكم بارتفاع المنطقة الرئيسية.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-03</div>
+            <div class="section-title">تخطيط الصفحات (PageLayout)</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكون <code>PageLayout</code> بحجم <strong>929 سطرًا</strong> هو القالب الموحد لجميع صفحات المحتوى في فيكسور. يوفر مجموعة من المكونات الفرعية المدمجة التي تُستخدم في كل صفحة تقريبًا، مما يضمن اتساق التخطيط والتجربة عبر التطبيق. يشمل: <code>StatsRow</code> لعرض الإحصائيات في صف أفقي، <code>PageSectionTitle</code> لعناوين الأقسام، <code>ProgressBar</code> لأشرطة التقدم الدلالية، و <code>ScrollArea</code> للمناطق القابلة للتمرير، و <code>EmptyState</code> لحالة الفراغ.
+</p>
+<div class="subsection">
+    <div class="subsection-title">المكونات الفرعية المدمجة</div>
+</div>
+<table class="vixor-table">
+<thead>
+<tr><th>المكون الفرعي</th><th>الوظيفة</th><th>الاستخدام النموذجي</th></tr>
+</thead>
+<tbody>
+<tr><td><code>StatsRow</code></td><td>صف أفقي لبطاقات الإحصائيات</td><td>عرض إجمالي الأرباح، عدد الصفقات، معدل النجاح</td></tr>
+<tr><td><code>PageSectionTitle</code></td><td>عنوان قسم مع أيقونة اختيارية</td><td>"التحليلات الأخيرة"، "إشارات التداول"</td></tr>
+<tr><td><code>ProgressBar</code></td><td>شريط تقدم أفقي مع نسبة</td><td>مستوى الثقة (78%)، تقدم الهدف</td></tr>
+<tr><td><code>ScrollArea</code></td><td>منطقة تمرير مخصصة</td><td>قوائم طويلة، محتوى يتجاوز الارتفاع</td></tr>
+<tr><td><code>EmptyState</code></td><td>حالة الفراغ مع رسالة وأيقونة</td><td>"لا توجد صفقات بعد"، "لا توجد تنبيهات"</td></tr>
+</tbody>
+</table>
+<div class="subsection">
+    <div class="subsection-title">قواعد الاستخدام</div>
+</div>
+<ul class="vixor-list">
+<li><strong>التبعية</strong>: يجب أن تكون كل صفحة محتوى ملفوفة بـ <code>PageLayout</code> مباشرة داخل <code>AppShell</code> دون أي مكونات وسيطة.</li>
+<li><strong>StatsRow</strong>: يقبل مصفوفة من الكائنات <code>{label, value, change, icon}</code>. القيمة <code>change</code> يمكن أن تكون موجبة (خضراء) أو سالبة (حمراء).</li>
+<li><strong>EmptyState</strong>: يعرض أيقونة كبيرة ونص رسالة وزر إجراء اختياري. يُستخدم عندما تكون قائمة البيانات فارغة تمامًا.</li>
+<li><strong>ProgressBar</strong>: يدعم ألوانًا دلالية: <code>bullish</code> (أخضر)، <code>bearish</code> (أحمر)، <code>primary</code> (نيلي)، <code>amber</code> (عنبر).</li>
+</ul>
+<div class="callout callout-warn">
+    <div class="callout-title">نمط مضاد</div>
+    <div class="callout-body">لا تستخدم <code>StatsRow</code> لعرض أكثر من 4 إحصائيات على الجوال — استخدم شبكة (grid) مخصصة بدلاً من ذلك. لا تضع <code>ScrollArea</code> داخل <code>ScrollArea</code> آخر لتجنب تعارض أشرطة التمرير. لا تتجاوز 3 مستويات تعشيش داخل <code>PageLayout</code>.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-04</div>
+            <div class="section-title">مكونات الرسم البياني</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+منظومة الرسوم البيانية في فيكسور تتكون من <strong>8 مكونات متخصصة</strong> تغطي جميع احتياجات عرض البيانات المالية والسعرية. من الرسوم البيانية التفاعلية الكاملة إلى المخططات المصغّرة المضمنة في البطاقات، كل مكون مصمم لأداء محدد مع الحفاظ على الاتساق البصري. هذه المكونات هي الأكثر تفاعلًا في التطبيق وتتطلب اهتمامًا خاصًا بالأداء والاستجابة وتحميل المكتبات.
+</p>
+<div class="subsection">
+    <div class="subsection-title">TradingViewChart — الرسم البياني الرئيسي</div>
+</div>
+<p class="body-text">
+بحجم <strong>206 سطرًا</strong>، يُعدّ المكون الأساسي لعرض بيانات الأسعار. يتضمن خريطة رموز لـ <strong>أكثر من 40 زوجًا تداوليًا</strong> عبر <code>SYMBOL_MAP</code>، وخريطة فترات زمنية عبر <code>INTERVAL_MAP</code> (1m إلى 1M)، وأسماء عرض مخصصة عبر <code>PAIR_DISPLAY_NAMES</code>. يُضمّن ويدجت TradingView كاملًا مع دعم الرسم البياني الشموعي وعرض الأحجام والأدوات الرسومية. المكون يُحمّل مكتبة TradingView ديناميكيًا لتقليل حجم الحزمة الأولي.
+</p>
+<div class="subsection">
+    <div class="subsection-title">CandlestickChart — الرسم البياني الشموعي المخصص</div>
+</div>
+<p class="body-text">
+بحجم <strong>452 سطرًا</strong>، يستخدم مكتبة <code>lightweight-charts</code> لبناء رسم بياني شموعي مخصص بالكامل. يعرّف واجهة <code>KlineBar</code> تمثل كل شمعة ببيانات <code>{time, open, high, low, close, volume}</code>. يدعم خطوط المقاومة والدعم والتدرجات اللونية للاتجاهات. يتميز بالأداء العالي في عرض آلاف الشموع دون تأخير ملحوظ.
+</p>
+<div class="subsection">
+    <div class="subsection-title">المكونات الأخرى</div>
+</div>
+<table class="vixor-table">
+<thead>
+<tr><th>المكون</th><th>الحجم</th><th>الوظيفة</th><th>متى يُستخدم</th></tr>
+</thead>
+<tbody>
+<tr><td><code>DexChart</code></td><td>297 سطرًا</td><td>تضمين رسم DexScreener</td><td>عرض بيانات DEX لأزواج غير مدرجة في TradingView</td></tr>
+<tr><td><code>TradingViewMiniChart</code></td><td>86 سطرًا</td><td>رسم مصغّر للبطاقات</td><td>بطاقات العملات، قوائم المراقبة</td></tr>
+<tr><td><code>TradingViewTechAnalysis</code></td><td>78 سطرًا</td><td>ويدجت التحليل الفني</td><td>ملخص المؤشرات الفنية (RSI, MACD, MA)</td></tr>
+<tr><td><code>TradingViewTickerTape</code></td><td>84 سطرًا</td><td>شريط أسعار متحرك</td><td>الصفحة الرئيسية، عرض الأسعار الحية</td></tr>
+<tr><td><code>EquityChart</code></td><td>94 سطرًا</td><td>منحنى رأس المال</td><td>لوحة المحفظة، تتبع الأداء</td></tr>
+<tr><td><code>MiniSparkline</code></td><td>46 سطرًا</td><td>خط صغير مضمن</td><td>داخل بطاقات الإحصائيات والتنبيهات</td></tr>
+</tbody>
+</table>
+<div class="callout callout-success">
+    <div class="callout-title">نصيحة الأداء</div>
+    <div class="callout-body">مكونات الرسم البياني تُحمّل مكتباتها ديناميكيًا عبر <code>dynamic import</code>. لا تُحمّل أكثر من رسم بياني تفاعلي واحد في نفس الوقت على الجوال. استخدم <code>MiniSparkline</code> للعرض السريع في القوائم بدلاً من <code>TradingViewMiniChart</code>.</div>
+</div>
+<div class="callout callout-warn">
+    <div class="callout-title">نمط مضاد</div>
+    <div class="callout-body">لا تضع <code>TradingViewChart</code> داخل <code>Sheet</code> أو <code>Dialog</code> — ويدجت TradingView يحتاج مساحة كاملة ولا يدعم التضمين في نوافذ منبثقة. لا تستخدم <code>CandlestickChart</code> لبيانات أقل من 30 شمعة لأن التصميم محسّن للعرض الكثيف.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-05</div>
+            <div class="section-title">مكونات التداول</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكونات التداول هي الواجهة المرئية التي يتفاعل معها المتداول يوميًا. تشمل <strong>7 مكونات متخصصة</strong> تغطي الإشارات والاتجاهات وتقييم المخاطر والتدريب والتقارير. كل مكون مصمم لتقديم معلومة تداولية معقدة بطريقة بصرية سريعة القراءة، مع دعم حالات متعددة (شراء/بيع/انتظار) وألوان دلالية واضحة تتبع معيار التداول العالمي.
+</p>
+<div class="subsection">
+    <div class="subsection-title">SignalBadge — شارة الإشارة</div>
+</div>
+<p class="body-text">
+بحجم <strong>101 سطرًا</strong>، يعرض إشارة تداول بارزة بأحد ثلاثة حالات: <strong>BUY</strong> (أخضر <code>#22D3A6</code>)، <strong>SELL</strong> (أحمر <code>#FB4667</code>)، أو <strong>WAIT</strong> (عنبر <code>#F5A623</code>). يدعم حجمين (افتراضي وصغير) ويتضمن أيقونة ديناميكية حسب نوع الإشارة. يُستخدم في بطاقات العملات وقوائم الإشارات والإشعارات الفورية.
+</p>
+<div class="subsection">
+    <div class="subsection-title">TrendArrow — سهم الاتجاه</div>
+</div>
+<p class="body-text">
+بحجم <strong>43 سطرًا</strong>، مكون صغير يعرض سهمًا أخضر متجهًا لأعلى (صعودي) أو سهمًا أحمر متجهًا لأسفل (هبوطي) مع قيمة النسبة المئوية. يُستخدم داخل بطاقات العملات وقوائم المراقبة للدلالة السريعة على اتجاه السعر. يقبل <code>value</code> (number) و <code>size</code> ('sm' | 'md').
+</p>
+<div class="subsection">
+    <div class="subsection-title">LiveDot — مؤشر الحالة الحية</div>
+</div>
+<p class="body-text">
+بحجم <strong>41 سطرًا</strong>، نقطة صغيرة متحركة (نبضية) تشير إلى أن البيانات حية ومُحدّثة عبر WebSocket، أو ثابتة (رمادية) تشير إلى بيانات متوقفة. يقبل <code>isLive</code> (boolean) فقط. يُستخدم بجوار الأسعار الحية ومؤشرات السوق.
+</p>
+<div class="subsection">
+    <div class="subsection-title">لوحات التداول المتقدمة</div>
+</div>
+<div class="card-grid">
+    <div class="info-card">
+        <div class="info-card-title">HunterScoreCard — بطاقة نقاط الذكاء المالي</div>
+        <div class="info-card-body">372 سطرًا. يُقيّم نشاط الأموال الذكية (Smart Money) ويعرض نتيجة مركبة من عدة مؤشرات. يشمل شريط ثقة ومؤشرات فرعية (حجم، تقلب، تدفق). الألوان تتدرج من الأحمر (ضعيف) إلى الأخضر (قوي). يرث من <code>BaseFeaturePanel</code>.</div>
+    </div>
+    <div class="info-card">
+        <div class="info-card-title">GovernorRiskPanel — لوحة حاكم المخاطر</div>
+        <div class="info-card-body">383 سطرًا. لوحة تقييم شاملة للمخاطر تعرض مستوى الخطر (منخفض/متوسط/مرتفع/حرج) مع توصيات عملية. تتضمن أشرطة تقدم لكل عامل مخاطرة وتقييمًا إجماليًا مُلوّنًا حسب المستوى.</div>
+    </div>
+    <div class="info-card">
+        <div class="info-card-title">CoachOverlay — طبقة التدريب</div>
+        <div class="info-card-body">334 سطرًا. تراكب يظهر أثناء التداول لتقديم نصائح فورية من MOXI. يعرض إشعارًا مع توصية محددة (شراء/بيع/انتظار) مع مبرر قصير. يمكن إخفاؤه بواسطة المستخدم عبر زر إغلاق.</div>
+    </div>
+    <div class="info-card">
+        <div class="info-card-title">AnalystReportPanel — لوحة تقرير المحلل</div>
+        <div class="info-card-body">272 سطرًا. يعرض تقريرًا أسبوعيًا شاملاً من الذكاء الاصطناعي يتضمن: ملخص السوق، العملات المُوصى بها، تحليل الاتجاهات، ومستوى الثقة الإجمالي. يدعم التوسيع والطي.</div>
+    </div>
+</div>
+<div class="callout callout-warn">
+    <div class="callout-title">نمط مضاد</div>
+    <div class="callout-body">لا تستخدم <code>SignalBadge</code> بدون سياق — يجب دائمًا عرضه مع اسم العملة والسعر. لا تعرض <code>GovernorRiskPanel</code> في مساحة أقل من 300px عرضًا. لا تُخفي <code>CoachOverlay</code> برمجيًا — دع المستخدم يقرر.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-06</div>
+            <div class="section-title">مكونات التنبيهات</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+نظام التنبيهات في فيكسور يتكون من <strong>3 مكونات متكاملة</strong> تتيح للمستخدم إنشاء وإدارة وتعديل تنبيهات الأسعار. النظام يعتمد على المراقبة المستمرة للأسعار عبر WebSocket وإرسال الإشعارات عند تحقق الشروط المحددة. كل مكون يتعامل مع جانب محدد من دورة حياة التنبيه ويعمل بالتنسيق مع المكونات الأخرى.
+</p>
+<div class="subsection">
+    <div class="subsection-title">AlertsList — قائمة التنبيهات</div>
+</div>
+<p class="body-text">
+بحجم <strong>239 سطرًا</strong>، يعرض جميع التنبيهات النشطة والمُنفّذة والمُعلّقة في قائمة منظمة. يدعم التصفية حسب الحالة (نشط/مُنفّذ/مُعلّق) والفرز حسب التاريخ أو السعر. كل عنصر في القائمة يعرض: اسم العملة مع <code>CoinImage</code>، الشرط (أعلى من/أقل من)، السعر المستهدف، الحالة مع شارة ملونة، وأزرار التعديل والحذف. يستخدم <code>ScrollArea</code> مع ارتفاع أقصى <code>max-h-96</code> للتعامل مع القوائم الطويلة.
+</p>
+<div class="subsection">
+    <div class="subsection-title">CreateAlertDialog — حوار إنشاء تنبيه</div>
+</div>
+<p class="body-text">
+بحجم <strong>239 سطرًا</strong>، نافذة منبثقة لإنشاء تنبيه سعر جديد. يتضمن: اختيار العملة من قائمة بحثية، تحديد الشرط (أعلى من/أقل من/تقاطع)، إدخال السعر المستهدف، واختياريًا إضافة ملاحظة. يتحقق من صحة المدخلات قبل الإرسال ويعرض أخطاء واضحة أسفل كل حقل. يُستخدم مع <code>Form</code> و <code>zod</code> للتحقق.
+</p>
+<div class="subsection">
+    <div class="subsection-title">EditAlertDialog — حوار تعديل تنبيه</div>
+</div>
+<p class="body-text">
+بحجم <strong>258 سطرًا</strong>، يشبه <code>CreateAlertDialog</code> لكنه يُستخدم لتعديل تنبيه موجود. يُحمّل بيانات التنبيه الحالي عند الفتح ويتيح تعديل جميع الحقول. يتضمن زر حذف التنبيه مع تأكيد عبر <code>AlertDialog</code>. يحافظ على التاريخ الأصلي للتنبيه والمعرف الفريد.
+</p>
+<div class="subsection">
+    <div class="subsection-title">الحالات المدعومة</div>
+</div>
+<table class="vixor-table">
+<thead>
+<tr><th>الحالة</th><th>اللون</th><th>الوصف</th></tr>
+</thead>
+<tbody>
+<tr><td>نشط (active)</td><td>أخضر</td><td>التنبيه يُراقب السعر بنشاط عبر WebSocket</td></tr>
+<tr><td>مُنفّذ (triggered)</td><td>نيلي</td><td>تحقق الشرط وتم إرسال الإشعار</td></tr>
+<tr><td>مُعلّق (paused)</td><td>عنبر</td><td>أوقف المستخدم المراقبة مؤقتًا</td></tr>
+<tr><td>منتهي (expired)</td><td>رمادي</td><td>انتهت صلاحية التنبيه تلقائيًا</td></tr>
+</tbody>
+</table>
+<div class="callout callout-warn">
+    <div class="callout-title">نمط مضاد</div>
+    <div class="callout-body">لا تفتح <code>CreateAlertDialog</code> أو <code>EditAlertDialog</code> داخل <code>Sheet</code> — استخدم <code>Dialog</code> فقط. لا تنشئ تنبيهات بدون الحد الأدنى من البيانات (عملة + شرط + سعر). لا تعرض أكثر من 50 تنبيهًا في <code>AlertsList</code> بدون ترقيم صفحات.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-07</div>
+            <div class="section-title">مكونات الذكاء الاصطناعي</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكونات الذكاء الاصطناعي تمثّل الواجهة البصرية لمحرك MOXI — مساعد فيكسور الذكي. تتكون من <strong>3 مكونات أساسية</strong>: الصورة الرمزية الشخصية، تخطيط استجابة الوكيل، والأدوات القابلة للتوسيع. هذه المكونات تجعل تفاعل المستخدم مع الذكاء الاصطناعي طبيعيًا وجذابًا بصريًا، مع دعم حالات متعددة تعكس المزاج السوقي ومستوى الثقة.
+</p>
+<div class="subsection">
+    <div class="subsection-title">MoxiAvatar — صورة MOXI الشخصية</div>
+</div>
+<p class="body-text">
+بحجم <strong>119 سطرًا</strong>، يعرض صورة رمزية دائرية لشخصية MOXI مع <strong>8 متغيرات تدرج لوني</strong> تعكس الحالة الحالية للمساعد. كل متغير يحمل اسمًا دلاليًا وتدرجًا فريدًا:
+</p>
+<table class="vixor-table">
+<thead>
+<tr><th>المتغير</th><th>الوصف</th><th>سياق الاستخدام</th></tr>
+</thead>
+<tbody>
+<tr><td><code>default</code></td><td>التدرج الافتراضي (نيلي)</td><td>الوضع العادي، الأسئلة العامة</td></tr>
+<tr><td><code>bull</code></td><td>تدرج صعودي (أخضر-نيلي)</td><td>إشارات شراء، تحليل إيجابي</td></tr>
+<tr><td><code>bear</code></td><td>تدرج هبوطي (أحمر-برتقالي)</td><td>تحذيرات، تحليل سلبي، خسائر</td></tr>
+<tr><td><code>crystal</code></td><td>تدرج كريستالي (أزرق فاتح)</td><td>تحليلات محايدة، بيانات خام</td></tr>
+<tr><td><code>flame</code></td><td>تدرج ناري (برتقالي-أحمر)</td><td>تقلبات عالية، تنبيهات عاجلة</td></tr>
+<tr><td><code>ocean</code></td><td>تدرج محيطي (أزرق-سيان)</td><td>تحليلات معمّقة، تقارير شاملة</td></tr>
+<tr><td><code>phantom</code></td><td>تدرج شبحي (رمادي-أرجواني)</td><td>التحليل الليلي، الوضع الداكن</td></tr>
+<tr><td><code>nova</code></td><td>تدرج نجمي (ذهبي-نيلي)</td><td>النجاحات، الإنجازات، الأهداف المحققة</td></tr>
+</tbody>
+</table>
+<div class="subsection">
+    <div class="subsection-title">AgentResponseLayout — تخطيط استجابة الوكيل</div>
+</div>
+<p class="body-text">
+بحجم <strong>123 سطرًا</strong>، يوفر تخطيطًا موحدًا لعرض ردود الذكاء الاصطناعي. يتضمن: رأسية مع <code>MoxiAvatar</code> وطابع زمني، منطقة المحتوى مع دعم Markdown الأساسي، وأزرار الإجراء (نسخ، مشاركة، ملاحظة). Props تشمل <code>variant</code> (نوع التدرج) و <code>timestamp</code> و <code>actions</code>. يضمن أن جميع ردود MOXI لها مظهر متسق.
+</p>
+<div class="subsection">
+    <div class="subsection-title">ExpandableWidget — الأدوات القابلة للتوسيع</div>
+</div>
+<p class="body-text">
+بحجم <strong>315 سطرًا</strong>، يعرض معلومات تحليلية قابلة للتوسيع والطي بأربعة أنماط بصرية: <strong>صعودي (bullish)</strong> بأخضر، <strong>هبوطي (bearish)</strong> بأحمر، <strong>محايد (neutral)</strong> بعنبر، و <strong>تحذيري (warning)</strong> ببرتقالي. Props: <code>variant</code>, <code>title</code>, <code>summary</code>, <code>children</code> (المحتوى المفصل). يُستخدم لعرض توصيات الذكاء الاصطناعي بطريقة مختصرة مع إمكانية التوسيع.
+</p>
+<div class="callout callout-success">
+    <div class="callout-title">قاعدة التدرجات</div>
+    <div class="callout-body">عند استخدام <code>MoxiAvatar</code>، اختر المتغير الذي يتوافق مع محتوى الرسالة وليس مع السوق عامةً. إذا كان التحليل مختلطًا، استخدم <code>crystal</code> (محايد). لا تستخدم <code>flame</code> إلا للتنبيهات العاجلة الحقيقية.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-08</div>
+            <div class="section-title">مكونات البيانات</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكونات البيانات توفّر وحدات بناء مرئية لعرض الأرقام والقيم المالية بطريقة منظمة وجذابة. هذه المكونات تُستخدم في كل صفحة تقريبًا وتشكل الأساس البصري لعرض المعلومات الكمية. تتكون من <strong>5 مكونات</strong> أساسية كل منها مصمم لنوع محدد من العرض البياني. كل مكون يحترم اتجاه RTL ويدعم الألوان الدلالية لتطبيق فيكسور.
+</p>
+<div class="subsection">
+    <div class="subsection-title">StatCard — بطاقة الإحصائية</div>
+</div>
+<p class="body-text">
+بحجم <strong>60 سطرًا</strong>، مكون خفيف يستخدم <code>forwardRef</code> لتمرير المرجع. يعرض قيمة عددية كبيرة مع عنوان واختياريًا نسبة التغير. Props: <code>title</code>, <code>value</code>, <code>change</code>, <code>icon</code>, <code>variant</code> ('default' | 'bullish' | 'bearish' | 'primary'), <code>size</code> ('sm' | 'md' | 'lg'). يُستخدم كوحدة بناء أساسية في <code>StatsRow</code>.
+</p>
+<div class="subsection">
+    <div class="subsection-title">MiniSparkline — الخط المضمن المصغّر</div>
+</div>
+<p class="body-text">
+بحجم <strong>46 سطرًا</strong>، يرسم خطًا بسيطًا داخل سياق النص (inline) لعرض الاتجاه العام للبيانات. يقبل <code>data</code> (number[]) و <code>color</code> (string, اختياري). يُلوّن تلقائيًا (أخضر للصعود، أحمر للهبوط) إذا لم يُحدد لون. يُستخدم داخل الجداول وقوائم المراقبة وبطاقات التنبيهات. الحد الأقصى 50 نقطة.
+</p>
+<div class="subsection">
+    <div class="subsection-title">CoinImage — صورة العملة</div>
+</div>
+<p class="body-text">
+بحجم <strong>74 سطرًا</strong>، يعرض رمز العملة (Logo) في حجم دائري مع احتياطي (fallback) لحرف العملة الأول. يستخدم مصدر الصور من DexScreener مع دعم التخزين المؤقت. Props: <code>symbol</code>, <code>size</code> ('xs' | 'sm' | 'md'). الأحجام: xs=16px, sm=24px, md=32px. يُستخدم في كل مكان يظهر فيه اسم عملة.
+</p>
+<div class="subsection">
+    <div class="subsection-title">PaginationBar و EquityChart</div>
+</div>
+<ul class="vixor-list">
+<li><strong>PaginationBar</strong> (176 سطرًا): شريط ترقيم كامل مع خطاف <code>usePagination</code>. Props: <code>totalItems</code>, <code>itemsPerPage</code>, <code>currentPage</code>, <code>onPageChange</code>. يتحكم في ارتفاع التمرير تلقائيًا عند تغيير الصفحة ويعرض نطاق العناصر ("عرض 1-20 من 156").</li>
+<li><strong>EquityChart</strong> (94 سطرًا): منحنى رأس المال عبر الزمن باستخدام <code>recharts</code>. يعرض خط رأس المال مع منطقة مملوءة شبه شفافة. يُلون بالأخضر إذا كان الأداء إيجابيًا وبالأحمر إذا كان سلبيًا. يُستخدم في لوحة المحفظة وتقارير الأداء.</li>
+</ul>
+<div class="callout callout-warn">
+    <div class="callout-title">أنماط مضادة</div>
+    <div class="callout-body">لا تستخدم <code>StatCard</code> لعرض نصوص طويلة — هو مصمم للأرقام فقط. لا تُمرّر أكثر من 50 نقطة بيانات لـ <code>MiniSparkline</code>. لا تستخدم <code>CoinImage</code> بدون مصدر احتياطي (fallback) لأن بعض العملات قد لا تملك صورًا متاحة.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-09</div>
+            <div class="section-title">مكونات واجهة المستخدم الأساسية</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكونات واجهة المستخدم الأساسية هي مجموعة مكونات shadcn/ui الأكثر استخدامًا في فيكسور. هذه المكونات تُشكّل لبنات البناء الأساسية لكل شاشة وتفاعل في التطبيق. تم تخصيص ألوانها وأنماطها عبر متغيرات CSS لتتناسب مع نظام التصميم الداكن لفيكسور مع الحفاظ على سلوك shadcn/ui الأصلي وخصائص إمكانية الوصول.
+</p>
+<div class="subsection">
+    <div class="subsection-title">Button — الزر</div>
+</div>
+<p class="body-text">
+المكون الأكثر استخدامًا في التطبيق. يدعم عدة متغيرات: <code>default</code> (نيلي)، <code>destructive</code> (أحمر)، <code>outline</code> (محيط فقط)، <code>secondary</code> (رمادي)، <code>ghost</code> (شفاف)، <code>link</code> (رابط). يدعم 4 أحجام: <code>default</code>، <code>sm</code>، <code>lg</code>، <code>icon</code>. في فيكسور يُضاف متغيران إضافيان عبر CSS: <code>vx-btn-primary</code> (تدرج نيلي مع توهج) و <code>vx-btn-bullish</code> / <code>vx-btn-bearish</code> للعمليات التداولية. جميع الأزرار تدعم <code>disabled</code> و <code>loading</code>.
+</p>
+<div class="subsection">
+    <div class="subsection-title">Card — البطاقة</div>
+</div>
+<p class="body-text">
+حاوية المحتوى الأساسية. تتكون من <code>Card</code>، <code>CardHeader</code>، <code>CardTitle</code>، <code>CardDescription</code>، <code>CardContent</code>، <code>CardFooter</code>. في فيكسور تُستخدم فئة <code>.vixor-card</code> المخصصة التي تضيف حدودًا خفيفة وتأثير تمرير (hover). جميع البطاقات تستخدم خلفية <code>#101114</code> مع حدود <code>rgba(255,255,255,0.08)</code> وتحويل دائري <code>border-radius: 12px</code>.
+</p>
+<div class="subsection">
+    <div class="subsection-title">Dialog, Sheet, Drawer — نوافذ المحتوى</div>
+</div>
+<table class="vixor-table">
+<thead>
+<tr><th>المكون</th><th>الاتجاه</th><th>الاستخدام</th><th>الأداء</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Dialog</code></td><td>مركزي</td><td>التأكيدات، النماذج القصيرة، رسائل النجاح</td><td>سريع — بدون حركة معقدة</td></tr>
+<tr><td><code>Sheet</code></td><td>جانبي</td><td>التفاصيل، النماذج الطويلة، إعدادات</td><td>متوسط — حركة انزلاق</td></tr>
+<tr><td><code>Drawer</code></td><td>سفلي (جوال)</td><td>إجراءات الجوال، اختيارات سريعة</td><td>سريع — حركة سفلية طبيعية</td></tr>
+</tbody>
+</table>
+<div class="subsection">
+    <div class="subsection-title">Input, Select, Badge, Tabs, Tooltip</div>
+</div>
+<ul class="vixor-list">
+<li><strong>Input</strong>: حقل إدخال النص مع دعم RTL كامل. يُستخدم مع <code>Form</code> و <code>Label</code>. يعرض حالة الخطأ باللون الأحمر مع رسالة أسفله. الأيقونات تُضاف عبر <code>slot</code> بداية/نهاية.</li>
+<li><strong>Select</strong>: قائمة منسدلة مع بحث مدمج عبر <code>Command</code>. يدعم مجموعات (groups) وقوالب مخصصة. يُستخدم لاختيار العملات والأطر الزمنية والفلاتر.</li>
+<li><strong>Badge</strong>: شارة صغيرة للتصنيف. متغيرات: <code>default</code>، <code>secondary</code>، <code>destructive</code>، <code>outline</code>. في فيكسور يُضاف <code>bullish</code> و <code>bearish</code> و <code>warning</code> و <code>success</code>.</li>
+<li><strong>Tabs</strong>: تبويبات للتنقل داخل الصفحة. يدعم أيقونات ومؤشرات مخصصة. يُستخدم لتبديل العروض (قائمة/شبكة) وأنواع التحليل.</li>
+<li><strong>Tooltip</strong>: تلميح يظهر عند التمرير. يدعم محتوى غني واتجاهات متعددة. يُستخدم لشرح المصطلحات المالية المختصرة مثل RSI و MACD.</li>
+</ul>
+<div class="callout callout-success">
+    <div class="callout-title">نصيحة</div>
+    <div class="callout-body">استخدم <code>Dialog</code> للنوافذ الصغيرة (أقل من 400px محتوى) و <code>Sheet</code> للنوافذ المتوسطة والكبيرة. على الجوال، يتحول <code>Sheet</code> تلقائيًا إلى سلوك يشبه <code>Drawer</code>.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-10</div>
+            <div class="section-title">مكونات النماذج</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكونات النماذج في فيكسور تُستخدم لجمع المدخلات من المستخدم في سياقات متنوعة: إنشاء التنبيهات، إعدادات المحفظة، تصفية البيانات، والتفضيلات. تعتمد على <strong>react-hook-form</strong> مع <strong>zod</strong> للتحقق من الصحة، مما يوفر تجربة نموذج سلسة وسريعة بدون إعادة التصيير (re-render) عند كل ضغطة مفتاح. هذا النهج يحسّن الأداء بشكل ملحوظ في النماذج المعقدة.
+</p>
+<div class="subsection">
+    <div class="subsection-title">Form — النموذج</div>
+</div>
+<p class="body-text">
+غلاف (wrapper) حول <code>react-hook-form</code> يوفر تكاملًا سلسًا مع مكونات shadcn/ui. كل حقل إدخال يُربط بالنموذج عبر <code>FormField</code> و <code>FormItem</code> و <code>FormLabel</code> و <code>FormControl</code> و <code>FormMessage</code>. يدعم التحقق من الصحة عبر مخططات Zod مع عرض الأخطاء بشكل فوري أسفل كل حقل. يتحكم في حالة <code>isSubmitting</code> لتعطيل الأزرار أثناء الإرسال.
+</p>
+<div class="subsection">
+    <div class="subsection-title">المكونات المدعومة</div>
+</div>
+<table class="vixor-table">
+<thead>
+<tr><th>المكون</th><th>النوع</th><th>الاستخدام في فيكسور</th><th>التحقق المطلوب</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Calendar</code></td><td>تاريخ</td><td>اختيار تاريخ التقارير، فلاتر زمنية</td><td>تاريخ صالح، ضمن النطاق المسموح</td></tr>
+<tr><td><code>Checkbox</code></td><td>اختيار متعدد</td><td>تفعيل/تعطيل الميزات، اختيار العملات</td><td>لا يوجد — اختياري</td></tr>
+<tr><td><code>RadioGroup</code></td><td>اختيار واحد</td><td>نوع التنبيه (أعلى/أقل/تقاطع)، فترة الرسم</td><td>خيار واحد محدد على الأقل</td></tr>
+<tr><td><code>Switch</code></td><td>تبديل</td><td>تفعيل الإشعارات، وضع التدريب</td><td>قيمة منطقية (boolean)</td></tr>
+<tr><td><code>Slider</code></td><td>نطاق رقمي</td><td>مستوى المخاطر (1-10)، نسبة الربح المستهدف</td><td>ضمن النطاق المسموح</td></tr>
+<tr><td><code>Textarea</code></td><td>نص متعدد الأسطر</td><td>ملاحظات التداول، وصف التنبيه</td><td>أقل من 500 حرف</td></tr>
+</tbody>
+</table>
+<div class="subsection">
+    <div class="subsection-title">قواعد النماذج</div>
+</div>
+<ul class="vixor-list">
+<li><strong>التحقق من الصحة</strong>: كل نموذج يجب أن يملك مخطط Zod خاص به. لا تعتمد على <code>required</code> HTML فقط.</li>
+<li><strong>التعطيل أثناء الإرسال</strong>: زر الإرسال يُعطّل تلقائيًا عبر <code>form.formState.isSubmitting</code> مع عرض مؤشر التحميل.</li>
+<li><strong>إعادة التعيين</strong>: بعد نجاح الإرسال، يُعاد تعيين النموذج عبر <code>form.reset()</code> مع إغلاق النافذة المنبثقة.</li>
+<li><strong>أخطاء RTL</strong>: رسائل الخطأ من Zod يجب ترجمتها للعربية عبر <code>z.errorMap</code> مخصص في <code>src/lib/zod.ts</code>.</li>
+</ul>
+<div class="callout callout-warn">
+    <div class="callout-title">نمط مضاد</div>
+    <div class="callout-body">لا تستخدم <code>useState</code> لإدارة قيم حقول النموذج — دع <code>react-hook-form</code> يديرها بالكامل. لا تضع <code>Slider</code> داخل قائمة طويلة قابلة للتمرير لأن التمرير يتعارض مع السحب. لا تستخدم <code>Calendar</code> لأوقات محددة — استخدم <code>Select</code> بدلاً من ذلك.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-11</div>
+            <div class="section-title">مكونات التنقل</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكونات التنقل تُمكّن المستخدم من التنقل بين أجزاء التطبيق المختلفة والوصول إلى الوظائف السياقية. تتكون من <strong>5 مكونات</strong> متخصصة: الشريط الجانبي، مسار التصفح، قائمة التنقل الأفقي، القائمة المنسدلة، وقائمة السياق. كل مكون يلبي احتياجًا تنقليًا محددًا مع الحفاظ على التجربة المتسقة عبر سطح المكتب والجوال.
+</p>
+<div class="subsection">
+    <div class="subsection-title">Sidebar — الشريط الجانبي</div>
+</div>
+<p class="body-text">
+مكون شريط جانبي كامل من shadcn/ui مُكيّف لفيكسور. يتضمن: رأسية مع شعار فيكسور، مجموعة روابط التنقل الرئيسية مع أيقونات Lucide، مؤشر الصفحة النشطة (شريط نيلي على اليسار في RTL)، ومؤشرات الإشعارات (نقطة حمراء). يدعم حالتين: موسّع (مع نص) ومُصغّر (أيقونات فقط عبر <code>SidebarTrigger</code>). يتحكم <code>AppShell</code> في حالته بناءً على حجم الشاشة تلقائيًا.
+</p>
+<div class="subsection">
+    <div class="subsection-title">Breadcrumb — مسار التصفح</div>
+</div>
+<p class="body-text">
+يُعرض في أعلى كل صفحة فرعية (ما عدا الرئيسية). يوضح التسلسل الهرمي للصفحة الحالية: الرئيسية ← القسم ← الصفحة. كل عنصر قابل للنقر للعودة للمستوى الأعلى. يستخدم فاصل مخصص (<code>chevron-left</code> في RTL) بين العناصر. يدعم <code>separator</code> prop لتخصيص الفاصل.
+</p>
+<div class="subsection">
+    <div class="subsection-title">NavigationMenu, DropdownMenu, ContextMenu</div>
+</div>
+<ul class="vixor-list">
+<li><strong>NavigationMenu</strong>: قائمة تنقل أفقية مع دعم القوائم الفرعية. يُستخدم في الرأسية للتنقل بين الأقسام الرئيسية. يدعم التمرير الأفقي على الشاشات الصغيرة مع إخفاء العناصر الزائدة.</li>
+<li><strong>DropdownMenu</strong>: قائمة منسدلة تظهر عند النقر. تُستخدم لقوائم الإجراءات (تعديل، حذف، مشاركة) وأزرار الخيارات (⋮). يدعم فصول (groups) وفواصل وعناصر مُعطّلة وعناصر خطيرة (destructive).</li>
+<li><strong>ContextMenu</strong>: قائمة سياق تظهر عند النقر بزر الماوس الأيمن (أو الضغط المطول على الجوال). تُستخدم للإجراءات السريعة مثل: إضافة تنبيه، فتح تفاصيل، نسخ الرمز.</li>
+</ul>
+<div class="callout callout-success">
+    <div class="callout-title">أفضل ممارسة</div>
+    <div class="callout-body">على الجوال، لا تعتمد على <code>ContextMenu</code> لأن النقر المطول قد يتعارض مع إجراءات المتصفح. وفر نفس الإجراءات عبر <code>DropdownMenu</code> أو زر الخيارات (⋮) كبديل دائم متاح.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-12</div>
+            <div class="section-title">مكونات العرض</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكونات العرض تتحكم في كيفية ظهور المحتوى عند تحميله أو أثناء العرض. هذه المكونات لا تحتوي على تفاعل مباشر من المستخدم بل تُحسّن التجربة البصرية وتُدير المساحات والفواصل والنسب. تشمل <strong>6 مكونات</strong>: الهيكل العظمي، شريط التقدم، منطقة التمرير، القابل للتحجيم، الفاصل، ونسبة العرض إلى الارتفاع.
+</p>
+<div class="subsection">
+    <div class="subsection-title">Skeleton — الهيكل العظمي</div>
+</div>
+<p class="body-text">
+يُعرض أثناء تحميل البيانات كبديل مرئي للمحتوى الفعلي. يستخدم حركة توهج (pulse) للإيحاء بالتحميل. في فيكسور يُوجد متغيرات مخصصة: <code>Skeleton</code> للنصوص، <code>SkeletonCard</code> للبطاقات (يحاكي بطاقة كاملة مع رأسية ومحتوى)، و <code>SkeletonChart</code> للرسوم البيانية (يحاكي مساحة الرسم). يجب أن يتطابق الشكل العظمي مع شكل المحتوى النهائي لمنع ارتداد التخطيط (Layout Shift).
+</p>
+<div class="subsection">
+    <div class="subsection-title">Progress — شريط التقدم</div>
+</div>
+<p class="body-text">
+شريط تقدم أفقي مع تدرج لوني. يدعم قيمة رقمية من 0 إلى 100 عبر <code>value</code> prop. في فيكسور يُستخدم لعرض: مستوى الثقة في التوصيات، تقدم تحليل الذكاء الاصطناعي، نسبة تحقيق الهدف، ومستوى المخاطر. يتحول اللون تلقائيًا حسب القيمة: أخضر فوق 70%، عنبر بين 30-70%، أحمر تحت 30%.
+</p>
+<div class="subsection">
+    <div class="subsection-title">ScrollArea — منطقة التمرير</div>
+</div>
+<p class="body-text">
+يستبدل شريط التمرير الافتراضي للمتصفح بشريط مخصص أنيق يتطابق مع تصميم فيكسور الداكن. يظهر شريط التمرير عند التمرير فقط ويختفي تدريجيًا. يُستخدم في: قوائم التنبيهات، قوائم الصفقات، محتوى الأقسام الطويلة. يدعم اتجاهات أفقية وعمودية عبر <code>orientation</code> prop.
+</p>
+<div class="subsection">
+    <div class="subsection-title">Resizable, Separator, AspectRatio</div>
+</div>
+<ul class="vixor-list">
+<li><strong>Resizable</strong>: يتيح للمستخدم تغيير حجم الأقسام بسحب الفاصل بينها. يُستخدم في تقسيم الشاشة (مثلاً: الرسم البياني على اليمين والقائمة الجانبية على اليسار). يدعم <code>minSize</code> و <code>maxSize</code> لكل قسم.</li>
+<li><strong>Separator</strong>: خط فاصل أفقي أو عمودي. يُستخدم بين الأقسام والمجموعات داخل البطاقات والنوافذ. ارتفاع 1px بلون <code>rgba(255,255,255,0.08)</code>. يأخذ <code>orientation</code> ('horizontal' | 'vertical').</li>
+<li><strong>AspectRatio</strong>: يحافظ على نسبة عرض إلى ارتفاع ثابتة للحاوية. يُستخدم للرسوم البيانية (16:9) وصور العملات (1:1) ومقاطع الفيديو (16:9). يمنع تشوه المحتوى.</li>
+</ul>
+<div class="callout callout-warn">
+    <div class="callout-title">نمط مضاد</div>
+    <div class="callout-body">لا تستخدم <code>Skeleton</code> لأقل من 300 مللي ثانية من وقت التحميل — الاستبدال السريع يسبب وميض (flicker) مزعج. لا تضع <code>Resizable</code> داخل <code>ScrollArea</code> لأن السحب والتمرير يتعارضان ويُسبب تجربة سيئة.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-13</div>
+            <div class="section-title">مكونات التحميل والأخطاء</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكونات التحميل والأخطاء تضمن تجربة مستخدم سلسة حتى في ظروف غير مثالية. تشمل <strong>4 مكونات</strong>: حالة تحميل المسار، حد خطأ المسار، مؤشر السحب للتحديث، والمودال الترحيبي. هذه المكونات حيوية للحفاظ على ثقة المستخدم في التطبيق وتقديم حلول واضحة وقابلة للتنفيذ عند حدوث مشاكل.
+</p>
+<div class="subsection">
+    <div class="subsection-title">RouteLoading — تحميل المسار</div>
+</div>
+<p class="body-text">
+بحجم <strong>99 سطرًا</strong>، يُعرض تلقائيًا عند التنقل بين الصفحات. يظهر شريط تقدم رفيع في أعلى الصفحة بأسلوب NProgress مع تأثير تلاشي سلس. يتكامل مع <code>next/navigation</code> عبر مراقبة حالة <code>usePathname()</code>. يتضمن شاشة تحميل كاملة للتنقل الأولي مع شعار فيكسور متحرك. لا يتطلب أي إعداد إضافي من المطور.
+</p>
+<div class="subsection">
+    <div class="subsection-title">RouteErrorBoundary — حد خطأ المسار</div>
+</div>
+<p class="body-text">
+بحجم <strong>296 سطرًا</strong>، يلتقط الأخطاء غير المتوقعة في الصفحات ويعرض شاشة خطأ احترافية. يتضمن: أيقونة تحذير كبيرة، رسالة خطأ مخصصة (أو رسالة افتراضية), زر "إعادة المحاولة"، وزر "العودة للرئيسية". يدعم تسجيل الأخطاء (Error Logging) وتمييز أخطاء الشبكة (ERR_NETWORK) عن أخطاء التطبيق. يحتفظ بمسار التنقل السابق عند الخطأ ويعرض زر العودة المناسب.
+</p>
+<div class="subsection">
+    <div class="subsection-title">PullIndicator — مؤشر السحب للتحديث</div>
+</div>
+<p class="body-text">
+بحجم <strong>50 سطرًا</strong>، يعرض مؤشرًا مرئيًا عند سحب المحتوى للأسفل على الجوال للتحديث. يتحول بين ثلاث حالات: سحب (سهم لأسفل)، جاهز للتحديث (سهم يتحول)، وتحديث (دوّار). يعمل مع <code>onRefresh</code> callback ويتحكم في المسافة المطلوبة لتفعيل التحديث (60px افتراضيًا). يختفي تلقائيًا بعد اكتمال التحديث.
+</p>
+<div class="subsection">
+    <div class="subsection-title">OnboardingModal — المودال الترحيبي</div>
+</div>
+<p class="body-text">
+بحجم <strong>151 سطرًا</strong>، يظهر للمستخدم الجديد عند أول زيارة للتطبيق. يتضمن: ترحيبًا بشخصية MOXI (بمتغير <code>default</code>)، شرحًا سريعًا لميزات فيكسور في 3-4 خطوات مرقمة، وخيارات التخصيص المبدئي (العملات المفضلة، مستوى الخبرة التداولية). يُخزّن حالة الإكمال في <code>localStorage</code> ضمن مفتاح <code>vixor_onboarding_done</code> ولا يظهر مرة أخرى. يدعم التنقل بين الخطوات والتحويل للخطوة الأخيرة.
+</p>
+<div class="callout callout-success">
+    <div class="callout-title">قاعدة ذهبية</div>
+    <div class="callout-body">كل مسار (route) يجب أن يملك <code>RouteErrorBoundary</code> خاص به أو ملف <code>error.tsx</code> الخاص بـ Next.js. لا تعتمد على الحد العام فقط — لأن الأخطاء المحددة تحتاج رسائل مخصصة وسياقات إجراء مختلفة.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-14</div>
+            <div class="section-title">مكونات الملاحظات</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكون الملاحظات يتيح للمتداولين تدوين أفكارهم وتحليلاتهم مباشرة داخل التطبيق. مكون <code>NoteEditorDialog</code> هو المحرر الرئيسي والمتقدم للملاحظات، مصمم ليكون أداة تدوين سريعة وفعالة تخدم احتياجات المتداولين أثناء التحليل الفوري واتخاذ قرارات التداول.
+</p>
+<div class="subsection">
+    <div class="subsection-title">NoteEditorDialog — محرر الملاحظات</div>
+</div>
+<p class="body-text">
+بحجم <strong>367 سطرًا</strong>، يُعدّ من أكبر المكونات الحوارية في فيكسور. يوفر محرر نصوص متقدم داخل نافذة <code>Dialog</code> مع الميزات التالية:
+</p>
+<ul class="vixor-list">
+<li><strong>التحرير الغني</strong>: يدعم تنسيق النص الأساسي: عريض، مائل، عناوين، قوائم نقطية، ورموز تعبيرية عبر شريط أدوات مصغّر أعلى المحرر.</li>
+<li><strong>الربط بالسياق</strong>: يمكن ربط الملاحظة بعملة محددة أو صفقة محددة أو تنبيه محدد عبر props: <code>coinId</code>, <code>tradeId</code>, <code>alertId</code>.</li>
+<li><strong>الحفظ التلقائي</strong>: يحفظ المسودة تلقائيًا كل 5 ثوانٍ في <code>localStorage</code> لتجنب فقدان البيانات. يعرض مؤشر "تم الحفظ" بصريًا.</li>
+<li><strong>التاريخ والوسوم</strong>: يدعم إضافة تاريخ ووسوم (tags) للملاحظة لتسهيل البحث والتصفية لاحقًا عبر نظام وسوم مرن.</li>
+<li><strong>إرفاق الصور</strong>: يمكن إرفاق لقطات شاشة من الرسم البياني أو صور خارجية مع دعم السحب والإفلات.</li>
+</ul>
+<div class="subsection">
+    <div class="subsection-title">الحالات والأنماط</div>
+</div>
+<table class="vixor-table">
+<thead>
+<tr><th>الحالة</th><th>الوصف</th><th>السلوك</th></tr>
+</thead>
+<tbody>
+<tr><td>إنشاء جديد</td><td>فتح بدون بيانات سابقة</td><td>حقل عنوان فارغ + محتوى فارغ + ربط اختياري</td></tr>
+<tr><td>تعديل موجود</td><td>فتح مع بيانات ملاحظة</td><td>تحميل البيانات + عرض التاريخ والوسوم</td></tr>
+<tr><td>حفظ المسودة</td><td>كتابة بدون حفظ</td><td>حفظ تلقائي كل 5 ثوان + مؤشر بصري</td></tr>
+<tr><td>حفظ نهائي</td><td>الضغط على "حفظ"</td><td>تحقق من صحة البيانات + إرسال + إغلاق</td></tr>
+<tr><td>إلغاء</td><td>الضغط على "إلغاء" أو Escape</td><td>تحذير إذا كانت هناك تغييرات غير محفوظة</td></tr>
+</tbody>
+</table>
+<div class="callout callout-warn">
+    <div class="callout-title">نمط مضاد</div>
+    <div class="callout-body">لا تفتح <code>NoteEditorDialog</code> في وضع ملء الشاشة — هو مصمم للحوار المتوسط فقط. لا تُمرّر نصًا بتنسيق HTML من مصادر خارجية دون تنقية (sanitize) لمنع ثغرات XSS. لا تعرض أكثر من 1000 حرف في المعاينة داخل القائمة.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-15</div>
+            <div class="section-title">مكونات التفاعل</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+مكونات التفاعل تشجّع المستخدمين على الاستخدام الفعّال للتطبيق من خلال تتبع المهام والمكافآت، وتوفير قوالب موحدة لبناء لوحات الميزات. تتكون من <strong>3 مكونات</strong>: شريط التفاعل، لوحة الميزات الأساسية، والعناصر الذرية المجمّعة في ملف <code>atoms.tsx</code>. معًا تشكل طبقة التفاعل التي تحوّل المستخدم السلبي إلى مستخدم نشط ومشارك.
+</p>
+<div class="subsection">
+    <div class="subsection-title">EngagementBar — شريط التفاعل</div>
+</div>
+<p class="body-text">
+بحجم <strong>422 سطرًا</strong>، هو مكون تفاعلي متقدم يعرض شريط مهام يشجّع المستخدم على استكشاف ميزات فيكسور. يتضمن: قائمة بالمهام (مثل: ربط محفظة، إنشاء أول تنبيه، عرض تحليل، إعداد تنبيه سعر)، مؤشر تقدم إجمالي (مثلاً "أكملت 3 من 7 مهام")، ومكافآت عند إكمال المهام (شارات أو ميزات مفتوحة). كل مهمة لها حالة: مكتملة (✓ أخضر)، متاحة (قابلة للنقر)، ومقفلة (تتطلب إنجاز مهام سابقة). الشريط يظهر في أعلى الصفحة الرئيسية ويختفي تدريجيًا مع إكمال المهام.
+</p>
+<div class="subsection">
+    <div class="subsection-title">BaseFeaturePanel — لوحة الميزات الأساسية</div>
+</div>
+<p class="body-text">
+بحجم <strong>114 سطرًا</strong>، قالب موحد (Template Pattern) لبناء لوحات الميزات. يوفر: رأسية مع عنوان وأيقونة ومؤشر حالة (محايد/صعودي/هبوطي)، منطقة محتوى قابلة للتوسيع والطي عبر زر، وتذييل مع أزرار الإجراء. يُستخدم كأساس (extends) لـ <code>HunterScoreCard</code> و <code>GovernorRiskPanel</code> و <code>AnalystReportPanel</code>. يضمن اتساق تخطيط جميع اللوحات المتقدمة في التطبيق.
+</p>
+<div class="subsection">
+    <div class="subsection-title">atoms.tsx — العناصر الذرية</div>
+</div>
+<p class="body-text">
+بحجم <strong>442 سطرًا</strong>، يجمّع عناصر واجهة مستخدم صغيرة ومُعاد استخدامها بكثرة عبر التطبيق. هذه "الذرات" هي أصغر وحدات البناء في فيكسور وهي المصدر الأول عند بناء واجهات جديدة:
+</p>
+<ul class="vixor-list">
+<li><strong>SectionTitle</strong>: عنوان قسم مع خط زخرفي على اليمين (في RTL) ووصف اختياري. يُستخدم في كل صفحة لفصل الأقسام بصريًا. Props: <code>title</code>, <code>description</code>, <code>icon</code>, <code>action</code>.</li>
+<li><strong>RecBadge</strong>: شارة التوصية تعرض قوة التوصية (شراء قوي/شراء/انتظار/بيع/بيع قوي) مع ألوان دلالية واضحة تتدرج من الأخضر الغامق إلى الأحمر الغامق.</li>
+<li><strong>ConfidenceBar</strong>: شريط الثقة المخصص يعرض نسبة الثقة بتدرج لوني (أحمر ← عنبر ← أخضر) مع قيمة رقمية ووصف نصي.</li>
+<li><strong>Stat</strong>: عنصر عرض إحصائي مُجمّع يعرض تسمية وقيمة ووحدة وتغيير نسبي. أكثر مرونة من <code>StatCard</code> لأنه لا يحتاج بطاقة محيطة.</li>
+</ul>
+<div class="callout callout-success">
+    <div class="callout-title">مبدأ التصميم الذري</div>
+    <div class="callout-body">عند بناء مكون جديد، ابدأ بالبحث في <code>atoms.tsx</code> — غالبًا ستجد العنصر الذي تحتاجه جاهزًا. إذا احتجت مكونًا جديدًا يُستخدم أكثر من 3 مرات في أماكن مختلفة، أضفه إلى <code>atoms.tsx</code> بدلاً من إنشاء ملف منفصل جديد.</div>
+</div>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-16</div>
+            <div class="section-title">العناصر الذرية (تفصيلي)</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+هذا الفصل يقدّم توثيقًا تفصيليًا لكل عنصر ذري في <code>atoms.tsx</code> مع Props المتاحة والحالات المدعومة وقواعد الاستخدام والأنماط المضادة. هذه العناصر هي الأكثر إعادة استخدامًا في التطبيق وتُستخدم عشرات المرات عبر الصفحات المختلفة. فهمها العميق يُسرّع عملية التطوير بشكل كبير.
+</p>
+<div class="subsection">
+    <div class="subsection-title">SectionTitle — عنوان القسم</div>
+</div>
+<table class="vixor-table">
+<thead>
+<tr><th>الخاصية (Prop)</th><th>النوع</th><th>مطلوب</th><th>الوصف</th></tr>
+</thead>
+<tbody>
+<tr><td><code>title</code></td><td>string</td><td>نعم</td><td>نص العنوان الأساسي</td></tr>
+<tr><td><code>description</code></td><td>string</td><td>لا</td><td>وصف قصير يظهر أسفل العنوان بلون ثانوي</td></tr>
+<tr><td><code>icon</code></td><td>LucideIcon</td><td>لا</td><td>أيقونة تظهر على يسار العنوان (يمين في RTL)</td></tr>
+<tr><td><code>action</code></td><td>ReactNode</td><td>لا</td><td>عنصر إجراء (مثل زر) يظهر على اليمين (يسار في RTL)</td></tr>
+<tr><td><code>className</code></td><td>string</td><td>لا</td><td>أصناف CSS إضافية للتخصيص</td></tr>
+</tbody>
+</table>
+<div class="subsection">
+    <div class="subsection-title">RecBadge — شارة التوصية</div>
+</div>
+<p class="body-text">
+يعرض توصية تداولية مختصرة بخلفية ملوّنة واضحة. Props: <code>recommendation</code> ('strong_buy' | 'buy' | 'hold' | 'sell' | 'strong_sell'), <code>size</code> ('sm' | 'md' | 'lg'). يدعم 5 مستويات لونية: <code>strong_buy</code> (أخضر غامق)، <code>buy</code> (أخضر)، <code>hold</code> (عنبر)، <code>sell</code> (أحمر)، <code>strong_sell</code> (أحمر غامق). كل مستوى يحدد تلقائيًا اللون والنص المعروض بالعربية. الحجم الافتراضي 24px ارتفاع مع خط 10pt.
+</p>
+<div class="subsection">
+    <div class="subsection-title">ConfidenceBar — شريط الثقة</div>
+</div>
+<p class="body-text">
+يعرض نسبة الثقة بشريط أفقي مُلوّن. Props: <code>value</code> (number, 0-100, مطلوب), <code>showLabel</code> (boolean, default: true), <code>size</code> ('sm' | 'md' | 'lg', default: 'md'), <code>className</code> (string, اختياري). يتضمن نصًا وصفيًا يظهر بجانب النسبة: "ثقة عالية" فوق 70%، "ثقة متوسطة" بين 40-70%، و "ثقة منخفضة" تحت 40%. التدرج اللوني سلس بين الحدود باستخدام CSS linear-gradient.
+</p>
+<div class="subsection">
+    <div class="subsection-title">Stat — العنصر الإحصائي</div>
+</div>
+<p class="body-text">
+عنصر عرض مرن لقيمة إحصائية. Props: <code>label</code> (string, مطلوب), <code>value</code> (string | number, مطلوب), <code>unit</code> (string, اختياري — مثل "%" أو "$"), <code>change</code> (number, اختياري — النسبة المئوية للتغير), <code>changeLabel</code> (string, اختياري — نص بجانب التغيير), <code>icon</code> (LucideIcon, اختياري), <code>variant</code> ('default' | 'bullish' | 'bearish' | 'primary', default: 'default'), <code>direction</code> ('horizontal' | 'vertical', default: 'horizontal').
+</p>
+<div class="subsection">
+    <div class="subsection-title">الأنماط المضادة للعناصر الذرية</div>
+</div>
+<div class="callout callout-warn">
+    <div class="callout-title">أنماط يجب تجنبها</div>
+    <div class="callout-body">لا تستخدم <code>SectionTitle</code> بدون <code>title</code> — سيُلقي خطأ TypeScript. لا تُمرّر قيمة <code>value</code> أكبر من 100 لـ <code>ConfidenceBar</code>. لا تستخدم <code>Stat</code> مع <code>variant="bearish"</code> لقيم إيجابية — هذا يُربك المستخدم. لا تُغلّف <code>RecBadge</code> داخل <code>Badge</code> آخر — هو مصمم ليكون عنصرًا مستقلاً.</div>
+</div>
+<div class="callout callout-success">
+    <div class="callout-title">ملخص سريع للعناصر الذرية</div>
+    <div class="callout-body">عند الشك، استخدم: <code>SectionTitle</code> لفصل الأقسام، <code>RecBadge</code> للتوصيات، <code>ConfidenceBar</code> للنسب المئوية، و <code>Stat</code> للأرقام المالية. هذه الأربعة تغطي 80% من احتياجات العرض في التطبيق.</div>
+</div>
+
+        
+</div>
+
+<!-- ENDING -->
+<div class="ending">
+    <div class="ending-text">وثيقة رسمية لمنظومة فيكسور الهندسية</div>
+    <div class="ending-brand">VIXOR — AI-Powered Trading Terminal</div>
+</div>
+
+<div class="page-footer">VIXOR Engineering Bible — سري وخاص</div>
+
+</body>
+</html>
