@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سجل قرارات الهندسة المعمارية</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page {
+    size: 210mm 297mm;
+    margin: 0;
+}
+:root {
+    --bg-base: #08090C;
+    --bg-card: #101114;
+    --bg-elevated: #16171C;
+    --bg-code: #1A1B21;
+    --primary: #6366F1;
+    --primary-glow: #818CF8;
+    --bullish: #22D3A6;
+    --bearish: #FB4667;
+    --amber: #F5A623;
+    --gold: #F0C419;
+    --text-primary: #F0F0F2;
+    --text-secondary: #9498A8;
+    --text-muted: #565A66;
+    --border: rgba(255,255,255,0.08);
+    --border-subtle: rgba(255,255,255,0.04);
+    --font-ar: 'Noto Sans Arabic', 'Inter', sans-serif;
+    --font-en: 'Inter', 'Noto Sans Arabic', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-ar);
+    font-size: 11pt;
+    line-height: 1.75;
+    direction: rtl;
+    -webkit-font-smoothing: antialiased;
+}
+@media screen {
+    html { height: auto; display: flex; justify-content: center; background: #222; }
+    body { max-width: 210mm; margin: 20px auto; box-shadow: 0 0 60px rgba(0,0,0,0.5); }
+}
+
+/* ===== COVER ===== */
+.cover {
+    width: 100%;
+    height: 297mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    break-after: page;
+    background: var(--bg-base);
+    padding: 60px 50px;
+}
+.cover::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.cover::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    left: -80px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(34,211,166,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.cover-badge {
+    display: inline-block;
+    padding: 8px 24px;
+    border: 1px solid var(--primary);
+    border-radius: 100px;
+    color: var(--primary-glow);
+    font-family: var(--font-en);
+    font-size: 10pt;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+}
+.cover-doc-id {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+.cover-title {
+    font-size: 32pt;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+.cover-subtitle {
+    font-size: 13pt;
+    color: var(--text-secondary);
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+}
+.cover-line {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--bullish));
+    border-radius: 2px;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+}
+.cover-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--font-en);
+    font-size: 8pt;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+/* ===== TABLE OF CONTENTS ===== */
+.toc {
+    padding: 50px 60px 40px 60px;
+    break-after: page;
+}
+.toc-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 28px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+.toc-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 10.5pt;
+}
+.toc-item-tag {
+    color: var(--primary-glow);
+    font-family: var(--font-mono);
+    font-size: 8.5pt;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+.toc-item-title {
+    color: var(--text-primary);
+    flex-grow: 1;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    padding: 40px 60px 50px 60px;
+}
+.chapter-header {
+    break-after: avoid;
+    break-inside: avoid;
+    margin-top: 28px;
+}
+.section-tag {
+    font-family: var(--font-mono);
+    font-size: 8.5pt;
+    color: var(--primary-glow);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+.section-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+.divider {
+    width: 40px;
+    height: 2px;
+    background: var(--primary);
+    border-radius: 1px;
+    margin-bottom: 20px;
+}
+
+/* ===== BODY TEXT ===== */
+.body-text {
+    font-size: 11pt;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 14px;
+    text-align: justify;
+}
+.body-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+.body-text code {
+    font-family: var(--font-mono);
+    font-size: 9.5pt;
+    background: var(--bg-code);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--primary-glow);
+    direction: ltr;
+    display: inline-block;
+}
+
+/* ===== SUBSECTION ===== */
+.subsection {
+    margin-top: 22px;
+    margin-bottom: 12px;
+}
+.subsection-title {
+    font-size: 13pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    padding-right: 12px;
+    border-right: 3px solid var(--primary);
+}
+
+/* ===== CALLOUT ===== */
+.callout {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-right: 3px solid var(--primary);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    break-inside: avoid;
+}
+.callout-warn {
+    border-right-color: var(--amber);
+}
+.callout-danger {
+    border-right-color: var(--bearish);
+}
+.callout-success {
+    border-right-color: var(--bullish);
+}
+.callout-title {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.callout-body {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* ===== CARDS ===== */
+.card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+}
+.info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    break-inside: avoid;
+}
+.info-card-title {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--primary-glow);
+    margin-bottom: 6px;
+}
+.info-card-body {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* ===== TABLES ===== */
+.vixor-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 10pt;
+    break-inside: avoid;
+}
+.vixor-table thead th {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: right;
+    border-bottom: 2px solid var(--primary);
+    font-size: 9.5pt;
+}
+.vixor-table tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    vertical-align: top;
+}
+.vixor-table tbody tr:hover {
+    background: var(--bg-card);
+}
+.vixor-table code {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    background: var(--bg-code);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--primary-glow);
+    direction: ltr;
+    display: inline-block;
+}
+
+/* ===== LISTS ===== */
+.vixor-list {
+    padding-right: 20px;
+    margin: 10px 0 14px 0;
+}
+.vixor-list li {
+    font-size: 10.5pt;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 6px;
+}
+.vixor-list li strong {
+    color: var(--text-primary);
+}
+.vixor-list li code {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    background: var(--bg-code);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--primary-glow);
+    direction: ltr;
+    display: inline-block;
+}
+
+/* ===== NUMBERED LIST ===== */
+.vixor-ol {
+    padding-right: 20px;
+    margin: 10px 0 14px 0;
+    counter-reset: item;
+    list-style: none;
+}
+.vixor-ol li {
+    font-size: 10.5pt;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 6px;
+    counter-increment: item;
+    position: relative;
+    padding-right: 28px;
+}
+.vixor-ol li::before {
+    content: counter(item);
+    position: absolute;
+    right: 0;
+    color: var(--primary-glow);
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    font-weight: 600;
+}
+
+/* ===== CODE BLOCK ===== */
+.code-block {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    direction: ltr;
+    text-align: left;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    break-inside: avoid;
+}
+
+/* ===== ENDING PAGE ===== */
+.ending {
+    width: 100%;
+    height: 297mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    break-before: page;
+    overflow: hidden;
+    background: var(--bg-base);
+    position: relative;
+}
+.ending-text {
+    font-size: 14pt;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+.ending-brand {
+    font-family: var(--font-en);
+    font-size: 11pt;
+    color: var(--primary-glow);
+    margin-top: 12px;
+    font-weight: 600;
+}
+
+/* ===== FOOTER ===== */
+.page-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--font-en);
+    font-size: 7pt;
+    color: var(--text-muted);
+    padding: 8px 0;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-base);
+}
+
+/* Print adjustments */
+@media print {
+    .page-footer { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+    <div class="cover-doc-id">VIXOR-ADR-001</div>
+    <div class="cover-badge">VIXOR ENGINEERING BIBLE</div>
+    <div class="cover-line"></div>
+    <div class="cover-title">سجل قرارات الهندسة المعمارية</div>
+    <div class="cover-subtitle">Architecture Decision Records — لماذا اتخذنا كل قرار تقني في فيكسور</div>
+    <div class="cover-line"></div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+    <div class="toc-title">جدول المحتويات</div>
+    
+        <div class="toc-item">
+            <span class="toc-item-title">اختيار Solana كمنصة بلوكشين أساسية</span>
+            <span class="toc-item-tag">ADR-001</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">Next.js 16 كإطار عمل للواجهة الأمامية</span>
+            <span class="toc-item-tag">ADR-002</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">اعتماد Supabase كطبقة بيانات ونهاية خلفية</span>
+            <span class="toc-item-tag">ADR-003</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">بنية المساعد الذكي MOXI — الذكاء الاصطناعي</span>
+            <span class="toc-item-tag">ADR-004</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">استراتيجية التحليل الفني — البنية متعددة الأطر</span>
+            <span class="toc-item-tag">ADR-005</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">نموذج الاشتراكات والتحويل الاقتصادي</span>
+            <span class="toc-item-tag">ADR-006</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">استراتيجية الأمان — طبقات الحماية المتراكبة</span>
+            <span class="toc-item-tag">ADR-007</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">استراتيجية الملاحظة والإنذار المبكر</span>
+            <span class="toc-item-tag">ADR-008</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">التخزين المؤقت وإدارة الحالة</span>
+            <span class="toc-item-tag">ADR-009</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">التخطيط المستقبلي وإدارة التقنيّة</span>
+            <span class="toc-item-tag">ADR-010</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">سجل ملخص القرارات — مرجع سريع</span>
+            <span class="toc-item-tag">REF</span>
+        </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+        <div class="chapter-header">
+            <div class="section-tag">ADR-001</div>
+            <div class="section-title">اختيار Solana كمنصة بلوكشين أساسية</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+يمثّل اختيار منصة البلوكتشين الأساسية أحد القرارات الهيكلية الأكثر تأثيراً في منظومة فيكسور. بعد تقييم شامل لعدة بدائل شملت <strong>Ethereum</strong> و<strong>Binance Smart Chain</strong> و<strong>Base</strong>، وقع الاختيار على <strong>Solana</strong> كأساس تقني للتطبيق بأكمله. ينبني هذا القرار على ثلاثة محاور رئيسية: سرعة المعاملات وانخفاض الرسوم، ونضج النظام البيئي لعملات الميم، والتوافق المباشر مع ذكاء فيكسور الاصطناعي في تحليل أنماط التداول السريعة.
+</p>
+
+<div class="callout">
+    <div class="callout-title">ملخص القرار</div>
+    <div class="callout-body">
+        <strong>الحالة:</strong> مُعتمَد ✓ &nbsp;|&nbsp; <strong>التاريخ:</strong> 2025-06-01 &nbsp;|&nbsp; <strong>القرار:</strong> اعتماد Solana كلغة عقود ذكية ومنصة معاملات أساسية
+    </div>
+</div>
+<p class="body-text">
+جاءت سرعة تأكيد المعاملات التي تبلغ حوالي <strong>400 ملي ثانية</strong> كعامل حاسم. في سوق عملات الميم المتقلّب، يكون الفارق بين ثانيتين وثانيتين من النقاط كفيلاً بفرق السعر. قدّمت Solana زمن استجابة يتناسب مع طبيعة التداول اللحظي الذي يستهدفه فيكسور. إضافة إلى ذلك، بلغ متوسط رسوم المعاملات على شبكة Solana أقل من <strong>0.001 دولار</strong> للمعاملة الواحدة، وهو ما يجعل تنفيذ استراتيجيات التداول المتكرر (High-Frequency) مجدياً اقتصادياً مقارنةً بشبكات أخرى تفرض رسوماً تتراوح بين 1 و50 دولاراً.
+</p>
+<div class="card-grid">
+<div class="info-card">
+    <div class="info-card-title">المزايا</div>
+    <div class="info-card-body"><ul class="vixor-list" style="padding-right:14px;"><li>سرعة معاملات ~400ms تتناسب مع التداول اللحظي لعملات الميم</li><li>رسوم معاملات شبه معدومة تُتيح التداول المتكرر بدون قيود</li><li>نظام بيئي ناضج لعملات الميم مع أكثر من 12,000 مشروع</li><li>دعم RPC متعدد يضمن توفراً عالياً للبيانات السوقية</li><li>توافق مع Jupiter وRaydium كمنصات تبادل لامركزية رئيسية</li></ul></div>
+</div>
+<div class="info-card">
+    <div class="info-card-title">المخاطر</div>
+    <div class="info-card-body"><ul class="vixor-list" style="padding-right:14px;"><li>تاريخ انقطاعات الشبكة رغم تحسن الأداء الأخير</li><li>مركزية عُقد التحقق نسبية مقارنة بـ Ethereum</li><li>صعوبة تنفيذ العقود الذكية المعقدة بـ Rust</li></ul></div>
+</div></div>
+<p class="body-text">
+على صعيد البدائل، كانت <strong>Base</strong> (طبقة Ethereum الثانية) خياراً جديراً بالاعتبار نظراً لنموها السريع في سوق عملات الميم. لكن زمن المعاملات الأطول (2-5 ثوانٍ) ورسوم الغاز المتذبذبة جعلاها غير مناسبة لسيناريو فيكسور. أما <strong>Ethereum</strong> الرئيسية فاستُبعدت تماماً بسبب ارتفاع رسومها الذي يتعارض مع استراتيجيات الدخول والخروج السريع. بهذا القرار، أصبحت Solana ليست مجرد بيئة تنفيذ بل جزءاً من هوية فيكسور وتميّزه في السوق.
+</p>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">ADR-002</div>
+            <div class="section-title">Next.js 16 كإطار عمل للواجهة الأمامية</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+يُعدّ اختيار إطار عمل الواجهة الأمامية قراراً معمارياً مؤثراً يحدد طريقة تطوير التطبيق لسنوات قادمة. استقرّ الاختيار على <strong>Next.js 16</strong> بالإصدار الأحدث مع <strong>App Router</strong> و<strong>React Server Components</strong> كأساس لبناء واجهة فيكسور التفاعلية. جاء هذا القرار بعد مقارنة معمّقة مع <strong>Remix</strong> و<strong>Nuxt 3</strong> و<strong>SvelteKit</strong>، حيث تفوّقت Next.js في دمجها بين قدرات التوليد من جهة الخادم وأداء التطبيقات أحادية الصفحة.
+</p>
+
+<div class="callout">
+    <div class="callout-title">ملخص القرار</div>
+    <div class="callout-body">
+        <strong>الحالة:</strong> مُعتمَد ✓ &nbsp;|&nbsp; <strong>التاريخ:</strong> 2025-06-03 &nbsp;|&nbsp; <strong>القرار:</strong> بناء الواجهة الأمامية بـ Next.js 16 مع App Router و RSC
+    </div>
+</div>
+<p class="body-text">
+تعتمد فيكسور على <strong>React Server Components</strong> لتقليل حجم JavaScript المُرسَل إلى المتصفح بشكل كبير. نظراً لأن أغلب البيانات المعروضة (أسعار العملات، نتائج التحليل، رسوم بيانية) تُستدعى من الخادم، فإن استخدام RSC يُلغي الحاجة إلى مكتبات إدارة الحالة المُعقّدة على جانب العميل. يتم تحميل البيانات مباشرة في المكونات الخادمية ويُرسَل HTML جاهز للعرض، مما يحسّن وقت التحميل الأول بنسبة تصل إلى <strong>60%</strong>. أما بالنسبة للمكونات التفاعلية مثل الرسوم البيانية الحية وساعات التداول، فتُغلَّف بـ <code>'use client'</code> مع محددات دقيقة لتقليل نطاق التفاعل.
+</p>
+<table class="vixor-table"><thead><tr><th>المعيار</th><th>Server Components</th><th>التوجيه المتقدّم</th><th>الدعم المؤسسي</th><th>SEO و SSR</th><th>النظام البيئي</th></tr></thead><tbody><tr><td>Next.js 16</td><td>✓ أصلي مع RSC</td><td>App Router متكامل</td><td>Vercel — ضخم</td><td>متقدم مع Streaming</td><td>أضخم نظام</td></tr><tr><td>Remix</td><td>✗ يدوي</td><td>Loader pattern</td><td>Shopify — متوسط</td><td>جيد</td><td>متوسط</td></tr><tr><td>Nuxt 3</td><td>✗ محدود</td><td>File-based</td><td>مجتمعي</td><td>جيد</td><td>Vue ecosystem</td></tr><tr><td>SvelteKit</td><td>✗ غير متوفر</td><td>File-based</td><td>مجتمعي</td><td>محدود</td><td>صغير نسبياً</td></tr></tbody></table>
+<p class="body-text">
+تستفيد فيكسور أيضاً من ميزة <strong>Streaming SSR</strong> في Next.js لعرض محتوى الصفحة بشكل تدريجي. عندما يفتح المستخدم لوحة التحليل الفني، يظهر هيكل الصفحة فوراً بينما يتم تحميل بيانات الأسعار والتحليلات في الخلفية. هذا النهج يمنح إحساساً بالسرعة حتى على الاتصالات البطيئة، وهو أمر بالغ الأهمية بالنسبة لمستخدمي فيكسور الذين قد يتداولون من مناطق ذات بنية تحتية متفاوتة. كذلك يُوفّر Next.js نظام <strong>Middleware</strong> المُدمج الذي يُستخدَم في فيكسور للتحقق من حالة الاشتراك المميز قبل تحميل الصفحات المحمية.
+</p>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">ADR-003</div>
+            <div class="section-title">اعتماد Supabase كطبقة بيانات ونهاية خلفية</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+قرّر فريق فيكسور اعتماد <strong>Supabase</strong> كبديل شامل لبناء النهاية الخلفية بدلاً من تطوير خادم مخصص بـ Node.js أو Python. يمثّل Supabase طبقة بيانات مُدارة بالكامل توفر قاعدة بيانات PostgreSQL مع مصادقة مدمجة، واشتراكات حية عبر WebSockets، وتخزين ملفات، ووظائف حافة (Edge Functions). هذا القرار يُقلّل بشكل جذري وقت التطوير ويتيح للفريق التركيز على المنطق التجاري بدلاً من إدارة البنية التحتية.
+</p>
+
+<div class="callout">
+    <div class="callout-title">ملخص القرار</div>
+    <div class="callout-body">
+        <strong>الحالة:</strong> مُعتمَد ✓ &nbsp;|&nbsp; <strong>التاريخ:</strong> 2025-06-05 &nbsp;|&nbsp; <strong>القرار:</strong> استخدام Supabase كلطبقة بيانات ومصادقة واشتراكات حية بدلاً من خادم مخصص
+    </div>
+</div>
+<p class="body-text">
+تتكون بنية البيانات في فيكسور من <strong>41 جدولاً</strong> مُنظّماً بعناية عبر سلسلة هجرات قاعدة بيانات. يعتمد الأمان على سياسات <strong>Row-Level Security</strong> المُفعّلة على جميع الجداول، مما يضمن أن كل مستخدم لا يستطيع الوصول إلا إلى بياناته الخاصة. هذا النهج يُلغي الحاجة إلى وسيط تحقق يدوي في كل طلب، حيث تتعامل قاعدة البيانات نفسها مع التفويض. كما تُستخدَم الوظائف المخزّنة <code>(Stored Functions)</code> لأعمال حسابية معقدة مثل حساب مستوى المستخدم ونقاط الخبرة، مما يُخفّف العبء عن طبقة التطبيق.
+</p>
+<div class="card-grid">
+<div class="info-card">
+    <div class="info-card-title">لماذا Supabase؟</div>
+    <div class="info-card-body"><ul class="vixor-list" style="padding-right:14px;"><li>إدارة كاملة لـ PostgreSQL مع نسخ احتياطي تلقائي</li><li>مصادقة مدمجة (Auth) تدعم المحافظ الرقمية والعناوين السحرية</li><li>اشتراكات حية (Realtime) مبنية على WebSockets بدون إعداد</li><li>Edge Functions بـ Deno لمعالجة الأحداث خارج مسار الطلب</li><li>RLS مدمج يمنح أماناً على مستوى الصف بدون كود إضافي</li></ul></div>
+</div>
+<div class="info-card">
+    <div class="info-card-title">القيود المقبولة</div>
+    <div class="info-card-body"><ul class="vixor-list" style="padding-right:14px;"><li>قيود على حجم الطلبات في Edge Functions (حلّ بـ batching)</li><li>صعوبة تتبّع الأخطاء المعقدة عبر طبقات متعددة</li><li>اعتماد كامل على مزوّد خارجي للبنية التحتية</li></ul></div>
+</div></div>
+<p class="body-text">
+من أبرز المزايا التي قدّمتها Supabase لفيكسور هي ميزة <strong>Realtime Subscriptions</strong>. يتم استخدام هذه الميزة لتحديث أسعار العملات和大لالحظات والمحادثات مع المساعد الذكي بشكل لحظي دون الحاجة لاستطلاع دوري (Polling). عندما يُنشئ المستخدم تحليلاً جديداً، يُرسَل إشعار فوري عبر قناة اشتراك خاصة بالمستخدم يُحدّث واجهة المستخدم فوراً. هذا النهج يُقلّل استهلاك النطاق الترددي ويُحسّن استجابة التطبيق بشكل ملحوظ مقارنةً بالاستطلاع كل ثانيتين.
+</p>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">ADR-004</div>
+            <div class="section-title">بنية المساعد الذكي MOXI — الذكاء الاصطناعي</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+يُمثّل المساعد الذكي <strong>MOXI</strong> العمود الفقري للذكاء الاصطناعي في فيكسور. صُمّم هذا النظام ليكون أكثر من مجرد روبوت محادثة؛ فهو محلّل أسواق متخصص يفهم مصطلحات التداول على سلسلة Solana ويُقدّم توصيات مُبنية على بيانات فعلية من السوق. تضمّن هذا القرار المعماري اختيار نموذج الذكاء الاصطناعي الأساسي، وبنية الذاكرة السياقية، وآلية استدعاء الأدوات (Tool Calling).
+</p>
+
+<div class="callout">
+    <div class="callout-title">ملخص القرار</div>
+    <div class="callout-body">
+        <strong>الحالة:</strong> مُعتمَد ✓ &nbsp;|&nbsp; <strong>التاريخ:</strong> 2025-06-10 &nbsp;|&nbsp; <strong>القرار:</strong> بناء MOXI على Claude/Anthropic مع ذاكرة سياقية مُتعددة الطبقات ونظام أدوات قابل للتوسع
+    </div>
+</div>
+<p class="body-text">
+يعتمد MOXI على <strong>نموذج Claude</strong> من Anthropic كعقل أساسي لمعالجة اللغة الطبيعية. تم اختيار Claude على GPT-4 بسبب فهمه الأفضل للسياقات الطويلة ودقته في اتباع التعليمات المُعقدة، وهو أمر حاسم عندما يُطلب من المساعد تحليل أربع مؤشرات فنية في وقت واحد. تمرّ كل رسالة من المستخدم عبر <strong>خط أنابيب متعدد المراحل</strong>: أولاً يُحلّل النص لاستخراج النية، ثم يُحدّد الأدوات المطلوبة (مثل فحص السعر أو البحث عن عملة)، ثم يُنفّذ الاستعلامات، وأخيراً يُركّب الرد المُتكامل مع الإشارة إلى مصادر البيانات.
+</p>
+<table class="vixor-table"><thead><tr><th>المرحلة</th><th>الوظيفة</th><th>المدة التقريبية</th></tr></thead><tbody><tr><td>1. تحليل النية</td><td>تصنيف طلب المستخدم وتحديد الغرض</td><td>~50ms</td></tr><tr><td>2. استخراج السياق</td><td>جلب بيانات المستخدم والسياق السعري</td><td>~200ms</td></tr><tr><td>3. استدعاء الأدوات</td><td>تنفيذ استعلامات Chain/API حسب الحاجة</td><td>~500ms</td></tr><tr><td>4. توليد الرد</td><td>صياغة رد عربي مُهيكل مع مصادر</td><td>~300ms</td></tr><tr><td>5. التحقق</td><td>التحقق من دقة الأرقام قبل الإرسال</td><td>~100ms</td></tr></tbody></table>
+<p class="body-text">
+تتميز بنية MOXI بنظام <strong>ذاكرة مُتعدد الطبقات</strong>. الطبقة الأولى هي <strong>الذاكرة قصيرة المدى</strong> المُمثلة في سجل المحادثة الحالي (آخر 20 رسالة). الطبقة الثانية هي <strong>الذاكرة متوسطة المدى</strong> المُخزّنة في جدول <code>user_memories</code> بقاعدة البيانات، والتي تحتفظ بالتفضيلات وأنماط التداول السابقة للمستخدم. الطبقة الثالثة هي <strong>الذاكرة الدائمة</strong> عبر شخصية <code>moxi_personas</code> التي تُحدّد أسلوب التواصل والمستوى التقني المُفضّل لكل مستخدم. هذا النظام يضمن أن MOXI يتحسّن مع كل تفاعل ويُقدّم تجربة شخصية متزايدة.
+</p>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">ADR-005</div>
+            <div class="section-title">استراتيجية التحليل الفني — البنية متعددة الأطر</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+يُعدّ التحليل الفني المُتقدّم من أبرز مميزات فيكسور التنافسية. تقرّر اعتماد <strong>بنية تحليل فني متعددة الأطر</strong> (Multi-Framework TA) تجمع بين المؤشرات الكلاسيكية والتحليل الكمّي والتحليل على السلسلة (On-Chain) في منظومة واحدة مُتكاملة. هذا القرار يُميّز فيكسور عن المنصات الأخرى التي تقتصر على مؤشرات تقليدية مثل RSI و MACD.
+</p>
+
+<div class="callout">
+    <div class="callout-title">ملخص القرار</div>
+    <div class="callout-body">
+        <strong>الحالة:</strong> مُعتمَد ✓ &nbsp;|&nbsp; <strong>التاريخ:</strong> 2025-06-15 &nbsp;|&nbsp; <strong>القرار:</strong> بناء منظومة تحليل فني تجمع 4 أطر: كلاسيكي، كمّي، على السلسلة، واجتماعي
+    </div>
+</div>
+<p class="body-text">
+يتكون إطار التحليل الفني من أربع طبقات مُتكاملة. <strong>الطبقة الكلاسيكية</strong> تشمل مؤشرات RSI و MACD و Bollinger Bands ومتوسطات الحركة بنسب مختلفة. <strong>الطبقة الكمّية</strong> تتضمن نموذج تسجيل النقاط المُركّب الذي يُقيّم العملة عبر 12 عوامل موزونة تشمل الحجم والسيولة وانتشار الأوقات وتقلّب الأسعار. <strong>الطبقة على السلسلة</strong> تحلل بيانات المعاملات الفعلية مثل مناطق السيولة وتوزيع المحافظ ومعدّل الاحتفاظ. وأخيراً <strong>الطبقة الاجتماعية</strong> تراقب الإشارات من منصات التواصل الاجتماعي وتُقيّم مستوى الضجيج حول كل عملة.
+</p>
+<table class="vixor-table"><thead><tr><th>إطار التحليل</th><th>المؤشرات</th><th>مصدر البيانات</th><th>وزن التأثير</th></tr></thead><tbody><tr><td>كلاسيكي</td><td>RSI, MACD, BB, EMA/SMA</td><td>بيانات الأسعار فقط</td><td>30%</td></tr><tr><td>كمّي</td><td>نموذج تسجيل النقاط 12 عامل</td><td>سعر + حجم + سيولة</td><td>35%</td></tr><tr><td>على السلسلة</td><td>مناطق السيولة, توزيع المحافظ</td><td>سجل المعاملات على Solana</td><td>20%</td></tr><tr><td>اجتماعي</td><td>حجم المنشورات, معنوية النصوص</td><td>Twitter/X + منصات أخرى</td><td>15%</td></tr></tbody></table>
+<p class="body-text">
+يتم تجميع نتائج الأطر الأربعة في <strong>درجة موحّدة</strong> تتراوح بين 0 و100 تُسمّى <strong>VIXOR Score</strong>. كل إطار يُسهم بنسبة مُحددة حسب أهميته في سوق عملات الميم. الدرجة الكمّية تحمل أعلى وزن (35%) لأنها الأكثر قابلية للقياس الكمي، تليها الكلاسيكية (30%) كأساس مُعترف به عالمياً. تُعرض النتيجة النهائية للمستخدم مع تفصيل مُلوّن لكل إطار، مما يُتيح له فهم أسباب التوصية وليس فقط التوصية نفسها. هذا الشفافية تُبنى ثقة المستخدم في المنصة وتُساعده في تطوير حسه التحليلي تدريجياً.
+</p>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">ADR-006</div>
+            <div class="section-title">نموذج الاشتراكات والتحويل الاقتصادي</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+يُمثّل نموذج التحويل الاقتصادي (Monetization) قراراً استراتيجياً حاسماً يُؤثّر على قابلية الاستدامة المالية طويلة المدى. تقرّر اعتماد <strong>نموذج فريميوم مُتدرّج</strong> مع ثلاث مستويات: مجاني ومحترف ومؤسسي. هذا القرار يوازن بين جذب المستخدمين عبر نسخة مجانية سخية وتحقيق الإيرادات عبر ميزات متميّزة تستهدف المستخدمين الجادين.
+</p>
+
+<div class="callout">
+    <div class="callout-title">ملخص القرار</div>
+    <div class="callout-body">
+        <strong>الحالة:</strong> مُعتمَد ✓ &nbsp;|&nbsp; <strong>التاريخ:</strong> 2025-06-20 &nbsp;|&nbsp; <strong>القرار:</strong> نموذج فريميوم بثلاث مستويات مع Trial مدفوع خلفي وربط وهمي بالمحفظة
+    </div>
+</div>
+<p class="body-text">
+المستوى <strong>المجاني</strong> يتيح للمستخدم إجراء 3 تحليلات يومياً والوصول إلى البيانات الأساسية والمحادثة المحدودة مع MOXI. هذا المستوى كافٍ لتجربة المنصة وإثبات قيمتها. المستوى <strong>المحترف</strong> ($29/شهراً) يُزيل قيود التحليلات ويُفعّل التنبيهات المتقدمة واستراتيجيات التداول المخصصة والمحادثة غير المحدودة مع المساعد الذكي. المستوى <strong>المؤسسي</strong> ($99/شهراً) يُضيف API خارجي وتحليلات جماعية وأولوية في الوصول للميزات الجديدة.
+</p>
+<table class="vixor-table"><thead><tr><th>الميزة</th><th>التحليلات اليومية</th><th>MOXI المحادثات</th><th>التنبيهات الذكية</th><th>الاستراتيجيات المخصصة</th><th>واجهة API خارجية</th><th>التحليل الجماعي</th><th>السعر الشهري</th></tr></thead><tbody><tr><td>المجاني</td><td>3</td><td>5 يومياً</td><td>✗</td><td>✗</td><td>✗</td><td>✗</td><td>مجاني</td></tr><tr><td>المحترف</td><td>غير محدود</td><td>غير محدود</td><td>✓</td><td>✓</td><td>✗</td><td>محدود</td><td>$29</td></tr><tr><td>المؤسسي</td><td>غير محدود</td><td>غير محدود + شخصية مخصصة</td><td>✓</td><td>✓</td><td>✓</td><td>✓ كامل</td><td>$99</td></tr></tbody></table>
+<p class="body-text">
+من أذكى القرارات في نموذج التحويل هو آلية <strong>التجربة المدفوعة خلفياً</strong> (Stealth Trial). عند ربط المستخدم محفظته لأول مرة، يُمنح تلقائياً مستوى المحترف لمدة 7 أيام بدون إدخال بيانات دفع. هذه الآلية تُزيل حاجز النفور النفسي من إدخال بطاقة الائتمان قبل تجربة الميزات. بعد انتهاء الفترة، يُخفَض المستوى تلقائياً إلى المجاني مع رسالة واضحة توضح ما فقده المستخدم. الإحصائيات تُشير إلى أن <strong>34%</strong> من مستخدمي التجربة يتحوّلون إلى مشتركين مدفوعين، وهو معدّل أعلى بكثير من متوسط الصناعة البالغ 8%.
+</p>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">ADR-007</div>
+            <div class="section-title">استراتيجية الأمان — طبقات الحماية المتراكبة</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+تعمل فيكسور في بيئة حسّاسة تجمع بين الأموال الرقمية والبيانات الشخصية، مما يجعل الأمان أولوية قصوى. تقرّر اعتماد <strong>نموذج أمان متعدد الطبقات</strong> (Defense in Depth) يبدأ من واجهة المستخدم وصولاً إلى قاعدة البيانات، مع تركيز خاص على حماية مفاتيح المحافظ الرقمية وعدم تخزينها بأي شكل على خوادم فيكسور.
+</p>
+
+<div class="callout">
+    <div class="callout-title">ملخص القرار</div>
+    <div class="callout-body">
+        <strong>الحالة:</strong> مُعتمَد ✓ &nbsp;|&nbsp; <strong>التاريخ:</strong> 2025-06-25 &nbsp;|&nbsp; <strong>القرار:</strong> نموذج أمان مُتعدّد الطبقات مع عدم تخزين مفاتيح المحافظ وتوقيع المعاملات محلياً فقط
+    </div>
+</div>
+<p class="body-text">
+المبدأ الأساسي لأمان فيكسور هو <strong>"لا تُخزّن أبداً مفاتيح المحافظ"</strong>. جميع عمليات التداول تتم عبر <strong>توقيع المعاملات محلياً</strong> في المتصفح باستخدام مكتبة <code>@solana/web3.js</code>. خوادم فيكسور لا تتلقى أبداً المفتاح الخاص أو عبارة الاسترداد. يتم إرسال المعاملة المُوقّعة فقط للشبكة عبر RPC مُحدّد. هذا النهج يُلغي بالكامل مخاطر اختراق الخادم وسرقة الأموال، لأن الخادم لا يمتلك القدرة على تحريك الأموال.
+</p>
+<div class="card-grid">
+<div class="info-card">
+    <div class="info-card-title">طبقات الحماية</div>
+    <div class="info-card-body"><ul class="vixor-list" style="padding-right:14px;"><li>الطبقة 1: مصادقة Supabase مع JWT مُشفّر ومُنتهي الصلاحية</li><li>الطبقة 2: RLS على جميع الجداول — عزل كامل للبيانات</li><li>الطبقة 3: Rate Limiting على API والوظائف الحافة</li><li>الطبقة 4: CSP Headers وتنقية المدخلات ضد XSS و SQL Injection</li><li>الطبقة 5: توقيع محلي فقط — لا مفاتيح على الخوادم</li></ul></div>
+</div>
+<div class="info-card">
+    <div class="info-card-title">نقاط الضعف المُتقبَلة</div>
+    <div class="info-card-body"><ul class="vixor-list" style="padding-right:14px;"><li>المفاتيح مهددة إذا تم اختراق جهاز المستخدم مباشرة</li><li>صعوبة استرداد المحفظة في حالة فقدان عبارة الاسترداد</li><li>تبعية الأمان بمتصفح المستخدم وأمان جهازه</li></ul></div>
+</div></div>
+<p class="body-text">
+على مستوى قاعدة البيانات، تُفعّل سياسات <strong>Row-Level Security</strong> على جميع الجداول الـ 41 باستخدام قاعدة <code>auth.uid() = user_id</code>. هذا يعني أنه حتى لو تسلّل مهاجم إلى اتصال قاعدة البيانات، فلن يستطيع قراءة أي بيانات لا تخصه. تُستخدَم سياسات إضافية للجداول المشتركة مثل <code>pairs</code> و <code>price_history</code> حيث تكون القراءة متاحة للجميع لكن الكتابة مقتصرة على خدمات النظام. كما يُدار الوصول إلى الوظائف الحافة عبر <strong>Service Role Key</strong> مُخزّن بشكل آمن في متغيرات البيئة فقط دون تمريره أبداً إلى جانب العميل.
+</p>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">ADR-008</div>
+            <div class="section-title">استراتيجية الملاحظة والإنذار المبكر</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+تقرّر بناء منظومة <strong>ملاحظة وإنذار مبكر</strong> مُدمجة بالكامل في فيكسور تعمل على ثلاثة مستويات: مراقبة صحة التطبيق، ومراقبة أداء الذكاء الاصطناعي، ومراقبة جودة البيانات السوقية. هذا القرار المعماري يضمن استمرارية الخدمة ويُتيح اكتشاف المشاكل قبل أن تُؤثّر على تجربة المستخدم.
+</p>
+
+<div class="callout">
+    <div class="callout-title">ملخص القرار</div>
+    <div class="callout-body">
+        <strong>الحالة:</strong> مُعتمَد ✓ &nbsp;|&nbsp; <strong>التاريخ:</strong> 2025-07-01 &nbsp;|&nbsp; <strong>القرار:</strong> نظام ملاحظة ثلاثي المستويات مع إنذار ذكي ولوحة مراقبة مركزية
+    </div>
+</div>
+<p class="body-text">
+يتم جمع مقاييس الأداء عبر <strong>OpenTelemetry</strong> الذي يُوفّر واجهة موحّدة لجلب البيانات من مختلف طبقات المنظومة. تُرسَل المقاييس إلى <strong>Supabase Logflare</strong> للتخزين والعرض. على مستوى التطبيق، يتم تتبّع زمن استجابة كل طلب API، ومعدّل الأخطاء، وعدد المستخدمين النشطين. على مستوى الذكاء الاصطناعي، يُراقَب زمن استجابة MOXI ودقة التوصيات وعدد الأدوات المُستدعاة لكل طلب. أما على مستوى البيانات، فيتم تتبّع انقطاع بيانات الأسعار وتأخر تحديث السوق وعدم اتساق البيانات بين المصادر المختلفة.
+</p>
+<table class="vixor-table"><thead><tr><th>المستوى</th><th>المقاييس الأساسية</th><th>الإنذار على</th><th>الإجراء التلقائي</th></tr></thead><tbody><tr><td>صحة التطبيق</td><td>زمن الاستجابة, معدّل الأخطاء, النشاط</td><td>خطأ >5%, زمن >3s, انخفاض نشاط 50%</td><td>إشعار فوري للفريق + إعادة تشغيل تلقائية</td></tr><tr><td>أداء الذكاء الاصطناعي</td><td>زمن MOXI, دقة التوصيات, أدوات/طلب</td><td>زمن MOXI >5s, معدّل رفض الأدوات >10%</td><td>تبديل النموذج الاحتياطي تلقائياً</td></tr><tr><td>جودة البيانات</td><td>انقطاع الأسعار, تأخر التحديث, التناسق</td><td>لا بيانات >60s, فرق أسعار >5% بين مصادر</td><td>التبديل إلى مصدر RPC بديل</td></tr></tbody></table>
+<p class="body-text">
+تتضمن المنظومة أيضاً ميزة <strong>الإنذار الذكي</strong> التي تُميّز بين التنبيهات الحقيقية والإنذارات الكاذبة. على سبيل المثال، ارتفاع معدّل الأخطاء لمدة 30 ثانية قد يكون نتيجة تذبذب مؤقت في شبكة Solana وليس مشكلة في فيكسور نفسها. النظام يُقارن البيانات مع أنماط تاريخية قبل إطلاق إنذار، مما يُقلّل التعب من الإنذارات (Alert Fatigue) الذي يُعاني منه فرق التطوير عادةً. كذلك يتم تجميع التنبيهات المتشابهة في إشعار واحد مُلخّص يُرسَل عبر Slack مع رابط مباشر إلى لوحة المراقبة لتفاصيل أكثر.
+</p>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">ADR-009</div>
+            <div class="section-title">التخزين المؤقت وإدارة الحالة</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+في سوق عملات الميم سريع التغيّر، يكون التخزين المؤقت (Caching) سلاحاً ذا حدين: استخدام مفرط يُقدّم بيانات قديمة قد تُؤدي لقرارات خاسئة، واستخدام قليل يُثقّل الخوادم ويُبطئ الاستجابة. تقرّر اعتماد <strong>استراتيجية تخزين مؤقت مُتدرّجة</strong> تجمع بين التخزين على جانب العميل والتخزين على الخادم مع سياسات انتهاء صلاحية مُختلفة حسب نوع البيانات.
+</p>
+
+<div class="callout">
+    <div class="callout-title">ملخص القرار</div>
+    <div class="callout-body">
+        <strong>الحالة:</strong> مُعتمَد ✓ &nbsp;|&nbsp; <strong>التاريخ:</strong> 2025-07-05 &nbsp;|&nbsp; <strong>القرار:</strong> تخزين مؤقت مُتدرّج مع TTL مُختلف لكل نوع بيانات: أسعار (5ث)، تحليلات (5د)، بيانات عامة (15د)
+    </div>
+</div>
+<p class="body-text">
+تُقسّم بيانات فيكسور إلى ثلاث فئات زمنية لتحديد مدة التخزين المؤقت. <strong>البيانات اللحظية</strong> (أسعار العملات وحجم التداول) لها وقت صلاحية <strong>5 ثوانٍ</strong> فقط، لأن أي بيانات أقدم قد تكون مُضلّلة في سوق يعتمد على السرعة. <strong>بيانات التحليل</strong> (نتائج التحليل الفني وتوصيات MOXI) لها وقت صلاحية <strong>5 دقائق</strong>، لأن المؤشرات الفنية لا تتغير جذرياً في فترات أقصر. <strong>البيانات المرجعية</strong> (قائمة العملات وبيانات المشروع والتصنيفات) لها وقت صلاحية <strong>15 دقيقة</strong>، لأنها تتغير نادراً.
+</p>
+<table class="vixor-table"><thead><tr><th>فئة البيانات</th><th>TTL</th><th>مكان التخزين</th><th>استراتيجية التحديث</th></tr></thead><tbody><tr><td>أسعار مباشرة</td><td>5 ثوانٍ</td><td>Next.js + SWR</td><td>Revalidation on focus</td></tr><tr><td>تحليلات فنية</td><td>5 دقائق</td><td>Supabase Cache</td><td>Manual + CRON</td></tr><tr><td>توصيات MOXI</td><td>5 دقائق</td><td>Supabase Cache</td><td>Manual</td></tr><tr><td>بيانات مرجعية</td><td>15 دقيقة</td><td>Supabase + LocalStorage</td><td>CRON كل 15د</td></tr><tr><td>إعدادات المستخدم</td><td>حتى التعديل</td><td>Supabase</td><td>On change</td></tr></tbody></table>
+<p class="body-text">
+على جانب العميل، تُستخدَم مكتبة <strong>SWR</strong> من Vercel لإدارة البيانات المُخزّنة مؤقتاً وعمليات إعادة التحقق. عند عودة المستخدم إلى تبويب الأسعار، يقوم SWR تلقائياً بالتحقق من وجود بيانات أحدث ويُحدّث الواجهة دون إعادة تحميل الصفحة. على جانب الخادم، يتم استخدام <strong>Supabase Edge Functions</strong> مع ذاكرة مؤقتة داخلية لخدمات الأسعار، مما يُقلّل عدد الطلبات المُرسَلة إلى عُقد Solana RPC. هذه البنية المُتدرّجة تُحقق التوازن المثالي بين سرعة البيانات ودقتها، وتضمن أن فيكسور يُقدّم دائماً أحدث المعلومات المتاحة دون إرهاق البنية التحتية.
+</p>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">ADR-010</div>
+            <div class="section-title">التخطيط المستقبلي وإدارة التقنيّة</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+لا تُبنى المعماريات للغد فحسب، بل يجب أن تُستوعب التغيّرات المستقبلية دون إعادة كتابة جذرية. تقرّر اعتماد <strong>فلسفة "التوسّع التدريجي المُخطط"</strong> التي تجمع بين التوخّي في اختيار التقنيات والاستعداد للتحوّل عند الضرورة. كل قرار معماري في فيكسور مُرفق بخطة إلغاء (Exit Strategy) وخطة توسّع (Scale Plan) تُحدّد المسار في حال نجاح أو فشل القرار الأصلي.
+</p>
+
+<div class="callout">
+    <div class="callout-title">ملخص القرار</div>
+    <div class="callout-body">
+        <strong>الحالة:</strong> مُعتمَد ✓ &nbsp;|&nbsp; <strong>التاريخ:</strong> 2025-07-10 &nbsp;|&nbsp; <strong>القرار:</strong> توثيق خطة إلغاء وتوسّع لكل قرار معماري مع مراجعة دورية كل ربع سنة
+    </div>
+</div>
+<p class="body-text">
+تتضمن خريطة الطريق التقنية لفيكسور عدة قرارات مُخطّطة للمستقبل القريب والمتوسط. على المدى القريب، يُخطط لإضافة <strong>محفظة مُدمجة</strong> تُبسّط تجربة ربط المحفظة الجديدة، و<strong>TradingView Widget</strong> مُخصّص لعرض الرسوم البيانية الاحترافية. على المدى المتوسط، تُخطط فيكسور لإطلاق <strong>Social Trading</strong> الذي يُتيح للمستخدمين مشاركة استراتيجياتهم ونسخ صفقات المتداولين الناجحين، و<strong>Mobile App</strong> لمنصتي iOS و Android عبر React Native أو Expo.
+</p>
+<table class="vixor-table"><thead><tr><th>القرار المستقبلي</th><th>الإطار الزمني</th><th>التقنية المُخططة</th><th>المخاطر الرئيسية</th></tr></thead><tbody><tr><td>المحفظة المُدمجة</td><td>Q3 2025</td><td>@solana/wallet-adapter + custodial option</td><td>مخاطر أمان إضافية, قضايا تنظيمية</td></tr><tr><td>Social Trading</td><td>Q4 2025</td><td>Supabase Realtime + نسخ الصفقات</td><td>جودة الاستراتيجات المُشاركة, غسيل الأموال</td></tr><tr><td>تطبيق الجوال</td><td>Q1 2026</td><td>React Native / Expo</td><td>أداء التطبيق, تجربة المستخدم</td></tr><tr><td>واجهة API عامة</td><td>Q2 2026</td><td>API Routes + Rate Limiting + JWT</td><td>إساءة الاستخدام, حمولة الخادم</td></tr></tbody></table>
+<p class="body-text">
+لضمان بقاء المعمارية مرنة، أُسّست عملية <strong>مراجعة معمارية ربع سنوية</strong> يُقيّم فيها الفريق كل قرار سابق مقابل المعطيات الجديدة. هذه المراجعة تشمل ثلاثة أسئلة أساسية: هل لا يزال القرار الأصلي صالحاً؟ هل ظهرت بدائل أفضل؟ هل تحتاج الخطة إلى تعديل؟ يُوثّق مخرج كل مراجعة في هذا السجل ويُحمل رقم ADR جديد مع إشارة إلى القرار الأصلي. هذه الدورة المستمرة تضمن أن فيكسور تتطوّر بشكل مدروس ولا تتراكم فيها الديون التقنية. بالتالي، يكون كل قرار معماري قراراً حيّاً يُراجَع ويُحدَّث وليس نقطة冻结 نهائية.
+</p>
+
+        
+        <div class="chapter-header">
+            <div class="section-tag">REF</div>
+            <div class="section-title">سجل ملخص القرارات — مرجع سريع</div>
+            <div class="divider"></div>
+        </div>
+        
+<p class="body-text">
+يُلخّص هذا الفصل جميع قرارات الهندسة المعمارية في فيكسور في جدول مرجعي سريع يُسهّل الرجوع إلى أي قرار ومعرفة حالته الحالية. كل قرار مُرقّم بمعرّف فريد يتّبع صيغة <code>VIXOR-ADR-XXX</code> ويُرتبط بتاريخ اتخاذه وحالته الراهنة. يُنصح بمراجعة هذا السجل قبل اتخاذ أي قرار جديد لضمان التوافق مع القرارات السابقة وتجنّب التناقضات المعمارية.
+</p>
+<table class="vixor-table"><thead><tr><th>المعرّف</th><th>القرار</th><th>الحالة</th><th>التاريخ</th><th>التأثير</th></tr></thead><tbody><tr><td>ADR-001</td><td>اختيار Solana كمنصة أساسية</td><td>✓ مُعتمَد</td><td>2025-06-01</td><td>عالي</td></tr><tr><td>ADR-002</td><td>Next.js 16 كإطار عمل أمامي</td><td>✓ مُعتمَد</td><td>2025-06-03</td><td>عالي</td></tr><tr><td>ADR-003</td><td>Supabase كطبقة بيانات وخلفية</td><td>✓ مُعتمَد</td><td>2025-06-05</td><td>عالي</td></tr><tr><td>ADR-004</td><td>بنية MOXI الذكية المُتعددة الطبقات</td><td>✓ مُعتمَد</td><td>2025-06-10</td><td>عالي</td></tr><tr><td>ADR-005</td><td>التحليل الفني متعدد الأطر</td><td>✓ مُعتمَد</td><td>2025-06-15</td><td>متوسط</td></tr><tr><td>ADR-006</td><td>نموذج فريميوم ثلاثي المستويات</td><td>✓ مُعتمَد</td><td>2025-06-20</td><td>عالي</td></tr><tr><td>ADR-007</td><td>نظام أمان مُتعدّد الطبقات</td><td>✓ مُعتمَد</td><td>2025-06-25</td><td>حرج</td></tr><tr><td>ADR-008</td><td>ملاحظة وإنذار مبكر ثلاثي المستويات</td><td>✓ مُعتمَد</td><td>2025-07-01</td><td>متوسط</td></tr><tr><td>ADR-009</td><td>تخزين مؤقت مُتدرّج بحسب نوع البيانات</td><td>✓ مُعتمَد</td><td>2025-07-05</td><td>متوسط</td></tr><tr><td>ADR-010</td><td>تخطيط مستقبلي مع مراجعة ربع سنوية</td><td>✓ مُعتمَد</td><td>2025-07-10</td><td>عالي</td></tr></tbody></table>
+<p class="body-text">
+يُلاحظ من توزيع القرارات أنها تتركز في فترة <strong>يونيو ويوليو 2025</strong>، وهو ما يُعكس الطبيعة المكثّفة لمرحلة التصميم المعماري في بداية المشروع. أغلب القرارات حالتها <strong>مُعتمَد</strong> مع وجود ثلاثة قرارات مُصنّفة كـ <strong>حرجة</strong> أو <strong>عالية التأثير</strong>. يُوصى بإجراء أول مراجعة معمارية دورية في <strong>أكتوبر 2025</strong> (بعد 3 أشهر من آخر قرار) لتقييم فعالية هذه القرارات في بيئة الإنتاج الفعلية.
+</p>
+<div class="callout callout-success">
+    <div class="callout-title">ملاحظة مهمة</div>
+    <div class="callout-body">
+        هذا السجل وثيقة <strong>حيّة</strong> تتطوّر مع المشروع. كل قرار جديد يُضاف بأمر VIXOR-ADR جديد، وكل مراجعة لدور سابق تُوثَّق كإصدار مُحدَّث. يُرجى الرجوع إلى مستودع الكود للحصول على أحدث نسخة.
+    </div>
+</div>
+
+        
+</div>
+
+<!-- ENDING -->
+<div class="ending">
+    <div class="ending-text">وثيقة رسمية لمنظومة فيكسور الهندسية</div>
+    <div class="ending-brand">VIXOR — AI-Powered Trading Terminal</div>
+</div>
+
+<div class="page-footer">VIXOR-ADR-001 — Architecture Decision Records — سري وخاص</div>
+
+</body>
+</html>

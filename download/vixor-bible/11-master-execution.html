@@ -1,62 +1,523 @@
-"""
-VIXOR Engineering Bible — Document 11: Master Execution Bible (إنجيل التنفيذ الرئيسي)
-VIXOR-MEB-001 — The #1 most critical document connecting ALL 17 bible documents.
-"""
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إنجيل التنفيذ الرئيسي</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page {
+    size: 210mm 297mm;
+    margin: 0;
+}
+:root {
+    --bg-base: #08090C;
+    --bg-card: #101114;
+    --bg-elevated: #16171C;
+    --bg-code: #1A1B21;
+    --primary: #6366F1;
+    --primary-glow: #818CF8;
+    --bullish: #22D3A6;
+    --bearish: #FB4667;
+    --amber: #F5A623;
+    --gold: #F0C419;
+    --text-primary: #F0F0F2;
+    --text-secondary: #9498A8;
+    --text-muted: #565A66;
+    --border: rgba(255,255,255,0.08);
+    --border-subtle: rgba(255,255,255,0.04);
+    --font-ar: 'Noto Sans Arabic', 'Inter', sans-serif;
+    --font-en: 'Inter', 'Noto Sans Arabic', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-ar);
+    font-size: 11pt;
+    line-height: 1.75;
+    direction: rtl;
+    -webkit-font-smoothing: antialiased;
+}
+@media screen {
+    html { height: auto; display: flex; justify-content: center; background: #222; }
+    body { max-width: 210mm; margin: 20px auto; box-shadow: 0 0 60px rgba(0,0,0,0.5); }
+}
 
-import sys, os
-sys.path.insert(0, os.path.dirname(__file__))
-from generate_base import generate_vixor_html, save_html, convert_to_pdf, OUTPUT_DIR
+/* ===== COVER ===== */
+.cover {
+    width: 100%;
+    height: 297mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    break-after: page;
+    background: var(--bg-base);
+    padding: 60px 50px;
+}
+.cover::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.cover::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    left: -80px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(34,211,166,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.cover-badge {
+    display: inline-block;
+    padding: 8px 24px;
+    border: 1px solid var(--primary);
+    border-radius: 100px;
+    color: var(--primary-glow);
+    font-family: var(--font-en);
+    font-size: 10pt;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+}
+.cover-doc-id {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+.cover-title {
+    font-size: 32pt;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+.cover-subtitle {
+    font-size: 13pt;
+    color: var(--text-secondary);
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+}
+.cover-line {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--bullish));
+    border-radius: 2px;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+}
+.cover-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--font-en);
+    font-size: 8pt;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
 
+/* ===== TABLE OF CONTENTS ===== */
+.toc {
+    padding: 50px 60px 40px 60px;
+    break-after: page;
+}
+.toc-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 28px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+.toc-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 10.5pt;
+}
+.toc-item-tag {
+    color: var(--primary-glow);
+    font-family: var(--font-mono);
+    font-size: 8.5pt;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+.toc-item-title {
+    color: var(--text-primary);
+    flex-grow: 1;
+}
 
-# ────────────────────────────────────────────────────────────────
-# HTML HELPERS
-# ────────────────────────────────────────────────────────────────
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    padding: 40px 60px 50px 60px;
+}
+.chapter-header {
+    break-after: avoid;
+    break-inside: avoid;
+    margin-top: 28px;
+}
+.section-tag {
+    font-family: var(--font-mono);
+    font-size: 8.5pt;
+    color: var(--primary-glow);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+.section-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+.divider {
+    width: 40px;
+    height: 2px;
+    background: var(--primary);
+    border-radius: 1px;
+    margin-bottom: 20px;
+}
 
-def bl(items):
-    return '<ul class="vixor-list">\n' + '\n'.join(f'    <li>{i}</li>' for i in items) + '\n</ul>'
+/* ===== BODY TEXT ===== */
+.body-text {
+    font-size: 11pt;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 14px;
+    text-align: justify;
+}
+.body-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+.body-text code {
+    font-family: var(--font-mono);
+    font-size: 9.5pt;
+    background: var(--bg-code);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--primary-glow);
+    direction: ltr;
+    display: inline-block;
+}
 
-def ol(items):
-    return '<ol class="vixor-ol">\n' + '\n'.join(f'    <li>{i}</li>' for i in items) + '\n</ol>'
+/* ===== SUBSECTION ===== */
+.subsection {
+    margin-top: 22px;
+    margin-bottom: 12px;
+}
+.subsection-title {
+    font-size: 13pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    padding-right: 12px;
+    border-right: 3px solid var(--primary);
+}
 
-def p(t):
-    return f'<p class="body-text">{t}</p>'
+/* ===== CALLOUT ===== */
+.callout {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-right: 3px solid var(--primary);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    break-inside: avoid;
+}
+.callout-warn {
+    border-right-color: var(--amber);
+}
+.callout-danger {
+    border-right-color: var(--bearish);
+}
+.callout-success {
+    border-right-color: var(--bullish);
+}
+.callout-title {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.callout-body {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
 
-def s(t):
-    return f'<div class="subsection"><div class="subsection-title">{t}</div></div>'
+/* ===== CARDS ===== */
+.card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+}
+.info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    break-inside: avoid;
+}
+.info-card-title {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--primary-glow);
+    margin-bottom: 6px;
+}
+.info-card-body {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
 
-def co(ct, ti, bo):
-    c = f" callout-{ct}" if ct else ""
-    return f'<div class="callout{c}"><div class="callout-title">{ti}</div><div class="callout-body">{bo}</div></div>'
+/* ===== TABLES ===== */
+.vixor-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 10pt;
+    break-inside: avoid;
+}
+.vixor-table thead th {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: right;
+    border-bottom: 2px solid var(--primary);
+    font-size: 9.5pt;
+}
+.vixor-table tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    vertical-align: top;
+}
+.vixor-table tbody tr:hover {
+    background: var(--bg-card);
+}
+.vixor-table code {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    background: var(--bg-code);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--primary-glow);
+    direction: ltr;
+    display: inline-block;
+}
 
-def cb(t):
-    return f'<div class="code-block">{t}</div>'
+/* ===== LISTS ===== */
+.vixor-list {
+    padding-right: 20px;
+    margin: 10px 0 14px 0;
+}
+.vixor-list li {
+    font-size: 10.5pt;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 6px;
+}
+.vixor-list li strong {
+    color: var(--text-primary);
+}
+.vixor-list li code {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    background: var(--bg-code);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--primary-glow);
+    direction: ltr;
+    display: inline-block;
+}
 
-def cg(cards):
-    inner = "".join(f'<div class="info-card"><div class="info-card-title">{a}</div><div class="info-card-body">{b}</div></div>' for a, b in cards)
-    return f'<div class="card-grid">{inner}</div>'
+/* ===== NUMBERED LIST ===== */
+.vixor-ol {
+    padding-right: 20px;
+    margin: 10px 0 14px 0;
+    counter-reset: item;
+    list-style: none;
+}
+.vixor-ol li {
+    font-size: 10.5pt;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 6px;
+    counter-increment: item;
+    position: relative;
+    padding-right: 28px;
+}
+.vixor-ol li::before {
+    content: counter(item);
+    position: absolute;
+    right: 0;
+    color: var(--primary-glow);
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    font-weight: 600;
+}
 
-def ft(headers, rows):
-    th = ''.join(f'<th>{h}</th>' for h in headers)
-    trs = ''
-    for r in rows:
-        tds = ''.join(f'<td>{c}</td>' for c in r)
-        trs += f'<tr>{tds}</tr>\n'
-    return f'<table class="vixor-table"><thead><tr>{th}</tr></thead><tbody>\n{trs}</tbody></table>'
+/* ===== CODE BLOCK ===== */
+.code-block {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    direction: ltr;
+    text-align: left;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    break-inside: avoid;
+}
 
+/* ===== ENDING PAGE ===== */
+.ending {
+    width: 100%;
+    height: 297mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    break-before: page;
+    overflow: hidden;
+    background: var(--bg-base);
+    position: relative;
+}
+.ending-text {
+    font-size: 14pt;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+.ending-brand {
+    font-family: var(--font-en);
+    font-size: 11pt;
+    color: var(--primary-glow);
+    margin-top: 12px;
+    font-weight: 600;
+}
 
-# ────────────────────────────────────────────────────────────────
-# CHAPTERS
-# ────────────────────────────────────────────────────────────────
+/* ===== FOOTER ===== */
+.page-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--font-en);
+    font-size: 7pt;
+    color: var(--text-muted);
+    padding: 8px 0;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-base);
+}
 
-chapters = [
+/* Print adjustments */
+@media print {
+    .page-footer { display: none; }
+}
+</style>
+</head>
+<body>
 
-    # ════════════════════════════════════════════════════════════
-    # SEC-01: الرؤية التنفيذية والهدف
-    # ════════════════════════════════════════════════════════════
-    {
-        "tag": "SEC-01",
-        "title": "الرؤية التنفيذية والهدف",
-        "content": """
+<!-- COVER -->
+<div class="cover">
+    <div class="cover-doc-id">VIXOR-MEB-001</div>
+    <div class="cover-badge">VIXOR ENGINEERING BIBLE</div>
+    <div class="cover-line"></div>
+    <div class="cover-title">إنجيل التنفيذ الرئيسي</div>
+    <div class="cover-subtitle">المستند المركزي الذي يربط منظومة فيكسور الهندسية بالكامل — الخريطة الشاملة للتنفيذ</div>
+    <div class="cover-line"></div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+    <div class="toc-title">جدول المحتويات</div>
+    
+        <div class="toc-item">
+            <span class="toc-item-title">الرؤية التنفيذية والهدف</span>
+            <span class="toc-item-tag">SEC-01</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">خريطة المستندات (Document Map)</span>
+            <span class="toc-item-tag">SEC-02</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">سلسلة القيمة: من MOXI إلى التنفيذ</span>
+            <span class="toc-item-tag">SEC-03</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">آلية الربط بين المستندات</span>
+            <span class="toc-item-tag">SEC-04</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">من الدليل إلى الكود: خريطة التتبع</span>
+            <span class="toc-item-tag">SEC-05</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">نظام التنفيذ: Git Hooks و CI Checks</span>
+            <span class="toc-item-tag">SEC-06</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">مصفوفة التتبع: المتطلبات ← الكود ← الاختبار ← السبرنت</span>
+            <span class="toc-item-tag">SEC-07</span>
+        </div>
+        <div class="toc-item">
+            <span class="toc-item-title">حوكمة التغيير: كيف نحدث المستندات</span>
+            <span class="toc-item-tag">SEC-08</span>
+        </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+        <div class="chapter-header">
+            <div class="section-tag">SEC-01</div>
+            <div class="section-title">الرؤية التنفيذية والهدف</div>
+            <div class="divider"></div>
+        </div>
+        
 <p class="body-text">
 فيكسور ليس مشروعًا مكتوبًا بالوثائق — فيكسور مشروع <strong>يُنفَّذ بالكود</strong>. هذه هي الفلسفة الجوهرية التي تميّز منظومة فيكسور الهندسية عن أي مشروع آخر. نحن لا نكتب الوثائق لنُرْضي عمليةً بيروقراطية، بل نكتبها لتتحوّل فورًا إلى مهام تنفيذية قابلة للبرمجة والاختبار والنشر. كل حرف في هذه المنظومة يجب أن يقود إلى سطر كود، وكل سطر كود يجب أن يُتتبع إلى متطلب في أحد الإنجيلات السبعة عشرة.
 </p>
@@ -105,16 +566,14 @@ chapters = [
 <p class="body-text">
 هذا المستند يُدير علاقة ثنائية الاتجاه: من الوثائق إلى الكود (تنفيذ المتطلبات)، ومن الكود إلى الوثائق (تحديث الانعكاسات). هذه الدورة المغلقة هي ما يجعل فيكسور مشروعًا حيًا يتطور باستمرار مع الحفاظ على اتساق تام بين ما نُخطط له وما نُنفذه.
 </p>
-"""
-    },
 
-    # ════════════════════════════════════════════════════════════
-    # SEC-02: خريطة المستندات (Document Map)
-    # ════════════════════════════════════════════════════════════
-    {
-        "tag": "SEC-02",
-        "title": "خريطة المستندات (Document Map)",
-        "content": """
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-02</div>
+            <div class="section-title">خريطة المستندات (Document Map)</div>
+            <div class="divider"></div>
+        </div>
+        
 <p class="body-text">
 منظومة فيكسور الهندسية تتكون من <strong>سبعة عشر مستندًا</strong> مُصنّفة إلى خمس فئات رئيسية. كل مستند له دور محدد ومتكامل مع بقية المنظومة. هذا القسم يقدّم الخريطة الكاملة مع معرف المستند، العنوان، عدد الصفحات التقديري، المحتوى الأساسي، والمراجع المتبادلة بين المستندات. فهم هذه الخريطة هو الشرط الأساسي للتنقل في المنظومة بكفاءة.
 </p>
@@ -206,16 +665,14 @@ chapters = [
         المجموع: <strong>17 مستندًا</strong> تقريبيًا <strong>~380 صفحة</strong> من التوثيق الهندسي الشامل. كل مستند مرتبط بـ 2-5 مستندات أخرى على الأقل عبر مراجع متبادلة. هذه الكثافة من الربط هي ما يجعل المنظومة حية بدلًا من كومة ورقية.
     </div>
 </div>
-"""
-    },
 
-    # ════════════════════════════════════════════════════════════
-    # SEC-03: سلسلة القيمة: من MOXI إلى التنفيذ
-    # ════════════════════════════════════════════════════════════
-    {
-        "tag": "SEC-03",
-        "title": "سلسلة القيمة: من MOXI إلى التنفيذ",
-        "content": """
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-03</div>
+            <div class="section-title">سلسلة القيمة: من MOXI إلى التنفيذ</div>
+            <div class="divider"></div>
+        </div>
+        
 <p class="body-text">
 فلسفة فيكسور تتمحور حول <strong>MOXI-First</strong> — فكرة أن الذكاء الاصطناعي (MOXI) هو نقطة الدخول الأساسية لكل شيء يفعله المستخدم. المستخدم لا يُدير الرسوم البيانية ولا يُنفّذ الصفقات يدويًا — بل يتحدث مع MOXI الذي يُترجم نية المستخدم إلى إجراءات فعلية. سلسلة القيمة هذه تُظهر كيف تتدفق الفكرة من المحادثة إلى التنفيذ الفعلي، مع ربط كل خطوة بالمستند المسؤول والكود المنفّذ.
 </p>
@@ -319,16 +776,14 @@ chapters = [
         <div class="info-card-body"><code>src/domains/review/</code> — مراجعة الأداء، تحليل النتائج، تقارير الربح والخسارة. يعتمد على <code>SPRINT-10</code> و <code>DB-14</code></div>
     </div>
 </div>
-"""
-    },
 
-    # ════════════════════════════════════════════════════════════
-    # SEC-04: آلية الربط بين المستندات
-    # ════════════════════════════════════════════════════════════
-    {
-        "tag": "SEC-04",
-        "title": "آلية الربط بين المستندات",
-        "content": """
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-04</div>
+            <div class="section-title">آلية الربط بين المستندات</div>
+            <div class="divider"></div>
+        </div>
+        
 <p class="body-text">
 الربط بين المستندات ليس عشوائيًا — إنه يتبع <strong>نمط تتبع صارم</strong> يضمن عدم وجود متطلب معزول أو كود يتيم. كل عنصر في المنظومة يرتبط بسلسلة واضحة: المتطلبات ← القرارات المعمارية ← الكود ← الاختبارات ← مهام السبرنت. هذا النمط يُنفّذ عبر ثلاث آليات أساسية: المراجع المتبادلة في النص، مصفوفة التتبع الرقمية، والتحقق الآلي عبر CI.
 </p>
@@ -380,16 +835,14 @@ chapters = [
 <p class="body-text">
 العلاقات بين المستندات تُشكّل شبكة مترابطة. <code>PRD-01</code> هو الجذر: كل مستند آخر يعتمد عليه بشكل مباشر أو غير مباشر. <code>ARC-02</code> يترجم متطلبات <code>PRD-01</code> إلى بنية تقنية. <code>PARCH-11</code> يربط البنية بمكونات المنتج. <code>MOXI-12</code> يُفصّل تجربة الذكاء الاصطناعي. <code>ENG-07</code> يحدد كيف نكتب الكود. <code>SEC-09</code> يحمي كل شيء. وهذا المستند (<code>MEB</code>) يجمع الكل في خريطة واحدة قابلة للتنقل والتحقق.
 </p>
-"""
-    },
 
-    # ════════════════════════════════════════════════════════════
-    # SEC-05: من الدليل إلى الكود: خريطة التتبع
-    # ════════════════════════════════════════════════════════════
-    {
-        "tag": "SEC-05",
-        "title": "من الدليل إلى الكود: خريطة التتبع",
-        "content": """
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-05</div>
+            <div class="section-title">من الدليل إلى الكود: خريطة التتبع</div>
+            <div class="divider"></div>
+        </div>
+        
 <p class="body-text">
 هذا القسم هو الأداة العملية التي يستخدمها كل مطوّر في فيكسور يوميًا. عندما تحتاج لفهم ميزة ما — من فكرتها الأولى في متطلبات المنتج إلى سطر الكود الأخير الذي يُنفّذها — تبدأ من هنا. الخريطة تربط كل ميزة رئيسية بموقعها الدقيق في قاعدة الكود، مع تحديد الملفات الأساسية والمساعدة والاختبارات المرتبطة بها.
 </p>
@@ -516,16 +969,14 @@ chapters = [
 └── dashboard/         # لوحة التحكم (PRD-01-F08)
     ├── MarketOverview.tsx
     └── PortfolioSummary.tsx</div>
-"""
-    },
 
-    # ════════════════════════════════════════════════════════════
-    # SEC-06: نظام التنفيذ: Git Hooks و CI Checks
-    # ════════════════════════════════════════════════════════════
-    {
-        "tag": "SEC-06",
-        "title": "نظام التنفيذ: Git Hooks و CI Checks",
-        "content": """
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-06</div>
+            <div class="section-title">نظام التنفيذ: Git Hooks و CI Checks</div>
+            <div class="divider"></div>
+        </div>
+        
 <p class="body-text">
 الوثائق وحدها لا تكفي — نحتاج آليات <strong>تُنفّذ قواعد الوثائق تلقائيًا</strong>. هذا القسم يُحدد نظام Git Hooks وCI Checks الذي يُحوّل قواعد كتب المعايير الهندسية (<code>ENG-07</code>) وكتاب الأمان (<code>SEC-09</code>) وكتاب قواعد البيانات (<code>DB-14</code>) من نصوص وثائقية إلى قيود تقنية تُرفض تلقائيًا عند مخالفتها. الهدف هو جعل <strong>الامتثال هو الحالة الافتراضية</strong> والمخالفة مستحيلة تقنيًا.
 </p>
@@ -662,7 +1113,7 @@ CI Pipeline يُشغّل فحوصات أعمق عند إنشاء طلب سحب (
 npx lint-staged
 
 # ─── Security: reject hardcoded secrets ───
-if git diff --cached --name-only | xargs rg -l '(SECRET|PRIVATE_KEY|API_KEY|PASSWORD)\\s*=' --no-ignore-vcs; then
+if git diff --cached --name-only | xargs rg -l '(SECRET|PRIVATE_KEY|API_KEY|PASSWORD)\s*=' --no-ignore-vcs; then
   echo "🚫 HARD-CODED SECRET DETECTED — See SEC-09 Section 2.1"
   exit 1
 fi
@@ -682,16 +1133,14 @@ fi
     ]
   }
 }</div>
-"""
-    },
 
-    # ════════════════════════════════════════════════════════════
-    # SEC-07: مصفوفة التتبع: المتطلبات ← الكود ← الاختبار ← السبرنت
-    # ════════════════════════════════════════════════════════════
-    {
-        "tag": "SEC-07",
-        "title": "مصفوفة التتبع: المتطلبات ← الكود ← الاختبار ← السبرنت",
-        "content": """
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-07</div>
+            <div class="section-title">مصفوفة التتبع: المتطلبات ← الكود ← الاختبار ← السبرنت</div>
+            <div class="divider"></div>
+        </div>
+        
 <p class="body-text">
 مصفوفة التتبع هي <strong>العمود الفقري</strong> لإنجيل التنفيذ الرئيسي. تُوفّر رؤية شاملة تربط كل متطلب منتج بموقعه في الكود واختباره ومهمة السبرنت المسؤولة عن تنفيذه. هذه المصفوفة هي المرجع الأول عند الإجابة عن أسئلة مثل: "أين يُنفّذ هذا المتطلب؟" أو "هل هذا المتطلبات مُختبر؟" أو "في أي سبرنت سيُنفّذ؟"
 </p>
@@ -847,16 +1296,14 @@ fi
         أي صف في المصفوفة يحتوي على خلية فارغة في عمود "الاختبار" يُمثّل <strong>دينًا تقنيًا</strong>. أي صف يحتوي على خلية فارغة في عمود "السبرنت" يُمثّل ميزة <strong>غير مُخطط لها</strong>. الهدف: أن تكون كل الخلايا مملوءة قبل إطلاق النسخة 1.0. الفريق يُراجع هذه المصفوفة في كل Retrospective لضمان عدم تراكم الفجوات.
     </div>
 </div>
-"""
-    },
 
-    # ════════════════════════════════════════════════════════════
-    # SEC-08: حوكمة التغيير: كيف نحدث المستندات
-    # ════════════════════════════════════════════════════════════
-    {
-        "tag": "SEC-08",
-        "title": "حوكمة التغيير: كيف نحدث المستندات",
-        "content": """
+        
+        <div class="chapter-header">
+            <div class="section-tag">SEC-08</div>
+            <div class="section-title">حوكمة التغيير: كيف نحدث المستندات</div>
+            <div class="divider"></div>
+        </div>
+        
 <p class="body-text">
 الوثائق الميتة أخطر من عدم وجود وثائق — لأنها تُعطي إحساسًا زائفًا بالأمان. فيكسور يتعامل مع الوثائق ككود حي: يجب أن تكون دائمًا متزامنة مع الواقع، ويجب أن يكون تحديثها جزءًا لا يتجزأ من عملية التطوير. هذا القسم يُحدد <strong>حوكمة التغيير</strong>: متى تُحدَّث أي وثيقة، من المسؤول عن التحديث، وكيف نتحقق من أن التحديث تم.
 </p>
@@ -985,27 +1432,17 @@ fi
         وثائق فيكسور ليست ملفات تأخذ الغبار على الرف — إنها <strong>أدوات تنفيذ حية</strong> تُوجّه التطوير، تُنفّذ القواعد آليًا، وتتطور مع الكود. عندما ينجح هذا النموذج، تصبح الوثائق والكود شيئًا واحدًا: انعكاسان لنظام واحد حي.
     </div>
 </div>
-"""
-    },
-]
 
+        
+</div>
 
-# ────────────────────────────────────────────────────────────────
-# MAIN
-# ────────────────────────────────────────────────────────────────
+<!-- ENDING -->
+<div class="ending">
+    <div class="ending-text">وثيقة رسمية لمنظومة فيكسور الهندسية</div>
+    <div class="ending-brand">VIXOR — AI-Powered Trading Terminal</div>
+</div>
 
-if __name__ == "__main__":
-    html = generate_vixor_html(
-        title="إنجيل التنفيذ الرئيسي",
-        subtitle="المستند المركزي الذي يربط منظومة فيكسور الهندسية بالكامل — الخريطة الشاملة للتنفيذ",
-        doc_id="VIXOR-MEB-001",
-        chapters=chapters,
-        footer_text="VIXOR Master Execution Bible — VIXOR-MEB-001",
-    )
-    html_path = save_html(html, "11-master-execution.html")
-    print(f"✅ HTML saved: {html_path}")
-    pdf_path = convert_to_pdf(html_path, "11-master-execution.pdf", skill_dir="/home/z/my-project/skills/pdf")
-    print(f"✅ PDF saved: {pdf_path}")
-    print(f"\n📄 Document: VIXOR-MEB-001 — إنجيل التنفيذ الرئيسي")
-    print(f"   Chapters: {len(chapters)} sections")
-    print(f"   Output dir: {OUTPUT_DIR}")
+<div class="page-footer">VIXOR Master Execution Bible — VIXOR-MEB-001 — سري وخاص</div>
+
+</body>
+</html>
