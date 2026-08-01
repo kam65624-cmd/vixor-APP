@@ -465,7 +465,13 @@ export async function fetchBinanceKlines(
 ): Promise<
   Array<{ time: number; open: number; high: number; low: number; close: number; volume: number }>
 > {
-  const binanceSymbol = AssetRegistry.binanceSymbol(pair);
+  // Try registry first, then fallback to constructing symbol from pair name
+  let binanceSymbol = AssetRegistry.binanceSymbol(pair);
+  if (!binanceSymbol) {
+    // Fallback: construct Binance symbol by removing "/" (e.g. "NEAR/USDT" → "NEARUSDT")
+    binanceSymbol = pair.replace("/", "");
+    console.log(`[PriceFetcher] Pair "${pair}" not in AssetRegistry, using fallback symbol "${binanceSymbol}"`);
+  }
   if (!binanceSymbol) return [];
 
   // Map timeframe strings to Binance interval format using the registry

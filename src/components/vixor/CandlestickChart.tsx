@@ -13,7 +13,6 @@
 "use client";
 
 import { useEffect, useRef, memo, useState, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { getChartOHLCV } from "@/domains/market/functions";
 import {
   createChart,
@@ -60,10 +59,10 @@ interface CandlestickChartProps {
 
 const VIXOR_CHART_OPTIONS: DeepPartial<ChartOptions> = {
   layout: {
-    background: { type: ColorType.Solid, color: "var(--color-background)" },
+    background: { type: ColorType.Solid, color: "#0B0D10" },
     textColor: "#9CA3AF",
     fontSize: 11,
-    fontFamily: "var(--font-sans)",
+    fontFamily: "system-ui, -apple-system, sans-serif",
   },
   grid: {
     vertLines: { color: "rgba(99,102,241,0.04)" },
@@ -71,8 +70,8 @@ const VIXOR_CHART_OPTIONS: DeepPartial<ChartOptions> = {
   },
   crosshair: {
     mode: CrosshairMode.Normal,
-    vertLine: { color: "rgba(99,102,241,0.3)", labelBackgroundColor: "var(--color-primary)" },
-    horzLine: { color: "rgba(99,102,241,0.3)", labelBackgroundColor: "var(--color-primary)" },
+    vertLine: { color: "rgba(99,102,241,0.3)", labelBackgroundColor: "#6366F1" },
+    horzLine: { color: "rgba(99,102,241,0.3)", labelBackgroundColor: "#6366F1" },
   },
   rightPriceScale: {
     borderColor: "rgba(99,102,241,0.08)",
@@ -125,12 +124,12 @@ function CandlestickChartInner({
 
     // Candlestick series (main)
     const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: "var(--color-bullish)",
-      downColor: "var(--color-bearish)",
-      borderDownColor: "var(--color-bearish)",
-      borderUpColor: "var(--color-bullish)",
-      wickDownColor: "var(--color-bearish)",
-      wickUpColor: "var(--color-bullish)",
+      upColor: "#22D3A6",
+      downColor: "#FB4667",
+      borderDownColor: "#FB4667",
+      borderUpColor: "#22D3A6",
+      wickDownColor: "#FB4667",
+      wickUpColor: "#22D3A6",
     });
 
     // Volume series (sub-chart)
@@ -194,6 +193,7 @@ function CandlestickChartInner({
 
       try {
         const data: KlineBar[] = await getChartOHLCV({ data: { pair, interval: tf, limit: 300 } });
+        console.log(`[CandlestickChart] Loaded ${data?.length ?? 0} bars for ${pair}:${tf}`);
 
         if (!data || data.length === 0) {
           setError("No chart data available");
@@ -369,10 +369,11 @@ function CandlestickChartInner({
         ref={containerRef}
         style={{
           width: "100%",
-          height,
+          height: height || "400px",
+          minHeight: "300px",
           position: "relative",
           background: "#0B0D10",
-          borderRadius: "0 0 var(--radius-lg) var(--radius-lg)",
+          borderRadius: "0 0 8px 8px",
         }}
       >
         {/* Loading overlay */}

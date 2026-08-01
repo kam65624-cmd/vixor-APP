@@ -362,6 +362,42 @@ const ASSETS: AssetDefinition[] = [
     popular: true,
     priority: 8,
   },
+  {
+    pair: "NEAR/USDT",
+    name: "NEAR Protocol",
+    label: "NEAR",
+    icon: "Ⓝ",
+    category: "crypto",
+    base: "NEAR",
+    quote: "USDT",
+    symbols: {
+      binance: "NEARUSDT",
+      twelveData: "NEAR/USDT",
+      tradingView: "BINANCE:NEARUSDT",
+    },
+    config: { pipSize: 0.001, decimals: 3, volatility: 0.04, typicalRange: 0.05, basePrice: 1.67 },
+    active: true,
+    popular: false,
+    priority: 16,
+  },
+  {
+    pair: "INJ/USDT",
+    name: "Injective",
+    label: "INJ",
+    icon: "💉",
+    category: "crypto",
+    base: "INJ",
+    quote: "USDT",
+    symbols: {
+      binance: "INJUSDT",
+      twelveData: "INJ/USDT",
+      tradingView: "BINANCE:INJUSDT",
+    },
+    config: { pipSize: 0.01, decimals: 2, volatility: 0.045, typicalRange: 0.06, basePrice: 7.5 },
+    active: true,
+    popular: false,
+    priority: 17,
+  },
 
   // ── Commodities ──────────────────────────────────────────────────────
   {
