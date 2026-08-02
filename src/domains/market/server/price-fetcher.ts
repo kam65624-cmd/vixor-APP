@@ -470,7 +470,9 @@ export async function fetchBinanceKlines(
   if (!binanceSymbol) {
     // Fallback: construct Binance symbol by removing "/" (e.g. "NEAR/USDT" → "NEARUSDT")
     binanceSymbol = pair.replace("/", "");
-    console.log(`[PriceFetcher] Pair "${pair}" not in AssetRegistry, using fallback symbol "${binanceSymbol}"`);
+    console.log(
+      `[PriceFetcher] Pair "${pair}" not in AssetRegistry, using fallback symbol "${binanceSymbol}"`,
+    );
   }
   if (!binanceSymbol) return [];
 

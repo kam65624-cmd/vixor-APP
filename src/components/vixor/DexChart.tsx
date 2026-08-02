@@ -239,8 +239,13 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
   const allBarsRef = useRef<KlineBar[]>([]);
   // Overlay series refs
   const overlayRefs = useRef<Record<string, ISeriesApi<"Line"> | null>>({
-    sma7: null, sma25: null, sma99: null, ema21: null,
-    bbUpper: null, bbMiddle: null, bbLower: null,
+    sma7: null,
+    sma25: null,
+    sma99: null,
+    ema21: null,
+    bbUpper: null,
+    bbMiddle: null,
+    bbLower: null,
   });
 
   const [activeInterval, setActiveInterval] = useState("hour");
@@ -278,7 +283,12 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     });
 
     // Pre-create overlay line series (hidden by default)
-    const createOverlay = (id: string, color: string, lineWidth: LineWidth = 1, lineStyle: LineStyle = LineStyle.Solid) => {
+    const createOverlay = (
+      id: string,
+      color: string,
+      lineWidth: LineWidth = 1,
+      lineStyle: LineStyle = LineStyle.Solid,
+    ) => {
       const s = chart.addSeries(LineSeries, {
         color,
         lineWidth,
@@ -326,8 +336,13 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
       volRef.current = null;
       priceLineRef.current = null;
       overlayRefs.current = {
-        sma7: null, sma25: null, sma99: null, ema21: null,
-        bbUpper: null, bbMiddle: null, bbLower: null,
+        sma7: null,
+        sma25: null,
+        sma99: null,
+        ema21: null,
+        bbUpper: null,
+        bbMiddle: null,
+        bbLower: null,
       };
     };
   }, []);
@@ -345,7 +360,10 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
 
     const candles: CandlestickData[] = sorted.map((k) => ({
       time: k.time as unknown as Time,
-      open: k.open, high: k.high, low: k.low, close: k.close,
+      open: k.open,
+      high: k.high,
+      low: k.low,
+      close: k.close,
     }));
 
     const volumes: HistogramData[] = sorted.map((k) => ({
@@ -393,7 +411,9 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     if (refs.sma7) {
       const vals = calcSMA(closes, 7);
       refs.sma7.setData(
-        vals.map((v, i) => (v !== null ? { time: times[i], value: v } : null)).filter(Boolean) as LineData[],
+        vals
+          .map((v, i) => (v !== null ? { time: times[i], value: v } : null))
+          .filter(Boolean) as LineData[],
       );
     }
 
@@ -401,7 +421,9 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     if (refs.sma25) {
       const vals = calcSMA(closes, 25);
       refs.sma25.setData(
-        vals.map((v, i) => (v !== null ? { time: times[i], value: v } : null)).filter(Boolean) as LineData[],
+        vals
+          .map((v, i) => (v !== null ? { time: times[i], value: v } : null))
+          .filter(Boolean) as LineData[],
       );
     }
 
@@ -409,7 +431,9 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     if (refs.sma99) {
       const vals = calcSMA(closes, 99);
       refs.sma99.setData(
-        vals.map((v, i) => (v !== null ? { time: times[i], value: v } : null)).filter(Boolean) as LineData[],
+        vals
+          .map((v, i) => (v !== null ? { time: times[i], value: v } : null))
+          .filter(Boolean) as LineData[],
       );
     }
 
@@ -417,7 +441,9 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     if (refs.ema21) {
       const vals = calcEMA(closes, 21);
       refs.ema21.setData(
-        vals.map((v, i) => (v !== null ? { time: times[i], value: v } : null)).filter(Boolean) as LineData[],
+        vals
+          .map((v, i) => (v !== null ? { time: times[i], value: v } : null))
+          .filter(Boolean) as LineData[],
       );
     }
 
@@ -425,13 +451,19 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     if (refs.bbUpper && refs.bbMiddle && refs.bbLower) {
       const bb = calcBollingerBands(closes, 20, 2);
       refs.bbUpper.setData(
-        bb.upper.map((v, i) => (v !== null ? { time: times[i], value: v } : null)).filter(Boolean) as LineData[],
+        bb.upper
+          .map((v, i) => (v !== null ? { time: times[i], value: v } : null))
+          .filter(Boolean) as LineData[],
       );
       refs.bbMiddle.setData(
-        bb.middle.map((v, i) => (v !== null ? { time: times[i], value: v } : null)).filter(Boolean) as LineData[],
+        bb.middle
+          .map((v, i) => (v !== null ? { time: times[i], value: v } : null))
+          .filter(Boolean) as LineData[],
       );
       refs.bbLower.setData(
-        bb.lower.map((v, i) => (v !== null ? { time: times[i], value: v } : null)).filter(Boolean) as LineData[],
+        bb.lower
+          .map((v, i) => (v !== null ? { time: times[i], value: v } : null))
+          .filter(Boolean) as LineData[],
       );
     }
 
@@ -439,7 +471,9 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     if (rsiSeriesRef.current) {
       const rsiVals = calcRSI(closes, 14);
       rsiSeriesRef.current.setData(
-        rsiVals.map((v, i) => (v !== null ? { time: times[i], value: v } : null)).filter(Boolean) as LineData[],
+        rsiVals
+          .map((v, i) => (v !== null ? { time: times[i], value: v } : null))
+          .filter(Boolean) as LineData[],
       );
       rsiChartRef.current?.timeScale().fitContent();
     }
@@ -472,7 +506,11 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     // Update price line
     if (priceLineRef.current && candleRef.current) {
       const isUp = livePrice >= lastBar.open;
-      try { candleRef.current.removePriceLine(priceLineRef.current); } catch { /* */ }
+      try {
+        candleRef.current.removePriceLine(priceLineRef.current);
+      } catch {
+        /* */
+      }
       priceLineRef.current = candleRef.current.createPriceLine({
         price: livePrice,
         color: isUp ? "#22D3A6" : "#FB4667",
@@ -501,7 +539,12 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
         });
         if (Array.isArray(serverBars) && serverBars.length > 0) {
           bars = serverBars.map((b: any) => ({
-            time: b.time, open: b.open, high: b.high, low: b.low, close: b.close, volume: b.volume || 0,
+            time: b.time,
+            open: b.open,
+            high: b.high,
+            low: b.low,
+            close: b.close,
+            volume: b.volume || 0,
           }));
         }
       } catch (e) {
@@ -519,12 +562,21 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
             const raw = json?.data;
             if (raw?.attributes?.ohlcv_list && Array.isArray(raw.attributes.ohlcv_list)) {
               bars = raw.attributes.ohlcv_list.map((c: any) => ({
-                time: c[0], open: c[1], high: c[2], low: c[3], close: c[4], volume: c[5] || 0,
+                time: c[0],
+                open: c[1],
+                high: c[2],
+                low: c[3],
+                close: c[4],
+                volume: c[5] || 0,
               }));
             } else if (Array.isArray(raw) && raw.length > 0) {
               bars = raw.map((c: any) => ({
-                time: c.attributes.time, open: c.attributes.open, high: c.attributes.high,
-                low: c.attributes.low, close: c.attributes.close, volume: c.attributes.volume || 0,
+                time: c.attributes.time,
+                open: c.attributes.open,
+                high: c.attributes.high,
+                low: c.attributes.low,
+                close: c.attributes.close,
+                volume: c.attributes.volume || 0,
               }));
             }
           }
@@ -598,17 +650,19 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
             </button>
           ))}
         </div>
-
-
       </div>
 
       {/* Loading overlay */}
       {loading && (
         <div
           style={{
-            position: "absolute", inset: 0, display: "flex",
-            alignItems: "center", justifyContent: "center",
-            background: "rgba(11,13,16,0.7)", zIndex: 5,
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(11,13,16,0.7)",
+            zIndex: 5,
           }}
         >
           <span style={{ fontSize: "12px", color: "#9CA3AF", fontFamily: "system-ui" }}>
@@ -621,21 +675,44 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
       {error && !loading && (
         <div
           style={{
-            position: "absolute", inset: 0, display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center",
-            background: "#0B0D10", zIndex: 10, gap: "10px",
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#0B0D10",
+            zIndex: 10,
+            gap: "10px",
           }}
         >
-          <svg style={{ width: 36, height: 36, opacity: 0.35 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+          <svg
+            style={{ width: 36, height: 36, opacity: 0.35 }}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
+            />
           </svg>
-          <div style={{ fontSize: "12px", color: "#9CA3AF", fontWeight: 600 }}>Chart data unavailable</div>
+          <div style={{ fontSize: "12px", color: "#9CA3AF", fontWeight: 600 }}>
+            Chart data unavailable
+          </div>
           <button
             onClick={() => loadData(activeInterval)}
             style={{
-              fontSize: "11px", color: "#6366F1", background: "none",
-              border: "1px solid #6366F1", borderRadius: "6px", padding: "6px 14px",
-              cursor: "pointer", fontWeight: 600,
+              fontSize: "11px",
+              color: "#6366F1",
+              background: "none",
+              border: "1px solid #6366F1",
+              borderRadius: "6px",
+              padding: "6px 14px",
+              cursor: "pointer",
+              fontWeight: 600,
             }}
           >
             Retry
@@ -644,10 +721,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
       )}
 
       {/* Main chart container */}
-      <div
-        ref={mainContainerRef}
-        style={{ width: "100%", height: "100%" }}
-      />
+      <div ref={mainContainerRef} style={{ width: "100%", height: "100%" }} />
     </div>
   );
 }
