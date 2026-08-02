@@ -304,6 +304,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [indicators, setIndicators] = useState<IndicatorConfig>(DEFAULT_INDICATORS);
+  const [showIndPanel, setShowIndPanel] = useState(false);
 
   const fetchDexOHLCV = useStableServerFn(getDexOHLCV);
 
@@ -745,7 +746,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
   // ── Render ──
   return (
     <div style={{ position: "relative", height, borderBottom: "1px solid var(--color-border)" }}>
-      {/* Timeframe selector + Indicator toggles */}
+      {/* Toolbar: Timeframes + Indicator toggle button */}
       <div
         style={{
           position: "absolute",
@@ -753,11 +754,11 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
           left: "8px",
           zIndex: 10,
           display: "flex",
-          flexDirection: "column",
+          alignItems: "center",
           gap: "4px",
         }}
       >
-        {/* Row 1: Timeframes */}
+        {/* Timeframes */}
         <div
           style={{
             display: "flex",
@@ -779,35 +780,84 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
           ))}
         </div>
 
-        {/* Row 2: Indicators */}
-        <div
+        {/* Indicator toggle button */}
+        <button
+          onClick={() => setShowIndPanel((p) => !p)}
           style={{
-            display: "flex",
-            gap: "3px",
-            background: "rgba(11,13,16,0.9)",
-            padding: "3px",
+            padding: "4px 7px",
             borderRadius: "6px",
-            border: "1px solid var(--color-border)",
+            border: showIndPanel ? "1px solid #6366F1" : "1px solid var(--color-border)",
+            background: showIndPanel ? "rgba(99,102,241,0.15)" : "rgba(11,13,16,0.9)",
+            color: showIndPanel ? "#A5B4FC" : "#6B7280",
+            fontSize: "12px",
+            cursor: "pointer",
+            lineHeight: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: "3px",
           }}
+          title="Indicators"
         >
-          {INDICATOR_BUTTONS.map((ind) => (
-            <button
-              key={ind.key}
-              onClick={() => toggleIndicator(ind.key)}
-              style={btnStyle(indicators[ind.key], ind.color)}
-              title={
-                ind.key === "sma7" ? "Simple Moving Average 7" :
-                ind.key === "sma25" ? "Simple Moving Average 25" :
-                ind.key === "sma99" ? "Simple Moving Average 99" :
-                ind.key === "ema21" ? "Exponential Moving Average 21" :
-                ind.key === "bb" ? "Bollinger Bands (20, 2)" :
-                "Relative Strength Index (14)"
-              }
-            >
-              {ind.label}
-            </button>
-          ))}
-        </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+          </svg>
+        </button>
+
+        {/* Dropdown indicator panel */}
+        {showIndPanel && (
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: "0",
+              marginTop: "4px",
+              background: "rgba(11,13,16,0.95)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "8px",
+              padding: "6px",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, auto)",
+              gap: "3px",
+              zIndex: 20,
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            {INDICATOR_BUTTONS.map((ind) => (
+              <button
+                key={ind.key}
+                onClick={() => toggleIndicator(ind.key)}
+                style={{
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                  border: "none",
+                  fontSize: "10px",
+                  fontWeight: 600,
+                  fontFamily: "system-ui, sans-serif",
+                  cursor: "pointer",
+                  background: indicators[ind.key] ? ind.color : "transparent",
+                  color: indicators[ind.key] ? "#000" : "#6B7280",
+                  transition: "all 0.15s",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <span
+                  style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    background: indicators[ind.key] ? "#000" : ind.color,
+                    display: "inline-block",
+                    flexShrink: 0,
+                  }}
+                />
+                {ind.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Loading overlay */}
