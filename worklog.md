@@ -157,3 +157,23 @@ Stage Summary:
 - Produced: /home/z/my-project/download/vixor-bible/19_task_tracker.html
 - Covers: 18 docs, 108 chapters, 14 tests, 10 future tasks, quality metrics, timeline
 - All 14 tests PASS, 10 future tasks PENDING
+---
+Task ID: F-004
+Agent: Main Agent
+Task: إصلاح الشارت المعطل (Fix broken DEX chart)
+
+Work Log:
+- Analyzed uploaded screenshot via VLM: identified broken image placeholder in chart area (DexScreener iframe blocked in Telegram WebView)
+- Traced 3-tier chart decision logic in -token-symbol-component.tsx: DexChart → DexScreener iframe → TradingView
+- Tested GeckoTerminal API: discovered network ID mismatch (code used "sol" but API expects "solana")
+- Verified all GeckoTerminal v2 network IDs against /api/v2/networks endpoint
+- Fixed networkMap in DexChart.tsx: solana→"solana", polygon→"polygon_pos", avalanche→"avax"
+- Fixed identical networkMap in server-side getDexOHLCV (src/domains/market/functions.ts)
+- Replaced DexScreener iframe fallback in DexChart with proper error state + "View on DexScreener →" link
+- Replaced both DexScreener iframe instances in token page with matching error state UI
+- Build succeeded (25.77s), pushed to GitHub for Vercel deployment
+
+Stage Summary:
+- ROOT CAUSE: GeckoTerminal network ID mapping was wrong ("sol" instead of "solana") causing 0 bars returned → error → DexScreener iframe fallback → blocked by Telegram WebView X-Frame-Options
+- FILES CHANGED: DexChart.tsx, functions.ts, -token-symbol-component.tsx (3 files, +143/-27)
+- COMMIT: b4efb95 - pushed to main, deploying to Vercel
