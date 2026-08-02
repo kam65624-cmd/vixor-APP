@@ -235,6 +235,7 @@ export function CopilotPage() {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const search = useSearch({ strict: false }) as {
+    q?: string;
     chartPair?: string;
     chartTimeframe?: string;
     chartPrice?: number;
@@ -653,6 +654,18 @@ export function CopilotPage() {
     },
     [input, sendMessage],
   );
+
+  // ─── Auto-send prompt from home page (q search param) ───
+  const initialPromptSent = useRef(false);
+  useEffect(() => {
+    if (search.q && !initialPromptSent.current && messages.length === 0) {
+      initialPromptSent.current = true;
+      const timer = setTimeout(() => {
+        sendMessage(search.q!);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [search.q, messages.length, sendMessage]);
 
   // ─── New Chat ───
   const startNewChat = useCallback(() => {
