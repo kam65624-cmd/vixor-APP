@@ -415,29 +415,44 @@ export const getDexOHLCV = createServerFn({ method: "GET" })
       });
       if (!res.ok) return [];
 
-      const json = (await res.json()) as {
-        data?: Array<{
-          attributes: {
-            time: number;
-            open: number;
-            high: number;
-            low: number;
-            close: number;
-            volume: number;
-          };
-        }>;
-      };
+      const json = (await res.json()) as any;
 
-      if (!json.data || json.data.length === 0) return [];
+      // GeckoTerminal v2 response: { data: { attributes: { ohlcv_list: [[t,o,h,l,c,v], ...] } } }
+      // Also handle legacy format: { data: [{ attributes: { time, open, ... } }, ...] }
+      let bars: Array<{
+        time: number;
+        open: number;
+        high: number;
+        low: number;
+        close: number;
+        volume: number;
+      }> = [];
 
-      return json.data.map((c) => ({
-        time: c.attributes.time,
-        open: c.attributes.open,
-        high: c.attributes.high,
-        low: c.attributes.low,
-        close: c.attributes.close,
-        volume: c.attributes.volume,
-      }));
+      if (Array.isArray(json.data) && json.data.length > 0) {
+        // Legacy format
+        bars = json.data.map((c: any) => ({
+          time: c.attributes.time,
+          open: c.attributes.open,
+          high: c.attributes.high,
+          low: c.attributes.low,
+          close: c.attributes.close,
+          volume: c.attributes.volume,
+        }));
+      } else if (json.data?.attributes?.ohlcv_list) {
+        // Current format: ohlcv_list is [[t, o, h, l, c, v], ...]
+        bars = json.data.attributes.ohlcv_list.map((c: any) => ({
+          time: c[0],
+          open: c[1],
+          high: c[2],
+          low: c[3],
+          close: c[4],
+          volume: c[5] || 0,
+        }));
+      }
+
+      if (bars.length === 0) return [];
+
+      return bars;
     } catch (err) {
       console.warn(
         "[DexOHLCV] GeckoTerminal failed:",

@@ -171,23 +171,48 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
         if (!res.ok) throw new Error("GeckoTerminal API non-200");
 
         const json = await res.json();
+
+        // GeckoTerminal v2 returns { data: { attributes: { ohlcv_list: [[t,o,h,l,c,v], ...] } } }
+        // Handle both old format (data = array of objects) and new format (data.attributes.ohlcv_list = array of arrays)
+        let data: KlineBar[] = [];
         const rawBars = json?.data;
-        if (!rawBars || !Array.isArray(rawBars) || rawBars.length === 0) {
+
+        if (Array.isArray(rawBars) && rawBars.length > 0) {
+          // Legacy format: data is an array of { attributes: { time, open, ... } }
+          data = rawBars
+            .map((c: any) => ({
+              time: c.attributes.time,
+              open: c.attributes.open,
+              high: c.attributes.high,
+              low: c.attributes.low,
+              close: c.attributes.close,
+              volume: c.attributes.volume || 0,
+            }))
+            .sort((a: any, b: any) => a.time - b.time);
+        } else if (rawBars?.attributes?.ohlcv_list && Array.isArray(rawBars.attributes.ohlcv_list)) {
+          // Current format: data.attributes.ohlcv_list is [[t, o, h, l, c, v], ...]
+          data = rawBars.attributes.ohlcv_list
+            .map((c: any) => ({
+              time: c[0],
+              open: c[1],
+              high: c[2],
+              low: c[3],
+              close: c[4],
+              volume: c[5] || 0,
+            }))
+            .sort((a: any, b: any) => a.time - b.time);
+        } else {
           throw new Error("No GeckoTerminal bars");
         }
 
-        const data: KlineBar[] = rawBars
-          .map((c: any) => ({
-            time: c.attributes.time,
-            open: c.attributes.open,
-            high: c.attributes.high,
-            low: c.attributes.low,
-            close: c.attributes.close,
-            volume: c.attributes.volume || 0,
-          }))
-          .sort((a: any, b: any) => a.time - b.time);
+        // Deduplicate by time (keep last) and sort ascending
+        const deduped = new Map<number, KlineBar>();
+        for (const bar of data) {
+          deduped.set(bar.time, bar);
+        }
+        const sorted = Array.from(deduped.values()).sort((a, b) => a.time - b.time);
 
-        const candles: CandlestickData[] = data.map((k) => ({
+        const candles: CandlestickData[] = sorted.map((k) => ({
           time: k.time as unknown as import("lightweight-charts").Time,
           open: k.open,
           high: k.high,
@@ -195,7 +220,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
           close: k.close,
         }));
 
-        const volumes: HistogramData[] = data.map((k) => ({
+        const volumes: HistogramData[] = sorted.map((k) => ({
           time: k.time as unknown as import("lightweight-charts").Time,
           value: k.volume,
           color: k.close >= k.open ? "rgba(34,211,166,0.3)" : "rgba(251,70,103,0.3)",
