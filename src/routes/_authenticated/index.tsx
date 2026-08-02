@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { memo, useEffect, useState, useRef, useCallback } from "react";
+import { memo, useState, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getDashboardData, getHomeMarketData } from "@/shared/data";
 import type { HomeMarketData, HomeTickerItem } from "@/shared/data";
@@ -7,12 +7,10 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getMe } from "@/domains/user/functions";
 import { useLivePrices } from "@/shared/market-data";
 import { LiveDot } from "@/components/vixor/LiveDot";
-import { MoxiAvatar } from "@/components/vixor/MoxiAvatar";
+import { MoxiCharacter3D } from "@/components/vixor/MoxiCharacter3D";
 import { MOXI_QUICK_ACTIONS } from "@/domains/moxi/types";
 import {
   TrendingUp,
-  BarChart2,
-  Scan,
   Bot,
   Zap,
   ChevronRight,
@@ -22,8 +20,6 @@ import {
   Activity,
   Globe,
   Crown,
-  ArrowUpRight,
-  ArrowDownRight,
   RefreshCw,
   Shield,
   Sparkles,
@@ -319,10 +315,9 @@ function MoxiHero({ userName, onSendPrompt }: { userName: string; onSendPrompt: 
       <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-primary/[0.04] pointer-events-none" />
       <div className="absolute -left-8 -bottom-8 w-32 h-32 rounded-full bg-primary/[0.03] pointer-events-none" />
 
-      {/* MOXI Avatar + Greeting */}
-      <div className="relative flex items-start gap-4 mb-4">
-        <MoxiAvatar variant="default" size={48} pulse />
-        <div className="flex-1 min-w-0 pt-0.5">
+      {/* MOAI Greeting */}
+      <div className="relative flex items-center gap-2.5 mb-4">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-base font-extrabold text-white">MOXI</span>
             <LiveDot size={6} />
@@ -439,6 +434,9 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-background)] text-foreground font-sans pb-28">
+      {/* ── 3D MOXI Side Character ──────────────────────────── */}
+      <MoxiCharacter3D onChatOpen={() => handleMoxiPrompt("")} />
+
       {/* ── MOXI Hero ──────────────────────────────────────────── */}
       <MoxiHero userName={userName} onSendPrompt={handleMoxiPrompt} />
 
