@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { memo, useEffect, useState, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getDashboardData, getHomeMarketData } from "@shared/data";
-import type { HomeMarketData, HomeTickerItem } from "@shared/data";
+import { getDashboardData, getHomeMarketData } from "@/shared/data";
+import type { HomeMarketData, HomeTickerItem } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { getMe } from "@domains/user/functions";
+import { getMe } from "@/domains/user/functions";
 import { useLivePrices } from "@/shared/market-data";
 import { LiveDot } from "@/components/vixor/LiveDot";
 import { MoxiAvatar } from "@/components/vixor/MoxiAvatar";
@@ -430,7 +430,7 @@ function HomePage() {
   // Navigate to copilot with a pre-filled prompt
   const handleMoxiPrompt = useCallback(
     (prompt: string) => {
-      navigate({ to: "/copilot" as any, search: { q: prompt } });
+      navigate({ to: "/copilot", search: { q: prompt } } as any);
     },
     [navigate],
   );
