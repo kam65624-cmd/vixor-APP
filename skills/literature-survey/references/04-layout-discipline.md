@@ -68,7 +68,7 @@ Captions must let a reader who reads only the caption + table understand what's 
 
 - This template is **single-column** `article` → there is no second column to span. `figure*` behaves exactly like `figure` here, so it buys no width. Don't use it to "make room".
 - Includes: `width=0.85\linewidth` to `width=\linewidth` — never a bare `\includegraphics{file}`.
-- TikZ figures (taxonomy, timeline, architecture): wrap in `\resizebox{\linewidth}{!}{…}` so they fit the column whatever their natural size (see `02-survey-figures.md` § _Fitting & overflow_). If shrinking makes a tree unreadable, fold it into sub-figures rather than spilling past the margin.
+- TikZ figures (taxonomy, timeline, architecture): wrap in `\resizebox{\linewidth}{!}{…}` so they fit the column whatever their natural size (see `02-survey-figures.md` § *Fitting & overflow*). If shrinking makes a tree unreadable, fold it into sub-figures rather than spilling past the margin.
 
 ### Path
 
@@ -97,7 +97,6 @@ diff <(comm -23 /tmp/labels.txt /tmp/refs.txt) <(echo)
 ### Non-breaking spaces
 
 Use `~` not regular space:
-
 - `Section~\ref{sec:methods}`
 - `Table~\ref{tab:capability}`
 - `Figure~\ref{fig:taxonomy}` (or `Fig.~\ref{...}`)

@@ -4,7 +4,7 @@
 
 The agent writes a runnable code package under `$RUN/experiment/`: `model.py`, `data.py`, `train.py`, `evaluate.py`, `config.yaml`, `requirements.txt`, `README.md`. Stubs (`nn.Linear(1, 1)`, random-tensor data loaders) are not acceptable — this reference defines the bar the code must clear before delivery.
 
-**Hard target:** an engineer with the user's data should be able to launch `python train.py --config config.yaml` and have the script train _something_ that responds to the data, log per-epoch loss, save a checkpoint, and evaluate on a held-out split. It need not match SOTA — it must be _real code_ not stub fragments.
+**Hard target:** an engineer with the user's data should be able to launch `python train.py --config config.yaml` and have the script train *something* that responds to the data, log per-epoch loss, save a checkpoint, and evaluate on a held-out split. It need not match SOTA — it must be *real code* not stub fragments.
 
 ## Required modules and their shape
 
@@ -55,7 +55,6 @@ Things that count as **placeholders to remove**: `nn.Linear(1, 1)`, `def forward
 ### `data.py`
 
 A real data loader that:
-
 - Reads from a configurable path (`config.yaml`)
 - May be generated from an agent-discovered public dataset or a user-supplied dataset for this run
 - Applies the pre-processing the design calls for (normalisation, windowing)
@@ -194,7 +193,6 @@ Don't dump every PyData package; only what the code uses.
 ### `README.md`
 
 A real README that:
-
 - States the experiment's task and dataset assumption in 2 sentences
 - Names the model briefly (architecture summary)
 - Documents how to install (`pip install -r requirements.txt`)

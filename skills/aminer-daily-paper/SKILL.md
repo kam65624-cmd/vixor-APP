@@ -9,16 +9,18 @@ metadata:
     "openclaw":
       {
         "emoji": "📚",
-        "requires": { "bins": ["python3"], "env": ["AMINER_API_KEY"] },
-        "primaryEnv": "AMINER_API_KEY",
-      },
+        "requires": {
+          "bins": ["python3"],
+          "env": ["AMINER_API_KEY"]
+        },
+        "primaryEnv": "AMINER_API_KEY"
+      }
   }
 ---
 
 # aminer-daily-paper
 
 Personalized paper recommendation via AMiner rec5 API. Token required: set `AMINER_API_KEY` env var.
-
 - Docs: https://open.aminer.cn/open/docs | Console: https://open.aminer.cn/open/board?tab=control
 
 **When to activate**: any time the user asks for paper recommendations — explicit command (`/aminer-dp ...`) or natural language (`recommend me papers on RAG`, `帮我推荐最近的多模态论文`).
@@ -34,7 +36,6 @@ Personalized paper recommendation via AMiner rec5 API. Token required: set `AMIN
 ```
 
 If missing, stop and tell the user:
-
 > `AMINER_API_KEY` is not set. Please obtain a token at https://open.aminer.cn and set it as an environment variable.
 
 No other environment variables are required.
@@ -51,14 +52,14 @@ Content-Type: application/json;charset=utf-8
 
 ### Request Fields
 
-| Field           | Type     | Required    | Description                                                                                                                                                                                          |
-| --------------- | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `author_name`   | string   | conditional | Scholar name (English). The backend resolves it to a scholar ID via person search.                                                                                                                   |
-| `author_org`    | string   | optional    | Scholar institution (English full name). Required for disambiguation when the name is ambiguous.                                                                                                     |
-| `topics`        | string[] | conditional | Research topic phrases. **Use the user’s wording** (Chinese, English, or mixed). The API accepts multi-language topic strings.                                                                       |
-| `size`          | int      | optional    | Number of papers per call (1–20). Omit to let the model decide (see below).                                                                                                                          |
-| `offset`        | int      | optional    | Pagination offset (0–100, default 0).                                                                                                                                                                |
-| `language_sort` | string   | optional    | `zh` or `en` **only when the user explicitly asks** for Chinese- or English-biased ranking (e.g. “优先中文论文” / “prefer English papers”). Otherwise omit; the request will not include this field. |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `author_name` | string | conditional | Scholar name (English). The backend resolves it to a scholar ID via person search. |
+| `author_org` | string | optional | Scholar institution (English full name). Required for disambiguation when the name is ambiguous. |
+| `topics` | string[] | conditional | Research topic phrases. **Use the user’s wording** (Chinese, English, or mixed). The API accepts multi-language topic strings. |
+| `size` | int | optional | Number of papers per call (1–20). Omit to let the model decide (see below). |
+| `offset` | int | optional | Pagination offset (0–100, default 0). |
+| `language_sort` | string | optional | `zh` or `en` **only when the user explicitly asks** for Chinese- or English-biased ranking (e.g. “优先中文论文” / “prefer English papers”). Otherwise omit; the request will not include this field. |
 
 At least one of `author_name` or `topics` should be provided. When none are given, the API returns personalized recommendations based on the account associated with `AMINER_API_KEY`.
 
@@ -68,40 +69,36 @@ At least one of `author_name` or `topics` should be provided. When none are give
 {
   "code": 200,
   "success": true,
-  "data": [
-    {
-      "offset": 0,
-      "size": 5,
-      "total": 32,
-      "papers": [
-        {
-          "paper_id": "...",
-          "arxiv_id": "",
-          "title": "...",
-          "year": 2026,
-          "authors": ["Author A", "Author B"],
-          "keywords": ["kw1", "kw2"],
-          "summary": "...",
-          "structured_summary": {
-            "research_problem": "...",
-            "research_challenge": "...",
-            "research_method": "...",
-            "experimental_results": ""
-          },
-          "famous_authors": [],
-          "aminer_author_profiles": [],
-          "author_entries": [],
-          "links": {
-            "aminer": "https://www.aminer.cn/pub/{paper_id}",
-            "arxiv": "",
-            "pdf": ""
-          },
-          "paper_url": "https://www.aminer.cn/pub/{paper_id}",
-          "source": "local_rec5"
-        }
-      ]
-    }
-  ]
+  "data": [{
+    "offset": 0,
+    "size": 5,
+    "total": 32,
+    "papers": [{
+      "paper_id": "...",
+      "arxiv_id": "",
+      "title": "...",
+      "year": 2026,
+      "authors": ["Author A", "Author B"],
+      "keywords": ["kw1", "kw2"],
+      "summary": "...",
+      "structured_summary": {
+        "research_problem": "...",
+        "research_challenge": "...",
+        "research_method": "...",
+        "experimental_results": ""
+      },
+      "famous_authors": [],
+      "aminer_author_profiles": [],
+      "author_entries": [],
+      "links": {
+        "aminer": "https://www.aminer.cn/pub/{paper_id}",
+        "arxiv": "",
+        "pdf": ""
+      },
+      "paper_url": "https://www.aminer.cn/pub/{paper_id}",
+      "source": "local_rec5"
+    }]
+  }]
 }
 ```
 
@@ -136,25 +133,21 @@ recommend me recent papers on RAG
 5. Reconstruct the trigger, then call `handle_trigger.py`.
 
 Example (Chinese topics — **keep as-is**):
-
 - User: `/aminer-dp topics: 具身智能, 环境保护`
 - You call: `handle_trigger.py --text "/aminer-dp topics: 具身智能, 环境保护"`  
   (Do **not** rewrite `topics` into unrelated English.)
 
 Example:
-
 - User: `/aminer-dp 我做多模态智能体和 tool-use，帮我推荐最近论文`
 - You extract: `topics: multimodal agents, tool-use`
 - You call: `handle_trigger.py --text "/aminer-dp topics: multimodal agents, tool-use size: 5"`
 
 Example (scholar):
-
 - User: `/aminer-dp 我是唐杰，清华大学，做多模态和知识图谱`
 - You extract: `scholar: Jie Tang, org: Tsinghua University, topics: multimodal, knowledge graph`
 - You call: `handle_trigger.py --text "/aminer-dp scholar: Jie Tang org: Tsinghua University topics: multimodal, knowledge graph"`
 
 Example (ambiguous name, ask user):
-
 - User: `/aminer-dp 推荐张伟方向的论文`
 - You: "张伟是一个常见名字，请提供机构信息以便精确匹配，例如：张伟，北京大学。或者直接提供 aminer_author_id。"
 
@@ -166,15 +159,14 @@ Example (ambiguous name, ask user):
 
 You decide `size` and whether to make multiple calls based on the input:
 
-| Scenario                                                | Action                                 |
-| ------------------------------------------------------- | -------------------------------------- |
-| Single topic or scholar, casual request                 | 1 call, omit `size` (default 10)       |
-| User explicitly asks for a number (e.g. "give me 5")    | 1 call, honor the number (max 20)      |
+| Scenario | Action |
+|----------|--------|
+| Single topic or scholar, casual request | 1 call, omit `size` (default 10) |
+| User explicitly asks for a number (e.g. "give me 5") | 1 call, honor the number (max 20) |
 | Multiple distinct topics (e.g. RAG + multimodal agents) | 1 call per topic group, `size: 5` each |
-| Broad open-ended request with no topics                 | 1 call, omit `size` (default 10)       |
+| Broad open-ended request with no topics | 1 call, omit `size` (default 10) |
 
 **Multi-call rules:**
-
 - Call `handle_trigger.py` once per topic group, passing a focused `topics:` subset each time.
 - Keep each `topics:` list to 1–3 closely related terms for precision.
 - Make calls sequentially; present all results together after all calls finish.

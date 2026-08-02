@@ -5,39 +5,35 @@ Quick reference for using the `market_research.sty` style package.
 ## Color Palette
 
 ### Primary Colors
-
-| Color Name      | RGB             | Hex       | Usage                                |
-| --------------- | --------------- | --------- | ------------------------------------ |
-| `primaryblue`   | (0, 51, 102)    | `#003366` | Headers, titles, links               |
-| `secondaryblue` | (51, 102, 153)  | `#336699` | Subsections, secondary elements      |
-| `lightblue`     | (173, 216, 230) | `#ADD8E6` | Key insight box backgrounds          |
-| `accentblue`    | (0, 120, 215)   | `#0078D7` | Accent highlights, opportunity boxes |
+| Color Name | RGB | Hex | Usage |
+|------------|-----|-----|-------|
+| `primaryblue` | (0, 51, 102) | `#003366` | Headers, titles, links |
+| `secondaryblue` | (51, 102, 153) | `#336699` | Subsections, secondary elements |
+| `lightblue` | (173, 216, 230) | `#ADD8E6` | Key insight box backgrounds |
+| `accentblue` | (0, 120, 215) | `#0078D7` | Accent highlights, opportunity boxes |
 
 ### Secondary Colors
-
-| Color Name        | RGB             | Hex       | Usage                                  |
-| ----------------- | --------------- | --------- | -------------------------------------- |
-| `accentgreen`     | (0, 128, 96)    | `#008060` | Market data boxes, positive indicators |
-| `lightgreen`      | (200, 230, 201) | `#C8E6C9` | Market data box backgrounds            |
-| `warningorange`   | (255, 140, 0)   | `#FF8C00` | Risk boxes, warnings                   |
-| `alertred`        | (198, 40, 40)   | `#C62828` | Critical risks                         |
-| `recommendpurple` | (103, 58, 183)  | `#673AB7` | Recommendation boxes                   |
+| Color Name | RGB | Hex | Usage |
+|------------|-----|-----|-------|
+| `accentgreen` | (0, 128, 96) | `#008060` | Market data boxes, positive indicators |
+| `lightgreen` | (200, 230, 201) | `#C8E6C9` | Market data box backgrounds |
+| `warningorange` | (255, 140, 0) | `#FF8C00` | Risk boxes, warnings |
+| `alertred` | (198, 40, 40) | `#C62828` | Critical risks |
+| `recommendpurple` | (103, 58, 183) | `#673AB7` | Recommendation boxes |
 
 ### Neutral Colors
-
-| Color Name   | RGB             | Hex       | Usage                      |
-| ------------ | --------------- | --------- | -------------------------- |
-| `darkgray`   | (66, 66, 66)    | `#424242` | Body text                  |
-| `mediumgray` | (117, 117, 117) | `#757575` | Secondary text             |
-| `lightgray`  | (240, 240, 240) | `#F0F0F0` | Backgrounds, callout boxes |
-| `tablealt`   | (245, 247, 250) | `#F5F7FA` | Alternating table rows     |
+| Color Name | RGB | Hex | Usage |
+|------------|-----|-----|-------|
+| `darkgray` | (66, 66, 66) | `#424242` | Body text |
+| `mediumgray` | (117, 117, 117) | `#757575` | Secondary text |
+| `lightgray` | (240, 240, 240) | `#F0F0F0` | Backgrounds, callout boxes |
+| `tablealt` | (245, 247, 250) | `#F5F7FA` | Alternating table rows |
 
 ---
 
 ## Box Environments
 
 ### Key Insight Box (Blue)
-
 For major findings, insights, and important discoveries.
 
 ```latex
@@ -48,7 +44,6 @@ increasing enterprise adoption and favorable regulatory conditions.
 ```
 
 ### Market Data Box (Green)
-
 For market statistics, metrics, and data highlights.
 
 ```latex
@@ -62,7 +57,6 @@ For market statistics, metrics, and data highlights.
 ```
 
 ### Risk Box (Orange/Warning)
-
 For risk factors, warnings, and cautions.
 
 ```latex
@@ -73,7 +67,6 @@ participants within the next 18 months.
 ```
 
 ### Critical Risk Box (Red)
-
 For high-severity or critical risks.
 
 ```latex
@@ -84,7 +77,6 @@ and 30% cost increases.
 ```
 
 ### Recommendation Box (Purple)
-
 For strategic recommendations and action items.
 
 ```latex
@@ -98,7 +90,6 @@ For strategic recommendations and action items.
 ```
 
 ### Callout Box (Gray)
-
 For definitions, notes, and supplementary information.
 
 ```latex
@@ -109,7 +100,6 @@ available if 100% market share was achieved.
 ```
 
 ### Executive Summary Box
-
 Special styling for executive summary highlights.
 
 ```latex
@@ -119,7 +109,6 @@ Key findings and highlights of the report...
 ```
 
 ### Opportunity Box (Teal/Accent Blue)
-
 For opportunities and positive findings.
 
 ```latex
@@ -130,7 +119,6 @@ growing at 22% CAGR.
 ```
 
 ### Framework Boxes
-
 For strategic analysis frameworks.
 
 ```latex
@@ -177,25 +165,21 @@ For highlighting key statistics (use in rows of 3).
 ## Custom Commands
 
 ### Highlighting Text
-
 ```latex
 \highlight{Important text}  % Blue bold
 ```
 
 ### Market Size Formatting
-
 ```latex
 \marketsize{45.2 billion}   % Outputs: $45.2 billion in green
 ```
 
 ### Growth Rate Formatting
-
 ```latex
 \growthrate{15.3}           % Outputs: 15.3% in green
 ```
 
 ### Risk Indicators
-
 ```latex
 \riskhigh{}     % Outputs: HIGH in red
 \riskmedium{}   % Outputs: MEDIUM in orange
@@ -203,13 +187,11 @@ For highlighting key statistics (use in rows of 3).
 ```
 
 ### Rating Stars (1-5)
-
 ```latex
 \rating{4}      % Outputs: ★★★★☆
 ```
 
 ### Trend Indicators
-
 ```latex
 \trendup{}      % Green up triangle
 \trenddown{}    % Red down triangle
@@ -221,7 +203,6 @@ For highlighting key statistics (use in rows of 3).
 ## Table Formatting
 
 ### Standard Table with Alternating Rows
-
 ```latex
 \begin{table}[htbp]
 \centering
@@ -243,7 +224,6 @@ Asia-Pacific & \$10.5B & 23.2\% & 18.7\% \\
 ```
 
 ### Table with Trend Indicators
-
 ```latex
 \begin{tabular}{@{}lrrl@{}}
 \toprule
@@ -261,7 +241,6 @@ Company C & \$4.2B & 12.4\% & \trendflat{} +1\% \\
 ## Figure Formatting
 
 ### Standard Figure
-
 ```latex
 \begin{figure}[htbp]
 \centering
@@ -272,7 +251,6 @@ Company C & \$4.2B & 12.4\% & \trendflat{} +1\% \\
 ```
 
 ### Figure with Source Attribution
-
 ```latex
 \begin{figure}[htbp]
 \centering
@@ -288,7 +266,6 @@ Company C & \$4.2B & 12.4\% & \trendflat{} +1\% \\
 ## List Formatting
 
 ### Bullet Lists
-
 ```latex
 \begin{itemize}
     \item First item with automatic blue bullet
@@ -298,7 +275,6 @@ Company C & \$4.2B & 12.4\% & \trendflat{} +1\% \\
 ```
 
 ### Numbered Lists
-
 ```latex
 \begin{enumerate}
     \item First item with blue number
@@ -308,7 +284,6 @@ Company C & \$4.2B & 12.4\% & \trendflat{} +1\% \\
 ```
 
 ### Nested Lists
-
 ```latex
 \begin{itemize}
     \item Main point
@@ -325,7 +300,6 @@ Company C & \$4.2B & 12.4\% & \trendflat{} +1\% \\
 ## Title Page
 
 ### Using the Custom Title Command
-
 ```latex
 \makemarketreporttitle
     {Market Title}              % Report title
@@ -336,7 +310,6 @@ Company C & \$4.2B & 12.4\% & \trendflat{} +1\% \\
 ```
 
 ### Manual Title Page
-
 See the template for full manual title page code.
 
 ---
@@ -357,7 +330,6 @@ Content that appears in table of contents...
 ## Common Patterns
 
 ### Market Snapshot Section
-
 ```latex
 \begin{marketdatabox}[Market Snapshot]
 \begin{itemize}
@@ -371,7 +343,6 @@ Content that appears in table of contents...
 ```
 
 ### Risk Register Summary
-
 ```latex
 \begin{table}[htbp]
 \centering
@@ -391,7 +362,6 @@ Currency fluctuation & Financial & Med & Low & \risklow{} \\
 ```
 
 ### Competitive Comparison Table
-
 ```latex
 \begin{table}[htbp]
 \centering
@@ -415,26 +385,20 @@ Customer Service & \rating{4} & \rating{4} & \rating{4} & \rating{5} \\
 ## Troubleshooting
 
 ### Box Overflow
-
 If box content overflows the page, break into multiple boxes or use page breaks:
-
 ```latex
 \newpage
 \begin{keyinsightbox}[Continued...]
 ```
 
 ### Figure Placement
-
 Use `[htbp]` for flexible placement, or `[H]` (requires `float` package) for exact placement:
-
 ```latex
 \begin{figure}[H]  % Requires \usepackage{float}
 ```
 
 ### Table Too Wide
-
 Use `\resizebox` or `adjustbox`:
-
 ```latex
 \resizebox{\textwidth}{!}{
 \begin{tabular}{...}
@@ -444,7 +408,6 @@ Use `\resizebox` or `adjustbox`:
 ```
 
 ### Color Not Appearing
-
 Ensure `xcolor` package is loaded with `[table]` option (already included in style file).
 
 ---
@@ -452,7 +415,6 @@ Ensure `xcolor` package is loaded with `[table]` option (already included in sty
 ## Compilation
 
 Compile with XeLaTeX for best results:
-
 ```bash
 xelatex report.tex
 bibtex report
@@ -461,7 +423,6 @@ xelatex report.tex
 ```
 
 Or use latexmk:
-
 ```bash
 latexmk -xelatex report.tex
 ```

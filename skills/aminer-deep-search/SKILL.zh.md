@@ -13,9 +13,12 @@ metadata:
   {
     "openclaw":
       {
-        "requires": { "bins": ["python3"], "env": ["AMINER_API_KEY"] },
-        "primaryEnv": "AMINER_API_KEY",
-      },
+        "requires": {
+          "bins": ["python3"],
+          "env": ["AMINER_API_KEY"]
+        },
+        "primaryEnv": "AMINER_API_KEY"
+      }
   }
 ---
 
@@ -46,12 +49,12 @@ metadata:
 
 ### `scripts/aminer_api.py` — AMiner 接口调用
 
-| 子命令                                                                                                                                    | 端点                                                                                                 | 价格          |
-| ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------- |
-| `search --query Q [--size 20] [--year YYYY] [--order n_citation\|year] [--max-pages 3]`                                                   | GET `/api/paper/search/pro` + 免费 `paper/info` 补全                                                 | ¥0.01/页      |
-| `qa-search [--query "自然语言问题"] [--topic-high '[["词A","词B"],["词C"]]'] [--size 20] [--year-from Y] [--year-to Y] [--citation-sort]` | POST `/api/paper/qa/search`（固定 `use_topic=true`：`use_topic=false` 时后端忽略 `query`）+ 免费补全 | ¥0.05/次      |
-| `info --ids id1 id2 ...`                                                                                                                  | POST `/api/paper/info`（≤100 个 id 分批）                                                            | 免费          |
-| `references --ids id1 id2 ... [--per-seed 20]`                                                                                            | 每个 seed 调 GET `/api/paper/relation` + 免费补全                                                    | ¥0.10/篇 seed |
+| 子命令 | 端点 | 价格 |
+|---|---|---|
+| `search --query Q [--size 20] [--year YYYY] [--order n_citation\|year] [--max-pages 3]` | GET `/api/paper/search/pro` + 免费 `paper/info` 补全 | ¥0.01/页 |
+| `qa-search [--query "自然语言问题"] [--topic-high '[["词A","词B"],["词C"]]'] [--size 20] [--year-from Y] [--year-to Y] [--citation-sort]` | POST `/api/paper/qa/search`（固定 `use_topic=true`：`use_topic=false` 时后端忽略 `query`）+ 免费补全 | ¥0.05/次 |
+| `info --ids id1 id2 ...` | POST `/api/paper/info`（≤100 个 id 分批） | 免费 |
+| `references --ids id1 id2 ... [--per-seed 20]` | 每个 seed 调 GET `/api/paper/relation` + 免费补全 | ¥0.10/篇 seed |
 
 输出形状：`search`/`qa-search`/`info` 输出 `[{id, title, year?, venue?, abstract_slice?}]`；`references` 额外带 `source_paper_ids`（哪些 seed 引用了该论文），且结果中排除 seed 本身。
 

@@ -1,7 +1,6 @@
 # Scene: Create New Spreadsheet
 
 ## When This Applies
-
 User wants to create a new Excel file from scratch — a table, template, schedule, report, or any structured data output.
 
 For financial models, also load `scenes/finance.md`.
@@ -22,7 +21,6 @@ For financial models, also load `scenes/finance.md`.
 All layout rules (Canvas Origin B2, column widths, row heights, margins) and styling (title/header/data/totals) are defined in **`engines/design.md`** — the single source of truth. Do not duplicate here.
 
 Quick reference for sheet structure:
-
 ```
 Row 1:  [top margin]
 Row 2:  Title (B2)
@@ -36,7 +34,6 @@ Last+3: Notes/sources
 ## Multi-Sheet Workbooks
 
 ### Cross-Sheet References
-
 ```python
 # Reference another sheet
 sheet['C5'] = "=Data!B10"
@@ -49,7 +46,6 @@ sheet['C5'].font = Font(color="008000")
 ```
 
 ### Common Multi-Sheet Patterns
-
 - **Data + Summary**: Raw data on Sheet1, formulas/charts on Summary
 - **Monthly tabs**: Jan, Feb, Mar... + Annual Summary
 - **Input + Output**: Assumptions sheet + Calculations sheet + Dashboard
@@ -57,7 +53,6 @@ sheet['C5'].font = Font(color="008000")
 ## Template Patterns
 
 ### Simple Data Table
-
 ```python
 wb = Workbook()
 ws = wb.active
@@ -86,13 +81,11 @@ ws.cell(row=total_row, column=7).value = f'=SUM(C{total_row}:F{total_row})'
 ```
 
 ### Schedule / Calendar
-
 - Use merged cells for day headers
 - Conditional formatting for weekends (light gray fill)
 - Freeze panes: `ws.freeze_panes = 'C5'` (freeze header + left labels)
 
 ### Checklist / Tracker
-
 - Checkbox column using data validation (`TRUE`/`FALSE`)
 - Status column with conditional formatting (green/amber/red)
 - Progress bar using data bar conditional formatting

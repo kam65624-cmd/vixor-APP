@@ -58,43 +58,36 @@ Everything else is flexible, but these two must be true:
 Pick **one** structure from the page's conversion job. Do not blend several into mush.
 
 ### A. Classic Narrative Scroll
-
 Hero → problem/value → product proof → how it works → objections → CTA. Each scroll section answers the visitor's next unspoken question, in order.
 **Best for:** products that need explanation before purchase; most SaaS and B2B pages.
 **The move:** section order = objection order. Map the skeptic's questions ("does it work with my stack?", "how long to set up?", "what does it cost?") and let the sections answer them in sequence. A section that answers no objection gets cut.
 
 ### B. Product Showcase
-
 The product UI is the hero — shown big, real, and annotated. Copy supports the image, not the reverse.
 **Best for:** visually strong products: design tools, dashboards, dev tools with a UI worth seeing.
 **The move:** real interface at full scale with callout annotations on actual features. Never a floating laptop mockup at 30° with a glow — that adds three layers of distance and signals stock template.
 
 ### C. Sales / Pricing Page
-
 Built around the buying decision: plans, comparison, objection handling, guarantee.
 **Best for:** visitors who already know the product and are deciding whether and which tier.
 **The move:** answer objections at the point of doubt — FAQ adjacent to the pricing table, refund/cancel terms next to the buy button, plan-comparison rows that map to real usage situations ("you need this tier when…"), not feature-name checkmark soup.
 
 ### D. Waitlist / Launch Page
-
 Deliberately scarce: one promise, one visual, one field. Tension comes from restraint.
 **Best for:** pre-launch products collecting signups before there is a full story to tell.
 **The move:** make signup value explicit — what the subscriber gets (early access? founding price? build updates?) and roughly when. "Join the waitlist" with no stated payoff converts nobody. A confirmation state must exist (inline success message at minimum).
 
 ### E. Service / Agency Page
-
 Capability framing + named process + proof of work + contact path.
 **Best for:** consultancies, studios, freelancers selling expertise rather than a product.
 **The move:** a named, numbered process ("Week 1: audit → Week 2–3: prototype → Week 4: ship") is the strongest trust signal a service page has — it proves the work is systematized, not improvised. Vague "we collaborate closely" paragraphs prove nothing.
 
 ### F. Editorial Launch
-
 Manifesto-style, type-led. The copy IS the design; imagery is minimal or absent.
 **Best for:** opinionated products, brand-led launches, developer tools with a strong point of view.
 **The move:** oversized statement typography (clamp() up to ~10–14vw for the thesis line), long-form conviction copy with real paragraph rhythm, one accent color. Works only if the writing is genuinely sharp — weak copy at display scale is just louder weakness.
 
 ### G. Interactive-Canvas Hero
-
 The product is usable inside the hero — a live demo, playground, or generated output.
 **Best for:** tools and APIs whose value is provable in under 10 seconds of interaction.
 **The move:** the visitor uses the product before reading about it. The demo must actually work with real logic (`web-tool.md` rigor applies to that component); a fake demo is worse than no demo.
@@ -115,27 +108,21 @@ Decide what proves the value claim, then design that proof as a first-class sect
 ## Landing-Page-Specific Moves
 
 ### Visual-weight tiers, never CSV-with-CSS
-
 Every information-dense section needs at least four visible weight tiers: hero moment / primary modules / secondary modules / tertiary detail. A page of equal-height cards in a single column is a spreadsheet with padding. Give the strongest claim 2–3× the space of supporting points; let minor features compress into a compact grid or single line each.
 
 ### Density rhythm
-
 Alternate full-bleed statement moments with denser informational sections. One dominant moment per page (the hero or one mid-page section), everything else supports it. A page where every section shouts at the same volume reads as noise; a page of uniform medium density reads as a document.
 
 ### The repeated CTA, with restraint
-
 Primary CTA at the hero, then again at each natural commitment moment (after the proof section, after pricing, at page end). Identical wording and style each time — the repetition builds familiarity. Secondary actions ("read docs", "watch video") get visually subordinate treatment everywhere: text link or ghost button, never a second filled button beside the primary.
 
 ### Asymmetric hero, not centered safety
-
 Default to off-balance hero composition — copy column against product visual at `1fr 1.2fr`, headline hanging into the margin, product image bleeding off one edge. Centered headline + centered subline + centered button is the single strongest template signal. Center only when structure D's scarcity or F's manifesto genuinely calls for it.
 
 ### Objection ladder for pricing
-
 Wherever a price appears, the three purchase anxieties must be answered within one viewport: what exactly do I get, what if it doesn't work out (cancel/refund/trial terms), and which option is for me (a highlighted recommended tier with a reason, not just a "POPULAR" badge).
 
 ### Numbers as design material
-
 Real metrics (latency, accuracy, time saved, counts) set at display scale with small labels are both proof and visual texture. Only real or clearly-labeled-demo numbers — and respect `horizontal-craft/data-integrity.md`.
 
 ## Completeness Checklist

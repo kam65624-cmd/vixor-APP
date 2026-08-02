@@ -69,11 +69,11 @@ Unicorn Studio 至少有两种常见数据形态：
 
 ## Firestore 集合结构
 
-| Collection | 用途             | 关键字段                                  |
-| ---------- | ---------------- | ----------------------------------------- |
-| `designs`  | 设计元数据       | creatorId, name, versionId, hasEmbed      |
-| `versions` | 版本数据（核心） | history[], options                        |
-| `remixes`  | 可 remix 设计    | designId, versionId, creatorId, thumbnail |
+| Collection | 用途 | 关键字段 |
+|---|---|---|
+| `designs` | 设计元数据 | creatorId, name, versionId, hasEmbed |
+| `versions` | 版本数据（核心） | history[], options |
+| `remixes` | 可 remix 设计 | designId, versionId, creatorId, thumbnail |
 
 ## 版本数据结构
 
@@ -117,13 +117,13 @@ type:      效果类型 (gradient, noiseFill, sdf_shape, glyphDither, bloomFast,
 
 ### 效果类型特有参数
 
-| 效果        | 关键参数                                                                             |
-| ----------- | ------------------------------------------------------------------------------------ |
-| gradient    | fill[], stops[], gradientType, gradientAngle, wrap                                   |
-| noiseFill   | noiseType, turbulence, color1, color2, colorPhase, chroma, direction                 |
-| sdf_shape   | shape(0-22), refraction, extrude, smoothing, axis, animationDirection, lightPosition |
-| glyphDither | characters, glyphSet, scale, gamma, monochrome, texture(sprite atlas)                |
-| bloomFast   | amount, intensity, exposure, tint                                                    |
+| 效果 | 关键参数 |
+|---|---|
+| gradient | fill[], stops[], gradientType, gradientAngle, wrap |
+| noiseFill | noiseType, turbulence, color1, color2, colorPhase, chroma, direction |
+| sdf_shape | shape(0-22), refraction, extrude, smoothing, axis, animationDirection, lightPosition |
+| glyphDither | characters, glyphSet, scale, gamma, monochrome, texture(sprite atlas) |
+| bloomFast | amount, intensity, exposure, tint |
 
 ## Shader 代码提取
 
@@ -152,18 +152,18 @@ bloomFast       → Hj (fragment)
 
 Shader 模板中含 `${variable}` 占位符，编译时替换：
 
-| 变量           | 内容                                                                    |
-| -------------- | ----------------------------------------------------------------------- |
-| `${fe}`        | mask 相关 uniform 声明                                                  |
-| `${Vt}`        | 图层混合辅助函数 (applyLayerMix, applyLayerMixAlpha, applyLayerMixClip) |
-| `${gt}`        | PCG hash / 随机数函数 (pcg2d, randFibo)                                 |
-| `${ht}`        | 混合模式函数 (17 种模式: Normal, Add, Multiply, Screen, Overlay, ...)   |
-| `${pe("var")}` | mask 应用 + fragColor 输出                                              |
-| `${wf}`        | BCC noise derivatives (OpenSimplex2S)                                   |
-| `${Aa}`        | Perlin noise 函数                                                       |
-| `${yr}`        | deband 抖动函数                                                         |
-| `${cm}`        | 渐变颜色/停止点 uniform 声明                                            |
-| `${xz}`        | 高斯权重函数 (bloom blur)                                               |
+| 变量 | 内容 |
+|---|---|
+| `${fe}` | mask 相关 uniform 声明 |
+| `${Vt}` | 图层混合辅助函数 (applyLayerMix, applyLayerMixAlpha, applyLayerMixClip) |
+| `${gt}` | PCG hash / 随机数函数 (pcg2d, randFibo) |
+| `${ht}` | 混合模式函数 (17 种模式: Normal, Add, Multiply, Screen, Overlay, ...) |
+| `${pe("var")}` | mask 应用 + fragColor 输出 |
+| `${wf}` | BCC noise derivatives (OpenSimplex2S) |
+| `${Aa}` | Perlin noise 函数 |
+| `${yr}` | deband 抖动函数 |
+| `${cm}` | 渐变颜色/停止点 uniform 声明 |
+| `${xz}` | 高斯权重函数 (bloom blur) |
 
 ### 编译管线
 
@@ -232,27 +232,25 @@ getChildEffectItems() {
 ### uTime 时间基准（关键陷阱）
 
 Embed SDK 中 `uTime` **不是秒数**，而是逐帧累加：
-
 ```js
 // setEffectPlaneUniforms() 中：
-t.uniforms.time.value += (speed * 60) / this.fps;
+t.uniforms.time.value += speed * 60 / this.fps;
 ```
 
 在 60fps 下：`uTime += speed` 每帧。1 秒后 `uTime = speed × 60`。
 
-| 效果层    | speed | 1 秒后 uTime |
-| --------- | ----- | ------------ |
-| noiseFill | 0.25  | 15           |
-| sdf_shape | 0.5   | 30           |
-| gradient  | 0.25  | 15           |
+| 效果层 | speed | 1 秒后 uTime |
+|--------|-------|-------------|
+| noiseFill | 0.25 | 15 |
+| sdf_shape | 0.5 | 30 |
+| gradient | 0.25 | 15 |
 
 **移植时必须乘以 `speed × 60`**，否则动画慢 15-60 倍：
-
 ```js
 // 正确：
-uni1f(prog, "uTime", elapsedSeconds * speed * 60);
+uni1f(prog, 'uTime', elapsedSeconds * speed * 60);
 // 错误：
-uni1f(prog, "uTime", elapsedSeconds);
+uni1f(prog, 'uTime', elapsedSeconds);
 ```
 
 ### showBg 参数的关键作用
@@ -303,16 +301,16 @@ Playwright 默认 headless 环境可能没有可用 WebGL。出现下面症状�
 
 ```js
 function createGlyphAtlas(chars, size = 40) {
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = size * chars.length;
   canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#000";
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = '#fff';
   ctx.font = `bold ${size * 0.8}px monospace`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
   for (let i = 0; i < chars.length; i++) {
     ctx.fillText(chars[i], size * i + size / 2, size / 2);
   }
@@ -323,7 +321,6 @@ function createGlyphAtlas(chars, size = 40) {
 ## Cloud Functions 端点
 
 所有位于 `https://us-central1-unicorn-studio.cloudfunctions.net/`：
-
 - `publishEmbedTest` — 发布/更新 embed（需认证）
 - `getUserIdByUsername` — 用户名→userId
 - `handleVideos/handleModels/handleImages` — 资源处理

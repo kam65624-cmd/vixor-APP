@@ -12,15 +12,12 @@ The pipeline emits a 30-line `experiment_report.md`:
 **Data contract:** `data_contract.md`
 
 ## Results Summary
-
 | Method | ... |
 
 ## Charts
-
 ![Chart](...)
 
 ## Code
-
 Runnable code skeleton in `experiment/`.
 ```
 
@@ -38,7 +35,7 @@ The first lines of the report:
 # Experiment Report: <topic>
 
 **Authored by:** AI4S Agent (with human review strongly recommended before publication or production use)
-**Mode:** Simulated (numbers from `experiment-suite/scripts/simulator.py`) ← or "Measured" / "Mixed"
+**Mode:** Simulated (numbers from `experiment-suite/scripts/simulator.py`)  ← or "Measured" / "Mixed"
 **Date:** YYYY-MM-DD
 **Hardware (if measured):** 1× A100 80GB, 38h wall-clock total
 **Data contract:** `data_contract.md`
@@ -71,13 +68,13 @@ The substantive section. Two passes:
 **5.a — Headline numbers.** A markdown table summarising the main comparison. Format:
 
 ```markdown
-| Method   | ETTm1     | Electricity | Traffic   | Weather   |
-| -------- | --------- | ----------- | --------- | --------- |
-| DLinear  | 0.382     | 0.166       | 0.434     | 0.241     |
-| ...      | ...       | ...         | ...       | ...       |
-| **Ours** | **0.354** | **0.149**   | **0.402** | **0.220** |
+| Method | ETTm1 | Electricity | Traffic | Weather |
+|---|---|---|---|---|
+| DLinear      | 0.382 | 0.166 | 0.434 | 0.241 |
+| ...          | ...   | ...   | ...   | ...   |
+| **Ours**     | **0.354** | **0.149** | **0.402** | **0.220** |
 
-_Three-seed mean. Numbers are simulated._
+*Three-seed mean. Numbers are simulated.*
 ```
 
 **5.b — Figures.** Embed each figure with a markdown reference + brief surrounding prose:
@@ -85,7 +82,7 @@ _Three-seed mean. Numbers are simulated._
 ```markdown
 ![Method comparison](figures/fig_02_method_comparison.pdf)
 
-_Figure 2._ MSE on ETTm1 across methods, with three-seed error bars. The patched configuration (Ours) is consistently best, with a roughly 8% improvement over DLinear at horizon 720. Numbers are simulated.
+*Figure 2.* MSE on ETTm1 across methods, with three-seed error bars. The patched configuration (Ours) is consistently best, with a roughly 8% improvement over DLinear at horizon 720. Numbers are simulated.
 ```
 
 ### 6. Analysis
@@ -123,17 +120,17 @@ Expected wall-clock per configuration: ≈ 30 min on 1× A100. Configurations ×
 
 ## Length guidance
 
-| Section                | Target words |
-| ---------------------- | ------------ |
-| 1. Header + disclosure | 60–120       |
-| 2. Problem             | 100–200      |
-| 3. Design rationale    | 250–350      |
-| 4. Method              | 100–200      |
-| 5. Results (5.a + 5.b) | 200–400      |
-| 6. Analysis            | 300–500      |
-| 7. Limitations         | 100–200      |
-| 8. Reproduction        | 80–150       |
-| **Total**              | **≥ 800**    |
+| Section | Target words |
+|---|---|
+| 1. Header + disclosure | 60–120 |
+| 2. Problem | 100–200 |
+| 3. Design rationale | 250–350 |
+| 4. Method | 100–200 |
+| 5. Results (5.a + 5.b) | 200–400 |
+| 6. Analysis | 300–500 |
+| 7. Limitations | 100–200 |
+| 8. Reproduction | 80–150 |
+| **Total** | **≥ 800** |
 
 ## Anti-patterns
 

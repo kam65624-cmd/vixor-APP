@@ -11,18 +11,18 @@ End-to-end experiment package builder. **Single stage, full quality from the sta
 
 The substantive work is decomposed into reference playbooks under `references/`:
 
-| Reference                                | Topic                                                                                                                  |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `references/00-incremental-execution.md` | how to do this without losing work: batches, persistence, resume — **read first**                                      |
-| `references/01-design-depth.md`          | what a real experiment design contains (motivation → hypothesis → datasets → baselines → metrics → ablations → budget) |
-| `references/01a-data-contract.md`        | runtime dataset binding: source, access route, version, split, and reuse boundary                                      |
-| `references/02-code-quality.md`          | code-skeleton standards — runnable `model.py`, `data.py`, `train.py`, `evaluate.py`                                    |
-| `references/03-results-protocol.md`      | `results.json` schema; `measured` / `simulated` / `illustrative` provenance                                            |
-| `references/04-publication-figures.md`   | publication-grade charts, multi-panel layouts, taste rules                                                             |
-| `references/04a-figure-contract.md`      | figure logic before plotting: conclusion, panel map, reviewer risk                                                     |
-| `references/04b-figure-qa.md`            | export bundle, editable text, statistics and image-integrity QA                                                        |
-| `references/05-report-structure.md`      | structured `experiment_report.md` (problem → design → method → results → analysis → limitations)                       |
-| `references/06-quality-gate.md`          | self-check before delivery                                                                                             |
+| Reference | Topic |
+|---|---|
+| `references/00-incremental-execution.md` | how to do this without losing work: batches, persistence, resume — **read first** |
+| `references/01-design-depth.md` | what a real experiment design contains (motivation → hypothesis → datasets → baselines → metrics → ablations → budget) |
+| `references/01a-data-contract.md` | runtime dataset binding: source, access route, version, split, and reuse boundary |
+| `references/02-code-quality.md` | code-skeleton standards — runnable `model.py`, `data.py`, `train.py`, `evaluate.py` |
+| `references/03-results-protocol.md` | `results.json` schema; `measured` / `simulated` / `illustrative` provenance |
+| `references/04-publication-figures.md` | publication-grade charts, multi-panel layouts, taste rules |
+| `references/04a-figure-contract.md` | figure logic before plotting: conclusion, panel map, reviewer risk |
+| `references/04b-figure-qa.md` | export bundle, editable text, statistics and image-integrity QA |
+| `references/05-report-structure.md` | structured `experiment_report.md` (problem → design → method → results → analysis → limitations) |
+| `references/06-quality-gate.md` | self-check before delivery |
 
 Also: `figure_examples/` — publication-style matplotlib scripts plus a shared style kit the agent can use as starting points.
 

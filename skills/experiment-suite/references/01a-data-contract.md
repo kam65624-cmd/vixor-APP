@@ -16,13 +16,11 @@ Write `$RUN/data_contract.md` with this structure:
 # Data Contract
 
 ## Task binding
-
 - research question:
 - task type:
 - target variable:
 
 ## Dataset route
-
 - mode: user-supplied | agent-discovered | reused-public | controlled | synthetic-fallback
 - source:
 - repository / landing page:
@@ -32,24 +30,20 @@ Write `$RUN/data_contract.md` with this structure:
 - persistent identifier quality: DOI | accession | stable URL | none
 
 ## Files used in this run
-
 - file or subset:
 - role: train / val / test / metadata / labels / source data
 
 ## Split protocol
-
 - split source:
 - split rule:
 - leakage risks:
 
 ## Pre-processing contract
-
 - raw to model input:
 - normalization / filtering:
 - exclusions:
 
 ## Reuse and publication notes
-
 - can this run be marked measured:
 - source-data / FAIR follow-up needed:
 - unresolved risks:

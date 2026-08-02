@@ -4,7 +4,7 @@
 
 A survey with 100+ references and 7 multi-paragraph sections does not fit into a single LLM tool call. WebSearch returns ~10 useful candidates per query, not 100. A single message can write one solid section, not seven. If you treat the build as "do it all in one shot", you will hit context limits, fail mid-task, and have nothing to recover.
 
-This reference defines the only execution mode that works: **incremental, file-persisted, resumable**. Every other reference (`01`–`05`) describes _what_ to produce; this one describes _how_ to produce it without losing work.
+This reference defines the only execution mode that works: **incremental, file-persisted, resumable**. Every other reference (`01`–`05`) describes *what* to produce; this one describes *how* to produce it without losing work.
 
 ## The three invariants
 
@@ -33,12 +33,12 @@ A "batch" is one WebSearch+WebFetch cycle, or one section's prose, or one figure
 
 ## Batch sizes that work
 
-| Operation              | Batch size per turn                                           | Total batches               | Persistence                                  |
-| ---------------------- | ------------------------------------------------------------- | --------------------------- | -------------------------------------------- |
-| Bibliography expansion | 1 WebSearch query → triage → ~5–15 WebFetch'd entries         | 10–15 batches to reach 100+ | Append to `bibliography.bib` after each      |
-| Section drafting       | 1 section per turn                                            | 7 batches total             | Write each `sections/<name>.tex` immediately |
-| Figure generation      | 1 figure per turn (TikZ inline or matplotlib script + render) | 6–10 batches                | Save script + render alongside               |
-| Compile + check        | 1 cycle after major artefact                                  | Several                     | `main.log` + grep                            |
+| Operation | Batch size per turn | Total batches | Persistence |
+|---|---|---|---|
+| Bibliography expansion | 1 WebSearch query → triage → ~5–15 WebFetch'd entries | 10–15 batches to reach 100+ | Append to `bibliography.bib` after each |
+| Section drafting | 1 section per turn | 7 batches total | Write each `sections/<name>.tex` immediately |
+| Figure generation | 1 figure per turn (TikZ inline or matplotlib script + render) | 6–10 batches | Save script + render alongside |
+| Compile + check | 1 cycle after major artefact | Several | `main.log` + grep |
 
 A turn that tries to do 5 sections produces shallow prose and probably truncates. A turn that tries to "WebSearch all 15 queries at once" hits tool budgets. One per turn is the rhythm.
 
@@ -90,7 +90,7 @@ The abstract names the field's structure as you have organised it. Until you hav
 For each figure (6–10 total):
 
 1. Open `references/02-survey-figures.md` for the family that fits this figure (taxonomy / timeline / matrix / architecture / quantitative).
-2. Decide what the figure _answers_ in the survey. That answer becomes the caption.
+2. Decide what the figure *answers* in the survey. That answer becomes the caption.
 3. Write the figure (TikZ inline in the relevant `sections/*.tex`, or a `figures/make_fig_NN_*.py` script).
 4. Render (TikZ compiles via main.tex; matplotlib via `cd figures && python make_fig_NN_*.py`).
 5. Verify the PDF exists and is non-trivial.

@@ -5,7 +5,6 @@
 The simulator emits one default chart (`fig_01_comparison_<metric>.pdf`) with default matplotlib styling — useful for a status check, far too crude for a real experiment package. This reference defines what to bring it up to.
 
 **Hard targets:**
-
 - ≥ 3 figures total (more if the experiment supports them)
 - All vector PDF, fonts embedded, publication-grade rcParams
 - Each figure has a question it answers; that question becomes the caption

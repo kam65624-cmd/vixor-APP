@@ -8,7 +8,6 @@ description: 给定一份 JD 和一份现有简历，做"JD 拆解 + 简历定�
 这个 skill 的边界很窄：**只解决"已有 JD + 已有简历，要改一份命中率最高的版本"**。
 
 不做的事：
-
 - 写新简历（去 `resume-builder`）
 - 找方向 / 推荐岗位（去 `job-intent-tracker`）
 - 出面试题（去 `interview-prep`）
@@ -18,7 +17,6 @@ description: 给定一份 JD 和一份现有简历，做"JD 拆解 + 简历定�
 ## 何时触发
 
 强信号：
-
 - 用户给了 JD 链接 / JD 文本 + 一份简历 → **必触发**
 - "针对这个岗位帮我改简历"
 - "对照一下这个 JD"
@@ -26,7 +24,6 @@ description: 给定一份 JD 和一份现有简历，做"JD 拆解 + 简历定�
 - "做一份定向版"
 
 弱信号（先确认）：
-
 - 只给了 JD 没有简历 → 问"你的简历方便发我看一下吗？没有的话，我可以先帮你从零做一份（resume-builder）"
 - 只给了简历说"改简历" → 问"是针对哪个 JD 改？没有 JD 就用 resume-builder 通用优化"
 
@@ -37,7 +34,6 @@ description: 给定一份 JD 和一份现有简历，做"JD 拆解 + 简历定�
 ### Step 1: 解析 JD
 
 输入可能是：
-
 - 纯文本（用户粘贴）
 - 链接（**不要**自动 fetch，提醒用户复制 JD 文本进来；若用户授权 fetch，使用 web_fetch）
 - 截图（用 OCR / 视觉识别，让用户确认抽取结果）
@@ -50,7 +46,6 @@ python scripts/parse_jd.py --jd-file <jd.txt> --out jd_parsed.json
 ```
 
 脚本会从 JD 抽出：
-
 - **硬技能 must-have**（"必须" / "要求" / "至少 X 年" 等强信号词后面的技能）
 - **硬技能 nice-to-have**（"加分" / "优先" / "熟悉者优先" 等弱信号）
 - **软技能信号**（沟通 / 推动 / 跨部门 / 抗压 等）
@@ -64,7 +59,6 @@ python scripts/parse_jd.py --jd-file <jd.txt> --out jd_parsed.json
 输入：用户上传的简历文件（.pdf / .docx / .md / .txt）。
 
 调用对应 skill 解析：
-
 - pdf → pdf skill
 - docx → docx skill
 
@@ -85,7 +79,6 @@ python scripts/jd_gap.py --jd jd_parsed.json --resume resume.txt --out gap.md
 3. **真缺口**（JD 要求但简历完全没有）
 
 对"真缺口"分两类：
-
 - **可补救**：简历里其实做过类似的事，只是没写出来 → 追问用户"你做过 X 吗？"
 - **不可补救**：用户确实没做过 → **不能编**，建议用户在 cover letter 或 summary 里诚实说明并强调 transferable skill
 
@@ -96,7 +89,6 @@ python scripts/jd_gap.py --jd jd_parsed.json --resume resume.txt --out gap.md
 **a. 重排经历顺序**：与 JD 最相关的工作 / 项目放最前（不改时间真实性，但可以把项目经历拆成两块"相关项目 / 其他项目"）
 
 **b. 重写每条 bullet**：
-
 - 把 JD 里的"职责动词"自然嵌入 bullet（如 JD 说"主导 ___ 系统设计"，简历里就把"参与"改成"主导"——前提是用户确实主导了）
 - 数字保留并放大（"用户 100 万"是好事，别藏起来）
 - 补 JD 关键词（如 JD 说"A/B 测试"，但简历里写的是"灰度对比"，改成"A/B 测试（灰度对比）"）
@@ -106,14 +98,12 @@ python scripts/jd_gap.py --jd jd_parsed.json --resume resume.txt --out gap.md
 **d. 调整技能列表**：把 JD 提到的技能移到最前面（前提是真的会）
 
 **e. 不改的事实**：
-
 - 公司名、岗位名、起止时间、学历 —— 一字不改
 - 项目规模、用户量、收入数据 —— 不能编，只能让用户确认后填准
 
 ### Step 5: 自检 + 报告
 
 输出三个文件：
-
 1. `resume_tailored_<公司>_<岗位>.md`（改写后的简历）
 2. `gap_analysis.md`（gap 分析报告）
 3. 聊天里给一个 ATS 命中率对比："改前 X% → 改后 Y%"

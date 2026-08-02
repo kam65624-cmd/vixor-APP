@@ -7,7 +7,6 @@
 ## Native Excel Charts (openpyxl.chart)
 
 ### Bar Chart
-
 ```python
 from openpyxl.chart import BarChart, Reference
 from templates.base import make_chart_title
@@ -31,7 +30,6 @@ ws.add_chart(chart, "J4")
 ```
 
 ### Line Chart
-
 ```python
 from openpyxl.chart import LineChart, Reference
 from templates.base import make_chart_title
@@ -53,7 +51,6 @@ ws.add_chart(chart, "J4")
 ```
 
 ### Pie Chart
-
 ```python
 from openpyxl.chart import PieChart, Reference
 from openpyxl.chart.label import DataLabelList
@@ -79,7 +76,6 @@ ws.add_chart(chart, "J4")
 ```
 
 ### Combo Chart (Bar + Line, dual axis)
-
 ```python
 from openpyxl.chart import BarChart, LineChart, Reference
 from templates.base import make_chart_title
@@ -103,7 +99,6 @@ ws.add_chart(bar, "E2")
 ## Matplotlib Charts (embedded as images)
 
 ### Chinese Font Setup
-
 ```python
 import matplotlib
 import matplotlib.pyplot as plt
@@ -120,7 +115,6 @@ plt.rcParams['axes.unicode_minus'] = False
 ```
 
 ### Standard Template
-
 ```python
 fig, ax = plt.subplots(figsize=(10, 6))
 ax.bar(categories, values, color='#4A90D9')
@@ -137,7 +131,6 @@ plt.close()
 ```
 
 ### Embed in Excel (preserving aspect ratio)
-
 ```python
 from openpyxl.drawing.image import Image as XlImage
 from PIL import Image as PILImage
@@ -155,7 +148,6 @@ ws.add_image(xl_img, 'B20')
 ```
 
 ### Smart Chart Recommend Function
-
 ```python
 def recommend_chart(df, x_col, y_cols):
     if pd.api.types.is_datetime64_any_dtype(df[x_col]):

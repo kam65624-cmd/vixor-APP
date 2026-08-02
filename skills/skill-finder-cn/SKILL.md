@@ -16,7 +16,6 @@ metadata:
 ## 功能
 
 当用户问：
-
 - "有什么 skill 可以帮我...？"
 - "找一个能做 X 的 skill"
 - "有没有 skill 可以..."
@@ -64,4 +63,4 @@ clawhub install <skill-name>
 
 ---
 
-_帮助用户发现需要的 Skills 🔍_
+*帮助用户发现需要的 Skills 🔍*

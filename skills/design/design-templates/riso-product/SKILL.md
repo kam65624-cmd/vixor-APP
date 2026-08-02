@@ -43,7 +43,6 @@ related_patterns: saas-landing
 ## 必须 / 禁止（写完自检）
 
 **必须**：
-
 - [ ] 至少 1 处文字带错位色阴影
 - [ ] 全局有可见但不糊的半调点纸纹
 - [ ] 至少 1 个 hero / 大色块用了 2 色以上 radial gradient multiply 叠加
@@ -52,7 +51,6 @@ related_patterns: saas-landing
 - [ ] 颜色饱和但不刺，paper 底色降低任何强色的塑料感
 
 **禁止**：
-
 - [ ] 不要把 reference.html 的 `<section>` 结构整段抄（公告条 → header → hero → USP 四列 → feature → cat-grid → material → process → gallery → counters → testi → faq → news → footer + 4 个详情页 + 1 个故事页）
 - [ ] 不要默认粉 #FF3F8E + 蓝 #2240FF — 那就是 NOIRLAB 的指纹
 - [ ] 不要黑金 / 玻璃拟态 / 深空渐变 / emoji / 3D 塑料贴纸
@@ -66,54 +64,26 @@ related_patterns: saas-landing
 
 ```css
 /* 1. 热粉 + 联邦蓝（NOIRLAB 原作 — 慎用，会撞脸）*/
---paper: #f1ebda;
---ink: #1b1a18;
---a: #ff3f8e;
---b: #2240ff;
---c: #ffd23a;
+--paper:#F1EBDA; --ink:#1B1A18;  --a:#FF3F8E; --b:#2240FF; --c:#FFD23A;
 
 /* 2. 薄荷 + 珊瑚 — 清新、女性向、护肤/茶饮/订阅盒 */
---paper: #efeee5;
---ink: #1f2a28;
---a: #ff6b5a;
---b: #2bb7a1;
---c: #ffc857;
+--paper:#EFEEE5; --ink:#1F2A28;  --a:#FF6B5A; --b:#2BB7A1; --c:#FFC857;
 
 /* 3. 柠檬 + 紫电 — 高冲击、潮流、运动鞋/电子/年轻品牌 */
---paper: #f4efe4;
---ink: #16151a;
---a: #f4e04d;
---b: #6a2ee8;
---c: #ff4d8d;
+--paper:#F4EFE4; --ink:#16151A;  --a:#F4E04D; --b:#6A2EE8; --c:#FF4D8D;
 
 /* 4. 橄榄 + 玫瑰 — 沉稳、内敛、茶/酒/家居/独立刊物 */
---paper: #efe9d8;
---ink: #1e1c18;
---a: #c24a6c;
---b: #5c6e2c;
---c: #d9a24a;
+--paper:#EFE9D8; --ink:#1E1C18;  --a:#C24A6C; --b:#5C6E2C; --c:#D9A24A;
 
 /* 5. 暗夜 + 荧光 — 深色底 riso，反向操作 */
---paper: #1b1a18;
---ink: #f1ebda;
---a: #ff3f8e;
---b: #4de0c7;
---c: #ffd23a;
+--paper:#1B1A18; --ink:#F1EBDA;  --a:#FF3F8E; --b:#4DE0C7; --c:#FFD23A;
 /* 注意：深底时半调点要用浅色、screen 混合 */
 
 /* 6. 天蓝 + 芥末 — 户外、咖啡、慢生活、文具 */
---paper: #ede8d8;
---ink: #1b1b1b;
---a: #3d89c7;
---b: #d6a92e;
---c: #e0625e;
+--paper:#EDE8D8; --ink:#1B1B1B;  --a:#3D89C7; --b:#D6A92E; --c:#E0625E;
 
 /* 7. 赤陶 + 鸭蓝 — 工艺/手作/陶艺/民艺 */
---paper: #f0e7d5;
---ink: #1f1a16;
---a: #c25538;
---b: #2f6b7d;
---c: #e4b83b;
+--paper:#F0E7D5; --ink:#1F1A16;  --a:#C25538; --b:#2F6B7D; --c:#E4B83B;
 ```
 
 替换原则：把 reference.html 里 `var(--pink)` 换成你选的 `var(--a)`，`var(--blue)` 换成 `var(--b)`，`var(--yellow)` 换成 `var(--c)`。**整套统一替换**，不要某处粉某处红。
@@ -123,38 +93,31 @@ related_patterns: saas-landing
 每套都自带 riso 视觉，但**结构截然不同**，让产物不撞脸。
 
 ### 骨架 A — 单页长滚动 landing
-
 ```
 [announce marquee] → [hero w/ 错位标题] → [3 列 USP] → [产品概览 grid 3-6 卡]
 → [大单品 spotlight w/ 半身图 + 规格表] → [创始人引言段 + 数字 counter]
 → [社区/真实评论 3 卡] → [FAQ 5–7 条手风琴] → [订阅条] → [footer]
 ```
-
 **没有详情页**。所有产品/详情都在同一页折叠展开。适合 1–4 个 SKU 的窄品牌。
 
 ### 骨架 B — 双页：home + 单详情页（无 hash 路由）
-
 ```
 home: [hero 全屏图+错位标题] → [4 卡产品 grid] → [品牌故事 2 列长文] → [footer]
 detail: 独立 detail.html → [大 hero 图 + 价格胶囊] → [左长文 + 右 sticky 规格表]
         → [3 张细节图 dgallery] → [其他系列 3 卡] → [返回 home]
 ```
-
 适合 1 个主推产品 + 一些次要 SKU 的品牌（比如 1 款香水 + 3 个配件）。
 
 ### 骨架 C — 杂志/独立刊物布局
-
 ```
 [封面页：单大字 + riso 噪点全屏 + 期号/日期 mono]
 [目录 contents：左竖排序号，右每篇标题+作者+栏目]
 [内页：左右栏不对称，长文 6:4 / 引文 7:3 / 大图 1:1 / 图文混排]
 [书脊页脚：mono 小字 章节名 + 页码]
 ```
-
 适合品牌内容站 / brand magazine / 文化品牌 / 出版相关项目。可以没有任何 CTA 按钮。
 
 ### 骨架 D — 海报式单屏（fold-only）
-
 ```
 首屏一整页占满：
   上：announce + brand
@@ -166,202 +129,131 @@ detail: 独立 detail.html → [大 hero 图 + 价格胶囊] → [左长文 + �
 ## 可直接抄的 CSS 积木
 
 ### 全局纸纹 + 半调点（必备）
-
 ```css
-body {
+body{
   background: var(--paper);
   color: var(--ink);
   position: relative;
 }
 /* 颗粒噪点（纸纤维感）*/
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9000;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .12 0 0 0 0 .10 0 0 0 0 .08 0 0 0 .35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  opacity: 0.45;
-  mix-blend-mode: multiply;
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:9000;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .12 0 0 0 0 .10 0 0 0 0 .08 0 0 0 .35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity:.45; mix-blend-mode:multiply;
 }
 /* 半调网点 */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 8990;
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    rgba(27, 26, 24, 0.08) 1px,
-    transparent 1.4px
-  );
+body::after{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:8990;
+  background-image: radial-gradient(circle at 1px 1px, rgba(27,26,24,.08) 1px, transparent 1.4px);
   background-size: 5px 5px;
-  mix-blend-mode: multiply;
-  opacity: 0.55;
+  mix-blend-mode: multiply; opacity:.55;
 }
 ```
 
 ### 错位色标题阴影
-
 ```css
-.headline-riso {
-  font-family: var(--hanli); /* 见下方字体栈 */
-  text-shadow:
-    4px 4px 0 var(--a),
-    8px 8px 0 var(--b);
-  letter-spacing: 0.04em;
+.headline-riso{
+  font-family: var(--hanli);  /* 见下方字体栈 */
+  text-shadow: 4px 4px 0 var(--a), 8px 8px 0 var(--b);
+  letter-spacing: .04em;
 }
 /* 反白版本：暗底 */
-.headline-riso--invert {
+.headline-riso--invert{
   color: var(--paper);
-  text-shadow:
-    3px 3px 0 var(--a),
-    6px 6px 0 var(--c);
+  text-shadow: 3px 3px 0 var(--a), 6px 6px 0 var(--c);
 }
 ```
 
 ### 隷書/毛笔字体栈（中文标题专用）
-
 ```css
-:root {
-  --hanli:
-    "白舟隷書教漢", "HakushuReisho", "Yuji Mai", "Yuji Boku", "ZCOOL XiaoWei", "STLiti", "华文隶书",
-    "LiSu", "SimLi", Georgia, serif;
+:root{
+  --hanli: "白舟隷書教漢", "HakushuReisho", "Yuji Mai", "Yuji Boku",
+           "ZCOOL XiaoWei", "STLiti", "华文隶书", "LiSu", "SimLi", Georgia, serif;
 }
 /* 若要 CDN 兜底 */
 /* <link href="https://fonts.googleapis.com/css2?family=Yuji+Mai&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet"> */
 /* 用 local() 检测系统装的白舟隷書 */
-@font-face {
-  font-family: "HakushuReisho";
-  font-display: swap;
+@font-face{
+  font-family:"HakushuReisho"; font-display:swap;
   src: local("HOT-ReishoR-K"), local("Hakushu Reisho R"), local("白舟隷書教漢");
 }
 ```
-
 **禁止**用 PingFang / Source Han Sans / Microsoft YaHei 做标题——会立刻没有 riso 味。正文可以用 Inter / 系统 sans。
 
 ### riso 三色叠印（大色块/hero 用）
-
 ```css
-.riso-shade {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+.riso-shade{
+  position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 65% at 18% 25%, rgba(255, 63, 142, 0.55) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 55% at 82% 75%, rgba(34, 64, 255, 0.5) 0%, transparent 60%),
-    radial-gradient(ellipse 30% 35% at 65% 18%, rgba(255, 210, 58, 0.4) 0%, transparent 70%);
+    radial-gradient(ellipse 55% 65% at 18% 25%, rgba(255,63,142,.55) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 55% at 82% 75%, rgba(34,64,255,.50) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 35% at 65% 18%, rgba(255,210,58,.40) 0%, transparent 70%);
   mix-blend-mode: multiply;
 }
 ```
-
 **关键**：3 个 ellipse 必须**位置错开**（左上 / 右下 / 中右）才有套印错位感。三色都对齐中心 = 失败。
 
 ### Neobrutalism 按钮
-
 ```css
-.btn-riso {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 28px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--paper);
+.btn-riso{
+  display:inline-flex; align-items:center; gap:14px;
+  padding:16px 28px; font-weight:600; letter-spacing:.05em;
+  border:2px solid var(--ink); border-radius:999px;
+  background: var(--ink); color: var(--paper);
   box-shadow: 5px 5px 0 var(--a);
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all .25s cubic-bezier(.2,.8,.2,1);
 }
-.btn-riso:hover {
-  background: var(--a);
-  color: var(--paper);
+.btn-riso:hover{
+  background: var(--a); color: var(--paper);
   box-shadow: 0 0 0 var(--a);
   transform: translate(5px, 5px);
 }
 ```
-
 4 种变体：`--ink`（实心黑底）/ `--paper`（白底蓝阴影）/ `--ghost`（透明 + ink 边框）/ `--accent`（强色底）。**hover 偏移到 0 + translate** 是这套阴影的关键，hover 是阴影"消失"而不是"加深"。
 
 ### Neobrutalism 卡片
-
 ```css
-.card-riso {
+.card-riso{
   border: 2px solid var(--ink);
   box-shadow: 6px 6px 0 var(--ink);
   background: var(--paper-2);
-  transition:
-    transform 0.3s,
-    box-shadow 0.3s;
+  transition: transform .3s, box-shadow .3s;
 }
-.card-riso:hover {
+.card-riso:hover{
   transform: translate(-3px, -3px);
-  box-shadow: 9px 9px 0 var(--a); /* 阴影变彩色 + 加深 */
+  box-shadow: 9px 9px 0 var(--a);  /* 阴影变彩色 + 加深 */
 }
 ```
 
 ### 图片半调叠加（不糊掉图）
-
 ```css
-.img-riso {
-  position: relative;
-  overflow: hidden;
-  border: 2px solid var(--ink);
-  box-shadow: 5px 5px 0 var(--a);
+.img-riso{
+  position: relative; overflow: hidden;
+  border: 2px solid var(--ink); box-shadow: 5px 5px 0 var(--a);
 }
 .img-riso > img,
-.img-riso > .img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: contrast(1.05) saturate(0.9); /* 略降饱和，靠近油墨色 */
+.img-riso > .img{
+  width:100%; height:100%; object-fit: cover;
+  filter: contrast(1.05) saturate(.9);  /* 略降饱和，靠近油墨色 */
 }
-.img-riso::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    rgba(34, 64, 255, 0.18) 1px,
-    transparent 1.4px
-  );
+.img-riso::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background-image: radial-gradient(circle at 1px 1px, rgba(34,64,255,.18) 1px, transparent 1.4px);
   background-size: 5px 5px;
   mix-blend-mode: multiply;
 }
 ```
-
 **核心**：半调点叠在图之上但只用 18% 不透明度，图本身保持清晰；图加 `filter: contrast(1.05) saturate(.9)` 把数字感拉回油墨感。
 
 ### 跑马灯公告条（可选）
-
 ```css
-.announce {
-  background: var(--a);
-  color: var(--paper);
-  border-bottom: 2px solid var(--ink);
-  text-shadow: 1.5px 1.5px 0 var(--b);
-  height: 40px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
+.announce{
+  background: var(--a); color: var(--paper);
+  border-bottom: 2px solid var(--ink); text-shadow: 1.5px 1.5px 0 var(--b);
+  height:40px; display:flex; align-items:center; overflow:hidden;
 }
-.announce__track {
-  display: flex;
-  gap: 64px;
-  white-space: nowrap;
-  animation: marquee 38s linear infinite;
-}
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
+.announce__track{ display:flex; gap:64px; white-space:nowrap; animation: marquee 38s linear infinite; }
+@keyframes marquee{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 ```
 
 ## 中文 webfont 加载（必做）
@@ -369,41 +261,30 @@ body::after {
 谷歌的 Yuji Mai / ZCOOL XiaoWei 是中文 + 日文 webfont，文件大。按"四件套"加载：
 
 ```html
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link
-  rel="preload"
-  as="style"
-  fetchpriority="high"
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" fetchpriority="high"
+  href="https://fonts.googleapis.com/css2?family=Yuji+Mai&family=ZCOOL+XiaoWei&display=swap">
+<link rel="stylesheet"
   href="https://fonts.googleapis.com/css2?family=Yuji+Mai&family=ZCOOL+XiaoWei&display=swap"
-/>
-<link
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Yuji+Mai&family=ZCOOL+XiaoWei&display=swap"
-  media="print"
-  onload="this.media='all'"
-/>
-<noscript
-  ><link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Yuji+Mai&family=ZCOOL+XiaoWei&display=swap"
-/></noscript>
+  media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Yuji+Mai&family=ZCOOL+XiaoWei&display=swap"></noscript>
 ```
-
 然后 `font-display: swap` + 系统隶书兜底（已写在 `--hanli` 里）。
 
 ## 反模式速查（看到这些就回头改）
 
-| 症状                      | 错在哪                       | 修正                                                   |
-| ------------------------- | ---------------------------- | ------------------------------------------------------ |
-| 标题用 PingFang 加粗      | 没用毛笔/隷書字体            | 换 `var(--hanli)`                                      |
-| 标题没阴影 / 阴影是黑色   | 没做错位色阴影               | `text-shadow:4px 4px 0 var(--a),8px 8px 0 var(--b)`    |
-| 背景是 #FFFFFF / 冷灰     | paper 底色不对               | 换温暖奶油色 #F1EBDA / #EFE9D8                         |
-| 半调点要么没有要么糊一片  | opacity 错、颗粒太大或太密   | 5–8px 网格，opacity 30–55%                             |
-| 图片灰蒙蒙看不清          | 加了重 overlay               | 只叠半调点 18% + `filter: contrast(1.05) saturate(.9)` |
-| 按钮 hover 阴影变大       | 方向反了                     | hover 阴影应该缩到 0 + 元素 translate                  |
-| 全用 NOIRLAB 粉+蓝        | 撞脸                         | 换七套预设之一                                         |
-| 写了 4 个 hash 路由详情页 | 整页 clone 了 reference 结构 | 用骨架 A/B/C/D 之一                                    |
+| 症状 | 错在哪 | 修正 |
+|---|---|---|
+| 标题用 PingFang 加粗 | 没用毛笔/隷書字体 | 换 `var(--hanli)` |
+| 标题没阴影 / 阴影是黑色 | 没做错位色阴影 | `text-shadow:4px 4px 0 var(--a),8px 8px 0 var(--b)` |
+| 背景是 #FFFFFF / 冷灰 | paper 底色不对 | 换温暖奶油色 #F1EBDA / #EFE9D8 |
+| 半调点要么没有要么糊一片 | opacity 错、颗粒太大或太密 | 5–8px 网格，opacity 30–55% |
+| 图片灰蒙蒙看不清 | 加了重 overlay | 只叠半调点 18% + `filter: contrast(1.05) saturate(.9)` |
+| 按钮 hover 阴影变大 | 方向反了 | hover 阴影应该缩到 0 + 元素 translate |
+| 全用 NOIRLAB 粉+蓝 | 撞脸 | 换七套预设之一 |
+| 写了 4 个 hash 路由详情页 | 整页 clone 了 reference 结构 | 用骨架 A/B/C/D 之一 |
 
 ## 关于 reference.html
 
@@ -412,7 +293,6 @@ body::after {
 ## 输入信息核对
 
 让用户给齐这些再动手：
-
 1. 品牌名 + 一句话定位
 2. 1–6 个产品 / 1 个主推 / 单事件（影响选骨架）
 3. 配色偏好（用预设名 or 描述）

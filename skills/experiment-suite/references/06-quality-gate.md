@@ -70,7 +70,6 @@ test -f figures/figure_contract.md
 ```
 
 For each figure:
-
 - vector PDF (not raster)
 - has a sibling `make_fig_*.py` script
 - listed in `manifest.json` with `id`, `path_pdf`, `caption`, `section`
@@ -148,7 +147,6 @@ cd experiment
 ### S4 · Visuals make sense
 
 Open each figure PDF. Check:
-
 - Axes labelled, legend readable at print scale
 - Watermark "simulated" present iff mode is simulated
 - Colors from the publication palette (no default cycle)

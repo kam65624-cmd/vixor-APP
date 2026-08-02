@@ -2,43 +2,35 @@
 name: get-fortune-analysis
 description: 生成视觉华丽、内容详实、具有仪式感的流年运势报告（流金星象风格）。
 ---
-
 # Skill Name: get-fortune-analysis
-
 # Version: 4.1.0
-
 # Description: 生成视觉华丽、内容详实、具有仪式感的流年运势报告（流金星象风格）。
 
 ## 1. Input Parameters
-
-| Parameter                                              | Type    | Description                   |
-| :----------------------------------------------------- | :------ | :---------------------------- |
-| `birth_year`, `birth_month`, `birth_day`, `birth_hour` | Integer | 用户出生时间                  |
-| `focus_type`                                           | String  | (可选) "事业", "财运", "情感" |
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `birth_year`, `birth_month`, `birth_day`, `birth_hour` | Integer | 用户出生时间 |
+| `focus_type` | String | (可选) "事业", "财运", "情感" |
 
 ## 2. Workflow
 
 ### Step 1: Calculation (Python)
-
 调用 `get_cyber_divination_data` 获取 `bazi` (八字基础) 和 `fortune` (流年十神) 数据。
 
 ### Step 2: Reasoning (深度分析模式)
-
 基于 `bazi` 和 `fortune` 进行多维度推理。
 **文案要求：**
-
-- **口吻**：温暖、笃定、专业，类似资深命理师或星座专家的语气。
-- **结构**：
-  1.  **年度关键词**：4个字，精准概括全年基调（如“破茧成蝶”）。
-  2.  **核心能量**：解释流年十神对用户命局的深层影响（30-50字）。
-  3.  **事业/财运**：具体的职场发展路径和财富机遇分析（50-80字）。
-  4.  **情感/人际**：人际关系模式与情感走向分析（50-80字）。
+* **口吻**：温暖、笃定、专业，类似资深命理师或星座专家的语气。
+* **结构**：
+    1.  **年度关键词**：4个字，精准概括全年基调（如“破茧成蝶”）。
+    2.  **核心能量**：解释流年十神对用户命局的深层影响（30-50字）。
+    3.  **事业/财运**：具体的职场发展路径和财富机遇分析（50-80字）。
+    4.  **情感/人际**：人际关系模式与情感走向分析（50-80字）。
 
 ### Step 3: JSON Output
-
 生成适配前端的 JSON 数据。
 
-````json
+```json
 {
     "fortune_report": {
         "score": 88,
@@ -194,7 +186,7 @@ description: 生成视觉华丽、内容详实、具有仪式感的流年运势�
             50% { opacity: 0.8; transform: scale(1.1); }
             100% { opacity: 0.3; transform: scale(1); }
         }
-
+        
         /* 新增：粒子上浮动画 */
         @keyframes floatUp {
             0% { transform: translateY(0) rotate(0deg); opacity: 0; }
@@ -208,7 +200,7 @@ description: 生成视觉华丽、内容详实、具有仪式感的流年运势�
 <body>
 
     <div class="app-container">
-
+        
         <div class="ritual-layer" id="ritualLayer">
             <div class="binary-container" id="binaryContainer"></div>
 
@@ -220,7 +212,7 @@ description: 生成视觉华丽、内容详实、具有仪式感的流年运势�
                         <path d="M2 12h20"></path>
                     </svg>
                 </div>
-
+                
                 <div class="fingerprint-area" id="fingerBtn">
                     <div class="fingerprint-icon">
                         <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -317,7 +309,7 @@ description: 生成视觉华丽、内容详实、具有仪式感的流年运势�
         function stopBinaryRain() {
             clearInterval(particleInterval);
             // 可选：渐隐清除现有粒子
-            // binaryContainer.style.opacity = 0;
+            // binaryContainer.style.opacity = 0; 
         }
 
 
@@ -366,7 +358,7 @@ description: 生成视觉华丽、内容详实、具有仪式感的流年运势�
             document.getElementById('overviewText').innerText = aiData.fortune_report.analysis.overview;
         }
 
-        function runNumberAnimation() { /* (省略，与上版相同) */
+        function runNumberAnimation() { /* (省略，与上版相同) */ 
              document.getElementById('scoreVal').innerText = aiData.fortune_report.score;
         }
 
@@ -376,4 +368,3 @@ description: 生成视觉华丽、内容详实、具有仪式感的流年运势�
     </script>
 </body>
 </html>
-````
