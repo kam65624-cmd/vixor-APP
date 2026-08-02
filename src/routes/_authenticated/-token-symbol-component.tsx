@@ -640,6 +640,7 @@ export function TokenPage() {
             <DexChart
               chainId={chainFromDiscover}
               pairAddress={pairAddress}
+              livePrice={liveDexPrice?.price}
               height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
             />
           ) : isDexToken || isContractAddress ? (
@@ -1029,6 +1030,7 @@ export function TokenPage() {
           <DexChart
             chainId={chainFromDiscover}
             pairAddress={pairAddress}
+            livePrice={liveDexPrice?.price}
             height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
           />
         ) : isDexToken || isContractAddress ? (

@@ -3,6 +3,7 @@
 // ============================================================================
 // Uses GeckoTerminal OHLCV data (server-side) + lightweight-charts.
 // Two-strategy fetch: server function first (no CORS), then direct client fetch.
+// Supports real-time price updates via livePrice prop.
 // ============================================================================
 
 import { memo, useState, useEffect, useRef, useCallback } from "react";
@@ -16,6 +17,7 @@ import {
   CrosshairMode,
   type IChartApi,
   type ISeriesApi,
+  type IPriceLine,
   type CandlestickData,
   type HistogramData,
   type DeepPartial,
@@ -26,6 +28,8 @@ interface DexChartProps {
   chainId: string;
   pairAddress: string;
   height?: string;
+  /** Live price from DexScreenerWS — updates the last candle in real-time */
+  livePrice?: number | null;
 }
 
 interface KlineBar {
@@ -85,6 +89,17 @@ const TF_MAP: Record<string, { tf: string; agg: number }> = {
   day: { tf: "day", agg: 1 },
 };
 
+// Time window sizes in seconds for each interval (used to determine if live
+// price belongs to the current candle or a new one)
+const TF_WINDOW_SECS: Record<string, number> = {
+  minute: 60,
+  "5minute": 300,
+  "15minute": 900,
+  hour: 3600,
+  "4hour": 14400,
+  day: 86400,
+};
+
 const NETWORK_MAP: Record<string, string> = {
   ethereum: "eth",
   solana: "solana",
@@ -95,11 +110,13 @@ const NETWORK_MAP: Record<string, string> = {
   avalanche: "avax",
 };
 
-function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps) {
+function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: DexChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volRef = useRef<ISeriesApi<"Histogram"> | null>(null);
+  const priceLineRef = useRef<IPriceLine | null>(null);
+  const lastBarRef = useRef<KlineBar | null>(null);
   const [activeInterval, setActiveInterval] = useState("hour");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +141,8 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
       borderUpColor: "#22D3A6",
       wickDownColor: "#FB4667",
       wickUpColor: "#22D3A6",
+      lastValueVisible: true,
+      priceLineVisible: false, // we draw our own price line below
     });
 
     const volumeSeries = chart.addSeries(HistogramSeries, {
@@ -152,6 +171,8 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
       chartRef.current = null;
       candleRef.current = null;
       volRef.current = null;
+      priceLineRef.current = null;
+      lastBarRef.current = null;
     };
   }, []);
 
@@ -181,7 +202,84 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
     candleRef.current?.setData(candles);
     volRef.current?.setData(volumes);
     chartRef.current?.timeScale().fitContent();
+
+    // Store the last bar for live updates
+    lastBarRef.current = sorted[sorted.length - 1];
+
+    // Create or update current price line
+    const lastClose = sorted[sorted.length - 1].close;
+    const prevClose = sorted.length > 1 ? sorted[sorted.length - 2].close : lastClose;
+    const isUp = lastClose >= prevClose;
+
+    if (priceLineRef.current && candleRef.current) {
+      // Update existing price line
+      candleRef.current.removePriceLine(priceLineRef.current);
+    }
+    if (candleRef.current) {
+      priceLineRef.current = candleRef.current.createPriceLine({
+        price: lastClose,
+        color: isUp ? "#22D3A6" : "#FB4667",
+        lineWidth: 1,
+        lineStyle: 2, // dashed
+        axisLabelVisible: true,
+        title: "",
+      });
+    }
   }, []);
+
+  // ── Real-time price update: update last candle or add new one ──
+  useEffect(() => {
+    if (!livePrice || livePrice <= 0 || !candleRef.current || !lastBarRef.current) return;
+
+    const lastBar = lastBarRef.current;
+    const windowSecs = TF_WINDOW_SECS[activeInterval] || 3600;
+    const now = Math.floor(Date.now() / 1000);
+    const currentCandleStart = Math.floor(now / windowSecs) * windowSecs;
+
+    if (lastBar.time === currentCandleStart) {
+      // Still within the current candle window — update it
+      const updated: CandlestickData = {
+        time: lastBar.time as unknown as import("lightweight-charts").Time,
+        open: lastBar.open,
+        high: Math.max(lastBar.high, livePrice),
+        low: Math.min(lastBar.low, livePrice),
+        close: livePrice,
+      };
+      candleRef.current.update(updated);
+      lastBarRef.current = { ...lastBar, high: Math.max(lastBar.high, livePrice), low: Math.min(lastBar.low, livePrice), close: livePrice };
+    } else if (livePrice !== lastBar.close) {
+      // New candle window — extend the last candle with live price as close
+      // (safer than inserting a partial candle)
+      const updated: CandlestickData = {
+        time: lastBar.time as unknown as import("lightweight-charts").Time,
+        open: lastBar.open,
+        high: Math.max(lastBar.high, livePrice),
+        low: Math.min(lastBar.low, livePrice),
+        close: livePrice,
+      };
+      candleRef.current.update(updated);
+      lastBarRef.current = { ...lastBar, high: Math.max(lastBar.high, livePrice), low: Math.min(lastBar.low, livePrice), close: livePrice };
+    }
+
+    // Update price line position & color
+    if (priceLineRef.current && candleRef.current) {
+      const prevClose = lastBar.open;
+      const isUp = livePrice >= prevClose;
+      try {
+        candleRef.current.removePriceLine(priceLineRef.current);
+      } catch {
+        /* may have been removed already */
+      }
+      priceLineRef.current = candleRef.current.createPriceLine({
+        price: livePrice,
+        color: isUp ? "#22D3A6" : "#FB4667",
+        lineWidth: 1,
+        lineStyle: 2, // dashed
+        axisLabelVisible: true,
+        title: "",
+      });
+    }
+  }, [livePrice, activeInterval]);
 
   // Load data — server function first (no CORS/WebView blocks), then direct fetch
   const loadData = useCallback(
@@ -361,23 +459,21 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
           <div style={{ fontSize: "12px", color: "var(--color-muted-foreground)", fontWeight: 600 }}>
             Chart data unavailable
           </div>
-          <a
-            href={`https://dexscreener.com/${chainId}/${pairAddress}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => loadData(activeInterval)}
             style={{
               fontSize: "11px",
-              color: "var(--color-primary)",
-              textDecoration: "none",
-              fontWeight: 600,
-              padding: "6px 14px",
+              color: "#6366F1",
+              background: "none",
+              border: "1px solid #6366F1",
               borderRadius: "6px",
-              border: "1px solid var(--color-primary)",
-              background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
+              padding: "6px 14px",
+              cursor: "pointer",
+              fontWeight: 600,
             }}
           >
-            View on DexScreener →
-          </a>
+            Retry
+          </button>
         </div>
       )}
 
