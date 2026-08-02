@@ -3,7 +3,7 @@
 // ============================================================================
 // Uses GeckoTerminal OHLCV data (server-side) + lightweight-charts.
 // Features: candlesticks, volume, SMA/EMA/Bollinger overlays, RSI sub-chart,
-// live price line, real-time candle updates, indicator toggles.
+// live price line, real-time candle updates.
 // ============================================================================
 
 import { memo, useState, useEffect, useRef, useCallback } from "react";
@@ -26,6 +26,7 @@ import {
   type DeepPartial,
   type ChartOptions,
   type Time,
+  type LineWidth,
 } from "lightweight-charts";
 
 // ── Types ──
@@ -44,15 +45,6 @@ interface KlineBar {
   low: number;
   close: number;
   volume: number;
-}
-
-interface IndicatorConfig {
-  sma7: boolean;
-  sma25: boolean;
-  sma99: boolean;
-  ema21: boolean;
-  bb: boolean;
-  rsi: boolean;
 }
 
 // ── Chart Options ──
@@ -80,35 +72,6 @@ const CHART_OPTIONS: DeepPartial<ChartOptions> = {
   timeScale: {
     borderColor: "rgba(99,102,241,0.08)",
     timeVisible: true,
-    rightOffset: 5,
-    barSpacing: 8,
-  },
-  handleScroll: { vertTouchDrag: false },
-};
-
-const RSI_CHART_OPTIONS: DeepPartial<ChartOptions> = {
-  layout: {
-    background: { type: ColorType.Solid, color: "#0B0D10" },
-    textColor: "#9CA3AF",
-    fontSize: 10,
-    fontFamily: "system-ui, -apple-system, sans-serif",
-  },
-  grid: {
-    vertLines: { color: "rgba(99,102,241,0.04)" },
-    horzLines: { color: "rgba(99,102,241,0.04)" },
-  },
-  crosshair: {
-    mode: CrosshairMode.Normal,
-    vertLine: { color: "rgba(99,102,241,0.2)", labelBackgroundColor: "#6366F1" },
-    horzLine: { color: "rgba(99,102,241,0.2)", labelBackgroundColor: "#6366F1" },
-  },
-  rightPriceScale: {
-    borderColor: "rgba(99,102,241,0.08)",
-    scaleMargins: { top: 0.05, bottom: 0.05 },
-  },
-  timeScale: {
-    borderColor: "rgba(99,102,241,0.08)",
-    visible: false, // hidden — synced with main chart
     rightOffset: 5,
     barSpacing: 8,
   },
@@ -152,26 +115,6 @@ const NETWORK_MAP: Record<string, string> = {
   polygon: "polygon_pos",
   bsc: "bsc",
   avalanche: "avax",
-};
-
-// ── Indicator toggles ──
-
-const INDICATOR_BUTTONS: { key: keyof IndicatorConfig; label: string; color: string }[] = [
-  { key: "sma7", label: "MA7", color: "#FBBF24" },
-  { key: "sma25", label: "MA25", color: "#3B82F6" },
-  { key: "sma99", label: "MA99", color: "#F97316" },
-  { key: "ema21", label: "EMA21", color: "#A78BFA" },
-  { key: "bb", label: "BB", color: "#6366F1" },
-  { key: "rsi", label: "RSI", color: "#EC4899" },
-];
-
-const DEFAULT_INDICATORS: IndicatorConfig = {
-  sma7: false,
-  sma25: true,
-  sma99: false,
-  ema21: false,
-  bb: false,
-  rsi: false,
 };
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -303,18 +246,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
   const [activeInterval, setActiveInterval] = useState("hour");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [indicators, setIndicators] = useState<IndicatorConfig>(DEFAULT_INDICATORS);
-  const [showIndPanel, setShowIndPanel] = useState(false);
-
   const fetchDexOHLCV = useStableServerFn(getDexOHLCV);
-
-  // ── Helper: parse height to px number ──
-  const heightPx = typeof document !== "undefined"
-    ? parseInt(height, 10) || 400
-    : 400;
-  const showRsi = indicators.rsi;
-  const mainHeight = showRsi ? Math.round(heightPx * 0.72) : heightPx;
-  const rsiHeight = showRsi ? Math.round(heightPx * 0.28) : 0;
 
   // ── Initialize main chart ──
   useEffect(() => {
@@ -346,7 +278,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     });
 
     // Pre-create overlay line series (hidden by default)
-    const createOverlay = (id: string, color: string, lineWidth: number = 1, lineStyle: LineStyle = LineStyle.Solid) => {
+    const createOverlay = (id: string, color: string, lineWidth: LineWidth = 1, lineStyle: LineStyle = LineStyle.Solid) => {
       const s = chart.addSeries(LineSeries, {
         color,
         lineWidth,
@@ -400,115 +332,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     };
   }, []);
 
-  // ── Initialize RSI chart ──
-  useEffect(() => {
-    if (!showRsi) {
-      if (rsiChartRef.current) {
-        rsiChartRef.current.remove();
-        rsiChartRef.current = null;
-        rsiSeriesRef.current = null;
-      }
-      return;
-    }
-    if (!rsiContainerRef.current) return;
-
-    const chart = createChart(rsiContainerRef.current, {
-      ...RSI_CHART_OPTIONS,
-      width: rsiContainerRef.current.clientWidth,
-      height: rsiContainerRef.current.clientHeight,
-    });
-
-    const rsiLine = chart.addSeries(LineSeries, {
-      color: "#EC4899",
-      lineWidth: 1.5,
-      priceLineVisible: false,
-      lastValueVisible: true,
-      pointMarkersVisible: false,
-    });
-
-    // Overbought / oversold reference lines
-    chart.addSeries(HistogramSeries, {
-      priceFormat: { type: "price", precision: 0, minMove: 1 },
-      priceScaleId: "rsi_zones",
-    });
-    chart.priceScale("rsi_zones").applyOptions({
-      scaleMargins: { top: 0, bottom: 0 },
-    });
-
-    // Create 70 and 30 price lines on the RSI series
-    rsiLine.createPriceLine({
-      price: 70,
-      color: "rgba(251,70,103,0.4)",
-      lineWidth: 1,
-      lineStyle: LineStyle.Dashed,
-      axisLabelVisible: true,
-      title: "OB",
-    });
-    rsiLine.createPriceLine({
-      price: 30,
-      color: "rgba(34,211,166,0.4)",
-      lineWidth: 1,
-      lineStyle: LineStyle.Dashed,
-      axisLabelVisible: true,
-      title: "OS",
-    });
-    rsiLine.createPriceLine({
-      price: 50,
-      color: "rgba(156,163,175,0.2)",
-      lineWidth: 1,
-      lineStyle: LineStyle.Dotted,
-      axisLabelVisible: false,
-      title: "",
-    });
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width: w, height: h } = entry.contentRect;
-        chart.applyOptions({ width: w, height: h });
-      }
-    });
-    observer.observe(rsiContainerRef.current);
-
-    rsiChartRef.current = chart;
-    rsiSeriesRef.current = rsiLine;
-
-    // Sync scroll from RSI → main chart
-    chart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
-      if (range && chartRef.current) {
-        chartRef.current.timeScale().setVisibleLogicalRange(range);
-      }
-    });
-
-    // If we already have data, apply RSI immediately
-    if (allBarsRef.current.length > 0) {
-      applyIndicators(allBarsRef.current);
-    }
-
-    return () => {
-      observer.disconnect();
-      chart.remove();
-      rsiChartRef.current = null;
-      rsiSeriesRef.current = null;
-    };
-  }, [showRsi]);
-
-  // ── Toggle indicator visibility ──
-  useEffect(() => {
-    const refs = overlayRefs.current;
-    // SMAs
-    if (refs.sma7) refs.sma7.applyOptions({ visible: indicators.sma7 });
-    if (refs.sma25) refs.sma25.applyOptions({ visible: indicators.sma25 });
-    if (refs.sma99) refs.sma99.applyOptions({ visible: indicators.sma99 });
-    // EMA
-    if (refs.ema21) refs.ema21.applyOptions({ visible: indicators.ema21 });
-    // Bollinger Bands
-    const showBb = indicators.bb;
-    if (refs.bbUpper) refs.bbUpper.applyOptions({ visible: showBb });
-    if (refs.bbMiddle) refs.bbMiddle.applyOptions({ visible: showBb });
-    if (refs.bbLower) refs.bbLower.applyOptions({ visible: showBb });
-  }, [indicators.sma7, indicators.sma25, indicators.sma99, indicators.ema21, indicators.bb]);
-
-  // ── Apply OHLCV data + indicators to chart ──
+  // ── Apply OHLCV data to chart ──
   const applyData = useCallback((bars: KlineBar[]) => {
     if (!candleRef.current || bars.length === 0) return;
 
@@ -723,11 +547,6 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     loadData(activeInterval);
   }, [activeInterval, loadData]);
 
-  // ── Toggle indicator handler ──
-  const toggleIndicator = useCallback((key: keyof IndicatorConfig) => {
-    setIndicators((prev) => ({ ...prev, [key]: !prev[key] }));
-  }, []);
-
   // ── Indicator label color helper ──
   const btnStyle = (active: boolean, color: string): React.CSSProperties => ({
     padding: "2px 6px",
@@ -746,7 +565,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
   // ── Render ──
   return (
     <div style={{ position: "relative", height, borderBottom: "1px solid var(--color-border)" }}>
-      {/* Toolbar: Timeframes + Indicator toggle button */}
+      {/* Toolbar: Timeframes */}
       <div
         style={{
           position: "absolute",
@@ -780,84 +599,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
           ))}
         </div>
 
-        {/* Indicator toggle button */}
-        <button
-          onClick={() => setShowIndPanel((p) => !p)}
-          style={{
-            padding: "4px 7px",
-            borderRadius: "6px",
-            border: showIndPanel ? "1px solid #6366F1" : "1px solid var(--color-border)",
-            background: showIndPanel ? "rgba(99,102,241,0.15)" : "rgba(11,13,16,0.9)",
-            color: showIndPanel ? "#A5B4FC" : "#6B7280",
-            fontSize: "12px",
-            cursor: "pointer",
-            lineHeight: 1,
-            display: "flex",
-            alignItems: "center",
-            gap: "3px",
-          }}
-          title="Indicators"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-          </svg>
-        </button>
 
-        {/* Dropdown indicator panel */}
-        {showIndPanel && (
-          <div
-            style={{
-              position: "absolute",
-              top: "100%",
-              left: "0",
-              marginTop: "4px",
-              background: "rgba(11,13,16,0.95)",
-              border: "1px solid var(--color-border)",
-              borderRadius: "8px",
-              padding: "6px",
-              display: "grid",
-              gridTemplateColumns: "repeat(3, auto)",
-              gap: "3px",
-              zIndex: 20,
-              backdropFilter: "blur(8px)",
-            }}
-          >
-            {INDICATOR_BUTTONS.map((ind) => (
-              <button
-                key={ind.key}
-                onClick={() => toggleIndicator(ind.key)}
-                style={{
-                  padding: "4px 8px",
-                  borderRadius: "4px",
-                  border: "none",
-                  fontSize: "10px",
-                  fontWeight: 600,
-                  fontFamily: "system-ui, sans-serif",
-                  cursor: "pointer",
-                  background: indicators[ind.key] ? ind.color : "transparent",
-                  color: indicators[ind.key] ? "#000" : "#6B7280",
-                  transition: "all 0.15s",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <span
-                  style={{
-                    width: "6px",
-                    height: "6px",
-                    borderRadius: "50%",
-                    background: indicators[ind.key] ? "#000" : ind.color,
-                    display: "inline-block",
-                    flexShrink: 0,
-                  }}
-                />
-                {ind.label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Loading overlay */}
@@ -904,20 +646,8 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
       {/* Main chart container */}
       <div
         ref={mainContainerRef}
-        style={{ width: "100%", height: showRsi ? `${mainHeight}px` : "100%" }}
+        style={{ width: "100%", height: "100%" }}
       />
-
-      {/* RSI sub-chart container */}
-      {showRsi && (
-        <div
-          ref={rsiContainerRef}
-          style={{
-            width: "100%",
-            height: `${rsiHeight}px`,
-            borderTop: "1px solid rgba(99,102,241,0.15)",
-          }}
-        />
-      )}
     </div>
   );
 }
