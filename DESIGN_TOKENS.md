@@ -79,9 +79,9 @@
 
 | Token | Value |
 |-------|-------|
-| `--chart-1` | `#6366f1` |
-| `--chart-2` | `#8c9eff` |
-| `--chart-3` | `#7b61ff` |
+| `--color-chart-1` | `#6366f1` |
+| `--color-chart-2` | `#8c9eff` |
+| `--color-chart-3` | `#7b61ff` |
 
 ### Borders & Inputs
 
