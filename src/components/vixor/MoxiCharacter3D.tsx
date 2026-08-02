@@ -73,7 +73,9 @@ export const MoxiCharacter3D = memo(function MoxiCharacter3D({
         )}
 
         {/* 3D Character Container */}
-        <div className={`moxi-3d-scene ${isHovered ? "moxi-hovered" : ""} ${isClicked ? "moxi-clicked" : ""}`}>
+        <div
+          className={`moxi-3d-scene ${isHovered ? "moxi-hovered" : ""} ${isClicked ? "moxi-clicked" : ""}`}
+        >
           <div className="moxi-3d-model">
             {/* ── Antenna ──────────────────────────── */}
             <div className="moxi-antenna">

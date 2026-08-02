@@ -1,0 +1,13 @@
+# Enforce conventional commit format: type(scope): message
+# Examples: feat(F-008): add 3D character
+#           fix: resolve TypeScript error
+#           chore: update dependencies
+if ! head -1 "$1" | tr -d '\n' | grep -qE '^(feat|fix|chore|docs|style|refactor|perf|test|ci|build|revert)(\(.+\))?(: .{1,80})$'; then
+  echo ""
+  echo "  ERROR: Non-conventional commit message."
+  echo "  Expected: type(scope): description (max 80 chars)"
+  echo "  Types: feat|fix|chore|docs|style|refactor|perf|test|ci|build|revert"
+  echo "  Example: feat(F-008): add 3D MOXI side character"
+  echo ""
+  exit 1
+fi

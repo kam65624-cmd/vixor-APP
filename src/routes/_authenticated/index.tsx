@@ -180,11 +180,15 @@ function MarketStatPill({
         <Icon size={14} style={{ color: accent }} />
       </div>
       <div className="min-w-0">
-        <div className="text-xs font-semibold uppercase tracking-wider text-foreground/35">{label}</div>
+        <div className="text-xs font-semibold uppercase tracking-wider text-foreground/35">
+          {label}
+        </div>
         {isLoading ? (
           <Skeleton className="h-4 w-16 mt-0.5" />
         ) : (
-          <div className="text-[13px] font-bold font-mono text-foreground truncate">{value || "—"}</div>
+          <div className="text-[13px] font-bold font-mono text-foreground truncate">
+            {value || "—"}
+          </div>
         )}
       </div>
     </div>
@@ -282,7 +286,9 @@ function FeatureCard({
       >
         <Icon size={16} style={{ color: accent }} />
       </div>
-      <div className="text-[13px] font-bold text-foreground group-hover:text-white transition-colors">{title}</div>
+      <div className="text-[13px] font-bold text-foreground group-hover:text-white transition-colors">
+        {title}
+      </div>
       <div className="text-[11px] text-foreground/40 mt-0.5">{desc}</div>
     </button>
   );
@@ -292,7 +298,13 @@ function FeatureCard({
 // MOXI Hero Section
 // ══════════════════════════════════════════════════════════════════════════════
 
-function MoxiHero({ userName, onSendPrompt }: { userName: string; onSendPrompt: (prompt: string) => void }) {
+function MoxiHero({
+  userName,
+  onSendPrompt,
+}: {
+  userName: string;
+  onSendPrompt: (prompt: string) => void;
+}) {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -304,9 +316,11 @@ function MoxiHero({ userName, onSendPrompt }: { userName: string; onSendPrompt: 
   }, [inputValue, onSendPrompt]);
 
   return (
-    <div className="mx-4 mt-4 relative overflow-hidden rounded-2xl p-5"
+    <div
+      className="mx-4 mt-4 relative overflow-hidden rounded-2xl p-5"
       style={{
-        background: "linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 10%, var(--color-card)), color-mix(in srgb, var(--color-primary) 3%, var(--color-card)))",
+        background:
+          "linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 10%, var(--color-card)), color-mix(in srgb, var(--color-primary) 3%, var(--color-card)))",
         border: "1px solid color-mix(in srgb, var(--color-primary) 15%, transparent)",
         boxShadow: "0 0 60px -20px var(--color-primary)",
       }}
@@ -322,9 +336,7 @@ function MoxiHero({ userName, onSendPrompt }: { userName: string; onSendPrompt: 
             <span className="text-base font-extrabold text-white">MOXI</span>
             <LiveDot size={6} />
           </div>
-          <div className="text-[13px] text-foreground/60 leading-relaxed">
-            {getMoxiGreeting()}
-          </div>
+          <div className="text-[13px] text-foreground/60 leading-relaxed">{getMoxiGreeting()}</div>
           <div className="text-xs text-foreground/30 mt-1">
             {getGreeting()}, <span className="text-foreground/50 font-semibold">{userName}</span>
           </div>
@@ -383,7 +395,18 @@ function HomePage() {
 
   // Live WebSocket prices for ticker
   const { getPrice } = useLivePrices({
-    pairs: ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "DOGE/USDT", "ADA/USDT", "AVAX/USDT", "DOT/USDT", "LINK/USDT"],
+    pairs: [
+      "BTC/USDT",
+      "ETH/USDT",
+      "SOL/USDT",
+      "BNB/USDT",
+      "XRP/USDT",
+      "DOGE/USDT",
+      "ADA/USDT",
+      "AVAX/USDT",
+      "DOT/USDT",
+      "LINK/USDT",
+    ],
   });
 
   const dashQuery = useQuery({
@@ -457,14 +480,22 @@ function HomePage() {
         <MarketStatPill
           icon={Crown}
           label="BTC Dom"
-          value={overview && overview.btcDominance > 0 ? `${overview.btcDominance.toFixed(1)}%` : undefined}
+          value={
+            overview && overview.btcDominance > 0
+              ? `${overview.btcDominance.toFixed(1)}%`
+              : undefined
+          }
           accent="var(--color-gold)"
           isLoading={marketQuery.isLoading}
         />
         <MarketStatPill
           icon={Globe}
           label="Fear & Greed"
-          value={marketData?.fearGreedIndex ? `${marketData.fearGreedIndex.value} — ${marketData.fearGreedIndex.label}` : undefined}
+          value={
+            marketData?.fearGreedIndex
+              ? `${marketData.fearGreedIndex.value} — ${marketData.fearGreedIndex.label}`
+              : undefined
+          }
           accent={
             (marketData?.fearGreedIndex?.value ?? 50) >= 60
               ? "var(--color-bullish)"
@@ -482,7 +513,9 @@ function HomePage() {
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
               <TrendingUp size={14} className="text-primary" />
-              <span className="text-xs font-bold uppercase tracking-widest text-foreground/50">Top Movers</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-foreground/50">
+                Top Movers
+              </span>
             </div>
             <button
               onClick={() => navigate({ to: "/discover" as any })}
@@ -493,10 +526,20 @@ function HomePage() {
           </div>
           <div className="vx-card divide-y divide-[var(--color-border)]">
             {(overview.topGainers ?? []).slice(0, 2).map((item) => (
-              <MoverMini key={`g-${item.symbol}`} item={item} isGainer livePrice={getLivePriceForSymbol(item.symbol)} />
+              <MoverMini
+                key={`g-${item.symbol}`}
+                item={item}
+                isGainer
+                livePrice={getLivePriceForSymbol(item.symbol)}
+              />
             ))}
             {(overview.topLosers ?? []).slice(0, 2).map((item) => (
-              <MoverMini key={`l-${item.symbol}`} item={item} isGainer={false} livePrice={getLivePriceForSymbol(item.symbol)} />
+              <MoverMini
+                key={`l-${item.symbol}`}
+                item={item}
+                isGainer={false}
+                livePrice={getLivePriceForSymbol(item.symbol)}
+              />
             ))}
           </div>
         </div>
@@ -506,15 +549,54 @@ function HomePage() {
       <div className="mx-4 mt-4">
         <div className="flex items-center gap-2 mb-2.5">
           <Zap size={14} className="text-primary" />
-          <span className="text-xs font-bold uppercase tracking-widest text-foreground/50">Quick Actions</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-foreground/50">
+            Quick Actions
+          </span>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
-          <FeatureCard icon={LineChart} title="Charts" desc="Live trading" to="/charts" badge="LIVE" />
-          <FeatureCard icon={Eye} title="Discover" desc="Trending tokens" to="/discover" badge="LIVE" />
-          <FeatureCard icon={Bot} title="AI Copilot" desc="Talk to MOXI" to="/copilot" accent="var(--color-gold)" />
-          <FeatureCard icon={TrendingUp} title="Signals" desc="AI signals" to="/signals" accent="var(--color-gold)" />
-          <FeatureCard icon={Radio} title="Radar" desc="Market intel" to="/radar" badge="LIVE" accent="var(--color-bullish)" />
-          <FeatureCard icon={Shield} title="PnL" desc="Track trades" to="/pnl" accent="var(--color-bullish)" />
+          <FeatureCard
+            icon={LineChart}
+            title="Charts"
+            desc="Live trading"
+            to="/charts"
+            badge="LIVE"
+          />
+          <FeatureCard
+            icon={Eye}
+            title="Discover"
+            desc="Trending tokens"
+            to="/discover"
+            badge="LIVE"
+          />
+          <FeatureCard
+            icon={Bot}
+            title="AI Copilot"
+            desc="Talk to MOXI"
+            to="/copilot"
+            accent="var(--color-gold)"
+          />
+          <FeatureCard
+            icon={TrendingUp}
+            title="Signals"
+            desc="AI signals"
+            to="/signals"
+            accent="var(--color-gold)"
+          />
+          <FeatureCard
+            icon={Radio}
+            title="Radar"
+            desc="Market intel"
+            to="/radar"
+            badge="LIVE"
+            accent="var(--color-bullish)"
+          />
+          <FeatureCard
+            icon={Shield}
+            title="PnL"
+            desc="Track trades"
+            to="/pnl"
+            accent="var(--color-bullish)"
+          />
         </div>
       </div>
 
