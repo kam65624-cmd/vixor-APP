@@ -394,15 +394,15 @@ export const getDexOHLCV = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const { chainId, pairAddress, interval, limit } = data;
 
-    // Map chainId to GeckoTerminal network id
+    // Map chainId to GeckoTerminal v2 network id (verified against /api/v2/networks)
     const networkMap: Record<string, string> = {
       ethereum: "eth",
-      solana: "sol",
+      solana: "solana",
       base: "base",
       arbitrum: "arbitrum",
-      polygon: "polygon",
+      polygon: "polygon_pos",
       bsc: "bsc",
-      avalanche: "avalanche",
+      avalanche: "avax",
     };
     const network = networkMap[chainId] || chainId;
 
