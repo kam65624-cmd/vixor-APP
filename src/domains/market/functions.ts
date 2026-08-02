@@ -388,11 +388,12 @@ export const getDexOHLCV = createServerFn({ method: "GET" })
         pairAddress: z.string().min(1),
         interval: z.string().default("hour"),
         limit: z.coerce.number().min(10).max(500).default(200),
+        aggregate: z.coerce.number().min(1).max(100).default(1),
       })
       .parse(d),
   )
   .handler(async ({ data }) => {
-    const { chainId, pairAddress, interval, limit } = data;
+    const { chainId, pairAddress, interval, limit, aggregate } = data;
 
     // Map chainId to GeckoTerminal v2 network id (verified against /api/v2/networks)
     const networkMap: Record<string, string> = {
@@ -406,7 +407,8 @@ export const getDexOHLCV = createServerFn({ method: "GET" })
     };
     const network = networkMap[chainId] || chainId;
 
-    const url = `https://api.geckoterminal.com/api/v2/networks/${network}/pools/${pairAddress}/ohlcv/${interval}?limit=${limit}`;
+    const aggParam = aggregate > 1 ? `&aggregate=${aggregate}` : "";
+    const url = `https://api.geckoterminal.com/api/v2/networks/${network}/pools/${pairAddress}/ohlcv/${interval}?limit=${limit}${aggParam}`;
 
     try {
       const res = await fetch(url, {

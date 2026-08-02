@@ -1,12 +1,11 @@
 // ============================================================================
 // VIXOR DexChart — Native lightweight-charts for DEX/meme tokens
 // ============================================================================
-// Uses GeckoTerminal OHLCV data + lightweight-charts (same engine as TradingView).
-// Replaces the blocked DexScreener iframe with a real interactive chart.
+// Uses GeckoTerminal OHLCV data (server-side) + lightweight-charts.
+// Two-strategy fetch: server function first (no CORS), then direct client fetch.
 // ============================================================================
 
 import { memo, useState, useEffect, useRef, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getDexOHLCV } from "@/domains/market/functions";
 import {
@@ -76,6 +75,25 @@ const INTERVALS = [
   { key: "day", label: "1D" },
 ] as const;
 
+const TF_MAP: Record<string, { tf: string; agg: number }> = {
+  minute: { tf: "minute", agg: 1 },
+  "5minute": { tf: "minute", agg: 5 },
+  "15minute": { tf: "minute", agg: 15 },
+  hour: { tf: "hour", agg: 1 },
+  "4hour": { tf: "hour", agg: 4 },
+  day: { tf: "day", agg: 1 },
+};
+
+const NETWORK_MAP: Record<string, string> = {
+  ethereum: "eth",
+  solana: "solana",
+  base: "base",
+  arbitrum: "arbitrum",
+  polygon: "polygon_pos",
+  bsc: "bsc",
+  avalanche: "avax",
+};
+
 function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -135,107 +153,111 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
     };
   }, []);
 
-  // Load data via direct GeckoTerminal CORS API with proper aggregate parameters
+  // Apply OHLCV data to chart series
+  const applyData = useCallback((bars: KlineBar[]) => {
+    if (!candleRef.current || bars.length === 0) return;
+
+    // Deduplicate by time, sort ascending
+    const deduped = new Map<number, KlineBar>();
+    for (const bar of bars) deduped.set(bar.time, bar);
+    const sorted = Array.from(deduped.values()).sort((a, b) => a.time - b.time);
+
+    const candles: CandlestickData[] = sorted.map((k) => ({
+      time: k.time as unknown as import("lightweight-charts").Time,
+      open: k.open,
+      high: k.high,
+      low: k.low,
+      close: k.close,
+    }));
+
+    const volumes: HistogramData[] = sorted.map((k) => ({
+      time: k.time as unknown as import("lightweight-charts").Time,
+      value: k.volume,
+      color: k.close >= k.open ? "rgba(34,211,166,0.3)" : "rgba(251,70,103,0.3)",
+    }));
+
+    candleRef.current?.setData(candles);
+    volRef.current?.setData(volumes);
+    chartRef.current?.timeScale().fitContent();
+  }, []);
+
+  // Load data — server function first (no CORS/WebView blocks), then direct fetch
   const loadData = useCallback(
     async (intervalKey: string) => {
       if (!candleRef.current) return;
       setLoading(true);
       setError(null);
 
+      const cfg = TF_MAP[intervalKey] || { tf: "hour", agg: 1 };
+      let bars: KlineBar[] = [];
+
+      // ── Strategy 1: Server-side fetch (Vercel backend — no CORS, no Telegram WebView blocks) ──
       try {
-        // GeckoTerminal v2 network IDs (verified against /api/v2/networks)
-        const networkMap: Record<string, string> = {
-          ethereum: "eth",
-          solana: "solana",
-          base: "base",
-          arbitrum: "arbitrum",
-          polygon: "polygon_pos",
-          bsc: "bsc",
-          avalanche: "avax",
-        };
-        const network = networkMap[chainId.toLowerCase()] || chainId.toLowerCase();
-
-        const tfMap: Record<string, { tf: string; agg: number }> = {
-          minute: { tf: "minute", agg: 1 },
-          "5minute": { tf: "minute", agg: 5 },
-          "15minute": { tf: "minute", agg: 15 },
-          hour: { tf: "hour", agg: 1 },
-          "4hour": { tf: "hour", agg: 4 },
-          day: { tf: "day", agg: 1 },
-        };
-        const cfg = tfMap[intervalKey] || { tf: "hour", agg: 1 };
-
-        const url = `https://api.geckoterminal.com/api/v2/networks/${network}/pools/${pairAddress}/ohlcv/${cfg.tf}?aggregate=${cfg.agg}&limit=200`;
-
-        const res = await fetch(url, { headers: { Accept: "application/json" } });
-        if (!res.ok) throw new Error("GeckoTerminal API non-200");
-
-        const json = await res.json();
-
-        // GeckoTerminal v2 returns { data: { attributes: { ohlcv_list: [[t,o,h,l,c,v], ...] } } }
-        // Handle both old format (data = array of objects) and new format (data.attributes.ohlcv_list = array of arrays)
-        let data: KlineBar[] = [];
-        const rawBars = json?.data;
-
-        if (Array.isArray(rawBars) && rawBars.length > 0) {
-          // Legacy format: data is an array of { attributes: { time, open, ... } }
-          data = rawBars
-            .map((c: any) => ({
-              time: c.attributes.time,
-              open: c.attributes.open,
-              high: c.attributes.high,
-              low: c.attributes.low,
-              close: c.attributes.close,
-              volume: c.attributes.volume || 0,
-            }))
-            .sort((a: any, b: any) => a.time - b.time);
-        } else if (rawBars?.attributes?.ohlcv_list && Array.isArray(rawBars.attributes.ohlcv_list)) {
-          // Current format: data.attributes.ohlcv_list is [[t, o, h, l, c, v], ...]
-          data = rawBars.attributes.ohlcv_list
-            .map((c: any) => ({
-              time: c[0],
-              open: c[1],
-              high: c[2],
-              low: c[3],
-              close: c[4],
-              volume: c[5] || 0,
-            }))
-            .sort((a: any, b: any) => a.time - b.time);
-        } else {
-          throw new Error("No GeckoTerminal bars");
+        const serverBars: any = await fetchDexOHLCV({
+          data: {
+            chainId,
+            pairAddress,
+            interval: cfg.tf,
+            limit: 200,
+            aggregate: cfg.agg,
+          },
+        });
+        if (Array.isArray(serverBars) && serverBars.length > 0) {
+          bars = serverBars.map((b: any) => ({
+            time: b.time,
+            open: b.open,
+            high: b.high,
+            low: b.low,
+            close: b.close,
+            volume: b.volume || 0,
+          }));
         }
+      } catch (e) {
+        console.warn("[DexChart] Server OHLCV failed, trying direct fetch:", e);
+      }
 
-        // Deduplicate by time (keep last) and sort ascending
-        const deduped = new Map<number, KlineBar>();
-        for (const bar of data) {
-          deduped.set(bar.time, bar);
+      // ── Strategy 2: Direct client-side GeckoTerminal fetch (fallback, may fail in WebView) ──
+      if (bars.length === 0) {
+        try {
+          const network = NETWORK_MAP[chainId.toLowerCase()] || chainId.toLowerCase();
+          const url = `https://api.geckoterminal.com/api/v2/networks/${network}/pools/${pairAddress}/ohlcv/${cfg.tf}?aggregate=${cfg.agg}&limit=200`;
+          const res = await fetch(url, { headers: { Accept: "application/json" } });
+          if (res.ok) {
+            const json = await res.json();
+            const raw = json?.data;
+
+            // GeckoTerminal v2: data.attributes.ohlcv_list = [[t,o,h,l,c,v], ...]
+            if (raw?.attributes?.ohlcv_list && Array.isArray(raw.attributes.ohlcv_list)) {
+              bars = raw.attributes.ohlcv_list.map((c: any) => ({
+                time: c[0], open: c[1], high: c[2], low: c[3], close: c[4], volume: c[5] || 0,
+              }));
+            }
+            // Legacy format: data = [{ attributes: { time, open, ... } }, ...]
+            else if (Array.isArray(raw) && raw.length > 0) {
+              bars = raw.map((c: any) => ({
+                time: c.attributes.time,
+                open: c.attributes.open,
+                high: c.attributes.high,
+                low: c.attributes.low,
+                close: c.attributes.close,
+                volume: c.attributes.volume || 0,
+              }));
+            }
+          }
+        } catch (e) {
+          console.warn("[DexChart] Direct GeckoTerminal fetch failed:", e);
         }
-        const sorted = Array.from(deduped.values()).sort((a, b) => a.time - b.time);
+      }
 
-        const candles: CandlestickData[] = sorted.map((k) => ({
-          time: k.time as unknown as import("lightweight-charts").Time,
-          open: k.open,
-          high: k.high,
-          low: k.low,
-          close: k.close,
-        }));
-
-        const volumes: HistogramData[] = sorted.map((k) => ({
-          time: k.time as unknown as import("lightweight-charts").Time,
-          value: k.volume,
-          color: k.close >= k.open ? "rgba(34,211,166,0.3)" : "rgba(251,70,103,0.3)",
-        }));
-
-        candleRef.current?.setData(candles);
-        volRef.current?.setData(volumes);
-        chartRef.current?.timeScale().fitContent();
-      } catch (err) {
-        // Fallback to DexScreener iframe embed when GeckoTerminal data is unavailable
-        setError("fallback");
+      // ── Apply or show error ──
+      if (bars.length === 0) {
+        setError("no_data");
+      } else {
+        applyData(bars);
       }
       setLoading(false);
     },
-    [chainId, pairAddress],
+    [chainId, pairAddress, fetchDexOHLCV, applyData],
   );
 
   useEffect(() => {
@@ -306,8 +328,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px" }: DexChartProps
         </div>
       )}
 
-      {/* Error / Fallback — DexScreener iframes are blocked in Telegram WebView (X-Frame-Options),
-          so we show a proper error state with a link to DexScreener instead */}
+      {/* Error state */}
       {error && !loading && (
         <div
           style={{
