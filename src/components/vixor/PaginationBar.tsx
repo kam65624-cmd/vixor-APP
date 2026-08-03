@@ -5,7 +5,7 @@
 //
 // Wraps the shadcn <Pagination> primitives into a controlled component that
 // emits page changes. Used by all list pages (signals, portfolio, journal,
-// trade-desk, copilot, daily-loop) so users can paginate through long lists.
+// trade-desk, moxi, daily-loop) so users can paginate through long lists.
 //
 // Usage:
 //   <PaginationBar

@@ -4,7 +4,7 @@
 //
 // A pure-CSS 3D AI companion that floats on the right side of the screen.
 // Uses CSS transforms (perspective, rotateY) for the 3D look.
-// Clicking opens the copilot with optional pre-filled prompt.
+// Clicking triggers the MOXI chat with optional pre-filled prompt.
 //
 // Usage:
 //   <MoxiCharacter3D onChatOpen={(prompt) => navigate(...)} />

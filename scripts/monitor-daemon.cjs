@@ -242,7 +242,6 @@ async function checkFrontendRoutes(state) {
     "/portfolio",
     "/journal",
     "/charts",
-    "/copilot",
     "/discover",
     "/daily-loop",
     "/trade-desk",

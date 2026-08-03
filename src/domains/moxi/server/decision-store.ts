@@ -8,12 +8,14 @@
 
 import { supabaseAdmin } from "@/shared/supabase/client.server";
 import type { Json } from "@/shared/supabase/types";
-import type { VixorAgentId, DecisionType, DecisionSeverity } from "../types";
+import type { DecisionType, DecisionSeverity } from "../types";
+
+type AgentId = "coach" | "analyst" | "governor" | "hunter" | "moxi";
 
 /** Parameters for storing a decision. */
 export interface StoreDecisionParams {
   userId: string;
-  agentId: VixorAgentId;
+  agentId: AgentId;
   decisionType: DecisionType;
   title: string;
   description?: string;

@@ -66,7 +66,7 @@ export const API_KEY_REGISTRY = [
     id: "OPENAI_API_KEY" as const,
     envVar: "VIXOR_OPENAI_API_KEY",
     label: "OpenAI",
-    description: "OpenAI GPT models for AI analysis, copilot, and signal generation",
+    description: "OpenAI GPT models for AI analysis, AI assistant, and signal generation",
     category: "AI / LLM",
   },
   {

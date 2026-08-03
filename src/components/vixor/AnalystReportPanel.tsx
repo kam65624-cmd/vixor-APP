@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/shared/utils";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { generateWeeklyReport, submitDecisionFeedback } from "@/domains/copilot/functions";
+import { generateWeeklyReport, submitDecisionFeedback } from "@/domains/moxi/agents";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

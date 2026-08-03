@@ -37,7 +37,6 @@ import { Route as AuthenticatedExperimentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
 import { Route as AuthenticatedDailyLoopRouteImport } from './routes/_authenticated/daily-loop'
 import { Route as AuthenticatedCurvesRouteImport } from './routes/_authenticated/curves'
-import { Route as AuthenticatedCopilotRouteImport } from './routes/_authenticated/copilot'
 import { Route as AuthenticatedCommunitiesRouteImport } from './routes/_authenticated/communities'
 import { Route as AuthenticatedChartsRouteImport } from './routes/_authenticated/charts'
 import { Route as AuthenticatedBrokersRouteImport } from './routes/_authenticated/brokers'
@@ -193,11 +192,6 @@ const AuthenticatedCurvesRoute = AuthenticatedCurvesRouteImport.update({
   path: '/curves',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCopilotRoute = AuthenticatedCopilotRouteImport.update({
-  id: '/copilot',
-  path: '/copilot',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedCommunitiesRoute =
   AuthenticatedCommunitiesRouteImport.update({
     id: '/communities',
@@ -275,7 +269,6 @@ export interface FileRoutesByFullPath {
   '/brokers': typeof AuthenticatedBrokersRoute
   '/charts': typeof AuthenticatedChartsRoute
   '/communities': typeof AuthenticatedCommunitiesRoute
-  '/copilot': typeof AuthenticatedCopilotRoute
   '/curves': typeof AuthenticatedCurvesRoute
   '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
@@ -316,7 +309,6 @@ export interface FileRoutesByTo {
   '/brokers': typeof AuthenticatedBrokersRoute
   '/charts': typeof AuthenticatedChartsRoute
   '/communities': typeof AuthenticatedCommunitiesRoute
-  '/copilot': typeof AuthenticatedCopilotRoute
   '/curves': typeof AuthenticatedCurvesRoute
   '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
@@ -360,7 +352,6 @@ export interface FileRoutesById {
   '/_authenticated/brokers': typeof AuthenticatedBrokersRoute
   '/_authenticated/charts': typeof AuthenticatedChartsRoute
   '/_authenticated/communities': typeof AuthenticatedCommunitiesRoute
-  '/_authenticated/copilot': typeof AuthenticatedCopilotRoute
   '/_authenticated/curves': typeof AuthenticatedCurvesRoute
   '/_authenticated/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/_authenticated/discover': typeof AuthenticatedDiscoverRoute
@@ -405,7 +396,6 @@ export interface FileRouteTypes {
     | '/brokers'
     | '/charts'
     | '/communities'
-    | '/copilot'
     | '/curves'
     | '/daily-loop'
     | '/discover'
@@ -446,7 +436,6 @@ export interface FileRouteTypes {
     | '/brokers'
     | '/charts'
     | '/communities'
-    | '/copilot'
     | '/curves'
     | '/daily-loop'
     | '/discover'
@@ -489,7 +478,6 @@ export interface FileRouteTypes {
     | '/_authenticated/brokers'
     | '/_authenticated/charts'
     | '/_authenticated/communities'
-    | '/_authenticated/copilot'
     | '/_authenticated/curves'
     | '/_authenticated/daily-loop'
     | '/_authenticated/discover'
@@ -724,13 +712,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCurvesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/copilot': {
-      id: '/_authenticated/copilot'
-      path: '/copilot'
-      fullPath: '/copilot'
-      preLoaderRoute: typeof AuthenticatedCopilotRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/communities': {
       id: '/_authenticated/communities'
       path: '/communities'
@@ -828,7 +809,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBrokersRoute: typeof AuthenticatedBrokersRoute
   AuthenticatedChartsRoute: typeof AuthenticatedChartsRoute
   AuthenticatedCommunitiesRoute: typeof AuthenticatedCommunitiesRoute
-  AuthenticatedCopilotRoute: typeof AuthenticatedCopilotRoute
   AuthenticatedCurvesRoute: typeof AuthenticatedCurvesRoute
   AuthenticatedDailyLoopRoute: typeof AuthenticatedDailyLoopRoute
   AuthenticatedDiscoverRoute: typeof AuthenticatedDiscoverRoute
@@ -870,7 +850,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBrokersRoute: AuthenticatedBrokersRoute,
   AuthenticatedChartsRoute: AuthenticatedChartsRoute,
   AuthenticatedCommunitiesRoute: AuthenticatedCommunitiesRoute,
-  AuthenticatedCopilotRoute: AuthenticatedCopilotRoute,
   AuthenticatedCurvesRoute: AuthenticatedCurvesRoute,
   AuthenticatedDailyLoopRoute: AuthenticatedDailyLoopRoute,
   AuthenticatedDiscoverRoute: AuthenticatedDiscoverRoute,

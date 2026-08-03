@@ -3,7 +3,7 @@
 // ============================================================================
 //
 // Builds MOXI's system prompt from context + persona.
-// MOXI is different from the 4 copilot agents — it's a unified companion
+// MOXI is different from the 4 legacy agents — it's a unified companion
 // that can do everything: analyze, signal, alert, summarize.
 // ============================================================================
 

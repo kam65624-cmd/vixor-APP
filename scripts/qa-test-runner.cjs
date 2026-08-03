@@ -5,7 +5,7 @@
  * Tests against the live deployment at https://vixor-app.vercel.app
  *
  * Coverage:
- *  1. Frontend routing (all 17 routes)
+ *  1. Frontend routing (all 16 routes)
  *  2. Responsive design (mobile/tablet/desktop via viewport probes)
  *  3. Dark/Light mode (CSS variable check on /settings)
  *  4. Client-side form validation (auth form HTML5 attrs, analyze file upload validation)
@@ -138,7 +138,6 @@ async function testFrontendRoutes() {
     "/auth",
     "/analyze",
     "/charts",
-    "/copilot",
     "/daily-loop",
     "/discover",
     "/journal",
@@ -544,7 +543,7 @@ async function testPagination() {
   // enough items to paginate through). The SSR HTML won't show pagination
   // markup for unauthenticated requests with no data, so we probe the
   // built JS bundle for the PaginationBar import as proof of wiring.
-  const pages = ["/signals", "/portfolio", "/journal", "/trade-desk", "/copilot", "/daily-loop"];
+  const pages = ["/signals", "/portfolio", "/journal", "/trade-desk", "/daily-loop"];
   // First, fetch one of the route JS bundles to find the PaginationBar import
   let bundleHasPaginationBar = false;
   try {

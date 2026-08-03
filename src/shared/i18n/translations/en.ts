@@ -52,7 +52,6 @@ const en = {
     charts: "Charts",
     journal: "Journal",
     portfolio: "Portfolio",
-    copilot: "Copilot",
     markets: "Markets",
     signals: "Signals",
     notifications: "Notifications",
@@ -130,7 +129,7 @@ const en = {
     topSignal: "Top Signal",
     suggestedAction: "Suggested Action",
     todayPlan: "Today's plan based on your signals and alerts",
-    askCopilot: "Ask Copilot",
+    askMoxi: "Ask MOXI",
     analyzeNow: "Analyze Now",
     analyzeChart: "Analyze Chart",
     smcIct: "SMC & ICT-powered signal in seconds",
@@ -202,7 +201,6 @@ const en = {
     heatmapSubtitle: "24h change across popular pairs",
     gain: "Gain",
     loss: "Loss",
-    heatmapComingSoon: "Interactive heatmap coming soon",
     readFullArticle: "Read full article",
     noNewsArticles: "No news articles found for this category.",
     failedToLoadNews: "Failed to load news. Please try again.",
@@ -251,7 +249,6 @@ const en = {
     deleteWatchlistDescription:
       "This action cannot be undone. All pairs in this watchlist will be removed.",
     noHeatmapData: "No heatmap data available",
-    interactiveHeatmapSoon: "Interactive heatmap coming soon",
     signalsDaily: "Daily signals powered by Vixor AI",
   },
 
@@ -265,7 +262,7 @@ const en = {
     watchlist: "Watchlist",
     myAlerts: "My Alerts",
     allAlerts: "All Alerts",
-    askCopilot: "Ask AI",
+    askMoxi: "Ask MOXI",
   },
 
   // ═══ ANALYZE ═══
@@ -430,41 +427,6 @@ const en = {
     totalPnL: "Total P&L",
     openPositions: "Open Positions",
     closedPositions: "Closed Positions",
-  },
-
-  // ═══ AI COPILOT ═══
-  copilot: {
-    title: "AI Copilot",
-    subtitle: "Your Trading Assistant",
-    vixorAi: "Vixor AI",
-    placeholder: "Ask Vixor anything about trading...",
-    example1: "Should I enter XAUUSD now?",
-    example2: "Analyze EURUSD on 4H",
-    example3: "What's the market bias for BTC?",
-    example4: "Review my recent trades",
-    thinking: "Thinking...",
-    noContext:
-      "I need more data to give you accurate answers. Try analyzing a chart or adding trades to your journal first.",
-    marketAnalyst: "Market Analyst",
-    riskManager: "Risk Manager",
-    newsAnalyst: "News Analyst",
-    strategyBuilder: "Strategy Builder",
-    welcomeTitle: "How can I help you today?",
-    welcomeDesc:
-      "I'm your context-aware AI trading assistant. I know your recent analyses, signals, and alerts.",
-    autoMode: "Auto (AI Picks Best Agent)",
-    consensusMode: "Multi-Agent Consensus",
-    consensusDesc: "Get perspectives from all 4 AI agents",
-    consensusPlaceholder: "Ask all 4 agents for their perspective...",
-    consultAgent: "Consult {agent}",
-    marketAnalystDesc: "SMC/ICT technical analysis, market structure, order blocks",
-    riskManagerDesc: "Position sizing, risk-reward, exposure management",
-    newsAnalystDesc: "Economic events, central banks, fundamental sentiment",
-    strategyBuilderDesc: "Trading plans, daily routines, strategy optimization",
-    synthesis: "AI Synthesis",
-    allAgentsAgree: "All agents agree",
-    consensusShort: "Consensus",
-    getConsensus: "Get Multi-Agent Consensus",
   },
 
   // ═══ PROFILE ═══

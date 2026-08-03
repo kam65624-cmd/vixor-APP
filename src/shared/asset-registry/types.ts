@@ -3,7 +3,7 @@
 // ============================================================================
 //
 // This module is the ONLY place where asset definitions live.
-// All domains (market, analysis, trading, copilot, etc.) MUST reference
+// All domains (market, analysis, trading, AI, etc.) MUST reference
 // assets through this registry — never hardcode pairs or symbols elsewhere.
 //
 // Architecture Rules:

@@ -15,10 +15,11 @@ export {
 export {
   isWalletConnectAvailable,
   connectWalletConnect,
+  disconnectWalletConnect,
   getWalletConnectUri,
-  WALLETCONNECT_PROJECT_ID,
-  WALLETCONNECT_RELAY_URL,
+  walletConnectAdapter,
 } from "./walletconnect-adapter";
+export type { WalletConnectAdapter, WalletConnectSession } from "./walletconnect-adapter";
 export {
   isTelegramWebApp,
   connectTelegramWallet,

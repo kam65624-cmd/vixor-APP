@@ -11,7 +11,7 @@
 //   - preference: User preferences (pairs, timeframes, style)
 //   - behavior: Observed behavior patterns (trade frequency, journal cadence)
 //   - mistake: Trading mistakes for learning
-//   - insight: Copilot-generated insights about the user
+//   - insight: AI-generated insights about the user
 //   - strategy: User's active trading strategy notes
 //
 // Usage:
@@ -34,7 +34,7 @@ export interface MemoryEntry {
   key: string;
   value: unknown;
   confidence: number; // 0-1, how confident we are about this memory
-  source: string; // what generated this memory (e.g., "copilot", "user_action", "system")
+  source: string; // what generated this memory (e.g., "moxi", "user_action", "system")
   created_at?: string;
   updated_at?: string;
 }
@@ -282,7 +282,7 @@ class MemoryStoreClass {
   }
 
   /**
-   * Format user memories as a context string for Copilot prompts.
+   * Format user memories as a context string for AI prompts.
    */
   async contextForPrompt(userId: string): Promise<string> {
     const all = await this.retrieveAll(userId);

@@ -65,7 +65,7 @@ export interface MoxiContext {
 
 /**
  * Assembles all real-time data needed for MOXI's system prompt.
- * Uses existing data-fetching patterns from the copilot domain — no new
+ * Uses existing data-fetching patterns from the MOXI domain — no new
  * data fetching logic, just parallel aggregation.
  */
 export async function buildMoxiContext(userId: string, supabase: any): Promise<MoxiContext> {

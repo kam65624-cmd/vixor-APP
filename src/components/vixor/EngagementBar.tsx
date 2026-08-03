@@ -44,14 +44,6 @@ const ALL_TASKS: DailyTask[] = [
     route: "/signals",
   },
   {
-    id: "copilot_chat",
-    label: "Ask Copilot",
-    shortLabel: "Copilot",
-    completed: false,
-    xp: 15,
-    route: "/copilot",
-  },
-  {
     id: "discover_tokens",
     label: "Explore DEX tokens",
     shortLabel: "Discover",

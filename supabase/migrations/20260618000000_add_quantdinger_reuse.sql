@@ -117,7 +117,7 @@ CREATE POLICY "users access own notifications"
   WITH CHECK (auth.uid() = user_id);
 
 -- ── agent_tokens ───────────────────────────────────────────────────────────
--- Personal access tokens for the programmatic API (copilot-from-script,
+-- Personal access tokens for the programmatic API (script access,  
 -- automated trading, etc.). NEVER store the raw token — only its SHA-256 hash.
 
 CREATE TABLE IF NOT EXISTS agent_tokens (

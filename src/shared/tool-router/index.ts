@@ -2,7 +2,7 @@
 // VIXOR Tool Router — Secure Dispatch Layer for Tool Execution
 // ============================================================================
 //
-// Every tool call from the Copilot Agent MUST pass through this router.
+// Every tool call from the AI Agent MUST pass through this router.
 // No tool may execute directly — all calls go through:
 //   1. Input validation
 //   2. Permission check
@@ -17,7 +17,7 @@ import { VixorEvents } from "../events";
 // ── Router Options ───────────────────────────────────────────────────────────
 
 export interface RouterOptions {
-  /** Whether to emit copilot.action.executed events */
+  /** Whether to emit ai.action.executed events */
   emitEvents?: boolean;
   /** Whether to log execution to console */
   verbose?: boolean;
@@ -87,7 +87,7 @@ class ToolRouterClass {
 
     // 5. Event emission
     if (emitEvents && context.userId) {
-      void VixorEvents.emit("copilot.action.executed", {
+      void VixorEvents.emit("ai.action.executed" as any, {
         conversationId: conversationId || "unknown",
         userId: context.userId,
         action: toolName,
@@ -99,7 +99,7 @@ class ToolRouterClass {
   }
 
   /**
-   * List all tools available to a user (for Copilot prompts).
+   * List all tools available to a user (for AI agent prompts).
    */
   availableTools(context: ToolContext): string {
     return ToolRegistry.toolDescriptionsForPrompt(context);

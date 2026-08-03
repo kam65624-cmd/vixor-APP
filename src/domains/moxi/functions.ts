@@ -2,11 +2,11 @@
 // MOXI — Server Functions
 // ============================================================================
 //
-// askMoxi: The main MOXI endpoint. Follows the same pattern as askCopilot:
+// askMoxi: The main MOXI endpoint.
 // 1. Auth + rate limit
 // 2. Build context (reuse buildMoxiContext)
 // 3. Tool intent detection → execute tool if matched
-// 4. AI fallback with MOXI system prompt via agent-orchestrator
+// 4. AI fallback with MOXI system prompt via LLMRouter
 // ============================================================================
 
 import { createServerFn } from "@tanstack/react-start";
@@ -17,8 +17,7 @@ import { buildMoxiContext } from "./context-engine";
 import { getMoxiPersona } from "./persona";
 import { buildMoxiSystemPrompt, formatMoxiContext } from "./prompt";
 
-// Rate limit: max 25 MOXI requests per user per minute (slightly higher than copilot
-// because MOXI handles more tool-like interactions)
+// Rate limit: max 25 MOXI requests per user per minute
 const moxiLimiter = new SlidingWindowLimiter({
   maxRequests: 25,
   windowMs: 60_000,
@@ -87,7 +86,7 @@ export const askMoxi = createServerFn({ method: "POST" })
       const { configureEventPersistence } = await import("@/shared/events/persist");
       configureEventPersistence();
 
-      const { processWithAgent } = await import("@/domains/copilot/server/copilot-agent");
+      const { processWithAgent } = await import("@/domains/moxi/server/agent");
       const toolContext: import("@/shared/tool-registry").ToolContext = {
         userId,
         isPremium: (moxiCtx.profile as any)?.is_premium ?? false,

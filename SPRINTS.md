@@ -90,7 +90,6 @@ Removed 310 files / 144,900 lines (audit reports, bibles, JSON dumps, obsolete s
 |-------|------|--------|--------|
 | `/` | `index.tsx` | home/moxi | Active |
 | `/charts` | `charts.tsx` | chart-intelligence | Active |
-| `/copilot` | `copilot.tsx` + `-copilot-component.tsx` | copilot | Active |
 | `/discover` | `discover.tsx` | discovery | Active |
 | `/token/:symbol` | `token.$symbol.tsx` + `-token-symbol-component.tsx` | discovery | Active |
 | `/analysis/:id` | `analysis.$id.tsx` + `-analysis-id-component.tsx` | analysis | Active |
@@ -138,7 +137,6 @@ Removed 310 files / 144,900 lines (audit reports, bibles, JSON dumps, obsolete s
 | broker | `src/domains/broker/` | 1 | Broker integration |
 | chart-intelligence | `src/domains/chart-intelligence/` | 5 | Chart pattern recognition |
 | chart-truth | `src/domains/chart-truth/` | 5 | Chart data validation |
-| copilot | `src/domains/copilot/` | 13 | MOXI AI chat, tool use |
 | daily-loop | `src/domains/daily-loop/` | 3 | Daily market brief |
 | debate | `src/domains/debate/` | 7 | AI debate analysis |
 | discover | `src/domains/discover/` | 2 | Token discovery |
@@ -165,7 +163,6 @@ Removed 310 files / 144,900 lines (audit reports, bibles, JSON dumps, obsolete s
 | GET /api/sol-price | `server/api/sol-price.ts` | SOL price feed |
 | GET /api/market-overview | `server/api/market-overview.ts` | Market stats |
 | GET /api/discover | `server/api/discover.ts` | Token discovery data |
-| POST /api/copilot-stream | `server/api/copilot-stream.ts` | MOXI streaming chat |
 | POST /api/generate-signals | `server/api/generate-signals.ts` | AI signal generation |
 | GET /api/check-alerts | `server/api/check-alerts.ts` | Signal alert checker |
 | POST /api/telegram-webhook | `server/api/telegram-webhook.ts` | Telegram bot webhook |

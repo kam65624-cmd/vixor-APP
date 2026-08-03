@@ -5,7 +5,7 @@
 // Manages the chart context when a user is viewing a TradingView chart
 // inside Vixor. This is the HIGHEST accuracy path — no screenshot needed.
 //
-// When the user is on the charts page and asks the copilot a question,
+// When the user is on the charts page and asks the AI a question,
 // the system automatically knows:
 //   - Which symbol they're viewing
 //   - What timeframe they're on

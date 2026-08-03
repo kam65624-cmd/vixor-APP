@@ -23,7 +23,12 @@ const VAULT_SCHEMA = z.object({
   OPENAI_BASE_URL: z.string().optional().default("https://api.openai.com/v1"),
   ANTHROPIC_API_KEY: z.string().optional().default(""),
   GROQ_API_KEY: z.string().optional().default(""),
-  LLM_PROVIDER: z.enum(["zai", "openai", "anthropic", "groq"]).optional().default("zai"),
+  DEEPSEEK_API_KEY: z.string().optional().default(""),
+  GEMINI_API_KEY: z.string().optional().default(""),
+  LLM_PROVIDER: z
+    .enum(["zai", "openai", "anthropic", "groq", "deepseek", "gemini"])
+    .optional()
+    .default("zai"),
 
   // ── Market Data ──
   MOBULA_API_KEY: z.string().optional().default(""),
@@ -98,6 +103,16 @@ const PROVIDER_REGISTRY: Record<string, ProviderDef> = {
     label: "Groq",
     category: "LLM",
     keys: ["GROQ_API_KEY"],
+  },
+  deepseek: {
+    label: "DeepSeek",
+    category: "LLM",
+    keys: ["DEEPSEEK_API_KEY"],
+  },
+  gemini: {
+    label: "Gemini",
+    category: "LLM",
+    keys: ["GEMINI_API_KEY"],
   },
   zai: {
     label: "ZAI (Bundled)",
@@ -215,6 +230,8 @@ function loadVault(): VaultConfig {
     OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     GROQ_API_KEY: process.env.GROQ_API_KEY,
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     LLM_PROVIDER: process.env.LLM_PROVIDER,
 
     MOBULA_API_KEY: process.env.MOBULA_API_KEY,
@@ -341,7 +358,13 @@ export function getAnthropicApiKey(): string {
 export function getGroqApiKey(): string {
   return getVault().GROQ_API_KEY;
 }
-export function getLlmProvider(): "zai" | "openai" | "anthropic" | "groq" {
+export function getDeepSeekApiKey(): string {
+  return getVault().DEEPSEEK_API_KEY;
+}
+export function getGeminiApiKey(): string {
+  return getVault().GEMINI_API_KEY;
+}
+export function getLlmProvider(): "zai" | "openai" | "anthropic" | "groq" | "deepseek" | "gemini" {
   return getVault().LLM_PROVIDER;
 }
 

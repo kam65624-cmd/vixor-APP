@@ -82,12 +82,7 @@ function PremiumPage() {
             id: "pro-monthly",
             name: "Pro",
             price_cents: 2900,
-            features: [
-              "AI Copilot access",
-              "Advanced signals",
-              "Priority alerts",
-              "Extended history",
-            ],
+            features: ["MOXI AI access", "Advanced signals", "Priority alerts", "Extended history"],
           },
           {
             id: "pro-yearly",

@@ -1,16 +1,13 @@
 // ============================================================================
-// VIXOR Copilot Agent — Tool-Using Execution Agent
+// MOXI — Intent Detection & Tool Execution Agent
 // ============================================================================
 //
-// This is the P1 Intelligence Layer Copilot.
+// P1 Intelligence Layer.
 // It can:
 //   - Understand user intent (keyword-based, no LLM required)
 //   - Execute tools via ToolRouter
 //   - Store and retrieve memories
 //   - Emit events
-//
-// The existing AI-based copilot (agent-orchestrator.ts) continues to work.
-// This layer ADDS tool execution capability ON TOP of the existing system.
 //
 // Flow:
 //   User message → Intent detection → Tool dispatch → Response
@@ -23,7 +20,7 @@ import { type ToolContext, ToolRegistry } from "@/shared/tool-registry";
 import { MemoryStore } from "@/shared/memory";
 import { VixorEvents } from "@/shared/events";
 
-// Ensure tools are registered when copilot-agent is used.
+// Ensure tools are registered when agent is used.
 // This is critical for Vercel serverless where API handlers
 // run in separate contexts from the SSR handler.
 import "@/shared/tool-registry/bootstrap";
@@ -206,9 +203,9 @@ function extractTimeframe(text: string): string | null {
   return null;
 }
 
-// ── Copilot Agent Class ──────────────────────────────────────────────────────
+// ── MOXI Agent Result ──────────────────────────────────────────────────────────
 
-export interface CopilotAgentResult {
+export interface AgentResult {
   /** Whether a tool was executed */
   toolExecuted: boolean;
   /** Tool name that was executed */
@@ -222,7 +219,7 @@ export interface CopilotAgentResult {
 }
 
 /**
- * Process a user message through the Copilot Agent.
+ * Process a user message through the MOXI Agent.
  * Attempts intent detection → tool execution first.
  * Falls back to AI if no intent is detected.
  */
@@ -230,7 +227,7 @@ export async function processWithAgent(
   message: string,
   context: ToolContext,
   options?: { conversationId?: string },
-): Promise<CopilotAgentResult> {
+): Promise<AgentResult> {
   // 1. Try intent detection
   const intent = detectIntent(message);
 
@@ -274,14 +271,14 @@ export async function processWithAgent(
   });
 
   // 4. Learn from user behavior
-  void MemoryStore.learn(context.userId, "behavior", "last_intent", intent.toolName, "copilot");
+  void MemoryStore.learn(context.userId, "behavior", "last_intent", intent.toolName, "moxi");
   if (intent.extractedParams.pair) {
     void MemoryStore.learn(
       context.userId,
       "preference",
       "queried_pair",
       intent.extractedParams.pair,
-      "copilot",
+      "moxi",
     );
   }
 
@@ -310,7 +307,7 @@ function formatToolResponse(toolName: string, data: unknown): string {
   switch (toolName) {
     case "createAlert": {
       const alert = data as Record<string, unknown>;
-      return `✅ Alert created for **${alert.pair}** ${alert.condition} $${alert.target_price} on ${alert.timeframe} timeframe. I'll notify you when the price reaches your target.`;
+      return `Alert created for **${alert.pair}** ${alert.condition} $${alert.target_price} on ${alert.timeframe} timeframe. I'll notify you when the price reaches your target.`;
     }
     case "listAlerts": {
       const alerts = data as Array<Record<string, unknown>>;
@@ -319,10 +316,10 @@ function formatToolResponse(toolName: string, data: unknown): string {
       const lines = alerts
         .slice(0, 5)
         .map((a) => `- **${a.pair}** ${a.condition} $${a.target_price} (${a.status})`);
-      return `📋 Your alerts:\n${lines.join("\n")}${alerts.length > 5 ? `\n...and ${alerts.length - 5} more` : ""}`;
+      return `Your alerts:\n${lines.join("\n")}${alerts.length > 5 ? `\n...and ${alerts.length - 5} more` : ""}`;
     }
     case "deleteAlert": {
-      return "✅ Alert cancelled successfully.";
+      return "Alert cancelled successfully.";
     }
     case "fetchSignals": {
       const signals = data as Array<Record<string, unknown>>;
@@ -334,11 +331,17 @@ function formatToolResponse(toolName: string, data: unknown): string {
           (s) =>
             `- **${s.pair}** (${s.timeframe}): ${s.recommendation} — Confidence: ${s.confidence}%, Entry: $${s.entry}`,
         );
-      return `📊 Today's signals:\n${lines.join("\n")}${signals.length > 5 ? `\n...and ${signals.length - 5} more` : ""}`;
+      return `Today's signals:\n${lines.join("\n")}${signals.length > 5 ? `\n...and ${signals.length - 5} more` : ""}`;
     }
     case "analyzeAsset": {
       const analysis = data as Record<string, unknown>;
-      return `📈 **${analysis.pair} Analysis** (${analysis.timeframe}):\n- Direction: **${analysis.trend}**\n- Recommendation: **${analysis.recommendation}** (Confidence: ${analysis.confidence}%)\n- Entry: $${analysis.entry}\n- Stop Loss: $${analysis.stop_loss}\n- Take Profit: ${JSON.stringify(analysis.take_profit)}\n- Pattern: ${analysis.pattern}`;
+      return `**${analysis.pair} Analysis** (${analysis.timeframe}):
+- Direction: **${analysis.trend}**
+- Recommendation: **${analysis.recommendation}** (Confidence: ${analysis.confidence}%)
+- Entry: $${analysis.entry}
+- Stop Loss: $${analysis.stop_loss}
+- Take Profit: ${JSON.stringify(analysis.take_profit)}
+- Pattern: ${analysis.pattern}`;
     }
     case "getAssetState": {
       const state = data as Record<string, unknown>;
@@ -347,16 +350,19 @@ function formatToolResponse(toolName: string, data: unknown): string {
         change !== null && change !== undefined
           ? `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`
           : "N/A";
-      return `💰 **${state.name}** (${state.pair}):\n- Price: $${state.price ?? "Unavailable"}\n- 24h Change: ${changeStr}\n- Category: ${state.category}`;
+      return `**${state.name}** (${state.pair}):
+- Price: $${state.price ?? "Unavailable"}
+- 24h Change: ${changeStr}
+- Category: ${state.category}`;
     }
     case "createJournalEntry": {
-      return "📝 Journal entry saved! Keeping a trading diary is one of the best ways to improve your trading performance over time.";
+      return "Journal entry saved! Keeping a trading diary is one of the best ways to improve your trading performance over time.";
     }
     case "fetchPortfolio": {
       const trades = data as Array<Record<string, unknown>>;
       if (trades.length === 0)
         return "Your trade journal is empty. Start by logging your first trade!";
-      return `📊 You have ${trades.length} trade(s) in your journal. Would you like me to analyze your trading patterns?`;
+      return `You have ${trades.length} trade(s) in your journal. Would you like me to analyze your trading patterns?`;
     }
     default:
       return `Tool "${toolName}" executed successfully.`;

@@ -25,12 +25,11 @@ export interface MigrationStatus {
   user_strategies: boolean;
   trading_notes: boolean;
   trades: boolean;
-  copilot_conversations: boolean;
-  copilot_messages: boolean;
   daily_loops: boolean;
   user_streaks: boolean;
   domain_events: boolean;
   user_memories: boolean;
+  vixor_decisions: boolean;
   allComplete: boolean;
   sql: string;
 }
@@ -195,74 +194,7 @@ CREATE TRIGGER trades_updated_at
   BEFORE UPDATE ON trades
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- 6. Copilot Conversations Table
-CREATE TABLE IF NOT EXISTS copilot_conversations (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  title TEXT NOT NULL DEFAULT 'New Chat',
-  agent_id TEXT DEFAULT 'auto',
-  is_consensus BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 7. Copilot Messages Table
-CREATE TABLE IF NOT EXISTS copilot_messages (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  conversation_id UUID NOT NULL REFERENCES copilot_conversations(id) ON DELETE CASCADE,
-  role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
-  content TEXT NOT NULL,
-  agent_id TEXT,
-  metadata JSONB DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
-ALTER TABLE copilot_conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE copilot_messages ENABLE ROW LEVEL SECURITY;
-
-DO $$ BEGIN
-  CREATE POLICY "Users can view own conversations" ON copilot_conversations FOR SELECT USING (auth.uid() = user_id);
-  CREATE POLICY "Users can insert own conversations" ON copilot_conversations FOR INSERT WITH CHECK (auth.uid() = user_id);
-  CREATE POLICY "Users can update own conversations" ON copilot_conversations FOR UPDATE USING (auth.uid() = user_id);
-  CREATE POLICY "Users can delete own conversations" ON copilot_conversations FOR DELETE USING (auth.uid() = user_id);
-  CREATE POLICY "Users can view own messages" ON copilot_messages FOR SELECT USING (
-    conversation_id IN (SELECT id FROM copilot_conversations WHERE user_id = auth.uid())
-  );
-  CREATE POLICY "Users can insert own messages" ON copilot_messages FOR INSERT WITH CHECK (
-    conversation_id IN (SELECT id FROM copilot_conversations WHERE user_id = auth.uid())
-  );
-  CREATE POLICY "Users can delete own messages" ON copilot_messages FOR DELETE USING (
-    conversation_id IN (SELECT id FROM copilot_conversations WHERE user_id = auth.uid())
-  );
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-CREATE INDEX IF NOT EXISTS idx_copilot_conversations_user ON copilot_conversations(user_id, updated_at DESC);
-CREATE INDEX IF NOT EXISTS idx_copilot_messages_conversation ON copilot_messages(conversation_id, created_at ASC);
-
-DROP TRIGGER IF EXISTS copilot_conversations_updated_at ON copilot_conversations;
-CREATE TRIGGER copilot_conversations_updated_at
-  BEFORE UPDATE ON copilot_conversations
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
-CREATE OR REPLACE FUNCTION auto_title_conversation()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.role = 'user' AND OLD IS NULL THEN
-    UPDATE copilot_conversations 
-    SET title = LEFT(NEW.content, 50), updated_at = now()
-    WHERE id = NEW.conversation_id AND title = 'New Chat';
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS copilot_messages_auto_title ON copilot_messages;
-CREATE TRIGGER copilot_messages_auto_title
-  AFTER INSERT ON copilot_messages
-  FOR EACH ROW EXECUTE FUNCTION auto_title_conversation();
-
--- 8. Daily Loops Table
+-- 6. Daily Loops Table
 CREATE TABLE IF NOT EXISTS daily_loops (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -383,24 +315,22 @@ export async function checkMigrations(): Promise<MigrationStatus> {
     strategiesRes,
     notesRes,
     tradesRes,
-    copilotConvRes,
-    copilotMsgRes,
     loopsRes,
     streaksRes,
     domainEventsRes,
     userMemoriesRes,
+    vixorDecisionsRes,
   ] = await Promise.all([
     supabaseAdmin.from("price_alerts").select("id").limit(1),
     supabaseAdmin.from("daily_signals").select("id").limit(1),
     supabaseAdmin.from("user_strategies").select("id").limit(1),
     supabaseAdmin.from("trading_notes").select("id").limit(1),
     supabaseAdmin.from("trades").select("id").limit(1),
-    supabaseAdmin.from("copilot_conversations").select("id").limit(1),
-    supabaseAdmin.from("copilot_messages").select("id").limit(1),
     supabaseAdmin.from("daily_loops").select("id").limit(1),
     supabaseAdmin.from("user_streaks").select("id").limit(1),
     supabaseAdmin.from("domain_events").select("id").limit(1),
     supabaseAdmin.from("user_memories").select("id").limit(1),
+    supabaseAdmin.from("vixor_decisions").select("id").limit(1),
   ]);
 
   const priceAlerts = !alertsRes.error || alertsRes.error.code !== "42P01";
@@ -408,12 +338,11 @@ export async function checkMigrations(): Promise<MigrationStatus> {
   const userStrategies = !strategiesRes.error || strategiesRes.error.code !== "42P01";
   const tradingNotes = !notesRes.error || notesRes.error.code !== "42P01";
   const tradesTable = !tradesRes.error || tradesRes.error.code !== "42P01";
-  const copilotConversations = !copilotConvRes.error || copilotConvRes.error.code !== "42P01";
-  const copilotMessages = !copilotMsgRes.error || copilotMsgRes.error.code !== "42P01";
   const dailyLoops = !loopsRes.error || loopsRes.error.code !== "42P01";
   const userStreaks = !streaksRes.error || streaksRes.error.code !== "42P01";
   const domainEvents = !domainEventsRes.error || domainEventsRes.error.code !== "42P01";
   const userMemories = !userMemoriesRes.error || userMemoriesRes.error.code !== "42P01";
+  const vixorDecisions = !vixorDecisionsRes.error || vixorDecisionsRes.error.code !== "42P01";
 
   const allComplete =
     priceAlerts &&
@@ -421,12 +350,11 @@ export async function checkMigrations(): Promise<MigrationStatus> {
     userStrategies &&
     tradingNotes &&
     tradesTable &&
-    copilotConversations &&
-    copilotMessages &&
     dailyLoops &&
     userStreaks &&
     domainEvents &&
-    userMemories;
+    userMemories &&
+    vixorDecisions;
 
   return {
     price_alerts: priceAlerts,
@@ -434,12 +362,11 @@ export async function checkMigrations(): Promise<MigrationStatus> {
     user_strategies: userStrategies,
     trading_notes: tradingNotes,
     trades: tradesTable,
-    copilot_conversations: copilotConversations,
-    copilot_messages: copilotMessages,
     daily_loops: dailyLoops,
     user_streaks: userStreaks,
     domain_events: domainEvents,
     user_memories: userMemories,
+    vixor_decisions: vixorDecisions,
     allComplete,
     sql: allComplete ? "" : getMigrationSQL(),
   };
@@ -465,12 +392,11 @@ export async function getPendingMigrationsSQL(): Promise<string> {
     { table: "user_strategies", label: "-- 3. User Strategies Table" },
     { table: "trading_notes", label: "-- 4. Trading Notes Table" },
     { table: "trades", label: "-- 5. Trades Table" },
-    { table: "copilot_conversations", label: "-- 6. Copilot Conversations Table" },
-    { table: "copilot_messages", label: "-- 7. Copilot Messages Table" },
-    { table: "daily_loops", label: "-- 8. Daily Loops Table" },
-    { table: "user_streaks", label: "-- 9. User Streaks Table" },
-    { table: "domain_events", label: "-- 10. Domain Events Table" },
-    { table: "user_memories", label: "-- 11. User Memories Table" },
+    { table: "daily_loops", label: "-- 6. Daily Loops Table" },
+    { table: "user_streaks", label: "-- 7. User Streaks Table" },
+    { table: "domain_events", label: "-- 8. Domain Events Table" },
+    { table: "user_memories", label: "-- 9. User Memories Table" },
+    { table: "vixor_decisions", label: "-- 10. Vixor Decisions Table" },
   ];
 
   // For simplicity, if any table is missing, return the full SQL with a header

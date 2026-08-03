@@ -11,7 +11,7 @@
 // because the local engine uses REAL OHLCV data, not the vision price.
 //
 // The truth layer's job is to flag when vision extraction might be wrong,
-// so downstream consumers (copilot, debate engine, risk governor) can
+// so downstream consumers (AI agent, debate engine, risk governor) can
 // factor this into their decisions.
 // ============================================================================
 

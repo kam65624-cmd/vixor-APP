@@ -26,15 +26,6 @@
               ┌────────────┴────────────┐
               │        trading          │
               └──────────┬──────────────┘
-                         │
-              ┌──────────┴──────────────┐
-              │         copilot         │
-              └──┬──────┬──────┬────────┘
-                 │      │      │
-            ┌────┴──┐ ┌┴────┐ ┌┴────────┐
-            │ user  │ │watch│ │(dynamic) │
-            └───────┘ │list │ └─────────┘
-                       └─────┘
 
   Independent (no cross-domain deps):
     discovery, arbitrage, wallet, daily-loop, notes, signal-tracking, trades, user, watchlist
@@ -61,7 +52,7 @@ Dynamic `await import()` calls are used for optional features (debate, chart-tru
 | `index.ts`                    | Barrel export                                  |
 
 **Imports from:** None (leaf)  
-**Imported by:** analysis, backtest, chart-truth, copilot, debate, experiment, trading (7 domains — most depended-upon)
+**Imported by:** analysis, backtest, chart-truth, debate, experiment, trading (6 domains — most depended-upon)
 
 ---
 
@@ -82,7 +73,7 @@ Dynamic `await import()` calls are used for optional features (debate, chart-tru
 | `types.ts`               | Public types                                |
 
 **Imports from:** backtest (static), chart-intelligence (static), market (static), chart-truth (dynamic), debate (dynamic)  
-**Imported by:** copilot, debate, experiment, trading (all dynamic or type-only)
+**Imported by:** debate, experiment, trading (all dynamic or type-only)
 
 ---
 
@@ -116,7 +107,7 @@ Dynamic `await import()` calls are used for optional features (debate, chart-tru
 | `chart-session.ts`    | TradingView session management               |
 
 **Imports from:** None (leaf)  
-**Imported by:** analysis, chart-truth, copilot (dynamic)
+**Imported by:** analysis, chart-truth (dynamic)
 
 ---
 
@@ -185,29 +176,6 @@ Dynamic `await import()` calls are used for optional features (debate, chart-tru
 
 ---
 
-### 9. `copilot` (17 files) — AI Domain
-
-**Responsibility:** AI chat assistant with multi-agent system. Two generations of agents: original 4 (market_analyst, risk_manager, news_analyst, strategy_builder) and new VIXOR AI 4 (coach, analyst, governor, hunter).
-
-| File/Dir                       | Role                                             |
-| ------------------------------ | ------------------------------------------------ |
-| `functions.ts`                 | Server functions: askCopilot, getConsensus, etc. |
-| `conversations.ts`             | Conversation CRUD                                |
-| `server/agents.ts`             | Original 4 agent definitions                     |
-| `server/agent-orchestrator.ts` | Agent execution + consensus                      |
-| `server/coach.agent.ts`        | Coach: pre-trade sentiment                       |
-| `server/analyst.agent.ts`      | Analyst: weekly behavioral reports               |
-| `server/governor.agent.ts`     | Governor: risk decisions                         |
-| `server/hunter.agent.ts`       | Hunter: smart money signals                      |
-| `server/decision-store.ts`     | Decision persistence                             |
-| `server/feedback.ts`           | Decision feedback                                |
-| `types.ts`                     | All copilot types                                |
-
-**Imports from:** analysis (static — types), trading (static — types), user (static — types), watchlist (static — types), market (static — types), chart-intelligence (dynamic)  
-**Imported by:** None
-
----
-
 ### 10. `trading` (12 files) — Trading Operations
 
 **Responsibility:** Price alerts, daily signals, user strategies, and exchange connectivity. Contains an agent gateway with adapters for Binance, Bybit, OKX, and a dummy adapter.
@@ -222,7 +190,7 @@ Dynamic `await import()` calls are used for optional features (debate, chart-tru
 | `gateway/types.ts`         | Gateway types (OrderRequest, etc.)            |
 
 **Imports from:** market (static), analysis (dynamic)  
-**Imported by:** copilot (static — types)
+**Imported by:** None
 
 ---
 
@@ -321,7 +289,7 @@ Dynamic `await import()` calls are used for optional features (debate, chart-tru
 | `server/telegram-verify.ts` | Telegram init data verification                       |
 
 **Imports from:** None (leaf)  
-**Imported by:** copilot (static — types)
+**Imported by:** None
 
 ---
 
@@ -335,7 +303,7 @@ Dynamic `await import()` calls are used for optional features (debate, chart-tru
 | `types.ts`     | Watchlist, WatchlistItem         |
 
 **Imports from:** None (leaf)  
-**Imported by:** copilot (static — types)
+**Imported by:** None
 
 ---
 
@@ -384,10 +352,6 @@ All cross-domain imports form a clean DAG. No A→B→A cycles detected.
 
 The `trading/gateway/` subdirectory (agent-gateway.ts + exchange adapters for Binance/Bybit/OKX/dummy) implements exchange connectivity for order execution. This is conceptually distinct from the rest of `trading/` (price alerts, daily signals, user strategies). **Recommendation:** Consider extracting to a dedicated `execution/` domain in a future refactoring pass. **Not moved** per task constraints.
 
-### 🟡 Duplicate Type Definitions in `copilot`
-
-`copilot/types.ts` and `copilot/server/agents.ts` both define `AgentId` and `AgentDefinition` with identical values. The barrel `index.ts` exports `AgentDefinition` from `server/agents.ts`. **Recommendation:** Remove the duplicate definitions from `agents.ts` and import from `../types` instead.
-
 ### 🟢 Small Domains (3 files each)
 
 These domains have minimal code but serve distinct, self-contained concerns:
@@ -418,7 +382,6 @@ These are `await import()` calls inside `analysis/server/run-analysis.ts`, not s
 | analysis           | 22    | Core analysis engine                 |
 | discovery          | 16    | Token discovery                      |
 | wallet             | 14    | Web3 wallet                          |
-| copilot            | 17    | AI chat + agents                     |
 | trading            | 12    | Alerts, signals, exchange gateway    |
 | backtest           | 8     | Backtesting engine                   |
 | debate             | 7     | Multi-agent debate                   |

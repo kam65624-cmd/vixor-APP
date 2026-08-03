@@ -1,4 +1,4 @@
-// Debate domain — consensus analysis for copilot agents
+// Debate domain — consensus analysis for AI agents
 export interface DebateResult {
   consensus: string;
   confidence: number;

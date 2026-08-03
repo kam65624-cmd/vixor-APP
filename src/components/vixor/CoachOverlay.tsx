@@ -16,14 +16,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/shared/utils";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { coachTrade, submitDecisionFeedback } from "@/domains/copilot/functions";
+import { coachTrade, submitDecisionFeedback } from "@/domains/moxi/agents";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { CoachSentiment, RiskLevel } from "@/domains/copilot/types";
+import type { CoachSentiment, RiskLevel } from "@/domains/moxi/types";
 
 // ─── Props ────────────────────────────────────────────────────────────────
 

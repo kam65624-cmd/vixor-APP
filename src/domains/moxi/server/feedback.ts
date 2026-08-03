@@ -1,4 +1,4 @@
-// Feedback recording for copilot decisions
+// Feedback recording for MOXI agent decisions
 export async function recordFeedback(
   decisionId: string,
   _userId: string,
@@ -9,6 +9,6 @@ export async function recordFeedback(
     typeof feedback === "string"
       ? { rating: feedback === "accepted" ? 5 : 2, comment: feedback }
       : feedback;
-  console.log(`[Copilot] Feedback recorded for ${decisionId}:`, fb);
+  console.log(`[MOXI] Feedback recorded for ${decisionId}:`, fb);
   return { success: true };
 }

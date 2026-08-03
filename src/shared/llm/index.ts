@@ -179,24 +179,88 @@ async function callOpenAICompatible(
   };
 }
 
-// ── Internal: Gemini call (placeholder) ────────────────────────────────────
+// ── Internal: Gemini call ─────────────────────────────────────────────────
+
+const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
+const GEMINI_DEFAULT_MODEL = "gemini-2.0-flash";
 
 /**
  * Internal: call the Google Gemini API.
  *
- * Currently a placeholder — throws "not implemented".
+ * Uses the `generateContent` REST endpoint with the Gemini-native format.
+ * Maps our LLMMessage[] to Gemini's `contents` array.
  *
- * @param _messages - The conversation messages.
- * @param _options - Optional call parameters.
- * @param _apiKey - The Gemini API key.
+ * @param messages - The conversation messages.
+ * @param options - Optional call parameters.
+ * @param apiKey - The Gemini API key.
  */
-
 async function callGemini(
-  _messages: LLMMessage[],
-  _options: LLMOptions = {},
-  _apiKey: string,
+  messages: LLMMessage[],
+  options: LLMOptions = {},
+  apiKey: string,
 ): Promise<LLMResponse> {
-  throw new Error("Gemini provider is not implemented yet");
+  const model = options.model ?? GEMINI_DEFAULT_MODEL;
+  const url = `${GEMINI_BASE_URL}/models/${model}:generateContent?key=${apiKey}`;
+
+  // Extract system message (Gemini uses systemInstruction, not a content role)
+  let systemInstruction: string | undefined;
+  const userTurns: LLMMessage[] = [];
+  for (const m of messages) {
+    if (m.role === "system") {
+      systemInstruction = m.content;
+    } else {
+      userTurns.push(m);
+    }
+  }
+
+  // Map non-system messages to Gemini format
+  const contents = userTurns.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+
+  const body: Record<string, unknown> = {
+    contents,
+    generationConfig: {
+      temperature: options.temperature ?? 0.7,
+      ...(options.maxTokens ? { maxOutputTokens: options.maxTokens } : {}),
+      ...(options.jsonMode ? { responseMimeType: "application/json" } : {}),
+    },
+    ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction }] } } : {}),
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    throw new Error(`Gemini API error ${res.status}: ${errText.slice(0, 500)}`);
+  }
+
+  const json = (await res.json()) as {
+    candidates?: Array<{
+      content?: { parts?: Array<{ text?: string }> };
+    }>;
+    usageMetadata?: {
+      promptTokenCount?: number;
+      candidatesTokenCount?: number;
+    };
+    modelVersion?: string;
+  };
+
+  const text = json.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+
+  return {
+    content: text,
+    model: json.modelVersion ?? model,
+    usage: {
+      promptTokens: json.usageMetadata?.promptTokenCount ?? 0,
+      completionTokens: json.usageMetadata?.candidatesTokenCount ?? 0,
+    },
+  };
 }
 
 // ── Main public API ────────────────────────────────────────────────────────

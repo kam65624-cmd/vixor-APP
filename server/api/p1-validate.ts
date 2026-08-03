@@ -4,7 +4,7 @@
 //
 // This endpoint validates that every P1 component is ACTIVE at runtime.
 // It tests: Asset Registry, Event Orchestrator, Tool Registry, Tool Router,
-// Memory Store, and Copilot Agent integration.
+// Memory Store, and MOXI Agent integration.
 //
 // Protected by CRON_SECRET — only accessible by admin/cron requests.
 // ============================================================================
@@ -260,20 +260,20 @@ const handler = defineEventHandler(async (event) => {
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 6. Copilot Agent Validation (Intent Detection)
+  // 6. MOXI Agent Validation (Intent Detection)
   // ═══════════════════════════════════════════════════════════════════════
   try {
-    const copilotModule = await import("../../src/domains/copilot/server/copilot-agent");
-    const hasProcessWithAgent = typeof copilotModule.processWithAgent === "function";
+    const moxiAgentModule = await import("../../src/domains/moxi/server/agent");
+    const hasProcessWithAgent = typeof moxiAgentModule.processWithAgent === "function";
 
-    results.copilotAgent = {
+    results.moxiAgent = {
       status: hasProcessWithAgent ? "ACTIVE" : "MISSING",
       processWithAgent: hasProcessWithAgent ? "EXPORTED" : "NOT FOUND",
-      integrationNote: "processWithAgent() is wired into askCopilot() — check copilot logs",
+      integrationNote: "processWithAgent() is wired into askMoxi() — check MOXI logs",
     };
   } catch (err) {
-    errors.push(`Copilot Agent: ${err instanceof Error ? err.message : String(err)}`);
-    results.copilotAgent = {
+    errors.push(`MOXI Agent: ${err instanceof Error ? err.message : String(err)}`);
+    results.moxiAgent = {
       status: "ERROR",
       error: err instanceof Error ? err.message : String(err),
     };
@@ -294,8 +294,7 @@ const handler = defineEventHandler(async (event) => {
         user_strategies: migrationStatus.user_strategies,
         trading_notes: migrationStatus.trading_notes,
         trades: migrationStatus.trades,
-        copilot_conversations: migrationStatus.copilot_conversations,
-        copilot_messages: migrationStatus.copilot_messages,
+        vixor_decisions: migrationStatus.vixor_decisions,
         daily_loops: migrationStatus.daily_loops,
         user_streaks: migrationStatus.user_streaks,
         domain_events: migrationStatus.domain_events,

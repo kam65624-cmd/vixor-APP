@@ -7,7 +7,6 @@
 | Endpoint | Methods | Rate Limit | File |
 |----------|---------|------------|------|
 | /api/check-alerts | GET | 30/60s | server/api/check-alerts.ts |
-| /api/copilot-stream | POST | — | server/api/copilot-stream.ts |
 | /api/discover | GET | 120/60s | server/api/discover.ts |
 | /api/generate-signals | GET | 10/60s | server/api/generate-signals.ts |
 | /api/health | GET | 30/60s | server/api/health.ts |
@@ -20,7 +19,7 @@
 | /api/stars-webhook | WEBHOOK | — | server/api/stars-webhook.ts |
 | /api/telegram-webhook | WEBHOOK | — | server/api/telegram-webhook.ts |
 
-**Total**: 13 endpoints
+**Total**: 12 endpoints
 
 ## Server Functions (createServerFn)
 
@@ -46,25 +45,6 @@
 | connectBroker | domains/broker/functions.ts |
 | disconnectBroker | domains/broker/functions.ts |
 | getConnectedBrokers | domains/broker/functions.ts |
-
-### domains/copilot
-
-| Function | File |
-|----------|------|
-| askCopilot | domains/copilot/functions.ts |
-| assessRisk | domains/copilot/functions.ts |
-| coachTrade | domains/copilot/functions.ts |
-| createConversation | domains/copilot/conversations.ts |
-| deleteConversation | domains/copilot/conversations.ts |
-| generateWeeklyReport | domains/copilot/functions.ts |
-| getConsensus | domains/copilot/functions.ts |
-| getConversation | domains/copilot/conversations.ts |
-| getRecentDecisions | domains/copilot/functions.ts |
-| listConversations | domains/copilot/conversations.ts |
-| saveMessage | domains/copilot/conversations.ts |
-| scoreOpportunity | domains/copilot/functions.ts |
-| submitDecisionFeedback | domains/copilot/functions.ts |
-| updateConversationTitle | domains/copilot/conversations.ts |
 
 ### domains/daily-loop
 
@@ -243,10 +223,10 @@
 | scanArbitrage | shared/data/index.ts |
 | updateUserSettings | shared/data/index.ts |
 
-**Total**: 134 server functions across 17 modules
+**Total**: 120 server functions across 16 modules
 
 ## Summary
 
-- HTTP API Routes: 13
-- Server Functions: 134
-- Domain Modules: 17
+- HTTP API Routes: 12
+- Server Functions: 120
+- Domain Modules: 16

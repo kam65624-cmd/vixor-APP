@@ -7,14 +7,14 @@
 //
 // Purpose:
 //   - Register existing createServerFn calls as "tools" with metadata
-//   - Provide a unified interface for the Copilot Agent to discover and call tools
+//   - Provide a unified interface for the AI Agent to discover and call tools
 //   - Add permission checks, validation, and audit logging at the tool level
 //   - Enable dynamic tool dispatch without hardcoding imports
 //
 // Architecture:
 //   Existing createServerFn → continues to work exactly as before
 //   Tool Registry → wraps select server functions with tool metadata
-//   Tool Router → dispatches tool calls from Copilot through the registry
+//   Tool Router → dispatches tool calls from AI agent through the registry
 //
 // Usage:
 //   import { ToolRegistry } from "@/shared/tool-registry";
@@ -42,7 +42,7 @@ export type ToolCategory =
   | "portfolio"
   | "journal"
   | "watchlist"
-  | "copilot"
+  | "ai"
   | "user"
   | "system";
 
@@ -76,13 +76,13 @@ export interface ToolResult<T = unknown> {
 export interface ToolDefinition<TInput extends ToolInput = ToolInput, TOutput = unknown> {
   /** Unique tool name (e.g., "createAlert", "fetchSignals") */
   name: string;
-  /** Human-readable description for Copilot to understand what this tool does */
+  /** Human-readable description for AI agent to understand what this tool does */
   description: string;
   /** Category for grouping and discovery */
   category: ToolCategory;
   /** Required permissions to execute this tool */
   permissions: ToolPermission[];
-  /** Parameter descriptions for Copilot to understand the input shape */
+  /** Parameter descriptions for AI agent to understand the input shape */
   parameters: ToolParameter[];
   /** Whether this tool modifies data (vs read-only) */
   mutative: boolean;
@@ -200,8 +200,8 @@ class ToolRegistryClass {
   }
 
   /**
-   * Get tool descriptions formatted for Copilot prompts.
-   * This is what the Copilot Agent sees to decide which tool to use.
+   * Get tool descriptions formatted for AI prompts.
+   * This is what the AI Agent sees to decide which tool to use.
    */
   toolDescriptionsForPrompt(context: ToolContext): string {
     const available = this.availableForUser(context);

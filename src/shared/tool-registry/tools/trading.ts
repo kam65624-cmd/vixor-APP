@@ -3,7 +3,7 @@
 // ============================================================================
 //
 // Wraps existing createServerFn functions as Tool Registry entries.
-// This enables the Copilot Agent to discover and call these tools.
+// This enables the AI Agent to discover and call these tools.
 //
 // IMPORTANT: The original createServerFn functions continue to work.
 // These tool registrations are ADDITIVE — they add metadata and discovery

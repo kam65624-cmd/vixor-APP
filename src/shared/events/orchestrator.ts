@@ -138,13 +138,13 @@ export interface VixorEventMap {
     title: string;
   };
 
-  // Copilot events
-  "copilot.message.sent": {
+  // AI Agent events
+  "ai.message.sent": {
     conversationId: string;
     userId: string;
     agentId: string;
   };
-  "copilot.action.executed": {
+  "ai.action.executed": {
     conversationId: string;
     userId: string;
     action: string;

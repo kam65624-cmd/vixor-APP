@@ -54,7 +54,6 @@ const ar: Translations = {
     charts: "الشموع",
     journal: "اليومية",
     portfolio: "المحفظة",
-    copilot: "المساعد",
     markets: "الأسواق",
     signals: "الإشارات",
     notifications: "الإشعارات",
@@ -132,7 +131,7 @@ const ar: Translations = {
     topSignal: "أقوى إشارة",
     suggestedAction: "الفعل المقترح",
     todayPlan: "خطة اليوم بناءً على إشاراتك وتنبيهاتك",
-    askCopilot: "اسأل المساعد",
+    askMoxi: "اسأل موكسي",
     analyzeNow: "حلّل الآن",
     analyzeChart: "حلّل الشارت",
     smcIct: "إشارات SMC و ICT في ثوانٍ",
@@ -204,7 +203,6 @@ const ar: Translations = {
     heatmapSubtitle: "تغير 24 ساعة عبر الأزواج",
     gain: "صعود",
     loss: "هبوط",
-    heatmapComingSoon: "خريطة حرارة تفاعلية قريباً",
     readFullArticle: "اقرأ المقال كاملاً",
     noNewsArticles: "لا توجد مقالات لهذا التصنيف.",
     failedToLoadNews: "فشل تحميل الأخبار. حاول مرة أخرى.",
@@ -253,7 +251,6 @@ const ar: Translations = {
     deleteWatchlistDescription:
       "لا يمكن التراجع عن هذا الإجراء. سيتم إزالة جميع الأزواج في هذه القائمة.",
     noHeatmapData: "لا توجد بيانات خريطة حرارة",
-    interactiveHeatmapSoon: "خريطة حرارة تفاعلية قريباً",
     signalsDaily: "إشارات يومية مدعومة بذكاء Vixor",
   },
 
@@ -267,7 +264,7 @@ const ar: Translations = {
     watchlist: "قائمة المتابعة",
     myAlerts: "تنبيهاتي",
     allAlerts: "جميع التنبيهات",
-    askCopilot: "اسأل الذكاء الاصطناعي",
+    askMoxi: "اسأل موكسي",
   },
 
   // ═══ تحليل ═══
@@ -431,40 +428,6 @@ const ar: Translations = {
     totalPnL: "إجمالي الربح والخسارة",
     openPositions: "صفقات مفتوحة",
     closedPositions: "صفقات مغلقة",
-  },
-
-  // ═══ المساعد الذكي ═══
-  copilot: {
-    title: "المساعد الذكي",
-    subtitle: "مساعدك في التداول",
-    vixorAi: "Vixor AI",
-    placeholder: "اسأل عن أي زوج، إعداد، أو حالة سوق...",
-    example1: "هل أدخل الذهب الآن؟",
-    example2: "حلل EURUSD على 4 ساعات",
-    example3: "ماذا اتجاه BTC؟",
-    example4: "راجع صفقاتي الأخيرة",
-    thinking: "يفكّر...",
-    noContext:
-      "أحتاج بيانات أكثر لإعطائك إجابات دقيقة. جرّب تحليل شارت أو أضف صفقات لليومية أولاً.",
-    marketAnalyst: "محلل السوق",
-    riskManager: "مدير المخاطر",
-    newsAnalyst: "محلل الأخبار",
-    strategyBuilder: "بنّاء الاستراتيجية",
-    welcomeTitle: "كيف يمكنني مساعدتك اليوم؟",
-    welcomeDesc: "أنا مساعد التداول الذكي. أعرف تحليلاتك الأخيرة وإشاراتك وتنبيهاتك.",
-    autoMode: "تلقائي (AI يختار أفضل وكيل)",
-    consensusMode: "إجماع الوكلاء",
-    consensusDesc: "احصل على آراء جميع الوكلاء الأربعة",
-    consensusPlaceholder: "اسأل جميع الوكلاء الأربعة عن رأيهم...",
-    consultAgent: "استشر {agent}",
-    marketAnalystDesc: "تحليل فني SMC/ICT، هيكل السوق، بلوكات الأوامر",
-    riskManagerDesc: "حجم الصفقة، مخاطرة-عائد، إدارة التعرض",
-    newsAnalystDesc: "أحداث اقتصادية، بنوك مركزية، مشاعر أساسية",
-    strategyBuilderDesc: "خطط تداول، روتين يومي، تحسين الاستراتيجية",
-    synthesis: "توليف AI",
-    allAgentsAgree: "جميع الوكلاء متفقون",
-    consensusShort: "إجماع",
-    getConsensus: "احصل على الإجماع",
   },
 
   // ═══ الملف الشخصي ═══

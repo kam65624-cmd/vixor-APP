@@ -17,12 +17,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/shared/utils";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { scoreOpportunity, submitDecisionFeedback } from "@/domains/copilot/functions";
+import { scoreOpportunity, submitDecisionFeedback } from "@/domains/moxi/agents";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import type { HunterSignal } from "@/domains/copilot/types";
+import type { HunterSignal } from "@/domains/moxi/types";
 
 // ─── Props ────────────────────────────────────────────────────────────────
 

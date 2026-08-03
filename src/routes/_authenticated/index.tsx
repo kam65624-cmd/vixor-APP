@@ -445,10 +445,14 @@ function HomePage() {
     [getPrice],
   );
 
-  // Navigate to copilot with a pre-filled prompt
+  // Handle MOXI prompt — opens MOXI chat via speech bubble
   const handleMoxiPrompt = useCallback(
     (prompt: string) => {
-      navigate({ to: "/copilot", search: { q: prompt } } as any);
+      // MOXI interaction is handled via the 3D character speech bubble on the home page
+      // For now, navigate to analyze page with the prompt as a query
+      if (prompt) {
+        navigate({ to: "/analyze", search: { q: prompt } } as any);
+      }
     },
     [navigate],
   );
@@ -570,9 +574,9 @@ function HomePage() {
           />
           <FeatureCard
             icon={Bot}
-            title="AI Copilot"
-            desc="Talk to MOXI"
-            to="/copilot"
+            title="MOXI AI"
+            desc="Market intel"
+            to="/alpha"
             accent="var(--color-gold)"
           />
           <FeatureCard
