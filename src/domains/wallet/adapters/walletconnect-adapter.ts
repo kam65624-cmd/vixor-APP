@@ -116,6 +116,8 @@ export async function connectWalletConnect(): Promise<{ address: string; chain: 
 
   try {
     // Dynamic import — keeps WC out of the main bundle
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore -- @walletconnect/sign-client is optional, installed at runtime
     const { SignClient } = await import("@walletconnect/sign-client");
 
     if (!_client) {
@@ -198,7 +200,10 @@ export async function disconnectWalletConnect(topic: string): Promise<void> {
   if (!_client) return;
 
   try {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore -- @walletconnect/sign-client is optional, installed at runtime
     const { SignClient } = await import("@walletconnect/sign-client");
+    void SignClient;
     // If we have the client, use it directly
     const client = _client as { disconnect: (opts: { topic: string }) => Promise<void> };
     await client.disconnect({ topic });
