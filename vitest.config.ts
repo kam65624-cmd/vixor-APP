@@ -9,10 +9,11 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["src/**/*.test.ts"],
-    environment: "node",
+    include: ["src/**/*.test.{ts,tsx}"],
+    environment: "jsdom",
     globals: false,
     pool: "forks",
     reporters: ["default"],
+    setupFiles: ["src/__tests__/setup.ts"],
   },
 });
