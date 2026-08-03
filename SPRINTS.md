@@ -1,7 +1,7 @@
 # VIXOR — Sprint-to-Code Map
 
 > Links each feature/sprint to its source files, domains, and components.
-> Updated: 2026-08-02
+> Updated: 2026-08-03
 
 ---
 
@@ -107,10 +107,10 @@ Removed 310 files / 144,900 lines (audit reports, bibles, JSON dumps, obsolete s
 | `/backtest` | `backtest.tsx` | backtest | Active |
 | `/analyze` | `analyze.tsx` | analysis | Active |
 | `/brokers` | `brokers.tsx` | broker | Active |
-| `/premium` | `premium.tsx` | — | Placeholder |
-| `/rewards` | `rewards.tsx` | — | Placeholder |
-| `/referral` | `referral.tsx` | — | Placeholder |
-| `/perpetuals` | `perpetuals.tsx` | trading | Placeholder |
+| `/premium` | `premium.tsx` | user | Active |
+| `/rewards` | `rewards.tsx` | user | Active |
+| `/referral` | `referral.tsx` | user | Active |
+| `/perpetuals` | `perpetuals.tsx` | trading | Active |
 | `/trade-desk` | `trade-desk.tsx` | trading | Active |
 | `/daily-loop` | `daily-loop.tsx` + `-daily-loop-component.tsx` | daily-loop | Active |
 | `/vision` | `vision.tsx` | strategy | Active |
@@ -120,10 +120,11 @@ Removed 310 files / 144,900 lines (audit reports, bibles, JSON dumps, obsolete s
 | `/curves` | `curves.tsx` | arbitrage | Active |
 | `/arbitrage` | `arbitrage.tsx` | arbitrage | Active |
 | `/bags` | `bags.tsx` | trading | Active |
-| `/communities` | `communities.tsx` | — | Placeholder |
+| `/communities` | `communities.tsx` | strategy | Active |
+| `/admin/api-keys` | `admin/api-keys.tsx` | user | Active |
 | `/settings` | `settings.tsx` | user | Active |
 | `/profile` | `profile.tsx` | user | Active |
-| `/notifications` | `notifications.tsx` | — | Active |
+| `/notifications` | `notifications.tsx` | user | Active |
 | `/wallet-web3` | `wallet-web3.tsx` | wallet | Active |
 | `/activity-web3` | `activity-web3.tsx` | wallet | Active |
 

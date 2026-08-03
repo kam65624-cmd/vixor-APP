@@ -1459,6 +1459,66 @@ export type Database = {
           },
         ];
       };
+      // ── Backtest results table (20260803000000) ──
+      backtest_results: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          pair: string | null;
+          timeframe: string | null;
+          strategy_params: Json;
+          total_trades: number | null;
+          win_rate: number | null;
+          total_pnl_pct: number | null;
+          max_drawdown: number | null;
+          sharpe_ratio: number | null;
+          equity_curve: Json | null;
+          trades_log: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          pair?: string | null;
+          timeframe?: string | null;
+          strategy_params?: Json;
+          total_trades?: number | null;
+          win_rate?: number | null;
+          total_pnl_pct?: number | null;
+          max_drawdown?: number | null;
+          sharpe_ratio?: number | null;
+          equity_curve?: Json | null;
+          trades_log?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          pair?: string | null;
+          timeframe?: string | null;
+          strategy_params?: Json;
+          total_trades?: number | null;
+          win_rate?: number | null;
+          total_pnl_pct?: number | null;
+          max_drawdown?: number | null;
+          sharpe_ratio?: number | null;
+          equity_curve?: Json | null;
+          trades_log?: Json | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "backtest_results_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

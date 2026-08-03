@@ -67,3 +67,6 @@ export type {
 
 // Strategy compilation (used by server functions and experiments)
 export { compileStrategy } from "./functions";
+
+// Server functions
+export { runBacktestServer, getBacktestHistory } from "./functions";

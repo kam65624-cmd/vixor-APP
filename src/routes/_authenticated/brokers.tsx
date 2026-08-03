@@ -17,6 +17,10 @@ interface BrokerInfo {
   badge?: "FEATURED" | "RECOMMENDED";
   color: string;
   affiliateUrl: string;
+  category: "crypto" | "forex" | "multi";
+  features: string[];
+  minDeposit: string;
+  leverage: string;
 }
 
 const BROKERS: BrokerInfo[] = [
@@ -25,50 +29,82 @@ const BROKERS: BrokerInfo[] = [
     rating: 4.8,
     badge: "FEATURED",
     color: "#F7A600",
+    category: "crypto",
     affiliateUrl: "https://www.bybit.com/en/register?affiliate_id=VIXOR",
+    features: ["Perpetuals", "Copy Trading", "USDT-M Futures"],
+    minDeposit: "$1",
+    leverage: "Up to 100x",
   },
   {
     name: "Binance",
     rating: 4.9,
     badge: "FEATURED",
     color: "var(--color-gold)",
+    category: "crypto",
     affiliateUrl: "https://www.binance.com/en/register?ref=VIXOR",
+    features: ["Spot", "Futures", "Launchpad", "P2P"],
+    minDeposit: "$1",
+    leverage: "Up to 125x",
   },
   {
     name: "OKX",
     rating: 4.7,
     color: "#FFFFFF",
+    category: "crypto",
     affiliateUrl: "https://www.okx.com/join/VIXOR",
+    features: ["Perpetuals", "Options", "DeFi", "Copy Trade"],
+    minDeposit: "$1",
+    leverage: "Up to 125x",
   },
   {
     name: "Pepperstone",
     rating: 4.6,
     color: "#00C087",
+    category: "forex",
     affiliateUrl: "https://pepperstone.com/en/open-account/?a_aid=VIXOR",
+    features: ["ECN", "Raw Spreads", "MT4/MT5"],
+    minDeposit: "$200",
+    leverage: "Up to 500:1",
   },
   {
     name: "IC Markets",
     rating: 4.7,
     color: "#2EAAE1",
+    category: "forex",
     affiliateUrl: "https://www.icmarkets.com/en/?camp=VIXOR",
+    features: ["Raw Spread", "cTrader", "Zero Commission"],
+    minDeposit: "$200",
+    leverage: "Up to 500:1",
   },
   {
     name: "Exness",
     rating: 4.5,
     color: "#00A651",
+    category: "forex",
     affiliateUrl: "https://www.exness.com/a/VIXOR",
+    features: ["Instant Withdrawal", "Cent Account", "MT4/MT5"],
+    minDeposit: "$1",
+    leverage: "Up to 2000:1",
   },
   {
     name: "XM",
     rating: 4.4,
     color: "#3B82F6",
+    category: "multi",
     affiliateUrl: "https://www.xm.com/en/register?a=VIXOR",
+    features: ["Stocks", "Forex", "Commodities", "MT4/MT5"],
+    minDeposit: "$5",
+    leverage: "Up to 888:1",
   },
   {
     name: "FBS",
     rating: 4.3,
     color: "#FF6600",
+    category: "forex",
     affiliateUrl: "https://fbs.com/en/register?a=VIXOR",
+    features: ["Cent Account", "Zero Spread", "Level Up"],
+    minDeposit: "$1",
+    leverage: "Up to 3000:1",
   },
 ];
 
@@ -272,6 +308,39 @@ const BrokerCard = memo(function BrokerCard({
 
       {/* Rating */}
       <StarRating rating={broker.rating} />
+
+      {/* Features */}
+      <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+        {broker.features.slice(0, 3).map((f) => (
+          <span
+            key={f}
+            style={{
+              fontSize: "10px",
+              fontWeight: 600,
+              padding: "2px 6px",
+              borderRadius: "4px",
+              background: "rgba(255,255,255,0.05)",
+              color: "var(--color-muted-foreground)",
+              letterSpacing: "0.02em",
+            }}
+          >
+            {f}
+          </span>
+        ))}
+      </div>
+
+      {/* Min deposit + Leverage */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: "11px",
+          color: "var(--color-muted-foreground)",
+        }}
+      >
+        <span>Min: {broker.minDeposit}</span>
+        <span>{broker.leverage}</span>
+      </div>
 
       {/* Action Buttons */}
       <div style={{ display: "flex", gap: "8px", marginTop: "auto" }}>
@@ -725,8 +794,31 @@ function BrokersPage() {
   });
 
   const [modalBroker, setModalBroker] = useState<BrokerInfo | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "crypto" | "forex" | "multi">("all");
 
   const connectedNames = connectedBrokers.map((c: any) => c.broker_name);
+
+  const filteredBrokers =
+    categoryFilter === "all" ? BROKERS : BROKERS.filter((b) => b.category === categoryFilter);
+
+  const CATEGORY_TABS = [
+    { key: "all" as const, label: "All", count: BROKERS.length },
+    {
+      key: "crypto" as const,
+      label: "Crypto",
+      count: BROKERS.filter((b) => b.category === "crypto").length,
+    },
+    {
+      key: "forex" as const,
+      label: "Forex",
+      count: BROKERS.filter((b) => b.category === "forex").length,
+    },
+    {
+      key: "multi" as const,
+      label: "Multi",
+      count: BROKERS.filter((b) => b.category === "multi").length,
+    },
+  ];
 
   const handleConnectClick = useCallback((broker: BrokerInfo) => {
     setModalBroker(broker);
@@ -778,6 +870,51 @@ function BrokersPage() {
       {/* Connected brokers strip */}
       <ConnectedStrip connectedNames={connectedNames} />
 
+      {/* Category filter tabs */}
+      <div
+        style={{
+          display: "flex",
+          gap: "6px",
+          padding: "10px 16px",
+          borderBottom: "1px solid var(--color-border)",
+          flexShrink: 0,
+          overflowX: "auto",
+        }}
+        className="scrollbar-hide"
+      >
+        {CATEGORY_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setCategoryFilter(tab.key)}
+            style={{
+              padding: "5px 12px",
+              borderRadius: "6px",
+              border: "none",
+              background:
+                categoryFilter === tab.key ? "var(--color-primary)" : "rgba(255,255,255,0.05)",
+              color: categoryFilter === tab.key ? "#fff" : "var(--color-muted-foreground)",
+              fontSize: "11px",
+              fontWeight: 600,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              transition: "all 0.15s ease",
+              fontFamily: "var(--font-sans)",
+            }}
+          >
+            {tab.label}
+            <span
+              style={{
+                marginLeft: "4px",
+                opacity: 0.7,
+                fontSize: "10px",
+              }}
+            >
+              {tab.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
       {/* Broker Grid */}
       <PageScrollArea>
         <div
@@ -788,7 +925,7 @@ function BrokersPage() {
             gap: "12px",
           }}
         >
-          {BROKERS.map((broker) => (
+          {filteredBrokers.map((broker) => (
             <BrokerCard
               key={broker.name}
               broker={broker}

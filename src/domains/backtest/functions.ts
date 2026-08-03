@@ -497,6 +497,56 @@ export const runBacktestServer = createServerFn({ method: "POST" })
     // ── 5. Run the backtest ──
     const result = await runBacktest(config);
 
+    // ── 6. Persist results to DB (fire-and-forget) ──
+    // Store a summary row so users can review past backtests.
+    // The full trade log and equity curve are stored as JSONB.
+    // We use .then() without await so persistence is non-blocking.
+    void supabaseAdmin
+      .from("backtest_results")
+      .insert({
+        user_id: userId,
+        name: `${data.strategyPreset} · ${data.pair} · ${data.timeframe}`,
+        pair: data.pair,
+        timeframe: data.timeframe,
+        strategy_params: {
+          preset: data.strategyPreset,
+          initialCapital: data.initialCapital,
+          riskPercent: data.riskPercent,
+          commission: data.commission,
+          slippage: data.slippage,
+          startDate: data.startDate ?? null,
+          endDate: data.endDate ?? null,
+        },
+        total_trades: result.metrics.totalTrades,
+        win_rate: result.metrics.winRate,
+        total_pnl_pct: result.metrics.totalReturn,
+        max_drawdown: result.metrics.maxDrawdown,
+        sharpe_ratio: result.metrics.sharpe,
+        equity_curve: result.equityCurve.map((p) => ({
+          t: p.time,
+          e: Math.round(p.equity * 100) / 100,
+          d: Math.round(p.drawdown * 10000) / 10000,
+        })),
+        trades_log: result.trades.map((t) => ({
+          id: t.id,
+          side: t.side,
+          entry: t.entryPrice,
+          exit: t.exitPrice,
+          pnl: Math.round(t.netPnl * 100) / 100,
+          ret: Math.round(t.returnPct * 10000) / 10000,
+          r: Math.round(t.rMultiple * 100) / 100,
+          reason: t.exitReason,
+          tag: t.tag ?? null,
+        })),
+      })
+      .then(({ error: insErr }) => {
+        if (insErr) {
+          console.error(`[Backtest] Failed to persist result:`, insErr.message);
+        } else {
+          console.log(`[Backtest] Persisted result for ${userId}`);
+        }
+      });
+
     return {
       ...result,
       pointsCost: BACKTEST_POINT_COST,
@@ -514,16 +564,33 @@ export const getBacktestHistory = createServerFn({ method: "GET" })
     z.object({ limit: z.number().min(1).max(100).default(20) }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
-    // TODO: Persist results to `backtest_results` table, then query:
-    //
-    // const { supabase } = context;
-    // const { data: rows } = await supabase
-    //   .from("backtest_results")
-    //   .select("*")
-    //   .eq("user_id", userId)
-    //   .order("created_at", { ascending: false })
-    //   .limit(data.limit);
-    // return rows ?? [];
+    const { userId } = context;
 
-    return [];
+    const { data: rows, error } = await supabaseAdmin
+      .from("backtest_results")
+      .select(
+        "id, name, pair, timeframe, strategy_params, total_trades, win_rate, total_pnl_pct, max_drawdown, sharpe_ratio, created_at",
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+
+    if (error) {
+      console.error(`[Backtest] Failed to fetch history for ${userId}:`, error.message);
+      return [];
+    }
+
+    return (rows ?? []).map((row: any) => ({
+      id: row.id,
+      name: row.name,
+      pair: row.pair,
+      timeframe: row.timeframe,
+      strategyPreset: row.strategy_params?.preset ?? "",
+      totalTrades: row.total_trades ?? 0,
+      winRate: row.win_rate ?? 0,
+      totalPnlPct: row.total_pnl_pct ?? 0,
+      maxDrawdown: row.max_drawdown ?? 0,
+      sharpeRatio: row.sharpe_ratio ?? 0,
+      createdAt: row.created_at,
+    }));
   });
