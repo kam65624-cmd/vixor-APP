@@ -302,6 +302,39 @@ DO $$ BEGIN
   CREATE POLICY "Users can read own memories" ON user_memories FOR SELECT TO authenticated USING (user_id::text = auth.uid()::text);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
+-- 12. Vixor Decisions Table (AI Agent Decisions)
+CREATE TABLE IF NOT EXISTS vixor_decisions (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  user_id TEXT NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  agent_id TEXT NOT NULL CHECK (agent_id IN ('coach', 'analyst', 'governor', 'hunter')),
+  decision_type TEXT NOT NULL CHECK (decision_type IN ('suggestion', 'warning', 'block', 'alert', 'report')),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  data JSONB DEFAULT '{}',
+  confidence REAL DEFAULT 0.5 CHECK (confidence >= 0 AND confidence <= 1),
+  feedback TEXT CHECK (feedback IN ('accepted', 'rejected', 'dismissed', 'expired')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at TIMESTAMPTZ,
+  workspace TEXT DEFAULT 'os' CHECK (workspace IN ('os', 'bullx', 'axiom', 'opensea')),
+  token_symbol TEXT,
+  chain TEXT,
+  severity TEXT DEFAULT 'medium' CHECK (severity IN ('low', 'medium', 'high', 'critical'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_vixor_decisions_user_id ON vixor_decisions(user_id);
+CREATE INDEX IF NOT EXISTS idx_vixor_decisions_agent_id ON vixor_decisions(agent_id);
+CREATE INDEX IF NOT EXISTS idx_vixor_decisions_user_created ON vixor_decisions(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_vixor_decisions_feedback ON vixor_decisions(feedback) WHERE feedback IS NULL;
+
+ALTER TABLE vixor_decisions ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can read own decisions" ON vixor_decisions FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Deny anon inserts" ON vixor_decisions FOR INSERT WITH CHECK (false);
+  CREATE POLICY "Deny anon updates" ON vixor_decisions FOR UPDATE USING (false);
+  CREATE POLICY "Deny anon deletes" ON vixor_decisions FOR DELETE USING (false);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 `;
 }
 
@@ -395,8 +428,8 @@ export async function getPendingMigrationsSQL(): Promise<string> {
     { table: "daily_loops", label: "-- 6. Daily Loops Table" },
     { table: "user_streaks", label: "-- 7. User Streaks Table" },
     { table: "domain_events", label: "-- 8. Domain Events Table" },
-    { table: "user_memories", label: "-- 9. User Memories Table" },
-    { table: "vixor_decisions", label: "-- 10. Vixor Decisions Table" },
+    { table: "user_memories", label: "-- 11. User Memories Table" },
+    { table: "vixor_decisions", label: "-- 12. Vixor Decisions Table" },
   ];
 
   // For simplicity, if any table is missing, return the full SQL with a header

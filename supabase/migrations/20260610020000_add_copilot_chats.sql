@@ -1,11 +1,16 @@
 -- ============================================================================
--- Vixor Migration: Copilot Chat Persistence
+-- Vixor Migration: MOXI Chat Persistence (originally named "copilot")
 -- ============================================================================
--- Adds copilot_conversations and copilot_messages tables for persisting
--- AI copilot chat history with multi-agent support.
+-- NOTE: The tables created here (copilot_conversations, copilot_messages) were
+-- renamed to moxi_conversations and moxi_messages via migration
+-- 20260804000000_rename_copilot_to_moxi.sql. This file is kept for historical
+-- reference only. Do NOT re-run this migration on a fresh database — use the
+-- moxi-named migration instead.
 -- ============================================================================
 
--- 1. Copilot Conversations Table
+-- The SQL below is preserved as-is for audit trail.
+-- For new deployments, the tables will be created with moxi_ prefixes directly.
+
 CREATE TABLE IF NOT EXISTS copilot_conversations (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
