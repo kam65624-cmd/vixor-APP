@@ -23,14 +23,11 @@ const cardVariants = cva("relative overflow-hidden border transition-all", {
       /** Terminal — minimal data display card */
       terminal: "bg-card border-border rounded-2xl",
       /** V6 Premium — edge glow on hover with gradient border reveal */
-      premium:
-        "vx-card-premium rounded-2xl",
+      premium: "vx-card-premium rounded-2xl",
       /** V6 Insight — AI-generated content with purple left accent */
-      insight:
-        "vx-card-insight rounded-2xl",
+      insight: "vx-card-insight rounded-2xl",
       /** V6 Monitor — live data card with scanning top border */
-      monitor:
-        "vx-card-monitor rounded-2xl",
+      monitor: "vx-card-monitor rounded-2xl",
     },
     padding: {
       none: "",

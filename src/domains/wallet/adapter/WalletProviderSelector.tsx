@@ -15,7 +15,10 @@ import type { WalletChain, EvmChainId, WalletProvider as WProvider } from "@/dom
 import { connectPhantom, isPhantomInstalled } from "@/domains/wallet/adapters/phantom-adapter";
 import { connectMetaMask, isMetaMaskInstalled } from "@/domains/wallet/adapters/metamask-adapter";
 import { isWalletConnectAvailable } from "@/domains/wallet/adapters/walletconnect-adapter";
-import { connectTelegramWallet, isTelegramWebApp } from "@/domains/wallet/adapters/telegram-adapter";
+import {
+  connectTelegramWallet,
+  isTelegramWebApp,
+} from "@/domains/wallet/adapters/telegram-adapter";
 
 // ── Types ──
 
@@ -300,7 +303,17 @@ export function WalletProviderSelector() {
       {/* Inline error — V6 style */}
       {error && (
         <div className="rounded-xl border border-bearish/20 bg-bearish/8 p-3 flex items-start gap-2.5">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-bearish)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--color-bearish)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0 mt-0.5"
+          >
             <circle cx="12" cy="12" r="10" />
             <line x1="12" x2="12" y1="8" y2="12" />
             <line x1="12" x2="12.01" y1="16" y2="16" />
@@ -311,8 +324,17 @@ export function WalletProviderSelector() {
             className="text-muted-foreground hover:text-foreground text-xs leading-none mt-0.5 shrink-0"
             aria-label="Dismiss error"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" x2="6" y1="6" y2="18" /><line x1="6" x2="18" y1="6" y2="18" />
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <line x1="18" x2="6" y1="6" y2="18" />
+              <line x1="6" x2="18" y1="6" y2="18" />
             </svg>
           </button>
         </div>
@@ -320,7 +342,17 @@ export function WalletProviderSelector() {
 
       {/* Disclaimer — V6 subtle style */}
       <div className="flex items-start gap-2 pt-1">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted-foreground)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--color-muted-foreground)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="shrink-0 mt-0.5"
+        >
           <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>

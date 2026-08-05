@@ -170,9 +170,7 @@ function MarketStatPill({
   isLoading?: boolean;
 }) {
   return (
-    <div
-      className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] p-3.5 transition-all hover:border-primary/20 hover:shadow-[var(--shadow-card-glow)]"
-    >
+    <div className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] p-3.5 transition-all hover:border-primary/20 hover:shadow-[var(--shadow-card-glow)]">
       <CardGradientOverlay />
       <div className="relative flex items-center gap-2.5">
         <div
@@ -234,9 +232,12 @@ function MoverMini({
       </div>
       <div className="text-right shrink-0">
         <div className="text-xs font-bold font-mono text-foreground/80">{fmtPrice(price)}</div>
-        <div className={`text-[10px] font-bold font-mono flex items-center justify-end gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}>
+        <div
+          className={`text-[10px] font-bold font-mono flex items-center justify-end gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}
+        >
           {isUp ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-          {isUp ? "+" : ""}{change.toFixed(2)}%
+          {isUp ? "+" : ""}
+          {change.toFixed(2)}%
         </div>
       </div>
     </button>
@@ -318,19 +319,42 @@ function MoxiHero({
   }, [inputValue, onSendPrompt]);
 
   return (
-    <div
-      className="mx-4 mt-4 relative overflow-hidden rounded-2xl p-5 vx-hero-gradient"
-    >
+    <div className="mx-4 mt-4 relative overflow-hidden rounded-2xl p-5 vx-hero-gradient">
       {/* Background glow orbs — enhanced V6 */}
-      <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(99, 102, 241, 0.12) 0%, transparent 70%)" }} />
-      <div className="absolute -left-12 -bottom-12 w-40 h-40 rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(139, 92, 246, 0.08) 0%, transparent 70%)" }} />
-      <div className="absolute right-8 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(240, 185, 11, 0.04) 0%, transparent 70%)" }} />
+      <div
+        className="absolute -right-20 -top-20 w-64 h-64 rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse, rgba(99, 102, 241, 0.12) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        className="absolute -left-12 -bottom-12 w-40 h-40 rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse, rgba(139, 92, 246, 0.08) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        className="absolute right-8 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse, rgba(240, 185, 11, 0.04) 0%, transparent 70%)",
+        }}
+      />
 
       {/* MOXI Greeting */}
       <div className="relative flex items-center gap-2.5 mb-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-base font-extrabold text-white" style={{ background: "var(--gradient-hero)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>MOXI</span>
+            <span
+              className="text-base font-extrabold text-white"
+              style={{
+                background: "var(--gradient-hero)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              MOXI
+            </span>
             <LiveDot size={6} />
             <span className="text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground/50">
               AI
@@ -399,10 +423,30 @@ function InsightCard({
   onAction?: () => void;
 }) {
   const config = {
-    bullish: { color: "var(--color-bullish)", bg: "var(--bullish-bg)", border: "var(--bullish-border)", Icon: TrendingUp },
-    bearish: { color: "var(--color-bearish)", bg: "var(--bearish-bg)", border: "var(--bearish-border)", Icon: ArrowDownRight },
-    neutral: { color: "var(--color-primary)", bg: "var(--primary-bg)", border: "var(--primary-border)", Icon: Bot },
-    alert: { color: "var(--color-neutral-wait)", bg: "var(--neutral-wait-bg)", border: "var(--neutral-wait-border)", Icon: Shield },
+    bullish: {
+      color: "var(--color-bullish)",
+      bg: "var(--bullish-bg)",
+      border: "var(--bullish-border)",
+      Icon: TrendingUp,
+    },
+    bearish: {
+      color: "var(--color-bearish)",
+      bg: "var(--bearish-bg)",
+      border: "var(--bearish-border)",
+      Icon: ArrowDownRight,
+    },
+    neutral: {
+      color: "var(--color-primary)",
+      bg: "var(--primary-bg)",
+      border: "var(--primary-border)",
+      Icon: Bot,
+    },
+    alert: {
+      color: "var(--color-neutral-wait)",
+      bg: "var(--neutral-wait-bg)",
+      border: "var(--neutral-wait-border)",
+      Icon: Shield,
+    },
   };
 
   const c = config[type];
@@ -411,7 +455,10 @@ function InsightCard({
   return (
     <Card variant="insight" className="group">
       <div className="flex items-start gap-3.5">
-        <div className="p-2.5 rounded-xl" style={{ background: c.bg, border: `1px solid ${c.border}` }}>
+        <div
+          className="p-2.5 rounded-xl"
+          style={{ background: c.bg, border: `1px solid ${c.border}` }}
+        >
           <TypeIcon size={16} style={{ color: c.color }} />
         </div>
         <div className="flex-1 min-w-0">
@@ -421,7 +468,9 @@ function InsightCard({
               {type.toUpperCase()}
             </span>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">{description}</p>
+          <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">
+            {description}
+          </p>
         </div>
         {actionLabel && (
           <button
@@ -597,7 +646,11 @@ function HomePage() {
               Discover <ChevronRight size={11} />
             </button>
           </div>
-          <Card variant="default" padding="none" className="divide-y divide-[var(--color-border-subtle)]">
+          <Card
+            variant="default"
+            padding="none"
+            className="divide-y divide-[var(--color-border-subtle)]"
+          >
             {(overview.topGainers ?? []).slice(0, 3).map((item) => (
               <MoverMini
                 key={`g-${item.symbol}`}
