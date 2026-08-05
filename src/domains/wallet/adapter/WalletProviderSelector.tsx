@@ -1,7 +1,7 @@
 "use client";
 
 // ============================================================================
-// VIXOR Wallet Provider Selector — Provider list (no modal wrapper)
+// VIXOR Wallet Provider Selector — V6 Premium UI
 // ============================================================================
 //
 // Pure list component for choosing a wallet provider.
@@ -67,7 +67,7 @@ const PROVIDERS: ProviderOption[] = [
 
 // ── Icons ──
 
-function ProviderIcon({ icon, size = 36 }: { icon: string; size?: number }) {
+function ProviderIcon({ icon, size = 40 }: { icon: string; size?: number }) {
   if (icon === "phantom") {
     return (
       <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
@@ -174,7 +174,6 @@ export function WalletProviderSelector() {
 
   const handleConnect = useCallback(
     async (provider: ProviderOption & { available: boolean }) => {
-      // Guard: don't attempt connection if not available
       if (!provider.available) {
         if (provider.installUrl) {
           window.open(provider.installUrl, "_blank", "noopener");
@@ -219,29 +218,29 @@ export function WalletProviderSelector() {
   );
 
   return (
-    <div>
-      {/* EVM chain selector */}
-      <div className="flex gap-2 mb-3" role="radiogroup" aria-label="Select EVM chain">
+    <div className="space-y-3">
+      {/* EVM chain selector — V6 pill style */}
+      <div className="flex gap-2" role="radiogroup" aria-label="Select EVM chain">
         {EVM_CHAIN_OPTIONS.map((c) => (
           <button
             key={c.id}
             onClick={() => setSelectedEvmChain(c.id)}
-            className={`flex-1 rounded-lg border px-2 py-2 text-center transition-colors min-h-[44px] ${
+            className={`flex-1 rounded-xl border px-3 py-2.5 text-center transition-all min-h-[44px] ${
               selectedEvmChain === c.id
-                ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--text-primary)]"
-                : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-hover)]"
+                ? "border-primary/30 bg-primary/10 text-foreground shadow-[var(--shadow-glow)]"
+                : "border-[var(--color-border)] text-muted-foreground hover:border-[var(--border-hover)] hover:bg-[var(--surface-elevated)]"
             }`}
             role="radio"
             aria-checked={selectedEvmChain === c.id}
           >
-            <div className="text-xs font-bold uppercase tracking-wider">{c.symbol}</div>
-            <div className="text-xs">{c.label}</div>
+            <div className="text-xs font-bold uppercase tracking-wider font-mono">{c.symbol}</div>
+            <div className="text-[11px] text-foreground/50 mt-0.5">{c.label}</div>
           </button>
         ))}
       </div>
 
-      {/* Provider list */}
-      <div className="grid gap-2">
+      {/* Provider list — V6 premium cards */}
+      <div className="grid gap-2.5">
         {providers.map((p) => {
           const isConnecting = connecting === p.id;
           const isDisabled = connecting !== null || !p.available;
@@ -251,65 +250,84 @@ export function WalletProviderSelector() {
               key={p.id}
               onClick={() => handleConnect(p)}
               disabled={isDisabled}
-              className={`flex items-center gap-3 rounded-xl border border-[var(--border)] p-3 transition-all min-h-[56px] ${
+              className={`relative flex items-center gap-4 rounded-2xl border p-4 transition-all min-h-[64px] overflow-hidden ${
                 isDisabled
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:border-[var(--border-hover)] hover:bg-[var(--surface-2)] active:scale-[0.98]"
+                  ? "opacity-50 cursor-not-allowed border-[var(--color-border)] bg-[var(--color-card)]"
+                  : "border-[var(--color-border)] bg-[var(--color-card)] hover:border-primary/30 hover:bg-[var(--surface-elevated)] hover:shadow-[var(--shadow-card-glow)] active:scale-[0.98] cursor-pointer"
               }`}
               aria-label={`Connect ${p.name}`}
             >
-              <ProviderIcon icon={p.icon} />
-              <div className="flex-1 text-left">
-                <div className="text-sm font-medium text-[var(--text-primary)]">{p.name}</div>
-                <div className="text-xs text-[var(--text-secondary)]">{p.description}</div>
-              </div>
-              {isConnecting ? (
-                <div className="size-5 rounded-full border-2 border-[var(--text-secondary)] border-t-transparent animate-spin" />
-              ) : p.id === "TELEGRAM" && p.available ? (
-                <span className="rounded-lg bg-[#2AABEE]/15 px-2.5 py-1 text-xs font-bold text-[#2AABEE]">
-                  RECOMMENDED
-                </span>
-              ) : p.id === "TELEGRAM" && !p.available ? (
-                <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-xs font-bold text-[var(--neutral-wait)]">
-                  OPEN IN TG
-                </span>
-              ) : p.id === "WALLETCONNECT" ? (
-                <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-xs font-bold text-[var(--neutral-wait)]">
-                  SOON
-                </span>
-              ) : p.available ? (
-                <span className="rounded-lg bg-[var(--bullish)]/15 px-2.5 py-1 text-xs font-bold text-[var(--bullish)]">
-                  CONNECT
-                </span>
-              ) : (
-                <span className="rounded-lg bg-[var(--surface-2)] px-2.5 py-1 text-xs font-bold text-[var(--neutral-wait)]">
-                  INSTALL
-                </span>
+              {/* Subtle gradient overlay on hover */}
+              {!isDisabled && (
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 hover:opacity-100 transition-opacity" />
               )}
+
+              <div className="relative z-10 flex items-center gap-4 w-full">
+                <ProviderIcon icon={p.icon} />
+                <div className="flex-1 text-left min-w-0">
+                  <div className="text-[13px] font-bold text-foreground">{p.name}</div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">{p.description}</div>
+                </div>
+                {isConnecting ? (
+                  <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                ) : p.id === "TELEGRAM" && p.available ? (
+                  <span className="rounded-lg bg-[#2AABEE]/15 px-3 py-1.5 text-[10px] font-bold text-[#2AABEE] border border-[#2AABEE]/20">
+                    RECOMMENDED
+                  </span>
+                ) : p.id === "TELEGRAM" && !p.available ? (
+                  <span className="rounded-lg bg-[var(--surface-elevated)] px-3 py-1.5 text-[10px] font-bold text-[var(--color-neutral-wait)] border border-[var(--color-border)]">
+                    OPEN IN TG
+                  </span>
+                ) : p.id === "WALLETCONNECT" ? (
+                  <span className="rounded-lg bg-[var(--surface-elevated)] px-3 py-1.5 text-[10px] font-bold text-[var(--color-neutral-wait)] border border-[var(--color-border)]">
+                    SOON
+                  </span>
+                ) : p.available ? (
+                  <span className="rounded-lg bg-bullish/15 px-3 py-1.5 text-[10px] font-bold text-bullish border border-bullish/20">
+                    CONNECT
+                  </span>
+                ) : (
+                  <span className="rounded-lg bg-[var(--surface-elevated)] px-3 py-1.5 text-[10px] font-bold text-muted-foreground border border-[var(--color-border)]">
+                    INSTALL
+                  </span>
+                )}
+              </div>
             </button>
           );
         })}
       </div>
 
-      {/* Inline error */}
+      {/* Inline error — V6 style */}
       {error && (
-        <div className="mt-3 rounded-lg border border-[var(--bearish)]/30 bg-[var(--bearish)]/10 p-2.5 flex items-start gap-2">
-          <span className="text-[var(--bearish)] text-xs leading-relaxed flex-1">{error}</span>
+        <div className="rounded-xl border border-bearish/20 bg-bearish/8 p-3 flex items-start gap-2.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-bearish)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" x2="12" y1="8" y2="12" />
+            <line x1="12" x2="12.01" y1="16" y2="16" />
+          </svg>
+          <span className="text-[12px] text-bearish leading-relaxed flex-1">{error}</span>
           <button
             onClick={() => setError(null)}
-            className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-xs leading-none mt-0.5"
+            className="text-muted-foreground hover:text-foreground text-xs leading-none mt-0.5 shrink-0"
             aria-label="Dismiss error"
           >
-            &#x2715;
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="18" x2="6" y1="6" y2="18" /><line x1="6" x2="18" y1="6" y2="18" />
+            </svg>
           </button>
         </div>
       )}
 
-      {/* Disclaimer */}
-      <p className="mt-4 text-xs text-[var(--text-tertiary)] leading-relaxed">
-        By connecting, you sign a message proving wallet ownership. We never store private
-        keys.
-      </p>
+      {/* Disclaimer — V6 subtle style */}
+      <div className="flex items-start gap-2 pt-1">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted-foreground)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
+          By connecting, you sign a message proving wallet ownership. We never store private keys.
+        </p>
+      </div>
     </div>
   );
 }

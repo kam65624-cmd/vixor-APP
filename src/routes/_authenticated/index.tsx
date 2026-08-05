@@ -8,7 +8,9 @@ import { getMe } from "@/domains/user/functions";
 import { useLivePrices } from "@/shared/market-data";
 import { LiveDot } from "@/components/vixor/LiveDot";
 import { MoxiCharacter3D } from "@/components/vixor/MoxiCharacter3D";
+import { Card, CardGradientOverlay } from "@/components/ui/card";
 import { MOXI_QUICK_ACTIONS } from "@/domains/moxi/types";
+import { AnimatedNumber } from "@/components/vixor/animations/AnimatedNumber";
 import {
   TrendingUp,
   Bot,
@@ -27,6 +29,8 @@ import {
   Target,
   Bell,
   PieChart,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -118,7 +122,7 @@ const MarketTicker = memo(function MarketTicker({
 }) {
   if (isLoading) {
     return (
-      <div className="w-full border-y border-white/5 bg-[var(--color-card)] py-2">
+      <div className="w-full border-y border-[var(--color-border-subtle)] bg-[var(--color-card)] py-2">
         <div className="flex gap-6 px-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="h-5 w-28 shrink-0" />
@@ -132,7 +136,7 @@ const MarketTicker = memo(function MarketTicker({
   const repeated = [...data.tickers, ...data.tickers, ...data.tickers];
 
   return (
-    <div className="relative w-full overflow-hidden border-y border-white/5 bg-[var(--color-card)]">
+    <div className="relative w-full overflow-hidden border-y border-[var(--color-border-subtle)] bg-[var(--color-card)]">
       <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[var(--color-card)] to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[var(--color-card)] to-transparent z-10 pointer-events-none" />
       <div className="flex animate-ticker" style={{ animation: "ticker 40s linear infinite" }}>
@@ -150,7 +154,7 @@ const MarketTicker = memo(function MarketTicker({
   );
 });
 
-// ─── Market Stat Pill ─────────────────────────────────────────────────────────
+// ─── Market Stat Pill — V6 Premium ──────────────────────────────────────────
 
 function MarketStatPill({
   icon: Icon,
@@ -167,35 +171,34 @@ function MarketStatPill({
 }) {
   return (
     <div
-      className="flex-1 flex items-center gap-2.5 p-3 rounded-xl"
-      style={{
-        background: `color-mix(in srgb, ${accent} 6%, var(--color-card))`,
-        border: `1px solid color-mix(in srgb, ${accent} 12%, transparent)`,
-      }}
+      className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] p-3.5 transition-all hover:border-primary/20 hover:shadow-[var(--shadow-card-glow)]"
     >
-      <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-        style={{ background: `color-mix(in srgb, ${accent} 10%, transparent)` }}
-      >
-        <Icon size={14} style={{ color: accent }} />
-      </div>
-      <div className="min-w-0">
-        <div className="text-xs font-semibold uppercase tracking-wider text-foreground/35">
-          {label}
+      <CardGradientOverlay />
+      <div className="relative flex items-center gap-2.5">
+        <div
+          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: `color-mix(in srgb, ${accent} 10%, transparent)` }}
+        >
+          <Icon size={14} style={{ color: accent }} />
         </div>
-        {isLoading ? (
-          <Skeleton className="h-4 w-16 mt-0.5" />
-        ) : (
-          <div className="text-[13px] font-bold font-mono text-foreground truncate">
-            {value || "—"}
+        <div className="min-w-0">
+          <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+            {label}
           </div>
-        )}
+          {isLoading ? (
+            <Skeleton className="h-4 w-16 mt-1" />
+          ) : (
+            <div className="text-[14px] font-bold font-mono text-foreground truncate mt-0.5">
+              {value || "—"}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── Top Mover Mini Card ─────────────────────────────────────────────────────
+// ─── Top Mover Mini Card — V6 Enhanced ──────────────────────────────────────
 
 function MoverMini({
   item,
@@ -214,10 +217,10 @@ function MoverMini({
   return (
     <button
       onClick={() => navigate({ to: "/discover" as any })}
-      className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-colors text-left"
+      className="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors text-left w-full"
     >
       <div
-        className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-bold"
+        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-[10px] font-bold"
         style={{
           background: isUp ? "var(--bullish-bg)" : "var(--bearish-bg)",
           color: isUp ? "var(--color-bullish)" : "var(--color-bearish)",
@@ -227,22 +230,20 @@ function MoverMini({
         {item.symbol.slice(0, 2)}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-xs font-bold text-foreground/90">{item.symbol}</div>
+        <div className="text-xs font-bold text-foreground">{item.symbol}</div>
       </div>
       <div className="text-right shrink-0">
         <div className="text-xs font-bold font-mono text-foreground/80">{fmtPrice(price)}</div>
-        <div
-          className={`text-[10px] font-bold font-mono ${isUp ? "text-bullish" : "text-bearish"}`}
-        >
-          {isUp ? "+" : ""}
-          {change.toFixed(2)}%
+        <div className={`text-[10px] font-bold font-mono flex items-center justify-end gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}>
+          {isUp ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
+          {isUp ? "+" : ""}{change.toFixed(2)}%
         </div>
       </div>
     </button>
   );
 }
 
-// ─── Feature Card ────────────────────────────────────────────────────────────
+// ─── Feature Card — V6 Premium with hover glow ─────────────────────────────
 
 function FeatureCard({
   icon: Icon,
@@ -263,11 +264,12 @@ function FeatureCard({
   return (
     <button
       onClick={() => navigate({ to: to as any })}
-      className="vx-card vx-card-interactive group relative w-full p-3.5 text-left overflow-hidden"
+      className="vx-card vx-card-interactive group relative w-full p-4 text-left overflow-hidden rounded-2xl"
     >
+      <CardGradientOverlay />
       {badge && (
         <span
-          className="absolute top-2.5 right-2.5 text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-md"
+          className="absolute top-3 right-3 text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-lg z-10"
           style={{
             background: `color-mix(in srgb, ${accent} 12%, transparent)`,
             color: accent,
@@ -278,7 +280,7 @@ function FeatureCard({
         </span>
       )}
       <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center mb-2.5"
+        className="relative z-10 w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-transform duration-200 group-hover:scale-110"
         style={{
           background: `color-mix(in srgb, ${accent} 10%, transparent)`,
           border: `1px solid color-mix(in srgb, ${accent} 15%, transparent)`,
@@ -286,16 +288,16 @@ function FeatureCard({
       >
         <Icon size={16} style={{ color: accent }} />
       </div>
-      <div className="text-[13px] font-bold text-foreground group-hover:text-white transition-colors">
+      <div className="relative z-10 text-[13px] font-bold text-foreground group-hover:text-white transition-colors">
         {title}
       </div>
-      <div className="text-[11px] text-foreground/40 mt-0.5">{desc}</div>
+      <div className="relative z-10 text-[11px] text-muted-foreground mt-0.5">{desc}</div>
     </button>
   );
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// MOXI Hero Section
+// MOXI Hero Section — V6 Premium Glassmorphism
 // ══════════════════════════════════════════════════════════════════════════════
 
 function MoxiHero({
@@ -317,33 +319,31 @@ function MoxiHero({
 
   return (
     <div
-      className="mx-4 mt-4 relative overflow-hidden rounded-2xl p-5"
-      style={{
-        background:
-          "linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 10%, var(--color-card)), color-mix(in srgb, var(--color-primary) 3%, var(--color-card)))",
-        border: "1px solid color-mix(in srgb, var(--color-primary) 15%, transparent)",
-        boxShadow: "0 0 60px -20px var(--color-primary)",
-      }}
+      className="mx-4 mt-4 relative overflow-hidden rounded-2xl p-5 vx-hero-gradient"
     >
-      {/* Background glow */}
-      <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-primary/[0.04] pointer-events-none" />
-      <div className="absolute -left-8 -bottom-8 w-32 h-32 rounded-full bg-primary/[0.03] pointer-events-none" />
+      {/* Background glow orbs — enhanced V6 */}
+      <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(99, 102, 241, 0.12) 0%, transparent 70%)" }} />
+      <div className="absolute -left-12 -bottom-12 w-40 h-40 rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(139, 92, 246, 0.08) 0%, transparent 70%)" }} />
+      <div className="absolute right-8 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(240, 185, 11, 0.04) 0%, transparent 70%)" }} />
 
-      {/* MOAI Greeting */}
+      {/* MOXI Greeting */}
       <div className="relative flex items-center gap-2.5 mb-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-base font-extrabold text-white">MOXI</span>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-base font-extrabold text-white" style={{ background: "var(--gradient-hero)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>MOXI</span>
             <LiveDot size={6} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground/50">
+              AI
+            </span>
           </div>
           <div className="text-[13px] text-foreground/60 leading-relaxed">{getMoxiGreeting()}</div>
-          <div className="text-xs text-foreground/30 mt-1">
+          <div className="text-xs text-foreground/30 mt-1.5">
             {getGreeting()}, <span className="text-foreground/50 font-semibold">{userName}</span>
           </div>
         </div>
       </div>
 
-      {/* Chat Input */}
+      {/* Chat Input — V6 glassmorphic */}
       <div className="relative">
         <input
           ref={inputRef}
@@ -352,18 +352,18 @@ function MoxiHero({
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           placeholder="Ask MOXI anything about the market..."
-          className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-3 pr-11 text-[13px] text-foreground placeholder:text-foreground/25 focus:outline-none focus:border-primary/30 focus:bg-white/[0.06] transition-all"
+          className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3 pr-11 text-[13px] text-foreground placeholder:text-foreground/25 focus:outline-none focus:border-primary/30 focus:bg-white/[0.07] focus:shadow-[var(--shadow-glow)] transition-all"
         />
         <button
           onClick={handleSubmit}
           disabled={!inputValue.trim()}
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center bg-primary/20 text-primary hover:bg-primary/30 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center bg-primary/20 text-primary hover:bg-primary/30 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
         >
           <Send size={14} />
         </button>
       </div>
 
-      {/* Quick Prompt Chips */}
+      {/* Quick Prompt Chips — V6 refined */}
       <div className="relative flex flex-wrap gap-2 mt-3">
         {MOXI_QUICK_ACTIONS.slice(0, 4).map((action) => {
           const ActionIcon = QUICK_ACTION_ICONS[action.icon] || Sparkles;
@@ -371,7 +371,7 @@ function MoxiHero({
             <button
               key={action.id}
               onClick={() => onSendPrompt(action.prompt)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.05] hover:bg-white/[0.07] hover:border-white/[0.08] transition-all text-left"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.1] transition-all text-left"
             >
               <ActionIcon size={11} className="text-primary/60" />
               <span className="text-[11px] text-foreground/50 font-medium">{action.label}</span>
@@ -380,6 +380,59 @@ function MoxiHero({
         })}
       </div>
     </div>
+  );
+}
+
+// ─── Insight Card — Premium AI insight with glow ────────────────────────────
+
+function InsightCard({
+  title,
+  description,
+  type,
+  actionLabel,
+  onAction,
+}: {
+  title: string;
+  description: string;
+  type: "bullish" | "bearish" | "neutral" | "alert";
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  const config = {
+    bullish: { color: "var(--color-bullish)", bg: "var(--bullish-bg)", border: "var(--bullish-border)", Icon: TrendingUp },
+    bearish: { color: "var(--color-bearish)", bg: "var(--bearish-bg)", border: "var(--bearish-border)", Icon: ArrowDownRight },
+    neutral: { color: "var(--color-primary)", bg: "var(--primary-bg)", border: "var(--primary-border)", Icon: Bot },
+    alert: { color: "var(--color-neutral-wait)", bg: "var(--neutral-wait-bg)", border: "var(--neutral-wait-border)", Icon: Shield },
+  };
+
+  const c = config[type];
+  const TypeIcon = c.Icon;
+
+  return (
+    <Card variant="insight" className="group">
+      <div className="flex items-start gap-3.5">
+        <div className="p-2.5 rounded-xl" style={{ background: c.bg, border: `1px solid ${c.border}` }}>
+          <TypeIcon size={16} style={{ color: c.color }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h4 className="text-[13px] font-bold text-foreground truncate">{title}</h4>
+            <span className="text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-lg bg-[var(--surface-elevated)] text-muted-foreground border border-[var(--color-border-subtle)]">
+              {type.toUpperCase()}
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">{description}</p>
+        </div>
+        {actionLabel && (
+          <button
+            onClick={onAction}
+            className="flex-shrink-0 px-3 py-1.5 text-[10px] font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors border border-primary/10"
+          >
+            {actionLabel}
+          </button>
+        )}
+      </div>
+    </Card>
   );
 }
 
@@ -445,11 +498,9 @@ function HomePage() {
     [getPrice],
   );
 
-  // Handle MOXI prompt — opens MOXI chat via speech bubble
+  // Handle MOXI prompt
   const handleMoxiPrompt = useCallback(
     (prompt: string) => {
-      // MOXI interaction is handled via the 3D character speech bubble on the home page
-      // For now, navigate to analyze page with the prompt as a query
       if (prompt) {
         navigate({ to: "/analyze", search: { q: prompt } } as any);
       }
@@ -472,8 +523,8 @@ function HomePage() {
         <MarketTicker data={marketData} isLoading={marketQuery.isLoading} />
       </div>
 
-      {/* ── Market Overview Stats ───────────────────────────────── */}
-      <div className="mx-4 mt-4 flex gap-2.5">
+      {/* ── Market Overview Stats — V6 Premium Cards ─────────────── */}
+      <div className="mx-4 mt-5 flex gap-3">
         <MarketStatPill
           icon={Activity}
           label="24h Vol"
@@ -511,25 +562,43 @@ function HomePage() {
         />
       </div>
 
-      {/* ── Top Movers (compact) ──────────────────────────────── */}
+      {/* ── AI Insight Cards — V6 Premium ────────────────────────── */}
+      <div className="mx-4 mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <InsightCard
+          title="Market Momentum Detected"
+          description="Strong buying pressure across SOL ecosystem. Volume surge 180% above 24h average."
+          type="bullish"
+          actionLabel="Analyze"
+          onAction={() => handleMoxiPrompt("Analyze SOL ecosystem momentum")}
+        />
+        <InsightCard
+          title="Whale Activity Alert"
+          description="Large transfers detected on ETH. Monitor for potential market impact in next 4-8 hours."
+          type="alert"
+          actionLabel="Track"
+          onAction={() => navigate({ to: "/pulse" })}
+        />
+      </div>
+
+      {/* ── Top Movers — V6 Card ──────────────────────────────────── */}
       {overview && (overview.topGainers?.length || overview.topLosers?.length) && (
-        <div className="mx-4 mt-4">
-          <div className="flex items-center justify-between mb-2.5">
+        <div className="mx-4 mt-5">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <TrendingUp size={14} className="text-primary" />
-              <span className="text-xs font-bold uppercase tracking-widest text-foreground/50">
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
                 Top Movers
               </span>
             </div>
             <button
               onClick={() => navigate({ to: "/discover" as any })}
-              className="flex items-center gap-1 text-[11px] text-foreground/30 hover:text-primary font-semibold transition-colors"
+              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary font-semibold transition-colors"
             >
               Discover <ChevronRight size={11} />
             </button>
           </div>
-          <div className="vx-card divide-y divide-[var(--color-border)]">
-            {(overview.topGainers ?? []).slice(0, 2).map((item) => (
+          <Card variant="default" padding="none" className="divide-y divide-[var(--color-border-subtle)]">
+            {(overview.topGainers ?? []).slice(0, 3).map((item) => (
               <MoverMini
                 key={`g-${item.symbol}`}
                 item={item}
@@ -545,19 +614,19 @@ function HomePage() {
                 livePrice={getLivePriceForSymbol(item.symbol)}
               />
             ))}
-          </div>
+          </Card>
         </div>
       )}
 
-      {/* ── Quick Actions Grid ─────────────────────────────────── */}
-      <div className="mx-4 mt-4">
-        <div className="flex items-center gap-2 mb-2.5">
+      {/* ── Quick Actions Grid — V6 Premium ─────────────────────────── */}
+      <div className="mx-4 mt-5">
+        <div className="flex items-center gap-2 mb-3">
           <Zap size={14} className="text-primary" />
-          <span className="text-xs font-bold uppercase tracking-widest text-foreground/50">
+          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
             Quick Actions
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-3 vx-stagger">
           <FeatureCard
             icon={LineChart}
             title="Charts"
@@ -589,7 +658,7 @@ function HomePage() {
           <FeatureCard
             icon={Radio}
             title="Radar"
-            desc="Market intel"
+            desc="Market scanner"
             to="/radar"
             badge="LIVE"
             accent="var(--color-bullish)"
@@ -604,11 +673,33 @@ function HomePage() {
         </div>
       </div>
 
+      {/* ── Premium Upgrade Card — V6 Gold Glow ──────────────────────── */}
+      <div className="mx-4 mt-5">
+        <Card variant="premium" className="flex items-center justify-between">
+          <CardGradientOverlay />
+          <div className="relative flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--gold-bg)] border border-[var(--gold-border)]">
+              <Crown size={18} className="text-[var(--color-gold)]" />
+            </div>
+            <div>
+              <h3 className="text-[13px] font-bold text-foreground">Premium</h3>
+              <p className="text-[11px] text-muted-foreground">Exclusive signals & analytics</p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate({ to: "/premium" })}
+            className="relative px-4 py-2 bg-[var(--color-gold)] text-black text-[11px] font-bold rounded-xl hover:opacity-90 transition-opacity shadow-[var(--shadow-gold-glow)]"
+          >
+            Upgrade
+          </button>
+        </Card>
+      </div>
+
       {/* ── Market Error Fallback ──────────────────────────────── */}
       {marketQuery.isError && !marketData && (
-        <div className="mx-4 mt-4 vx-card p-5 text-center">
+        <div className="mx-4 mt-5 vx-card p-5 text-center">
           <RefreshCw size={20} className="text-foreground/20 mx-auto mb-2" />
-          <p className="text-xs text-foreground/40 font-medium">Unable to load market data</p>
+          <p className="text-xs text-muted-foreground font-medium">Unable to load market data</p>
           <button
             onClick={() => marketQuery.refetch()}
             className="vx-btn vx-btn-sm vx-btn-primary mt-3"

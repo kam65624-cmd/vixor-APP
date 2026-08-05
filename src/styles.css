@@ -4,15 +4,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ===== VIXOR Design System V5 — Premium Trading 2026/2027 =====
- * Based on V4, upgraded to 2026/2027 Premium Spec:
- *   - Indigo primary (#6366F1) replacing blue-purple
- *   - Modern teal bullish (#22D3A6) replacing classic green
- *   - Deeper backgrounds (08090C / 101114 / 16171C)
- *   - 3-level shadow + glow system
- *   - Motion tokens with premium easings
- *   - 8-level typography scale
- *   - JetBrains Mono for financial numbers
+/* ===== VIXOR Design System V6 — Intelligent Command Center 2026/2027 =====
+ * Based on V5, upgraded to V6 "Command Center" Spec:
+ *   - Indigo primary (#6366F1) + Purple secondary (#8B5CF6)
+ *   - Accent gold (#F0B90B) for BNB Chain touches
+ *   - Hero gradient with animated glow
+ *   - Premium card variants (glow, insight, monitor)
+ *   - Flash highlight animations for live data
+ *   - Dynamic bottom dock navigation
+ *   - 4-layer depth hierarchy (bg → card → elevated → hero)
+ *   - Glassmorphism 2.0 with enhanced blur
  * ============================================================ */
 
 @theme inline {
@@ -136,10 +137,19 @@
   --text-tertiary: #565a66;
   --text-muted: #565a66;
 
-  /* ── Primary accent — Blue-Purple #6366F1 ── */
+  /* ── Primary accent — Indigo #6366F1 ── */
   --primary: #6366f1;
   --primary-foreground: #ffffff;
   --primary-glow: #818cf8;
+  --primary-glow-rgb: 99, 102, 241;
+
+  /* ── Secondary accent — Purple #8B5CF6 for differentiation ── */
+  --secondary-accent: #8b5cf6;
+  --secondary-accent-glow: #a78bfa;
+
+  /* ── Accent Gold — #F0B90B BNB Chain inspired ── */
+  --accent-gold: #f0b90b;
+  --accent-gold-glow: #fbbf24;
 
   /* ── Secondary / Muted ── */
   --secondary: #16171c;
@@ -178,21 +188,37 @@
 
   /* ── Gradients ── */
   --gradient-primary: linear-gradient(135deg, #6366f1, #818cf8);
+  --gradient-hero: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --gradient-hero-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.2));
+  --gradient-card-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 60%);
+  --gradient-asset: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
   --gradient-bullish: linear-gradient(135deg, #22d3a62e, #22d3a605);
   --gradient-bearish: linear-gradient(135deg, #fb46672e, #fb466705);
   --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
   --gradient-accent-bg: radial-gradient(ellipse at 30% 20%, #6366f110 0%, transparent 60%);
 
-  /* ── Shadows — Layer-based depth (no glow) ── */
+  /* ── Shadows — 4-level depth with glow ── */
   --shadow-resting: 0px 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-elevated: 0px 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 16px -4px #6366f125;
+  --shadow-floating: 0px 16px 48px -8px rgba(99, 102, 241, 0.15), 0px 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-card-glow: 0 0 0 1px rgba(99, 102, 241, 0.1), 0 4px 16px rgba(99, 102, 241, 0.08);
+  --shadow-gold-glow: 0 0 0 1px rgba(240, 185, 11, 0.15), 0 4px 16px rgba(240, 185, 11, 0.08);
 
   /* ── Background treatment ── */
   --bg-grid:
     linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   --bg-grid-size: 40px 40px;
+
+  /* ── Surface Hero — 4th layer for dynamic backgrounds ── */
+  --surface-hero: #0c0d12;
+  --surface-hero-glow: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 50%);
+
+  /* ── Glassmorphism 2.0 ── */
+  --glass-bg: rgba(16, 17, 20, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(20px) saturate(180%);
 
   /* ── Layout bridge tokens ── */
   --surface: var(--background);
@@ -699,6 +725,276 @@
   }
   .rtl .text-right {
     text-align: left;
+  }
+
+  /* ====== V6 Premium Card Variants ====== */
+
+  /* Premium card — subtle edge glow on hover */
+  .vx-card-premium {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+  }
+  .vx-card-premium::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
+    pointer-events: none;
+    transition: opacity var(--transition-base);
+  }
+  .vx-card-premium::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), transparent 40%, transparent 60%, rgba(139, 92, 246, 0.15));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    z-index: 1;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    padding: 1px;
+  }
+  .vx-card-premium:hover::after {
+    opacity: 1;
+  }
+  .vx-card-premium:hover {
+    box-shadow: var(--shadow-card-glow);
+    border-color: rgba(99, 102, 241, 0.15);
+  }
+
+  /* Insight card — AI-generated content with colored left accent */
+  .vx-card-insight {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    border-left: 3px solid var(--secondary-accent, #8b5cf6);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+  }
+  .vx-card-insight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(139, 92, 246, 0.04) 0%, transparent 30%);
+    pointer-events: none;
+  }
+  .vx-card-insight:hover {
+    border-left-color: var(--primary-glow, #a78bfa);
+    box-shadow: 0 0 24px -4px rgba(139, 92, 246, 0.15);
+  }
+
+  /* Monitor card — live data with pulsing border */
+  .vx-card-monitor {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+  }
+  .vx-card-monitor::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-bullish), var(--color-primary), var(--color-bullish), transparent);
+    background-size: 200% 100%;
+    animation: vx-monitor-scan 3s linear infinite;
+    pointer-events: none;
+  }
+  .vx-card-monitor:hover {
+    border-color: rgba(34, 211, 166, 0.15);
+    box-shadow: 0 0 24px -4px rgba(34, 211, 166, 0.1);
+  }
+
+  /* ====== V6 Flash Highlight for Live Data ====== */
+  @keyframes vx-flash-up {
+    0% { background-color: rgba(34, 211, 166, 0.25); }
+    100% { background-color: transparent; }
+  }
+  @keyframes vx-flash-down {
+    0% { background-color: rgba(251, 70, 103, 0.25); }
+    100% { background-color: transparent; }
+  }
+  @keyframes vx-flash-gold {
+    0% { background-color: rgba(240, 185, 11, 0.2); }
+    100% { background-color: transparent; }
+  }
+  @keyframes vx-monitor-scan {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .vx-flash-up {
+    animation: vx-flash-up 0.6s ease-out;
+    border-radius: 4px;
+  }
+  .vx-flash-down {
+    animation: vx-flash-down 0.6s ease-out;
+    border-radius: 4px;
+  }
+  .vx-flash-gold {
+    animation: vx-flash-gold 0.6s ease-out;
+    border-radius: 4px;
+  }
+
+  /* ====== V6 Dynamic Bottom Dock ====== */
+  .vx-dock {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 0 8px;
+    mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 32px), transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 32px), transparent);
+  }
+  .vx-dock::-webkit-scrollbar {
+    display: none;
+  }
+  .vx-dock-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    height: 44px;
+    padding: 0 4px;
+    border-radius: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    position: relative;
+    scroll-snap-align: center;
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+  }
+  .vx-dock-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .vx-dock-item:active {
+    transform: scale(0.92);
+    transition-duration: 100ms;
+  }
+  .vx-dock-item-active {
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  }
+  .vx-dock-item-active .vx-dock-icon {
+    color: var(--color-primary);
+    filter: drop-shadow(0 0 8px rgba(var(--primary-glow-rgb, 99, 102, 241), 0.5));
+    transform: scale(1.1);
+  }
+  .vx-dock-item-active .vx-dock-label {
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+  .vx-dock-item-active .vx-dock-dot {
+    opacity: 1;
+  }
+  .vx-dock-icon {
+    color: var(--color-muted-foreground);
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .vx-dock-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--color-muted-foreground);
+    letter-spacing: 0.02em;
+    transition: all var(--transition-base);
+    margin-top: 2px;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .vx-dock-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    margin-top: 2px;
+    box-shadow: 0 0 8px var(--color-primary), 0 0 16px rgba(var(--primary-glow-rgb, 99, 102, 241), 0.3);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+  }
+  .vx-dock-separator {
+    width: 1px;
+    height: 24px;
+    background: var(--color-border);
+    flex-shrink: 0;
+    margin: 0 4px;
+  }
+
+  /* ====== V6 Hero Banner Gradient ====== */
+  .vx-hero-gradient {
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-primary) 12%, var(--color-card)),
+      color-mix(in srgb, var(--secondary-accent, #8b5cf6) 6%, var(--color-card))
+    );
+    border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+    box-shadow: 0 0 80px -20px rgba(var(--primary-glow-rgb, 99, 102, 241), 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .vx-hero-gradient::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(var(--primary-glow-rgb, 99, 102, 241), 0.06) 0%, transparent 70%);
+    pointer-events: none;
+    animation: vx-hero-glow-drift 8s ease-in-out infinite;
+  }
+  @keyframes vx-hero-glow-drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-5%, 3%); }
+  }
+
+  /* ====== V6 Filter Chip ====== */
+  .vx-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-muted-foreground);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+  }
+  .vx-filter-chip:hover {
+    color: var(--color-foreground);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--color-border-hover);
+  }
+  .vx-filter-chip-active {
+    color: var(--color-primary-foreground);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
   }
 
   /* ====== Premium Card System ====== */
@@ -1420,6 +1716,38 @@
   to {
     stroke-dashoffset: 0;
   }
+}
+
+/* V6 Modal animations — used by Wallet modal, More panel, etc. */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease both;
+}
+.animate-slideUp {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* V6 Flash highlight — for live data value changes */
+@keyframes flash-bullish {
+  0% { background-color: rgba(34, 211, 166, 0.15); box-shadow: 0 0 12px rgba(34, 211, 166, 0.1); }
+  100% { background-color: transparent; box-shadow: none; }
+}
+@keyframes flash-bearish {
+  0% { background-color: rgba(251, 70, 103, 0.15); box-shadow: 0 0 12px rgba(251, 70, 103, 0.1); }
+  100% { background-color: transparent; box-shadow: none; }
+}
+.animate-flash-bullish {
+  animation: flash-bullish 0.5s ease-out both;
+}
+.animate-flash-bearish {
+  animation: flash-bearish 0.5s ease-out both;
 }
 
 /* Table row — clean 1px separator, hover feedback */
