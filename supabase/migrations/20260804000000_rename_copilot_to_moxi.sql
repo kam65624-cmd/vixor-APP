@@ -14,9 +14,16 @@ ALTER TABLE IF EXISTS copilot_messages RENAME TO moxi_messages;
 ALTER INDEX IF EXISTS idx_copilot_conversations_user RENAME TO idx_moxi_conversations_user;
 ALTER INDEX IF EXISTS idx_copilot_messages_conversation RENAME TO idx_moxi_messages_conversation;
 
--- 3. Rename triggers
-ALTER TRIGGER IF EXISTS copilot_conversations_updated_at ON moxi_conversations RENAME TO moxi_conversations_updated_at;
-ALTER TRIGGER IF EXISTS copilot_messages_auto_title ON moxi_messages RENAME TO moxi_messages_auto_title;
+-- 3. Rename triggers (PostgreSQL doesn't support IF EXISTS on ALTER TRIGGER)
+DO $$ BEGIN
+  ALTER TRIGGER copilot_conversations_updated_at ON moxi_conversations RENAME TO moxi_conversations_updated_at;
+EXCEPTION WHEN undefined_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TRIGGER copilot_messages_auto_title ON moxi_messages RENAME TO moxi_messages_auto_title;
+EXCEPTION WHEN undefined_object THEN NULL;
+END $$;
 
 -- 4. Update the auto-title function (references old table name in SQL body)
 CREATE OR REPLACE FUNCTION auto_title_conversation()
