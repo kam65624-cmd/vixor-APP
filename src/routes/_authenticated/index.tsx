@@ -31,7 +31,12 @@ import {
   PieChart,
   ArrowUpRight,
   ArrowDownRight,
+  AlertTriangle,
+  Compass,
+  Signal,
+  Wallet,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Vixor — AI Trading Terminal" }] }),
@@ -263,18 +268,24 @@ function FeatureCard({
 }) {
   const navigate = useNavigate();
   return (
-    <button
+    <motion.button
       onClick={() => navigate({ to: to as any })}
-      className="vx-card vx-card-interactive group relative w-full p-4 text-left overflow-hidden rounded-2xl"
+      whileHover={{ y: -3, scale: 1.02 }}
+      whileTap={{ scale: 0.95 }}
+      className={"vx-card group relative w-full p-4 text-left overflow-hidden rounded-2xl"}
+      style={{
+        background: "color-mix(in srgb, " + accent + " 6%, var(--color-card))",
+        border: "1px solid color-mix(in srgb, " + accent + " 15%, transparent)",
+        cursor: "pointer",
+      }}
     >
-      <CardGradientOverlay />
       {badge && (
         <span
           className="absolute top-3 right-3 text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-lg z-10"
           style={{
-            background: `color-mix(in srgb, ${accent} 12%, transparent)`,
+            background: "color-mix(in srgb, " + accent + " 12%, transparent)",
             color: accent,
-            border: `1px solid color-mix(in srgb, ${accent} 20%, transparent)`,
+            border: "1px solid color-mix(in srgb, " + accent + " 20%, transparent)",
           }}
         >
           {badge}
@@ -283,8 +294,9 @@ function FeatureCard({
       <div
         className="relative z-10 w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-transform duration-200 group-hover:scale-110"
         style={{
-          background: `color-mix(in srgb, ${accent} 10%, transparent)`,
-          border: `1px solid color-mix(in srgb, ${accent} 15%, transparent)`,
+          background: "color-mix(in srgb, " + accent + " 10%, transparent)",
+          border: "1px solid color-mix(in srgb, " + accent + " 15%, transparent)",
+          boxShadow: "0 0 20px color-mix(in srgb, " + accent + " 8%, transparent)",
         }}
       >
         <Icon size={16} style={{ color: accent }} />
@@ -293,7 +305,7 @@ function FeatureCard({
         {title}
       </div>
       <div className="relative z-10 text-[11px] text-muted-foreground mt-0.5">{desc}</div>
-    </button>
+    </motion.button>
   );
 }
 
@@ -407,7 +419,7 @@ function MoxiHero({
   );
 }
 
-// ─── Insight Card — Premium AI insight with glow ────────────────────────────
+// ─── Artistic Insight Card — V6 Premium with gradients, glow orbs, actions ──
 
 function InsightCard({
   title,
@@ -425,27 +437,35 @@ function InsightCard({
   const config = {
     bullish: {
       color: "var(--color-bullish)",
-      bg: "var(--bullish-bg)",
-      border: "var(--bullish-border)",
+      gradient: "from-[rgba(34,211,166,0.1)] via-transparent to-transparent",
+      borderColor: "rgba(34,211,166,0.2)",
+      glowColor: "rgba(34,211,166,0.15)",
       Icon: TrendingUp,
+      badge: "BULLISH",
     },
     bearish: {
       color: "var(--color-bearish)",
-      bg: "var(--bearish-bg)",
-      border: "var(--bearish-border)",
+      gradient: "from-[rgba(251,70,103,0.1)] via-transparent to-transparent",
+      borderColor: "rgba(251,70,103,0.2)",
+      glowColor: "rgba(251,70,103,0.15)",
       Icon: ArrowDownRight,
+      badge: "BEARISH",
     },
     neutral: {
       color: "var(--color-primary)",
-      bg: "var(--primary-bg)",
-      border: "var(--primary-border)",
+      gradient: "from-[rgba(99,102,241,0.1)] via-transparent to-transparent",
+      borderColor: "rgba(99,102,241,0.2)",
+      glowColor: "rgba(99,102,241,0.15)",
       Icon: Bot,
+      badge: "NEUTRAL",
     },
     alert: {
       color: "var(--color-neutral-wait)",
-      bg: "var(--neutral-wait-bg)",
-      border: "var(--neutral-wait-border)",
-      Icon: Shield,
+      gradient: "from-[rgba(245,158,11,0.1)] via-transparent to-transparent",
+      borderColor: "rgba(245,158,11,0.2)",
+      glowColor: "rgba(245,158,11,0.15)",
+      Icon: AlertTriangle,
+      badge: "ALERT",
     },
   };
 
@@ -453,38 +473,76 @@ function InsightCard({
   const TypeIcon = c.Icon;
 
   return (
-    <Card variant="insight" className="group">
-      <div className="flex items-start gap-3.5">
-        <div
-          className="p-2.5 rounded-xl"
-          style={{ background: c.bg, border: `1px solid ${c.border}` }}
-        >
-          <TypeIcon size={16} style={{ color: c.color }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h4 className="text-[13px] font-bold text-foreground truncate">{title}</h4>
-            <span className="text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-lg bg-[var(--surface-elevated)] text-muted-foreground border border-[var(--color-border-subtle)]">
-              {type.toUpperCase()}
-            </span>
+    <motion.div
+      whileHover={{ y: -4, scale: 1.01 }}
+      transition={{ duration: 0.2 }}
+      className={"relative overflow-hidden rounded-3xl p-5 bg-gradient-to-br " + c.gradient}
+      style={{ border: "1px solid " + c.borderColor, boxShadow: "0 8px 40px " + c.glowColor }}
+    >
+      <div
+        className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-[60px] animate-pulse pointer-events-none"
+        style={{ background: c.glowColor }}
+      />
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div
+              className="p-2.5 rounded-2xl"
+              style={{
+                background: "color-mix(in srgb, " + c.color + " 12%, transparent)",
+                border: "1px solid " + c.borderColor,
+                boxShadow: "0 0 24px " + c.glowColor,
+              }}
+            >
+              <TypeIcon size={18} style={{ color: c.color, strokeWidth: 2.2 }} />
+            </div>
+            <div>
+              <h4 className="text-[13px] font-bold text-foreground">{title}</h4>
+              <span className="text-[10px] flex items-center gap-1" style={{ color: c.color }}>
+                <span
+                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ background: c.color }}
+                />
+                {type === "bullish"
+                  ? "Strong signal"
+                  : type === "alert"
+                    ? "High alert"
+                    : "Monitoring"}
+              </span>
+            </div>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">
-            {description}
-          </p>
-        </div>
-        {actionLabel && (
-          <button
-            onClick={onAction}
-            className="flex-shrink-0 px-3 py-1.5 text-[10px] font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors border border-primary/10"
+          <span
+            className="px-3 py-1 text-[10px] font-bold rounded-full"
+            style={{
+              background: "color-mix(in srgb, " + c.color + " 12%, transparent)",
+              color: c.color,
+              border: "1px solid " + c.borderColor,
+            }}
           >
+            {c.badge}
+          </span>
+        </div>
+        <p
+          className="text-[12px] leading-relaxed"
+          style={{ color: "var(--color-muted-foreground)" }}
+        >
+          {description}
+        </p>
+        {actionLabel && (
+          <motion.button
+            onClick={onAction}
+            whileTap={{ scale: 0.95 }}
+            className="mt-4 px-5 py-2 text-[11px] font-bold rounded-xl flex items-center gap-2 cursor-pointer"
+            style={{ background: c.color, color: "white", boxShadow: "0 4px 20px " + c.glowColor }}
+          >
+            <Zap size={12} />
             {actionLabel}
-          </button>
+          </motion.button>
         )}
       </div>
-    </Card>
+    </motion.div>
   );
 }
-
 // ══════════════════════════════════════════════════════════════════════════════
 // Main Page
 // ══════════════════════════════════════════════════════════════════════════════
@@ -679,19 +737,13 @@ function HomePage() {
             Quick Actions
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-3 vx-stagger">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <FeatureCard
-            icon={LineChart}
-            title="Charts"
-            desc="Live trading"
-            to="/charts"
-            badge="LIVE"
-          />
-          <FeatureCard
-            icon={Eye}
+            icon={Compass}
             title="Discover"
             desc="Trending tokens"
             to="/discover"
+            accent="var(--color-primary)"
             badge="LIVE"
           />
           <FeatureCard
@@ -702,26 +754,48 @@ function HomePage() {
             accent="var(--color-gold)"
           />
           <FeatureCard
-            icon={TrendingUp}
+            icon={Signal}
             title="Signals"
             desc="AI signals"
             to="/signals"
             accent="var(--color-gold)"
           />
           <FeatureCard
+            icon={Wallet}
+            title="Wallet"
+            desc="Connect & trade"
+            to="/wallet-web3"
+            accent="var(--color-primary)"
+          />
+          <FeatureCard
+            icon={LineChart}
+            title="Charts"
+            desc="Live trading"
+            to="/charts"
+            accent="var(--color-bullish)"
+            badge="LIVE"
+          />
+          <FeatureCard
             icon={Radio}
             title="Radar"
             desc="Market scanner"
             to="/radar"
-            badge="LIVE"
             accent="var(--color-bullish)"
+            badge="LIVE"
           />
           <FeatureCard
-            icon={Shield}
+            icon={PieChart}
             title="PnL"
             desc="Track trades"
             to="/pnl"
-            accent="var(--color-bullish)"
+            accent="var(--color-primary)"
+          />
+          <FeatureCard
+            icon={Crown}
+            title="Premium"
+            desc="Pro analytics"
+            to="/premium"
+            accent="var(--color-gold)"
           />
         </div>
       </div>

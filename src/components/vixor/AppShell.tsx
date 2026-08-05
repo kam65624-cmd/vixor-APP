@@ -10,6 +10,7 @@ import {
   memo,
   type CSSProperties,
 } from "react";
+import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 
 import { getTelegramInitData } from "@/shared/telegram";
@@ -90,12 +91,12 @@ const dockItems: DockItem[] = [
   { to: "", label: "More", icon: <MoreDotsIcon />, isMore: true, group: "more" },
 ];
 
-// ── Compact SVG Icons for dock (18x18) ──
+// ── SVG Icons for dock (26x26) ──
 function HomeIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -111,8 +112,8 @@ function HomeIcon() {
 function CompassIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -128,8 +129,8 @@ function CompassIcon() {
 function SearchIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -145,8 +146,8 @@ function SearchIcon() {
 function SignalIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -165,8 +166,8 @@ function SignalIcon() {
 function SwapIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -185,8 +186,8 @@ function SwapIcon() {
 function DeskIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -203,8 +204,8 @@ function DeskIcon() {
 function AlphaIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -219,8 +220,8 @@ function AlphaIcon() {
 function PortfolioIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -236,8 +237,8 @@ function PortfolioIcon() {
 function ChartsIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -253,8 +254,8 @@ function ChartsIcon() {
 function MoreDotsIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -845,7 +846,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         className="flex-1 overflow-auto"
         style={{
           paddingTop: isTg ? "calc(44px + env(safe-area-inset-top, 0px))" : "44px",
-          paddingBottom: "calc(56px + env(safe-area-inset-bottom, 0px))",
+          paddingBottom: "calc(72px + env(safe-area-inset-bottom, 0px))",
         }}
       >
         <div key={path} className="vixor-page-enter">
@@ -857,7 +858,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <BottomBar onMoreOpen={() => setShowMore(true)} isTg={isTg} />
 
       {/* ── More Panel (Slide-up) ── */}
-      {showMore && <MorePanel currentPath={path} onClose={() => setShowMore(false)} />}
+      <AnimatePresence>
+        {showMore && <MorePanel currentPath={path} onClose={() => setShowMore(false)} />}
+      </AnimatePresence>
 
       {showOnboarding && (
         <Suspense fallback={null}>
@@ -1372,6 +1375,7 @@ const BottomBar = memo(function BottomBar({ onMoreOpen, isTg }: BottomBarProps) 
   const location = useLocation();
   const path = location.pathname;
   const dockRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Auto-scroll to active item on mount / route change
   useEffect(() => {
@@ -1383,11 +1387,22 @@ const BottomBar = memo(function BottomBar({ onMoreOpen, isTg }: BottomBarProps) 
     }
   }, [path]);
 
+  // Drag-to-scroll handler for horizontal swiping
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
+    const container = dockRef.current;
+    if (!container) return;
+    const delta = -info.offset.x;
+    container.scrollBy({ left: delta * 1.5, behavior: "smooth" });
+    setIsDragging(false);
+  };
+
   let lastGroup = "";
   const items: ReactNode[] = [];
   for (const item of dockItems) {
     if (item.group && item.group !== lastGroup && lastGroup !== "") {
-      items.push(<div key={`sep-${item.group}`} className="vx-dock-separator" />);
+      items.push(
+        <div key={`sep-${item.group}`} className="w-px h-6 bg-white/[0.06] mx-0.5 flex-shrink-0" />,
+      );
     }
     lastGroup = item.group || "";
 
@@ -1399,56 +1414,112 @@ const BottomBar = memo(function BottomBar({ onMoreOpen, isTg }: BottomBarProps) 
 
     if (item.isMore) {
       items.push(
-        <button
+        <motion.button
           key="more-dock"
           onClick={onMoreOpen}
-          className="vx-dock-item"
+          className="relative flex flex-col items-center justify-center min-w-[68px] h-[64px] px-2 rounded-2xl transition-all duration-200 text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
+          whileHover={{ y: -4, transition: { duration: 0.15 } }}
+          whileTap={{ scale: 0.88 }}
           aria-label="More navigation"
         >
           <span className="vx-dock-icon" style={{ opacity: 0.6 }}>
             {item.icon}
           </span>
           <span className="vx-dock-label">{item.label}</span>
-        </button>,
+        </motion.button>,
       );
     } else {
       items.push(
-        <Link
+        <motion.div
           key={item.to}
-          to={item.to}
-          data-active={isActive}
-          className={`vx-dock-item ${isActive ? "vx-dock-item-active" : ""}`}
-          aria-label={item.label}
-          aria-current={isActive ? "page" : undefined}
+          className="relative flex-shrink-0"
+          whileHover={{ y: -4, transition: { duration: 0.15 } }}
+          whileTap={{ scale: 0.9 }}
         >
-          <span className="vx-dock-icon">{item.icon}</span>
-          <span className="vx-dock-label">{item.label}</span>
-          <div className="vx-dock-dot" />
-        </Link>,
+          {isActive && (
+            <motion.div
+              className="absolute inset-0 rounded-2xl bg-[var(--color-primary)]/[0.12]"
+              layoutId="activeDockGlow"
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            />
+          )}
+          {isActive && (
+            <motion.div
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-full"
+              style={{
+                background: "var(--color-primary)",
+                boxShadow: "0 0 16px rgba(99,102,241,0.5)",
+              }}
+              layoutId="activeDockIndicator"
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            />
+          )}
+          <Link
+            to={item.to}
+            data-active={isActive}
+            className={`vx-dock-item ${isActive ? "vx-dock-item-active" : ""}`}
+            aria-label={item.label}
+            aria-current={isActive ? "page" : undefined}
+          >
+            <span
+              className={`vx-dock-icon transition-all duration-300 ${isActive ? "drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" : ""}`}
+            >
+              {item.icon}
+            </span>
+            <span className="vx-dock-label">{item.label}</span>
+            <div className="vx-dock-dot" />
+          </Link>
+        </motion.div>,
       );
     }
   }
 
   return (
-    <nav
-      className="fixed bottom-0 inset-x-0 z-50 bottom-nav-premium"
+    <motion.nav
+      className="fixed bottom-0 inset-x-0 z-50"
+      initial={{ y: 100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
       style={{
-        background: "var(--overlay-secondary)",
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
-        borderTop: "1px solid var(--color-border-subtle)",
-        height: isTg ? "calc(56px + env(safe-area-inset-bottom, 0px))" : "56px",
+        background: "rgba(10,11,16,0.95)",
+        backdropFilter: "blur(24px) saturate(200%)",
+        WebkitBackdropFilter: "blur(24px) saturate(200%)",
+        borderTop: "none",
+        height: isTg ? "calc(72px + env(safe-area-inset-bottom, 0px))" : "72px",
         display: "flex",
         alignItems: "center",
         paddingBottom: isTg ? "env(safe-area-inset-bottom, 0px)" : "0px",
+        boxShadow: "0 -4px 40px rgba(0,0,0,0.4)",
       }}
       role="navigation"
       aria-label="Main navigation"
     >
-      <div ref={dockRef} className="vx-dock" style={{ width: "100%" }}>
+      {/* Glow line at top */}
+      <div
+        className="absolute top-0 left-0 right-0 h-px"
+        style={{
+          background: "linear-gradient(to right, transparent, rgba(99,102,241,0.35), transparent)",
+        }}
+      />
+      <motion.div
+        ref={dockRef}
+        className="vx-dock flex items-center gap-0.5 overflow-x-auto px-1"
+        style={{
+          width: "100%",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          cursor: isDragging ? "grabbing" : "grab",
+        }}
+        drag="x"
+        dragConstraints={{ left: -600, right: 0 }}
+        dragElastic={0.08}
+        dragMomentum
+        onDragStart={() => setIsDragging(true)}
+        onDragEnd={handleDragEnd}
+      >
         {items}
-      </div>
-    </nav>
+      </motion.div>
+    </motion.nav>
   );
 });
 
@@ -1473,34 +1544,41 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
   return (
     <>
       {/* Backdrop */}
-      <div
+      <motion.div
         onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
         style={{
           position: "fixed",
           inset: 0,
-          background: "var(--overlay-secondary)",
-          backdropFilter: "blur(4px)",
-          WebkitBackdropFilter: "blur(4px)",
+          background: "rgba(0,0,0,0.6)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
           zIndex: 99,
-          animation: "fadeIn 0.2s ease",
         }}
       />
 
       {/* Panel */}
-      <div
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", stiffness: 400, damping: 35 }}
         style={{
           position: "fixed",
           bottom: 0,
           left: 0,
           right: 0,
           background: "var(--color-card)",
-          borderTopLeftRadius: "20px",
-          borderTopRightRadius: "20px",
+          borderTopLeftRadius: "24px",
+          borderTopRightRadius: "24px",
           borderTop: "1px solid var(--color-border)",
           zIndex: 100,
           maxHeight: "75vh",
           overflowY: "auto",
-          animation: "slideUp 0.25s ease",
+          boxShadow: "0 -8px 60px rgba(0,0,0,0.5)",
           paddingBottom: "8px",
         }}
       >
@@ -1533,18 +1611,28 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
             borderBottom: "1px solid var(--color-border)",
           }}
         >
-          <span
-            style={{
-              fontSize: "14px",
-              fontWeight: 700,
-              color: "var(--color-foreground)",
-            }}
-          >
-            Explore
-          </span>
-          <button
+          <div className="flex items-center gap-2">
+            {" "}
+            <span style={{ fontSize: "15px", fontWeight: 800, color: "var(--color-foreground)" }}>
+              {" "}
+              Explore{" "}
+            </span>{" "}
+            <span
+              className="text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded-lg"
+              style={{
+                background: "var(--primary-bg)",
+                color: "var(--color-primary)",
+                border: "1px solid var(--primary-border)",
+              }}
+            >
+              {" "}
+              {moreNavCategories.reduce((acc, cat) => acc + cat.items.length, 0)} items{" "}
+            </span>{" "}
+          </div>{" "}
+          <motion.button
             onClick={onClose}
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--surface-elevated)] border border-[var(--color-border)] text-muted-foreground hover:text-foreground hover:border-[var(--border-hover)] transition-all cursor-pointer"
+            whileTap={{ scale: 0.9 }}
+            className="flex items-center justify-center w-8 h-8 rounded-xl bg-[var(--surface-elevated)] border border-[var(--color-border)] text-muted-foreground hover:text-foreground hover:border-[var(--border-hover)] transition-all cursor-pointer"
           >
             <svg
               width="14"
@@ -1558,7 +1646,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
               <line x1="18" x2="6" y1="6" y2="18" />
               <line x1="6" x2="18" y1="6" y2="18" />
             </svg>
-          </button>
+          </motion.button>
         </div>
 
         {/* Categories */}
@@ -1630,7 +1718,7 @@ function MorePanel({ currentPath, onClose }: MorePanelProps) {
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }
