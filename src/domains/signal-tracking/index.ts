@@ -17,3 +17,13 @@ export type {
   CreateSignalTrackingInput,
 } from "./types";
 export { SIGNAL_STATUS_CONFIG, TERMINAL_STATUSES } from "./types";
+export {
+  evaluateSignalTransition,
+  isTerminalStatus,
+  TRANSITION_TERMINAL_STATUSES,
+} from "./transition-engine";
+export type {
+  SignalTransitionRequest,
+  SignalTransitionDecision,
+  SignalEventType,
+} from "./transition-engine";

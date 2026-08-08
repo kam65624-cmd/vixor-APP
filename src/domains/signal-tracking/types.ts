@@ -3,7 +3,15 @@
 // ============================================================================
 
 export type SignalStatus =
-  "pending" | "active" | "tp1_hit" | "tp2_hit" | "tp3_hit" | "sl_hit" | "expired" | "cancelled";
+  | "pending"
+  | "active"
+  | "tp1_hit"
+  | "tp2_hit"
+  | "tp3_hit"
+  | "sl_hit"
+  | "invalidated"
+  | "expired"
+  | "cancelled";
 
 export type SignalSourceType = "daily_signal" | "analysis";
 
@@ -59,6 +67,7 @@ export const SIGNAL_STATUS_CONFIG: Record<
   tp2_hit: { label: "TP2 Hit", color: "var(--color-bullish)", icon: "✅" },
   tp3_hit: { label: "TP3 Hit", color: "var(--color-bullish)", icon: "✅" },
   sl_hit: { label: "SL Hit", color: "var(--color-bearish)", icon: "🛑" },
+  invalidated: { label: "Invalidated", color: "var(--color-bearish)", icon: "⚠" },
   expired: { label: "Expired", color: "var(--color-muted-foreground)", icon: "⏰" },
   cancelled: { label: "Cancelled", color: "var(--color-muted-foreground)", icon: "❌" },
 };
