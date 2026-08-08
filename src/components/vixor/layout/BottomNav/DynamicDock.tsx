@@ -1,10 +1,6 @@
 import { memo, useState, useEffect, useRef, type ReactNode } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import {
-  motion,
-  AnimatePresence,
-  type PanInfo,
-} from "framer-motion";
+import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -77,10 +73,7 @@ export const DynamicDock = memo(function DynamicDock({
     // Group separator
     if (item.group && item.group !== lastGroup && lastGroup !== "") {
       rendered.push(
-        <div
-          key={`sep-${item.group}`}
-          className="w-px h-8 bg-white/[0.06] mx-1 flex-shrink-0"
-        />,
+        <div key={`sep-${item.group}`} className="w-px h-8 bg-white/[0.06] mx-1 flex-shrink-0" />,
       );
     }
     lastGroup = item.group || "";
@@ -104,9 +97,7 @@ export const DynamicDock = memo(function DynamicDock({
           <span className="w-[26px] h-[26px] flex items-center justify-center opacity-60">
             {item.icon}
           </span>
-          <span className="text-[9px] font-semibold mt-1 tracking-wide">
-            {item.label}
-          </span>
+          <span className="text-[9px] font-semibold mt-1 tracking-wide">{item.label}</span>
         </motion.button>,
       );
     } else {
@@ -190,10 +181,7 @@ export const DynamicDock = memo(function DynamicDock({
   }
 
   // Count hidden items for More button badge
-  const hiddenCount = moreCategories.reduce(
-    (acc, cat) => acc + cat.items.length,
-    0,
-  );
+  const hiddenCount = moreCategories.reduce((acc, cat) => acc + cat.items.length, 0);
 
   return (
     <>
@@ -206,14 +194,10 @@ export const DynamicDock = memo(function DynamicDock({
           background: "rgba(10,11,16,0.95)",
           backdropFilter: "blur(24px) saturate(200%)",
           WebkitBackdropFilter: "blur(24px) saturate(200%)",
-          height: isTg
-            ? "calc(72px + env(safe-area-inset-bottom, 0px))"
-            : "72px",
+          height: isTg ? "calc(72px + env(safe-area-inset-bottom, 0px))" : "72px",
           display: "flex",
           alignItems: "center",
-          paddingBottom: isTg
-            ? "env(safe-area-inset-bottom, 0px)"
-            : "0px",
+          paddingBottom: isTg ? "env(safe-area-inset-bottom, 0px)" : "0px",
           boxShadow: "0 -4px 40px rgba(0,0,0,0.4)",
         }}
         role="navigation"
@@ -270,11 +254,7 @@ interface MorePanelProps {
   onClose: () => void;
 }
 
-const MorePanel = memo(function MorePanel({
-  currentPath,
-  categories,
-  onClose,
-}: MorePanelProps) {
+const MorePanel = memo(function MorePanel({ currentPath, categories, onClose }: MorePanelProps) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -307,10 +287,7 @@ const MorePanel = memo(function MorePanel({
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
-          <div
-            className="w-9 h-1 rounded-full"
-            style={{ background: "var(--handle-bar)" }}
-          />
+          <div className="w-9 h-1 rounded-full" style={{ background: "var(--handle-bar)" }} />
         </div>
 
         {/* Header */}
@@ -359,9 +336,7 @@ const MorePanel = memo(function MorePanel({
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {category.items.map((item) => {
-                  const isActive =
-                    currentPath === item.to ||
-                    currentPath.startsWith(item.to + "/");
+                  const isActive = currentPath === item.to || currentPath.startsWith(item.to + "/");
                   return (
                     <Link
                       key={item.to}
@@ -370,9 +345,7 @@ const MorePanel = memo(function MorePanel({
                       className={`flex items-center gap-2.5 p-3 rounded-xl transition-all duration-200 ${isActive ? "bg-[var(--bullish-bg)] border border-[color-mix(in_srgb,var(--color-bullish)_20%,transparent)]" : "bg-[var(--color-muted)] border border-[var(--color-border)]"}`}
                       style={{
                         textDecoration: "none",
-                        color: isActive
-                          ? "var(--color-primary)"
-                          : "var(--color-muted-foreground)",
+                        color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
                         fontSize: "12px",
                         fontWeight: isActive ? 600 : 500,
                       }}

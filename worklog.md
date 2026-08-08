@@ -29,3 +29,32 @@ Stage Summary:
 - 5-group MorePanel reorganization
 - Flash highlight animations for live data
 - Build + tests: 100% passing
+
+---
+Task ID: 1
+Agent: main
+Task: P0-02B TASK 1 — Signal Transition Engine + Unit Tests
+
+Work Log:
+- Read existing files: types.ts, functions.ts, use-signal-monitor.ts, index.ts, events/orchestrator.ts, DB migration
+- Analyzed current TERMINAL_STATUSES (incorrectly includes tp1_hit/tp2_hit as terminal)
+- Analyzed existing evaluateTrackingPrice (client-side, no transition matrix, no sequential TP enforcement)
+- Added 'invalidated' to SignalStatus union type in types.ts
+- Added 'invalidated' entry to SIGNAL_STATUS_CONFIG
+- Created transition-engine.ts (280 lines): pure deterministic state machine
+- Created transition-engine.test.ts (480 lines): 85 unit tests
+- Updated index.ts barrel exports
+- Fixed 2 test logic errors (SELL SL/TP tests inheriting BUY TPs from makeRequest defaults)
+- Fixed TS error: Map inference with heterogeneous tuple values
+- Fixed TS error: missing 'invalidated' in SIGNAL_STATUS_CONFIG Record
+- All 85 new tests pass, all 301 existing tests pass (zero regression)
+
+Stage Summary:
+- NEW: src/domains/signal-tracking/transition-engine.ts
+- NEW: src/domains/signal-tracking/transition-engine.test.ts
+- MODIFIED: src/domains/signal-tracking/types.ts (added 'invalidated' status)
+- MODIFIED: src/domains/signal-tracking/index.ts (added barrel exports)
+- TYPECHECK: PASS
+- LINT: PASS (after prettier)
+- TESTS: 85/85 new + 301/301 existing = 386 total PASS
+- COMMIT: d76eef0 pushed to main
