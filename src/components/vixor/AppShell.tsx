@@ -21,6 +21,7 @@ import { useWallet } from "@/domains/wallet/adapter/WalletProvider";
 import { WalletProviderSelector } from "@/domains/wallet/adapter/WalletProviderSelector";
 import { useOnline } from "@/shared/hooks/use-online";
 import { useLivePrices } from "@/shared/market-data";
+import { FloatingCopilot } from "@/components/vixor/FloatingCopilot";
 
 // ── SOL Price Hook ──────────────────────────────────────────────────────────
 
@@ -868,7 +869,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Suspense>
       )}
 
-      {/* ── Wallet Connection Modal ── V6 Premium Glassmorphic ── */}
+      {/* ── MOXI Floating Orb (global) ── */}
+      <FloatingCopilot />
       {showWalletModal && (
         <div
           onClick={() => setShowWalletModal(false)}
