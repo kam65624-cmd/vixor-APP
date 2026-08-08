@@ -1,16 +1,7 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import {
-  lazy,
-  Suspense,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  memo,
-  type CSSProperties,
-} from "react";
-import { motion, AnimatePresence, type PanInfo } from "framer-motion";
+import { lazy, Suspense, useEffect, useRef, useState, useCallback, memo } from "react";
+import { motion, type PanInfo } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 
 import { getTelegramInitData } from "@/shared/telegram";
@@ -22,6 +13,7 @@ import { WalletProviderSelector } from "@/domains/wallet/adapter/WalletProviderS
 import { useOnline } from "@/shared/hooks/use-online";
 import { useLivePrices } from "@/shared/market-data";
 import { FloatingCopilot } from "@/components/vixor/FloatingCopilot";
+import { DynamicDock } from "@/components/vixor/layout/BottomNav/DynamicDock";
 
 // ── SOL Price Hook ──────────────────────────────────────────────────────────
 
@@ -68,8 +60,10 @@ interface DockItem {
   to: string;
   label: string;
   icon: ReactNode;
-  group?: string; // Optional group separator
+  group?: string;
   isMore?: boolean;
+  badge?: string;
+  badgeColor?: string;
 }
 
 const dockItems: DockItem[] = [
@@ -684,7 +678,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const path = location.pathname;
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showMore, setShowMore] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const sol = useSolPrice();
   const isTg = useIsTelegram();
@@ -692,11 +685,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { isOnline } = useOnline();
 
   const signedIn = path !== "/auth";
-
-  // Close "More" panel on route change
-  useEffect(() => {
-    setShowMore(false);
-  }, [path]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -855,13 +843,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </main>
 
-      {/* ── Bottom Bar: 5 core nav + More button ── */}
-      <BottomBar onMoreOpen={() => setShowMore(true)} isTg={isTg} />
-
-      {/* ── More Panel (Slide-up) ── */}
-      <AnimatePresence>
-        {showMore && <MorePanel currentPath={path} onClose={() => setShowMore(false)} />}
-      </AnimatePresence>
+      {/* ── Dynamic Dock ── */}
+      <DynamicDock items={dockItems} moreCategories={moreNavCategories} isTg={isTg} />
 
       {showOnboarding && (
         <Suspense fallback={null}>
