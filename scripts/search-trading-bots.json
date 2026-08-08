@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://hummingbot.org",
+    "name": "Hummingbot - the open source framework for crypto market",
+    "snippet": "Hummingbot is an open source Python framework that helps you run agentic trading strategies on any CEX and DEX. All code is open sourced under the Apache 2.0 ...",
+    "host_name": "hummingbot.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/freqtrade/freqtrade",
+    "name": "freqtrade/freqtrade: Free, open source crypto trading bot",
+    "snippet": "Freqtrade is a free and open source crypto trading bot written in Python . It is designed to support all major exchanges and be controlled via Telegram or webUI.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.octobot.cloud/en/blog/best-open-source-crypto-trading-bots",
+    "name": "5 Best Open source Crypto Trading Bots",
+    "snippet": "Jul 30, 2026 — Freqtrade , written in Python , is known for its ease of use and Telegram integration. It allows for extensive strategy testing and simultaneous ...",
+    "host_name": "www.octobot.cloud",
+    "rank": 2,
+    "date": "Jul 30, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://gainium.io/compare/freqtrade-vs-hummingbot",
+    "name": "Freqtrade vs Hummingbot vs Gainium",
+    "snippet": "Freqtrade requires Python — you write strategies as Python classes. Hummingbot also requires Python and has the steepest learning curve of the three. Gainium ... Read more",
+    "host_name": "gainium.io",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.freqtrade.io/en/stable",
+    "name": "Freqtrade",
+    "snippet": "Freqtrade is a free and open source crypto trading bot written in Python . It is designed to support all major exchanges and be controlled via Telegram or webUI.",
+    "host_name": "www.freqtrade.io",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@gwrx2005/ai-integrated-crypto-trading-platforms-a-comparative-analysis-of-octobot-jesse-b921458d9dd6",
+    "name": "AI-Integrated Crypto Trading Platforms: A Comparative",
+    "snippet": "Freqtrade is a widely-used Python trading bot with an extensive feature set. All five are free, open-source projects,",
+    "host_name": "medium.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/algotrading/comments/lke71j/an_awesome_list_about_crypto_trading_bots_find",
+    "name": "find open source crypto trading bots, technical analysis and",
+    "snippet": "An awesome list about crypto trading bots : find open source crypto trading bots , technical analysis and market data libraries, data providers, ... Read more",
+    "host_name": "www.reddit.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.scribd.com/document/999423454/Trading-Bot-Research",
+    "name": "Trading Bot Research | PDF",
+    "snippet": "This report analyzes top open - source crypto trading bots , focusing on Freqtrade , Jesse, and Hummingbot , with recommendations for optimal AI-assisted strategy ...",
+    "host_name": "www.scribd.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.freqtrade.io/en/2022.3",
+    "name": "Home",
+    "snippet": "Freqtrade is a free and open source crypto trading bot written in Python . It is designed to support all major exchanges and be controlled via Telegram or ... Read more",
+    "host_name": "www.freqtrade.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -10,7 +10,7 @@ import { createSignalTracking, getUserSignalTrackings } from "@/domains/signal-t
 import { shareOnX, shareOnTelegram } from "@/shared/share";
 import type { ShareableSignal } from "@/shared/share";
 import type { SignalTracking } from "@/domains/signal-tracking";
-import { SIGNAL_STATUS_CONFIG, TERMINAL_STATUSES } from "@/domains/signal-tracking";
+import { SIGNAL_STATUS_CONFIG } from "@/domains/signal-tracking";
 import { useSignalMonitor } from "@/shared/hooks/use-signal-monitor";
 import { useSound } from "@/shared/hooks/use-sound";
 import {

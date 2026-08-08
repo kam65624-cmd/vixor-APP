@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://github.com/anandanand84/technicalindicators",
+    "name": "anandanand84/technicalindicators: A javascript technical",
+    "snippet": "A javascript technical indicators written in typescript with pattern recognition right in the browser - anandanand84/technicalindicators.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ta-lib.org",
+    "name": "TA-Lib | TA-Lib.org",
+    "snippet": "3 days ago — Open - source technical analysis library : 200+ indicators (ADX, MACD, RSI, Bollinger Bands), candlestick patterns, a C/C++ core and wrappers ...",
+    "host_name": "ta-lib.org",
+    "rank": 1,
+    "date": "Aug 5, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.npmjs.com/package/trading-signals",
+    "name": "trading-signals",
+    "snippet": "Jan 21, 2026 — The \"trading-signals\" library provides a TypeScript implementation for common technical indicators . It is well-suited for algorithmic trading,",
+    "host_name": "www.npmjs.com",
+    "rank": 2,
+    "date": "Jan 21, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/javascript/comments/1psi6qx/qfchart_open_source_charting_library_for",
+    "name": "QFChart: Open Source Charting library for candlestick and",
+    "snippet": "QFChart : Open Source Charting library for candlestick and technical indicator visualization with overlay, drawing tools and multi-pane support. Read more",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.jsdelivr.com/package/npm/fast-technical-indicators",
+    "name": "fast-technical-indicators CDN by jsDelivr",
+    "snippet": "A high-performance, zero-dependency technical indicators library for JavaScript and TypeScript . 100% API-compatible with the popular technicalindicators package ... Read more",
+    "host_name": "www.jsdelivr.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/shahradelahi/technical-analysis",
+    "name": "shahradelahi/technical-analysis: [WIP] 📈 JS library for",
+    "snippet": "A lightweight JavaScript library that delivers a comprehensive suite of technical and candlestick indicators, plus essential utilities, to streamline financial ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.syncfusion.com/javascript-ui-controls/js-charts/technical-indicators",
+    "name": "JavaScript Technical Indicators | HTML5 Charts",
+    "snippet": "JavaScript chart component supports 10 different types of built-in financial technical indicators such as RSI, momentum, Bollinger bands, accumulation ... Read more",
+    "host_name": "www.syncfusion.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://tulipindicators.org",
+    "name": "Tulip Indicators Open-Source Technical Analysis Indicator",
+    "snippet": "Tulip Indicators (TI ) is a library of functions for technical analysis of financial time series data. It is written in ANSI C for speed and portability. Read more",
+    "host_name": "tulipindicators.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ninokroesen.com/ta",
+    "name": "ta — open-source technical analysis library - Nino Kroesen",
+    "snippet": "Apr 26, 2026 — ta is a cross-language technical-analysis library for JavaScript, Python, and Go. Open-source, MIT-licensed.",
+    "host_name": "ninokroesen.com",
+    "rank": 8,
+    "date": "Apr 26, 2026",
+    "favicon": ""
+  }
+]

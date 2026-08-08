@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://backtest-kit.github.io",
+    "name": "backtest-kit",
+    "snippet": "A TypeScript engine for backtesting and live-trading strategies — crypto, forex, DEX, spot or futures — where the code you test is the code you ship.",
+    "host_name": "backtest-kit.github.io",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/backtest-kit",
+    "name": "Backtest Kit",
+    "snippet": "Production-grade algorithmic trading infrastructure for Node.js — backtest, paper, and live trading from a single codebase. real-time crypto backtesting:",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/backtesting-engine",
+    "name": "backtesting-engine · GitHub Topics",
+    "snippet": "Free, open source, a high frequency trading and market making backtesting and trading bot, which accounts for limit orders, queue positions, and latencies,",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/backtesting",
+    "name": "backtesting · GitHub Topics",
+    "snippet": "Backtestable AI trading agents and Python algorithmic trading strategies for stocks, options, crypto, futures, forex, SEC filings, FRED macro data, and real ... Read more",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/trading-toolkit",
+    "name": "trading-toolkit · GitHub Topics",
+    "snippet": "Discussions. AI quantitative trading platform for crypto, stocks, and forex with backtesting, live trading, market data, and multi-agent research.vibe ... Read more",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/wangzhe3224/awesome-systematic-trading",
+    "name": "wangzhe3224/awesome-systematic-trading",
+    "snippet": "Backtest + live trading . TypeScript, Rust, C++, C# . Backtest and live trading in Python. supports Crypto, Stocks. Screen stocks, crypto, forex, bonds, and ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/trading-strategy-simulation",
+    "name": "trading-strategy-simulation",
+    "snippet": "A high-performance algorithmic trading system built in Rust for backtesting , live trading , and strategy optimization with Binance & MT5 support, parallel ... Read more",
+    "host_name": "github.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/trading-deployment-kit",
+    "name": "trading-deployment-kit",
+    "snippet": "backtesting and live trading . A powerful Algo-Trading-Framework for stocks, crypto, and forex. Features Multi-Exchange-API, Backtesting, and Trading-Bot tools.",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/algotrading/comments/1l4o8jg/ive_built_a_backtesting_platform_for_myself_i",
+    "name": "I've built a backtesting platform for myself. I share now.",
+    "snippet": "This is a plugin that allows you to backtest directly in Visual Studio Code. You can write backtest strategies with full IDE support (IDE or not ... Read more",
+    "host_name": "www.reddit.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  }
+]

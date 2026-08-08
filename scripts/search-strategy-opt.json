@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://github.com/imsatoshi/GeneTrader",
+    "name": "imsatoshi/GeneTrader: Genetic Algorithm Optimization for",
+    "snippet": "This project implements a genetic algorithm to optimize trading strategy parameters and trading pair selection. It supports multi-process parallel computation, ... Read more",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/javascript/comments/1brurtz/a_powerful_opensource_typescriptbased_algorithmic",
+    "name": "A powerful, open-source, TypeScript-based algorithmic",
+    "snippet": "NextTrade, an open - source platform for creating, testing, optimizing, and deploying algorithmic trading software. Backtesting allows you to see ...",
+    "host_name": "www.reddit.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.quantconnect.com",
+    "name": "QuantConnect.com: Open Source Algorithmic Trading Platform.",
+    "snippet": "We accurately model multi-asset portfolio strategies, tracking real-time strategy equity across complex portfolios in backtesting and live trading. You can ... Read more",
+    "host_name": "www.quantconnect.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@austin-starks/i-created-an-open-source-automated-trading-platform-f9d94575ceba",
+    "name": "I created NextTrade: An open-source automated trading",
+    "snippet": "Optimize Strategy using a Genetic Algorithm . The optimizer does this by running hundreds of backtests in the backend, and continuously evolving ...",
+    "host_name": "medium.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pub.towardsai.net/genetic-algorithm-for-trading-strategy-optimization-in-python-614eb660990d",
+    "name": "Genetic Algorithm for Trading Strategy Optimization in Python",
+    "snippet": "Jan 16, 2021 — Backtrader : An awesome open-source python framework that allows you to focus on writing reusable trading strategies, indicators, and analyzers ...",
+    "host_name": "pub.towardsai.net",
+    "rank": 4,
+    "date": "Jan 16, 2021",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/396395655_Optimizing_trading_strategies_using_genetic_algorithms_A_review_and_implementation",
+    "name": "(PDF) Optimizing trading strategies using genetic algorithms",
+    "snippet": "Oct 8, 2025 — This article explores the application of genetic algorithms (GAs) to optimize trading systems, based on both a literature review and an ... Read more",
+    "host_name": "www.researchgate.net",
+    "rank": 5,
+    "date": "Oct 8, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://nautilustrader.io",
+    "name": "NautilusTrader: open-source algorithmic trading platform",
+    "snippet": "Open-source algorithmic trading platform with a Rust-native core, Python strategy API, deterministic backtesting , and live deployment across asset classes ...",
+    "host_name": "nautilustrader.io",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.quantstart.com/articles/Successful-Backtesting-of-Algorithmic-Trading-Strategies-Part-I",
+    "name": "Successful Backtesting of Algorithmic Trading Strategies",
+    "snippet": "In simple terms, backtesting is carried out by exposing your particular strategy algorithm to a stream of historical financial data, which leads to a set of ... Read more",
+    "host_name": "www.quantstart.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.paperswithbacktest.com/p/backtesting-a-trading-strategy-on",
+    "name": "Backtesting a trading strategy on VeighNa",
+    "snippet": "Sep 24, 2023 — CtaBacktester's built-in optimization algorithm can be used to quickly optimize the parameters of a developed strategy. Currently, it supports ... Read more",
+    "host_name": "blog.paperswithbacktest.com",
+    "rank": 8,
+    "date": "Sep 24, 2023",
+    "favicon": ""
+  }
+]

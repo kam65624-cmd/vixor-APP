@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.infragistics.com/blogs/best-react-data-grid",
+    "name": "What's the Best React Data Grid for a Top Dev Experience?",
+    "snippet": "Feb 6, 2026 · the best React Data Grid can handle volume, complexity, exporting options, batch editing, advanced filtering, state persistence, virtualization ...",
+    "host_name": "www.infragistics.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://shanikaw.medium.com/top-free-open-source-react-data-grid-libraries-c534008e6c7e",
+    "name": "Top Free Open-Source React Data Grid Libraries - Medium",
+    "snippet": "Jul 2, 2026 · A React data grid is a UI component for displaying, editing, filtering, sorting, grouping, and managing large datasets in React applications.",
+    "host_name": "shanikaw.medium.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/reactjs/comments/1fb9poc/need_help_with_table_virtualization_for_large",
+    "name": "Need Help with Table Virtualization for Large Data Sets (100k+ rows",
+    "snippet": "Sep 7, 2024 · TL;DR: Building a table with 100k+ rows and 50+ columns in React, tried several virtualization libraries but scrolling causes whitespace issues. Fast, smooth React Data Grid : r/javascript - Reddit What's gonna be a good approach to rendering a VERY large data ... More results from www.reddit.com",
+    "host_name": "www.reddit.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=3yEwF0bG-iM",
+    "name": "React Free Open Source DataGrid - YouTube",
+    "snippet": "Nov 23, 2025 · ... data streaming 1000+ updates/sec Smart batching (requestAnimationFrame) Flash animation for price moves (green/red) Real-time sorting ...",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://bhushanpoojary.github.io/react-open-source-datagrid-view",
+    "name": "React DataGrid - Enterprise-Grade Open Source Data Grid",
+    "snippet": "A powerful, enterprise-grade data grid for React. High-performance virtual scrolling, advanced filtering, real-time updates, and 10 built-in themes — all free ...",
+    "host_name": "bhushanpoojary.github.io",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://rv-grid.com/compare/mui-x-grid-alternative",
+    "name": "MUI X Data Grid Alternative | RevoGrid",
+    "snippet": "MUI Data Source centralizes React server workflows. ... It is built for interactive grid workflows where the user spends real time manipulating data.",
+    "host_name": "rv-grid.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://svar.dev/blog/top-react-alternatives-to-ag-grid",
+    "name": "Top Free, Open-Source Alternatives to Ag-Grid for React in 2026",
+    "snippet": "Jan 15, 2026 · Discover the best open-source alternatives to Ag-Grid for React in 2026. Compare TanStack Table, SVAR DataGrid, MUI X, and more to choose ...",
+    "host_name": "svar.dev",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/42315245/how-to-use-react-virtualized-when-there-is-no-notion-of-a-row-index-to-get-rowda",
+    "name": "How to use React Virtualized when there is no notion of a row index",
+    "snippet": "Feb 18, 2017 · I would like to use React Virtualized to display data coming from a large (100k+ rows) database-table that is constantly being modified: rows ...",
+    "host_name": "stackoverflow.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.syncfusion.com/evaluation-guide/architect/react-data-grid/performance-and-scalability",
+    "name": "React Data Grid Performance and Scalability | Syncfusion",
+    "snippet": "Jun 23, 2026 · The Data Grid supports high-frequency real-time data updates for applications such as financial trading feeds, IoT monitoring dashboards, and ... Rendering Performance Modes · Performance Benchmarks · Dom Efficiency",
+    "host_name": "www.syncfusion.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/TanStack/table/discussions/2873",
+    "name": "React-Table with Two-Way Virtualization or Virtualized Grid #2873",
+    "snippet": "There is a good example for vertical virtualization using react-window. React-window also offers \"FixedSizeGrid\", how can we implement that? Thanks in advance!",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

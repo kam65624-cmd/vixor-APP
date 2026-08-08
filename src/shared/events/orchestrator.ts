@@ -63,6 +63,10 @@ export interface VixorEventMap {
     entryPrice: number;
     stopLoss: number;
   };
+  // TODO(P1-5): signal.tp_hit schema uses {tpLevel, hitTp} but the transition
+  // engine outputs {tpIndex}. These are semantically different (tpLevel = price,
+  // tpIndex = 0-based index). Schema must be aligned before wiring events in Task 4.
+  // Also: no production signal.* events are currently emitted.
   "signal.tp_hit": {
     trackingId: string;
     userId: string;

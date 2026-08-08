@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://www.reddit.com/r/quant/comments/18bh8jt/open_source_backtesting_software",
+    "name": "Open source backtesting software : r/quant",
+    "snippet": "Hi, I am developing a free to use backtesting software right now! It's called BacktestingMax and it will be available in January. Everyone keep ...",
+    "host_name": "www.reddit.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/backtesting",
+    "name": "backtesting · GitHub Topics",
+    "snippet": "Free, open source , a high frequency trading and market making backtesting and trading bot, which accounts for limit orders, queue positions, and latencies,",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://backtest-kit.github.io",
+    "name": "backtest-kit",
+    "snippet": "A TypeScript engine for backtesting and live-trading strategies — crypto, forex, DEX, spot or futures — where the code you test is the code you ship.",
+    "host_name": "backtest-kit.github.io",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.quantstart.com/articles/backtesting-systematic-trading-strategies-in-python-considerations-and-open-source-frameworks",
+    "name": "Backtesting Systematic Trading Strategies in Python",
+    "snippet": "PyAlgoTrade is a muture, fully documented backtesting framework along with paper- and live-trading capabilities. Data support includes Yahoo! Finance, Google ...",
+    "host_name": "www.quantstart.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://nautilustrader.io",
+    "name": "NautilusTrader: open-source algorithmic trading platform",
+    "snippet": "One engine for research, backtesting , and live trading. Deterministic execution, nanosecond timestamps, and shared engine semantics across the full strategy ...",
+    "host_name": "nautilustrader.io",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.linkedin.com/posts/louisschirra_github-louisschbacktest-engine-a-modular-activity-7327965836026019841-f5bX",
+    "name": "GitHub - LouisSch/Backtest-Engine: A modular high-",
+    "snippet": "I have just released an open-source backtesting engine written in modern C ++, designed to simulate tick-level financial data and run multiple ...",
+    "host_name": "www.linkedin.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://timkimutai.medium.com/how-i-built-an-event-driven-backtesting-engine-in-python-25179a80cde0",
+    "name": "How I Built an Event-Driven Backtesting Engine in Python",
+    "snippet": "A step-by-step guide to designing a robust system for simulating realistic trading strategies, from data feed to portfolio performance analysis .",
+    "host_name": "timkimutai.medium.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=ziRmuw3KTj8",
+    "name": "Backtesting trading strategies in JavaScript: a primer",
+    "snippet": "This video is a primer on simulation and backtesting of quantitative and systematic trading strategies with JavaScript .",
+    "host_name": "www.youtube.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://quantjourney.substack.com/p/i-have-never-seen-bad-backtest-3n",
+    "name": "Building a Robust Backtesting Framework - Event-Driven",
+    "snippet": "In this post, you will read about: Learn about the QuantJourney Backtest Framework and its event-driven architecture for backtesting trading ...",
+    "host_name": "quantjourney.substack.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  }
+]

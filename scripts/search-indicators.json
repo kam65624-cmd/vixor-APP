@@ -1,0 +1,65 @@
+[
+  {
+    "url": "https://github.com/tradingview/lightweight-charts",
+    "name": "TradingView Lightweight Charts",
+    "snippet": "The Lightweight Charts™ library is the best choice for you if you want to display financial data as an interactive chart on your web page without affecting your ... Read more",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/algotrading/comments/1hlc5py/which_plot_library_easiest_to_use_for_charting",
+    "name": "Which plot library easiest to use for charting technical",
+    "snippet": "I am planning to use NodeJS to code a few indicators and use Highcharts.js to plot the charts and indicators, but open to R (ggplot) or Python (plotly) ...",
+    "host_name": "www.reddit.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tradingview.com/lightweight-charts",
+    "name": "Lightweight Charts™ library",
+    "snippet": "Top performance in a tiny package. Free, open-source and feature-rich . At just 45 kilobytes, the dream of super compact interactive charts is now a reality.",
+    "host_name": "www.tradingview.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.npmjs.com/package/@pipsend/charts",
+    "name": "pipsend/charts",
+    "snippet": "May 6, 2026 — A: Pipsend Charts is built on top of TradingView's Lightweight Charts™ and adds: 10 pre-built technical indicators (SMA, EMA, RSI, MACD, etc.) ... Read more",
+    "host_name": "www.npmjs.com",
+    "rank": 3,
+    "date": "May 6, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://tradingview.github.io/lightweight-charts/docs",
+    "name": "Getting started | Lightweight Charts",
+    "snippet": "Lightweight ChartsTM is a client-side library . The package includes TypeScript declarations, enabling seamless integration within TypeScript projects.",
+    "host_name": "tradingview.github.io",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/rohanbeingsocial/add-drawing-tools-indicators-and-replay-to-lightweight-charts-without-stitching-six-repos-together-51ad",
+    "name": "Add drawing tools, indicators and replay to Lightweight",
+    "snippet": "Jun 10, 2026 — Add drawing tools, indicators and replay to Lightweight Charts without stitching six repos together. #react # javascript # typescript # opensource . Read more",
+    "host_name": "dev.to",
+    "rank": 5,
+    "date": "Jun 10, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://lightningchart.com/js-charts/trader",
+    "name": "LightningChart JS Trader: Finance & Trading Charting",
+    "snippet": "LightningChart® JS Trader features advanced technical chart types including CandleStick, Bar charts, Line charts, Mountain, Kagi, Renko, Point & Figure, ... Read more",
+    "host_name": "lightningchart.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  }
+]

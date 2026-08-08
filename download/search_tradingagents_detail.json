@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://github.com/tauricresearch/tradingagents",
+    "name": "TradingAgents: Multi-Agents LLM Financial Trading",
+    "snippet": "TradingAgents is a multi-agent trading framework that mirrors the dynamics of real-world trading firms. By deploying specialized LLM-powered agents: from ... Read more",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://tradingagents-ai.github.io",
+    "name": "TradingAgents: Multi-Agents LLM Financial Trading Framework",
+    "snippet": "TradingAgents leverages a multi-agent framework to simulate a professional trading firm with distinct roles: fundamental, sentiment, and technical analysts; ... Read more",
+    "host_name": "tradingagents-ai.github.io",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/pdf/2412.20138",
+    "name": "Multi-Agents LLM Financial Trading Framework",
+    "snippet": "by Y Xiao · 2024 · Cited by 267 — Significant progress has been made in automated problem-solving using societies of agents pow- ered by large language models (LLMs). Read more",
+    "host_name": "arxiv.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://openreview.net/forum?id=4QPrXwMQt1",
+    "name": "Multi-Agents LLM Financial Trading Framework",
+    "snippet": "by Y Xiao · Cited by 267 — TradingAgents is a multi-agent LLM-powered trading framework that simulates hedge fund collaboration, outperforming baselines in key financial ...",
+    "host_name": "openreview.net",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ui.adsabs.harvard.edu/abs/arXiv:2412.20138",
+    "name": "Multi-Agents LLM Financial Trading Framework - ADS",
+    "snippet": "TradingAgents proposes a novel stock trading framework inspired by trading firms, featuring LLM-powered agents in specialized roles such as fundamental analysts ... Read more",
+    "host_name": "ui.adsabs.harvard.edu",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]

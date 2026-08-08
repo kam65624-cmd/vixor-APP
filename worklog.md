@@ -1,60 +1,25 @@
+# VIXOR Work Log
 
 ---
-Task ID: 1
+Task ID: 2
 Agent: Main Agent
-Task: VIXOR Design System V6 Redesign — Phase 1 Implementation
+Task: Architecture V2 Revised — Product + Intelligence (based on user feedback)
 
 Work Log:
-- Explored full codebase: TanStack Start, Tailwind CSS v4, 1647-line AppShell, 623-line Home page
-- Updated styles.css: Added V6 tokens (secondary-accent #8B5CF6, accent-gold #F0B90B, gradient-hero, gradient-card-glow, gradient-asset, shadow-floating, shadow-card-glow, shadow-gold-glow, surface-hero, glass-bg/border/blur)
-- Added 3 premium card variants to CSS: .vx-card-premium (edge glow on hover), .vx-card-insight (AI purple accent), .vx-card-monitor (scanning live border)
-- Added V6 flash highlight animations: vx-flash-up, vx-flash-down, vx-flash-gold, vx-monitor-scan
-- Added V6 dynamic bottom dock CSS: .vx-dock, .vx-dock-item, .vx-dock-item-active, .vx-dock-icon, .vx-dock-label, .vx-dock-dot, .vx-dock-separator
-- Added V6 hero gradient CSS: .vx-hero-gradient with animated glow drift
-- Added V6 filter chip CSS: .vx-filter-chip, .vx-filter-chip-active
-- Updated Card component (card.tsx): Added premium, insight, monitor variants
-- Replaced static BottomBar (3 items + More) with Dynamic Scrollable Dock (10 items in 4 groups: core, trading, ai, more)
-- Reorganized MorePanel from 5 groups to 5 smart groups (Market Intelligence, AI & Automation, Trading, Performance, Platform)
-- Extracted all inline SVG icons into reusable compact functions
-- Updated Home page MoxiHero to use vx-hero-gradient class with gradient text
-- Added vx-stagger animation to Quick Actions grid
-- Updated bottom padding from 52px to 56px for new dock height
-- Added auto-scroll to active dock item on route change
-- All 216 tests passing, tsc clean, Vite build successful
+- Analyzed 16-point feedback from user on initial OSS Research report
+- Identified core shift: from “OSS Integration Architecture” to “VIXOR Product + Intelligence Architecture”
+- Added Experience Layer + Decision Layer (the 2 missing layers)
+- Created Capability Map: every OSS project → User Capability in Journey
+- Defined User Journey: Discover → Analyze → MOXI Decision → Execute → Track → Review → Learn
+- Page Consolidation: 41 routes → 12 core experiences (25 pages reclassified)
+- Information Hierarchy: 6-level (WHAT MATTERS → WHY → DO → RISK → NEXT → EVIDENCE)
+- MOXI Architecture V2: proactive insights + Decision Layer + Mastra POC
+- Migration Strategy V2: ordered by Business Value x Technical Value x Risk
+- Union of both research efforts (previous + Z.AI)
+- Key rule: any integration that doesn’t produce user capability = don’t add
 
 Stage Summary:
-- Design System V6 fully applied (CSS tokens, gradients, shadows, surfaces)
-- 3 new card variants: premium (glow), insight (AI), monitor (live)
-- Dynamic bottom dock navigation replaces static 3+More
-- 5-group MorePanel reorganization
-- Flash highlight animations for live data
-- Build + tests: 100% passing
-
----
-Task ID: 1
-Agent: main
-Task: P0-02B TASK 1 — Signal Transition Engine + Unit Tests
-
-Work Log:
-- Read existing files: types.ts, functions.ts, use-signal-monitor.ts, index.ts, events/orchestrator.ts, DB migration
-- Analyzed current TERMINAL_STATUSES (incorrectly includes tp1_hit/tp2_hit as terminal)
-- Analyzed existing evaluateTrackingPrice (client-side, no transition matrix, no sequential TP enforcement)
-- Added 'invalidated' to SignalStatus union type in types.ts
-- Added 'invalidated' entry to SIGNAL_STATUS_CONFIG
-- Created transition-engine.ts (280 lines): pure deterministic state machine
-- Created transition-engine.test.ts (480 lines): 85 unit tests
-- Updated index.ts barrel exports
-- Fixed 2 test logic errors (SELL SL/TP tests inheriting BUY TPs from makeRequest defaults)
-- Fixed TS error: Map inference with heterogeneous tuple values
-- Fixed TS error: missing 'invalidated' in SIGNAL_STATUS_CONFIG Record
-- All 85 new tests pass, all 301 existing tests pass (zero regression)
-
-Stage Summary:
-- NEW: src/domains/signal-tracking/transition-engine.ts
-- NEW: src/domains/signal-tracking/transition-engine.test.ts
-- MODIFIED: src/domains/signal-tracking/types.ts (added 'invalidated' status)
-- MODIFIED: src/domains/signal-tracking/index.ts (added barrel exports)
-- TYPECHECK: PASS
-- LINT: PASS (after prettier)
-- TESTS: 85/85 new + 301/301 existing = 386 total PASS
-- COMMIT: d76eef0 pushed to main
+- Produced: /home/z/my-project/download/VIXOR_Architecture_V2_Revised.docx
+- 8 sections covering: Feedback Summary, Capability Map, Architecture V2, User Journey, Page Consolidation, Information Hierarchy, MOXI V2, Migration Strategy
+- ZERO code changes (research-only)
+- Awaiting user decision on whether to proceed or iterate

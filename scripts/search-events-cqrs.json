@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://event-driven.io/en",
+    "name": "Event-Driven by Oskar Dudycz",
+    "snippet": "I run workshops and training about Event Sourcing, CQRS and event - driven architectures . Event - Driven Architecture .",
+    "host_name": "event-driven.io",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://khalilstemmler.com/articles/typescript-domain-driven-design/chain-business-logic-domain-events",
+    "name": "Decoupling Logic with Domain Events [Guide]",
+    "snippet": "Sep 26, 2019 — In this article, we'll walk through the process of using Domain Events to clean up how we decouple complex domain logic across the subdomains ...",
+    "host_name": "khalilstemmler.com",
+    "rank": 1,
+    "date": "Sep 26, 2019",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/typescript/comments/12cd656/ddd_hexagonal_cqrs_reference_implementation_using",
+    "name": "DDD, Hexagonal, CQRS reference implementation using",
+    "snippet": "Complete working example of using Domain Driven Design (DDD), Hexagonal Architecture , CQRS , Event Sourcing (ES), Event Driven Architecture ... Read more",
+    "host_name": "www.reddit.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@gedeon.dominguez/building-a-crm-in-typescript-with-event-sourcing-vertical-slices-and-some-ddd-i-just-couldnt-563459385d63",
+    "name": "Building a CRM in TypeScript with Event Sourcing &",
+    "snippet": "In an event -sourced code-base, many objects are shape- driven rather than class- driven , so TypeScript's inference pays for itself.",
+    "host_name": "medium.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/leandrocp/awesome-cqrs-event-sourcing",
+    "name": "A curated list of awesome CQRS and Event Sourcing things",
+    "snippet": "KurrentDB - Database that's engineered for modern software applications and event-driven architectures (previously EventStoreDB); EventStore - An event ... Read more",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/71083541/event-sourcing-vs-event-driven-architecture-difference",
+    "name": "Event Sourcing vs Event Driven Architecture difference",
+    "snippet": "I was looking in to event base architecture and came to know about two architecture Event Sourcing & Event Driven Architecture. My understanding is following ...",
+    "host_name": "stackoverflow.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://spin.atomicobject.com/cqrs-event-sourcing-typescript",
+    "name": "CQRS and Event Sourcing in TypeScript: A Production",
+    "snippet": "Jun 4, 2026 — Below, you'll find a tour of CQRS , Event Sourcing, and Projections as they actually appear in a real production NestJS + KurrentDB + ... Read more",
+    "host_name": "spin.atomicobject.com",
+    "rank": 6,
+    "date": "Jun 4, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://oneuptime.com/blog/post/2026-01-22-cqrs-pattern-typescript/view",
+    "name": "How to Implement CQRS Pattern in TypeScript",
+    "snippet": "Jan 22, 2026 — A practical guide to implementing the Command Query Responsibility Segregation ( CQRS ) pattern in TypeScript .",
+    "host_name": "oneuptime.com",
+    "rank": 7,
+    "date": "Jan 22, 2026",
+    "favicon": ""
+  }
+]

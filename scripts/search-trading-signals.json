@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://github.com/topics/technical-analysis",
+    "name": "technical-analysis · GitHub Topics",
+    "snippet": "TradingView MCP server — real-time market data, technical analysis, screeners & backtesting for Claude, ChatGPT, Cursor & any MCP client. Read more",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/wangzhe3224/awesome-systematic-trading",
+    "name": "wangzhe3224/awesome-systematic-trading",
+    "snippet": "TypeScript | - Open-source AI agent stock trading battle platform. Freqtrade is a free and open source crypto trading bot written in Python. Solana-native  ...",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://profitview.net/blog/open-source-trading-projects",
+    "name": "Open Source Trading Projects - ProfitView",
+    "snippet": "The ultimate platform for algorithmic trading and automation. Github has now cemented its place as the open-source repository venue. Github has an API (and ・ ...",
+    "host_name": "profitview.net",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/merovinh/best-of-algorithmic-trading",
+    "name": "merovinh/best-of-algorithmic-trading",
+    "snippet": "A ranked list of algorithmic trading open - source libraries, frameworks, bots, tools, books, communities, education materials. Updated weekly.",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/technical-indicators",
+    "name": "technical-indicators",
+    "snippet": "The Open - Source Backtesting Engine / Trading Simulator by Bertram Enterprises. c-sharp finance options trading trading -bot quant trading -platform portfolio ... Read more",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@gwrx2005/top-10-ai-powered-crypto-trading-repositories-on-github-0041862546b6",
+    "name": "Top 10 AI-Powered Crypto Trading Repositories on GitHub",
+    "snippet": "The Intelligent Trading Bot by asavi nov is an open-source project that generates trading signals using machine learning and feature engineering,",
+    "host_name": "medium.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/javascript/comments/1brurtz/a_powerful_opensource_typescriptbased_algorithmic",
+    "name": "A powerful, open-source, TypeScript-based algorithmic",
+    "snippet": "GitHub Repo I released NextTrade , an open-source platform for creating, testing, optimizing, and deploying algorithmic trading software.",
+    "host_name": "www.reddit.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/futures-market",
+    "name": "futures-market · GitHub Topics",
+    "snippet": "Application to execute trades and monitor performance of perpetual futures quantitative trading strategy. reactjs cryptocurrencies algorithmic- trading binance ... Read more",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/14H034160212/AlphaTrader",
+    "name": "14H034160212/AlphaTrader: SerenityTrader Pro is",
+    "snippet": "SerenityAlphaTrader Pro is a fully automated AI quantitative trading system powered by a Python/FastAPI backend and a pure HTML/JS frontend. Read more",
+    "host_name": "github.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  }
+]

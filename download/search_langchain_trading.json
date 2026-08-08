@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.youtube.com/watch?v=td7qNK8_H-0",
+    "name": "Building a Stockbroker Agent in LangGraph.js - YouTube",
+    "snippet": "Sep 5, 2024 · ... langchain.dev/javascript-langgraph-v02-cloud-studio/ Sign up for a LangSmith account here: https://smith.langchain.com Get Financial ...",
+    "host_name": "www.youtube.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pub.towardsai.net/building-a-financial-research-agent-with-react-langgraph-and-langchain-c5d5142d8b29",
+    "name": "Building a Financial Research Agent with ReAct, LangGraph, and",
+    "snippet": "Mar 24, 2026 · Building a Financial Research Agent with ReAct, LangGraph, and LangChain · Step 1: Define the Agent State · Step 2: Build the Research Tools · Step ...",
+    "host_name": "pub.towardsai.net",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.langchain.com/blog/financial-ai-that-investigates-macro-trends-eu-economic-analysis-with-you-com-and-langchain",
+    "name": "EU macroeconomic analysis with Deep Agents, LangSmith, and the",
+    "snippet": "This macroeconomic research agent analyzes GDP data across all 27 EU member states, detects anomalies, investigates structural and cyclical drivers at the ...",
+    "host_name": "www.langchain.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/fintech/comments/1om84on/im_currently_using_langchaintradingagents_how_can",
+    "name": "I'm currently using langchain-trading-agents. How can I  - Reddit",
+    "snippet": "Nov 2, 2025 · Prompt engineering for trading agents needs specific, structured instructions with clear output formats. Generic prompts like \"analyze Bitcoin\" ...",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/coding-nexus/i-commissioned-langchain-trading-agent-v3-and-im-shocked-03eaf3ae466d",
+    "name": "I Commissioned LangChain Trading Agent V3 and I'm Shocked |",
+    "snippet": "Nov 9, 2025 · A technical overview of the Stock Research Agent V3 architecture, token optimization strategy, and deployment workflow for AI-driven ...",
+    "host_name": "medium.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.langchain.com",
+    "name": "LangChain: Observe, Evaluate, and Deploy Reliable AI Agents",
+    "snippet": "LangSmith is framework-agnostic: trace your preferred framework or integrate LangSmith with any agent stack using our Python, TypeScript, Go, or Java SDKs.",
+    "host_name": "www.langchain.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.linkedin.com/posts/langchain_ai-financial-analyst-agent-create-an-activity-7286849911373942785-wMGw",
+    "name": "LangChain's Post - LinkedIn",
+    "snippet": "Jan 19, 2025 · LangChain's AI Financial Analyst Agent is a powerful leap forward in investment automation. Leveraging GPT-4 and LangGraph, it combines real- ...",
+    "host_name": "www.linkedin.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.piwheels.org/project/langchain-trading-agents",
+    "name": "langchain-trading-agents - piwheels",
+    "snippet": "AI trading agents driven by langchain,Simulates real-world financial company departments(manager,news,traditional indicator,price_action,economic_calendar, ...",
+    "host_name": "www.piwheels.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://tradingagents-ai.github.io",
+    "name": "TradingAgents: Multi-Agents LLM Financial Trading Framework",
+    "snippet": "TradingAgents leverages a multi-agent framework to simulate a professional trading firm with distinct roles: fundamental, sentiment, and technical analysts; ...",
+    "host_name": "tradingagents-ai.github.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/anandsinh01/langchain-trading-analysis",
+    "name": "anandsinh01/langchain-trading-analysis: AI-powered  - GitHub",
+    "snippet": "A comprehensive AI-powered trading analysis system built with LangChain, LangGraph, and LangSmith, featuring a beautiful Streamlit interface for multi-agent ...",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

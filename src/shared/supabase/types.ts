@@ -1630,6 +1630,7 @@ export const Constants = {
         "tp2_hit",
         "tp3_hit",
         "sl_hit",
+        "invalidated",
         "expired",
         "cancelled",
       ],

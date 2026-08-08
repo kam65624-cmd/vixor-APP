@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://tardis.dev",
+    "name": "The most granular data for cryptocurrency markets — Tardis.dev",
+    "snippet": "Historical tick-level order book updates, trades, quotes, open interest, funding, liquidations, options chains and more. API access and downloadable CSV ...",
+    "host_name": "tardis.dev",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.tardis.dev/historical-data-details/overview",
+    "name": "Overview | Tardis.dev Documentation",
+    "snippet": "Jul 7, 2026 — Historical market data available via HTTP API provides order book snapshots at the beginning of each day (00:00 UTC) and every time a WebSocket ... Read more",
+    "host_name": "docs.tardis.dev",
+    "rank": 1,
+    "date": "Jul 7, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/tardis-dev/tardis-node",
+    "name": "tardis-dev/tardis-node: Convenient access to tick-level real-",
+    "snippet": "tardis-dev library provides convenient access to tick-level real-time and historical cryptocurrency market data both in exchange native and normalized formats.",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.tardis.dev/node-client/quickstart",
+    "name": "Quickstart | Tardis.dev Documentation",
+    "snippet": "Jul 7, 2026 — tardis-dev library provides access to tick-level historical and real-time cryptocurrency market data both in exchange-native and normalized ...",
+    "host_name": "docs.tardis.dev",
+    "rank": 3,
+    "date": "Jul 7, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.coinapi.io/blog/best-alternative-to-tardis-dev-coinapi-comparison",
+    "name": "What is the best alternative to Tardis.dev? CoinAPI vs",
+    "snippet": "Nov 3, 2025 — CoinAPI is widely recognized as the best crypto API for trading and research, and the most complete alternative to Tardis . dev for full-depth,  ...",
+    "host_name": "www.coinapi.io",
+    "rank": 4,
+    "date": "Nov 3, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.tardis.dev/tardis-machine/quickstart",
+    "name": "Quickstart | Tardis.dev Documentation",
+    "snippet": "Jun 25, 2026 — It provides both tick-level historical and consolidated real-time cryptocurrency market data via its HTTP and WebSocket APIs and is available ... Read more",
+    "host_name": "docs.tardis.dev",
+    "rank": 5,
+    "date": "Jun 25, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.tardis.dev/historical-data-details/lighter",
+    "name": "Lighter",
+    "snippet": "Apr 23, 2026 — Tardis-machine is a locally runnable server that exposes API allowing efficiently requesting historical market data for whole time periods",
+    "host_name": "docs.tardis.dev",
+    "rank": 6,
+    "date": "Apr 23, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=20663471",
+    "name": "Historical order book reconstruction API for crypto markets",
+    "snippet": "Aug 10, 2019 — Historical order book reconstruction API for crypto markets (tardis.dev) consider building a normalization layer on top of what you have here. ...",
+    "host_name": "news.ycombinator.com",
+    "rank": 7,
+    "date": "Aug 10, 2019",
+    "favicon": ""
+  }
+]

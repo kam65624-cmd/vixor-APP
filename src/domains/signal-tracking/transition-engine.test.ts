@@ -13,6 +13,8 @@ import {
   TRANSITION_TERMINAL_STATUSES,
 } from "./transition-engine";
 import type { SignalTransitionRequest } from "./transition-engine";
+import { TERMINAL_STATUSES, INTERMEDIATE_STATUSES, MONITORED_STATUSES } from "./types";
+import type { SignalStatus } from "./types";
 
 // ── Test Helpers ──────────────────────────────────────────────────────────────
 
@@ -65,6 +67,99 @@ describe("isTerminalStatus", () => {
     expect(isTerminalStatus("active")).toBe(false);
     expect(isTerminalStatus("tp1_hit")).toBe(false);
     expect(isTerminalStatus("tp2_hit")).toBe(false);
+  });
+});
+
+// ── Contract Alignment: types.ts ↔ transition-engine.ts (Task 1.2C) ─────────
+
+describe("Contract alignment: TERMINAL_STATUSES ↔ TRANSITION_TERMINAL_STATUSES", () => {
+  const ALL_STATUSES: SignalStatus[] = [
+    "pending",
+    "active",
+    "tp1_hit",
+    "tp2_hit",
+    "tp3_hit",
+    "sl_hit",
+    "invalidated",
+    "expired",
+    "cancelled",
+  ];
+
+  it("TERMINAL_STATUSES array matches TRANSITION_TERMINAL_STATUSES set exactly", () => {
+    const terminalArraySorted = [...TERMINAL_STATUSES].sort();
+    const terminalSetSorted = [...TRANSITION_TERMINAL_STATUSES].sort();
+    expect(terminalArraySorted).toEqual(terminalSetSorted);
+  });
+
+  it("INTERMEDIATE_STATUSES contains exactly tp1_hit and tp2_hit", () => {
+    expect(INTERMEDIATE_STATUSES).toHaveLength(2);
+    expect(INTERMEDIATE_STATUSES).toContain("tp1_hit");
+    expect(INTERMEDIATE_STATUSES).toContain("tp2_hit");
+  });
+
+  it("no overlap between TERMINAL and INTERMEDIATE statuses", () => {
+    const terminalSet = new Set(TERMINAL_STATUSES);
+    for (const s of INTERMEDIATE_STATUSES) {
+      expect(terminalSet.has(s)).toBe(false);
+    }
+  });
+
+  it("MONITORED_STATUSES covers pending, active, and all intermediate states", () => {
+    const monitoredSet = new Set(MONITORED_STATUSES);
+    expect(monitoredSet.has("pending")).toBe(true);
+    expect(monitoredSet.has("active")).toBe(true);
+    for (const s of INTERMEDIATE_STATUSES) {
+      expect(monitoredSet.has(s)).toBe(true);
+    }
+    // Terminal statuses must NOT be in monitored
+    for (const s of TERMINAL_STATUSES) {
+      expect(monitoredSet.has(s)).toBe(false);
+    }
+  });
+
+  it("every SignalStatus is covered by exactly one category", () => {
+    const terminalSet = new Set(TERMINAL_STATUSES);
+    const intermediateSet = new Set(INTERMEDIATE_STATUSES);
+    const monitoredSet = new Set(MONITORED_STATUSES);
+
+    for (const status of ALL_STATUSES) {
+      const isTerminal = terminalSet.has(status);
+      const isIntermediate = intermediateSet.has(status);
+      const isMonitored = monitoredSet.has(status);
+
+      if (isTerminal) {
+        // Terminal: must NOT be intermediate or monitored
+        expect(isIntermediate).toBe(false);
+        expect(isMonitored).toBe(false);
+      } else if (isIntermediate) {
+        // Intermediate: must be monitored, must NOT be terminal
+        expect(isTerminal).toBe(false);
+        expect(isMonitored).toBe(true);
+      } else {
+        // Active/non-terminal: pending and active must be monitored
+        expect(isMonitored).toBe(true);
+      }
+    }
+  });
+
+  it("resolved_at contract: only terminal statuses should set resolved_at", () => {
+    // This test codifies the locked contract:
+    //   pending/active/tp1_hit/tp2_hit → resolved_at = NULL
+    //   tp3_hit/sl_hit/invalidated/expired/cancelled → resolved_at = SET
+    const resolvedAtStatuses: SignalStatus[] = TERMINAL_STATUSES;
+    const nullResolvedAtStatuses: SignalStatus[] = ["pending", "active", ...INTERMEDIATE_STATUSES];
+
+    // No overlap
+    const resolvedSet = new Set(resolvedAtStatuses);
+    for (const s of nullResolvedAtStatuses) {
+      expect(resolvedSet.has(s)).toBe(false);
+    }
+
+    // Together they cover all statuses
+    const allCovered = new Set([...resolvedAtStatuses, ...nullResolvedAtStatuses]);
+    for (const s of ALL_STATUSES) {
+      expect(allCovered.has(s)).toBe(true);
+    }
   });
 });
 

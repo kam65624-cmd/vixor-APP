@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://github.com/shadcn-ui/ui",
+    "name": "Shadcn UI",
+    "snippet": "A set of beautifully designed components that you can customize, extend, and build on. Start here then make it your own. Open Source. Open Code.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/birobirobiro/awesome-shadcn-ui",
+    "name": "birobirobiro/awesome-shadcn-ui",
+    "snippet": "A retro sci-fi UI design system inspired by classic starship consoles and alien computer terminals, featuring modular HUD components, neon data grids, tactical ...",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ui.shadcn.com",
+    "name": "The Foundation for your Design System - shadcn/ui",
+    "snippet": "A set of beautifully designed components that you can customize, extend, and build on. Start here then make it your own. Open Source. Open Code. Build Your Own.",
+    "host_name": "ui.shadcn.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://shaxadd.medium.com/these-radix-based-ui-libraries-are-crazy-awesome-3ab656a21a22",
+    "name": "These Radix-based UI Libraries are Crazy Awesome - Medium",
+    "snippet": "Shadcn is a UI library that builds on top of Radix Primitives to provide a set of styled, ready-to-use components. It combines the flexibility ...",
+    "host_name": "shaxadd.medium.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/reactjs/comments/153u733/radix_ui_components",
+    "name": "Radix Ui Components ? : r/reactjs",
+    "snippet": "Hello community! I look forward to use in my nextjs project Radix ui components. Would you recommend these library. For me it looks pretty solid. Do ...",
+    "host_name": "www.reddit.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]

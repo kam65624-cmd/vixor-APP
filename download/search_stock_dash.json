@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://github.com/topics/stock-dashboard?o=desc&s=stars",
+    "name": "stock-dashboard · GitHub Topics",
+    "snippet": "A production-grade Next.js 14+ stock market dashboard showcasing modern React patterns, TypeScript best practices, and real-time data management . Built as a ... Read more",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=gu4pafNCXng",
+    "name": "Build and Deploy a Real-Time Stock Market App with Alerts",
+    "snippet": "Build a real-time stock market app with live prices, search, personalized alerts, interactive charts , powered by Next.js, WebSockets & Next.js",
+    "host_name": "www.youtube.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/react/comments/1n0gnol/trading_dashboard_built_with_react_and_typescript",
+    "name": "Trading dashboard built with React and TypeScript",
+    "snippet": "Built a trading dashboard recently and running into some interesting performance challenges with real - time data. The project handles live ... Read more",
+    "host_name": "www.reddit.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/rajgurung/stock-intelligence-frontend",
+    "name": "rajgurung/stock-intelligence-frontend",
+    "snippet": "Professional Stock Market Intelligence Platform for Education & Learning | Bloomberg-style financial dashboard built with Next.js 15, TypeScript & Tailwind ...",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/tradingview/charting-library-examples",
+    "name": "TradingView Charting Library Integration Examples",
+    "snippet": "Charting Library is a standalone solution for displaying charts. This free, downloadable library is hosted on your servers and is connected to your data ... Read more",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=3U83yIFoKw4",
+    "name": "Realtime Stock Trading App with Next.js 15, Typescript, and",
+    "snippet": "In today's video, I show you how I completed the challenge of building a simplified version of a real - time trading app in less than 4 hours ...",
+    "host_name": "www.youtube.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ably.com/blog/top-react-chart-libraries",
+    "name": "The top 11 React chart libraries for data visualization",
+    "snippet": "Sep 15, 2023 — Discover the top 11 React chart libraries for data visualization , and how to select the right one for your next project.",
+    "host_name": "ably.com",
+    "rank": 6,
+    "date": "Sep 15, 2023",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/stock-market-analysis?l=typescript",
+    "name": "stock-market-analysis",
+    "snippet": "Fully functional public stock dashboard built with Next. js, React, and TradingView widgets . Finnhub-backed stock search, browser-local watchlist and layout ... Read more",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://tailadmin.com/blog/free-nextjs-admin-dashboard",
+    "name": "15+ Free Next.js Admin Dashboard Template for 2026",
+    "snippet": "TailAdmin Next.js stands as the best open-source admin dashboard template. This template uses the latest Next.js, React , and Tailwind CSS to create a clean ... Read more",
+    "host_name": "tailadmin.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  }
+]

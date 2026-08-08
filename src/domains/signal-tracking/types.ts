@@ -27,7 +27,11 @@ export interface SignalTracking {
   take_profit: number[] | null;
   status: SignalStatus;
   current_price: number | null;
+  // TODO(P1-cleanup): previous_price is a dead-field — zero reads, zero writes in production.
+  // Documented for later cleanup task. Do NOT remove in 1.2C.
   previous_price: number | null;
+  // TODO(P1-cleanup): MFE/MAE columns exist and updateExcursions() exists, but has zero
+  // production callers. Values remain at defaults. Documented for later cleanup task.
   max_favorable_excursion: number;
   max_adverse_excursion: number;
   hit_tp: number;
@@ -72,12 +76,28 @@ export const SIGNAL_STATUS_CONFIG: Record<
   cancelled: { label: "Cancelled", color: "var(--color-muted-foreground)", icon: "❌" },
 };
 
-/** Terminal statuses — no further price monitoring needed */
+/**
+ * Canonical terminal statuses — no further transitions allowed.
+ * Aligned with Transition Engine TRANSITION_TERMINAL_STATUSES.
+ *
+ * TERMINAL:  tp3_hit, sl_hit, invalidated, expired, cancelled
+ * INTERMEDIATE:  tp1_hit, tp2_hit (monitoring must continue)
+ * ACTIVE:  pending, active
+ */
 export const TERMINAL_STATUSES: SignalStatus[] = [
-  "tp1_hit",
-  "tp2_hit",
   "tp3_hit",
   "sl_hit",
+  "invalidated",
   "expired",
   "cancelled",
 ];
+
+/** Intermediate statuses — TP hit but signal is still live, monitoring continues. */
+export const INTERMEDIATE_STATUSES: SignalStatus[] = ["tp1_hit", "tp2_hit"];
+
+/**
+ * All statuses that require active price monitoring.
+ * These are the non-terminal, non-WAIT states where the signal
+ * is still being tracked for TP/SL/entry hits.
+ */
+export const MONITORED_STATUSES: SignalStatus[] = ["pending", "active", "tp1_hit", "tp2_hit"];

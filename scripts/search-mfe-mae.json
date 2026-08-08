@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://www.tradesviz.com/blog/mfe-mae-charts",
+    "name": "MFE & MAE: The Complete Guide to Maximum Favorable",
+    "snippet": "Jun 28, 2026 — MFE - Maximum Favorable Excursion is the furthest price or PnL moved in your favor while the trade was open. MAE - Maximum Adverse Excursion is ... Read more",
+    "host_name": "www.tradesviz.com",
+    "rank": 0,
+    "date": "Jun 28, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://trademetria.com/blog/understanding-mae-and-mfe-metrics-a-guide-for-traders",
+    "name": "Understanding MAE and MFE Metrics: A Guide for Traders",
+    "snippet": "Aug 7, 2024 — Maximum Adverse Excursion ( MAE ) measures the largest intraday drawdown (or loss) from the entry price of a trade to its worst point before ... Read more",
+    "host_name": "trademetria.com",
+    "rank": 1,
+    "date": "Aug 7, 2024",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=g7rvyaiOm7g",
+    "name": "How Professional Traders Use MFE & MAE to Improve Forex",
+    "snippet": "I'm going to show you how professional traders use MF and ME in back testing to dramatically improve their results especially in Forex trading.",
+    "host_name": "www.youtube.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/quantopian/zipline/issues/189",
+    "name": "Example of MFE / MAE / BSO · Issue #189",
+    "snippet": "Jul 8, 2013 — MAE - Maximum Adverse Excursion is the maximum draw down the trade had before the trade was closed. MFE - Maximum Favorable Excursion is the ... Read more",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "Jul 8, 2013",
+    "favicon": ""
+  },
+  {
+    "url": "https://spreadsheetshub.com/blogs/articles/how-to-track-mfe-and-mae-to-optimize-exit-strategies?srsltid=AfmBOoqq3BO6Wwsny69h-cm7gzbuD71JzRT2LwRPUhVZnD0_kJw45snr",
+    "name": "How to Track MFE and MAE to Optimize Exit Strategies",
+    "snippet": "Feb 7, 2026 — This comprehensive guide will demystify MFE and MAE , explain their calculation, demonstrate tracking methods, and show how they supercharge exit ... Read more",
+    "host_name": "spreadsheetshub.com",
+    "rank": 4,
+    "date": "Feb 7, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://tradersync.com/mfe-and-mae-metrics",
+    "name": "MFE and MAE Metrics",
+    "snippet": "Oct 12, 2022 — Maximum Adverse Excursion ( Price MAE ) Defines the price of the asset that would have led to maximum losses during the trade. Read more",
+    "host_name": "tradersync.com",
+    "rank": 5,
+    "date": "Oct 12, 2022",
+    "favicon": ""
+  },
+  {
+    "url": "https://journalplus.co/learn/glossary/mfe",
+    "name": "What is Maximum Favorable Excursion? Definition &",
+    "snippet": "Apr 9, 2026 — MAE ( Maximum Adverse Excursion ) measures entry quality by tracking the deepest drawdown during the trade . Together they form a complete entry/ ...",
+    "host_name": "journalplus.co",
+    "rank": 6,
+    "date": "Apr 9, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.elitetrader.com/et/threads/mae-and-mfe-metrics-the-how-to-and-where-to-find.307059",
+    "name": "MAE and MFE metrics . The \"How to\" and \"where to find\"",
+    "snippet": "Feb 21, 2017 — Maximum Adverse Excursion (MAE)– is a maximal unrealized loss while your trade is open . For every trade you take its logical to record the MFE ... Read more",
+    "host_name": "www.elitetrader.com",
+    "rank": 7,
+    "date": "Feb 21, 2017",
+    "favicon": ""
+  }
+]

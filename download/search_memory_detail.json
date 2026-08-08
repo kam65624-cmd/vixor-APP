@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://blog.devgenius.io/ai-agent-memory-systems-in-2026-mem0-zep-hindsight-memvid-and-everything-in-between-compared-96e35b818da8",
+    "name": "AI Agent Memory Systems in 2026: Mem0, Zep, Hindsight",
+    "snippet": "Mar 20, 2026 — The Mem0 paper found Zep's memory footprint exceeds 600,000 tokens per conversation (versus 1,764 for Mem0 ), and their team's testing found that ... Read more",
+    "host_name": "blog.devgenius.io",
+    "rank": 0,
+    "date": "Mar 20, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/asymptotic-spaghetti-integration/from-beta-to-battle-tested-picking-between-letta-mem0-zep-for-ai-memory-6850ca8703d1",
+    "name": "Picking Between Letta, Mem0 & Zep for AI Memory",
+    "snippet": "Letta, Mem0, and Zep represent three distinct philosophies: community-led open source, pragmatic SaaS, and research-driven sophistication .",
+    "host_name": "medium.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/28naem-del/mnemosyne/blob/main/COMPARISON.md",
+    "name": "mnemosyne/COMPARISON.md at main · 28naem-del",
+    "snippet": "Mem0, Zep, Cognee, LangMem (LangChain), and Letta (formerly MemGPT). Zep focuses on session memory with LLM summarization and fact extraction.",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/LangChain/comments/1kash7b/i_benchmarked_openai_memory_vs_langmem_vs_letta",
+    "name": "I Benchmarked OpenAI Memory vs LangMem vs Letta",
+    "snippet": "Mem0 set a new baseline for memory systems in most benchmarks (J scores, latency, tokens), particularly for single-hop, multi-hop, and temporal ... Read more",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/NirDiamant/Agent_Memory_Techniques",
+    "name": "Agent Memory Techniques",
+    "snippet": "Agent memory is the set of techniques that let an LLM-based agent. Mem0: managed memory layer . AI Letta (MemGPT): self-editing memory with inner/outer ...",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.digitalapplied.com/blog/open-source-agent-memory-mem0-letta-zep-compared",
+    "name": "Open-Source Agent Memory: Mem0 vs Letta vs Zep",
+    "snippet": "5 days ago — Mem0, Letta and Zep bet differently on what remembering means . A licence, architecture and benchmark comparison, including why the published ...",
+    "host_name": "www.digitalapplied.com",
+    "rank": 5,
+    "date": "Aug 3, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.graphlit.com/blog/survey-of-ai-agent-memory-frameworks",
+    "name": "AI Agent Memory Frameworks in 2026: Memory vs. Context",
+    "snippet": "May 20, 2026 — Mem0 is a dedicated memory engine for AI agents . It gives developers memory operations and hosted infrastructure around user, agent, and session ... Read more",
+    "host_name": "www.graphlit.com",
+    "rank": 6,
+    "date": "May 20, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.developersdigest.tech/blog/best-ai-agent-memory-providers-2026",
+    "name": "Best AI Agent Memory Providers in 2026: Mem0 vs Zep vs",
+    "snippet": "Jul 2, 2026 — Mem0's library and Letta are directly open source and self-hostable , and Zep's memory engine Graphiti is Apache 2.0 and self-hosts on a graph ... Read more",
+    "host_name": "www.developersdigest.tech",
+    "rank": 7,
+    "date": "Jul 2, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://vectorize.io/articles/mem0-vs-letta",
+    "name": "Mem0 vs Letta (MemGPT): AI Agent Memory Compared (2026)",
+    "snippet": "Mar 15, 2026 — Mem0 is the right choice when you want a memory layer , not a runtime. Specifically: You have an existing agent framework and just need to add ... Read more",
+    "host_name": "vectorize.io",
+    "rank": 8,
+    "date": "Mar 15, 2026",
+    "favicon": ""
+  }
+]

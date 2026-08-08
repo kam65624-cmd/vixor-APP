@@ -1,0 +1,65 @@
+[
+  {
+    "url": "https://levelup.gitconnected.com",
+    "name": "Event-Driven Architecture with Practical Examples in TypeScript",
+    "snippet": "Jul 3, 2025 — Event Bus : The communication layer that delivers events from producers to consumers. This might be: an in-memory pub/sub system, a message queue ... Read more",
+    "host_name": "levelup.gitconnected.com",
+    "rank": 0,
+    "date": "Jul 3, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://oneuptime.com",
+    "name": "How to Build Event-Driven Architecture in Node.js",
+    "snippet": "Jan 30, 2026 — Learn how to build scalable event-driven applications in Node.js using EventEmitter, custom events, and async patterns for decoupled ...",
+    "host_name": "oneuptime.com",
+    "rank": 1,
+    "date": "Jan 30, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.stackademic.com",
+    "name": "Crafting a High-Performance Event-Driven Architecture in",
+    "snippet": "Dec 8, 2025 — Crafting a High-Performance Event-Driven Architecture in JavaScript · 1. Laying the Foundation: The Event Bus · 2. Scaling with Namespaced Events. Read more",
+    "host_name": "blog.stackademic.com",
+    "rank": 2,
+    "date": "Dec 8, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://aws.amazon.com",
+    "name": "Event-Driven Architecture",
+    "snippet": "Learn the basics of event-driven architectures and get started with Amazon EventBridge, including creating an event bus , setting up SaaS event sources, and more ... Read more",
+    "host_name": "aws.amazon.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.freecodecamp.org",
+    "name": "Event-Based Architectures in JavaScript: A Handbook for",
+    "snippet": "Nov 5, 2025 — An event - driven architecture is a software design pattern where the flow of the program is determined by events . An event can be any significant ... Read more",
+    "host_name": "www.freecodecamp.org",
+    "rank": 4,
+    "date": "Nov 5, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://thenewstack.io",
+    "name": "The Basics of Event-Driven Architectures",
+    "snippet": "Sep 22, 2023 — An event bus is where events are loaded and where events are offloaded. , including the open source Apache Druid, Apache Pinot and ClickHouse.",
+    "host_name": "thenewstack.io",
+    "rank": 5,
+    "date": "Sep 22, 2023",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to",
+    "name": "Event-Driven on the Frontend: Why We Miss an Event Bus",
+    "snippet": "Apr 29, 2026 — An event bus decouples sender from receiver completely . They only need to agree on the type of the message, nothing else. You can add a new ... Read more",
+    "host_name": "dev.to",
+    "rank": 6,
+    "date": "Apr 29, 2026",
+    "favicon": ""
+  }
+]

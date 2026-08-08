@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://github.com/marco-ippolito/fiume",
+    "name": "marco-ippolito/fiume: zero-dependency, lightweight finite",
+    "snippet": "Oct 6, 2025 — Fiume is a zero-dependency, simple, and flexible state machine library written in TypeScript . compatible with all JavaScript runtimes",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "Oct 6, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/WinstonFassett/matchina",
+    "name": "WinstonFassett/matchina: Lightweight state machines in",
+    "snippet": "Lightweight state machines in TypeScript . Matchina lets you model states as tagged unions and drive transitions with full type inference.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/WebLegions/typescript-fsm",
+    "name": "WebLegions/typescript-fsm: TS-FSM is a strongly typed",
+    "snippet": "TS-FSM is a strongly typed finite state machine for TypeScript that is using async operations. Library uses generics to take the user states and events.",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/typescript/comments/1pihaeb/github_doeixdmachine_minimal_typescript_state",
+    "name": "Minimal TypeScript state machine library with compile-time",
+    "snippet": "Minimal TypeScript state machine library with compile-time safety through Type-State Programming where states are types, not strings.",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/gabrielanhaia/state-machines-in-typescript-a-60-line-type-safe-engine-1jbf",
+    "name": "State Machines in TypeScript: A 60-Line Type-Safe Engine",
+    "snippet": "May 3, 2026 — For something smaller still, robot3 (~1KB minified, BSD-2-Clause, last published September 2025) gives you a finite-state-machine API close to ... Read more",
+    "host_name": "dev.to",
+    "rank": 4,
+    "date": "May 3, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/matthewp/robot",
+    "name": "Robot - A functional, immutable Finite State Machine library",
+    "snippet": "A small functional and immutable Finite State Machine library . Using state machines for your components brings the declarative programming approach to ... Read more",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://regularhuman.dev",
+    "name": "Robot",
+    "snippet": "Finite State Machines are like static typing for your states. Robot is a Finite State Machine library meant to be simple, functional, and fun. With Robot you ... Read more",
+    "host_name": "regularhuman.dev",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/statemachine",
+    "name": "statemachine · GitHub Topics",
+    "snippet": "a State Machine library , which provided a lightweight, easy use, type safe and programmable state machine implementation for Java.",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=21860700",
+    "name": "Simpler UI Logic With Finite State Machines",
+    "snippet": "Dec 23, 2019 — The less states you have, the easier it is to reason about and automatically verify your model. But in practice, people often accidentally ... Read more",
+    "host_name": "news.ycombinator.com",
+    "rank": 8,
+    "date": "Dec 23, 2019",
+    "favicon": ""
+  }
+]

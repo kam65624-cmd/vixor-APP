@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://github.com/open-telemetry/opentelemetry-js",
+    "name": "open-telemetry/opentelemetry-js - GitHub",
+    "snippet": "This package provides TypeScript interfaces, enums and no-op implementations for the OpenTelemetry core trace and metrics model.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/open-telemetry",
+    "name": "OpenTelemetry - CNCF - GitHub",
+    "snippet": "OpenTelemetry is a collection of APIs, SDKs, and tools. Use it to instrument, generate, collect, and export telemetry data (metrics, logs and traces)",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/open-telemetry/opentelemetry-operator",
+    "name": "OpenTelemetry Operator for Kubernetes - GitHub",
+    "snippet": "The OpenTelemetry Operator is an implementation of a Kubernetes Operator. Task-oriented guides for common observability scenarios with the OpenTelemetry ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/open-telemetry/opentelemetry-java-instrumentation/discussions/11403",
+    "name": "Difference between opentelemetry-spring-boot-starter and  - GitHub",
+    "snippet": "Jun 7, 2024 · OpenTelemetry observability. An independent standalone observability system Offers optional bridges into parts of the OpenTelemetry ecosystem",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/github/comments/1jvu7uu/github_observability_with_opentelemetry_would",
+    "name": "GitHub Observability with OpenTelemetry! Would this solve  - Reddit",
+    "snippet": "Apr 10, 2025 · The GitHub Repo with the OTel Automated Instrumentation that produces this data can be found here => https://dt-url.net/devrel-pl-github-thoth.",
+    "host_name": "www.reddit.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]

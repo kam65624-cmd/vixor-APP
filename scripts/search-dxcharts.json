@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://devexperts.com/dxcharts",
+    "name": "B2B Financial Charting Library with Unique Flexibility",
+    "snippet": "Add DXcharts, a powerful HTML5 financial charting library , to any platform, application, or webpage. Check our demo for a consistent trading experience.",
+    "host_name": "devexperts.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://sourceforge.net/projects/dxcharts-lite.mirror",
+    "name": "DXcharts Lite download",
+    "snippet": "Flexible open source financial charting library . provides a seamless intuitive user experience with automatic scale zoom, mouse wheel zoom, and chart scrolling ...",
+    "host_name": "sourceforge.net",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/devexperts/choosing-a-financial-charting-library-for-your-trading-app-7-things-to-look-for-4436",
+    "name": "Choosing a financial charting library for your trading app",
+    "snippet": "Jul 22, 2025 — DXcharts was built with that in mind. You can add your own tools, wire up custom logic, and extend the chart without fighting the framework. Read more",
+    "host_name": "dev.to",
+    "rank": 2,
+    "date": "Jul 22, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/react/comments/mbmjts/whats_the_best_free_open_source_react_interactive",
+    "name": "What's the best free open source react interactive stock",
+    "snippet": "I'm searching for if there's a powerful react charting library like this one in Vue. https://github.com/tvjsx/trading-vue-js to allow users to have ...",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/devexperts/dxcharts-lite",
+    "name": "devexperts/dxcharts-lite: Flexible financial charts based on",
+    "snippet": "DXcharts Lite is a modern solution for visualizing financial data with a wide variety of chart types. Get started with DXCharts Lite by installing the library ...",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://geekflare.com/dev/financial-charting-libraries",
+    "name": "Top 12 Financial Charting Libraries for Finance App",
+    "snippet": "May 19, 2025 — DXcharts is a modern white-label charting library that brings online trading startups and global brokers a unique level of flexibility.",
+    "host_name": "geekflare.com",
+    "rank": 5,
+    "date": "May 19, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://ably.com/blog/top-react-chart-libraries",
+    "name": "The top 11 React chart libraries for data visualization",
+    "snippet": "Sep 15, 2023 — Discover the top 11 React chart libraries for data visualization , and how to select the right one for your next project.",
+    "host_name": "ably.com",
+    "rank": 6,
+    "date": "Sep 15, 2023",
+    "favicon": ""
+  },
+  {
+    "url": "https://awesome.cube.dev/for/react/charting-libraries",
+    "name": "React charting libraries — the awesome list",
+    "snippet": "React charting libraries for application developers: charting libraries, data grids, maps, etc. open-source charts",
+    "host_name": "awesome.cube.dev",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

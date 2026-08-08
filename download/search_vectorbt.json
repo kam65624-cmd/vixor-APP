@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/polakowo/vectorbt",
+    "name": "GitHub - polakowo/vectorbt: The backtesting engine that gives you",
+    "snippet": "Portfolio backtesting with trade, drawdown, and performance analytics, including QuantStats integration; Signal tooling for generation, ranking, mapping, and ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/polakowo/vectorbt/issues/155",
+    "name": "Is Vectorbt suitable for price-based aggregations? #155 - GitHub",
+    "snippet": "May 30, 2021 · Generally, although vectorbt simplifies backtesting in many ways, this tool is safe to use only if you have at least an intermediate knowledge ...",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://vectorbt.dev/getting-started/resources",
+    "name": "Resources - VectorBT",
+    "snippet": "Python library for backtesting and analyzing trading strategies at scale. examples, articles, videos, and help channels for VectorBT. Optimize portfolio ...",
+    "host_name": "vectorbt.dev",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/backtesting",
+    "name": "backtesting · GitHub Topics",
+    "snippet": "Backtest trading strategies in Python. Python algorithmic trading strategies for stocks, options, crypto, futures, forex, SEC filings, FRED macro data, and ...",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://vectorbt.pro",
+    "name": "VectorBT® PRO: Getting started",
+    "snippet": "VectorBT® PRO is a high-performance, production-grade Python engine for backtesting, algorithmic trading, and quantitative research.",
+    "host_name": "vectorbt.pro",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=JOdEZMcvyac",
+    "name": "Vectorbt for beginners - Full Python Course - YouTube",
+    "snippet": "Mar 27, 2022 · A full introduction to backtesting with VectorBt in python. VectorBt utilises common data science libraries like Pandas, Numpy, Plotly, ...",
+    "host_name": "www.youtube.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/quant/comments/18bh8jt/open_source_backtesting_software",
+    "name": "Open source backtesting software : r/quant - Reddit",
+    "snippet": "Dec 5, 2023 · Take a look at VectorBt Pro though it is one of the most powerful toolsets out there and it is still being actively maintained, which is a huge ...",
+    "host_name": "www.reddit.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@Tobi_Lux/backtesting-using-vectorbt-cookbook-part-1-08decaab6011",
+    "name": "Backtesting using vectorbt — cookbook (Part 1) | by Tobi Lux - Medium",
+    "snippet": "Feb 3, 2026 · vbt is a Python-based, comprehensive ecosystem for back-testing trading strategies across stocks, commodities, bonds, and cryptocurrencies.",
+    "host_name": "medium.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/polakowo/vectorbt/issues/290",
+    "name": "Question regarding streaming of data, signals generation  - GitHub",
+    "snippet": "Nov 30, 2021 · Hello, I'm considering using vectorbt for backtesting and optimization of strategies, I have a few questions which I couldn't find any ...",
+    "host_name": "github.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/polakowo/vectorbt/discussions/169",
+    "name": "Backtesting multiple trading strategies against a single asset #169",
+    "snippet": "Jun 14, 2021 · I'm using Portfolio.from_signals to backtest multiple trading strategies against a single asset and then compare their Sharpe ratios.",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

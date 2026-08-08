@@ -16,7 +16,6 @@ import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import { log } from "@/shared/structured-logger";
 import { notificationRouter } from "@/shared/notifications";
 import type { SignalTracking } from "@/domains/signal-tracking/types";
-import { TERMINAL_STATUSES } from "@/domains/signal-tracking/types";
 import type { OHLCVBar, LocalAnalysisResult } from "@/domains/analysis/engine/core/types";
 
 // ── In-memory rate-limit cache (keyed by tracking id) ────────────────────
@@ -376,6 +375,11 @@ export async function reanalyzeSingleTracking(
 
   return { trackingId, status: "notified", diff, newResult };
 }
+
+// TODO(P1-3): signal_tracking.signal_id REFERENCES daily_signals(id), but the
+// analysis flow passes analyses.id into signal_id. This FK contradiction means
+// the constraint is effectively broken for analysis-sourced trackings.
+// Documented as a separate task — do NOT change the FK in 1.2C.
 
 // ---------------------------------------------------------------------------
 // Public server function: Trigger re-analysis for the current user's trackings

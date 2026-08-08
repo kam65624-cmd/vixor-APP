@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://github.com/solana-labs/token-list",
+    "name": "solana-labs/token-list: The community maintained",
+    "snippet": "Jul 3, 2022 — Solana Token Registry is a package that allows application to query for list of tokens. The JSON schema for the tokens includes: chainId, ... Read more",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "Jul 3, 2022",
+    "favicon": ""
+  },
+  {
+    "url": "https://solana.stackexchange.com/questions/5203/how-can-i-register-new-spl-token-to-spl-token-listnaming-and-logo",
+    "name": "How can I register new spl-token to spl-token list(Naming",
+    "snippet": "Jan 11, 2023 — I'm going to register my spl-token to Solana spl-token list. I used to use https://github.com/solana-labs/token-list before. But today, I saw the message ...",
+    "host_name": "solana.stackexchange.com",
+    "rank": 1,
+    "date": "Jan 11, 2023",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.npmjs.com/package/@solana/spl-token-registry?activeTab=readme",
+    "name": "solana/spl-token-registry",
+    "snippet": "Jun 21, 2022 — Token Registry is a package that allows application to query for list of tokens . The JSON schema for the tokens includes: and custom extensions ...",
+    "host_name": "www.npmjs.com",
+    "rank": 2,
+    "date": "Jun 21, 2022",
+    "favicon": ""
+  },
+  {
+    "url": "https://solana.com/docs/tokens/extensions/metadata",
+    "name": "Metadata Pointer & Token Metadata",
+    "snippet": "With TokenMetadata , the mint stores the token's name , symbol , uri , update_authority , and custom metadata on the mint account itself.",
+    "host_name": "solana.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://forum.solana.com/t/srfc-00017-token-metadata-interface/283",
+    "name": "sRFC 00017: Token Metadata Interface",
+    "snippet": "Jun 1, 2023 — This proposal contains a spec for a simple token - metadata state and instruction interface for SPL token mints. The interface can be implemented ...",
+    "host_name": "forum.solana.com",
+    "rank": 4,
+    "date": "Jun 1, 2023",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/solana/comments/1bfxc37/how_to_create_a_solana_token_spl_from_cli_with",
+    "name": "How to create a Solana Token (SPL) from CLI with metadata",
+    "snippet": "This guide covers the basics of creating a token with metadata directly on-chain using the CLI. It's a cost-effective way compared to paid ...",
+    "host_name": "www.reddit.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://devpost.com/software/spl-token-registry",
+    "name": "SPL Token Registry",
+    "snippet": "Oct 15, 2021 — The SPL Token Registry stores the metadata for a token mint in a program owned account. It also has a voting system in place where anyone can ... Read more",
+    "host_name": "devpost.com",
+    "rank": 6,
+    "date": "Oct 15, 2021",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/72932645/how-to-register-name-and-log-in-my-solana-token-on-github",
+    "name": "How to register name and log in my solana token on GITHUB",
+    "snippet": "If you want to add a name or logo to your SPL TOKEN , you can check out this video on YouTube which explains it clearly on how to do it through ... Read more",
+    "host_name": "stackoverflow.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

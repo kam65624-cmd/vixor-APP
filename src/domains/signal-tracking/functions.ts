@@ -9,7 +9,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import type { SignalTracking, SignalStatus, CreateSignalTrackingInput } from "./types";
-import { TERMINAL_STATUSES } from "./types";
+import { TERMINAL_STATUSES, MONITORED_STATUSES } from "./types";
 import { notificationRouter } from "@/shared/notifications";
 
 // ── Create Tracking ────────────────────────────────────────────────────────
@@ -86,6 +86,14 @@ export const getUserSignalTrackings = createServerFn({ method: "GET" })
     return { trackings: (data ?? []) as SignalTracking[], error: null };
   });
 
+// TODO(P1-4): take_profit array write-time element validation is missing.
+// Malformed arrays (non-numeric, negative, wrong length) are accepted.
+// This is documented for a later validation task — not addressed in 1.2C.
+
+// TODO(Task-2): hit_tp is currently client-controlled. The server-authority
+// implementation (Task 2) will derive hit_tp from the transition engine.
+// Do NOT fix in 1.2C.
+
 // ── Update Tracking Status ─────────────────────────────────────────────────
 
 export const updateSignalTracking = createServerFn({ method: "POST" })
@@ -131,8 +139,13 @@ export const updateSignalTracking = createServerFn({ method: "POST" })
       return { ok: false, error: error.message };
     }
 
-    // ── Send notification for TP/SL/entry status changes ──
-    if (TERMINAL_STATUSES.includes(status) || status === "active") {
+    // ── Send notification for status changes that warrant user alerts ──
+    // NOTE: tp1_hit and tp2_hit are INTERMEDIATE (not terminal) but still
+    // deserve notifications. We check explicitly rather than relying on
+    // TERMINAL_STATUSES to avoid silently dropping intermediate TP alerts.
+    const warrantsNotification =
+      status === "active" || status.startsWith("tp") || status === "sl_hit";
+    if (warrantsNotification) {
       // Fetch the tracking to get pair/direction for notification
       const { data: tracking } = await supabase
         .from("signal_tracking")
@@ -212,6 +225,9 @@ export const cancelSignalTracking = createServerFn({ method: "POST" })
     return { ok: true, error: null };
   });
 
+// TODO(Task-2): This client-side price evaluation will be replaced by
+// server-authority evaluation. Kept for legacy compatibility until Task 6.
+
 // ── Price Check: Evaluate a single tracking against a price ────────────────
 // This runs on the CLIENT (called from useSignalMonitor hook).
 
@@ -275,6 +291,10 @@ export function evaluateTrackingPrice(
 
   return { hitType: "none" };
 }
+
+// TODO(P1-cleanup): updateExcursions() is dead-code — exported but has zero
+// production callers. MFE/MAE values remain at DB defaults (0).
+// Documented for later cleanup task. Do NOT remove in 1.2C.
 
 // ── Update MFE/MAE (client-side) ──────────────────────────────────────────
 

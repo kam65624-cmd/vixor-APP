@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://twelvedata.com",
+    "name": "Twelve Data | Stock, Forex, and Crypto Market Data APIs",
+    "snippet": "Try Twelve Data financial APIs for free with instant access to stock, forex, cryptocurrency, and fundamental market data . Real time, historical, and EOD data.",
+    "host_name": "twelvedata.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://finnhub.io/docs/api/crypto-candles",
+    "name": "Crypto OHLCV API",
+    "snippet": "Free stock API for realtime market data, global company fundamentals, economic data, and alternative data. Stream real-time trades for US stocks, forex and  ...",
+    "host_name": "finnhub.io",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/datasets/comments/1b40a4p/good_apis_for_financialtrading_data_ohlc_volume",
+    "name": "Good APIs for financial/trading data (OHLC, volume etc.)",
+    "snippet": "a free Python API where I can access OHLC data , volume, etc., It can be stocks, options, or cryptocurrencies; free version, much more for $30/ ...",
+    "host_name": "www.reddit.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.cryptodatadownload.com",
+    "name": "CryptoDataDownload — Free Historical Cryptocurrency Data",
+    "snippet": "Free OHLCV downloads . Browser-based analytics for working analysts. A full programmatic API with the first commercial ML feature store for crypto markets. All ... Read more",
+    "host_name": "www.cryptodatadownload.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/ohlcv-data?l=python",
+    "name": "ohlcv-data",
+    "snippet": "This is a python script that can fetch OHLCV data from Binance spot markets by drawing tokens from a CSV which specifies the ticker, the date you want to pull ... Read more",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://alltick.co",
+    "name": "AllTick: Real-time Tick Data for Forex, US & HK Stocks, and",
+    "snippet": "AllTick's real-time market data API provides accurate and comprehensive market data, covering forex, stocks, cryptocurrencies, commodities, and more. It ... Read more",
+    "host_name": "alltick.co",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://support.kraken.com/articles/360047124832-downloadable-historical-ohlcvt-open-high-low-close-volume-trades-data",
+    "name": "Downloadable historical OHLCVT (Open, High, Low, Close",
+    "snippet": "Apr 26, 2026 — OHLCVT data is the API equivalent to the candlesticks that are displayed on graphical charts (such as the Kraken Pro trading interface). Read more",
+    "host_name": "support.kraken.com",
+    "rank": 6,
+    "date": "Apr 26, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://developers.coindesk.com/documentation/data-api/index_cc_v1_historical_hours",
+    "name": "Indices & Ref. Rates | Historical OHLCV+ Hour",
+    "snippet": "This endpoint is expertly crafted to provide hourly candlestick data for various indices , offering a granular view of index movements within a day. Read more",
+    "host_name": "developers.coindesk.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.coingecko.com/en/api",
+    "name": "Crypto Data API: Most Comprehensive & Reliable",
+    "snippet": "One API for all crypto market data. Access real-time and historical crypto prices, market data , onchain liquidity and more – all through a single API ... Read more",
+    "host_name": "www.coingecko.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  }
+]

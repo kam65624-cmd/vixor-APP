@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.reddit.com/r/algotrading/comments/1hlc5py/which_plot_library_easiest_to_use_for_charting",
+    "name": "Which plot library easiest to use for charting technical indicators?",
+    "snippet": "Dec 24, 2024 · I like highcharts. It's pretty simple to use and gives you a clean and interactive chart. I haven't had a need for lower plots such as volume so ... Alternatives For TradingView Advanced Charts Library : r/opensource Which charting library to choose for large datasets & custom ... - Reddit More results from www.reddit.com",
+    "host_name": "www.reddit.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/tradingview/lightweight-charts",
+    "name": "TradingView Lightweight Charts - GitHub",
+    "snippet": "The Lightweight Charts™ library is the best choice for you if you want to display financial data as an interactive chart on your web page without affecting your ...",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tradingview.com/lightweight-charts",
+    "name": "Lightweight Charts™ library - TradingView",
+    "snippet": "Top performance in a tiny package. Free, open-source and feature-rich. At just 45 kilobytes, the dream of super compact interactive charts is now a reality.",
+    "host_name": "www.tradingview.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=N5cZhhaw-AU",
+    "name": "Create Stunning Trading Indicators with Lightweight Charts - YouTube",
+    "snippet": "Dec 13, 2024 · Transform your charting game with Lightweight Charts! In this video, I show how to use this powerful open-source charting library to plot ...",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.metabase.com/blog/best-open-source-chart-library",
+    "name": "Comparing the most popular open-source charting libraries",
+    "snippet": "Feb 13, 2024 · Discover features from commonly used data visualization libraries, like Chart.js, ECharts, and Nivo.",
+    "host_name": "www.metabase.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ably.com/blog/top-react-chart-libraries",
+    "name": "The top 11 React chart libraries for data visualization - Ably Realtime",
+    "snippet": "Sep 15, 2023 · Discover the top 11 React chart libraries for data visualization, and how to select the right one for your next project.",
+    "host_name": "ably.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://awesome.cube.dev/for/react/charting-libraries",
+    "name": "React charting libraries — the awesome list",
+    "snippet": "React charting libraries for application developers · Chart.js · Apache ECharts · Recharts · Plotly · Frappe · ApexCharts · nivo · Highcharts.",
+    "host_name": "awesome.cube.dev",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.fusioncharts.com/blog/best-react-chart-library",
+    "name": "Best React Chart Library in 2026: 7 Top Options Compared",
+    "snippet": "Jun 21, 2026 · Compare the best React chart libraries in 2026, including FusionCharts, Recharts, ECharts, Victory, D3.js, Visx, and Chart.js.",
+    "host_name": "www.fusioncharts.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://thefintechtimes.com/exploring-open-source-charting-options-dxcharts-lite-vs-tradingview-lightweight",
+    "name": "Exploring Open Source Charting Options: DXcharts Lite vs",
+    "snippet": "Sep 4, 2024 · In conclusion, both DXcharts™® Lite and TradingView™® Lightweight Charts can be considered valuable tools for traders and investors.",
+    "host_name": "thefintechtimes.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://strapi.io/blog/chart-libraries",
+    "name": "Top 5 Chart Libraries to use in Your Next Project - Strapi",
+    "snippet": "Jul 13, 2026 · Apache ECharts is a powerful open-source charting library designed for building complex dashboards and data-heavy applications. Originally ...",
+    "host_name": "strapi.io",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

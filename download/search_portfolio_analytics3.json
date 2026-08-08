@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://github.com/wilsonfreitas/awesome-quant",
+    "name": "wilsonfreitas/awesome-quant: A curated list of insanely",
+    "snippet": "Em pyrial - Python - Portfolio's risk and performance analytics and returns predictions. ... pyfolio-reloaded - Python - Portfolio and risk analytics in Python.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/ranaroussi/quantstats",
+    "name": "QuantStats: Portfolio analytics for quants",
+    "snippet": "QuantStats Python library that performs portfolio profiling, allowing quants and portfolio managers to understand their performance better by providing them ...",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/PythonForForex/Backtrader-for-backtesting/blob/main/portfolio.py",
+    "name": "Backtrader-for-backtesting/portfolio.py at main",
+    "snippet": "These are the code snippets used in the Backtrader for backtesting guide on the AlgoTrading101 website - Backtrader -for-backtesting/ portfolio .py at main ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/quantopian/pyfolio",
+    "name": "quantopian/pyfolio: Portfolio and risk analytics in Python",
+    "snippet": "pyfolio is a Python library for performance and risk analysis of financial portfolios developed by Quantopian Inc. It works well with the Zipline open source ...",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.backtrader.com/docu/analyzers/pyfolio",
+    "name": "Analyzers - PyFolio",
+    "snippet": "Jul 25, 2017 — pyfolio is a Python library for performance and risk analysis of financial portfolios developed by Quantopian Inc. It works well with the ...",
+    "host_name": "www.backtrader.com",
+    "rank": 4,
+    "date": "Jul 25, 2017",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=Dm8GaSYZPF8",
+    "name": "QuantStats: Portfolio Analytics with Python Tutorial",
+    "snippet": "QuantStats: Portfolio Analytics with Python Tutorial . Backtest with Python and Backtrader Part. Portfolio Analysis in Python with QuantStats",
+    "host_name": "www.youtube.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/jin-system-architect/i-never-made-it-into-a-hedge-fund-but-i-survived-the-python-quant-ecosystem-da41fcbf731a",
+    "name": "I Never Made It Into a Hedge Fund. But I Survived the",
+    "snippet": "The distinction between pyfolio and QuantStats is practical: pyfolio is richer for internal research diagnostics . QuantStats is faster for ...",
+    "host_name": "medium.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/polakowo/vectorbt",
+    "name": "polakowo/vectorbt: The backtesting engine that gives you",
+    "snippet": "Portfolio backtesting with trade, drawdown, and performance analytics , including QuantStats integration; Signal tooling for generation, ranking, mapping, and ...",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/quant/comments/1dk6cks/any_python_packages_for_advanced_portfolio",
+    "name": "Any Python packages for advanced portfolio analytics?",
+    "snippet": "Basically just the title. Want to run some analytics on my strategy and was wondering what the best package for this is.",
+    "host_name": "www.reddit.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  }
+]

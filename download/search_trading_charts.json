@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://github.com/tradingview/lightweight-charts",
+    "name": "TradingView Lightweight Charts",
+    "snippet": "Lightweight ChartsTM are one of the smallest and fastest financial HTML5 charts . to display financial data as an interactive chart on your web page",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/financial-charting-library",
+    "name": "financial-charting-library",
+    "snippet": "tradingview / lightweight-charts Star 16.8k. TradingView's Lightweight Charts JavaScript library . 175 lightweight charts react. TradingView's Lightweight ...",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tradingview.com/lightweight-charts",
+    "name": "Lightweight Charts™ library",
+    "snippet": "Free, open-source and feature-rich . Maintained by TradingView, hosted on GitHub, Lightweight Charts is open-source and welcomes contributions.",
+    "host_name": "www.tradingview.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/financial-chart",
+    "name": "financial-chart · GitHub Topics",
+    "snippet": "financial lightweight charts react ・ component supporting Flutter, iOS, Android, and React Native. Built for 60fps rendering, with rich technical indicators ...",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/tradingview/lightweight-charts/discussions/733",
+    "name": "React Native support #733 - tradingview lightweight-charts",
+    "snippet": "I think that all of tradingview's charting solution are suitable for react -native. Here you can find an example for charting_library, I think that for ... Read more",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://tradingview.github.io/lightweight-charts",
+    "name": "Lightweight Charts™ Documentation",
+    "snippet": "Lightweight Charts ™ is a library for creating interactive financial charts . This documentation site provides all the information needed to get started with ...",
+    "host_name": "tradingview.github.io",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.stackademic.com/how-to-integrate-tradingviews-lightweight-charts-in-a-react-application-94e0dbd0657d",
+    "name": "How to Integrate TradingView's Lightweight Charts in a",
+    "snippet": "Oct 22, 2024 — Step 1: Install Lightweight Charts · Step 2: Setting Up the Chart Component · Step 3: Add the Chart Component to Your App · Step 4: Customize Your ... Read more",
+    "host_name": "blog.stackademic.com",
+    "rank": 6,
+    "date": "Oct 22, 2024",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/tradingview/lightweight-charts/blob/master/.github/skills/lightweight-charts/SKILL.md",
+    "name": "Lightweight Charts skill",
+    "snippet": "Use when working with TradingView's lightweight-charts — creating charts, adding series (Line/Area/Bar/Candlestick/Histogram), configuring time and price scales ... Read more",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://thefintechtimes.com/exploring-open-source-charting-options-dxcharts-lite-vs-tradingview-lightweight",
+    "name": "Exploring Open Source Charting Options: DXcharts Lite vs",
+    "snippet": "Sep 4, 2024 — A comparison of DXcharts™® Lite and TradingView ™® Lightweight Charts , highlighting features and differences to find the right open - source ...",
+    "host_name": "thefintechtimes.com",
+    "rank": 8,
+    "date": "Sep 4, 2024",
+    "favicon": ""
+  }
+]

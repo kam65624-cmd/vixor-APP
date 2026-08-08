@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://github.com/statelyai/xstate",
+    "name": "statelyai/xstate: State machines, statecharts, and actors for",
+    "snippet": "XState provides a powerful and flexible way to manage application and workflow state by allowing developers to model logic as actors and state machines .",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/reactjs/comments/1761cqt/are_state_machines_the_future",
+    "name": "Are State machines the future? : r/reactjs",
+    "snippet": "Currently doing an internship right now and I've learned a lot of advanced concepts. Right now i'm helping implement a feature that uses xState as ...",
+    "host_name": "www.reddit.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stately.ai/docs/xstate",
+    "name": "XState",
+    "snippet": "XState provides a powerful and flexible way to manage application and workflow state by allowing developers to model logic as actors and state machines .",
+    "host_name": "stately.ai",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://oneuptime.com/blog/post/2026-01-30-typescript-type-safe-state-machines/view",
+    "name": "How to Build Type-Safe State Machines in TypeScript",
+    "snippet": "Jan 30, 2026 — This post walks through building type-safe state machines from scratch, then shows how to integrate with XState for production use.",
+    "host_name": "oneuptime.com",
+    "rank": 3,
+    "date": "Jan 30, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@melekcharradi/xstate-the-redux-alternative-for-complex-application-logic-9747262861d1",
+    "name": "XState: The Redux Alternative for Complex Application Logic",
+    "snippet": "It provides a robust framework for modeling complex logic, complete with TypeScript support, visual tooling, and integration with major frontend ... Read more",
+    "host_name": "medium.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=DMXAv8iTrcY",
+    "name": "Design a polling state machine with XState",
+    "snippet": "In this video I do a walkthrough of designing and implementing a state machine for polling an external service . State machines help us to think ...",
+    "host_name": "www.youtube.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/78115677/how-can-i-combine-2-state-machines-in-xstate-5",
+    "name": "How can I combine 2 state machines in xstate 5",
+    "snippet": "I have a machine that handles the processus of creating a product, which is used each time a user wants to create one. Now I want to have a more ...",
+    "host_name": "stackoverflow.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/noriste/how-i-strive-for-xstate-machine-types-and-tests-readability-19f4",
+    "name": "How I strive for XState machine, types, and tests readability",
+    "snippet": "Oct 12, 2021 — The machine itself is pretty simple, here I talk about my Design Decisions, mostly related to TypeScript and the Tests.",
+    "host_name": "dev.to",
+    "rank": 7,
+    "date": "Oct 12, 2021",
+    "favicon": ""
+  }
+]

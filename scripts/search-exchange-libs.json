@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://ccxt.com",
+    "name": "CCXT – Cryptocurrency Exchange Trading Library | One API",
+    "snippet": "CCXT is the open-source trading library used by developers worldwide: one unified API for 100+ crypto exchanges and prediction markets in JavaScript, ...",
+    "host_name": "ccxt.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/orgs/community/discussions/149128",
+    "name": "Are there libraries similar to ccxt for Capital.com? #149128",
+    "snippet": "Jan 14, 2025 — Currently, there isn't a CCXT-like library directly integrated with Capital.com API . However, you can consider the following options: Capital. ...",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "Jan 14, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.nuget.org/packages/ccxt/4.5.6",
+    "name": "ccxt 4.5.6",
+    "snippet": "The CCXT library is used to connect and trade with cryptocurrency exchanges and payment processing services worldwide. It provides quick access to market data ... Read more",
+    "host_name": "www.nuget.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://vezgo.com/blog/ccxt-vs-vezgo-the-better-crypto-exchange-api",
+    "name": "The CCXT Alternative: The Best Crypto Exchange API",
+    "snippet": "Sep 1, 2023 — CCXT is a library to connect to crypto exchanges for trading and data aggregation. Vezgo, the CCXT alternative, is a turnkey crypto API",
+    "host_name": "vezgo.com",
+    "rank": 3,
+    "date": "Sep 1, 2023",
+    "favicon": ""
+  },
+  {
+    "url": "https://pypi.org/project/ccxt-robotter",
+    "name": "ccxt-robotter - CryptoCurrency eXchange Trading Library",
+    "snippet": "The CCXT library is used to connect and trade with cryptocurrency exchanges and payment processing services worldwide. It provides quick access to market data ... Read more",
+    "host_name": "pypi.org",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/neural-engineer/cryptocurrency-market-data-with-ccxt-a-technical-guide-08a9943f9639",
+    "name": "CryptoCurrency Market Data with CCXT: A Technical Guide",
+    "snippet": "CCXT is a powerful library that supports over 120 cryptocurrency exchanges and provides consistent methods for: Market data retrieval; Trading ... Read more",
+    "host_name": "medium.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://classic.yarnpkg.com/en/package/ccxt-compiled",
+    "name": "ccxt-compiled",
+    "snippet": "The CCXT library is used to connect and trade with cryptocurrency / altcoin exchanges and payment processing services worldwide.",
+    "host_name": "classic.yarnpkg.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=2Zdm2ISdm1Q",
+    "name": "CCXT - Cryptocurrency Exchange Trading Library Tutorial",
+    "snippet": "It's a javascript python php cryptocurrency trading api with support for more than 120 bitcoin and altcoin exchanges.",
+    "host_name": "www.youtube.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://mudrex.com/blog/mudrex-is-now-integrated-into-ccxt-the-worlds-leading-open-source-crypto-trading-library",
+    "name": "Mudrex is Now Integrated Into CCXT: The World's Leading",
+    "snippet": "Jul 10, 2026 — It currently supports 100+ exchanges across multiple programming languages, including Python, JavaScript / TypeScript , C#, PHP, Go, and Java. For ... Read more",
+    "host_name": "mudrex.com",
+    "rank": 8,
+    "date": "Jul 10, 2026",
+    "favicon": ""
+  }
+]

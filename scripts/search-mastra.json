@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://mastra.ai",
+    "name": "Mastra: TypeScript AI Framework for Agents and Apps",
+    "snippet": "Mastra is an open-source TypeScript framework for building AI -powered applications and agents . Mastra provides agents , workflows , memory , workspaces and ... Read more",
+    "host_name": "mastra.ai",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://mastra.ai/ai-agent-framework",
+    "name": "Build AI Agents With a Modern TypeScript Stack",
+    "snippet": "Mastra is an open-source TypeScript framework that gives you every primitive you need in a single framework : agents , memory , tools , workflows and evals. Read more",
+    "host_name": "mastra.ai",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/mastra-ai/mastra",
+    "name": "Mastra is the modern TypeScript framework for AI-powered",
+    "snippet": "Mastra uses storage to remember execution state, so you can pause indefinitely and resume where you left off. add human-like memory with Observational Memory",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ayautomate.com/blog/best-typescript-ai-agent-frameworks",
+    "name": "8 Best TypeScript AI Agent Frameworks: AI SDK vs Mastra",
+    "snippet": "Jun 16, 2026 — Mastra , best for full-stack agent apps with workflows, memory, and evals. Mastra is the most ambitious \"batteries-included\" TypeScript agent ... Read more",
+    "host_name": "www.ayautomate.com",
+    "rank": 3,
+    "date": "Jun 16, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.developersdigest.tech/blog/mastra-durable-typescript-agents",
+    "name": "Mastra for Durable TypeScript Agents: Where It Fits and",
+    "snippet": "May 30, 2026 — Mastra is the strongest fit when a TypeScript product needs agents , workflows , memory , tools , MCP, evals, and traces in one backend layer.",
+    "host_name": "www.developersdigest.tech",
+    "rank": 4,
+    "date": "May 30, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://mastra.ai/blog/best-ai-agent-frameworks",
+    "name": "The 6 Best AI Agent Frameworks (July 2026)",
+    "snippet": "Jul 18, 2026 — Beyond its TypeScript-native experience, Mastra includes ... tool calling, memory, workflow orchestration , evaluations, and observability. Read more",
+    "host_name": "mastra.ai",
+    "rank": 5,
+    "date": "Jul 18, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://noqta.tn/en/blog/mastra-typescript-ai-agent-framework-guide-2026",
+    "name": "Mastra: TypeScript AI Agent Framework Guide 2026",
+    "snippet": "May 10, 2026 — An agent has a model, a system prompt, a set of tools , optional memory , and optional structured output. You define one once, then call it from ...",
+    "host_name": "noqta.tn",
+    "rank": 6,
+    "date": "May 10, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.arcade.dev/en/get-started/agent-frameworks/mastra",
+    "name": "Build an AI Agent and Workflow with Arcade and Mastra",
+    "snippet": "Jul 24, 2026 — Mastra is an open-source, TypeScript agent framework for building AI applications. It provides agents with memory, tool calling, workflows ... Read more",
+    "host_name": "docs.arcade.dev",
+    "rank": 7,
+    "date": "Jul 24, 2026",
+    "favicon": ""
+  }
+]

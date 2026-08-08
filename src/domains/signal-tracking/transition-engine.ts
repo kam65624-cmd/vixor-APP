@@ -39,6 +39,10 @@ export type SignalEventType =
 // Input to the engine. Contains everything needed to make a transition decision.
 // The caller (server layer) is responsible for validating ownership, signal
 // version, and rate-limiting BEFORE invoking the engine.
+//
+// TODO(P1-6, Task-2): observedAt is provided by the client. The server-authority
+// implementation (Task 2) must add serverReceivedAt and validate/round observedAt.
+// Do NOT add server timestamps in 1.2C.
 
 export interface SignalTransitionRequest {
   /** Current signal status in the database */

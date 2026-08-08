@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://www.lseg.com/en/post-trade/solutions/advise/open-source-risk-engine",
+    "name": "Open Source Risk Engine | Acadia Quant Service",
+    "snippet": "The Open Source Risk project provides a transparent, peer-reviewed framework for pricing and risk analysis , serving as a benchmark, validation, and training ...",
+    "host_name": "www.lseg.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.rs/crate/nautilus-risk/latest",
+    "name": "nautilus-risk 0.60.0",
+    "snippet": "The nautilus-risk crate provides risk management capabilities including pre-trade order validation, position sizing calculations, and trading controls.",
+    "host_name": "docs.rs",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://xescuder.medium.com/building-a-trading-backtesting-system-part-4-risk-management-and-position-sizing-55dba2736745",
+    "name": "Part 4: Risk Management and Position Sizing - Xavier Escudero",
+    "snippet": "Optimal f Position Sizing : This method aims to maximize the geometric growth rate of the trading account by dynamically adjusting the position ... Read more",
+    "host_name": "xescuder.medium.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://bookmap.com/blog/position-sizing-for-success-how-to-manage-risk-effectively",
+    "name": "Position Sizing for Success: How to Manage Risk Effectively",
+    "snippet": "Position sizing ensures that a trader doesn't risk too much , especially in trades that don't go as planned. It helps in: Preventing the risk of substantial ...",
+    "host_name": "bookmap.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://opensourcerisk.org",
+    "name": "Open Source Risk Engine",
+    "snippet": "It is the first end-to-end open source risk application providing complex risk analytics for financial institutions through a series of releases.",
+    "host_name": "opensourcerisk.org",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://es.tradingview.com/scripts/size",
+    "name": "SIZE — Indicadores y estrategias",
+    "snippet": "This open-source Pine Script® indicator helps traders manage risk by calculating position size, margin, and risk/reward based on account size, leverage, entry, ...",
+    "host_name": "es.tradingview.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://journalplus.co/best/trading-risk-management-tools",
+    "name": "Best Risk Management Tools for Traders 2026",
+    "snippet": "Mar 22, 2026 — What is the best free risk management tool for trading? Myfxbook's Position Size Calculator is the best free option for quick position sizing. Read more",
+    "host_name": "journalplus.co",
+    "rank": 6,
+    "date": "Mar 22, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://lime.co/news/position-sizing-for-risk-management-protecting-your-trading-capital-143344",
+    "name": "Position Sizing for Risk Management: Protecting Your",
+    "snippet": "Jul 7, 2025 — Position sizing refers to determining how much capital to allocate to each trade relative to your total trading account. It's the systematic ... Read more",
+    "host_name": "lime.co",
+    "rank": 7,
+    "date": "Jul 7, 2025",
+    "favicon": ""
+  }
+]

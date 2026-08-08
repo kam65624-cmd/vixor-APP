@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/freqtrade/freqtrade",
+    "name": "freqtrade/freqtrade: Free, open source crypto trading bot - GitHub",
+    "snippet": "Freqtrade is a free and open source crypto trading bot written in Python. It is designed to support all major exchanges and be controlled via Telegram or webUI.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://gainium.io/compare/freqtrade-vs-hummingbot",
+    "name": "Freqtrade vs Hummingbot vs Gainium: Open Source Trading",
+    "snippet": "Freqtrade is the gold standard for developers who want to build trading strategies in Python. With 48,000+ GitHub stars and 9 years of development,",
+    "host_name": "gainium.io",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/jesse-ai/jesse",
+    "name": "jesse-ai/jesse: An advanced crypto trading bot written in Python",
+    "snippet": "Jesse is an advanced crypto trading framework that aims to simplify researching and defining YOUR OWN trading strategies for backtesting, ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@gwrx2005/top-10-ai-powered-crypto-trading-repositories-on-github-0041862546b6",
+    "name": "Top 10 AI-Powered Crypto Trading Repositories on GitHub",
+    "snippet": "Freqtrade is a popular open-source crypto trading bot that supports strategy development, backtesting, and live trading.",
+    "host_name": "medium.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://x.com/DivyanshT91162/status/2084702444836323332",
+    "name": "Top 3 GitHub Repositories for Crypto & Trading 1. freqtrade A",
+    "snippet": "freqtrade A powerful open-source crypto trading bot that supports strategy backtesting, paper trading, and live trading. Hummingbot The go-to ...",
+    "host_name": "x.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/hummingbot/hummingbot",
+    "name": "hummingbot/hummingbot: Open source software that helps you",
+    "snippet": "Hummingbot is an open-source framework that helps you design and deploy automated trading strategies, or bots, that can run on many centralized or ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.threads.com/@tuba.captures/post/DYp5QBnDbDF/crypto-quant-dev-project-repos-hummingbot-jesse-freq-ai-cryptofeed-octo-bot",
+    "name": "5 Crypto + Quant Dev Project Repos - Threads",
+    "snippet": "A developer shares their journey building their first cryptocurrency trading bot. Automating trades often reveals how much market psychology ...",
+    "host_name": "www.threads.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/algotradingcrypto/comments/luzvc7/jesse_vs_freqtrade",
+    "name": "Jesse vs Freqtrade : r/algotradingcrypto - Reddit",
+    "snippet": "I've been researching these 2 libraries, and I'm wondering what the pros and cons are. Has anybody tried them both?",
+    "host_name": "www.reddit.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.octobot.cloud/en/blog/best-open-source-crypto-trading-bots",
+    "name": "5 Best Open-Source Crypto Trading Bots - OctoBot Cloud",
+    "snippet": "Freqtrade , written in Python, is known for its ease of use and Telegram integration. It allows for extensive strategy testing and simultaneous running of ...",
+    "host_name": "www.octobot.cloud",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/botcrypto-io/awesome-crypto-trading-bots/blob/main/README.md",
+    "name": "awesome-crypto-trading-bots/README.md at main - GitHub",
+    "snippet": "Hummingbot - Hummingbot is an open-source project that integrates cryptocurrency trading on both centralized exchanges and decentralized protocols. It allows ...",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
