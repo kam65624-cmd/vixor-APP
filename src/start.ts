@@ -5,6 +5,11 @@ import { attachSupabaseAuth } from "@/shared/supabase/auth-attacher";
 import { log } from "@/shared/structured-logger";
 import { metrics } from "@/shared/metrics-store";
 
+// ── P1 Bootstrap: Register event consumers + configure event persistence ──
+// Must run BEFORE createStart() so all event handlers are active when
+// the first server function executes.
+import "@/shared/p1-bootstrap";
+
 // Structured request logging + metrics recording.
 // Logs every request as a single JSON line for downstream ingestion (Loki/ELK/Datadog).
 const loggingMiddleware = createMiddleware().server(async ({ next, request }) => {

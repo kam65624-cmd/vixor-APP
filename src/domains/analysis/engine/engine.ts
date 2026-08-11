@@ -43,6 +43,8 @@ import { detectHarmonicPatterns } from "./patterns/harmonic-patterns";
 
 import { calculateRiskReward, rrRatio } from "./risk/risk-reward";
 import { getLatestIndicators, getRSIStatus, getADXStrength, checkEMAAlignment } from "./indicators";
+import { detectRegime, type Regime } from "./regime/regime-detector";
+import type { CalendarImpactAssessment } from "./calendar-impact";
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -57,6 +59,8 @@ export interface AnalysisInput {
   bars?: OHLCVBar[];
   /** Optional: image bytes for future OCR extraction */
   imageBytes?: Uint8Array;
+  /** Optional: pre-fetched calendar impact assessment */
+  calendarImpact?: CalendarImpactAssessment;
 }
 
 /**
@@ -129,6 +133,17 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     indicators.ema200,
   );
 
+  // ── Step 5c: Regime detection ──────────────────────────────────────
+  // detectRegime requires 30+ bars and uses Candle type (structurally compatible)
+  let regime: Regime | undefined;
+  let regimeAdjusted = false;
+  try {
+    const regimeResult = detectRegime(bars as any);
+    regime = regimeResult.regime;
+  } catch {
+    // Insufficient bars for regime detection — continue without regime
+  }
+
   // ── Step 6: ATR & Support/Resistance for risk-reward ───────────────
   const atrValue = atr(bars, 14);
   const currentPrice = bars[bars.length - 1]!.close;
@@ -155,7 +170,7 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
   // Adjust recommendation based on pattern confluence + indicators
   // CRITICAL: Confluence scoring ensures consistency — the same data must produce
   // the same recommendation every time. No Math.random() anywhere.
-  const confluence = calculateConfluenceScore(
+  let confluence = calculateConfluenceScore(
     trend,
     rr.recommendation,
     candlePatterns,
@@ -169,6 +184,13 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     orderBlocks,
     fvgs,
   );
+
+  // ── Regime-based confluence weight adjustment ────────────────────
+  // Trending: boost EMA/MACD/BOS signals. Ranging: boost RSI/BB/reversal patterns.
+  // Volatile: boost ATR signals.
+  if (regime) {
+    confluence = adjustConfluenceForRegime(confluence, regime, indicators, emaAlignment);
+  }
 
   // Require minimum confluence to issue BUY/SELL — otherwise WAIT
   // This prevents the engine from flipping between BUY and SELL on minor data changes
@@ -199,6 +221,31 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
 
   if (usingSyntheticData) {
     confidence = Math.min(Math.max(Math.round(confidence * 0.8), 20), 70);
+  }
+
+  // ── Regime-based confidence adjustment ────────────────────────────
+  if (regime && finalRec !== "WAIT") {
+    if (regime === "volatile") {
+      // Volatile regime: reduce overall confidence by 10%
+      confidence = Math.round(confidence * 0.9);
+      regimeAdjusted = true;
+    }
+  }
+
+  // ── Calendar impact confidence adjustment ───────────────────────────
+  // Applied additively (always negative or zero), floored at 0.
+  // Non-blocking: if calendarImpact is not provided, no adjustment.
+  let calendarImpactResult: CalendarImpactAssessment | undefined;
+  if (input.calendarImpact) {
+    try {
+      calendarImpactResult = input.calendarImpact;
+      confidence = Math.max(0, confidence + calendarImpactResult.confidenceAdjustment);
+    } catch (err) {
+      console.warn(
+        "[engine] Calendar impact adjustment failed, continuing without:",
+        err instanceof Error ? err.message : String(err),
+      );
+    }
   }
 
   // Top liquidity zones
@@ -366,6 +413,8 @@ export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
     news_impact: newsImpact,
     signal_badge: signalBadge,
     vixor_message: vixorMessage,
+    ...(regime ? { regime, regimeAdjusted } : {}),
+    ...(calendarImpactResult ? { calendarImpact: calendarImpactResult } : {}),
   };
 }
 
@@ -603,6 +652,75 @@ function calculateConfluenceScore(
   } else {
     return { direction: "NONE", score: 0, signals: [] };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Helper: Regime-based confluence adjustment
+// ---------------------------------------------------------------------------
+function adjustConfluenceForRegime(
+  confluence: ConfluenceResult,
+  regime: Regime,
+  indicators: {
+    macdHistogram: number;
+    bollingerPosition: number;
+    atr: number;
+    rsi: number;
+  },
+  emaAlignment: { alignment: string; strength: number },
+): ConfluenceResult {
+  const adjusted = {
+    direction: confluence.direction,
+    score: confluence.score,
+    signals: [...confluence.signals],
+  };
+
+  if (regime === "trending_up" || regime === "trending_down") {
+    // Trending: add bonus for EMA alignment and MACD confirmation
+    if (
+      (regime === "trending_up" && adjusted.direction === "BUY") ||
+      (regime === "trending_down" && adjusted.direction === "SELL")
+    ) {
+      if (emaAlignment.alignment !== "NEUTRAL" && emaAlignment.strength >= 60) {
+        if (!adjusted.signals.some((s) => s.includes("EMA alignment"))) {
+          adjusted.score += 1;
+          adjusted.signals.push(`Regime-boosted EMA alignment (${emaAlignment.strength}%)`);
+        }
+      }
+      if (!isNaN(indicators.macdHistogram)) {
+        const macdConfirms =
+          (regime === "trending_up" && indicators.macdHistogram > 0) ||
+          (regime === "trending_down" && indicators.macdHistogram < 0);
+        if (macdConfirms && !adjusted.signals.some((s) => s.includes("MACD"))) {
+          adjusted.score += 1;
+          adjusted.signals.push("Regime-boosted MACD confirmation");
+        }
+      }
+    }
+  } else if (regime === "ranging") {
+    // Ranging: add bonus for RSI extremes and Bollinger Band proximity
+    if (!isNaN(indicators.rsi)) {
+      const rsiReversal =
+        (adjusted.direction === "BUY" && indicators.rsi <= 35) ||
+        (adjusted.direction === "SELL" && indicators.rsi >= 65);
+      if (rsiReversal) {
+        adjusted.score += 1;
+        adjusted.signals.push("Regime-boosted RSI reversal in range");
+      }
+    }
+    if (!isNaN(indicators.bollingerPosition)) {
+      const bbReversal =
+        (adjusted.direction === "BUY" && indicators.bollingerPosition <= 0.15) ||
+        (adjusted.direction === "SELL" && indicators.bollingerPosition >= 0.85);
+      if (bbReversal) {
+        adjusted.score += 1;
+        adjusted.signals.push("Regime-boosted Bollinger Band reversal");
+      }
+    }
+  }
+  // Volatile regime confidence reduction is handled in the confidence calculation
+  // above (10% reduction), so no confluence adjustment needed here.
+
+  return adjusted;
 }
 
 // ---------------------------------------------------------------------------

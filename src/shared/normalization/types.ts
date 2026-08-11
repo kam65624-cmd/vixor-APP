@@ -59,6 +59,26 @@ export interface CanonicalQuote {
 export type PriceSource =
   "binance" | "dexscreener" | "finnhub" | "twelvedata" | "helius" | "cache" | "unknown";
 
+// ── Order Book ────────────────────────────────────────────────────────────
+
+export interface OrderBookEntry {
+  price: number;
+  quantity: number;
+}
+
+export interface CanonicalOrderBook {
+  pair: string;
+  bids: OrderBookEntry[];
+  asks: OrderBookEntry[];
+  bestBid: number | null;
+  bestAsk: number | null;
+  spread: number | null;
+  /** Mid-price: (bestBid + bestAsk) / 2 */
+  midPrice: number | null;
+  timestamp: string;
+  source: PriceSource;
+}
+
 // ── Candle / OHLCV ─────────────────────────────────────────────────────────
 
 /** Canonical candlestick */

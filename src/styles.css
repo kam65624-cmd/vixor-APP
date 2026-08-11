@@ -84,8 +84,24 @@
   --color-chart-2: #8c9eff;
   --color-chart-3: #7b61ff;
 
-  /* Surface aliases */
+  /* Surface aliases — 4-layer depth hierarchy */
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-surface-elevated: var(--surface-elevated);
+
+  /* Overlay & chrome tokens */
+  --color-overlay: var(--overlay);
+  --color-overlay-secondary: var(--overlay-secondary);
+
+  /* Gradient bridge tokens */
+  --color-gradient-primary: var(--gradient-primary);
+  --color-gradient-hero: var(--gradient-hero);
+  --color-gradient-bullish: var(--gradient-bullish);
+  --color-gradient-bearish: var(--gradient-bearish);
+  --color-gradient-glass: var(--gradient-glass);
+
+  /* Text / misc aliases */
   --color-accent-dark: var(--accent-dark);
   --color-border-subtle: var(--border-subtle);
   --color-text-muted: var(--text-muted);

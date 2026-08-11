@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { BinanceWS, type LivePrice } from "./binance-ws";
 import { AssetRegistry } from "@/shared/asset-registry";
+import { normalizeTwelveDataQuote } from "@/shared/normalization/normalizers";
 
 export type FeedStatus = "idle" | "connecting" | "connected" | "disconnected" | "error" | "polling";
 
@@ -131,6 +132,7 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
   }, [enabled, wsSymbols.join(",")]);
 
   // REST polling for non-crypto pairs (forex, gold, etc.)
+  // Normalizes responses via normalizeTwelveDataQuote for canonical data.
   useEffect(() => {
     if (!enabled || nonCryptoPairs.length === 0) return;
 
@@ -144,30 +146,79 @@ export function useLivePrices(options: UseLivePricesOptions = {}): UseLivePrices
 
         setPrices((prev) => {
           const next = new Map(prev);
-          for (const [pair, data] of Object.entries(result)) {
-            if (typeof data === "object" && data !== null && "price" in data) {
-              const d = data as {
-                price: number;
-                change24h?: number;
-                high24h?: number;
-                low24h?: number;
-                volume24h?: number;
-              };
-              const asset = AssetRegistry.find(pair);
+
+          // Handle array response (from getMarketPrices server function)
+          if (Array.isArray(result)) {
+            for (const item of result) {
+              if (!item?.pair || !item?.price) continue;
+              const asset = AssetRegistry.find(item.pair);
               if (!asset) continue;
-              const symbol = asset.symbols.binance || pair.replace("/", "");
+              const symbol = asset.symbols.binance || item.pair.replace("/", "");
+
+              // Normalize through canonical layer when possible
+              const itemData = item as unknown as Record<string, unknown>;
+              const normalized = normalizeTwelveDataQuote({
+                symbol: item.pair,
+                close: String(item.price),
+                high: itemData.high24h != null ? String(itemData.high24h) : undefined,
+                low: itemData.low24h != null ? String(itemData.low24h) : undefined,
+                volume: itemData.volume24h != null ? String(itemData.volume24h) : undefined,
+                percent_change: item.change24h != null ? String(item.change24h) : undefined,
+              });
+
               next.set(symbol, {
-                pair,
+                pair: normalized.ok ? normalized.data.pair : item.pair,
                 symbol,
-                price: d.price,
-                change24h: d.change24h ?? 0,
-                high24h: d.high24h ?? 0,
-                low24h: d.low24h ?? 0,
-                volume24h: d.volume24h ?? 0,
+                price: item.price,
+                change24h: item.change24h ?? 0,
+                high24h: 0,
+                low24h: 0,
+                volume24h: 0,
                 quoteVolume24h: 0,
                 open24h: 0,
                 timestamp: Date.now(),
+                source: normalized.ok ? normalized.data.source : undefined,
               });
+            }
+          } else {
+            // Handle object response (legacy format)
+            for (const [pair, data] of Object.entries(result)) {
+              if (typeof data === "object" && data !== null && "price" in data) {
+                const d = data as {
+                  price: number;
+                  change24h?: number;
+                  high24h?: number;
+                  low24h?: number;
+                  volume24h?: number;
+                };
+                const asset = AssetRegistry.find(pair);
+                if (!asset) continue;
+                const symbol = asset.symbols.binance || pair.replace("/", "");
+
+                // Normalize through canonical layer
+                const normalized = normalizeTwelveDataQuote({
+                  symbol: pair,
+                  close: String(d.price),
+                  high: d.high24h != null ? String(d.high24h) : undefined,
+                  low: d.low24h != null ? String(d.low24h) : undefined,
+                  volume: d.volume24h != null ? String(d.volume24h) : undefined,
+                  percent_change: d.change24h != null ? String(d.change24h) : undefined,
+                });
+
+                next.set(symbol, {
+                  pair: normalized.ok ? normalized.data.pair : pair,
+                  symbol,
+                  price: d.price,
+                  change24h: d.change24h ?? 0,
+                  high24h: d.high24h ?? 0,
+                  low24h: d.low24h ?? 0,
+                  volume24h: d.volume24h ?? 0,
+                  quoteVolume24h: 0,
+                  open24h: 0,
+                  timestamp: Date.now(),
+                  source: normalized.ok ? normalized.data.source : undefined,
+                });
+              }
             }
           }
           return next;

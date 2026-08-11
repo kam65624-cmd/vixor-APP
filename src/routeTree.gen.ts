@@ -17,11 +17,13 @@ import { Route as AuthenticatedWhaleRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedWalletWeb3RouteImport } from './routes/_authenticated/wallet-web3'
 import { Route as AuthenticatedVisionRouteImport } from './routes/_authenticated/vision'
 import { Route as AuthenticatedTradeDeskRouteImport } from './routes/_authenticated/trade-desk'
+import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
 import { Route as AuthenticatedTrackersRouteImport } from './routes/_authenticated/trackers'
 import { Route as AuthenticatedSwapRouteImport } from './routes/_authenticated/swap'
 import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
+import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
 import { Route as AuthenticatedReferralRouteImport } from './routes/_authenticated/referral'
 import { Route as AuthenticatedRadarRouteImport } from './routes/_authenticated/radar'
 import { Route as AuthenticatedPulseRouteImport } from './routes/_authenticated/pulse'
@@ -31,6 +33,7 @@ import { Route as AuthenticatedPredictionsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedPnlRouteImport } from './routes/_authenticated/pnl'
 import { Route as AuthenticatedPerpetualsRouteImport } from './routes/_authenticated/perpetuals'
+import { Route as AuthenticatedOpportunitiesRouteImport } from './routes/_authenticated/opportunities'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
 import { Route as AuthenticatedExperimentsRouteImport } from './routes/_authenticated/experiments'
@@ -89,6 +92,11 @@ const AuthenticatedTradeDeskRoute = AuthenticatedTradeDeskRouteImport.update({
   path: '/trade-desk',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTrackingRoute = AuthenticatedTrackingRouteImport.update({
+  id: '/tracking',
+  path: '/tracking',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTrackersRoute = AuthenticatedTrackersRouteImport.update({
   id: '/trackers',
   path: '/trackers',
@@ -112,6 +120,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
   id: '/rewards',
   path: '/rewards',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedReferralRoute = AuthenticatedReferralRouteImport.update({
@@ -160,6 +173,12 @@ const AuthenticatedPerpetualsRoute = AuthenticatedPerpetualsRouteImport.update({
   path: '/perpetuals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOpportunitiesRoute =
+  AuthenticatedOpportunitiesRouteImport.update({
+    id: '/opportunities',
+    path: '/opportunities',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -275,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/experiments': typeof AuthenticatedExperimentsRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/opportunities': typeof AuthenticatedOpportunitiesRoute
   '/perpetuals': typeof AuthenticatedPerpetualsRoute
   '/pnl': typeof AuthenticatedPnlRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -284,11 +304,13 @@ export interface FileRoutesByFullPath {
   '/pulse': typeof AuthenticatedPulseRoute
   '/radar': typeof AuthenticatedRadarRoute
   '/referral': typeof AuthenticatedReferralRoute
+  '/review': typeof AuthenticatedReviewRoute
   '/rewards': typeof AuthenticatedRewardsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/signals': typeof AuthenticatedSignalsRoute
   '/swap': typeof AuthenticatedSwapRoute
   '/trackers': typeof AuthenticatedTrackersRoute
+  '/tracking': typeof AuthenticatedTrackingRoute
   '/trade-desk': typeof AuthenticatedTradeDeskRoute
   '/vision': typeof AuthenticatedVisionRoute
   '/wallet-web3': typeof AuthenticatedWalletWeb3Route
@@ -315,6 +337,7 @@ export interface FileRoutesByTo {
   '/experiments': typeof AuthenticatedExperimentsRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/opportunities': typeof AuthenticatedOpportunitiesRoute
   '/perpetuals': typeof AuthenticatedPerpetualsRoute
   '/pnl': typeof AuthenticatedPnlRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -324,11 +347,13 @@ export interface FileRoutesByTo {
   '/pulse': typeof AuthenticatedPulseRoute
   '/radar': typeof AuthenticatedRadarRoute
   '/referral': typeof AuthenticatedReferralRoute
+  '/review': typeof AuthenticatedReviewRoute
   '/rewards': typeof AuthenticatedRewardsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/signals': typeof AuthenticatedSignalsRoute
   '/swap': typeof AuthenticatedSwapRoute
   '/trackers': typeof AuthenticatedTrackersRoute
+  '/tracking': typeof AuthenticatedTrackingRoute
   '/trade-desk': typeof AuthenticatedTradeDeskRoute
   '/vision': typeof AuthenticatedVisionRoute
   '/wallet-web3': typeof AuthenticatedWalletWeb3Route
@@ -358,6 +383,7 @@ export interface FileRoutesById {
   '/_authenticated/experiments': typeof AuthenticatedExperimentsRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/opportunities': typeof AuthenticatedOpportunitiesRoute
   '/_authenticated/perpetuals': typeof AuthenticatedPerpetualsRoute
   '/_authenticated/pnl': typeof AuthenticatedPnlRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
@@ -367,11 +393,13 @@ export interface FileRoutesById {
   '/_authenticated/pulse': typeof AuthenticatedPulseRoute
   '/_authenticated/radar': typeof AuthenticatedRadarRoute
   '/_authenticated/referral': typeof AuthenticatedReferralRoute
+  '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/rewards': typeof AuthenticatedRewardsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/signals': typeof AuthenticatedSignalsRoute
   '/_authenticated/swap': typeof AuthenticatedSwapRoute
   '/_authenticated/trackers': typeof AuthenticatedTrackersRoute
+  '/_authenticated/tracking': typeof AuthenticatedTrackingRoute
   '/_authenticated/trade-desk': typeof AuthenticatedTradeDeskRoute
   '/_authenticated/vision': typeof AuthenticatedVisionRoute
   '/_authenticated/wallet-web3': typeof AuthenticatedWalletWeb3Route
@@ -402,6 +430,7 @@ export interface FileRouteTypes {
     | '/experiments'
     | '/journal'
     | '/notifications'
+    | '/opportunities'
     | '/perpetuals'
     | '/pnl'
     | '/portfolio'
@@ -411,11 +440,13 @@ export interface FileRouteTypes {
     | '/pulse'
     | '/radar'
     | '/referral'
+    | '/review'
     | '/rewards'
     | '/settings'
     | '/signals'
     | '/swap'
     | '/trackers'
+    | '/tracking'
     | '/trade-desk'
     | '/vision'
     | '/wallet-web3'
@@ -442,6 +473,7 @@ export interface FileRouteTypes {
     | '/experiments'
     | '/journal'
     | '/notifications'
+    | '/opportunities'
     | '/perpetuals'
     | '/pnl'
     | '/portfolio'
@@ -451,11 +483,13 @@ export interface FileRouteTypes {
     | '/pulse'
     | '/radar'
     | '/referral'
+    | '/review'
     | '/rewards'
     | '/settings'
     | '/signals'
     | '/swap'
     | '/trackers'
+    | '/tracking'
     | '/trade-desk'
     | '/vision'
     | '/wallet-web3'
@@ -484,6 +518,7 @@ export interface FileRouteTypes {
     | '/_authenticated/experiments'
     | '/_authenticated/journal'
     | '/_authenticated/notifications'
+    | '/_authenticated/opportunities'
     | '/_authenticated/perpetuals'
     | '/_authenticated/pnl'
     | '/_authenticated/portfolio'
@@ -493,11 +528,13 @@ export interface FileRouteTypes {
     | '/_authenticated/pulse'
     | '/_authenticated/radar'
     | '/_authenticated/referral'
+    | '/_authenticated/review'
     | '/_authenticated/rewards'
     | '/_authenticated/settings'
     | '/_authenticated/signals'
     | '/_authenticated/swap'
     | '/_authenticated/trackers'
+    | '/_authenticated/tracking'
     | '/_authenticated/trade-desk'
     | '/_authenticated/vision'
     | '/_authenticated/wallet-web3'
@@ -572,6 +609,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTradeDeskRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tracking': {
+      id: '/_authenticated/tracking'
+      path: '/tracking'
+      fullPath: '/tracking'
+      preLoaderRoute: typeof AuthenticatedTrackingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/trackers': {
       id: '/_authenticated/trackers'
       path: '/trackers'
@@ -605,6 +649,13 @@ declare module '@tanstack/react-router' {
       path: '/rewards'
       fullPath: '/rewards'
       preLoaderRoute: typeof AuthenticatedRewardsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/review': {
+      id: '/_authenticated/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof AuthenticatedReviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/referral': {
@@ -668,6 +719,13 @@ declare module '@tanstack/react-router' {
       path: '/perpetuals'
       fullPath: '/perpetuals'
       preLoaderRoute: typeof AuthenticatedPerpetualsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/opportunities': {
+      id: '/_authenticated/opportunities'
+      path: '/opportunities'
+      fullPath: '/opportunities'
+      preLoaderRoute: typeof AuthenticatedOpportunitiesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notifications': {
@@ -815,6 +873,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedExperimentsRoute: typeof AuthenticatedExperimentsRoute
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedOpportunitiesRoute: typeof AuthenticatedOpportunitiesRoute
   AuthenticatedPerpetualsRoute: typeof AuthenticatedPerpetualsRoute
   AuthenticatedPnlRoute: typeof AuthenticatedPnlRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
@@ -824,11 +883,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPulseRoute: typeof AuthenticatedPulseRoute
   AuthenticatedRadarRoute: typeof AuthenticatedRadarRoute
   AuthenticatedReferralRoute: typeof AuthenticatedReferralRoute
+  AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedRewardsRoute: typeof AuthenticatedRewardsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRoute
   AuthenticatedSwapRoute: typeof AuthenticatedSwapRoute
   AuthenticatedTrackersRoute: typeof AuthenticatedTrackersRoute
+  AuthenticatedTrackingRoute: typeof AuthenticatedTrackingRoute
   AuthenticatedTradeDeskRoute: typeof AuthenticatedTradeDeskRoute
   AuthenticatedVisionRoute: typeof AuthenticatedVisionRoute
   AuthenticatedWalletWeb3Route: typeof AuthenticatedWalletWeb3Route
@@ -856,6 +917,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedExperimentsRoute: AuthenticatedExperimentsRoute,
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedOpportunitiesRoute: AuthenticatedOpportunitiesRoute,
   AuthenticatedPerpetualsRoute: AuthenticatedPerpetualsRoute,
   AuthenticatedPnlRoute: AuthenticatedPnlRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
@@ -865,11 +927,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPulseRoute: AuthenticatedPulseRoute,
   AuthenticatedRadarRoute: AuthenticatedRadarRoute,
   AuthenticatedReferralRoute: AuthenticatedReferralRoute,
+  AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedRewardsRoute: AuthenticatedRewardsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSignalsRoute: AuthenticatedSignalsRoute,
   AuthenticatedSwapRoute: AuthenticatedSwapRoute,
   AuthenticatedTrackersRoute: AuthenticatedTrackersRoute,
+  AuthenticatedTrackingRoute: AuthenticatedTrackingRoute,
   AuthenticatedTradeDeskRoute: AuthenticatedTradeDeskRoute,
   AuthenticatedVisionRoute: AuthenticatedVisionRoute,
   AuthenticatedWalletWeb3Route: AuthenticatedWalletWeb3Route,

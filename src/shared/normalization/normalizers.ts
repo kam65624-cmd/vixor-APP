@@ -9,7 +9,13 @@
 //
 // ============================================================================
 
-import type { CanonicalQuote, CanonicalCandle, NormalizationResponse, PriceSource } from "./types";
+import type {
+  CanonicalQuote,
+  CanonicalCandle,
+  CanonicalOrderBook,
+  NormalizationResponse,
+  PriceSource,
+} from "./types";
 
 // ── Pair Normalization ─────────────────────────────────────────────────────
 // Converts provider-specific pair formats to canonical "BASE/QUOTE" format.
@@ -212,6 +218,79 @@ export function normalizeDexScreenerToken(token: {
   };
 }
 
+// ── TwelveData Normalizer ───────────────────────────────────────────────────
+
+/**
+ * Normalizes a TwelveData /quote response into a CanonicalQuote.
+ *
+ * TwelveData returns numeric fields as strings. Key mappings:
+ *   - close → price (last trade price)
+ *   - percent_change → change24hPct
+ *   - high / low → high24h / low24h (day range)
+ *   - volume → volume24h
+ *   - timestamp (unix seconds) → ISO 8601
+ */
+export function normalizeTwelveDataQuote(quote: {
+  symbol?: string;
+  close?: string;
+  high?: string;
+  low?: string;
+  volume?: string;
+  percent_change?: string;
+  change?: string;
+  open?: string;
+  previous_close?: string;
+  timestamp?: number;
+  currency?: string;
+}): NormalizationResponse<CanonicalQuote> {
+  if (!quote.symbol || !quote.close) {
+    return {
+      ok: false,
+      error: "Missing symbol or close in TwelveData quote",
+      code: "MISSING_FIELD",
+      source: "twelvedata",
+    };
+  }
+
+  const price = parseFloat(quote.close);
+  if (isNaN(price) || price <= 0) {
+    return {
+      ok: false,
+      error: `Invalid TwelveData close price: ${quote.close}`,
+      code: "VALIDATION_FAILED",
+      source: "twelvedata",
+    };
+  }
+
+  const high = parseFloat(quote.high ?? "0");
+  const low = parseFloat(quote.low ?? "0");
+  const volume = parseFloat(quote.volume ?? "0");
+  const changePct = parseFloat(quote.percent_change ?? "0");
+
+  const pair = normalizePair(quote.symbol);
+
+  return {
+    ok: true,
+    data: {
+      pair,
+      price,
+      bid: null,
+      ask: null,
+      change24hPct: isNaN(changePct) ? 0 : changePct,
+      high24h: isNaN(high) || high <= 0 ? price : high,
+      low24h: isNaN(low) || low <= 0 ? price : low,
+      volume24h: isNaN(volume) ? 0 : volume,
+      quoteVolume24h: null,
+      timestamp: quote.timestamp
+        ? new Date(quote.timestamp * 1000).toISOString()
+        : new Date().toISOString(),
+      source: "twelvedata",
+    },
+    source: "twelvedata",
+    normalizedAt: new Date().toISOString(),
+  };
+}
+
 // ── Freshness Utilities ─────────────────────────────────────────────────────
 
 import type { Freshness, FreshnessCheck } from "./types";
@@ -240,4 +319,135 @@ export function checkFreshness(timestamp: string, maxAgeSeconds: number = 60): F
 /** Format a freshness check for logging */
 export function formatFreshness(check: FreshnessCheck, pair: string): string {
   return `[Freshness] ${pair}: ${check.status} (${Math.round(check.ageSeconds)}s / ${check.maxAgeSeconds}s max)`;
+}
+
+// ── Binance Order Book Normalizer ──────────────────────────────────────────
+
+/**
+ * Normalizes a Binance depth payload into a CanonicalOrderBook.
+ *
+ * Binance depth response format:
+ *   { "lastUpdateId": 160, "bids": [["0.0024", "10"], ...], "asks": [["0.0026", "100"], ...] }
+ */
+export function normalizeBinanceOrderBook(
+  payload: {
+    lastUpdateId?: number;
+    bids?: [string, string][];
+    asks?: [string, string][];
+    symbol?: string;
+  },
+  pairOverride?: string,
+): NormalizationResponse<CanonicalOrderBook> {
+  const rawBids = payload.bids ?? [];
+  const rawAsks = payload.asks ?? [];
+
+  if (rawBids.length === 0 && rawAsks.length === 0 && !pairOverride) {
+    return {
+      ok: false,
+      error: "Missing bids, asks, or pairOverride in Binance order book payload",
+      code: "MISSING_FIELD",
+      source: "binance",
+    };
+  }
+
+  const pair = pairOverride ? normalizePair(pairOverride) : normalizePair(payload.symbol ?? "");
+
+  const bids = rawBids.map(([priceStr, qtyStr]) => ({
+    price: parseFloat(priceStr),
+    quantity: parseFloat(qtyStr),
+  }));
+
+  const asks = rawAsks.map(([priceStr, qtyStr]) => ({
+    price: parseFloat(priceStr),
+    quantity: parseFloat(qtyStr),
+  }));
+
+  const bestBid = bids.length > 0 ? bids[0].price : null;
+  const bestAsk = asks.length > 0 ? asks[0].price : null;
+  const spread = bestBid !== null && bestAsk !== null ? bestAsk - bestBid : null;
+  const midPrice = bestBid !== null && bestAsk !== null ? (bestBid + bestAsk) / 2 : null;
+
+  return {
+    ok: true,
+    data: {
+      pair,
+      bids,
+      asks,
+      bestBid,
+      bestAsk,
+      spread,
+      midPrice,
+      timestamp: new Date().toISOString(),
+      source: "binance",
+    },
+    source: "binance",
+    normalizedAt: new Date().toISOString(),
+  };
+}
+
+// ── Binance Kline Normalizer ─────────────────────────────────────────────
+
+/**
+ * Normalizes a Binance kline array into a CanonicalCandle.
+ *
+ * Binance kline format:
+ *   [
+ *     "1499040000000",        // Open time (ms)
+ *     "0.01634000",           // Open
+ *     "0.80000000",           // High
+ *     "0.01565800",           // Low
+ *     "0.01577100",           // Close
+ *     "148976.11427815",      // Volume (base)
+ *     1499644799999,          // Close time (ms)
+ *     "2434.19055334",        // Quote asset volume
+ *     308,                     // Number of trades
+ *     ...                      // (ignored)
+ *   ]
+ */
+export function normalizeBinanceKline(
+  kline: unknown[],
+  pair: string,
+): NormalizationResponse<CanonicalCandle> {
+  if (!Array.isArray(kline) || kline.length < 6) {
+    return {
+      ok: false,
+      error: "Binance kline must be an array with at least 6 elements",
+      code: "INVALID_PAYLOAD",
+      source: "binance",
+    };
+  }
+
+  const openTime = Number(kline[0]);
+  const open = parseFloat(String(kline[1]));
+  const high = parseFloat(String(kline[2]));
+  const low = parseFloat(String(kline[3]));
+  const close = parseFloat(String(kline[4]));
+  const volume = parseFloat(String(kline[5]));
+  const quoteVolume = kline.length > 7 ? parseFloat(String(kline[7])) : null;
+
+  if (isNaN(openTime) || isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) {
+    return {
+      ok: false,
+      error: "Invalid numeric values in Binance kline",
+      code: "VALIDATION_FAILED",
+      source: "binance",
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      pair: normalizePair(pair),
+      openTime: new Date(openTime).toISOString(),
+      open,
+      high,
+      low,
+      close,
+      volume: isNaN(volume) ? 0 : volume,
+      quoteVolume: isNaN(quoteVolume ?? NaN) ? null : quoteVolume,
+      source: "binance",
+    },
+    source: "binance",
+    normalizedAt: new Date().toISOString(),
+  };
 }

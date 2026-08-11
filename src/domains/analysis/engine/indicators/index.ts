@@ -205,6 +205,190 @@ function computeVWAP(bars: OHLCVBar[]): number[] {
 }
 
 // ---------------------------------------------------------------------------
+// Real ADX implementation with +DI/-DI
+// ---------------------------------------------------------------------------
+function computeADX(bars: OHLCVBar[], period = 14): number[] {
+  const n = bars.length;
+  const out: number[] = new Array(n).fill(NaN);
+  if (n < period * 2) return out;
+
+  // Step 1: True Range, +DM, -DM
+  const tr: number[] = new Array(n).fill(0);
+  const plusDM: number[] = new Array(n).fill(0);
+  const minusDM: number[] = new Array(n).fill(0);
+
+  for (let i = 1; i < n; i++) {
+    const high = bars[i].high;
+    const low = bars[i].low;
+    const prevHigh = bars[i - 1].high;
+    const prevLow = bars[i - 1].low;
+    const prevClose = bars[i - 1].close;
+
+    tr[i] = Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose));
+
+    const upMove = high - prevHigh;
+    const downMove = prevLow - low;
+    plusDM[i] = upMove > downMove && upMove > 0 ? upMove : 0;
+    minusDM[i] = downMove > upMove && downMove > 0 ? downMove : 0;
+  }
+
+  // Step 2: Wilder's smoothing (EMA with alpha = 1/period)
+  // Seed: sum of first `period` values (indices 1..period)
+  let trSum = 0;
+  let plusSum = 0;
+  let minusSum = 0;
+  for (let i = 1; i <= period; i++) {
+    trSum += tr[i];
+    plusSum += plusDM[i];
+    minusSum += minusDM[i];
+  }
+
+  const smoothTR: number[] = new Array(n).fill(NaN);
+  const smoothPlus: number[] = new Array(n).fill(NaN);
+  const smoothMinus: number[] = new Array(n).fill(NaN);
+  smoothTR[period] = trSum;
+  smoothPlus[period] = plusSum;
+  smoothMinus[period] = minusSum;
+
+  for (let i = period + 1; i < n; i++) {
+    smoothTR[i] = smoothTR[i - 1] - smoothTR[i - 1] / period + tr[i];
+    smoothPlus[i] = smoothPlus[i - 1] - smoothPlus[i - 1] / period + plusDM[i];
+    smoothMinus[i] = smoothMinus[i - 1] - smoothMinus[i - 1] / period + minusDM[i];
+  }
+
+  // Step 3: +DI, -DI, DX
+  const dx: number[] = new Array(n).fill(NaN);
+  for (let i = period; i < n; i++) {
+    if (smoothTR[i] < 1e-12) {
+      dx[i] = 0;
+      continue;
+    }
+    const plusDI = (smoothPlus[i] / smoothTR[i]) * 100;
+    const minusDI = (smoothMinus[i] / smoothTR[i]) * 100;
+    const diSum = plusDI + minusDI;
+    dx[i] = diSum < 1e-12 ? 0 : (Math.abs(plusDI - minusDI) / diSum) * 100;
+  }
+
+  // Step 4: ADX = Wilder's smoothing of DX
+  let adx = NaN;
+  let dxSum = 0;
+  let count = 0;
+  for (let i = period; i < n; i++) {
+    if (Number.isFinite(dx[i])) {
+      dxSum += dx[i];
+      count++;
+      if (count === period) {
+        adx = dxSum / period;
+        out[i] = adx;
+      } else if (count > period) {
+        adx = (adx * (period - 1) + dx[i]) / period;
+        out[i] = adx;
+      }
+    }
+  }
+
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Real CCI implementation
+// ---------------------------------------------------------------------------
+function computeCCI(bars: OHLCVBar[], period = 20): number[] {
+  const n = bars.length;
+  const out: number[] = new Array(n).fill(NaN);
+  if (n < period) return out;
+
+  // Typical Price = (high + low + close) / 3
+  const tp: number[] = new Array(n);
+  for (let i = 0; i < n; i++) {
+    tp[i] = (bars[i].high + bars[i].low + bars[i].close) / 3;
+  }
+
+  // SMA of TP
+  const smaTP = computeSMA(tp, period);
+
+  // Mean Deviation = SMA of |TP - SMA_TP|
+  for (let i = period - 1; i < n; i++) {
+    const slice = tp.slice(i - period + 1, i + 1);
+    const meanTP = smaTP[i]!;
+    let meanDev = 0;
+    for (let j = 0; j < period; j++) {
+      meanDev += Math.abs(slice[j] - meanTP);
+    }
+    meanDev /= period;
+
+    if (meanDev < 1e-12) {
+      out[i] = 0;
+    } else {
+      out[i] = (tp[i] - meanTP) / (0.015 * meanDev);
+    }
+  }
+
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// NaN-safe SMA — skips NaN values when computing the average.
+// Used for smoothing Stochastic %K where leading NaN values exist.
+// ---------------------------------------------------------------------------
+function computeSMANaN(prices: number[], length: number): number[] {
+  const res: number[] = new Array(prices.length).fill(NaN);
+  for (let i = length - 1; i < prices.length; i++) {
+    let sum = 0;
+    let count = 0;
+    for (let j = i - length + 1; j <= i; j++) {
+      if (Number.isFinite(prices[j])) {
+        sum += prices[j];
+        count++;
+      }
+    }
+    if (count >= length) {
+      res[i] = sum / count;
+    }
+  }
+  return res;
+}
+
+// ---------------------------------------------------------------------------
+// Real Stochastic RSI implementation
+// ---------------------------------------------------------------------------
+function computeStochasticRSI(
+  prices: number[],
+  rsiPeriod = 14,
+  stochPeriod = 14,
+  smoothPeriod = 3,
+): { k: number[]; d: number[] } {
+  const rsi = computeRSI(prices, rsiPeriod);
+  const n = rsi.length;
+  const k: number[] = new Array(n).fill(NaN);
+
+  // Apply Stochastic formula on RSI values
+  for (let i = stochPeriod + rsiPeriod - 1; i < n; i++) {
+    const window = rsi.slice(i - stochPeriod + 1, i + 1);
+    const valid = window.filter((v) => Number.isFinite(v));
+    if (valid.length === 0) continue;
+
+    const minRSI = Math.min(...valid);
+    const maxRSI = Math.max(...valid);
+    const currentRSI = rsi[i];
+
+    if (!Number.isFinite(currentRSI)) continue;
+
+    const range = maxRSI - minRSI;
+    if (range < 1e-12) {
+      k[i] = 50; // Flat RSI → middle stochastic
+    } else {
+      k[i] = ((currentRSI - minRSI) / range) * 100;
+    }
+  }
+
+  // %D = NaN-safe SMA of %K
+  const d = computeSMANaN(k, smoothPeriod);
+
+  return { k, d };
+}
+
+// ---------------------------------------------------------------------------
 // computeIndicators — main function
 // ---------------------------------------------------------------------------
 export function computeIndicators(bars: OHLCVBar[]): IndicatorResults {
@@ -241,12 +425,11 @@ export function computeIndicators(bars: OHLCVBar[]): IndicatorResults {
   const sma20 = computeSMA(closes, 20);
   const sma50 = computeSMA(closes, 50);
 
-  const stochK = computeRSI(rsi, 14);
-  const stochD = computeSMA(stochK, 3);
+  const stochRSI = computeStochasticRSI(closes, 14, 14, 3);
 
   const atr = computeATR(bars, 14);
-  const adx = computeEMA(rsi, 14);
-  const cci = computeSMA(closes, 20);
+  const adx = computeADX(bars, 14);
+  const cci = computeCCI(bars, 20);
   const obv = computeOBV(bars);
   const vwap = computeVWAP(bars);
 
@@ -256,7 +439,7 @@ export function computeIndicators(bars: OHLCVBar[]): IndicatorResults {
     bollingerBands,
     ema: { ema9, ema21, ema50, ema200 },
     sma: { sma20, sma50 },
-    stochRSI: { k: stochK, d: stochD },
+    stochRSI: { k: stochRSI.k, d: stochRSI.d },
     atr,
     adx,
     cci,

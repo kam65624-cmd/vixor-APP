@@ -10,6 +10,7 @@
 import { fetchPrices, POPULAR_PAIRS } from "@/domains/market/server/price-fetcher";
 import type { PriceResult } from "@/domains/market/server/price-fetcher";
 import type { SignalTracking } from "@/domains/signal-tracking/types";
+import type { ScannedOpportunity } from "@/domains/analysis/opportunity-scanner";
 
 // ─── MoxiContext Shape ──────────────────────────────────────────────────────
 
@@ -59,6 +60,8 @@ export interface MoxiContext {
   currentTime: string;
   /** Learned user memory from MemoryStore (if available) */
   memoryContext?: string;
+  /** Cached opportunity scan results (if recently scanned) */
+  activeOpportunities?: ScannedOpportunity[];
 }
 
 // ─── Build Full Context ─────────────────────────────────────────────────────
@@ -201,6 +204,17 @@ export async function buildMoxiContext(userId: string, supabase: any): Promise<M
     // Non-critical — MOXI works fine without memory
   }
 
+  // ── Load cached opportunities (non-critical) ──
+  let activeOpportunities: ScannedOpportunity[] | undefined;
+  try {
+    const cached = await getCachedOpportunities();
+    if (cached && cached.length > 0) {
+      activeOpportunities = cached;
+    }
+  } catch {
+    // Non-critical
+  }
+
   return {
     profile: profileResult.data ?? null,
     strategy: strategyResult.data ?? null,
@@ -222,5 +236,30 @@ export async function buildMoxiContext(userId: string, supabase: any): Promise<M
       memoryContext && memoryContext !== "No stored memories for this user yet."
         ? memoryContext
         : undefined,
+    activeOpportunities: activeOpportunities?.length ? activeOpportunities : undefined,
   };
+}
+
+// ── Opportunity Cache ────────────────────────────────────────────────────────
+
+// Simple in-memory cache for recent opportunity scans.
+// Avoids re-scanning on every MOXI message.
+const OPPORTUNITY_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+let _cachedOpportunities: { data: ScannedOpportunity[]; timestamp: number } | null = null;
+
+/** Get cached opportunities if fresh */
+function getCachedOpportunities(): ScannedOpportunity[] {
+  if (
+    _cachedOpportunities &&
+    Date.now() - _cachedOpportunities.timestamp < OPPORTUNITY_CACHE_TTL_MS
+  ) {
+    return _cachedOpportunities.data;
+  }
+  return [];
+}
+
+/** Store opportunities in cache */
+export function setCachedOpportunities(opportunities: ScannedOpportunity[]): void {
+  _cachedOpportunities = { data: opportunities, timestamp: Date.now() };
 }

@@ -6,6 +6,8 @@
 // Works on Vercel since the WS connection is client-side.
 // ============================================================================
 
+import { normalizeBinanceTicker } from "@/shared/normalization/normalizers";
+
 export interface BinanceTickerPayload {
   /** Stream name, e.g. "btcusdt@ticker" */
   s: string; // Symbol, e.g. "BTCUSDT"
@@ -20,17 +22,30 @@ export interface BinanceTickerPayload {
   E: number; // Event timestamp (ms)
 }
 
+/** Live price with canonical pair from the normalization layer */
 export interface LivePrice {
-  pair: string; // Canonical pair, e.g. "BTC/USDT"
-  symbol: string; // Binance symbol, e.g. "BTCUSDT"
-  price: number; // Current price
-  change24h: number; // 24h price change percent
-  high24h: number; // 24h high
-  low24h: number; // 24h low
-  volume24h: number; // 24h volume (base)
-  quoteVolume24h: number; // 24h volume in USDT
-  open24h: number; // 24h open price
-  timestamp: number; // Last update timestamp
+  /** Canonical pair, e.g. "BTC/USDT" (normalized via ProviderRegistry) */
+  pair: string;
+  /** Binance symbol, e.g. "BTCUSDT" */
+  symbol: string;
+  /** Current price (validated via normalizer) */
+  price: number;
+  /** 24h price change percent */
+  change24h: number;
+  /** 24h high */
+  high24h: number;
+  /** 24h low */
+  low24h: number;
+  /** 24h volume (base) */
+  volume24h: number;
+  /** 24h volume in quote asset (USDT) */
+  quoteVolume24h: number;
+  /** 24h open price */
+  open24h: number;
+  /** Last update timestamp (ms) */
+  timestamp: number;
+  /** Provider source ("binance" for WS, undefined for REST poll) */
+  source?: string;
 }
 
 type PriceCallback = (prices: Map<string, LivePrice>) => void;
@@ -172,17 +187,27 @@ export class BinanceWS {
 
   private handleTicker(data: BinanceTickerPayload): void {
     const symbol = data.s;
+
+    // Run through canonical normalizer for validated, canonical pair format
+    const normalized = normalizeBinanceTicker(data);
+    if (!normalized.ok) {
+      // Normalization failed — skip this ticker
+      return;
+    }
+    const canonical = normalized.data;
+
     const price: LivePrice = {
-      pair: this.symbolToPair(symbol),
+      pair: canonical.pair,
       symbol,
-      price: parseFloat(data.c),
-      change24h: parseFloat(data.P),
-      high24h: parseFloat(data.h),
-      low24h: parseFloat(data.l),
-      volume24h: parseFloat(data.v),
-      quoteVolume24h: parseFloat(data.q),
+      price: canonical.price,
+      change24h: canonical.change24hPct,
+      high24h: canonical.high24h,
+      low24h: canonical.low24h,
+      volume24h: canonical.volume24h,
+      quoteVolume24h: canonical.quoteVolume24h ?? 0,
       open24h: parseFloat(data.o),
       timestamp: data.E,
+      source: "binance",
     };
 
     this.prices.set(symbol, price);

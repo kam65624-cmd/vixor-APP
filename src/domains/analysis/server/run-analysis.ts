@@ -29,6 +29,10 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { getNewsForSymbol, type NewsItem } from "@/domains/market/server/news";
 import { runLocalAnalysis, generateFallbackResult } from "@/domains/analysis/engine/engine";
 import {
+  assessCalendarImpact,
+  setCalendarFetcher,
+} from "@/domains/analysis/engine/calendar-impact";
+import {
   PAIR_CONFIGS,
   type OHLCVBar,
   type LocalAnalysisResult,
@@ -395,12 +399,24 @@ async function runLocalAnalysisFromSnapshot(
     }));
 
     try {
+      // ── Calendar impact assessment (non-blocking) ──
+      let calendarImpact;
+      try {
+        calendarImpact = await assessCalendarImpact(pair);
+      } catch (calErr) {
+        console.warn(
+          "[Vixor] Calendar impact assessment failed, continuing without:",
+          calErr instanceof Error ? calErr.message : String(calErr),
+        );
+      }
+
       localResult = runLocalAnalysis({
         pair,
         timeframe,
         tradingStyle: trading_style,
         analysisStyle: analysis_style,
         bars,
+        calendarImpact,
       });
     } catch (engineErr) {
       console.error("[Vixor] Local engine failed even with real data:", engineErr);

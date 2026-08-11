@@ -176,6 +176,12 @@ export interface LocalAnalysisResult {
     rr: string;
   };
   vixor_message: string;
+  /** Market regime detected by the regime detector (if enough bars) */
+  regime?: string;
+  /** Whether confidence was adjusted by regime detection */
+  regimeAdjusted?: boolean;
+  /** Calendar impact assessment (if provided by caller) */
+  calendarImpact?: import("../calendar-impact").CalendarImpactAssessment;
 }
 
 // Data generation config

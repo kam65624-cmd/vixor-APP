@@ -14,3 +14,4 @@ export {
   getFinnhubQuoteCacheStats,
   type FinnhubQuote,
 } from "./finnhub-quotes";
+export { MarketDataGateway } from "./market-data-gateway";

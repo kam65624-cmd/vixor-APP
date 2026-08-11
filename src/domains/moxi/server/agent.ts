@@ -41,6 +41,33 @@ interface IntentMatch {
 function detectIntent(message: string): IntentMatch | null {
   const lower = message.toLowerCase();
 
+  // ── Scan opportunities intent ─────────────────────────────────
+  if (
+    /(scan|find|search|look.*for|what.*setup|any.*opportunit)/i.test(lower) &&
+    /(opportunit|setup|trade|signal|buy|sell|entry)/i.test(lower)
+  ) {
+    const minConfidence = extractMinConfidence(lower);
+    return {
+      toolName: "scanOpportunities",
+      confidence: 0.85,
+      extractedParams: {
+        ...(minConfidence != null ? { minConfidence } : {}),
+      },
+    };
+  }
+
+  // ── Economic calendar intent ───────────────────────────────────
+  if (
+    /(calendar|event|news|economic|schedule|nfp|cpi|fomc|employment|gdp)/i.test(lower) &&
+    /(upcoming|this.*week|next|what.*event|when|schedule|calendar)/i.test(lower)
+  ) {
+    return {
+      toolName: "getEconomicCalendar",
+      confidence: 0.85,
+      extractedParams: {},
+    };
+  }
+
   // ── Alert intents ────────────────────────────────────────────────
   if (
     /(create|set|add|make|place).*(alert|notification|reminder)/i.test(lower) ||
@@ -164,6 +191,10 @@ const COMMON_PAIRS = [
   "ETH/USDT",
   "SOL/USDT",
   "BNB/USDT",
+  "XRP/USDT",
+  "ADA/USDT",
+  "DOGE/USDT",
+  "AVAX/USDT",
   "XAU/USD",
   "EUR/USD",
   "GBP/USD",
@@ -182,9 +213,15 @@ function extractPair(text: string): string | null {
   if (/\bBTC\b/i.test(text)) return "BTC/USDT";
   if (/\bETH\b/i.test(text)) return "ETH/USDT";
   if (/\bSOL\b/i.test(text)) return "SOL/USDT";
+  if (/\bBNB\b/i.test(text)) return "BNB/USDT";
+  if (/\bXRP\b/i.test(text)) return "XRP/USDT";
+  if (/\bADA\b/i.test(text)) return "ADA/USDT";
+  if (/\bDOGE\b/i.test(text)) return "DOGE/USDT";
+  if (/\bAVAX\b/i.test(text)) return "AVAX/USDT";
   if (/\bGOLD\b/i.test(text) || /\bXAU\b/i.test(text)) return "XAU/USD";
   if (/\bEURO\b/i.test(text) || /\bEUR\b/i.test(text)) return "EUR/USD";
   if (/\bPOUND\b/i.test(text) || /\bGBP\b/i.test(text)) return "GBP/USD";
+  if (/\bYEN\b/i.test(text) || /\bJPY\b/i.test(text)) return "USD/JPY";
   return null;
 }
 
@@ -200,6 +237,26 @@ function extractTimeframe(text: string): string | null {
   if (/\b4H\b|\b4HOUR\b/i.test(upper)) return "4H";
   if (/\b1D\b|\bDAILY\b|\bDAY\b/i.test(upper)) return "1D";
   if (/\b15M\b|\b15MIN\b/i.test(upper)) return "15M";
+  return null;
+}
+
+/**
+ * Extract a minimum confidence number from text.
+ * Matches patterns like "above 70", "confidence 80", "min score 65", "> 75".
+ */
+function extractMinConfidence(text: string): number | null {
+  // "above 70", "above 70%", "> 75", ">75"
+  const aboveMatch = text.match(/(?:above|over|greater than|more than|>\s*)\s*(\d+)/i);
+  if (aboveMatch) {
+    const val = parseInt(aboveMatch[1]!, 10);
+    if (val >= 0 && val <= 100) return val;
+  }
+  // "confidence 80", "min confidence 65", "minimum 70"
+  const confMatch = text.match(/(?:confidence|min.*score|minimum|at least)\s*(\d+)/i);
+  if (confMatch) {
+    const val = parseInt(confMatch[1]!, 10);
+    if (val >= 0 && val <= 100) return val;
+  }
   return null;
 }
 
@@ -363,6 +420,35 @@ function formatToolResponse(toolName: string, data: unknown): string {
       if (trades.length === 0)
         return "Your trade journal is empty. Start by logging your first trade!";
       return `You have ${trades.length} trade(s) in your journal. Would you like me to analyze your trading patterns?`;
+    }
+    case "scanOpportunities": {
+      const scanData = data as Record<string, unknown>;
+      const opportunities = (scanData.opportunities || []) as Array<Record<string, unknown>>;
+      const totalScanned = (scanData.totalScanned as number) || 0;
+
+      if (opportunities.length === 0) {
+        return `Scanned ${totalScanned} pair/timeframe combinations. No opportunities above the confidence threshold right now. The market might be in a wait-and-see mode.`;
+      }
+
+      const lines = opportunities.map(
+        (o) =>
+          `- **${o.pair}** (${o.timeframe}): **${o.direction}** — Confidence: ${o.confidence}% | Entry: ${o.entry} | SL: ${o.stopLoss} | TP: ${JSON.stringify(o.takeProfits)} | R:R ${o.riskReward}x | ${Array.isArray(o.signals) ? o.signals.slice(0, 2).join(", ") : ""}`,
+      );
+
+      return `**Market Scan** (scanned ${totalScanned} combinations):\n${lines.join("\n")}`;
+    }
+    case "getEconomicCalendar": {
+      const events = data as Array<Record<string, unknown>>;
+      if (events.length === 0) {
+        return "No high or medium impact economic events in the next 7 days. Quiet on the macro front.";
+      }
+
+      const lines = events.map(
+        (e) =>
+          `- ${e.flag || ""} **${e.title}** (${e.currency}, **${e.impact}** impact) — ${new Date(e.date as string).toLocaleString()} | Forecast: ${e.forecast || "N/A"} | Previous: ${e.previous || "N/A"}`,
+      );
+
+      return `**Upcoming Economic Events** (${events.length} high/medium impact):\n${lines.join("\n")}`;
     }
     default:
       return `Tool "${toolName}" executed successfully.`;

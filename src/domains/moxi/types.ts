@@ -68,6 +68,7 @@ export interface MoxiFormattedContext {
   upcomingEvents: string;
   memoryContext: string;
   toolDescriptions: string;
+  activeOpportunities: string;
 }
 
 /** Default MOXI persona */

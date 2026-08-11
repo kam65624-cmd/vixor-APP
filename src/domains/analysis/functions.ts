@@ -9,6 +9,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import { log } from "@/shared/structured-logger";
+import { scanForOpportunities, setScanFetcher, type ScanResult } from "./opportunity-scanner";
 
 // ---------- VALIDATORS ----------
 const CreateAnalysisInput = z.object({
@@ -405,4 +406,195 @@ export const getAnalysis = createServerFn({ method: "GET" })
       imageUrl = signed?.signedUrl ?? null;
     }
     return { ...a, signal_badge: signalBadge, vixor_message: vixorMessage, imageUrl } as any;
+  });
+
+// ---------- SCAN OPPORTUNITIES ----------
+const POPULAR_PAIRS = [
+  "BTC/USDT",
+  "ETH/USDT",
+  "SOL/USDT",
+  "XRP/USDT",
+  "ADA/USDT",
+  "DOGE/USDT",
+  "AVAX/USDT",
+  "DOT/USDT",
+  "LINK/USDT",
+  "MATIC/USDT",
+  "EUR/USD",
+  "GBP/USD",
+  "XAU/USD",
+  "GBP/JPY",
+  "USD/JPY",
+];
+
+export const scanOpportunities = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (): Promise<ScanResult> => {
+    // Wire up the OHLCV fetcher for the scanner
+    const { fetchBinanceKlines, fetchTwelveDataKlines } =
+      await import("@/domains/market/server/price-fetcher");
+
+    setScanFetcher(async (pair: string, timeframe: string, limit: number) => {
+      // Try Binance first (crypto pairs)
+      try {
+        const klines = await fetchBinanceKlines(pair, timeframe, limit);
+        if (klines.length >= 20) {
+          return klines.map((k) => ({
+            time: k.time,
+            open: k.open,
+            high: k.high,
+            low: k.low,
+            close: k.close,
+            volume: k.volume,
+          }));
+        }
+      } catch {
+        // Non-fatal
+      }
+
+      // Try TwelveData (forex/commodities)
+      try {
+        const klines = await fetchTwelveDataKlines(pair, timeframe, limit);
+        if (klines.length >= 20) {
+          return klines.map((k) => ({
+            time: k.time,
+            open: k.open,
+            high: k.high,
+            low: k.low,
+            close: k.close,
+            volume: k.volume,
+          }));
+        }
+      } catch {
+        // Non-fatal
+      }
+
+      return [];
+    });
+
+    return scanForOpportunities(POPULAR_PAIRS, {
+      minConfidence: 65,
+      timeframes: ["1H", "4H"],
+      maxResults: 10,
+    });
+  });
+
+// ---------- ANALYZE AND TRACK ----------
+
+export const analyzeAndTrack = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) =>
+    z
+      .object({
+        pair: z.string().min(1),
+        timeframe: z.string().optional().default("4H"),
+        autoTrack: z.boolean().optional().default(false),
+        minConfidence: z.number().optional().default(70),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
+
+    // 1. Run analysis using the local engine
+    const { runLocalAnalysis } = await import("@/domains/analysis/engine/engine");
+    const { fetchBinanceKlines, fetchTwelveDataKlines } =
+      await import("@/domains/market/server/price-fetcher");
+    const { AssetRegistry } = await import("@/shared/asset-registry");
+
+    let bars: any;
+    if (AssetRegistry.isCrypto(data.pair)) {
+      bars = await fetchBinanceKlines(data.pair, data.timeframe, 200);
+    }
+    if (!bars || bars.length <= 20) {
+      const tdBars = await fetchTwelveDataKlines(data.pair, data.timeframe, 200);
+      if (tdBars.length > 20) bars = tdBars;
+    }
+
+    const analysisResult = runLocalAnalysis({
+      pair: data.pair,
+      timeframe: data.timeframe,
+      tradingStyle: "Day Trading",
+      bars: bars && bars.length > 20 ? bars : undefined,
+    });
+
+    // Emit analysis.created event
+    const { VixorEvents } = await import("@/shared/events");
+    void VixorEvents.emit("analysis.created", {
+      analysisId: `aat-${Date.now()}`,
+      pair: data.pair,
+      timeframe: data.timeframe,
+      userId,
+      recommendation: analysisResult.recommendation as "BUY" | "SELL" | "WAIT",
+      confidence: analysisResult.confidence,
+    });
+
+    // 2. Optionally auto-track
+    let trackingResult: { ok: boolean; trackingId?: string; error?: string } | null = null;
+
+    if (
+      data.autoTrack &&
+      analysisResult.confidence >= data.minConfidence &&
+      analysisResult.recommendation !== "WAIT"
+    ) {
+      // Check for existing tracking
+      const { data: existing } = await supabase
+        .from("signal_tracking")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("pair", data.pair)
+        .eq("status", "pending")
+        .maybeSingle();
+
+      if (existing) {
+        trackingResult = { ok: false, error: "ALREADY_TRACKING", trackingId: existing.id };
+      } else {
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        const { data: row, error: insertError } = await supabase
+          .from("signal_tracking")
+          .insert({
+            user_id: userId,
+            source_type: "analysis",
+            pair: data.pair,
+            direction: analysisResult.recommendation,
+            entry_price: analysisResult.entry ?? null,
+            stop_loss: analysisResult.stop_loss ?? null,
+            take_profit: analysisResult.take_profit ?? [],
+            expires_at: expiresAt,
+          })
+          .select("id")
+          .single();
+
+        if (insertError || !row) {
+          trackingResult = { ok: false, error: insertError?.message ?? "insert_failed" };
+        } else {
+          trackingResult = { ok: true, trackingId: (row as { id: string }).id };
+
+          // Emit signal.tracking.created
+          void VixorEvents.emit("signal.tracking.created", {
+            trackingId: (row as { id: string }).id,
+            userId,
+            pair: data.pair,
+            direction: analysisResult.recommendation as "BUY" | "SELL",
+            entryPrice: analysisResult.entry ?? 0,
+            stopLoss: analysisResult.stop_loss ?? 0,
+          });
+        }
+      }
+    }
+
+    return {
+      analysis: {
+        pair: analysisResult.pair,
+        timeframe: analysisResult.timeframe,
+        recommendation: analysisResult.recommendation,
+        confidence: analysisResult.confidence,
+        entry: analysisResult.entry,
+        stopLoss: analysisResult.stop_loss,
+        takeProfit: analysisResult.take_profit,
+        riskReward: analysisResult.rr,
+        trend: analysisResult.trend,
+      },
+      tracking: trackingResult,
+    };
   });

@@ -34,21 +34,49 @@ import type {
   NotificationResult,
   NotificationSeverity,
 } from "./types";
-import { telegramChannel } from "./channels/telegram";
-import { emailChannel } from "./channels/email";
-import { webhookChannel } from "./channels/webhook";
-import { inAppChannel } from "./channels/in-app";
 
-// ── Channel registry ────────────────────────────────────────────────────────
-
-const CHANNELS: Record<NotificationChannel, NotificationChannelAdapter> = {
-  telegram: telegramChannel,
-  email: emailChannel,
-  webhook: webhookChannel,
-  "in-app": inAppChannel,
-};
+// ── Lazy channel registry ─────────────────────────────────────────────────
+//
+// Channels that use Node-only modules (e.g. node:crypto in webhook.ts) must
+// NOT be statically imported — Vite will pull them into the client bundle and
+// fail with "X is not exported by __vite-browser-external".  Instead we
+// resolve each channel on first use via a lazy getter.
 
 const DEFAULT_CHANNELS: NotificationChannel[] = ["telegram", "in-app"];
+
+const channelCache = new Map<string, NotificationChannelAdapter>();
+
+async function getChannel(id: NotificationChannel): Promise<NotificationChannelAdapter> {
+  const cached = channelCache.get(id);
+  if (cached) return cached;
+
+  let channel: NotificationChannelAdapter;
+  switch (id) {
+    case "telegram": {
+      const mod = await import("./channels/telegram");
+      channel = mod.telegramChannel;
+      break;
+    }
+    case "email": {
+      const mod = await import("./channels/email");
+      channel = mod.emailChannel;
+      break;
+    }
+    case "webhook": {
+      const mod = await import("./channels/webhook");
+      channel = mod.webhookChannel;
+      break;
+    }
+    case "in-app": {
+      const mod = await import("./channels/in-app");
+      channel = mod.inAppChannel;
+      break;
+    }
+  }
+
+  channelCache.set(id, channel!);
+  return channel!;
+}
 
 // ── Templating ──────────────────────────────────────────────────────────────
 
@@ -128,12 +156,14 @@ export class NotificationRouter {
 
     const results = await Promise.all(
       channels.map(async (channelId): Promise<NotificationResult> => {
-        const channel = CHANNELS[channelId];
-        if (!channel) {
+        let channel: NotificationChannelAdapter;
+        try {
+          channel = await getChannel(channelId);
+        } catch {
           return {
             channel: channelId,
             ok: false,
-            error: `Unknown channel: ${channelId}`,
+            error: `Failed to load channel: ${channelId}`,
             durationMs: 0,
           };
         }
@@ -170,9 +200,10 @@ export class NotificationRouter {
     id: NotificationChannel;
     configured: boolean;
   }> {
-    return (Object.keys(CHANNELS) as NotificationChannel[]).map((id) => ({
+    const ALL_IDS: NotificationChannel[] = ["telegram", "email", "webhook", "in-app"];
+    return ALL_IDS.map((id) => ({
       id,
-      configured: CHANNELS[id].isConfigured(),
+      configured: channelCache.get(id)?.isConfigured() ?? false,
     }));
   }
 }
@@ -191,7 +222,6 @@ export type {
 } from "./types";
 
 export { NotificationError } from "./types";
-export { telegramChannel } from "./channels/telegram";
-export { emailChannel } from "./channels/email";
-export { webhookChannel } from "./channels/webhook";
-export { inAppChannel } from "./channels/in-app";
+// NOTE: Channel implementations are no longer statically re-exported to avoid
+// pulling Node-only modules (e.g. node:crypto in webhook.ts) into the client bundle.
+// Import them via dynamic import() or through getChannel() if needed.

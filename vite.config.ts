@@ -85,7 +85,12 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 700,
     rollupOptions: {
-      external: ["ccxt", "@walletconnect/sign-client", "@tonconnect/sdk"],
+      external: [
+        "ccxt",
+        "@walletconnect/sign-client",
+        "@tonconnect/sdk",
+        "node:crypto",
+      ],
     },
   },
   server: {

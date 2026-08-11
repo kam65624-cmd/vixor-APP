@@ -211,6 +211,20 @@ export const getTradeStats = createServerFn({ method: "GET" })
     };
   });
 
+export const getPerformance = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { calculatePerformance } = await import("./performance");
+    return calculatePerformance(context.userId);
+  });
+
+export const getWeeklyReview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { generateWeeklyReview } = await import("./weekly-review");
+    return generateWeeklyReview(context.userId);
+  });
+
 // ── Type exports for backward compatibility ────────────────────────────────
 // These re-exports ensure existing consumers don't break.
 

@@ -79,6 +79,19 @@ function fmtMemory(memoryContext?: string): string {
   return `\n\n## USER MEMORY (Learned from past interactions)\n${memoryContext}\n\nIMPORTANT: Use this memory to personalize. Reference specific preferences and patterns.`;
 }
 
+function fmtOpportunities(
+  opportunities?: import("@/domains/analysis/opportunity-scanner").ScannedOpportunity[],
+): string {
+  if (!opportunities || opportunities.length === 0) return "No recent opportunity scans available.";
+  return opportunities
+    .slice(0, 5)
+    .map(
+      (o) =>
+        `${o.direction} ${o.pair} (${o.timeframe}) — Confidence: ${o.confidence}% | Entry: ${o.entryPrice} | SL: ${o.stopLoss} | R:R ${o.riskReward}x | ${o.keySignals.slice(0, 2).join(", ") || o.regime}`,
+    )
+    .join("\n  ");
+}
+
 // ── Format Full Context ────────────────────────────────────────────────────
 
 /**
@@ -95,6 +108,7 @@ export function formatMoxiContext(ctx: MoxiContext): MoxiFormattedContext {
     upcomingEvents: fmtEvents(ctx.notableEvents),
     memoryContext: fmtMemory(ctx.memoryContext),
     toolDescriptions: "", // Filled by the caller from ToolRegistry
+    activeOpportunities: fmtOpportunities(ctx.activeOpportunities),
   };
 }
 
@@ -156,6 +170,8 @@ When the user asks something that matches a tool, use it. Don't just describe wh
 - **Live Market Prices**: ${ctx.livePrices}
 - **Upcoming Events**:
   ${ctx.upcomingEvents}
+- **Scanned Opportunities**:
+  ${ctx.activeOpportunities}
 ${ctx.memoryContext}
 
 ## RULES

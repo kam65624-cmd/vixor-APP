@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { memo, useState } from "react";
 import { getPortfolioData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getPerformance } from "@/domains/trades/functions";
+import { PerformancePanel } from "@/components/vixor/PerformancePanel";
 import {
   PageLayout,
   StatsRow,
@@ -36,12 +38,19 @@ const ALLOC_COLORS = [
 function PortfolioPage() {
   const navigate = useNavigate();
   const fetchPortfolio = useStableServerFn(getPortfolioData);
-  const [activeTab, setActiveTab] = useState<"holdings" | "history">("holdings");
+  const fetchPerformance = useStableServerFn(getPerformance);
+  const [activeTab, setActiveTab] = useState<"holdings" | "performance" | "history">("holdings");
 
   const query = useQuery({
     queryKey: ["portfolio-data-page"],
     queryFn: () => fetchPortfolio({}),
     staleTime: 30_000,
+  });
+
+  const perfQuery = useQuery({
+    queryKey: ["portfolio-performance"],
+    queryFn: () => fetchPerformance({}),
+    staleTime: 60_000,
   });
 
   const data = query.data;
@@ -64,70 +73,68 @@ function PortfolioPage() {
       title="Portfolio"
       badge="PORTFOLIO"
       badgeColor={"var(--color-primary)"}
-      description={`Derived from your ${tradeCount} recorded trades`}
-      tabs={["Holdings", "History"]}
+      tabs={"holdings,performance,history".split(",") as any}
       activeTab={activeTab}
-      onTabChange={(t) => setActiveTab(t as "holdings" | "history")}
-      loading={isLoading}
+      onTabChange={(t) => setActiveTab(t as "holdings" | "performance" | "history")}
+      loading={isLoading && activeTab === "holdings"}
       loadingColor={"var(--color-bullish)"}
     >
-      {/* ── Stats ─────────────────────────────────────────────────── */}
-      <StatsRow
-        stats={[
-          {
-            label: "Total Value",
-            value: fmt(totalValue),
-            icon: "💎",
-            color: "var(--color-foreground)",
-          },
-          {
-            label: "Total PnL",
-            value: `${totalPnl >= 0 ? "+" : ""}${fmt(totalPnl)}`,
-            color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
-            sub: `${totalPnlPct >= 0 ? "+" : ""}${totalPnlPct.toFixed(1)}%`,
-          },
-          {
-            label: "Holdings",
-            value: String(holdings.length),
-            icon: "📊",
-            color: "var(--color-foreground)",
-          },
-        ]}
-      />
-
-      {/* ── Allocation bar (THEME colours) ────────────────────────── */}
-      {holdings.length > 0 && (
-        <div
-          style={{
-            display: "flex",
-            height: "6px",
-            borderRadius: "3px",
-            overflow: "hidden",
-            background: "var(--color-card)",
-            borderBottom: `1px solid ${"var(--color-border)"}`,
-          }}
-        >
-          {holdings.map((h, i) => {
-            const pct = totalValue > 0 ? (h.value / totalValue) * 100 : 0;
-            if (pct < 1) return null;
-            return (
-              <div
-                key={h.symbol}
-                style={{
-                  width: `${pct}%`,
-                  background: ALLOC_COLORS[i % ALLOC_COLORS.length],
-                  transition: "width 0.3s ease",
-                }}
-                title={`${h.symbol}: ${pct.toFixed(1)}%`}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {/* ── Holdings tab ──────────────────────────────────────────── */}
+      {/* ── Holdings Tab ───────────────────────────────────────────── */}
       {activeTab === "holdings" && (
         <>
+          <StatsRow
+            stats={[
+              {
+                label: "Total Value",
+                value: fmt(totalValue),
+                icon: "💎",
+                color: "var(--color-foreground)",
+              },
+              {
+                label: "Total PnL",
+                value: `${totalPnl >= 0 ? "+" : ""}${fmt(totalPnl)}`,
+                color: totalPnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
+                sub: `${totalPnlPct >= 0 ? "+" : ""}${totalPnlPct.toFixed(1)}%`,
+              },
+              {
+                label: "Holdings",
+                value: String(holdings.length),
+                icon: "📊",
+                color: "var(--color-foreground)",
+              },
+            ]}
+          />
+
+          {/* ── Allocation bar (THEME colours) ────────────────────── */}
+          {holdings.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                height: "6px",
+                borderRadius: "3px",
+                overflow: "hidden",
+                background: "var(--color-card)",
+                borderBottom: `1px solid ${"var(--color-border)"}`,
+              }}
+            >
+              {holdings.map((h, i) => {
+                const pct = totalValue > 0 ? (h.value / totalValue) * 100 : 0;
+                if (pct < 1) return null;
+                return (
+                  <div
+                    key={h.symbol}
+                    style={{
+                      width: `${pct}%`,
+                      background: ALLOC_COLORS[i % ALLOC_COLORS.length],
+                      transition: "width 0.3s ease",
+                    }}
+                    title={`${h.symbol}: ${pct.toFixed(1)}%`}
+                  />
+                );
+              })}
+            </div>
+          )}
+
           <SectionTitle title="Holdings" count={holdings.length} />
 
           <ScrollArea>
@@ -146,7 +153,14 @@ function PortfolioPage() {
         </>
       )}
 
-      {/* ── History tab ───────────────────────────────────────────── */}
+      {/* ── Performance Tab ───────────────────────────────────────── */}
+      {activeTab === "performance" && (
+        <ScrollArea>
+          <PerformancePanel performance={perfQuery.data ?? null} isLoading={perfQuery.isLoading} />
+        </ScrollArea>
+      )}
+
+      {/* ── History Tab ───────────────────────────────────────────── */}
       {activeTab === "history" && (
         <LinkedEmptyState
           icon="📋"

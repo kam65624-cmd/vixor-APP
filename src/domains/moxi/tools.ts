@@ -130,6 +130,27 @@ export const MOXI_TOOLS: MoxiToolDefinition[] = [
     category: "signals",
     params: [],
   },
+  {
+    name: "scanOpportunities",
+    description:
+      "Scan the market for high-confidence trading opportunities across multiple pairs. Returns top opportunities with entry/SL/TP levels.",
+    category: "analysis",
+    params: [
+      {
+        name: "minConfidence",
+        type: "number",
+        description: "Minimum confidence score (0-100)",
+        required: false,
+      },
+    ],
+  },
+  {
+    name: "getEconomicCalendar",
+    description:
+      "Fetches upcoming economic events filtered to high and medium impact. Returns formatted list with time, currency, impact, and forecast.",
+    category: "data",
+    params: [],
+  },
 ];
 
 // ─── Lookup Helpers ─────────────────────────────────────────────────────────

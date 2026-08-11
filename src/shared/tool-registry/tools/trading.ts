@@ -269,3 +269,121 @@ ToolRegistry.register({
     }
   },
 });
+
+// ── scanOpportunities ─────────────────────────────────────────────────────
+
+ToolRegistry.register({
+  name: "scanOpportunities",
+  description:
+    "Scan the market for high-confidence trading opportunities across multiple pairs. Returns top 5 with entry/SL/TP.",
+  category: "analysis",
+  permissions: ["authenticated"],
+  mutative: false,
+  parameters: [
+    {
+      name: "minConfidence",
+      type: "number",
+      description: "Minimum confidence score (0-100, default 65)",
+      required: false,
+    },
+  ],
+  execute: async (input, context: ToolContext): Promise<ToolResult> => {
+    try {
+      const { scanForOpportunities, setScanFetcher } =
+        await import("@/domains/analysis/opportunity-scanner");
+      const { fetchBinanceKlines, fetchTwelveDataKlines } =
+        await import("@/domains/market/server/price-fetcher");
+      const { AssetRegistry, POPULAR_PAIRS } = await import("@/shared/asset-registry");
+
+      // Build a fetcher that routes to the right API per pair
+      const pairs = POPULAR_PAIRS.map((p) => p.pair);
+      setScanFetcher(async (pair: string, tf: string, limit: number) => {
+        if (AssetRegistry.isCrypto(pair)) {
+          const bars = await fetchBinanceKlines(pair, tf, limit);
+          if (bars && bars.length > 20) return bars;
+        }
+        const tdBars = await fetchTwelveDataKlines(pair, tf, limit);
+        return tdBars;
+      });
+
+      const minConf = (input.minConfidence as number) || 65;
+      const result = await scanForOpportunities(pairs, {
+        minConfidence: minConf,
+        timeframes: ["1H", "4H"],
+        maxResults: 5,
+      });
+
+      // Format for chat consumption
+      const formatted = result.opportunities.map((o) => ({
+        pair: o.pair,
+        timeframe: o.timeframe,
+        direction: o.direction,
+        confidence: o.confidence,
+        entry: o.entryPrice,
+        stopLoss: o.stopLoss,
+        takeProfits: o.takeProfits,
+        riskReward: o.riskReward,
+        signals: o.keySignals,
+        regime: o.regime,
+      }));
+
+      // Update MOXI context cache with scan results
+      try {
+        const { setCachedOpportunities } = await import("@/domains/moxi/context-engine");
+        setCachedOpportunities(result.opportunities);
+      } catch {
+        // Non-critical — cache update failure shouldn't block response
+      }
+
+      return {
+        success: true,
+        data: {
+          opportunities: formatted,
+          totalScanned: result.totalScanned,
+          scanDurationMs: result.scanDurationMs,
+        },
+      };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  },
+});
+
+// ── getEconomicCalendar ───────────────────────────────────────────────────
+
+ToolRegistry.register({
+  name: "getEconomicCalendar",
+  description:
+    "Fetches upcoming economic events filtered to high and medium impact. Returns time, currency, impact, forecast.",
+  category: "market",
+  permissions: ["authenticated"],
+  mutative: false,
+  parameters: [],
+  execute: async (_input, _context: ToolContext): Promise<ToolResult> => {
+    try {
+      const { fetchEconomicCalendar, COUNTRY_FLAGS } =
+        await import("@/domains/market/server/economic-calendar");
+
+      const events = await fetchEconomicCalendar(7);
+
+      // Filter to high + medium impact, format for chat
+      const filtered = events
+        .filter((e) => e.impact === "high" || e.impact === "medium")
+        .slice(0, 15)
+        .map((e) => ({
+          title: e.title,
+          date: e.date,
+          currency: e.currency,
+          impact: e.impact,
+          forecast: e.forecast || null,
+          previous: e.previous || null,
+          country: e.country,
+          flag: COUNTRY_FLAGS[e.country] || "",
+        }));
+
+      return { success: true, data: filtered };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  },
+});
