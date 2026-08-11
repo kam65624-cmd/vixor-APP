@@ -101,5 +101,8 @@ src/routes/api/
 
 # --- VIXOR: non-production artifacts ---
 download/
-scripts/
 worklog.md
+
+# scripts/ — ignore all except build-required files
+scripts/*
+!scripts/fix-vercel-bundle.mjs
