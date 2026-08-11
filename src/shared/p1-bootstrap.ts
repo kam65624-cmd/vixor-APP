@@ -6,7 +6,8 @@
 // Intelligence Layer. It:
 //   1. Registers all tools in the Tool Registry (via side-effect import)
 //   2. Configures event persistence to domain_events table
-//   3. Logs initialization status
+//   3. Registers domain event consumers
+//   4. Logs initialization status
 //
 // Import once at the top of src/server.ts:
 //   import "./shared/p1-bootstrap";
@@ -21,5 +22,9 @@ import "./tool-registry/bootstrap";
 // This wires the EventOrchestrator to persist all events to Supabase.
 import { configureEventPersistence } from "./events/persist";
 
+// ── Register domain event consumers ─────────────────────────────────────────
+import { registerEventConsumers } from "./events/consumers";
+
 // ── Execute initialization ──────────────────────────────────────────────────
 configureEventPersistence();
+registerEventConsumers();
