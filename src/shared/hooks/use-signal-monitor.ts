@@ -3,21 +3,22 @@
 // ============================================================================
 // React hook that connects useLivePrices to signal tracking.
 // For each active/pending tracking, checks if TP/SL is hit on every price tick.
-// When hit, updates the tracking status via server function and sends notification.
+// When hit, requests a server-authoritative transition via requestSignalTransition.
+//
+// Phase 3: The client NO LONGER determines the new status.
+// It sends the observed price to the server, which uses the Transition Engine
+// to determine the valid next state.
 // ============================================================================
 
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useLivePrices } from "@/shared/market-data/use-live-prices";
 import {
   getUserSignalTrackings,
-  updateSignalTracking,
-  evaluateTrackingPrice,
-  updateExcursions,
+  requestSignalTransition,
 } from "@/domains/signal-tracking";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import type { SignalTracking, SignalStatus } from "@/domains/signal-tracking";
-import { TERMINAL_STATUSES } from "@/domains/signal-tracking";
-import { AssetRegistry } from "@/shared/asset-registry";
+import { TERMINAL_STATUSES, MONITORED_STATUSES } from "@/domains/signal-tracking";
 
 export interface SignalMonitorState {
   /** All user trackings (fetched once on mount) */
@@ -41,11 +42,12 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
   const notifCountRef = useRef(0);
 
   const fetchTrackings = useStableServerFn(getUserSignalTrackings);
-  const updateTracking = useStableServerFn(updateSignalTracking);
+  const transitionFn = useStableServerFn(requestSignalTransition);
 
-  // Filter active/pending trackings and extract unique pairs
+  // Filter active/pending trackings that need monitoring and extract unique pairs
   const activeTrackings = trackings.filter(
-    (t) => !TERMINAL_STATUSES.includes(t.status) && t.direction !== "WAIT",
+    (t) =>
+      MONITORED_STATUSES.includes(t.status) && t.direction !== "WAIT",
   );
 
   const monitoredPairs = Array.from(new Set(activeTrackings.map((t) => t.pair)));
@@ -69,14 +71,15 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
     enabled: enabled && monitoredPairs.length > 0,
   });
 
-  // Track previous prices to avoid duplicate notifications
+  // Track previous prices to avoid duplicate server calls
   const prevPriceRef = useRef<Map<string, number>>(new Map());
+
+  // Track which trackings have pending transitions (debounce)
+  const pendingTransitions = useRef<Set<string>>(new Set());
 
   // Check prices against trackings on every update
   const checkPrices = useCallback(() => {
     if (!enabled || activeTrackings.length === 0) return;
-
-    let anyUpdated = false;
 
     for (const tracking of activeTrackings) {
       const livePrice = getPrice(tracking.pair);
@@ -89,50 +92,60 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
       if (prevPrice === currentPrice) continue;
       prevPriceRef.current.set(tracking.id, currentPrice);
 
-      // Evaluate price against tracking
-      const result = evaluateTrackingPrice(tracking, currentPrice);
+      // Skip if there's already a pending transition for this tracking
+      if (pendingTransitions.current.has(tracking.id)) continue;
 
-      if (result.hitType !== "none" && result.newStatus) {
-        // Update tracking status via server function
-        updateTracking({
-          data: {
-            trackingId: tracking.id,
-            status: result.newStatus,
-            currentPrice,
-            hitTp: result.hitType === "tp_hit" ? tracking.hit_tp + 1 : tracking.hit_tp,
-          },
-        }).then((res: { ok: boolean }) => {
-          if (res.ok) {
-            // Update local state
-            setTrackings((prev) =>
-              prev.map((t) =>
-                t.id === tracking.id
-                  ? {
-                      ...t,
-                      status: result.newStatus!,
-                      current_price: currentPrice,
-                      updated_at: new Date().toISOString(),
-                    }
-                  : t,
-              ),
-            );
+      // Request server-authoritative transition
+      // The client NO LONGER determines the new status.
+      // We send the observed price; the server's Transition Engine decides.
+      pendingTransitions.current.add(tracking.id);
 
-            // Notification is sent server-side by updateSignalTracking.
-            // No need to call notificationRouter from the client.
-            // (notificationRouter uses node:crypto via webhook.ts, client-incompatible)
-            notifCountRef.current++;
-            setNotificationsSent(notifCountRef.current);
-          }
-        });
+      transitionFn({
+        data: {
+          trackingId: tracking.id,
+          observedPrice: currentPrice,
+          currentVersion: tracking.updated_at,
+          actor: "system",
+        },
+      }).then((res) => {
+        pendingTransitions.current.delete(tracking.id);
 
-        anyUpdated = true;
-      }
+        if (res.ok) {
+          // Update local state from server response
+          setTrackings((prev) =>
+            prev.map((t) =>
+              t.id === tracking.id
+                ? {
+                    ...t,
+                    status: res.transition.to,
+                    current_price: res.transition.price ?? t.current_price,
+                    updated_at: res.transition.serverReceivedAt,
+                    // Derive hit_tp from transition result
+                    hit_tp:
+                      res.transition.event === "TP1_HIT"
+                        ? 1
+                        : res.transition.event === "TP2_HIT"
+                          ? 2
+                          : res.transition.event === "TP3_HIT"
+                            ? 3
+                            : t.hit_tp,
+                  }
+                : t,
+            ),
+          );
+
+          notifCountRef.current++;
+          setNotificationsSent(notifCountRef.current);
+        }
+        // If transition was denied (e.g., NO_TRIGGER), that's normal —
+        // price hasn't triggered any TP/SL/entry yet.
+      }).catch(() => {
+        pendingTransitions.current.delete(tracking.id);
+      });
     }
 
-    if (anyUpdated) {
-      setLastCheckAt(Date.now());
-    }
-  }, [enabled, activeTrackings, getPrice, updateTracking]);
+    setLastCheckAt(Date.now());
+  }, [enabled, activeTrackings, getPrice, transitionFn]);
 
   // Run price checks whenever prices update
   useEffect(() => {
@@ -141,48 +154,54 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
   }, [prices, wsStatus, checkPrices]);
 
   // Check for expired signals every 60 seconds
+  // Now uses server-authoritative transition instead of client-side status change
   useEffect(() => {
     if (!enabled) return;
 
     const interval = setInterval(() => {
       const now = Date.now();
-      let anyExpired = false;
 
-      setTrackings((prev) => {
-        const next = prev.map((t) => {
-          if (
-            t.expires_at &&
-            new Date(t.expires_at).getTime() < now &&
-            !TERMINAL_STATUSES.includes(t.status)
-          ) {
-            anyExpired = true;
-            return {
-              ...t,
-              status: "expired" as SignalStatus,
-              resolved_at: new Date().toISOString(),
-            };
-          }
-          return t;
-        });
-        return anyExpired ? next : prev;
-      });
-
-      if (anyExpired) {
-        // Update expired in DB
-        for (const t of trackings) {
-          if (
-            t.expires_at &&
-            new Date(t.expires_at).getTime() < now &&
-            !TERMINAL_STATUSES.includes(t.status)
-          ) {
-            void updateTracking({ data: { trackingId: t.id, status: "expired" } });
-          }
+      for (const t of trackings) {
+        if (
+          t.expires_at &&
+          new Date(t.expires_at).getTime() < now &&
+          !TERMINAL_STATUSES.includes(t.status)
+        ) {
+          // Request server-authoritative expiration transition
+          pendingTransitions.current.add(t.id);
+          transitionFn({
+            data: {
+              trackingId: t.id,
+              requestedTransition: "expired",
+              observedPrice: 0,
+              currentVersion: t.updated_at,
+              actor: "system",
+            },
+          }).then((res) => {
+            pendingTransitions.current.delete(t.id);
+            if (res.ok) {
+              setTrackings((prev) =>
+                prev.map((tr) =>
+                  tr.id === t.id
+                    ? {
+                        ...tr,
+                        status: "expired" as SignalStatus,
+                        resolved_at: res.transition.serverReceivedAt,
+                        updated_at: res.transition.serverReceivedAt,
+                      }
+                    : tr,
+                ),
+              );
+            }
+          }).catch(() => {
+            pendingTransitions.current.delete(t.id);
+          });
         }
       }
     }, 60_000);
 
     return () => clearInterval(interval);
-  }, [enabled, trackings, updateTracking]);
+  }, [enabled, trackings, transitionFn]);
 
   return {
     trackings,

@@ -84,6 +84,21 @@ export interface VixorEventMap {
     currentPrice: number;
   };
 
+  // Signal transition events (Phase 3 — server-authoritative)
+  "signal.transition.completed": {
+    trackingId: string;
+    userId: string;
+    pair: string;
+    direction: "BUY" | "SELL";
+    fromStatus: string;
+    toStatus: string;
+    eventType: string;
+    price: number | null;
+    tpIndex: number | null;
+    serverReceivedAt: string;
+    actor: string;
+  };
+
   // Alert events
   "alert.triggered": {
     alertId: string;

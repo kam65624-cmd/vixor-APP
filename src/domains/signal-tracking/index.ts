@@ -5,10 +5,6 @@
 export {
   createSignalTracking,
   getUserSignalTrackings,
-  updateSignalTracking,
-  cancelSignalTracking,
-  evaluateTrackingPrice,
-  updateExcursions,
 } from "./functions";
 export type {
   SignalTracking,
@@ -28,3 +24,11 @@ export type {
   SignalTransitionDecision,
   SignalEventType,
 } from "./transition-engine";
+export { requestSignalTransition } from "./transition.server.fn";
+export type {
+  TransitionServiceRequest,
+  TransitionServiceRequestWithVersion,
+  TransitionServiceResult,
+  TransitionServiceError,
+  TransitionServiceResponse,
+} from "./signal-transition.service";
