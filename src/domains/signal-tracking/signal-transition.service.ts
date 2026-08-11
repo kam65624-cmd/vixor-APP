@@ -25,9 +25,7 @@ import type {
 import type { SignalTracking, SignalStatus } from "./types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/shared/supabase/types";
-import {
-  fromSupabaseError,
-} from "@/shared/errors";
+import { fromSupabaseError } from "@/shared/errors";
 import { TERMINAL_STATUSES } from "./types";
 import { notificationRouter } from "@/shared/notifications";
 
@@ -61,13 +59,7 @@ export interface TransitionServiceResult {
 export interface TransitionServiceError {
   ok: false;
   error: string;
-  code:
-    | "VALIDATION"
-    | "NOT_FOUND"
-    | "FORBIDDEN"
-    | "CONFLICT"
-    | "TRANSITION_DENIED"
-    | "INTERNAL";
+  code: "VALIDATION" | "NOT_FOUND" | "FORBIDDEN" | "CONFLICT" | "TRANSITION_DENIED" | "INTERNAL";
 }
 
 export type TransitionServiceResponse = TransitionServiceResult | TransitionServiceError;
@@ -162,7 +154,11 @@ export async function executeSignalTransition(
   }
 
   if (!currentVersion || typeof currentVersion !== "string") {
-    return { ok: false, error: "currentVersion (updated_at) is required for concurrency protection", code: "VALIDATION" };
+    return {
+      ok: false,
+      error: "currentVersion (updated_at) is required for concurrency protection",
+      code: "VALIDATION",
+    };
   }
 
   // ── 2. Fetch current signal state (server-authoritative) ────────────────
@@ -198,12 +194,14 @@ export async function executeSignalTransition(
 
   // For non-price transitions, the price is irrelevant to the business logic
   // but the engine still validates it. Use a non-zero placeholder.
-  const effectivePrice = requestedTransition
-    ? (observedPrice ?? 1)
-    : observedPrice;
+  const effectivePrice = requestedTransition ? (observedPrice ?? 1) : observedPrice;
 
   if (effectivePrice === undefined || effectivePrice === null) {
-    return { ok: false, error: "observedPrice is required for price-based transitions", code: "VALIDATION" };
+    return {
+      ok: false,
+      error: "observedPrice is required for price-based transitions",
+      code: "VALIDATION",
+    };
   }
 
   const engineRequest: SignalTransitionRequest = {
@@ -211,9 +209,7 @@ export async function executeSignalTransition(
     direction: tracking.direction as "BUY" | "SELL" | "WAIT",
     entryPrice: tracking.entry_price,
     stopLoss: tracking.stop_loss,
-    takeProfit: Array.isArray(tracking.take_profit)
-      ? (tracking.take_profit as number[])
-      : null,
+    takeProfit: Array.isArray(tracking.take_profit) ? (tracking.take_profit as number[]) : null,
     hitTp: tracking.hit_tp,
     observedPrice: effectivePrice,
     observedAt: observedAt ?? serverReceivedAt,
@@ -259,24 +255,27 @@ export async function executeSignalTransition(
   const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
   // Try RPC first (atomic)
-  const { data: rpcResult, error: rpcError } = await supabaseAdmin.rpc("execute_signal_transition", {
-    p_tracking_id: trackingId,
-    p_user_id: userId,
-    p_current_version: currentVersion,
-    p_new_status: newStatus,
-    p_current_price: decision.price ?? tracking.current_price,
-    p_hit_tp: hitTp,
-    p_activated_at: activatedAt,
-    p_resolved_at: resolvedAt,
-    p_from_status: tracking.status as string,
-    p_event_type: decision.event!,
-    p_observed_price: decision.price ?? null,
-    p_tp_index: decision.tpIndex ?? null,
-    p_transition_reason: decision.reason ?? null,
-    p_observed_at: observedAt ?? serverReceivedAt,
-    p_actor: actor ?? "user",
-    p_source: "server",
-  });
+  const { data: rpcResult, error: rpcError } = await supabaseAdmin.rpc(
+    "execute_signal_transition",
+    {
+      p_tracking_id: trackingId,
+      p_user_id: userId,
+      p_current_version: currentVersion,
+      p_new_status: newStatus,
+      p_current_price: decision.price ?? tracking.current_price,
+      p_hit_tp: hitTp,
+      p_activated_at: activatedAt,
+      p_resolved_at: resolvedAt,
+      p_from_status: tracking.status as string,
+      p_event_type: decision.event!,
+      p_observed_price: decision.price ?? null,
+      p_tp_index: decision.tpIndex ?? null,
+      p_transition_reason: decision.reason ?? null,
+      p_observed_at: observedAt ?? serverReceivedAt,
+      p_actor: actor ?? "user",
+      p_source: "server",
+    },
+  );
 
   if (rpcError || !rpcResult) {
     // RPC not available — fall back to sequential operations

@@ -2,10 +2,7 @@
 // VIXOR Signal Tracking — Domain Barrel Export
 // ============================================================================
 
-export {
-  createSignalTracking,
-  getUserSignalTrackings,
-} from "./functions";
+export { createSignalTracking, getUserSignalTrackings } from "./functions";
 export type {
   SignalTracking,
   SignalStatus,

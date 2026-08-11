@@ -98,3 +98,8 @@ server/api/wallet/ip-fingerprint.ts
 
 # Dead client routes  
 src/routes/api/
+
+# --- VIXOR: non-production artifacts ---
+download/
+scripts/
+worklog.md

@@ -12,10 +12,7 @@
 
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useLivePrices } from "@/shared/market-data/use-live-prices";
-import {
-  getUserSignalTrackings,
-  requestSignalTransition,
-} from "@/domains/signal-tracking";
+import { getUserSignalTrackings, requestSignalTransition } from "@/domains/signal-tracking";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import type { SignalTracking, SignalStatus } from "@/domains/signal-tracking";
 import { TERMINAL_STATUSES, MONITORED_STATUSES } from "@/domains/signal-tracking";
@@ -46,8 +43,7 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
 
   // Filter active/pending trackings that need monitoring and extract unique pairs
   const activeTrackings = trackings.filter(
-    (t) =>
-      MONITORED_STATUSES.includes(t.status) && t.direction !== "WAIT",
+    (t) => MONITORED_STATUSES.includes(t.status) && t.direction !== "WAIT",
   );
 
   const monitoredPairs = Array.from(new Set(activeTrackings.map((t) => t.pair)));
@@ -107,41 +103,43 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
           currentVersion: tracking.updated_at,
           actor: "system",
         },
-      }).then((res) => {
-        pendingTransitions.current.delete(tracking.id);
+      })
+        .then((res) => {
+          pendingTransitions.current.delete(tracking.id);
 
-        if (res.ok) {
-          // Update local state from server response
-          setTrackings((prev) =>
-            prev.map((t) =>
-              t.id === tracking.id
-                ? {
-                    ...t,
-                    status: res.transition.to,
-                    current_price: res.transition.price ?? t.current_price,
-                    updated_at: res.transition.serverReceivedAt,
-                    // Derive hit_tp from transition result
-                    hit_tp:
-                      res.transition.event === "TP1_HIT"
-                        ? 1
-                        : res.transition.event === "TP2_HIT"
-                          ? 2
-                          : res.transition.event === "TP3_HIT"
-                            ? 3
-                            : t.hit_tp,
-                  }
-                : t,
-            ),
-          );
+          if (res.ok) {
+            // Update local state from server response
+            setTrackings((prev) =>
+              prev.map((t) =>
+                t.id === tracking.id
+                  ? {
+                      ...t,
+                      status: res.transition.to,
+                      current_price: res.transition.price ?? t.current_price,
+                      updated_at: res.transition.serverReceivedAt,
+                      // Derive hit_tp from transition result
+                      hit_tp:
+                        res.transition.event === "TP1_HIT"
+                          ? 1
+                          : res.transition.event === "TP2_HIT"
+                            ? 2
+                            : res.transition.event === "TP3_HIT"
+                              ? 3
+                              : t.hit_tp,
+                    }
+                  : t,
+              ),
+            );
 
-          notifCountRef.current++;
-          setNotificationsSent(notifCountRef.current);
-        }
-        // If transition was denied (e.g., NO_TRIGGER), that's normal —
-        // price hasn't triggered any TP/SL/entry yet.
-      }).catch(() => {
-        pendingTransitions.current.delete(tracking.id);
-      });
+            notifCountRef.current++;
+            setNotificationsSent(notifCountRef.current);
+          }
+          // If transition was denied (e.g., NO_TRIGGER), that's normal —
+          // price hasn't triggered any TP/SL/entry yet.
+        })
+        .catch(() => {
+          pendingTransitions.current.delete(tracking.id);
+        });
     }
 
     setLastCheckAt(Date.now());
@@ -177,25 +175,27 @@ export function useSignalMonitor(enabled: boolean = true): SignalMonitorState {
               currentVersion: t.updated_at,
               actor: "system",
             },
-          }).then((res) => {
-            pendingTransitions.current.delete(t.id);
-            if (res.ok) {
-              setTrackings((prev) =>
-                prev.map((tr) =>
-                  tr.id === t.id
-                    ? {
-                        ...tr,
-                        status: "expired" as SignalStatus,
-                        resolved_at: res.transition.serverReceivedAt,
-                        updated_at: res.transition.serverReceivedAt,
-                      }
-                    : tr,
-                ),
-              );
-            }
-          }).catch(() => {
-            pendingTransitions.current.delete(t.id);
-          });
+          })
+            .then((res) => {
+              pendingTransitions.current.delete(t.id);
+              if (res.ok) {
+                setTrackings((prev) =>
+                  prev.map((tr) =>
+                    tr.id === t.id
+                      ? {
+                          ...tr,
+                          status: "expired" as SignalStatus,
+                          resolved_at: res.transition.serverReceivedAt,
+                          updated_at: res.transition.serverReceivedAt,
+                        }
+                      : tr,
+                  ),
+                );
+              }
+            })
+            .catch(() => {
+              pendingTransitions.current.delete(t.id);
+            });
         }
       }
     }, 60_000);

@@ -151,7 +151,9 @@ describe("executeSignalTransition", () => {
 
   describe("valid price-based transitions", () => {
     it("transitions pending → active when BUY entry price is reached", async () => {
-      const db = createMockDb(makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }));
+      const db = createMockDb(
+        makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }),
+      );
       const request = makeRequest({ observedPrice: 99 }); // price dropped to entry
 
       const result = await executeSignalTransition(
@@ -207,7 +209,9 @@ describe("executeSignalTransition", () => {
     });
 
     it("transitions pending → active when SELL entry price is reached", async () => {
-      const db = createMockDb(makeTracking({ status: "pending", direction: "SELL", entry_price: 100 }));
+      const db = createMockDb(
+        makeTracking({ status: "pending", direction: "SELL", entry_price: 100 }),
+      );
       const request = makeRequest({ observedPrice: 101 }); // price rose to entry
 
       const result = await executeSignalTransition(
@@ -241,7 +245,9 @@ describe("executeSignalTransition", () => {
     });
 
     it("SL priority: transitions to sl_hit even if TP could trigger on same tick", async () => {
-      const db = createMockDb(makeTracking({ status: "active", stop_loss: 95, take_profit: [110, 120, 130] }));
+      const db = createMockDb(
+        makeTracking({ status: "active", stop_loss: 95, take_profit: [110, 120, 130] }),
+      );
       const request = makeRequest({ observedPrice: 94 }); // below SL=95, also below TP
 
       const result = await executeSignalTransition(
@@ -261,7 +267,9 @@ describe("executeSignalTransition", () => {
 
   describe("invalid transitions", () => {
     it("denies transition when price has not reached entry", async () => {
-      const db = createMockDb(makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }));
+      const db = createMockDb(
+        makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }),
+      );
       const request = makeRequest({ observedPrice: 105 }); // price above entry, BUY needs price <= entry
 
       const result = await executeSignalTransition(
@@ -446,7 +454,9 @@ describe("executeSignalTransition", () => {
 
   describe("serverReceivedAt", () => {
     it("generates serverReceivedAt server-side (not from client)", async () => {
-      const db = createMockDb(makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }));
+      const db = createMockDb(
+        makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }),
+      );
       const request = makeRequest({
         observedPrice: 99,
         // Deliberately NOT sending any server timestamp — client cannot control it
@@ -514,7 +524,9 @@ describe("executeSignalTransition", () => {
 
   describe("SignalTransition audit record", () => {
     it("creates audit record on successful transition", async () => {
-      const db = createMockDb(makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }));
+      const db = createMockDb(
+        makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }),
+      );
       const request = makeRequest({ observedPrice: 99 });
 
       const result = await executeSignalTransition(
@@ -548,7 +560,9 @@ describe("executeSignalTransition", () => {
     });
 
     it("records serverReceivedAt in audit record", async () => {
-      const db = createMockDb(makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }));
+      const db = createMockDb(
+        makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }),
+      );
       const request = makeRequest({ observedPrice: 99 });
 
       await executeSignalTransition(
@@ -565,7 +579,9 @@ describe("executeSignalTransition", () => {
 
   describe("domain event emission", () => {
     it("emits signal.transition.completed after successful transition", async () => {
-      const db = createMockDb(makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }));
+      const db = createMockDb(
+        makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }),
+      );
       const request = makeRequest({ observedPrice: 99 });
 
       const result = await executeSignalTransition(
@@ -582,7 +598,9 @@ describe("executeSignalTransition", () => {
     });
 
     it("does NOT emit event when transition is denied", async () => {
-      const db = createMockDb(makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }));
+      const db = createMockDb(
+        makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }),
+      );
       const request = makeRequest({ observedPrice: 105 }); // no trigger
 
       await executeSignalTransition(
@@ -645,7 +663,11 @@ describe("executeSignalTransition", () => {
 
     it("returns VALIDATION error when observedPrice missing for price-based transition", async () => {
       const db = createMockDb(makeTracking());
-      const request = { trackingId: TRACKING_ID, currentVersion: VERSION, observedPrice: undefined as unknown as number };
+      const request = {
+        trackingId: TRACKING_ID,
+        currentVersion: VERSION,
+        observedPrice: undefined as unknown as number,
+      };
 
       const result = await executeSignalTransition(
         db as Parameters<typeof executeSignalTransition>[0],

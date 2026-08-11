@@ -42,11 +42,7 @@ export class DomainError extends Error {
   readonly statusCode: number;
   readonly details?: Record<string, unknown>;
 
-  constructor(
-    category: ErrorCategory,
-    message: string,
-    details?: Record<string, unknown>,
-  ) {
+  constructor(category: ErrorCategory, message: string, details?: Record<string, unknown>) {
     super(message);
     this.name = "DomainError";
     this.category = category;

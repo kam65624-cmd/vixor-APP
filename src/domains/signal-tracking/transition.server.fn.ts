@@ -38,9 +38,7 @@ export const requestSignalTransition = createServerFn({ method: "POST" })
       data.requestedTransition &&
       !["cancelled", "expired", "invalidated"].includes(data.requestedTransition)
     ) {
-      throw new Error(
-        "requestedTransition must be one of: cancelled, expired, invalidated",
-      );
+      throw new Error("requestedTransition must be one of: cancelled, expired, invalidated");
     }
 
     return data;

@@ -19,9 +19,7 @@ import type { Trade, TradeDirection, TradeStatus } from "./types";
 const createTradeSchema = z.object({
   pair: z.string().min(1, "Pair is required"),
   direction: z.enum(["long", "short"] as const),
-  entry_price: z
-    .number()
-    .positive("Entry price must be positive"),
+  entry_price: z.number().positive("Entry price must be positive"),
   stop_loss: z.number().positive().optional(),
   take_profit: z.number().positive().optional(),
   amount: z.number().positive("Amount must be positive"),
@@ -204,7 +202,10 @@ export const getTradeStats = createServerFn({ method: "GET" })
       closedTrades: closed.length,
       winRate: closed.length > 0 ? wins.length / closed.length : 0,
       totalPnl: closed.reduce((sum, t) => sum + ((t.pnl as number) ?? 0), 0),
-      avgPnl: closed.length > 0 ? closed.reduce((sum, t) => sum + ((t.pnl as number) ?? 0), 0) / closed.length : 0,
+      avgPnl:
+        closed.length > 0
+          ? closed.reduce((sum, t) => sum + ((t.pnl as number) ?? 0), 0) / closed.length
+          : 0,
       bestTrade: closed.length > 0 ? Math.max(...closed.map((t) => t.pnl as number)) : 0,
       worstTrade: closed.length > 0 ? Math.min(...closed.map((t) => t.pnl as number)) : 0,
     };
@@ -213,4 +214,12 @@ export const getTradeStats = createServerFn({ method: "GET" })
 // ── Type exports for backward compatibility ────────────────────────────────
 // These re-exports ensure existing consumers don't break.
 
-export type { TradeDirection, TradeStatus, CreateTradeInput, UpdateTradeInput, ListTradesFilters, TradeStats, EquityCurvePoint } from "./types";
+export type {
+  TradeDirection,
+  TradeStatus,
+  CreateTradeInput,
+  UpdateTradeInput,
+  ListTradesFilters,
+  TradeStats,
+  EquityCurvePoint,
+} from "./types";
