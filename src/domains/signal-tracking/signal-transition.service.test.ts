@@ -5,8 +5,8 @@
 // Uses mocked Supabase clients to test the service logic without DB.
 // ============================================================================
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { executeSignalTransition } from "./signal-transition.service";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { executeSignalTransition, isNonAtomicFallbackAllowed } from "./signal-transition.service";
 import type { TransitionServiceRequestWithVersion } from "./signal-transition.service";
 import type { SignalStatus } from "./types";
 
@@ -145,6 +145,12 @@ describe("executeSignalTransition", () => {
     adminUpdateData = null;
     eventEmitted = null;
     setupAdminMock();
+    // Enable non-atomic fallback for existing tests (they mock RPC as unavailable)
+    process.env.VIXOR_ALLOW_NON_ATOMIC_FALLBACK = "true";
+  });
+
+  afterEach(() => {
+    delete process.env.VIXOR_ALLOW_NON_ATOMIC_FALLBACK;
   });
 
   // ── 1. Valid transition: pending → active (BUY entry reached) ──
@@ -716,6 +722,89 @@ describe("executeSignalTransition", () => {
     });
   });
 
-  // ── 12. Existing Transition Engine tests must still pass ──
-  // (Verified by running the full test suite — checked in Task 3.14)
+  // ── 13. Production-safe fallback (TASK B.1) ──
+
+  describe("production-safe fallback (TASK B.1)", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      adminUpdateData = null;
+      eventEmitted = null;
+      // CRITICAL: delete the env var set by outer beforeEach (L149)
+      // to simulate production-safe mode where fallback is FORBIDDEN.
+      delete process.env.VIXOR_ALLOW_NON_ATOMIC_FALLBACK;
+      setupAdminMock();
+    });
+
+    afterEach(() => {
+      delete process.env.VIXOR_ALLOW_NON_ATOMIC_FALLBACK;
+    });
+
+    it("RPC unavailable in production-safe mode returns INTERNAL — no UPDATE, no AUDIT", async () => {
+      const db = createMockDb(
+        makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }),
+      );
+      const result = await executeSignalTransition(
+        db as Parameters<typeof executeSignalTransition>[0],
+        USER_ID,
+        makeRequest({ observedPrice: 99 }),
+      );
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.code).toBe("INTERNAL");
+        expect(result.error).toContain("RPC failed");
+      }
+      // Verify no fallback UPDATE or INSERT was attempted
+      expect(adminUpdateData).toBeNull();
+      expect(adminInsertMock).not.toHaveBeenCalled();
+    });
+
+    it("RPC throws non-CONFLICT error in production-safe mode returns INTERNAL", async () => {
+      const db = createMockDb(
+        makeTracking({ status: "pending", direction: "BUY", entry_price: 100 }),
+      );
+      // Override RPC to return a non-CONFLICT error
+      (mockAdminDb.rpc as ReturnType<typeof vi.fn>).mockResolvedValue({
+        data: null,
+        error: { message: "unexpected RPC error", code: "XX000" },
+      });
+
+      const result = await executeSignalTransition(
+        db as Parameters<typeof executeSignalTransition>[0],
+        USER_ID,
+        makeRequest({ observedPrice: 99 }),
+      );
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.code).toBe("INTERNAL");
+      }
+      // Verify no fallback UPDATE was attempted
+      expect(adminUpdateData).toBeNull();
+    });
+
+    it("isNonAtomicFallbackAllowed returns false when NODE_ENV is production", () => {
+      const origEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "production";
+      expect(isNonAtomicFallbackAllowed()).toBe(false);
+      process.env.NODE_ENV = origEnv;
+    });
+
+    it("isNonAtomicFallbackAllowed returns false when env var is not set", () => {
+      const origEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "test";
+      delete process.env.VIXOR_ALLOW_NON_ATOMIC_FALLBACK;
+      expect(isNonAtomicFallbackAllowed()).toBe(false);
+      process.env.NODE_ENV = origEnv;
+    });
+
+    it("isNonAtomicFallbackAllowed returns true when test env + env var is true", () => {
+      const origEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "test";
+      process.env.VIXOR_ALLOW_NON_ATOMIC_FALLBACK = "true";
+      expect(isNonAtomicFallbackAllowed()).toBe(true);
+      process.env.NODE_ENV = origEnv;
+      delete process.env.VIXOR_ALLOW_NON_ATOMIC_FALLBACK;
+    });
+  });
 });

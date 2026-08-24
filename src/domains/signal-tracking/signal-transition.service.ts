@@ -29,6 +29,25 @@ import { fromSupabaseError } from "@/shared/errors";
 import { TERMINAL_STATUSES } from "./types";
 import { notificationRouter } from "@/shared/notifications";
 
+// ── Environment Policy for Non-Atomic Fallback ──────────────────────────────
+// In Production: RPC failure = FAIL CLOSED. No silent downgrade.
+// In Test/Dev: fallback is allowed ONLY if explicitly enabled.
+//
+// The gate uses TWO conditions to prevent accidental Production activation:
+//   1. NODE_ENV must NOT be "production"
+//   2. VIXOR_ALLOW_NON_ATOMIC_FALLBACK must be explicitly "true"
+//
+// This makes it impossible to accidentally enable fallback in Production
+// via environment variable misconfiguration alone.
+
+export function isNonAtomicFallbackAllowed(): boolean {
+  const env = process.env.NODE_ENV ?? "development";
+  if (env === "production") {
+    return false;
+  }
+  return process.env.VIXOR_ALLOW_NON_ATOMIC_FALLBACK === "true";
+}
+
 // ── Transition Service Types ─────────────────────────────────────────────────
 
 export interface TransitionServiceRequest {
@@ -262,9 +281,8 @@ export async function executeSignalTransition(
   }
 
   // ── 6. Execute atomic transition via PostgreSQL RPC ────────────────────
-  // Uses a single RPC call that wraps the signal update + audit insert
-  // in a PostgreSQL transaction. Falls back to sequential operations if
-  // the RPC is not available (migration not yet applied).
+  // In Production: RPC failure = FAIL CLOSED. No silent downgrade.
+  // In Test/Dev with VIXOR_ALLOW_NON_ATOMIC_FALLBACK=true: sequential fallback.
 
   const newStatus = decision.to!;
   let transitionId = "";
@@ -317,24 +335,28 @@ export async function executeSignalTransition(
   );
 
   if (rpcError || !rpcResult) {
-    // RPC not available — fall back to sequential operations
-    // (This path handles the case where the migration hasn't been applied yet)
-    if (rpcError?.message?.includes("execute_signal_transition")) {
-      console.warn(
-        "[SignalTransition] RPC not available, falling back to sequential operations. Apply migration 20260811000001.",
-      );
-    } else if (rpcError) {
-      // Real RPC error (conflict, etc.)
-      if (rpcError.message?.includes("CONFLICT")) {
-        return { ok: false, error: "Signal state has changed concurrently", code: "CONFLICT" };
-      }
-      console.error("[SignalTransition] RPC error:", rpcError.message);
+    // Handle known RPC errors
+    if (rpcError?.message?.includes("CONFLICT")) {
+      return { ok: false, error: "Signal state has changed concurrently", code: "CONFLICT" };
     }
 
-    // ⚠️ NON-ATOMIC FALLBACK — UPDATE and INSERT run as separate statements.
-    // If INSERT fails after UPDATE succeeds, the signal state will be updated
-    // but the audit record will be missing. This path should NEVER execute in
-    // production once migration 20260811000001 is applied.
+    // ── PRODUCTION: FAIL CLOSED ──
+    // In production, RPC failure is a hard failure. No silent downgrade
+    // to non-atomic sequential operations. This preserves atomicity invariant.
+    if (!isNonAtomicFallbackAllowed()) {
+      console.error(
+        `[SignalTransition] RPC FAILED in production-safe mode for tracking=${trackingId} user=${userId}. Error: ${rpcError?.message ?? "empty result"}. Transition REJECTED — no state was modified.`,
+      );
+      return {
+        ok: false,
+        error: `Atomic transition RPC failed: ${rpcError?.message ?? "empty result"}. Signal state was NOT modified.`,
+        code: "INTERNAL",
+      };
+    }
+
+    // ── TEST/DEV: NON-ATOMIC FALLBACK (only if explicitly enabled) ──
+    // This path is REACHABLE only when NODE_ENV !== "production" AND
+    // VIXOR_ALLOW_NON_ATOMIC_FALLBACK="true". It must NEVER execute in production.
     console.error(
       `[SignalTransition] NON-ATOMIC FALLBACK for tracking=${trackingId} user=${userId} — RPC unavailable. Signal state UPDATE and audit INSERT will run as separate statements.`,
     );

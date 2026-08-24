@@ -179,6 +179,12 @@ describe("Signal Tracking Integration Pipeline", () => {
     auditInsertData = null;
     signalUpdateData = null;
     setupAdminMock();
+    // Enable non-atomic fallback for integration tests (they mock RPC as unavailable)
+    process.env.VIXOR_ALLOW_NON_ATOMIC_FALLBACK = "true";
+  });
+
+  afterEach(() => {
+    delete process.env.VIXOR_ALLOW_NON_ATOMIC_FALLBACK;
   });
 
   // ─────────────────────────────────────────────────────────────────────────
