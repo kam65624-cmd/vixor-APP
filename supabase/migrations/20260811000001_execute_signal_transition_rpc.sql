@@ -36,7 +36,7 @@ BEGIN
   SET
     status = p_new_status,
     current_price = COALESCE(p_current_price, current_price),
-    hit_tp = COALESCE(p_hit_tp, hit_tp),
+    hit_tp = COALESCE(p_hit_tp, hit_tp),  -- trigger enforces final invariant
     activated_at = COALESCE(p_activated_at, activated_at),
     resolved_at = COALESCE(p_resolved_at, resolved_at),
     updated_at = clock_timestamp()

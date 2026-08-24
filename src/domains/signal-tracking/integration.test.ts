@@ -585,4 +585,237 @@ describe("Signal Tracking Integration Pipeline", () => {
     expect(result.ok).toBe(false);
     expect(capturedEvents).toHaveLength(0);
   });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Test: Granular TP event emission (TASK D verification)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  it("emits signal.tp_hit event with correct payload on TP1 hit", async () => {
+    const tracking = makeTracking({ status: "active", hit_tp: 0 });
+    const db = createMockDb(tracking);
+
+    const result = await executeSignalTransition(
+      db as Parameters<typeof executeSignalTransition>[0],
+      USER_ID,
+      makeRequest({ observedPrice: 111 }),
+    );
+
+    expect(result.ok).toBe(true);
+
+    // Should emit BOTH signal.transition.completed AND signal.tp_hit
+    const tpEvent = capturedEvents.find((e) => e.type === "signal.tp_hit");
+    expect(tpEvent).toBeDefined();
+    if (tpEvent) {
+      const p = tpEvent.payload as Record<string, unknown>;
+      expect(p.trackingId).toBe(TRACKING_ID);
+      expect(p.pair).toBe("BTC/USDT");
+      expect(p.direction).toBe("BUY");
+      expect(p.tpIndex).toBe(0);
+      expect(p.hitTp).toBe(1); // tpIndex + 1
+      expect(p.currentPrice).toBe(111);
+    }
+  });
+
+  it("emits signal.tp_hit event on TP2 hit (tpIndex=1, hitTp=2)", async () => {
+    const tracking = makeTracking({ status: "tp1_hit", hit_tp: 1 });
+    const db = createMockDb(tracking);
+
+    const result = await executeSignalTransition(
+      db as Parameters<typeof executeSignalTransition>[0],
+      USER_ID,
+      makeRequest({ observedPrice: 121 }),
+    );
+
+    expect(result.ok).toBe(true);
+    const tpEvent = capturedEvents.find((e) => e.type === "signal.tp_hit");
+    expect(tpEvent).toBeDefined();
+    if (tpEvent) {
+      const p = tpEvent.payload as Record<string, unknown>;
+      expect(p.tpIndex).toBe(1);
+      expect(p.hitTp).toBe(2);
+    }
+  });
+
+  it("emits signal.tp_hit event on TP3 hit (tpIndex=2, hitTp=3)", async () => {
+    const tracking = makeTracking({ status: "tp2_hit", hit_tp: 2 });
+    const db = createMockDb(tracking);
+
+    const result = await executeSignalTransition(
+      db as Parameters<typeof executeSignalTransition>[0],
+      USER_ID,
+      makeRequest({ observedPrice: 131 }),
+    );
+
+    expect(result.ok).toBe(true);
+    const tpEvent = capturedEvents.find((e) => e.type === "signal.tp_hit");
+    expect(tpEvent).toBeDefined();
+    if (tpEvent) {
+      const p = tpEvent.payload as Record<string, unknown>;
+      expect(p.tpIndex).toBe(2);
+      expect(p.hitTp).toBe(3);
+    }
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Test: Granular SL event emission (TASK D verification)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  it("emits signal.sl_hit event with correct payload on SL hit", async () => {
+    const tracking = makeTracking({ status: "active" });
+    const db = createMockDb(tracking);
+
+    const result = await executeSignalTransition(
+      db as Parameters<typeof executeSignalTransition>[0],
+      USER_ID,
+      makeRequest({ observedPrice: 89 }),
+    );
+
+    expect(result.ok).toBe(true);
+
+    // Should emit BOTH signal.transition.completed AND signal.sl_hit
+    const slEvent = capturedEvents.find((e) => e.type === "signal.sl_hit");
+    expect(slEvent).toBeDefined();
+    if (slEvent) {
+      const p = slEvent.payload as Record<string, unknown>;
+      expect(p.trackingId).toBe(TRACKING_ID);
+      expect(p.pair).toBe("BTC/USDT");
+      expect(p.direction).toBe("BUY");
+      expect(p.currentPrice).toBe(89);
+      expect(p.stopLoss).toBe(90);
+    }
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Test: No granular events for non-TP/SL transitions
+  // ─────────────────────────────────────────────────────────────────────────
+
+  it("does NOT emit signal.tp_hit or signal.sl_hit on entry reached", async () => {
+    const tracking = makeTracking({ status: "pending", direction: "BUY", entry_price: 100 });
+    const db = createMockDb(tracking);
+
+    await executeSignalTransition(
+      db as Parameters<typeof executeSignalTransition>[0],
+      USER_ID,
+      makeRequest({ observedPrice: 99 }),
+    );
+
+    expect(capturedEvents.find((e) => e.type === "signal.tp_hit")).toBeUndefined();
+    expect(capturedEvents.find((e) => e.type === "signal.sl_hit")).toBeUndefined();
+  });
+
+  it("does NOT emit signal.tp_hit or signal.sl_hit on cancel", async () => {
+    const tracking = makeTracking({ status: "pending" });
+    const db = createMockDb(tracking);
+
+    await executeSignalTransition(
+      db as Parameters<typeof executeSignalTransition>[0],
+      USER_ID,
+      makeRequest({ requestedTransition: "cancelled", observedPrice: 1 }),
+    );
+
+    expect(capturedEvents.find((e) => e.type === "signal.tp_hit")).toBeUndefined();
+    expect(capturedEvents.find((e) => e.type === "signal.sl_hit")).toBeUndefined();
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Test: Full E2E path proof
+  // Market Price → Server Request → Engine → Validated Decision →
+  // DB Write (UPDATE + INSERT) → Committed → Domain Events → Consumers
+  // ─────────────────────────────────────────────────────────────────────────
+
+  it("E2E: full signal path — market price triggers TP1, all side-effects fire", async () => {
+    const tracking = makeTracking({ status: "active", hit_tp: 0 });
+    const db = createMockDb(tracking);
+
+    // Act: market price of 111 triggers TP1
+    const result = await executeSignalTransition(
+      db as Parameters<typeof executeSignalTransition>[0],
+      USER_ID,
+      makeRequest({ observedPrice: 111, actor: "system" }),
+    );
+
+    // 1. Server returns success with correct transition
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.transition.from).toBe("active");
+    expect(result.transition.to).toBe("tp1_hit");
+    expect(result.transition.event).toBe("TP1_HIT");
+    expect(result.transition.price).toBe(111);
+
+    // 2. DB was updated with correct status and hit_tp
+    expect(adminUpdateMock).toHaveBeenCalled();
+    expect(signalUpdateData?.status).toBe("tp1_hit");
+    expect(signalUpdateData?.hit_tp).toBe(1);
+    expect(signalUpdateData?.current_price).toBe(111);
+
+    // 3. Audit record was created in signal_transitions
+    const fromCalls = (adminDb.from as ReturnType<typeof vi.fn>).mock.calls;
+    expect(fromCalls.some((c) => c[0] === "signal_transitions")).toBe(true);
+
+    // 4. signal.transition.completed event was emitted
+    const completedEvent = capturedEvents.find((e) => e.type === "signal.transition.completed");
+    expect(completedEvent).toBeDefined();
+    if (completedEvent) {
+      const p = completedEvent.payload as Record<string, unknown>;
+      expect(p.trackingId).toBe(TRACKING_ID);
+      expect(p.fromStatus).toBe("active");
+      expect(p.toStatus).toBe("tp1_hit");
+      expect(p.eventType).toBe("TP1_HIT");
+      expect(p.actor).toBe("system");
+    }
+
+    // 5. signal.tp_hit granular event was emitted
+    const tpEvent = capturedEvents.find((e) => e.type === "signal.tp_hit");
+    expect(tpEvent).toBeDefined();
+    if (tpEvent) {
+      const p = tpEvent.payload as Record<string, unknown>;
+      expect(p.tpIndex).toBe(0);
+      expect(p.hitTp).toBe(1);
+      expect(p.currentPrice).toBe(111);
+    }
+
+    // 6. Notification was sent
+    expect(capturedNotifications.length).toBeGreaterThanOrEqual(1);
+    const tpNotif = capturedNotifications.find((n) => n.title.includes("TP"));
+    expect(tpNotif).toBeDefined();
+    if (tpNotif) {
+      expect(tpNotif.body).toContain("BTC/USDT");
+      expect(tpNotif.body).toContain("111.00");
+    }
+  });
+
+  it("E2E: full signal path — market price triggers SL, all side-effects fire", async () => {
+    const tracking = makeTracking({ status: "active" });
+    const db = createMockDb(tracking);
+
+    const result = await executeSignalTransition(
+      db as Parameters<typeof executeSignalTransition>[0],
+      USER_ID,
+      makeRequest({ observedPrice: 89, actor: "system" }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    // 1. Correct transition decision
+    expect(result.transition.to).toBe("sl_hit");
+    expect(result.transition.event).toBe("SL_HIT");
+
+    // 2. DB updated with resolved_at (terminal)
+    expect(signalUpdateData?.status).toBe("sl_hit");
+    expect(signalUpdateData?.resolved_at).toBeTruthy();
+
+    // 3. signal.sl_hit granular event emitted
+    const slEvent = capturedEvents.find((e) => e.type === "signal.sl_hit");
+    expect(slEvent).toBeDefined();
+    if (slEvent) {
+      const p = slEvent.payload as Record<string, unknown>;
+      expect(p.stopLoss).toBe(90);
+      expect(p.currentPrice).toBe(89);
+    }
+
+    // 4. Warning notification sent
+    const slNotif = capturedNotifications.find((n) => n.severity === "warning");
+    expect(slNotif).toBeDefined();
+  });
 });

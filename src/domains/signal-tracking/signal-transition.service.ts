@@ -121,6 +121,35 @@ function sendTransitionNotification(
   }
 }
 
+// ── hit_tp ↔ status Invariant Normalization ────────────────────────────────────────
+// hit_tp is a persisted derived field. The authoritative source is `status`.
+// This function normalizes hit_tp from status to guarantee engine correctness
+// even if a bug or direct DB write creates a mismatch.
+//
+// Canonical mapping:
+//   pending / active / sl_hit / expired / cancelled / invalidated → 0
+//   tp1_hit → 1
+//   tp2_hit → 2
+//   tp3_hit → 3
+
+export const STATUS_TO_HIT_TP: Readonly<Record<string, number>> = {
+  tp1_hit: 1,
+  tp2_hit: 2,
+  tp3_hit: 3,
+};
+
+export function normalizeHitTp(status: string, persistedHitTp: number): number {
+  const correct = STATUS_TO_HIT_TP[status] ?? 0;
+  if (persistedHitTp !== correct) {
+    // Log the repair for observability — this should NEVER happen in production
+    // but if it does, we want to know about it.
+    console.warn(
+      `[SignalTransition] hit_tp invariant repair: status=${status} had hit_tp=${persistedHitTp}, normalized to ${correct}`,
+    );
+  }
+  return correct;
+}
+
 // ── Main Transition Service ──────────────────────────────────────────────────
 
 /**
@@ -129,11 +158,12 @@ function sendTransitionNotification(
  * This function:
  * 1. Loads the current signal from DB (server-authoritative state)
  * 2. Validates ownership via userId
- * 3. Calls the Transition Engine (pure domain logic, no side effects)
- * 4. If allowed: atomically updates signal + creates audit record via RPC
- * 5. Sends user notifications for entry/TP/SL transitions
- * 6. Emits domain events after successful commit
- * 7. Returns structured result
+ * 3. Normalizes hit_tp from status (invariant guarantee)
+ * 4. Calls the Transition Engine (pure domain logic, no side effects)
+ * 5. If allowed: atomically updates signal + creates audit record via RPC
+ * 6. Sends user notifications for entry/TP/SL transitions
+ * 7. Emits domain events after successful commit
+ * 8. Returns structured result
  *
  * @param db - Supabase client (user-authenticated, RLS applies)
  * @param userId - Authenticated user ID (for ownership check)
@@ -210,7 +240,10 @@ export async function executeSignalTransition(
     entryPrice: tracking.entry_price,
     stopLoss: tracking.stop_loss,
     takeProfit: Array.isArray(tracking.take_profit) ? (tracking.take_profit as number[]) : null,
-    hitTp: tracking.hit_tp,
+    // Normalize hit_tp from authoritative status (invariant guarantee)
+    // This ensures the engine always receives a consistent cursor even if
+    // a prior bug or direct DB write created a mismatch.
+    hitTp: normalizeHitTp(tracking.status as SignalStatus, tracking.hit_tp),
     observedPrice: effectivePrice,
     observedAt: observedAt ?? serverReceivedAt,
     requestedTransition,
@@ -250,6 +283,12 @@ export async function executeSignalTransition(
   let hitTp: number | null = null;
   if (decision.tpIndex !== undefined) {
     hitTp = decision.tpIndex + 1;
+  } else {
+    // For non-TP transitions (SL, cancel, expire, invalidate, entry),
+    // always compute the correct hit_tp from the new status.
+    // This prevents COALESCE(p_hit_tp, hit_tp) in the RPC from preserving
+    // a stale hit_tp value (e.g., tp1_hit→sl_hit should reset hit_tp to 0).
+    hitTp = STATUS_TO_HIT_TP[newStatus] ?? 0;
   }
 
   const { supabaseAdmin } = await import("@/shared/supabase/client.server");
@@ -292,16 +331,23 @@ export async function executeSignalTransition(
       console.error("[SignalTransition] RPC error:", rpcError.message);
     }
 
-    // Sequential fallback
+    // ⚠️ NON-ATOMIC FALLBACK — UPDATE and INSERT run as separate statements.
+    // If INSERT fails after UPDATE succeeds, the signal state will be updated
+    // but the audit record will be missing. This path should NEVER execute in
+    // production once migration 20260811000001 is applied.
+    console.error(
+      `[SignalTransition] NON-ATOMIC FALLBACK for tracking=${trackingId} user=${userId} — RPC unavailable. Signal state UPDATE and audit INSERT will run as separate statements.`,
+    );
+
+    // Sequential fallback — always set hit_tp from canonical mapping
     const updates: Database["public"]["Tables"]["signal_tracking"]["Update"] = {
       status: newStatus as Database["public"]["Enums"]["signal_status"],
       current_price: decision.price ?? tracking.current_price,
+      hit_tp:
+        decision.tpIndex !== undefined ? decision.tpIndex + 1 : (STATUS_TO_HIT_TP[newStatus] ?? 0),
       updated_at: serverReceivedAt,
     };
 
-    if (decision.tpIndex !== undefined) {
-      updates.hit_tp = decision.tpIndex + 1;
-    }
     if (newStatus === "active") {
       updates.activated_at = serverReceivedAt;
     }
@@ -369,10 +415,14 @@ export async function executeSignalTransition(
     decision.price,
   );
 
-  // ── 8. Emit domain event (after successful commit) ──────────────────────
+  // ── 8. Emit domain events (after successful commit) ─────────────────────
+  // Emits the generic transition.completed event PLUS granular TP/SL events
+  // so that all registered consumers are properly activated.
 
   try {
     const { VixorEvents } = await import("@/shared/events");
+
+    // 8a. Always emit the generic transition event
     await VixorEvents.emit("signal.transition.completed", {
       trackingId,
       userId,
@@ -386,6 +436,31 @@ export async function executeSignalTransition(
       serverReceivedAt,
       actor: actor ?? "user",
     } as never);
+
+    // 8b. Emit granular TP event for take-profit transitions
+    if (decision.event?.startsWith("TP") && decision.tpIndex !== undefined) {
+      await VixorEvents.emit("signal.tp_hit", {
+        trackingId,
+        userId,
+        pair: tracking.pair,
+        direction: tracking.direction as "BUY" | "SELL",
+        tpIndex: decision.tpIndex,
+        hitTp: decision.tpIndex + 1,
+        currentPrice: decision.price ?? 0,
+      });
+    }
+
+    // 8c. Emit granular SL event for stop-loss transition
+    if (decision.event === "SL_HIT") {
+      await VixorEvents.emit("signal.sl_hit", {
+        trackingId,
+        userId,
+        pair: tracking.pair,
+        direction: tracking.direction as "BUY" | "SELL",
+        currentPrice: decision.price ?? 0,
+        stopLoss: tracking.stop_loss ?? 0,
+      });
+    }
   } catch {
     // Event emission failure should NEVER break the transition flow
   }

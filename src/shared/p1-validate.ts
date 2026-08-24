@@ -2,13 +2,14 @@
 // VIXOR P1 Migration Validation — Shared Server Function
 // ============================================================================
 //
-// Checks whether the 3 critical Phase 1 migrations have been applied
+// Checks whether the 4 critical Phase 1 migrations have been applied
 // to the database by querying supabase_migrations.schema_migrations.
 //
 // Critical migrations:
 //   1. 20260629000000_add_signal_tracking.sql
 //   2. 20260811000000_add_signal_transitions.sql
 //   3. 20260811000001_execute_signal_transition_rpc.sql
+//   4. 20260824000000_enforce_hit_tp_status_invariant.sql
 //
 // Usage:
 //   import { validateP1Migrations } from '@/shared/p1-validate';
@@ -28,6 +29,10 @@ export interface P1MigrationStatus {
     version: string;
     applied: boolean;
   };
+  enforce_hit_tp_invariant: {
+    version: string;
+    applied: boolean;
+  };
   allApplied: boolean;
 }
 
@@ -35,10 +40,11 @@ const CRITICAL_MIGRATIONS = [
   "20260629000000_add_signal_tracking",
   "20260811000000_add_signal_transitions",
   "20260811000001_execute_signal_transition_rpc",
+  "20260824000000_enforce_hit_tp_status_invariant",
 ] as const;
 
 /**
- * Validate that the 3 critical Phase 1 migrations have been applied.
+ * Validate that the 4 critical Phase 1 migrations have been applied.
  * Uses supabaseAdmin RPC to query supabase_migrations.schema_migrations,
  * which is a Supabase system table not included in generated types.
  *
@@ -81,14 +87,19 @@ export async function validateP1Migrations(): Promise<P1MigrationStatus> {
   const addSignalTracking = checkMigration(CRITICAL_MIGRATIONS[0]);
   const addSignalTransitions = checkMigration(CRITICAL_MIGRATIONS[1]);
   const executeSignalTransitionRpc = checkMigration(CRITICAL_MIGRATIONS[2]);
+  const enforceHitTpInvariant = checkMigration(CRITICAL_MIGRATIONS[3]);
 
   const allApplied =
-    addSignalTracking.applied && addSignalTransitions.applied && executeSignalTransitionRpc.applied;
+    addSignalTracking.applied &&
+    addSignalTransitions.applied &&
+    executeSignalTransitionRpc.applied &&
+    enforceHitTpInvariant.applied;
 
   return {
     add_signal_tracking: addSignalTracking,
     add_signal_transitions: addSignalTransitions,
     execute_signal_transition_rpc: executeSignalTransitionRpc,
+    enforce_hit_tp_invariant: enforceHitTpInvariant,
     allApplied,
   };
 }
