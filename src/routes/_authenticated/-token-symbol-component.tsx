@@ -391,6 +391,7 @@ export function TokenPage() {
   // ── Chart Mode (for DEX tokens) ──
   type ChartMode = "native" | "dextools";
   const [chartMode, setChartMode] = useState<ChartMode>("native");
+  const handleDexToolsError = useCallback(() => setChartMode("native"), []);
 
   // ── Quick Trade State ──
 
@@ -684,6 +685,7 @@ export function TokenPage() {
                   chainId={chainFromDiscover}
                   pairAddress={pairAddress}
                   height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+                  onLoadError={handleDexToolsError}
                 />
               ) : (
                 <DexChart
@@ -1129,6 +1131,7 @@ export function TokenPage() {
                 chainId={chainFromDiscover}
                 pairAddress={pairAddress}
                 height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+                onLoadError={handleDexToolsError}
               />
             ) : (
               <DexChart

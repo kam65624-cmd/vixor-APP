@@ -10,7 +10,7 @@
  * It requires a real domain to render.
  */
 
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState, useCallback } from "react";
 
 // ── Chain ID mapping (app chain → DEXTools chain) ───────────────────────────
 
@@ -67,6 +67,64 @@ export interface DexToolsChartProps {
   paneColor?: string;
   /** Show chart in USD (true) or native pair (false). @default true */
   chartInUsd?: boolean;
+  /** Called when the iframe fails to load. */
+  onLoadError?: () => void;
+}
+
+// ── Error Fallback UI ────────────────────────────────────────────────────────
+
+function ErrorFallback({ message }: { message: string }) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "var(--color-card, #1a1a2e)",
+        color: "var(--color-muted-foreground, #888)",
+        fontSize: "12px",
+        gap: "8px",
+        padding: "16px",
+        textAlign: "center",
+      }}
+    >
+      <svg
+        style={{ width: 32, height: 32, opacity: 0.4 }}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+        />
+      </svg>
+      <div style={{ fontWeight: 600 }}>{message}</div>
+      <a
+        href="https://www.dextools.io"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          fontSize: "11px",
+          color: "var(--color-primary, #6C5CE7)",
+          textDecoration: "none",
+          fontWeight: 600,
+          padding: "5px 12px",
+          borderRadius: "6px",
+          border: "1px solid var(--color-primary, #6C5CE7)",
+          background: "color-mix(in srgb, var(--color-primary, #6C5CE7) 10%, transparent)",
+          marginTop: "4px",
+        }}
+      >
+        Open DEXTools →
+      </a>
+    </div>
+  );
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -85,7 +143,10 @@ export const DexToolsChart = memo(function DexToolsChart({
   chartBgColor,
   paneColor,
   chartInUsd = true,
+  onLoadError,
 }: DexToolsChartProps) {
+  const [hasError, setHasError] = useState(false);
+
   const src = useMemo(() => {
     const dextoolsChain = CHAIN_MAP[chainId?.toLowerCase()] ?? chainId?.toLowerCase();
     if (!dextoolsChain || !pairAddress) return null;
@@ -104,21 +165,23 @@ export const DexToolsChart = memo(function DexToolsChart({
     return `https://www.dextools.io/widget-chart/en/${dextoolsChain}/pe-light/${pairAddress}?${params.toString()}`;
   }, [chainId, pairAddress, theme, chartType, chartResolution, drawingToolbars, showTradeHistory, headerColor, chartBgColor, paneColor, chartInUsd]);
 
+  const handleError = useCallback(() => {
+    setHasError(true);
+    onLoadError?.();
+  }, [onLoadError]);
+
   if (!src) {
     return (
-      <div
-        style={{
-          width,
-          height,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "var(--color-card)",
-          color: "var(--color-muted-foreground)",
-          fontSize: "13px",
-        }}
-      >
-        DEXTools chart unavailable — missing chain or pair address
+      <div style={{ width, height }}>
+        <ErrorFallback message="DEXTools chart unavailable — missing chain or pair address" />
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div style={{ width, height }}>
+        <ErrorFallback message="DEXTools widget failed to load" />
       </div>
     );
   }
@@ -136,6 +199,9 @@ export const DexToolsChart = memo(function DexToolsChart({
       }}
       loading="lazy"
       allowFullScreen
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+      referrerPolicy="no-referrer"
+      onError={handleError}
     />
   );
 });
