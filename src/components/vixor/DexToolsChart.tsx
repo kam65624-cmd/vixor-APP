@@ -1,18 +1,15 @@
 /**
  * @module components/vixor/DexToolsChart
- * @description DEXTools Chart Widget — embedded TradingView-powered chart
- * for any DEX pair supported by DEXTools.io.
+ * @description DEXTools deep-link generator + "Open on DEXTools" button.
  *
- * Uses an iframe pointing to:
- *   https://www.dextools.io/widget-chart/en/<chainId>/pe-light/<pairAddress>?...
- *
- * IMPORTANT: This widget will NOT work on localhost.
- * It requires a real domain to render.
+ * DEXTools blocks iframe embedding (Cloudflare + bot protection),
+ * so instead of an embedded chart we provide a direct link to the
+ * DEXTools pair explorer page — which works in any browser/WebView.
  */
 
-import { memo, useMemo, useState, useCallback } from "react";
+import { memo, useMemo } from "react";
 
-// ── Chain ID mapping (app chain → DEXTools chain) ───────────────────────────
+// ── Chain ID mapping (app chain → DEXTools URL path) ──────────────────────
 
 const CHAIN_MAP: Record<string, string> = {
   solana: "solana",
@@ -28,7 +25,6 @@ const CHAIN_MAP: Record<string, string> = {
   poly: "polygon",
   avalanche: "avalanche",
   avax: "avalanche",
-  // Additional supported chains
   optimism: "optimism",
   "polygon_pos": "polygon",
   near: "near",
@@ -38,172 +34,76 @@ const CHAIN_MAP: Record<string, string> = {
   tron: "tron",
 };
 
-// ── Props ────────────────────────────────────────────────────────────────────
+// ── Public helper ──────────────────────────────────────────────────────────
 
-export interface DexToolsChartProps {
-  /** The chain ID (e.g. "solana", "ethereum", "base"). */
-  chainId: string;
-  /** The DEX pair/pool address. */
-  pairAddress: string;
-  /** Widget height (CSS value). @default "400px" */
-  height?: string;
-  /** Widget width (CSS value). @default "100%" */
-  width?: string;
-  /** Theme: "dark" or "light". @default "dark" */
-  theme?: "dark" | "light";
-  /** Chart type: 0=Bar, 1=Candle, 2=Line, 3=Area, 8=Heikin Ashi, 9=Hollow Candle, 10=Baseline. @default 1 */
-  chartType?: number;
-  /** Chart resolution. @default "30" */
-  chartResolution?: string;
-  /** Show drawing toolbars. @default false */
-  drawingToolbars?: boolean;
-  /** Show trade history overlay. @default false */
-  showTradeHistory?: boolean;
-  /** Custom header color (hex without #). */
-  headerColor?: string;
-  /** Custom chart background color (hex without #). */
-  chartBgColor?: string;
-  /** Custom pane/controls background color (hex without #). */
-  paneColor?: string;
-  /** Show chart in USD (true) or native pair (false). @default true */
-  chartInUsd?: boolean;
-  /** Called when the iframe fails to load. */
-  onLoadError?: () => void;
+/** Build the DEXTools pair-explorer URL for a given chain + pair address. */
+export function getDexToolsUrl(chainId: string, pairAddress: string): string | null {
+  const dextoolsChain = CHAIN_MAP[chainId?.toLowerCase()] ?? chainId?.toLowerCase();
+  if (!dextoolsChain || !pairAddress) return null;
+  return `https://www.dextools.io/app/en/${dextoolsChain}/pair-explorer/${pairAddress}`;
 }
 
-// ── Error Fallback UI ────────────────────────────────────────────────────────
+// ── Props ────────────────────────────────────────────────────────────────────
 
-function ErrorFallback({ message }: { message: string }) {
-  return (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "var(--color-card, #1a1a2e)",
-        color: "var(--color-muted-foreground, #888)",
-        fontSize: "12px",
-        gap: "8px",
-        padding: "16px",
-        textAlign: "center",
-      }}
-    >
-      <svg
-        style={{ width: 32, height: 32, opacity: 0.4 }}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-        />
-      </svg>
-      <div style={{ fontWeight: 600 }}>{message}</div>
-      <a
-        href="https://www.dextools.io"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          fontSize: "11px",
-          color: "var(--color-primary, #6C5CE7)",
-          textDecoration: "none",
-          fontWeight: 600,
-          padding: "5px 12px",
-          borderRadius: "6px",
-          border: "1px solid var(--color-primary, #6C5CE7)",
-          background: "color-mix(in srgb, var(--color-primary, #6C5CE7) 10%, transparent)",
-          marginTop: "4px",
-        }}
-      >
-        Open DEXTools →
-      </a>
-    </div>
-  );
+export interface DexToolsButtonProps {
+  chainId: string;
+  pairAddress: string;
+  /** Button label. @default "DEXTools Chart" */
+  label?: string;
+  /** Additional CSS styles for the button container. */
+  style?: React.CSSProperties;
+  /** HTML class name. */
+  className?: string;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export const DexToolsChart = memo(function DexToolsChart({
+/**
+ * A button that opens the DEXTools pair explorer in a new tab.
+ * Used as a companion to the native DexChart — not a replacement.
+ */
+export const DexToolsButton = memo(function DexToolsButton({
   chainId,
   pairAddress,
-  height = "400px",
-  width = "100%",
-  theme = "dark",
-  chartType = 1,
-  chartResolution = "30",
-  drawingToolbars = false,
-  showTradeHistory = false,
-  headerColor,
-  chartBgColor,
-  paneColor,
-  chartInUsd = true,
-  onLoadError,
-}: DexToolsChartProps) {
-  const [hasError, setHasError] = useState(false);
+  label = "Open on DEXTools",
+  style,
+  className,
+}: DexToolsButtonProps) {
+  const url = useMemo(() => getDexToolsUrl(chainId, pairAddress), [chainId, pairAddress]);
 
-  const src = useMemo(() => {
-    const dextoolsChain = CHAIN_MAP[chainId?.toLowerCase()] ?? chainId?.toLowerCase();
-    if (!dextoolsChain || !pairAddress) return null;
-
-    const params = new URLSearchParams();
-    params.set("theme", theme);
-    params.set("chartType", String(chartType));
-    params.set("chartResolution", chartResolution);
-    params.set("drawingToolbars", String(drawingToolbars));
-    if (showTradeHistory) params.set("showTradeHistory", "true");
-    if (headerColor) params.set("headerColor", headerColor);
-    if (chartBgColor) params.set("tvPlatformColor", chartBgColor);
-    if (paneColor) params.set("tvPaneColor", paneColor);
-    if (!chartInUsd) params.set("chartInUsd", "false");
-
-    return `https://www.dextools.io/widget-chart/en/${dextoolsChain}/pe-light/${pairAddress}?${params.toString()}`;
-  }, [chainId, pairAddress, theme, chartType, chartResolution, drawingToolbars, showTradeHistory, headerColor, chartBgColor, paneColor, chartInUsd]);
-
-  const handleError = useCallback(() => {
-    setHasError(true);
-    onLoadError?.();
-  }, [onLoadError]);
-
-  if (!src) {
-    return (
-      <div style={{ width, height }}>
-        <ErrorFallback message="DEXTools chart unavailable — missing chain or pair address" />
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div style={{ width, height }}>
-        <ErrorFallback message="DEXTools widget failed to load" />
-      </div>
-    );
-  }
+  if (!url) return null;
 
   return (
-    <iframe
-      title="DEXTools Trading Chart"
-      src={src}
-      width={width}
-      height={height}
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
       style={{
-        border: "none",
-        borderRadius: "0",
-        display: "block",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        fontSize: "11px",
+        fontWeight: 600,
+        color: "var(--color-primary, #6C5CE7)",
+        textDecoration: "none",
+        padding: "5px 12px",
+        borderRadius: "6px",
+        border: "1px solid var(--color-primary, #6C5CE7)",
+        background: "color-mix(in srgb, var(--color-primary, #6C5CE7) 10%, transparent)",
+        transition: "all 0.15s",
+        cursor: "pointer",
+        ...style,
       }}
-      loading="lazy"
-      allowFullScreen
-      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-      referrerPolicy="no-referrer"
-      onError={handleError}
-    />
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+        <polyline points="15 3 21 3 21 9" />
+        <line x1="10" y1="14" x2="21" y2="3" />
+      </svg>
+      {label}
+    </a>
   );
 });
 
-export default DexToolsChart;
+export default DexToolsButton;
