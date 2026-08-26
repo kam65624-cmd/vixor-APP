@@ -7,6 +7,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { BinanceWS, type LivePrice } from "@/shared/market-data/binance-ws";
 import { DexScreenerWS } from "@/shared/market-data/dexscreener-ws";
 import { DexChart } from "@/components/vixor/DexChart";
+import { DexToolsChart } from "@/components/vixor/DexToolsChart";
 import { TradingViewChart } from "@/components/vixor/TradingViewChart";
 import {
   PageLayout,
@@ -387,6 +388,10 @@ export function TokenPage() {
     liveBinancePrice?.change24h ?? liveDexPrice?.change24h ?? tokenData?.change24h ?? null;
   const isPriceLive = !!(liveBinancePrice || liveDexPrice);
 
+  // ── Chart Mode (for DEX tokens) ──
+  type ChartMode = "native" | "dextools";
+  const [chartMode, setChartMode] = useState<ChartMode>("native");
+
   // ── Quick Trade State ──
 
   const [direction, setDirection] = useState<"long" | "short">("long");
@@ -637,12 +642,58 @@ export function TokenPage() {
           </div>
 
           {pairAddress && chainFromDiscover ? (
-            <DexChart
-              chainId={chainFromDiscover}
-              pairAddress={pairAddress}
-              livePrice={liveDexPrice?.price}
-              height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
-            />
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "6px 12px",
+                  background: "var(--color-card)",
+                  borderBottom: "1px solid var(--color-border)",
+                }}
+              >
+                {(["native", "dextools"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setChartMode(mode)}
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      padding: "4px 10px",
+                      borderRadius: "4px",
+                      border: "none",
+                      cursor: "pointer",
+                      background:
+                        chartMode === mode
+                          ? "var(--color-primary)"
+                          : "transparent",
+                      color:
+                        chartMode === mode
+                          ? "#fff"
+                          : "var(--color-muted-foreground)",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {mode === "native" ? "Chart" : "DEXTools"}
+                  </button>
+                ))}
+              </div>
+              {chartMode === "dextools" ? (
+                <DexToolsChart
+                  chainId={chainFromDiscover}
+                  pairAddress={pairAddress}
+                  height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+                />
+              ) : (
+                <DexChart
+                  chainId={chainFromDiscover}
+                  pairAddress={pairAddress}
+                  livePrice={liveDexPrice?.price}
+                  height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+                />
+              )}
+            </div>
           ) : isDexToken || isContractAddress ? (
             <div
               style={{
@@ -726,7 +777,9 @@ export function TokenPage() {
               }}
             >
               {isDexToken
-                ? `Live chart · ${chainFromDiscover?.toUpperCase() ?? "DEX"}`
+                ? chartMode === "dextools"
+                  ? `DEXTools chart · ${chainFromDiscover?.toUpperCase() ?? "DEX"}`
+                  : `Live chart · ${chainFromDiscover?.toUpperCase() ?? "DEX"}`
                 : "Chart powered by TradingView."}
             </p>
             {isDexToken && dexUrl && (
@@ -1031,15 +1084,61 @@ export function TokenPage() {
         </div>
 
         {/* ════════════════════════════════════════════════════════════════════
-            2. CHART — Native DexChart for DEX, TradingView for majors
+            2. CHART — DexChart + DEXTools toggle for DEX, TradingView for majors
         ════════════════════════════════════════════════════════════════════ */}
         {pairAddress && chainFromDiscover ? (
-          <DexChart
-            chainId={chainFromDiscover}
-            pairAddress={pairAddress}
-            livePrice={liveDexPrice?.price}
-            height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
-          />
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "6px 16px",
+                background: "var(--color-card)",
+                borderBottom: "1px solid var(--color-border)",
+              }}
+            >
+              {(["native", "dextools"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setChartMode(mode)}
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    padding: "4px 10px",
+                    borderRadius: "4px",
+                    border: "none",
+                    cursor: "pointer",
+                    background:
+                      chartMode === mode
+                        ? "var(--color-primary)"
+                        : "transparent",
+                    color:
+                      chartMode === mode
+                        ? "#fff"
+                        : "var(--color-muted-foreground)",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {mode === "native" ? "Chart" : "DEXTools"}
+                </button>
+              ))}
+            </div>
+            {chartMode === "dextools" ? (
+              <DexToolsChart
+                chainId={chainFromDiscover}
+                pairAddress={pairAddress}
+                height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+              />
+            ) : (
+              <DexChart
+                chainId={chainFromDiscover}
+                pairAddress={pairAddress}
+                livePrice={liveDexPrice?.price}
+                height={typeof window !== "undefined" && window.innerWidth < 768 ? "300px" : "400px"}
+              />
+            )}
+          </div>
         ) : isDexToken || isContractAddress ? (
           <div
             style={{
