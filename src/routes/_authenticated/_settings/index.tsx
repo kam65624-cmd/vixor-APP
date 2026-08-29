@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserSettings, updateUserSettings } from "@/shared/data";
@@ -27,13 +26,8 @@ import { ToggleSwitch } from "./ToggleSwitch";
 import { SettingRow } from "./SettingRow";
 import { ExchangeCard } from "./ExchangeCard";
 
-export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Settings — Vixor" }] }),
-  component: SettingsPage,
-});
-
 // ── Main Component ────────────────────────────────────────────────────────────
-function SettingsPage() {
+export function SettingsPage() {
   const queryClient = useQueryClient();
 
   // Server function wrappers (stable references)
@@ -750,5 +744,3 @@ function SettingsPage() {
     </PageLayout>
   );
 }
-
-export { SettingsPage };

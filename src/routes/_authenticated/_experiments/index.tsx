@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMe } from "@/domains/user/functions";
 import { listExperiments, createExperiment } from "@/domains/experiment/functions";
@@ -20,11 +19,6 @@ import {
 } from "./constants";
 import type { ExperimentRecord, BestScoreSummary } from "./constants";
 import { ExperimentCard } from "./ExperimentCard";
-
-export const Route = createFileRoute("/_authenticated/experiments")({
-  head: () => ({ meta: [{ title: "Experiments — Vixor" }] }),
-  component: ExperimentsPage,
-});
 
 // ---------------------------------------------------------------------------
 // Main page component

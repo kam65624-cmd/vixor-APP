@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageLayout, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
@@ -28,22 +28,6 @@ import { ForexSectionHeader } from "./ForexSectionHeader";
 import { ForexPairRow } from "./ForexPairRow";
 import { TokenRow } from "./TokenRow";
 import { FilterPanel } from "./FilterPanel";
-
-// ── Route definition with typed search params ───────────────────────────────
-
-export const Route = createFileRoute("/_authenticated/discover")({
-  head: () => ({ meta: [{ title: "Discover — Vixor" }] }),
-  component: DiscoverPage,
-  validateSearch: (search) => ({
-    category: (search.category as string) || "ALL",
-    sortBy: (search.sortBy as string) || "trending",
-    search: (search.search as string) || "",
-    minLiquidity: search.minLiquidity as string | undefined,
-    minVolume: search.minVolume as string | undefined,
-    honeypotOnly: search.honeypotOnly === "true",
-    smartMoneyMin: search.smartMoneyMin as string | undefined,
-  }),
-});
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 

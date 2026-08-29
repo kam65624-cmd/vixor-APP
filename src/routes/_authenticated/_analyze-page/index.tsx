@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { createAnalysis } from "@/domains/analysis/functions";
@@ -11,15 +11,6 @@ import { cardStyle, STEPS_KEYS } from "./constants";
 import { UploadStage } from "./UploadStage";
 import { PreviewStage } from "./PreviewStage";
 import { AnalyzingStage } from "./AnalyzingStage";
-
-export const Route = createFileRoute("/_authenticated/analyze")({
-  head: () => ({ meta: [{ title: "Analyze — Vixor" }] }),
-  component: Analyze,
-  validateSearch: (search: Record<string, unknown>) => ({
-    screenshot: (search.screenshot as string) || undefined,
-    pair: (search.pair as string) || undefined,
-  }),
-});
 
 export function Analyze() {
   const navigate = useNavigate();
