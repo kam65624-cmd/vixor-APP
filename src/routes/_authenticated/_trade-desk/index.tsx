@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useSearch } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -19,24 +19,14 @@ import { RiskCalculator } from "./RiskCalculator";
 import { ActivePositions } from "./ActivePositions";
 import { ExecutionDialog } from "./ExecutionDialog";
 
-// ── Route definition ──
-
-export const Route = createFileRoute("/_authenticated/trade-desk")({
-  head: () => ({ meta: [{ title: "Trade Desk — Vixor" }] }),
-  component: TradeDesk,
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { symbol?: string; price?: string; direction?: string } => ({
-    symbol: search.symbol as string | undefined,
-    price: search.price as string | undefined,
-    direction: search.direction as string | undefined,
-  }),
-});
-
 // ── Main component ──
 
 export function TradeDesk() {
-  const search = Route.useSearch();
+  const search = useSearch({ from: "/_authenticated/trade-desk" }) as {
+    symbol?: string;
+    price?: string;
+    direction?: string;
+  };
   const { t } = useI18n();
   const { play } = useSound();
   const queryClient = useQueryClient();
