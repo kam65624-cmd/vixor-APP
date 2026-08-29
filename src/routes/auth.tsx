@@ -32,14 +32,14 @@ export const Route = createFileRoute("/auth")({
 });
 
 const features = [
-  { icon: BarChart3, label: "AI Chart Analysis", desc: "Instant pattern recognition" },
+  { icon: BarChart3, label: "Smart Chart Analysis", desc: "Instant pattern recognition" },
   { icon: TrendingUp, label: "Trade Setups", desc: "Entry, SL & TP levels" },
   { icon: Shield, label: "Risk Management", desc: "Protect your capital" },
   { icon: Zap, label: "200 Free Points", desc: "Start analyzing today" },
 ];
 
 /** Telegram bot username — configurable via env var, must match the bot linked to this app */
-const TELEGRAM_BOT_USERNAME = (import.meta as any).env?.VITE_TELEGRAM_BOT_USERNAME || "VixorAIBot";
+const TELEGRAM_BOT_USERNAME = (import.meta as any).env?.VITE_TELEGRAM_BOT_USERNAME || "HuntBot";
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -306,7 +306,7 @@ function AuthPage() {
               </div>
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Vixor AI</h1>
+              <h1 className="text-3xl font-bold tracking-tight">HUNT</h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {tgStatus === "webapp" ? "Signing in with Telegram..." : "Sign in with Telegram"}
               </p>
