@@ -15,7 +15,10 @@
 // ============================================================================
 
 import type { AnalysisResult } from "@/domains/analysis/server/run-analysis";
-import type { DebateResult } from "@/domains/debate";
+export interface DebateResult {
+  riskOverride?: boolean;
+  [key: string]: unknown;
+}
 import type { RiskProfile, GovernorDecision, GovernorAction } from "../types";
 import { DEFAULT_RISK_PROFILE } from "../types";
 import {
