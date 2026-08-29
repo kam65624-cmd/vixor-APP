@@ -46,7 +46,7 @@ function getTelegramUserData(): TelegramUserData | null {
 }
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({ meta: [{ title: "Profile — Vixor" }] }),
+  head: () => ({ meta: [{ title: "Profile — HUNT" }] }),
   component: ProfilePage,
 });
 
@@ -512,13 +512,17 @@ function ProfilePage() {
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
             <Badge
-              label={`⚡ ${pointsBalance.toLocaleString()} pts`}
+              label={`Lvl ${profile?.current_level ?? 1} · ${profile?.level_title ?? "Scout"}`}
               color={"var(--color-primary)"}
+            />
+            <Badge
+              label={`⚡ ${pointsBalance.toLocaleString()} pts`}
+              color={"var(--color-info)"}
             />
             {currentStreak > 0 && (
               <Badge label={`🔥 ${currentStreak}-day streak`} color={"var(--color-neutral-wait)"} />
             )}
-            {pointsBalance >= 5000 && <Badge label="👑 PRO" color={"var(--color-bullish)"} />}
+            <Badge label={`⭐ ${profile?.xp ?? 0} XP`} color={"var(--color-bullish)"} />
           </div>
         </div>
       </div>

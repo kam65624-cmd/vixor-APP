@@ -22,7 +22,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/alpha")({
   head: () => ({
-    meta: [{ title: "Alpha Feed \u2014 Vixor" }],
+    meta: [{ title: "Trending Board — HUNT" }],
   }),
   component: AlphaPage,
 });
@@ -58,8 +58,8 @@ function AlphaPage() {
 
   return (
     <PageLayout
-      title="Alpha Feed"
-      badge="ALPHA INTEL"
+      title="Trending Board"
+      badge="WHAT'S HOT"
       badgeColor={"var(--color-bearish)"}
       tabs={[...TABS]}
       activeTab={activeTab}
