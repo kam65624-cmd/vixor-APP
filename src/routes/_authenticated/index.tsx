@@ -43,7 +43,7 @@ import { UnifiedFeed } from "@/components/vixor/UnifiedFeed";
 import { SmartBottomSheet } from "@/components/vixor/SmartBottomSheet";
 
 export const Route = createFileRoute("/_authenticated/")({
-  head: () => ({ meta: [{ title: "Vixor — AI Trading Terminal" }] }),
+  head: () => ({ meta: [{ title: "HUNT — Token Discovery Terminal" }] }),
   component: HomePageV3,
 });
 
@@ -642,7 +642,7 @@ function HomePageV3() {
             />
             <FeatureCard
               icon={Bot}
-              title="MOXI AI"
+              title="MOXI"
               desc="Market intel"
               to="/alpha"
               accent="var(--color-gold)"
@@ -650,7 +650,7 @@ function HomePageV3() {
             <FeatureCard
               icon={Signal}
               title="Signals"
-              desc="AI signals"
+              desc="Smart signals"
               to="/signals"
               accent="var(--color-gold)"
             />

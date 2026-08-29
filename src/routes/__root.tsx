@@ -175,20 +175,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#121212" },
-      { title: "Vixor — Solana Meme Coin Trading Terminal" },
+      { title: "HUNT — Solana Token Discovery Terminal" },
       {
         name: "description",
         content:
-          "AI-powered Solana meme coin trading terminal. Discover tokens, track whales, and trade with confidence.",
+          "Solana token discovery terminal. Discover opportunities, track smart money, and trade with confidence.",
       },
-      { property: "og:title", content: "Vixor — Solana Meme Coin Trading Terminal" },
+      { property: "og:title", content: "HUNT — Solana Token Discovery Terminal" },
       {
         property: "og:description",
         content:
-          "AI-powered Solana meme coin trading terminal. Discover tokens, track whales, and trade with confidence.",
+          "Solana token discovery terminal. Discover opportunities, track smart money, and trade with confidence.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "VIXOR" },
+      { property: "og:site_name", content: "HUNT" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@vixor_app" },
       { name: "robots", content: "index, follow" },

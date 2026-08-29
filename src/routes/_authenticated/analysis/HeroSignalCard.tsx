@@ -398,7 +398,7 @@ export function HeroSignalCard({
             >
               {analysisSource === "openrouter" ? (
                 <>
-                  <BrainCircuit size={12} /> AI Analysis
+                  <BrainCircuit size={12} /> Analysis Engine
                 </>
               ) : analysisSource === "local_engine" ? (
                 <>
@@ -464,7 +464,7 @@ export function HeroSignalCard({
   );
 }
 
-/** Vixor Verdict box rendered below the hero card. */
+/** Verdict box rendered below the hero card. */
 export function VixorVerdictBox({
   a,
   recColor,
@@ -485,7 +485,7 @@ export function VixorVerdictBox({
     >
       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
         <BrainCircuit size={20} style={{ color: recColor, flexShrink: 0 }} />
-        <span style={{ ...LABEL, letterSpacing: "0.1em" }}>Vixor Verdict</span>
+        <span style={{ ...LABEL, letterSpacing: "0.1em" }}>Verdict</span>
       </div>
       <p
         style={{

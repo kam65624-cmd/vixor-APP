@@ -31,7 +31,7 @@ export const createNote = createServerFn({ method: "POST" })
       .from("trading_notes")
       .insert({
         user_id: context.userId,
-        analysisId: data.analysisId,
+        analysis_id: data.analysisId,
         title: data.title ?? "",
         content: data.content,
         mood: data.mood || "neutral",
