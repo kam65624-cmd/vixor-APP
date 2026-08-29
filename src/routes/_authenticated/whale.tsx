@@ -21,7 +21,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/whale")({
   head: () => ({
-    meta: [{ title: "Whale Alerts \u2014 Vixor" }],
+    meta: [{ title: "Whale Watch — HUNT" }],
   }),
   component: WhalePage,
 });
@@ -41,13 +41,13 @@ function WhalePage() {
     volume24h: 0,
     largeTradeCount: 0,
     biggestTrade: 0,
-    biggestPair: "\u2014",
+    biggestPair: "—",
   };
 
   return (
     <PageLayout
-      title="Whale Alerts"
-      badge="WHALE TRACKER"
+      title="Whale Tracker"
+      badge="WHALE WATCH"
       badgeColor={"var(--color-info)"}
       loading={isLoading}
       loadingColor={"var(--color-info)"}

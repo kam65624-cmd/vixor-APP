@@ -31,7 +31,7 @@ import { DemoNotice } from "./DemoNotice";
 // ── Route Definition ────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/_authenticated/radar")({
-  head: () => ({ meta: [{ title: "Trade Radar — Vixor" }] }),
+  head: () => ({ meta: [{ title: "Radar Feed — HUNT" }] }),
   component: RadarPage,
 });
 
@@ -203,7 +203,7 @@ function RadarPage() {
         value: String(signalCount),
         color: "var(--color-primary)",
         icon: "🤖",
-        sub: "AI generated",
+        sub: "Engine generated",
       },
     ];
   }, [blips, tokens, signals]);
@@ -219,8 +219,8 @@ function RadarPage() {
 
   return (
     <PageLayout
-      title="Trade Radar"
-      badge="LIVE"
+      title="Radar Feed"
+      badge="TARGET FEED"
       badgeColor="var(--color-bullish)"
       loading={isLoading}
       loadingColor="var(--color-bullish)"

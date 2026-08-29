@@ -19,7 +19,7 @@ import {
 import { Search, TrendingUp, TrendingDown, Clock, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/opportunities")({
-  head: () => ({ meta: [{ title: "Opportunities — Vixor" }] }),
+  head: () => ({ meta: [{ title: "Verified Opportunities — HUNT" }] }),
   component: OpportunitiesPage,
 });
 
@@ -56,9 +56,9 @@ function OpportunitiesPage() {
 
   return (
     <PageLayout
-      title="Opportunities"
-      badge="SCANNER"
-      badgeColor="var(--color-primary)"
+      title="Verified Opportunities"
+      badge="HUNT COMPLETE"
+      badgeColor="var(--color-bullish)"
       loading={false}
     >
       <StatsRow

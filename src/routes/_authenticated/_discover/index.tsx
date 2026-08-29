@@ -32,7 +32,7 @@ import { FilterPanel } from "./FilterPanel";
 // ── Route definition with typed search params ───────────────────────────────
 
 export const Route = createFileRoute("/_authenticated/discover")({
-  head: () => ({ meta: [{ title: "Discover — Vixor" }] }),
+  head: () => ({ meta: [{ title: "Token Discovery — HUNT" }] }),
   component: DiscoverPage,
   validateSearch: (search) => ({
     category: (search.category as string) || "ALL",
@@ -534,8 +534,8 @@ export function DiscoverPage() {
 
   return (
     <PageLayout
-      title="Discover"
-      badge={isForexMode ? "MARKETS" : "ON-CHAIN"}
+      title="Token Discovery"
+      badge={isForexMode ? "MARKETS" : "TARGET LOCKED"}
       badgeColor={isForexMode ? GOLD_COLOR : "var(--color-bullish)"}
       loading={effectiveLoading}
       loadingColor={isForexMode ? GOLD_COLOR : "var(--color-bullish)"}
