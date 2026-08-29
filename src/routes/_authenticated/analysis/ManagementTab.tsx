@@ -1,0 +1,169 @@
+import { Layers, ShieldCheck, AlertTriangle } from "lucide-react";
+import { CARD, LABEL, MONO, GREEN_GRAD } from "./constants";
+import { highlightSMC } from "./utils";
+
+interface ManagementTabProps {
+  a: any;
+  management: string[];
+}
+
+export function ManagementTab({ a, management }: ManagementTabProps) {
+  return (
+    <div
+      className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+      style={{ margin: "0 16px" }}
+    >
+      <div style={{ ...CARD, padding: "20px", marginBottom: "16px" }}>
+        <h3
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "12px",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: "var(--color-muted-foreground)",
+            marginBottom: "16px",
+          }}
+        >
+          <Layers size={16} style={{ color: "var(--color-bullish)" }} /> Step-by-Step Management
+        </h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {management.map((m, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                gap: "12px",
+                background: "var(--color-card)",
+                border: `1px solid ${"var(--color-border)"}`,
+                padding: "14px",
+                borderRadius: "12px",
+              }}
+            >
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  ...MONO,
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  background: i === 0 ? GREEN_GRAD : "var(--color-muted)",
+                  color: i === 0 ? "var(--color-foreground)" : "var(--color-muted-foreground)",
+                }}
+              >
+                {i + 1}
+              </div>
+              <div
+                style={{
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  lineHeight: 1.6,
+                  color: "var(--color-foreground)",
+                }}
+              >
+                {highlightSMC(m)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {a.risk_reasons && a.risk_reasons.length > 0 && (
+        <div
+          style={{
+            ...CARD,
+            padding: "20px",
+            marginBottom: "16px",
+            borderColor: "color-mix(in srgb, var(--color-bearish) 20%, transparent)",
+          }}
+        >
+          <h3
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "12px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              color: "var(--color-bearish)",
+              marginBottom: "16px",
+            }}
+          >
+            <ShieldCheck size={16} style={{ color: "var(--color-bearish)" }} /> Risk Factors
+          </h3>
+          <ul
+            style={{
+              listStyle: "none",
+              padding: 0,
+              margin: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+            }}
+          >
+            {a.risk_reasons.map((r: string, i: number) => (
+              <li key={i} style={{ display: "flex", gap: "8px", fontSize: "14px" }}>
+                <span
+                  style={{
+                    color: "var(--color-bearish)",
+                    marginTop: "2px",
+                    flexShrink: 0,
+                  }}
+                >
+                  •
+                </span>
+                <span style={{ fontWeight: 500, color: "var(--color-muted-foreground)" }}>{r}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "12px",
+          padding: "16px",
+          borderRadius: "12px",
+          background: "color-mix(in srgb, var(--color-neutral-wait) 10%, transparent)",
+          border: "1px solid var(--neutral-wait-border)",
+        }}
+      >
+        <AlertTriangle
+          size={20}
+          style={{ color: "var(--color-neutral-wait)", flexShrink: 0, marginTop: "2px" }}
+        />
+        <div
+          style={{
+            fontSize: "12px",
+            fontWeight: 500,
+            color: "var(--color-muted-foreground)",
+            lineHeight: 1.6,
+          }}
+        >
+          <strong
+            style={{
+              color: "var(--color-foreground)",
+              display: "block",
+              marginBottom: "4px",
+            }}
+          >
+            Risk Disclaimer
+          </strong>
+          This analysis is generated by Vixor AI based on technical patterns and fundamental data.
+          It is <strong style={{ color: "var(--color-foreground)" }}>not financial advice</strong>.
+          Always apply your own risk management and judgment before executing any trade.
+        </div>
+      </div>
+    </div>
+  );
+}
