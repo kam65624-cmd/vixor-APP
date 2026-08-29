@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedYieldRouteImport } from './routes/_authenticated/yield'
 import { Route as AuthenticatedWhaleRouteImport } from './routes/_authenticated/whale'
 import { Route as AuthenticatedWalletWeb3RouteImport } from './routes/_authenticated/wallet-web3'
 import { Route as AuthenticatedVisionRouteImport } from './routes/_authenticated/vision'
@@ -32,23 +31,15 @@ import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPredictionsRouteImport } from './routes/_authenticated/predictions'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedPnlRouteImport } from './routes/_authenticated/pnl'
-import { Route as AuthenticatedPerpetualsRouteImport } from './routes/_authenticated/perpetuals'
 import { Route as AuthenticatedOpportunitiesRouteImport } from './routes/_authenticated/opportunities'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
-import { Route as AuthenticatedExperimentsRouteImport } from './routes/_authenticated/experiments'
 import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
 import { Route as AuthenticatedDailyLoopRouteImport } from './routes/_authenticated/daily-loop'
-import { Route as AuthenticatedCurvesRouteImport } from './routes/_authenticated/curves'
-import { Route as AuthenticatedCommunitiesRouteImport } from './routes/_authenticated/communities'
 import { Route as AuthenticatedChartsRouteImport } from './routes/_authenticated/charts'
-import { Route as AuthenticatedBrokersRouteImport } from './routes/_authenticated/brokers'
-import { Route as AuthenticatedBagsRouteImport } from './routes/_authenticated/bags'
 import { Route as AuthenticatedBacktestRouteImport } from './routes/_authenticated/backtest'
-import { Route as AuthenticatedArbitrageRouteImport } from './routes/_authenticated/arbitrage'
 import { Route as AuthenticatedAnalyzeRouteImport } from './routes/_authenticated/analyze'
 import { Route as AuthenticatedAlphaRouteImport } from './routes/_authenticated/alpha'
-import { Route as AuthenticatedActivityWeb3RouteImport } from './routes/_authenticated/activity-web3'
 import { Route as AuthenticatedTokenSymbolRouteImport } from './routes/_authenticated/token.$symbol'
 import { Route as AuthenticatedAnalysisIdRouteImport } from './routes/_authenticated/analysis.$id'
 import { Route as AuthenticatedAdminApiKeysRouteImport } from './routes/_authenticated/admin/api-keys'
@@ -65,11 +56,6 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedYieldRoute = AuthenticatedYieldRouteImport.update({
-  id: '/yield',
-  path: '/yield',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedWhaleRoute = AuthenticatedWhaleRouteImport.update({
@@ -168,11 +154,6 @@ const AuthenticatedPnlRoute = AuthenticatedPnlRouteImport.update({
   path: '/pnl',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedPerpetualsRoute = AuthenticatedPerpetualsRouteImport.update({
-  id: '/perpetuals',
-  path: '/perpetuals',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedOpportunitiesRoute =
   AuthenticatedOpportunitiesRouteImport.update({
     id: '/opportunities',
@@ -190,12 +171,6 @@ const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
   path: '/journal',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedExperimentsRoute =
-  AuthenticatedExperimentsRouteImport.update({
-    id: '/experiments',
-    path: '/experiments',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedDiscoverRoute = AuthenticatedDiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
@@ -206,40 +181,14 @@ const AuthenticatedDailyLoopRoute = AuthenticatedDailyLoopRouteImport.update({
   path: '/daily-loop',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCurvesRoute = AuthenticatedCurvesRouteImport.update({
-  id: '/curves',
-  path: '/curves',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCommunitiesRoute =
-  AuthenticatedCommunitiesRouteImport.update({
-    id: '/communities',
-    path: '/communities',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedChartsRoute = AuthenticatedChartsRouteImport.update({
   id: '/charts',
   path: '/charts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedBrokersRoute = AuthenticatedBrokersRouteImport.update({
-  id: '/brokers',
-  path: '/brokers',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedBagsRoute = AuthenticatedBagsRouteImport.update({
-  id: '/bags',
-  path: '/bags',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedBacktestRoute = AuthenticatedBacktestRouteImport.update({
   id: '/backtest',
   path: '/backtest',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedArbitrageRoute = AuthenticatedArbitrageRouteImport.update({
-  id: '/arbitrage',
-  path: '/arbitrage',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAnalyzeRoute = AuthenticatedAnalyzeRouteImport.update({
@@ -252,12 +201,6 @@ const AuthenticatedAlphaRoute = AuthenticatedAlphaRouteImport.update({
   path: '/alpha',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedActivityWeb3Route =
-  AuthenticatedActivityWeb3RouteImport.update({
-    id: '/activity-web3',
-    path: '/activity-web3',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedTokenSymbolRoute =
   AuthenticatedTokenSymbolRouteImport.update({
     id: '/token/$symbol',
@@ -279,23 +222,15 @@ const AuthenticatedAdminApiKeysRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
-  '/activity-web3': typeof AuthenticatedActivityWeb3Route
   '/alpha': typeof AuthenticatedAlphaRoute
   '/analyze': typeof AuthenticatedAnalyzeRoute
-  '/arbitrage': typeof AuthenticatedArbitrageRoute
   '/backtest': typeof AuthenticatedBacktestRoute
-  '/bags': typeof AuthenticatedBagsRoute
-  '/brokers': typeof AuthenticatedBrokersRoute
   '/charts': typeof AuthenticatedChartsRoute
-  '/communities': typeof AuthenticatedCommunitiesRoute
-  '/curves': typeof AuthenticatedCurvesRoute
   '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
-  '/experiments': typeof AuthenticatedExperimentsRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
-  '/perpetuals': typeof AuthenticatedPerpetualsRoute
   '/pnl': typeof AuthenticatedPnlRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/predictions': typeof AuthenticatedPredictionsRoute
@@ -315,30 +250,21 @@ export interface FileRoutesByFullPath {
   '/vision': typeof AuthenticatedVisionRoute
   '/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/whale': typeof AuthenticatedWhaleRoute
-  '/yield': typeof AuthenticatedYieldRoute
   '/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
   '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
-  '/activity-web3': typeof AuthenticatedActivityWeb3Route
   '/alpha': typeof AuthenticatedAlphaRoute
   '/analyze': typeof AuthenticatedAnalyzeRoute
-  '/arbitrage': typeof AuthenticatedArbitrageRoute
   '/backtest': typeof AuthenticatedBacktestRoute
-  '/bags': typeof AuthenticatedBagsRoute
-  '/brokers': typeof AuthenticatedBrokersRoute
   '/charts': typeof AuthenticatedChartsRoute
-  '/communities': typeof AuthenticatedCommunitiesRoute
-  '/curves': typeof AuthenticatedCurvesRoute
   '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
-  '/experiments': typeof AuthenticatedExperimentsRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
-  '/perpetuals': typeof AuthenticatedPerpetualsRoute
   '/pnl': typeof AuthenticatedPnlRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/predictions': typeof AuthenticatedPredictionsRoute
@@ -358,7 +284,6 @@ export interface FileRoutesByTo {
   '/vision': typeof AuthenticatedVisionRoute
   '/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/whale': typeof AuthenticatedWhaleRoute
-  '/yield': typeof AuthenticatedYieldRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
@@ -368,23 +293,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/activity-web3': typeof AuthenticatedActivityWeb3Route
   '/_authenticated/alpha': typeof AuthenticatedAlphaRoute
   '/_authenticated/analyze': typeof AuthenticatedAnalyzeRoute
-  '/_authenticated/arbitrage': typeof AuthenticatedArbitrageRoute
   '/_authenticated/backtest': typeof AuthenticatedBacktestRoute
-  '/_authenticated/bags': typeof AuthenticatedBagsRoute
-  '/_authenticated/brokers': typeof AuthenticatedBrokersRoute
   '/_authenticated/charts': typeof AuthenticatedChartsRoute
-  '/_authenticated/communities': typeof AuthenticatedCommunitiesRoute
-  '/_authenticated/curves': typeof AuthenticatedCurvesRoute
   '/_authenticated/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/_authenticated/discover': typeof AuthenticatedDiscoverRoute
-  '/_authenticated/experiments': typeof AuthenticatedExperimentsRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/opportunities': typeof AuthenticatedOpportunitiesRoute
-  '/_authenticated/perpetuals': typeof AuthenticatedPerpetualsRoute
   '/_authenticated/pnl': typeof AuthenticatedPnlRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/_authenticated/predictions': typeof AuthenticatedPredictionsRoute
@@ -404,7 +321,6 @@ export interface FileRoutesById {
   '/_authenticated/vision': typeof AuthenticatedVisionRoute
   '/_authenticated/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/_authenticated/whale': typeof AuthenticatedWhaleRoute
-  '/_authenticated/yield': typeof AuthenticatedYieldRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/_authenticated/analysis/$id': typeof AuthenticatedAnalysisIdRoute
@@ -415,23 +331,15 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/activity-web3'
     | '/alpha'
     | '/analyze'
-    | '/arbitrage'
     | '/backtest'
-    | '/bags'
-    | '/brokers'
     | '/charts'
-    | '/communities'
-    | '/curves'
     | '/daily-loop'
     | '/discover'
-    | '/experiments'
     | '/journal'
     | '/notifications'
     | '/opportunities'
-    | '/perpetuals'
     | '/pnl'
     | '/portfolio'
     | '/predictions'
@@ -451,30 +359,21 @@ export interface FileRouteTypes {
     | '/vision'
     | '/wallet-web3'
     | '/whale'
-    | '/yield'
     | '/admin/api-keys'
     | '/analysis/$id'
     | '/token/$symbol'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
-    | '/activity-web3'
     | '/alpha'
     | '/analyze'
-    | '/arbitrage'
     | '/backtest'
-    | '/bags'
-    | '/brokers'
     | '/charts'
-    | '/communities'
-    | '/curves'
     | '/daily-loop'
     | '/discover'
-    | '/experiments'
     | '/journal'
     | '/notifications'
     | '/opportunities'
-    | '/perpetuals'
     | '/pnl'
     | '/portfolio'
     | '/predictions'
@@ -494,7 +393,6 @@ export interface FileRouteTypes {
     | '/vision'
     | '/wallet-web3'
     | '/whale'
-    | '/yield'
     | '/'
     | '/admin/api-keys'
     | '/analysis/$id'
@@ -503,23 +401,15 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/activity-web3'
     | '/_authenticated/alpha'
     | '/_authenticated/analyze'
-    | '/_authenticated/arbitrage'
     | '/_authenticated/backtest'
-    | '/_authenticated/bags'
-    | '/_authenticated/brokers'
     | '/_authenticated/charts'
-    | '/_authenticated/communities'
-    | '/_authenticated/curves'
     | '/_authenticated/daily-loop'
     | '/_authenticated/discover'
-    | '/_authenticated/experiments'
     | '/_authenticated/journal'
     | '/_authenticated/notifications'
     | '/_authenticated/opportunities'
-    | '/_authenticated/perpetuals'
     | '/_authenticated/pnl'
     | '/_authenticated/portfolio'
     | '/_authenticated/predictions'
@@ -539,7 +429,6 @@ export interface FileRouteTypes {
     | '/_authenticated/vision'
     | '/_authenticated/wallet-web3'
     | '/_authenticated/whale'
-    | '/_authenticated/yield'
     | '/_authenticated/'
     | '/_authenticated/admin/api-keys'
     | '/_authenticated/analysis/$id'
@@ -572,13 +461,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/yield': {
-      id: '/_authenticated/yield'
-      path: '/yield'
-      fullPath: '/yield'
-      preLoaderRoute: typeof AuthenticatedYieldRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/whale': {
@@ -714,13 +596,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPnlRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/perpetuals': {
-      id: '/_authenticated/perpetuals'
-      path: '/perpetuals'
-      fullPath: '/perpetuals'
-      preLoaderRoute: typeof AuthenticatedPerpetualsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/opportunities': {
       id: '/_authenticated/opportunities'
       path: '/opportunities'
@@ -742,13 +617,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJournalRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/experiments': {
-      id: '/_authenticated/experiments'
-      path: '/experiments'
-      fullPath: '/experiments'
-      preLoaderRoute: typeof AuthenticatedExperimentsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/discover': {
       id: '/_authenticated/discover'
       path: '/discover'
@@ -763,20 +631,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDailyLoopRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/curves': {
-      id: '/_authenticated/curves'
-      path: '/curves'
-      fullPath: '/curves'
-      preLoaderRoute: typeof AuthenticatedCurvesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/communities': {
-      id: '/_authenticated/communities'
-      path: '/communities'
-      fullPath: '/communities'
-      preLoaderRoute: typeof AuthenticatedCommunitiesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/charts': {
       id: '/_authenticated/charts'
       path: '/charts'
@@ -784,32 +638,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChartsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/brokers': {
-      id: '/_authenticated/brokers'
-      path: '/brokers'
-      fullPath: '/brokers'
-      preLoaderRoute: typeof AuthenticatedBrokersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/bags': {
-      id: '/_authenticated/bags'
-      path: '/bags'
-      fullPath: '/bags'
-      preLoaderRoute: typeof AuthenticatedBagsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/backtest': {
       id: '/_authenticated/backtest'
       path: '/backtest'
       fullPath: '/backtest'
       preLoaderRoute: typeof AuthenticatedBacktestRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/arbitrage': {
-      id: '/_authenticated/arbitrage'
-      path: '/arbitrage'
-      fullPath: '/arbitrage'
-      preLoaderRoute: typeof AuthenticatedArbitrageRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/analyze': {
@@ -824,13 +657,6 @@ declare module '@tanstack/react-router' {
       path: '/alpha'
       fullPath: '/alpha'
       preLoaderRoute: typeof AuthenticatedAlphaRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/activity-web3': {
-      id: '/_authenticated/activity-web3'
-      path: '/activity-web3'
-      fullPath: '/activity-web3'
-      preLoaderRoute: typeof AuthenticatedActivityWeb3RouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/token/$symbol': {
@@ -858,23 +684,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedActivityWeb3Route: typeof AuthenticatedActivityWeb3Route
   AuthenticatedAlphaRoute: typeof AuthenticatedAlphaRoute
   AuthenticatedAnalyzeRoute: typeof AuthenticatedAnalyzeRoute
-  AuthenticatedArbitrageRoute: typeof AuthenticatedArbitrageRoute
   AuthenticatedBacktestRoute: typeof AuthenticatedBacktestRoute
-  AuthenticatedBagsRoute: typeof AuthenticatedBagsRoute
-  AuthenticatedBrokersRoute: typeof AuthenticatedBrokersRoute
   AuthenticatedChartsRoute: typeof AuthenticatedChartsRoute
-  AuthenticatedCommunitiesRoute: typeof AuthenticatedCommunitiesRoute
-  AuthenticatedCurvesRoute: typeof AuthenticatedCurvesRoute
   AuthenticatedDailyLoopRoute: typeof AuthenticatedDailyLoopRoute
   AuthenticatedDiscoverRoute: typeof AuthenticatedDiscoverRoute
-  AuthenticatedExperimentsRoute: typeof AuthenticatedExperimentsRoute
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOpportunitiesRoute: typeof AuthenticatedOpportunitiesRoute
-  AuthenticatedPerpetualsRoute: typeof AuthenticatedPerpetualsRoute
   AuthenticatedPnlRoute: typeof AuthenticatedPnlRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
   AuthenticatedPredictionsRoute: typeof AuthenticatedPredictionsRoute
@@ -894,7 +712,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedVisionRoute: typeof AuthenticatedVisionRoute
   AuthenticatedWalletWeb3Route: typeof AuthenticatedWalletWeb3Route
   AuthenticatedWhaleRoute: typeof AuthenticatedWhaleRoute
-  AuthenticatedYieldRoute: typeof AuthenticatedYieldRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdminApiKeysRoute: typeof AuthenticatedAdminApiKeysRoute
   AuthenticatedAnalysisIdRoute: typeof AuthenticatedAnalysisIdRoute
@@ -902,23 +719,15 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedActivityWeb3Route: AuthenticatedActivityWeb3Route,
   AuthenticatedAlphaRoute: AuthenticatedAlphaRoute,
   AuthenticatedAnalyzeRoute: AuthenticatedAnalyzeRoute,
-  AuthenticatedArbitrageRoute: AuthenticatedArbitrageRoute,
   AuthenticatedBacktestRoute: AuthenticatedBacktestRoute,
-  AuthenticatedBagsRoute: AuthenticatedBagsRoute,
-  AuthenticatedBrokersRoute: AuthenticatedBrokersRoute,
   AuthenticatedChartsRoute: AuthenticatedChartsRoute,
-  AuthenticatedCommunitiesRoute: AuthenticatedCommunitiesRoute,
-  AuthenticatedCurvesRoute: AuthenticatedCurvesRoute,
   AuthenticatedDailyLoopRoute: AuthenticatedDailyLoopRoute,
   AuthenticatedDiscoverRoute: AuthenticatedDiscoverRoute,
-  AuthenticatedExperimentsRoute: AuthenticatedExperimentsRoute,
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOpportunitiesRoute: AuthenticatedOpportunitiesRoute,
-  AuthenticatedPerpetualsRoute: AuthenticatedPerpetualsRoute,
   AuthenticatedPnlRoute: AuthenticatedPnlRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
   AuthenticatedPredictionsRoute: AuthenticatedPredictionsRoute,
@@ -938,7 +747,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedVisionRoute: AuthenticatedVisionRoute,
   AuthenticatedWalletWeb3Route: AuthenticatedWalletWeb3Route,
   AuthenticatedWhaleRoute: AuthenticatedWhaleRoute,
-  AuthenticatedYieldRoute: AuthenticatedYieldRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdminApiKeysRoute: AuthenticatedAdminApiKeysRoute,
   AuthenticatedAnalysisIdRoute: AuthenticatedAnalysisIdRoute,

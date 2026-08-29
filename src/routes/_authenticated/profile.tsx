@@ -451,7 +451,8 @@ function ProfilePage() {
   const userLevel = useMemo(() => {
     const xp = profile?.xp ?? 0;
     const level = Math.max(1, Math.min(100, Math.floor(1 + xp / 750)));
-    const title = level >= 76 ? "Apex" : level >= 51 ? "Sentinel" : level >= 26 ? "Predator" : "Scout";
+    const title =
+      level >= 76 ? "Apex" : level >= 51 ? "Sentinel" : level >= 26 ? "Predator" : "Scout";
     return { level, title };
   }, [profile?.xp]);
 
@@ -522,10 +523,7 @@ function ProfilePage() {
               label={`Lvl ${userLevel.level} · ${userLevel.title}`}
               color={"var(--color-primary)"}
             />
-            <Badge
-              label={`⚡ ${pointsBalance.toLocaleString()} pts`}
-              color={"var(--color-info)"}
-            />
+            <Badge label={`⚡ ${pointsBalance.toLocaleString()} pts`} color={"var(--color-info)"} />
             {currentStreak > 0 && (
               <Badge label={`🔥 ${currentStreak}-day streak`} color={"var(--color-neutral-wait)"} />
             )}

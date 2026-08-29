@@ -6,14 +6,12 @@
 // whale activity, and signal blips in real time.
 // ============================================================================
 
-import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getDailySignals } from "@/shared/data";
 import { PageLayout, StatsRow, SectionTitle, PageScrollArea } from "@/components/vixor/PageLayout";
 import { getRadarBlips } from "./server-fn";
-export { getRadarBlips };
 
 import type { MarketToken, MarketOverview, DiscoverToken, SignalRow, RadarBlip } from "./server-fn";
 import {
@@ -28,16 +26,11 @@ import { HeatmapGrid } from "./HeatmapGrid";
 import { AlertsLogEntry } from "./AlertsLogEntry";
 import { DemoNotice } from "./DemoNotice";
 
-// ── Route Definition ────────────────────────────────────────────────────────
-
-export const Route = createFileRoute("/_authenticated/radar")({
-  head: () => ({ meta: [{ title: "Radar Feed — HUNT" }] }),
-  component: RadarPage,
-});
+export { getRadarBlips };
 
 // ── Main Page ───────────────────────────────────────────────────────────────
 
-function RadarPage() {
+export function RadarPage() {
   const fetchSignals = useStableServerFn(getDailySignals);
   const [isDemo, setIsDemo] = useState(false);
   const [autoScrollOffset, setAutoScrollOffset] = useState(0);
@@ -203,7 +196,7 @@ function RadarPage() {
         value: String(signalCount),
         color: "var(--color-primary)",
         icon: "🤖",
-        sub: "Engine generated",
+        sub: "AI generated",
       },
     ];
   }, [blips, tokens, signals]);
@@ -219,8 +212,8 @@ function RadarPage() {
 
   return (
     <PageLayout
-      title="Radar Feed"
-      badge="TARGET FEED"
+      title="Trade Radar"
+      badge="LIVE"
       badgeColor="var(--color-bullish)"
       loading={isLoading}
       loadingColor="var(--color-bullish)"
@@ -512,5 +505,3 @@ function RadarPage() {
     </PageLayout>
   );
 }
-
-export { RadarPage };

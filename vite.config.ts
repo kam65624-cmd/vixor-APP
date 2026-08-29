@@ -81,7 +81,7 @@ export default defineConfig({
       "@tanstack/query-core",
     ],
   },
-  css: { transformer: "lightningcss" },
+  css: { transformer: "lightningcss", postcss: { plugins: [] } },
   build: {
     chunkSizeWarningLimit: 700,
     rollupOptions: {
