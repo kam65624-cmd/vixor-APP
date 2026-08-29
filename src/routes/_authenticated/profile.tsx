@@ -448,6 +448,13 @@ function ProfilePage() {
     "var(--color-neutral-wait)",
   ];
 
+  const userLevel = useMemo(() => {
+    const xp = profile?.xp ?? 0;
+    const level = Math.max(1, Math.min(100, Math.floor(1 + xp / 750)));
+    const title = level >= 76 ? "Apex" : level >= 51 ? "Sentinel" : level >= 26 ? "Predator" : "Scout";
+    return { level, title };
+  }, [profile?.xp]);
+
   return (
     <PageLayout title="Profile" loading={isLoading}>
       {/* Profile Card */}
@@ -512,7 +519,7 @@ function ProfilePage() {
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
             <Badge
-              label={`Lvl ${profile?.current_level ?? 1} · ${profile?.level_title ?? "Scout"}`}
+              label={`Lvl ${userLevel.level} · ${userLevel.title}`}
               color={"var(--color-primary)"}
             />
             <Badge
