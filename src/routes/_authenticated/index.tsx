@@ -633,26 +633,41 @@ function HomePageV3() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <FeatureCard
+              icon={Zap}
+              title="Trade Desk"
+              desc="Execute trades"
+              to="/trade"
+              accent="var(--color-primary)"
+              badge="LIVE"
+            />
+            <FeatureCard
+              icon={LineChart}
+              title="Live Chart"
+              desc="View charts"
+              to="/trade/chart"
+              accent="var(--color-bullish)"
+            />
+            <FeatureCard
+              icon={Signal}
+              title="Signals Feed"
+              desc="Trade signals"
+              to="/trade/signals"
+              accent="var(--color-gold)"
+              badge="LIVE"
+            />
+            <FeatureCard
+              icon={PieChart}
+              title="PnL Tracker"
+              desc="Performance"
+              to="/trade/pnl"
+              accent="var(--color-primary)"
+            />
+            <FeatureCard
               icon={Compass}
               title="Discover"
               desc="Trending tokens"
               to="/discover"
               accent="var(--color-primary)"
-              badge="LIVE"
-            />
-            <FeatureCard
-              icon={Bot}
-              title="MOXI"
-              desc="Market intel"
-              to="/alpha"
-              accent="var(--color-gold)"
-            />
-            <FeatureCard
-              icon={Signal}
-              title="Signals"
-              desc="Smart signals"
-              to="/signals"
-              accent="var(--color-gold)"
             />
             <FeatureCard
               icon={Wallet}
@@ -662,27 +677,11 @@ function HomePageV3() {
               accent="var(--color-primary)"
             />
             <FeatureCard
-              icon={LineChart}
-              title="Charts"
-              desc="Live trading"
-              to="/charts"
-              accent="var(--color-bullish)"
-              badge="LIVE"
-            />
-            <FeatureCard
               icon={Radio}
               title="Radar"
               desc="Market scanner"
               to="/radar"
               accent="var(--color-bullish)"
-              badge="LIVE"
-            />
-            <FeatureCard
-              icon={PieChart}
-              title="PnL"
-              desc="Track trades"
-              to="/pnl"
-              accent="var(--color-primary)"
             />
             <FeatureCard
               icon={Crown}

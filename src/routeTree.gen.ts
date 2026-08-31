@@ -40,6 +40,10 @@ import { Route as AuthenticatedChartsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBacktestRouteImport } from './routes/_authenticated/backtest'
 import { Route as AuthenticatedAnalyzeRouteImport } from './routes/_authenticated/analyze'
 import { Route as AuthenticatedAlphaRouteImport } from './routes/_authenticated/alpha'
+import { Route as AuthenticatedTradeIndexRouteImport } from './routes/_authenticated/trade/index'
+import { Route as AuthenticatedTradeSignalsRouteImport } from './routes/_authenticated/trade/signals'
+import { Route as AuthenticatedTradePnlRouteImport } from './routes/_authenticated/trade/pnl'
+import { Route as AuthenticatedTradeChartRouteImport } from './routes/_authenticated/trade/chart'
 import { Route as AuthenticatedTokenSymbolRouteImport } from './routes/_authenticated/token.$symbol'
 import { Route as AuthenticatedAnalysisIdRouteImport } from './routes/_authenticated/analysis.$id'
 import { Route as AuthenticatedAdminApiKeysRouteImport } from './routes/_authenticated/admin/api-keys'
@@ -201,6 +205,27 @@ const AuthenticatedAlphaRoute = AuthenticatedAlphaRouteImport.update({
   path: '/alpha',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTradeIndexRoute = AuthenticatedTradeIndexRouteImport.update({
+  id: '/trade/',
+  path: '/trade/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTradeSignalsRoute =
+  AuthenticatedTradeSignalsRouteImport.update({
+    id: '/trade/signals',
+    path: '/trade/signals',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedTradePnlRoute = AuthenticatedTradePnlRouteImport.update({
+  id: '/trade/pnl',
+  path: '/trade/pnl',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTradeChartRoute = AuthenticatedTradeChartRouteImport.update({
+  id: '/trade/chart',
+  path: '/trade/chart',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTokenSymbolRoute =
   AuthenticatedTokenSymbolRouteImport.update({
     id: '/token/$symbol',
@@ -253,6 +278,10 @@ export interface FileRoutesByFullPath {
   '/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
   '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
+  '/trade/chart': typeof AuthenticatedTradeChartRoute
+  '/trade/pnl': typeof AuthenticatedTradePnlRoute
+  '/trade/signals': typeof AuthenticatedTradeSignalsRoute
+  '/trade/': typeof AuthenticatedTradeIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -288,6 +317,10 @@ export interface FileRoutesByTo {
   '/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
   '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
+  '/trade/chart': typeof AuthenticatedTradeChartRoute
+  '/trade/pnl': typeof AuthenticatedTradePnlRoute
+  '/trade/signals': typeof AuthenticatedTradeSignalsRoute
+  '/trade': typeof AuthenticatedTradeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -325,6 +358,10 @@ export interface FileRoutesById {
   '/_authenticated/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/_authenticated/analysis/$id': typeof AuthenticatedAnalysisIdRoute
   '/_authenticated/token/$symbol': typeof AuthenticatedTokenSymbolRoute
+  '/_authenticated/trade/chart': typeof AuthenticatedTradeChartRoute
+  '/_authenticated/trade/pnl': typeof AuthenticatedTradePnlRoute
+  '/_authenticated/trade/signals': typeof AuthenticatedTradeSignalsRoute
+  '/_authenticated/trade/': typeof AuthenticatedTradeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -362,6 +399,10 @@ export interface FileRouteTypes {
     | '/admin/api-keys'
     | '/analysis/$id'
     | '/token/$symbol'
+    | '/trade/chart'
+    | '/trade/pnl'
+    | '/trade/signals'
+    | '/trade/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -397,6 +438,10 @@ export interface FileRouteTypes {
     | '/admin/api-keys'
     | '/analysis/$id'
     | '/token/$symbol'
+    | '/trade/chart'
+    | '/trade/pnl'
+    | '/trade/signals'
+    | '/trade'
   id:
     | '__root__'
     | '/_authenticated'
@@ -433,6 +478,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/api-keys'
     | '/_authenticated/analysis/$id'
     | '/_authenticated/token/$symbol'
+    | '/_authenticated/trade/chart'
+    | '/_authenticated/trade/pnl'
+    | '/_authenticated/trade/signals'
+    | '/_authenticated/trade/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -659,6 +708,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAlphaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/trade/': {
+      id: '/_authenticated/trade/'
+      path: '/trade'
+      fullPath: '/trade/'
+      preLoaderRoute: typeof AuthenticatedTradeIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/trade/signals': {
+      id: '/_authenticated/trade/signals'
+      path: '/trade/signals'
+      fullPath: '/trade/signals'
+      preLoaderRoute: typeof AuthenticatedTradeSignalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/trade/pnl': {
+      id: '/_authenticated/trade/pnl'
+      path: '/trade/pnl'
+      fullPath: '/trade/pnl'
+      preLoaderRoute: typeof AuthenticatedTradePnlRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/trade/chart': {
+      id: '/_authenticated/trade/chart'
+      path: '/trade/chart'
+      fullPath: '/trade/chart'
+      preLoaderRoute: typeof AuthenticatedTradeChartRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/token/$symbol': {
       id: '/_authenticated/token/$symbol'
       path: '/token/$symbol'
@@ -716,6 +793,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminApiKeysRoute: typeof AuthenticatedAdminApiKeysRoute
   AuthenticatedAnalysisIdRoute: typeof AuthenticatedAnalysisIdRoute
   AuthenticatedTokenSymbolRoute: typeof AuthenticatedTokenSymbolRoute
+  AuthenticatedTradeChartRoute: typeof AuthenticatedTradeChartRoute
+  AuthenticatedTradePnlRoute: typeof AuthenticatedTradePnlRoute
+  AuthenticatedTradeSignalsRoute: typeof AuthenticatedTradeSignalsRoute
+  AuthenticatedTradeIndexRoute: typeof AuthenticatedTradeIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -751,6 +832,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminApiKeysRoute: AuthenticatedAdminApiKeysRoute,
   AuthenticatedAnalysisIdRoute: AuthenticatedAnalysisIdRoute,
   AuthenticatedTokenSymbolRoute: AuthenticatedTokenSymbolRoute,
+  AuthenticatedTradeChartRoute: AuthenticatedTradeChartRoute,
+  AuthenticatedTradePnlRoute: AuthenticatedTradePnlRoute,
+  AuthenticatedTradeSignalsRoute: AuthenticatedTradeSignalsRoute,
+  AuthenticatedTradeIndexRoute: AuthenticatedTradeIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
