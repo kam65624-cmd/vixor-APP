@@ -70,24 +70,13 @@ interface BadgeData {
 }
 
 const BADGE_DEFS: BadgeDef[] = [
-  {
-    icon: "🎯",
-    name: "First Trade",
-    desc: "Made your first trade",
-    check: (d) => d.totalTrades >= 1,
-  },
-  { icon: "🔥", name: "On Fire", desc: "7-day login streak", check: (d) => d.streak >= 7 },
-  {
-    icon: "👑",
-    name: "Pro Trader",
-    desc: "100+ trades completed",
-    check: (d) => d.totalTrades >= 100,
-  },
-  { icon: "🤝", name: "Connector", desc: "Referred 3+ users", check: (d) => d.referralCount >= 3 },
-  { icon: "💰", name: "Big Winner", desc: "Single trade +$500+", check: (d) => d.bestTrade >= 500 },
-  { icon: "📊", name: "Analyst", desc: "10+ chart analyses", check: (d) => d.analysisCount >= 10 },
+  { icon: "🎯", name: "First Profit", desc: "First profitable trade", check: (d) => d.totalTrades >= 1 },
+  { icon: "🔥", name: "7-Day Streak", desc: "7-day active streak", check: (d) => d.streak >= 7 },
+  { icon: "👑", name: "Pro Trader", desc: "100+ trades completed", check: (d) => d.totalTrades >= 100 },
   { icon: "⚡", name: "Sharp Eye", desc: "Win rate above 70%", check: (d) => d.winRate >= 70 },
-  { icon: "🏆", name: "Legend", desc: "1000+ XP earned", check: (d) => d.xp >= 1000 },
+  { icon: "💰", name: "Big Winner", desc: "Single trade +$500+", check: (d) => d.bestTrade >= 500 },
+  { icon: "📊", name: "Quant Master", desc: "10+ chart analyses", check: (d) => d.analysisCount >= 10 },
+  { icon: "🏆", name: "Market Legend", desc: "1000+ XP earned", check: (d) => d.xp >= 1000 },
 ];
 
 const settings = [

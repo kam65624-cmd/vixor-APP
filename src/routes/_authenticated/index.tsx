@@ -501,38 +501,38 @@ function HomePageV3() {
             </p>
           </div>
           <button
-            onClick={() => handleMoxiPrompt("لخص لي السوق في ٣ نقاط")}
-            className="px-4 py-2.5 bg-[#6366F1]/10 text-[#6366F1] text-xs font-bold rounded-xl border border-[#6366F1]/20 flex items-center gap-2 hover:bg-[#6366F1]/20 transition-all"
+            onClick={() => navigate({ to: "/trade" })}
+            className="px-4 py-2.5 bg-[#F59E0B]/10 text-[#F59E0B] text-xs font-bold rounded-xl border border-[#F59E0B]/20 flex items-center gap-2 hover:bg-[#F59E0B]/20 transition-all"
           >
-            <Bot className="w-4 h-4" /> اسأل MOXI
+            <Zap className="w-4 h-4" /> Trade Desk
           </button>
         </div>
 
-        {/* ── 2. MOXI Hero — AI Input (Compact V3) ─────────────────────── */}
+        {/* ── 2. VIXOR Trading Hero (Compact V3) ─────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl p-4 vx-hero-gradient">
           <div
             className="absolute -right-20 -top-20 w-64 h-64 rounded-full pointer-events-none"
             style={{
-              background: "radial-gradient(ellipse, rgba(99, 102, 241, 0.12) 0%, transparent 70%)",
+              background: "radial-gradient(ellipse, rgba(245, 158, 11, 0.12) 0%, transparent 70%)",
             }}
           />
           <div className="relative flex items-center gap-2.5 mb-3">
             <span
               className="text-base font-extrabold text-white"
               style={{
-                background: "var(--gradient-hero)",
+                background: "linear-gradient(135deg, #F59E0B 0%, #6366F1 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
               }}
             >
-              MOXI
+              VIXOR TERMINAL
             </span>
             <LiveDot size={6} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-foreground/50">
-              AI
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-[#F59E0B]">
+              PRO
             </span>
-            <span className="text-[12px] text-foreground/50 ml-auto">{getMoxiGreeting()}</span>
+            <span className="text-[12px] text-foreground/50 ml-auto">Institutional Trading & Market Signals</span>
           </div>
           <div className="relative flex flex-wrap gap-2">
             {MOXI_QUICK_ACTIONS.slice(0, 4).map((action) => {
