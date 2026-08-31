@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "NODE_OPTIONS=--max-old-space-size=4096 pnpm run build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "crons": [
+    {
+      "path": "/api/generate-signals",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/check-alerts",
+      "schedule": "30 0 * * *"
+    }
+  ]
+}

@@ -1,0 +1,455 @@
+// ============================================================================
+// Vixor Auto-Migration Runner — Creates missing tables on server startup
+// ============================================================================
+//
+// This script checks if the required tables exist and creates them if they don't.
+// It's designed to be called once on server startup or manually via API endpoint.
+//
+// It uses the Supabase Admin client (service role key) to execute raw SQL
+// through the REST API. Since PostgREST doesn't support raw SQL execution,
+// we use a workaround: try to select from each table, and if it fails with
+// "relation does not exist", we know we need to create it.
+//
+// However, we can't create tables through PostgREST. The actual table creation
+// must be done through the Supabase Dashboard SQL Editor or the CLI.
+//
+// This file exports:
+// 1. `checkMigrations()` - Checks which tables exist and returns status
+// 2. `getMigrationSQL()` - Returns the full SQL for all tables
+// 3. `getPendingMigrationsSQL()` - Returns only the SQL for tables that are missing
+// ============================================================================
+
+export interface MigrationStatus {
+  price_alerts: boolean;
+  daily_signals: boolean;
+  user_strategies: boolean;
+  trading_notes: boolean;
+  trades: boolean;
+  daily_loops: boolean;
+  user_streaks: boolean;
+  domain_events: boolean;
+  user_memories: boolean;
+  vixor_decisions: boolean;
+  allComplete: boolean;
+  sql: string;
+}
+
+export function getMigrationSQL(): string {
+  return `
+-- Vixor Migration: Price Alerts, Daily Signals, User Strategies
+-- Run this SQL in the Supabase Dashboard SQL Editor:
+-- https://supabase.com/dashboard/project/lrbgxrfvjxaixtzkutxn/sql
+
+-- 1. Price Alerts Table
+CREATE TABLE IF NOT EXISTS price_alerts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  symbol TEXT NOT NULL,
+  pair TEXT NOT NULL,
+  condition TEXT NOT NULL CHECK (condition IN ('above', 'below', 'crosses_up', 'crosses_down')),
+  target_price NUMERIC NOT NULL,
+  current_price NUMERIC,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'triggered', 'cancelled')),
+  triggered_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  note TEXT,
+  timeframe TEXT DEFAULT '1H'
+);
+
+CREATE INDEX IF NOT EXISTS idx_price_alerts_user ON price_alerts(user_id);
+CREATE INDEX IF NOT EXISTS idx_price_alerts_active ON price_alerts(status) WHERE status = 'active';
+
+ALTER TABLE price_alerts ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can manage their own alerts" ON price_alerts FOR ALL USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- 2. Daily Signals Table
+CREATE TABLE IF NOT EXISTS daily_signals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  pair TEXT NOT NULL,
+  timeframe TEXT NOT NULL,
+  recommendation TEXT NOT NULL CHECK (recommendation IN ('BUY', 'SELL', 'WAIT')),
+  confidence NUMERIC NOT NULL,
+  entry NUMERIC,
+  stop_loss NUMERIC,
+  take_profit NUMERIC[],
+  reasons TEXT[],
+  pattern TEXT,
+  market_structure JSONB,
+  liquidity_zones JSONB,
+  signal_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_daily_signals_date ON daily_signals(signal_date);
+
+-- 3. User Strategies Table
+CREATE TABLE IF NOT EXISTS user_strategies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  name TEXT NOT NULL DEFAULT 'My Strategy',
+  pairs TEXT[] NOT NULL DEFAULT '{}',
+  trading_style TEXT NOT NULL DEFAULT 'Day Trading',
+  risk_tolerance TEXT NOT NULL DEFAULT 'MEDIUM',
+  preferred_timeframes TEXT[] NOT NULL DEFAULT '{1H,4H}',
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_strategies_user ON user_strategies(user_id);
+
+ALTER TABLE user_strategies ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can manage their own strategies" ON user_strategies FOR ALL USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- 4. Trading Notes Table
+CREATE TABLE IF NOT EXISTS trading_notes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  pair TEXT,
+  analysis_id UUID REFERENCES analyses(id) ON DELETE SET NULL,
+  title TEXT NOT NULL DEFAULT '',
+  content TEXT NOT NULL DEFAULT '',
+  tags TEXT[] DEFAULT '{}',
+  mood TEXT CHECK (mood IN ('confident', 'cautious', 'anxious', 'neutral')) DEFAULT 'neutral',
+  is_pinned BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_trading_notes_user_id ON trading_notes(user_id);
+CREATE INDEX IF NOT EXISTS idx_trading_notes_pair ON trading_notes(pair) WHERE pair IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_trading_notes_analysis_id ON trading_notes(analysis_id) WHERE analysis_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_trading_notes_pinned ON trading_notes(user_id, is_pinned) WHERE is_pinned = true;
+
+ALTER TABLE trading_notes ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can view own notes" ON trading_notes FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Users can insert own notes" ON trading_notes FOR INSERT WITH CHECK (auth.uid() = user_id);
+  CREATE POLICY "Users can update own notes" ON trading_notes FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "Users can delete own notes" ON trading_notes FOR DELETE USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Auto-update updated_at trigger
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trading_notes_updated_at ON trading_notes;
+CREATE TRIGGER trading_notes_updated_at
+  BEFORE UPDATE ON trading_notes
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- 5. Trades Table
+CREATE TABLE IF NOT EXISTS trades (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  pair TEXT NOT NULL,
+  direction TEXT NOT NULL CHECK (direction IN ('long', 'short')),
+  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'closed', 'cancelled')),
+  entry_price NUMERIC NOT NULL,
+  entry_date TIMESTAMPTZ NOT NULL DEFAULT now(),
+  quantity NUMERIC,
+  exit_price NUMERIC,
+  exit_date TIMESTAMPTZ,
+  stop_loss NUMERIC,
+  take_profit NUMERIC,
+  notes TEXT,
+  tags TEXT[] DEFAULT '{}',
+  strategy TEXT,
+  analysis_id UUID REFERENCES analyses(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Note: Generated columns (pnl, pnl_pips, r_multiple) require raw SQL execution
+-- in the Supabase Dashboard. See supabase/migrations/20260610010000_add_trades.sql
+-- for the full migration with generated columns.
+
+CREATE INDEX IF NOT EXISTS idx_trades_user_id ON trades(user_id);
+CREATE INDEX IF NOT EXISTS idx_trades_status ON trades(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_trades_pair ON trades(user_id, pair);
+CREATE INDEX IF NOT EXISTS idx_trades_dates ON trades(user_id, entry_date DESC);
+
+ALTER TABLE trades ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can view own trades" ON trades FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Users can insert own trades" ON trades FOR INSERT WITH CHECK (auth.uid() = user_id);
+  CREATE POLICY "Users can update own trades" ON trades FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "Users can delete own trades" ON trades FOR DELETE USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DROP TRIGGER IF EXISTS trades_updated_at ON trades;
+CREATE TRIGGER trades_updated_at
+  BEFORE UPDATE ON trades
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- 6. Daily Loops Table
+CREATE TABLE IF NOT EXISTS daily_loops (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  morning_prep_completed BOOLEAN DEFAULT false,
+  morning_prep_at TIMESTAMPTZ,
+  market_bias TEXT,
+  key_levels TEXT,
+  watchlist_reviewed BOOLEAN DEFAULT false,
+  london_session_traded BOOLEAN DEFAULT false,
+  london_session_notes TEXT,
+  ny_session_traded BOOLEAN DEFAULT false,
+  ny_session_notes TEXT,
+  asian_session_traded BOOLEAN DEFAULT false,
+  asian_session_notes TEXT,
+  eod_review_completed BOOLEAN DEFAULT false,
+  eod_review_at TIMESTAMPTZ,
+  daily_pnl NUMERIC,
+  trades_taken INTEGER DEFAULT 0,
+  rules_followed INTEGER DEFAULT 0,
+  rules_broken INTEGER DEFAULT 0,
+  emotional_state TEXT CHECK (emotional_state IN ('disciplined', 'anxious', 'fomo', 'revenge', 'calm', 'tired')) DEFAULT 'calm',
+  lessons_learned TEXT,
+  tomorrow_plan TEXT,
+  completion_percentage NUMERIC DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, date)
+);
+
+CREATE INDEX IF NOT EXISTS idx_daily_loops_user_date ON daily_loops(user_id, date DESC);
+
+ALTER TABLE daily_loops ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can view own daily loops" ON daily_loops FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Users can insert own daily loops" ON daily_loops FOR INSERT WITH CHECK (auth.uid() = user_id);
+  CREATE POLICY "Users can update own daily loops" ON daily_loops FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "Users can delete own daily loops" ON daily_loops FOR DELETE USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DROP TRIGGER IF EXISTS daily_loops_updated_at ON daily_loops;
+CREATE TRIGGER daily_loops_updated_at
+  BEFORE UPDATE ON daily_loops
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- 9. User Streaks Table
+CREATE TABLE IF NOT EXISTS user_streaks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE UNIQUE,
+  current_streak INTEGER DEFAULT 0,
+  longest_streak INTEGER DEFAULT 0,
+  last_completed_date DATE,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE user_streaks ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can view own streaks" ON user_streaks FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Users can update own streaks" ON user_streaks FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "Users can insert own streaks" ON user_streaks FOR INSERT WITH CHECK (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- 10. Domain Events Table
+CREATE TABLE IF NOT EXISTS domain_events (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  event_type TEXT NOT NULL,
+  payload JSONB NOT NULL DEFAULT '{}',
+  source TEXT,
+  trace_id TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_domain_events_event_type ON domain_events (event_type);
+CREATE INDEX IF NOT EXISTS idx_domain_events_created_at ON domain_events (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_domain_events_trace_id ON domain_events (trace_id) WHERE trace_id IS NOT NULL;
+
+ALTER TABLE domain_events ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Service role can manage domain_events" ON domain_events FOR ALL TO service_role USING (true) WITH CHECK (true);
+  CREATE POLICY "Users can read domain_events" ON domain_events FOR SELECT TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- 11. User Memories Table
+CREATE TABLE IF NOT EXISTS user_memories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  category TEXT NOT NULL CHECK (category IN ('preference', 'behavior', 'mistake', 'insight', 'strategy')),
+  key TEXT NOT NULL,
+  value JSONB NOT NULL DEFAULT '{}',
+  confidence REAL NOT NULL DEFAULT 0.5 CHECK (confidence >= 0 AND confidence <= 1),
+  source TEXT NOT NULL DEFAULT 'system',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(user_id, category, key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_memories_user_category ON user_memories (user_id, category);
+
+ALTER TABLE user_memories ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Service role can manage user_memories" ON user_memories FOR ALL TO service_role USING (true) WITH CHECK (true);
+  CREATE POLICY "Users can read own memories" ON user_memories FOR SELECT TO authenticated USING (user_id::text = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- 12. Vixor Decisions Table (AI Agent Decisions)
+CREATE TABLE IF NOT EXISTS vixor_decisions (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  user_id TEXT NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  agent_id TEXT NOT NULL CHECK (agent_id IN ('coach', 'analyst', 'governor', 'hunter')),
+  decision_type TEXT NOT NULL CHECK (decision_type IN ('suggestion', 'warning', 'block', 'alert', 'report')),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  data JSONB DEFAULT '{}',
+  confidence REAL DEFAULT 0.5 CHECK (confidence >= 0 AND confidence <= 1),
+  feedback TEXT CHECK (feedback IN ('accepted', 'rejected', 'dismissed', 'expired')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at TIMESTAMPTZ,
+  workspace TEXT DEFAULT 'os' CHECK (workspace IN ('os', 'bullx', 'axiom', 'opensea')),
+  token_symbol TEXT,
+  chain TEXT,
+  severity TEXT DEFAULT 'medium' CHECK (severity IN ('low', 'medium', 'high', 'critical'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_vixor_decisions_user_id ON vixor_decisions(user_id);
+CREATE INDEX IF NOT EXISTS idx_vixor_decisions_agent_id ON vixor_decisions(agent_id);
+CREATE INDEX IF NOT EXISTS idx_vixor_decisions_user_created ON vixor_decisions(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_vixor_decisions_feedback ON vixor_decisions(feedback) WHERE feedback IS NULL;
+
+ALTER TABLE vixor_decisions ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "Users can read own decisions" ON vixor_decisions FOR SELECT USING (auth.uid() = user_id);
+  CREATE POLICY "Deny anon inserts" ON vixor_decisions FOR INSERT WITH CHECK (false);
+  CREATE POLICY "Deny anon updates" ON vixor_decisions FOR UPDATE USING (false);
+  CREATE POLICY "Deny anon deletes" ON vixor_decisions FOR DELETE USING (false);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+`;
+}
+
+export async function checkMigrations(): Promise<MigrationStatus> {
+  const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+  // Check each table by attempting a select
+  const [
+    alertsRes,
+    signalsRes,
+    strategiesRes,
+    notesRes,
+    tradesRes,
+    loopsRes,
+    streaksRes,
+    domainEventsRes,
+    userMemoriesRes,
+    vixorDecisionsRes,
+  ] = await Promise.all([
+    supabaseAdmin.from("price_alerts").select("id").limit(1),
+    supabaseAdmin.from("daily_signals").select("id").limit(1),
+    supabaseAdmin.from("user_strategies").select("id").limit(1),
+    supabaseAdmin.from("trading_notes").select("id").limit(1),
+    supabaseAdmin.from("trades").select("id").limit(1),
+    supabaseAdmin.from("daily_loops").select("id").limit(1),
+    supabaseAdmin.from("user_streaks").select("id").limit(1),
+    supabaseAdmin.from("domain_events").select("id").limit(1),
+    supabaseAdmin.from("user_memories").select("id").limit(1),
+    supabaseAdmin.from("vixor_decisions").select("id").limit(1),
+  ]);
+
+  const priceAlerts = !alertsRes.error || alertsRes.error.code !== "42P01";
+  const dailySignals = !signalsRes.error || signalsRes.error.code !== "42P01";
+  const userStrategies = !strategiesRes.error || strategiesRes.error.code !== "42P01";
+  const tradingNotes = !notesRes.error || notesRes.error.code !== "42P01";
+  const tradesTable = !tradesRes.error || tradesRes.error.code !== "42P01";
+  const dailyLoops = !loopsRes.error || loopsRes.error.code !== "42P01";
+  const userStreaks = !streaksRes.error || streaksRes.error.code !== "42P01";
+  const domainEvents = !domainEventsRes.error || domainEventsRes.error.code !== "42P01";
+  const userMemories = !userMemoriesRes.error || userMemoriesRes.error.code !== "42P01";
+  const vixorDecisions = !vixorDecisionsRes.error || vixorDecisionsRes.error.code !== "42P01";
+
+  const allComplete =
+    priceAlerts &&
+    dailySignals &&
+    userStrategies &&
+    tradingNotes &&
+    tradesTable &&
+    dailyLoops &&
+    userStreaks &&
+    domainEvents &&
+    userMemories &&
+    vixorDecisions;
+
+  return {
+    price_alerts: priceAlerts,
+    daily_signals: dailySignals,
+    user_strategies: userStrategies,
+    trading_notes: tradingNotes,
+    trades: tradesTable,
+    daily_loops: dailyLoops,
+    user_streaks: userStreaks,
+    domain_events: domainEvents,
+    user_memories: userMemories,
+    vixor_decisions: vixorDecisions,
+    allComplete,
+    sql: allComplete ? "" : getMigrationSQL(),
+  };
+}
+
+/**
+ * Returns only the SQL for tables that are currently missing from the database.
+ * Each table's SQL block is extracted from getMigrationSQL() individually.
+ */
+export async function getPendingMigrationsSQL(): Promise<string> {
+  const status = await checkMigrations();
+
+  if (status.allComplete) {
+    return "-- All tables exist. No migration needed.\n";
+  }
+
+  const fullSQL = getMigrationSQL();
+
+  // Split by table section markers and keep only missing ones
+  const sections: { table: keyof MigrationStatus; label: string }[] = [
+    { table: "price_alerts", label: "-- 1. Price Alerts Table" },
+    { table: "daily_signals", label: "-- 2. Daily Signals Table" },
+    { table: "user_strategies", label: "-- 3. User Strategies Table" },
+    { table: "trading_notes", label: "-- 4. Trading Notes Table" },
+    { table: "trades", label: "-- 5. Trades Table" },
+    { table: "daily_loops", label: "-- 6. Daily Loops Table" },
+    { table: "user_streaks", label: "-- 7. User Streaks Table" },
+    { table: "domain_events", label: "-- 8. Domain Events Table" },
+    { table: "user_memories", label: "-- 11. User Memories Table" },
+    { table: "vixor_decisions", label: "-- 12. Vixor Decisions Table" },
+  ];
+
+  // For simplicity, if any table is missing, return the full SQL with a header
+  // explaining which tables need creation. The SQL uses IF NOT EXISTS so it's
+  // safe to re-run even for tables that already exist.
+  const missing = sections.filter((s) => !status[s.table]);
+
+  if (missing.length === 0) {
+    return "-- All tables exist. No migration needed.\n";
+  }
+
+  const missingNames = missing.map((m) => m.label).join("\n--   ");
+
+  return (
+    `-- Vixor Pending Migrations\n` +
+    `-- The following tables are missing and need to be created:\n` +
+    `--   ${missingNames}\n` +
+    `-- Run this SQL in the Supabase Dashboard SQL Editor:\n` +
+    `-- https://supabase.com/dashboard/project/_/sql\n` +
+    `-- (All statements use IF NOT EXISTS, so it's safe to re-run)\n\n` +
+    fullSQL
+  );
+}

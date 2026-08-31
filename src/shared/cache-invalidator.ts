@@ -1,0 +1,95 @@
+// ============================================================================
+// Vixor Cache Invalidation — Utilities for targeted cache invalidation
+// ============================================================================
+//
+// Provides functions to invalidate specific cache entries or groups of entries.
+// Used when data changes and the cache needs to be refreshed.
+//
+// Usage:
+//   import { invalidatePriceCache, invalidateAllCache } from "@/shared/cache-invalidator";
+//   await invalidatePriceCache("BTC/USDT");
+//   await invalidateAllCache();
+// ============================================================================
+
+import { cache, CACHE_KEYS } from "@/shared/cache";
+import { ALL_KNOWN_PAIRS } from "@/shared/asset-registry";
+
+/**
+ * Invalidate the cached price data for a specific pair.
+ * Use this when a fresh price fetch is needed immediately.
+ */
+export async function invalidatePriceCache(pair: string): Promise<void> {
+  await cache.delete(CACHE_KEYS.price(pair));
+}
+
+/**
+ * Invalidate all price data across all known pairs.
+ * Use this when market conditions change dramatically (e.g., flash crash).
+ */
+export async function invalidateAllPriceCache(): Promise<void> {
+  const knownPairs = ALL_KNOWN_PAIRS;
+
+  await Promise.allSettled(knownPairs.map((pair) => cache.delete(CACHE_KEYS.price(pair))));
+
+  // Also invalidate the aggregated market prices cache
+  await cache.delete(CACHE_KEYS.marketPrices());
+}
+
+/**
+ * Invalidate the cached klines data for a specific pair and interval.
+ * Use this when a fresh candle fetch is needed immediately.
+ */
+export async function invalidateKlinesCache(pair: string, interval: string): Promise<void> {
+  await cache.delete(CACHE_KEYS.klines(pair, interval));
+}
+
+/**
+ * Invalidate the cached news data for a specific category.
+ * Use this when fresh news is needed immediately.
+ */
+export async function invalidateNewsCache(category: string): Promise<void> {
+  await cache.delete(CACHE_KEYS.news(category));
+}
+
+/**
+ * Invalidate the aggregated market prices cache.
+ * Use this when the dashboard needs fresh price data.
+ */
+export async function invalidateMarketPricesCache(): Promise<void> {
+  await cache.delete(CACHE_KEYS.marketPrices());
+}
+
+/**
+ * Nuclear option — invalidate ALL vixor cache entries.
+ * Use this sparingly, only when a full refresh is absolutely necessary.
+ */
+export async function invalidateAllCache(): Promise<void> {
+  const knownPairs = ALL_KNOWN_PAIRS;
+
+  const knownIntervals = ["1M", "5M", "15M", "30M", "1H", "4H", "1D", "1W"];
+  const newsCategories = ["general", "forex", "crypto"];
+
+  const invalidations: Promise<void>[] = [];
+
+  // Prices
+  for (const pair of knownPairs) {
+    invalidations.push(cache.delete(CACHE_KEYS.price(pair)));
+  }
+
+  // Klines
+  for (const pair of knownPairs) {
+    for (const interval of knownIntervals) {
+      invalidations.push(cache.delete(CACHE_KEYS.klines(pair, interval)));
+    }
+  }
+
+  // News
+  for (const category of newsCategories) {
+    invalidations.push(cache.delete(CACHE_KEYS.news(category)));
+  }
+
+  // Market prices
+  invalidations.push(cache.delete(CACHE_KEYS.marketPrices()));
+
+  await Promise.allSettled(invalidations);
+}

@@ -1,0 +1,313 @@
+// ============================================================================
+// VIXOR Memory System — Long-term User Memory (PostgreSQL Only)
+// ============================================================================
+//
+// Stores user behavior, trading style, strategy preferences, mistakes,
+// and learned patterns in Supabase PostgreSQL.
+//
+// NO pgvector, NO embeddings, NO LLMs — pure structured memory.
+//
+// Memory Types:
+//   - preference: User preferences (pairs, timeframes, style)
+//   - behavior: Observed behavior patterns (trade frequency, journal cadence)
+//   - mistake: Trading mistakes for learning
+//   - insight: AI-generated insights about the user
+//   - strategy: User's active trading strategy notes
+//
+// Usage:
+//   import { MemoryStore } from "@/shared/memory";
+//
+//   await MemoryStore.store(userId, "preference", "preferred_pairs", ["BTC/USDT", "XAU/USD"]);
+//   const pairs = await MemoryStore.retrieve(userId, "preference", "preferred_pairs");
+// ============================================================================
+
+import type { Json } from "@/shared/supabase/types";
+
+// ── Memory Types ─────────────────────────────────────────────────────────────
+
+export type MemoryCategory = "preference" | "behavior" | "mistake" | "insight" | "strategy";
+
+export interface MemoryEntry {
+  id?: string;
+  user_id: string;
+  category: MemoryCategory;
+  key: string;
+  value: unknown;
+  confidence: number; // 0-1, how confident we are about this memory
+  source: string; // what generated this memory (e.g., "moxi", "user_action", "system")
+  created_at?: string;
+  updated_at?: string;
+}
+
+// ── Internal DB row shape ────────────────────────────────────────────────────
+
+interface MemoryRow {
+  id: string;
+  user_id: string;
+  category: string | null;
+  content: string;
+  metadata: Json | null;
+  created_at: string;
+  updated_at: string | null;
+}
+
+/** Extract structured fields from the JSONB metadata column. */
+function decodeMetadata(meta: Json | null): { key: string; confidence: number; source: string } {
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) {
+    return { key: "", confidence: 0.5, source: "system" };
+  }
+  const m = meta as Record<string, unknown>;
+  return {
+    key: String(m.key ?? ""),
+    confidence: typeof m.confidence === "number" ? m.confidence : 0.5,
+    source: String(m.source ?? "system"),
+  };
+}
+
+// ── Memory Store Class ───────────────────────────────────────────────────────
+
+class MemoryStoreClass {
+  /**
+   * Store a memory entry. Upserts if the key already exists for this user+category.
+   */
+  async store(
+    userId: string,
+    category: MemoryCategory,
+    key: string,
+    value: unknown,
+    options: { confidence?: number; source?: string } = {},
+  ): Promise<{ success: boolean; error?: string }> {
+    const { confidence = 0.7, source = "system" } = options;
+
+    try {
+      const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+      const metadata: Json = { key, confidence, source };
+
+      // Upsert: insert (or update if unique constraint exists)
+      const { error } = await supabaseAdmin.from("user_memories").upsert(
+        {
+          user_id: userId,
+          category,
+          content: JSON.stringify(value),
+          metadata,
+        },
+        {
+          onConflict: "user_id,category,content",
+        },
+      );
+
+      if (error) {
+        console.warn(`[MemoryStore] Store failed: ${error.message}`);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (err) {
+      console.warn("[MemoryStore] Store error:", err);
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  }
+
+  /**
+   * Retrieve a specific memory entry by category and key.
+   */
+  async retrieve<T = unknown>(
+    userId: string,
+    category: MemoryCategory,
+    key: string,
+  ): Promise<T | null> {
+    try {
+      const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+      const { data, error } = await supabaseAdmin
+        .from("user_memories")
+        .select("content, metadata")
+        .eq("user_id", userId)
+        .eq("category", category)
+        .maybeSingle();
+
+      if (error || !data) return null;
+
+      const { key: rowKey } = decodeMetadata(data.metadata);
+      if (rowKey !== key) return null;
+
+      return JSON.parse(data.content) as T;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Retrieve all memories of a category for a user.
+   */
+  async retrieveCategory<T = unknown>(
+    userId: string,
+    category: MemoryCategory,
+  ): Promise<Array<{ key: string; value: T; confidence: number; source: string }>> {
+    try {
+      const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+      const { data, error } = await supabaseAdmin
+        .from("user_memories")
+        .select("content, metadata")
+        .eq("user_id", userId)
+        .eq("category", category);
+
+      if (error || !data) return [];
+
+      return data.map((row) => {
+        const { key, confidence, source } = decodeMetadata(row.metadata);
+        return {
+          key,
+          value: JSON.parse(row.content) as T,
+          confidence,
+          source,
+        };
+      });
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Retrieve all memories for a user, grouped by category.
+   */
+  async retrieveAll(
+    userId: string,
+  ): Promise<Record<MemoryCategory, Array<{ key: string; value: unknown; confidence: number }>>> {
+    try {
+      const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+      const { data, error } = await supabaseAdmin
+        .from("user_memories")
+        .select("category, content, metadata")
+        .eq("user_id", userId);
+
+      if (error || !data) {
+        return { preference: [], behavior: [], mistake: [], insight: [], strategy: [] };
+      }
+
+      const grouped: Record<string, Array<{ key: string; value: unknown; confidence: number }>> = {
+        preference: [],
+        behavior: [],
+        mistake: [],
+        insight: [],
+        strategy: [],
+      };
+
+      for (const row of data) {
+        const cat = (row.category ?? "preference") as string;
+        if (!grouped[cat]) grouped[cat] = [];
+        const { key, confidence } = decodeMetadata(row.metadata);
+        grouped[cat].push({
+          key,
+          value: JSON.parse(row.content),
+          confidence,
+        });
+      }
+
+      return grouped as Record<
+        MemoryCategory,
+        Array<{ key: string; value: unknown; confidence: number }>
+      >;
+    } catch {
+      return { preference: [], behavior: [], mistake: [], insight: [], strategy: [] };
+    }
+  }
+
+  /**
+   * Delete a specific memory entry.
+   */
+  async forget(
+    userId: string,
+    category: MemoryCategory,
+    key: string,
+  ): Promise<{ success: boolean }> {
+    try {
+      const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+      const { error } = await supabaseAdmin
+        .from("user_memories")
+        .delete()
+        .eq("user_id", userId)
+        .eq("category", category);
+
+      return { success: !error };
+    } catch {
+      return { success: false };
+    }
+  }
+
+  /**
+   * Learn from user behavior — automatically store observations.
+   * Increases confidence if the same observation is made repeatedly.
+   */
+  async learn(
+    userId: string,
+    category: MemoryCategory,
+    key: string,
+    value: unknown,
+    source: string = "user_action",
+  ): Promise<void> {
+    // Check if memory already exists
+    const existing = await this.retrieve(userId, category, key);
+
+    if (existing !== null) {
+      // Memory exists — update with max confidence
+      try {
+        const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+
+        const metadata: Json = { key, confidence: 1, source };
+
+        await supabaseAdmin
+          .from("user_memories")
+          .update({
+            content: JSON.stringify(value),
+            metadata,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId)
+          .eq("category", category);
+      } catch {
+        // Non-critical
+      }
+    } else {
+      // New memory — store with initial confidence
+      await this.store(userId, category, key, value, {
+        confidence: 0.5,
+        source,
+      });
+    }
+  }
+
+  /**
+   * Format user memories as a context string for AI prompts.
+   */
+  async contextForPrompt(userId: string): Promise<string> {
+    const all = await this.retrieveAll(userId);
+    const lines: string[] = [];
+
+    const categoryLabels: Record<MemoryCategory, string> = {
+      preference: "User Preferences",
+      behavior: "Observed Behavior",
+      mistake: "Known Mistakes",
+      insight: "Insights",
+      strategy: "Strategy Notes",
+    };
+
+    for (const [cat, entries] of Object.entries(all)) {
+      if (entries.length === 0) continue;
+      lines.push(`\n**${categoryLabels[cat as MemoryCategory]}:**`);
+      for (const entry of entries) {
+        lines.push(`  - ${entry.key}: ${JSON.stringify(entry.value)}`);
+      }
+    }
+
+    return lines.length > 0 ? lines.join("\n") : "No stored memories for this user yet.";
+  }
+}
+
+// ── Singleton Export ──────────────────────────────────────────────────────────
+
+export const MemoryStore = new MemoryStoreClass();

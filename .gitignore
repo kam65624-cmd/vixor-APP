@@ -1,0 +1,108 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+.output
+.vinxi
+.tanstack/**
+.nitro
+*.local
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vercel/
+.vercel
+.env*
+!.env.example
+.vercel/
+
+# Phantom submodule — QuantDinger reference repo (62MB, kept locally for audit only)
+# Was committed as gitlink (mode 160000) by mistake; breaks Vercel/GitHub Actions
+# checkout because no .gitmodules entry exists. Files stay on disk locally.
+audit/QuantDinger/
+tool-results/
+upload/
+
+# Build artifacts
+.next/
+alert (2).tsx
+auth.functions.ts
+auth.tsx
+command.tsx
+input-otp.tsx
+input.tsx
+route.tsx
+run-analysis.server.ts
+skeleton.tsx
+telegram-verify.server.ts
+vixor.functions.ts
+chat_content.json
+
+# Old scripts (superseded)
+scripts/build_audit_pdfs.py
+scripts/convert-to-axiom.py
+scripts/fix-palette.py
+scripts/fix_all_migrations.py
+scripts/fix_migrations.py
+scripts/fix_template.py
+scripts/fix_all_migrations.py
+scripts/generate-audit-report.py
+scripts/generate-qa-report.py
+scripts/generate-vixor-report.py
+scripts/generate_audit_report.py
+scripts/generate_report.py
+scripts/generate_report.py.fixed
+scripts/phase-a2-extended.py
+scripts/phase-a2-fix-quotes.py
+scripts/phase-a2-full.py
+scripts/phase-a2-unify-colors.py
+scripts/phase-a2a3-pagelayout.py
+scripts/phase-a2a3-pagelayout.py
+scripts/phase-a5-analysis.py
+scripts/prod3-cleanup-console.py
+scripts/render_report.mjs
+scripts/test-analysis-e2e.ts
+scripts/test-engine.ts
+scripts/vixor-workflow-report.py
+scripts/vixor_report.html
+scripts/credit-100-points.ts
+
+# Dead server routes
+server/api/admin/
+server/api/arbitrage-scan.ts
+server/api/dexscreener.ts
+server/api/discover/
+server/api/token-image.ts
+server/api/vixor-ai/
+server/api/wallet/ip-fingerprint.ts
+
+# Dead client routes  
+src/routes/api/
+
+# --- VIXOR: non-production artifacts ---
+download/
+worklog.md
+
+# scripts/ — ignore all except build-required files
+scripts/*
+!scripts/fix-vercel-bundle.mjs
