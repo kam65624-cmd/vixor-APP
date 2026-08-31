@@ -46,16 +46,6 @@ upload/
 # Build artifacts
 .next/
 alert (2).tsx
-auth.functions.ts
-auth.tsx
-command.tsx
-input-otp.tsx
-input.tsx
-route.tsx
-run-analysis.server.ts
-skeleton.tsx
-telegram-verify.server.ts
-vixor.functions.ts
 chat_content.json
 
 # Old scripts (superseded)
