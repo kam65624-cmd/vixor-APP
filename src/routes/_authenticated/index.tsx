@@ -9,7 +9,13 @@ import { useLivePrices } from "@/shared/market-data";
 import { LiveDot } from "@/components/vixor/LiveDot";
 import { MoxiCharacter3D } from "@/components/vixor/MoxiCharacter3D";
 import { Card, CardGradientOverlay } from "@/components/ui/card";
-import { MOXI_QUICK_ACTIONS } from "@/domains/moxi/types";
+// VIXOR quick action prompts (Trader skin)
+const VIXOR_QUICK_ACTIONS = [
+  { id: "scan", icon: "Activity", label: "Market Scan", prompt: "Run a full market scan across top 20 pairs" },
+  { id: "signals", icon: "Radio", label: "Live Signals", prompt: "Show me the highest confidence trade signals right now" },
+  { id: "entry", icon: "Target", label: "Find Entry", prompt: "Find optimal entry points for BTC and ETH" },
+  { id: "pnl", icon: "PieChart", label: "PnL Review", prompt: "Analyze my portfolio performance and suggest improvements" },
+];
 import { AnimatedNumber } from "@/components/vixor/animations/AnimatedNumber";
 import {
   TrendingUp,
@@ -43,7 +49,7 @@ import { UnifiedFeed } from "@/components/vixor/UnifiedFeed";
 import { SmartBottomSheet } from "@/components/vixor/SmartBottomSheet";
 
 export const Route = createFileRoute("/_authenticated/")({
-  head: () => ({ meta: [{ title: "HUNT — Token Discovery Terminal" }] }),
+  head: () => ({ meta: [{ title: "VIXOR — Institutional Trading Terminal" }] }),
   component: HomePageV3,
 });
 
@@ -496,8 +502,8 @@ function HomePageV3() {
             <p className="text-xs text-[#9498A8] flex items-center gap-2 mt-1">
               <span className="w-1.5 h-1.5 bg-[#22D3A6] rounded-full animate-pulse" />
               {marketData?.tickers?.length
-                ? `السوق نشط • ${tickers.length} أصل متاح`
-                : "جاري تحميل بيانات السوق..."}
+                ? `Markets Active • ${tickers.length} assets tracked`
+                : "Loading market data..."}
             </p>
           </div>
           <button
@@ -535,7 +541,7 @@ function HomePageV3() {
             <span className="text-[12px] text-foreground/50 ml-auto">Institutional Trading & Market Signals</span>
           </div>
           <div className="relative flex flex-wrap gap-2">
-            {MOXI_QUICK_ACTIONS.slice(0, 4).map((action) => {
+            {VIXOR_QUICK_ACTIONS.map((action) => {
               const ActionIcon = QUICK_ACTION_ICONS[action.icon] || Sparkles;
               return (
                 <button

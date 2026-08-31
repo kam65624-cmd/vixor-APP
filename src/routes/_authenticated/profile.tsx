@@ -46,7 +46,7 @@ function getTelegramUserData(): TelegramUserData | null {
 }
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({ meta: [{ title: "Profile — HUNT" }] }),
+  head: () => ({ meta: [{ title: "Profile — VIXOR Trader" }] }),
   component: ProfilePage,
 });
 
@@ -70,13 +70,14 @@ interface BadgeData {
 }
 
 const BADGE_DEFS: BadgeDef[] = [
-  { icon: "🎯", name: "First Profit", desc: "First profitable trade", check: (d) => d.totalTrades >= 1 },
-  { icon: "🔥", name: "7-Day Streak", desc: "7-day active streak", check: (d) => d.streak >= 7 },
-  { icon: "👑", name: "Pro Trader", desc: "100+ trades completed", check: (d) => d.totalTrades >= 100 },
-  { icon: "⚡", name: "Sharp Eye", desc: "Win rate above 70%", check: (d) => d.winRate >= 70 },
-  { icon: "💰", name: "Big Winner", desc: "Single trade +$500+", check: (d) => d.bestTrade >= 500 },
-  { icon: "📊", name: "Quant Master", desc: "10+ chart analyses", check: (d) => d.analysisCount >= 10 },
+  { icon: "🎯", name: "First Win", desc: "First profitable trade", check: (d) => d.totalTrades >= 1 },
+  { icon: "🔥", name: "7-Day Streak", desc: "7-day active trading streak", check: (d) => d.streak >= 7 },
+  { icon: "👑", name: "Elite Trader", desc: "100+ trades executed", check: (d) => d.totalTrades >= 100 },
+  { icon: "⚡", name: "Sharp Entry", desc: "Win rate above 70%", check: (d) => d.winRate >= 70 },
+  { icon: "💰", name: "Big Haul", desc: "Single trade +$500 profit", check: (d) => d.bestTrade >= 500 },
+  { icon: "📈", name: "Chart Master", desc: "10+ technical analyses", check: (d) => d.analysisCount >= 10 },
   { icon: "🏆", name: "Market Legend", desc: "1000+ XP earned", check: (d) => d.xp >= 1000 },
+  { icon: "🔭", name: "Signal Hunter", desc: "Used 5+ trade signals", check: (d) => d.totalTrades >= 5 },
 ];
 
 const settings = [
