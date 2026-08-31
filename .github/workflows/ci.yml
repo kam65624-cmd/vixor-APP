@@ -39,31 +39,25 @@ jobs:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
     needs: validate
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
-
-      - name: Deploy to Vercel (Production)
+      - name: Check Vercel Token & Deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::warning title=Vercel Token Missing::VERCEL_TOKEN secret is not configured in GitHub repository. Skipping Vercel deploy step."
+            echo "To enable automatic Vercel deployment on commit, add VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID to GitHub Secrets."
+            exit 0
+          fi
+
+          npm install -g vercel@latest
           vercel deploy \
-            --token=${{ secrets.VERCEL_TOKEN }} \
+            --token="$VERCEL_TOKEN" \
             --prod \
             --yes \
             --build-env NODE_OPTIONS=--max-old-space-size=4096
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
