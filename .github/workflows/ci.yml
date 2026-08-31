@@ -51,8 +51,12 @@ jobs:
         run: |
           if [ -z "$VERCEL_TOKEN" ]; then
             echo "::warning title=Vercel Token Missing::VERCEL_TOKEN secret is not configured in GitHub repository. Skipping Vercel deploy step."
-            echo "To enable automatic Vercel deployment on commit, add VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID to GitHub Secrets."
             exit 0
+          fi
+
+          if [ -n "$VERCEL_PROJECT_ID" ] && [ -z "$VERCEL_ORG_ID" ]; then
+            echo "Notice: VERCEL_PROJECT_ID is set without VERCEL_ORG_ID. Unsetting VERCEL_PROJECT_ID for auto-scoped Vercel deployment."
+            unset VERCEL_PROJECT_ID
           fi
 
           npm install -g vercel@latest
