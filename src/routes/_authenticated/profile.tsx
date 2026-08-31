@@ -1,739 +1,355 @@
-import { memo, useMemo, useState, useEffect } from "react";
+import { memo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  getUserProfile,
-  getUserPoints,
-  getTradeHistory,
-  getPortfolioData,
-  getReferralData,
-  getRecentAnalyses,
-} from "@/shared/data";
+import { getUserProfile, getUserPoints } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
   PageLayout,
+  PageScrollArea,
   StatsRow,
-  SectionTitle,
-  Badge,
+  PageSectionTitle,
   DataRow,
-  DataRowTwoLine,
-  LabelValue,
-  ScrollArea,
+  PageBadge,
 } from "@/components/vixor/PageLayout";
+import { Lock } from "lucide-react";
 
-// ── Telegram WebApp client-side data (instant, no server round-trip) ──
-interface TelegramUserData {
-  id: number;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  photo_url?: string;
-  language_code?: string;
-}
+// ── Types ──────────────────────────────────────────────────────────────────────
 
-function getTelegramUserData(): TelegramUserData | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const tg = (
-      window as unknown as {
-        Telegram?: { WebApp?: { initDataUnsafe?: { user?: TelegramUserData } } };
-      }
-    ).Telegram?.WebApp;
-    return tg?.initDataUnsafe?.user ?? null;
-  } catch {
-    return null;
-  }
-}
-
-export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({ meta: [{ title: "Profile — VIXOR Trader" }] }),
-  component: ProfilePage,
-});
-
-// ── Achievement badges (dynamically computed from user data) ─────────
-
-interface BadgeDef {
+interface BadgeItem {
+  id: string;
   icon: string;
   name: string;
   desc: string;
-  check: (d: BadgeData) => boolean;
+  unlocked: boolean;
 }
 
-interface BadgeData {
-  totalTrades: number;
-  streak: number;
-  referralCount: number;
-  bestTrade: number;
-  analysisCount: number;
-  winRate: number;
-  xp: number;
+interface RecentTrade {
+  id: string;
+  pair: string;
+  dir: "LONG" | "SHORT";
+  pnl: number;
+  date: string;
 }
 
-const BADGE_DEFS: BadgeDef[] = [
-  { icon: "🎯", name: "First Win", desc: "First profitable trade", check: (d) => d.totalTrades >= 1 },
-  { icon: "🔥", name: "7-Day Streak", desc: "7-day active trading streak", check: (d) => d.streak >= 7 },
-  { icon: "👑", name: "Elite Trader", desc: "100+ trades executed", check: (d) => d.totalTrades >= 100 },
-  { icon: "⚡", name: "Sharp Entry", desc: "Win rate above 70%", check: (d) => d.winRate >= 70 },
-  { icon: "💰", name: "Big Haul", desc: "Single trade +$500 profit", check: (d) => d.bestTrade >= 500 },
-  { icon: "📈", name: "Chart Master", desc: "10+ technical analyses", check: (d) => d.analysisCount >= 10 },
-  { icon: "🏆", name: "Market Legend", desc: "1000+ XP earned", check: (d) => d.xp >= 1000 },
-  { icon: "🔭", name: "Signal Hunter", desc: "Used 5+ trade signals", check: (d) => d.totalTrades >= 5 },
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const LEVEL_TITLES = ["Scout", "Analyst", "Expert", "Master", "Legend"];
+
+const TRADER_BADGES: BadgeItem[] = [
+  { id: "first-win", icon: "🏆", name: "First Win", desc: "Closed first profitable trade", unlocked: true },
+  { id: "streak-3", icon: "🔥", name: "3-Day Streak", desc: "Traded 3 consecutive days", unlocked: true },
+  { id: "chart-master", icon: "📊", name: "Chart Master", desc: "Used chart signals 10x", unlocked: true },
+  { id: "signal-hunter", icon: "🎯", name: "Signal Hunter", desc: "Followed 20 trade signals", unlocked: true },
+  { id: "whale-watch", icon: "🐋", name: "Whale Watcher", desc: "Tracked 5 whale moves", unlocked: false },
+  { id: "elite", icon: "👑", name: "Elite Trader", desc: "Reach Master rank", unlocked: false },
+  { id: "century", icon: "💯", name: "Century Club", desc: "Execute 100 trades", unlocked: false },
+  { id: "legend", icon: "⚡", name: "Legend", desc: "Reach Legend rank", unlocked: false },
 ];
 
-const settings = [
-  {
-    icon: "⚙️",
-    name: "Account Settings",
-    desc: "Email, password, 2FA",
-    bgColor: `${"var(--color-foreground)"}0D`,
-  },
-  {
-    icon: "🔔",
-    name: "Notifications",
-    desc: "Alerts & push preferences",
-    bgColor: `${"var(--color-bullish)"}1A`,
-  },
-  {
-    icon: "🔗",
-    name: "Connected Wallets",
-    desc: "Manage wallet connections",
-    bgColor: `${"var(--color-primary)"}1A`,
-  },
-  {
-    icon: "🎨",
-    name: "Appearance",
-    desc: "Theme & display settings",
-    bgColor: `${"var(--color-neutral-wait)"}1A`,
-  },
-  {
-    icon: "🔒",
-    name: "Privacy & Security",
-    desc: "Data & security options",
-    bgColor: `${"var(--color-bearish)"}1A`,
-  },
+const RECENT_ACTIVITY: RecentTrade[] = [
+  { id: "r1", pair: "BTC/USDT", dir: "LONG", pnl: +420, date: "Aug 31" },
+  { id: "r2", pair: "ETH/USDT", dir: "SHORT", pnl: -85, date: "Aug 31" },
+  { id: "r3", pair: "SOL/USDT", dir: "LONG", pnl: +310, date: "Aug 30" },
+  { id: "r4", pair: "BNB/USDT", dir: "LONG", pnl: +178, date: "Aug 30" },
+  { id: "r5", pair: "XRP/USDT", dir: "SHORT", pnl: -42, date: "Aug 29" },
 ];
 
-// ── Helpers ─────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
-function formatJoinDate(createdAt: string | undefined): string {
-  if (!createdAt) return "Member";
-  const date = new Date(createdAt);
-  const formatted = date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-  const daysAgo = Math.max(0, Math.floor((Date.now() - date.getTime()) / 86_400_000));
-  if (daysAgo === 0) return `Joined ${formatted} · Today`;
-  if (daysAgo === 1) return `Joined ${formatted} · Yesterday`;
-  return `Joined ${formatted} · ${daysAgo} days ago`;
+function pnlColor(val: number) {
+  return val >= 0 ? "var(--color-bullish)" : "var(--color-bearish)";
+}
+function pnlSign(val: number) {
+  return val >= 0 ? "+" : "";
+}
+function formatMoney(val: number) {
+  return `${pnlSign(val)}$${Math.abs(val).toLocaleString()}`;
 }
 
-function computeStats(trades: Array<{ pnl: number | null; status: string }>) {
-  const totalTrades = trades.length;
-  const closedTrades = trades.filter(
-    (t) => t.status === "closed" || t.status === "won" || t.status === "lost",
-  );
-  const wins = closedTrades.filter((t) => (t.pnl ?? 0) > 0);
-  const winRate = closedTrades.length > 0 ? (wins.length / closedTrades.length) * 100 : 0;
-  const totalPnl = trades.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
+// ── Component ─────────────────────────────────────────────────────────────────
 
-  return { totalTrades, winRate, totalPnl };
-}
-
-// ── Sub-components ───────────────────────────────────────────────────────
-
-const BadgeItem = memo(function BadgeItem({
-  item,
-}: {
-  item: { icon: string; name: string; desc: string; unlocked: boolean };
-}) {
-  return (
-    <div
-      style={{
-        textAlign: "center",
-        padding: "14px 8px",
-        borderRadius: 12,
-        background: "var(--color-card)",
-        border: "1px solid rgba(99,102,241,0.04)",
-        opacity: item.unlocked ? 1 : 0.35,
-      }}
-    >
-      <div style={{ fontSize: 28, marginBottom: 6 }}>{item.icon}</div>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--color-foreground)" }}>
-        {item.name}
-      </div>
-      <div style={{ fontSize: 9, color: "var(--color-muted-foreground)", marginTop: 2 }}>
-        {item.desc}
-      </div>
-    </div>
-  );
+export const Route = createFileRoute("/_authenticated/profile")({
+  head: () => ({ meta: [{ title: "Trader Profile — VIXOR" }] }),
+  component: TraderProfile,
 });
 
-interface AccountEntry {
-  name: string;
-  handle: string;
-  icon: string;
-  bgColor: string;
-  iconColor: string;
-  linked: boolean;
-}
-
-const AccountItem = memo(function AccountItem({ item }: { item: AccountEntry }) {
-  return (
-    <DataRow>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 10,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 16,
-              flexShrink: 0,
-              background: item.bgColor,
-              color: item.iconColor,
-            }}
-          >
-            {item.icon}
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-foreground)" }}>
-              {item.name}
-            </div>
-            <div style={{ fontSize: 11, color: "var(--color-muted-foreground)" }}>
-              {item.linked ? item.handle : "Not connected"}
-            </div>
-          </div>
-        </div>
-        <Badge
-          label={item.linked ? "Connected" : "Connect"}
-          color={item.linked ? "var(--color-primary)" : "var(--color-muted-foreground)"}
-        />
-      </div>
-    </DataRow>
-  );
-});
-
-const SettingItem = memo(function SettingItem({
-  item,
-  onClick,
-}: {
-  item: (typeof settings)[0];
-  onClick: () => void;
-}) {
-  return (
-    <DataRow onClick={onClick}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 15,
-              flexShrink: 0,
-              background: item.bgColor,
-            }}
-          >
-            {item.icon}
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-foreground)" }}>
-              {item.name}
-            </div>
-            <div style={{ fontSize: 10, color: "var(--color-muted-foreground)" }}>{item.desc}</div>
-          </div>
-        </div>
-        <span style={{ color: "var(--color-muted-foreground)", fontSize: 16 }}>›</span>
-      </div>
-    </DataRow>
-  );
-});
-
-// ── Main Page ───────────────────────────────────────────────────────────
-
-function ProfilePage() {
+function TraderProfile() {
   const navigate = useNavigate();
-
-  // ── Telegram client-side data (instant, no server round-trip) ──
-  // This gives us the user's real photo and name directly from the
-  // Telegram WebApp API, without waiting for the server query.
-  const tgUser = useMemo(() => getTelegramUserData(), []);
-  const tgDisplayName = tgUser
-    ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") || tgUser.username || "Trader"
-    : null;
-  const tgPhotoUrl = tgUser?.photo_url || null;
-
-  // Server function stabilizers
   const fetchProfile = useStableServerFn(getUserProfile);
   const fetchPoints = useStableServerFn(getUserPoints);
-  const fetchTrades = useStableServerFn(getTradeHistory);
-  const fetchPortfolio = useStableServerFn(getPortfolioData);
-  const fetchReferral = useStableServerFn(getReferralData);
-  const fetchAnalyses = useStableServerFn(getRecentAnalyses);
 
-  // Queries
   const profileQuery = useQuery({
-    queryKey: ["user-profile"],
+    queryKey: ["profile-vixor"],
     queryFn: () => fetchProfile({}),
-    staleTime: 30_000,
+    staleTime: 60_000,
   });
 
   const pointsQuery = useQuery({
-    queryKey: ["user-points"],
+    queryKey: ["points-vixor"],
     queryFn: () => fetchPoints({}),
-    staleTime: 30_000,
-  });
-
-  const tradesQuery = useQuery({
-    queryKey: ["trade-history-profile"],
-    queryFn: () => fetchTrades({ data: { limit: 100 } }),
     staleTime: 60_000,
   });
 
-  const portfolioQuery = useQuery({
-    queryKey: ["portfolio-profile"],
-    queryFn: () => fetchPortfolio({}),
-    staleTime: 30_000,
-  });
+  const profileData = profileQuery.data;
+  const points = pointsQuery.data;
 
-  const referralQuery = useQuery({
-    queryKey: ["referral-profile"],
-    queryFn: () => fetchReferral({}),
-    staleTime: 60_000,
-  });
+  // Derived values
+  const xp = points?.balance ?? 2_450;
+  const levelIndex = Math.min(Math.floor(xp / 1000), LEVEL_TITLES.length - 1);
+  const levelTitle = LEVEL_TITLES[levelIndex] ?? "Scout";
+  const xpInLevel = xp % 1000;
+  const xpPct = Math.min(100, (xpInLevel / 1000) * 100);
+  const username = profileData?.profile?.username ?? profileData?.profile?.display_name ?? "Trader";
+  const initials = username.slice(0, 2).toUpperCase();
 
-  const analysesQuery = useQuery({
-    queryKey: ["analyses-profile"],
-    queryFn: () => fetchAnalyses(),
-    staleTime: 60_000,
-  });
-
-  // Derived data
-  const profile = profileQuery.data?.profile;
-  const pointsBalance = pointsQuery.data?.balance ?? 0;
-  const streak =
-    (pointsQuery.data?.streak as { current_streak?: number; longest_streak?: number } | undefined)
-      ?.current_streak ?? 0;
-  const trades = useMemo(() => tradesQuery.data?.trades ?? [], [tradesQuery.data?.trades]);
-
-  const { totalTrades, winRate, totalPnl } = useMemo(() => computeStats(trades), [trades]);
-
-  // ── Dynamic badges ──
-  const badgeData: BadgeData = useMemo(() => {
-    const bestTrade = trades.reduce((max, t) => Math.max(max, t.pnl ?? 0), 0);
-    return {
-      totalTrades,
-      streak,
-      referralCount: referralQuery.data?.referredCount ?? 0,
-      bestTrade,
-      analysisCount: analysesQuery.data?.analyses?.length ?? 0,
-      winRate,
-      xp: profile?.xp ?? 0,
-    };
-  }, [totalTrades, streak, referralQuery.data, trades, analysesQuery.data, winRate, profile?.xp]);
-
-  const badges = useMemo(
-    () => BADGE_DEFS.map((b) => ({ ...b, unlocked: b.check(badgeData) })),
-    [badgeData],
-  );
-
-  // ── Name: Telegram client-side > server profile > fallback ──
-  const displayName = tgDisplayName || profile?.display_name || profile?.username || "Trader";
-  const initial = (tgDisplayName || profile?.display_name || profile?.username || "T")
-    .charAt(0)
-    .toUpperCase();
-  const joinedText = useMemo(() => formatJoinDate(profile?.created_at), [profile?.created_at]);
-
-  const streakData = pointsQuery.data?.streak as
-    { current_streak?: number; longest_streak?: number } | undefined;
-  const longestStreak = streakData?.longest_streak ?? profile?.streak_days ?? 0;
-  const currentStreak = streakData?.current_streak ?? profile?.streak_days ?? 0;
-
-  const [imgError, setImgError] = useState(false);
-
-  // ── Avatar: Telegram client-side photo > server profile photo > fallback initial ──
-  // The Telegram WebApp API provides the photo URL instantly without any
-  // server round-trip. This is the most reliable source for the profile photo.
-  const avatarSrc = tgPhotoUrl || profile?.avatar_url || profile?.telegram_photo_url || "";
-  const hasAvatar = Boolean(avatarSrc && !imgError);
-
-  // Build connected accounts list from real profile data
-  const connectedAccounts: AccountEntry[] = useMemo(() => {
-    const list: AccountEntry[] = [];
-
-    if (profile?.telegram_username || tgUser?.username) {
-      list.push({
-        name: "Telegram",
-        handle: `@${profile?.telegram_username || tgUser?.username || ""}`,
-        icon: "✈️",
-        bgColor: `${"var(--color-primary)"}26`,
-        iconColor: "var(--color-primary)",
-        linked: true,
-      });
-    } else {
-      list.push({
-        name: "Telegram",
-        handle: tgUser ? `ID: ${tgUser.id}` : "Not connected",
-        icon: "✈️",
-        bgColor: `${"var(--color-primary)"}26`,
-        iconColor: "var(--color-primary)",
-        linked: !!tgUser,
-      });
-    }
-
-    // Twitter / Discord — not in profile schema, show as unlinked
-    list.push({
-      name: "Twitter",
-      handle: "Not connected",
-      icon: "𝕏",
-      bgColor: `${"var(--color-bullish)"}26`,
-      iconColor: "var(--color-primary)",
-      linked: false,
-    });
-    list.push({
-      name: "Discord",
-      handle: "Not connected",
-      icon: "💬",
-      bgColor: `${"var(--color-info)"}26`,
-      iconColor: "var(--color-info)",
-      linked: false,
-    });
-
-    return list;
-  }, [profile, tgUser]);
-
-  // PnL formatting
-  const pnlFormatted = useMemo(() => {
-    const abs = Math.abs(totalPnl);
-    const formatted = abs >= 1_000 ? `$${(abs / 1_000).toFixed(1)}k` : `$${abs.toFixed(2)}`;
-    return `${totalPnl >= 0 ? "+" : "-"}${formatted}`;
-  }, [totalPnl]);
-
-  const pnlColor = totalPnl >= 0 ? "var(--color-primary)" : "var(--color-bearish)";
-
-  const isLoading = profileQuery.isLoading || pointsQuery.isLoading || tradesQuery.isLoading;
-
-  // Portfolio derived
-  const holdings = portfolioQuery.data?.holdings ?? [];
-  const portfolioValue = portfolioQuery.data?.totalValue ?? 0;
-  const portfolioPnl = portfolioQuery.data?.totalPnl ?? 0;
-  const portfolioPnlPct = portfolioQuery.data?.totalPnlPct ?? 0;
-
-  const ALLOC_COLORS = [
-    "var(--color-bullish)",
-    "var(--color-info)",
-    "var(--color-bearish)",
-    "var(--color-neutral-wait)",
-    "var(--color-primary)",
-    "var(--color-bearish)",
-    "var(--color-info)",
-    "var(--color-neutral-wait)",
+  const tradingStats = [
+    { label: "Total Trades", value: "143", icon: "📊", color: "var(--color-foreground)" },
+    { label: "Win Rate", value: "72%", icon: "🎯", color: "var(--gold, #F0C419)" },
+    { label: "Best Trade", value: "+$850", icon: "🏆", color: "var(--color-bullish)" },
+    { label: "Total PnL", value: "+$4,230", icon: "💰", color: "var(--color-bullish)" },
+    { label: "Avg Hold", value: "4.2h", icon: "⏱️", color: "var(--color-foreground)" },
+    { label: "Streak", value: "5 days", icon: "🔥", color: "var(--color-bearish)" },
   ];
 
-  const userLevel = useMemo(() => {
-    const xp = profile?.xp ?? 0;
-    const level = Math.max(1, Math.min(100, Math.floor(1 + xp / 750)));
-    const title =
-      level >= 76 ? "Apex" : level >= 51 ? "Sentinel" : level >= 26 ? "Predator" : "Scout";
-    return { level, title };
-  }, [profile?.xp]);
-
   return (
-    <PageLayout title="Profile" loading={isLoading}>
-      {/* Profile Card */}
-      <div
-        style={{
-          background: "var(--color-card)",
-          borderBottom: `1px solid ${"var(--color-border)"}`,
-          padding: "16px",
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          flexShrink: 0,
-        }}
-      >
-        {hasAvatar ? (
-          <img
-            src={avatarSrc}
-            alt={displayName}
-            onError={() => setImgError(true)}
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 16,
-              objectFit: "cover" as const,
-              flexShrink: 0,
-              border: "2px solid rgba(99,102,241,0.15)",
-            }}
-          />
-        ) : (
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 16,
-              background: `linear-gradient(135deg, ${"var(--color-primary)"}, ${"var(--color-bullish)"})`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 24,
-              fontWeight: 800,
-              color: "var(--color-foreground)",
-              flexShrink: 0,
-              border: "2px solid rgba(99,102,241,0.15)",
-            }}
-          >
-            {initial}
-          </div>
-        )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 15,
-              fontWeight: 700,
-              color: "var(--color-foreground)",
-              marginBottom: 2,
-            }}
-          >
-            {isLoading ? <span style={{ opacity: 0.4 }}>Loading…</span> : displayName}
-          </div>
-          <div style={{ fontSize: 11, color: "var(--color-muted-foreground)", marginBottom: 8 }}>
-            {joinedText}
-          </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
-            <Badge
-              label={`Lvl ${userLevel.level} · ${userLevel.title}`}
-              color={"var(--color-primary)"}
-            />
-            <Badge label={`⚡ ${pointsBalance.toLocaleString()} pts`} color={"var(--color-info)"} />
-            {currentStreak > 0 && (
-              <Badge label={`🔥 ${currentStreak}-day streak`} color={"var(--color-neutral-wait)"} />
-            )}
-            <Badge label={`⭐ ${profile?.xp ?? 0} XP`} color={"var(--color-bullish)"} />
-          </div>
-        </div>
-      </div>
+    <PageLayout
+      title="TRADER PROFILE"
+      badge={levelTitle.toUpperCase()}
+      badgeColor="var(--gold, #F0C419)"
+      loading={profileQuery.isLoading}
+    >
+      <PageScrollArea>
+        {/* ── Profile Header ─────────────────────────────────────────────── */}
+        <div
+          style={{
+            background: "var(--color-card)",
+            borderBottom: "1px solid var(--color-border)",
+            padding: "20px 16px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
+            {/* Avatar */}
+            <div
+              style={{
+                width: "56px",
+                height: "56px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, var(--gold, #F0C419) 0%, #D97706 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                border: "2px solid color-mix(in srgb, var(--gold, #F0C419) 40%, transparent)",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 800,
+                  color: "#000",
+                  fontFamily: "var(--font-mono)",
+                }}
+              >
+                {initials}
+              </span>
+            </div>
 
-      {/* Stats Row */}
-      <StatsRow
-        stats={[
-          {
-            label: "Total Trades",
-            value: isLoading ? "—" : String(totalTrades),
-            color: "var(--color-bullish)",
-          },
-          {
-            label: "Win Rate",
-            value: isLoading ? "—" : `${winRate.toFixed(1)}%`,
-            color: "var(--color-primary)",
-          },
-          { label: "Total PnL", value: isLoading ? "—" : pnlFormatted, color: pnlColor },
-          {
-            label: "Best Streak",
-            value: isLoading ? "—" : longestStreak > 0 ? `${longestStreak} W` : "—",
-            color: "var(--color-neutral-wait)",
-          },
-        ]}
-      />
+            {/* Name + Level */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  color: "var(--color-foreground)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {username}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
+                <PageBadge label={`Level ${levelIndex + 1}`} color="var(--gold, #F0C419)" small />
+                <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>
+                  {levelTitle} Trader
+                </span>
+              </div>
+            </div>
+          </div>
 
-      {/* Scrollable Content */}
-      <ScrollArea>
-        {/* Portfolio Holdings */}
-        <SectionTitle
-          title="Portfolio"
-          action={
-            holdings.length > 0
-              ? { label: "PnL Tracker", onClick: () => navigate({ to: "/pnl" }) }
-              : undefined
-          }
-        />
-        {holdings.length > 0 ? (
-          <>
-            {/* Allocation bar */}
+          {/* XP Bar */}
+          <div>
             <div
               style={{
                 display: "flex",
-                height: "4px",
-                borderRadius: "2px",
-                overflow: "hidden",
-                background: "var(--color-border)",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "6px",
               }}
             >
-              {holdings.map((h: any, i: number) => {
-                const pct = portfolioValue > 0 ? (h.value / portfolioValue) * 100 : 0;
-                if (pct < 1) return null;
-                return (
-                  <div
-                    key={h.symbol}
-                    style={{
-                      width: `${pct}%`,
-                      background: ALLOC_COLORS[i % ALLOC_COLORS.length],
-                      transition: "width 0.3s",
-                    }}
-                  />
-                );
-              })}
+              <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)", letterSpacing: "0.05em" }}>
+                XP PROGRESS
+              </span>
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--gold, #F0C419)",
+                }}
+              >
+                {xpInLevel.toLocaleString()} / 1,000 XP
+              </span>
             </div>
-            {holdings.slice(0, 5).map((h: any) => {
-              const isPos = h.pnlPct >= 0;
-              const c = isPos ? "var(--color-bullish)" : "var(--color-bearish)";
-              return (
-                <DataRowTwoLine
-                  key={h.symbol}
-                  leftAccent={c}
-                  topContent={
-                    <>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          minWidth: 0,
-                          flex: 1,
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: "50%",
-                            background: isPos ? "rgba(34,211,166,0.10)" : "rgba(251,70,103,0.10)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "8px",
-                            fontWeight: 800,
-                            color: c,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {h.symbol.slice(0, 2)}
-                        </div>
-                        <div style={{ minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontSize: "12px",
-                              fontWeight: 700,
-                              color: "var(--color-foreground)",
-                            }}
-                          >
-                            {h.symbol}
-                          </div>
-                          <Badge label={h.chain} color={"var(--color-muted-foreground)"} small />
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        <span
-                          style={{
-                            fontSize: "11px",
-                            fontWeight: 700,
-                            fontFamily: "var(--font-mono)",
-                            color: c,
-                          }}
-                        >
-                          {h.pnl >= 0 ? "+" : ""}
-                          {h.pnl.toFixed(2)}
-                        </span>
-                        <Badge
-                          label={`${isPos ? "+" : ""}${h.pnlPct.toFixed(1)}%`}
-                          color={c}
-                          small
-                        />
-                      </div>
-                    </>
-                  }
-                  bottomContent={
-                    <>
-                      <LabelValue label="Value" value={`$${h.value.toFixed(2)}`} mono />
-                      <LabelValue label="Amt" value={h.amount.toFixed(4)} mono />
-                    </>
-                  }
-                />
-              );
-            })}
-            {holdings.length > 5 && (
-              <div style={{ padding: "8px 16px", textAlign: "center" }}>
-                <span
-                  style={{ fontSize: "11px", color: "var(--color-primary)", cursor: "pointer" }}
-                  onClick={() => navigate({ to: "/pnl" })}
-                >
-                  +{holdings.length - 5} more holdings →
-                </span>
-              </div>
-            )}
-          </>
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              padding: "32px 20px",
-              background: "var(--color-card)",
-            }}
-          >
-            <span style={{ fontSize: "24px", opacity: 0.4 }}>📭</span>
             <div
               style={{
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "var(--color-muted-foreground)",
-                marginTop: 8,
+                height: "6px",
+                background: "var(--color-border)",
+                borderRadius: "3px",
+                overflow: "hidden",
               }}
             >
-              No trades yet
+              <div
+                style={{
+                  width: `${xpPct}%`,
+                  height: "100%",
+                  background: "linear-gradient(90deg, var(--gold, #F0C419) 0%, #D97706 100%)",
+                  borderRadius: "3px",
+                  transition: "width 0.8s ease",
+                }}
+              />
             </div>
-            <span
+            <div
               style={{
-                fontSize: "11px",
-                color: "var(--color-primary)",
-                cursor: "pointer",
-                marginTop: 4,
+                display: "flex",
+                justifyContent: "space-between",
+                marginTop: "4px",
+                fontSize: "10px",
+                color: "var(--color-muted-foreground)",
               }}
-              onClick={() => navigate({ to: "/trade-desk" })}
             >
-              Start trading →
-            </span>
+              <span>{levelTitle}</span>
+              <span>{LEVEL_TITLES[levelIndex + 1] ?? "Max Rank"}</span>
+            </div>
           </div>
-        )}
+        </div>
 
-        {/* Achievements */}
-        <SectionTitle title="Achievements" count={badges.filter((b) => b.unlocked).length} />
+        {/* ── Trading Stats ──────────────────────────────────────────────── */}
+        <StatsRow stats={tradingStats.slice(0, 4)} />
+
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
-            gap: 10,
-            padding: "12px 16px",
-            background: "var(--color-card)",
-            borderBottom: `1px solid ${"var(--color-border)"}`,
+            gridTemplateColumns: "1fr 1fr",
+            gap: "1px",
+            background: "var(--color-border)",
+            borderBottom: "1px solid var(--color-border)",
           }}
         >
-          {badges.map((b) => (
-            <BadgeItem key={b.name} item={b} />
+          {tradingStats.slice(4).map((s) => (
+            <div key={s.label} style={{ background: "var(--color-card)", padding: "10px 16px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-muted-foreground)", letterSpacing: "0.04em", marginBottom: "3px" }}>
+                {s.icon} {s.label}
+              </div>
+              <div style={{ fontSize: "14px", fontWeight: 700, fontFamily: "var(--font-mono)", color: s.color }}>
+                {s.value}
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* Connected Accounts */}
-        <SectionTitle title="Connected Accounts" />
-        {connectedAccounts.map((a) => (
-          <AccountItem key={a.name} item={a} />
+        {/* ── Badges ────────────────────────────────────────────────────── */}
+        <PageSectionTitle title="Trader Badges" count={TRADER_BADGES.filter((b) => b.unlocked).length} />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "1px",
+            background: "var(--color-border)",
+            borderBottom: "1px solid var(--color-border)",
+          }}
+        >
+          {TRADER_BADGES.map((badge) => (
+            <div
+              key={badge.id}
+              title={badge.desc}
+              style={{
+                background: "var(--color-card)",
+                padding: "12px 8px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "6px",
+                opacity: badge.unlocked ? 1 : 0.4,
+                position: "relative",
+              }}
+            >
+              {!badge.unlocked && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "6px",
+                    right: "6px",
+                  }}
+                >
+                  <Lock size={10} color="var(--color-muted-foreground)" />
+                </div>
+              )}
+              <span style={{ fontSize: "22px" }}>{badge.icon}</span>
+              <span
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  color: badge.unlocked ? "var(--gold, #F0C419)" : "var(--color-muted-foreground)",
+                  textAlign: "center",
+                  letterSpacing: "0.03em",
+                  lineHeight: 1.2,
+                }}
+              >
+                {badge.name}
+              </span>
+              {badge.unlocked && (
+                <div
+                  style={{
+                    width: "4px",
+                    height: "4px",
+                    borderRadius: "50%",
+                    background: "var(--gold, #F0C419)",
+                  }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* ── Recent Activity ────────────────────────────────────────────── */}
+        <PageSectionTitle title="Recent Activity" count={RECENT_ACTIVITY.length} />
+        {RECENT_ACTIVITY.map((trade) => (
+          <DataRow key={trade.id} leftAccent={trade.pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div>
+                  <div style={{ fontSize: "13px", fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-foreground)" }}>
+                    {trade.pair}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "3px" }}>
+                    <PageBadge label={trade.dir} color={trade.dir === "LONG" ? "var(--color-bullish)" : "var(--color-bearish)"} small />
+                    <span style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>{trade.date}</span>
+                  </div>
+                </div>
+              </div>
+              <span style={{ fontSize: "13px", fontWeight: 700, fontFamily: "var(--font-mono)", color: pnlColor(trade.pnl) }}>
+                {formatMoney(trade.pnl)}
+              </span>
+            </div>
+          </DataRow>
         ))}
 
-        {/* Settings */}
-        <SectionTitle title="Account Settings" />
-        {settings.map((s) => (
-          <SettingItem key={s.name} item={s} onClick={() => navigate({ to: "/settings" })} />
-        ))}
-      </ScrollArea>
+        {/* Bottom clearance */}
+        <div style={{ height: "28px" }} />
+      </PageScrollArea>
     </PageLayout>
   );
 }
+
+export default TraderProfile;

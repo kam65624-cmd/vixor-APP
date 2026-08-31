@@ -1,746 +1,434 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { memo, useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getDashboardData, getHomeMarketData } from "@/shared/data";
-import type { HomeMarketData, HomeTickerItem } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { getMe } from "@/domains/user/functions";
-import { useLivePrices } from "@/shared/market-data";
-import { LiveDot } from "@/components/vixor/LiveDot";
-import { MoxiCharacter3D } from "@/components/vixor/MoxiCharacter3D";
-import { Card, CardGradientOverlay } from "@/components/ui/card";
-// VIXOR quick action prompts (Trader skin)
-const VIXOR_QUICK_ACTIONS = [
-  { id: "scan", icon: "Activity", label: "Market Scan", prompt: "Run a full market scan across top 20 pairs" },
-  { id: "signals", icon: "Radio", label: "Live Signals", prompt: "Show me the highest confidence trade signals right now" },
-  { id: "entry", icon: "Target", label: "Find Entry", prompt: "Find optimal entry points for BTC and ETH" },
-  { id: "pnl", icon: "PieChart", label: "PnL Review", prompt: "Analyze my portfolio performance and suggest improvements" },
-];
-import { AnimatedNumber } from "@/components/vixor/animations/AnimatedNumber";
+import { getDashboardData } from "@/shared/data";
+import { useLivePrices } from "@/shared/market-data/use-live-prices";
 import {
-  TrendingUp,
-  Bot,
-  Zap,
-  ChevronRight,
-  LineChart,
-  Eye,
-  Radio,
-  Activity,
-  Globe,
-  Crown,
-  RefreshCw,
-  Shield,
-  Sparkles,
-  Send,
-  Target,
-  Bell,
-  PieChart,
-  ArrowUpRight,
-  ArrowDownRight,
-  AlertTriangle,
-  Compass,
-  Signal,
-  Wallet,
-} from "lucide-react";
-import { motion } from "framer-motion";
-import { SmartTabs } from "@/components/vixor/SmartTabs";
-import type { SmartTabKey } from "@/components/vixor/SmartTabs";
-import { UnifiedFeed } from "@/components/vixor/UnifiedFeed";
-import { SmartBottomSheet } from "@/components/vixor/SmartBottomSheet";
+  PageLayout,
+  PageScrollArea,
+  StatsRow,
+  PageSectionTitle,
+  DataRow,
+  PageBadge,
+} from "@/components/vixor/PageLayout";
+import { BarChart2, TrendingUp, TrendingDown, ChevronRight, Zap, Activity } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/")({
-  head: () => ({ meta: [{ title: "VIXOR — Institutional Trading Terminal" }] }),
-  component: HomePageV3,
+  head: () => ({ meta: [{ title: "Trader Dashboard — VIXOR" }] }),
+  component: TraderDashboard,
 });
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ── Mock Data ──────────────────────────────────────────────────────────────────
 
-function getGreeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return "Good Morning";
-  if (h < 17) return "Good Afternoon";
-  return "Good Evening";
-}
+const RECENT_TRADES = [
+  { id: "t1", pair: "BTC/USDT", dir: "LONG", pnl: +420, pnlPct: +2.1, time: "14:32" },
+  { id: "t2", pair: "ETH/USDT", dir: "SHORT", pnl: -85, pnlPct: -0.9, time: "13:15" },
+  { id: "t3", pair: "SOL/USDT", dir: "LONG", pnl: +310, pnlPct: +4.3, time: "11:50" },
+  { id: "t4", pair: "BNB/USDT", dir: "LONG", pnl: +178, pnlPct: +1.6, time: "10:22" },
+  { id: "t5", pair: "XRP/USDT", dir: "SHORT", pnl: -42, pnlPct: -0.5, time: "09:05" },
+];
 
-function getMoxiGreeting(): string {
-  const h = new Date().getHours();
-  if (h < 6) return "Burning the midnight oil? Let me check what moved while you slept.";
-  if (h < 12) return "Markets are waking up. Here is what I am watching right now.";
-  if (h < 17) return "Session is active. Let me catch you up on the moves.";
-  return "Wrapping up the session. Here is your end-of-day brief.";
-}
+const QUICK_ACTIONS = [
+  { id: "chart", label: "Open Chart", icon: BarChart2, path: "/trade/chart" },
+  { id: "signals", label: "View Signals", icon: Activity, path: "/trade/signals" },
+  { id: "pnl", label: "Track PnL", icon: TrendingUp, path: "/trade/pnl" },
+  { id: "desk", label: "Trade Desk", icon: Zap, path: "/trade/" },
+];
 
-function fmtPrice(p: number): string {
-  if (p >= 1000) return `$${p.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
-  if (p >= 1) return `$${p.toFixed(4)}`;
-  if (p >= 0.001) return `$${p.toFixed(6)}`;
-  return `$${p.toFixed(8)}`;
-}
-
-function formatVolume(v: number): string {
-  if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
-  if (v >= 1e3) return `$${(v / 1e3).toFixed(2)}K`;
-  return `$${v.toFixed(0)}`;
-}
-
-// ─── Skeleton Shimmer ────────────────────────────────────────────────────────
-
-function Skeleton({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse bg-white/[0.04] rounded-lg ${className}`} />;
-}
-
-// ─── Icon map for quick action prompts ────────────────────────────────────────
-
-const QUICK_ACTION_ICONS: Record<string, React.ElementType> = {
-  Activity,
-  Radio,
-  Target,
-  Bell,
-  PieChart,
-  Sparkles,
+const DAILY_CHALLENGE = {
+  title: "Execute 3 profitable trades today",
+  progress: 2,
+  total: 3,
+  xp: 150,
+  desc: "2 of 3 targets completed",
 };
 
-// ─── Live Ticker Strip ───────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
-const TickerItem = memo(function TickerItem({
-  symbol,
-  price,
-  change24h,
-}: {
-  symbol: string;
-  price: number;
-  change24h: number;
-}) {
-  const isUp = change24h >= 0;
-  return (
-    <div className="flex items-center gap-2 px-4 py-2.5 shrink-0">
-      <span className="text-xs font-bold text-foreground/70 tracking-wide">{symbol}</span>
-      <span className="text-xs font-mono font-semibold text-foreground/90">{fmtPrice(price)}</span>
-      <span
-        className={`text-xs font-bold font-mono flex items-center gap-0.5 ${isUp ? "text-bullish" : "text-bearish"}`}
-      >
-        {isUp ? "+" : ""}
-        {change24h.toFixed(2)}%
-      </span>
-    </div>
-  );
-});
-
-const MarketTicker = memo(function MarketTicker({
-  data,
-  isLoading,
-}: {
-  data?: HomeMarketData;
-  isLoading?: boolean;
-}) {
-  if (isLoading) {
-    return (
-      <div className="w-full border-y border-[var(--color-border-subtle)] bg-[var(--color-card)] py-2">
-        <div className="flex gap-6 px-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-5 w-28 shrink-0" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!data?.tickers?.length) return null;
-  const repeated = [...data.tickers, ...data.tickers, ...data.tickers];
-
-  return (
-    <div className="relative w-full overflow-hidden border-y border-[var(--color-border-subtle)] bg-[var(--color-card)]">
-      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[var(--color-card)] to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[var(--color-card)] to-transparent z-10 pointer-events-none" />
-      <div className="flex animate-ticker" style={{ animation: "ticker 40s linear infinite" }}>
-        {repeated.map((t, i) => (
-          <TickerItem key={`${t.symbol}-${i}`} {...t} />
-        ))}
-      </div>
-      <style>{`
-        @keyframes ticker {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-33.33%); }
-        }
-      `}</style>
-    </div>
-  );
-});
-
-// ─── Market Stat Pill ───────────────────────────────────────────────────────
-
-function MarketStatPill({
-  icon: Icon,
-  label,
-  value,
-  accent = "var(--color-primary)",
-  isLoading,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value?: string;
-  accent?: string;
-  isLoading?: boolean;
-}) {
-  return (
-    <div className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] p-3.5 transition-all hover:border-primary/20 hover:shadow-[var(--shadow-card-glow)]">
-      <CardGradientOverlay />
-      <div className="relative flex items-center gap-2.5">
-        <div
-          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: `color-mix(in srgb, ${accent} 10%, transparent)` }}
-        >
-          <Icon size={14} style={{ color: accent }} />
-        </div>
-        <div className="min-w-0">
-          <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-            {label}
-          </div>
-          {isLoading ? (
-            <Skeleton className="h-4 w-16 mt-1" />
-          ) : (
-            <div className="text-[14px] font-bold font-mono text-foreground truncate mt-0.5">
-              {value || "—"}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+function pnlColor(val: number) {
+  return val >= 0 ? "var(--color-bullish)" : "var(--color-bearish)";
 }
 
-// ─── Insight Card ───────────────────────────────────────────────────────────
-
-function InsightCard({
-  title,
-  description,
-  type,
-  actionLabel,
-  onAction,
-}: {
-  title: string;
-  description: string;
-  type: "bullish" | "bearish" | "neutral" | "alert";
-  actionLabel?: string;
-  onAction?: () => void;
-}) {
-  const config = {
-    bullish: {
-      color: "var(--color-bullish)",
-      gradient: "from-[rgba(34,211,166,0.1)] via-transparent to-transparent",
-      borderColor: "rgba(34,211,166,0.2)",
-      glowColor: "rgba(34,211,166,0.15)",
-      Icon: TrendingUp,
-      badge: "BULLISH",
-    },
-    bearish: {
-      color: "var(--color-bearish)",
-      gradient: "from-[rgba(251,70,103,0.1)] via-transparent to-transparent",
-      borderColor: "rgba(251,70,103,0.2)",
-      glowColor: "rgba(251,70,103,0.15)",
-      Icon: ArrowDownRight,
-      badge: "BEARISH",
-    },
-    neutral: {
-      color: "var(--color-primary)",
-      gradient: "from-[rgba(99,102,241,0.1)] via-transparent to-transparent",
-      borderColor: "rgba(99,102,241,0.2)",
-      glowColor: "rgba(99,102,241,0.15)",
-      Icon: Bot,
-      badge: "NEUTRAL",
-    },
-    alert: {
-      color: "var(--color-neutral-wait)",
-      gradient: "from-[rgba(245,158,11,0.1)] via-transparent to-transparent",
-      borderColor: "rgba(245,158,11,0.2)",
-      glowColor: "rgba(245,158,11,0.15)",
-      Icon: AlertTriangle,
-      badge: "ALERT",
-    },
-  };
-
-  const c = config[type];
-  const TypeIcon = c.Icon;
-
-  return (
-    <motion.div
-      whileHover={{ y: -4, scale: 1.01 }}
-      transition={{ duration: 0.2 }}
-      className={"relative overflow-hidden rounded-3xl p-5 bg-gradient-to-br " + c.gradient}
-      style={{
-        border: "1px solid " + c.borderColor,
-        boxShadow: "0 8px 40px " + c.glowColor,
-      }}
-    >
-      <div
-        className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-[60px] animate-pulse pointer-events-none"
-        style={{ background: c.glowColor }}
-      />
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div
-              className="p-2.5 rounded-2xl"
-              style={{
-                background: "color-mix(in srgb, " + c.color + " 12%, transparent)",
-                border: "1px solid " + c.borderColor,
-                boxShadow: "0 0 24px " + c.glowColor,
-              }}
-            >
-              <TypeIcon size={18} style={{ color: c.color, strokeWidth: 2.2 }} />
-            </div>
-            <div>
-              <h4 className="text-[13px] font-bold text-foreground">{title}</h4>
-              <span className="text-[10px] flex items-center gap-1" style={{ color: c.color }}>
-                <span
-                  className="w-1.5 h-1.5 rounded-full animate-pulse"
-                  style={{ background: c.color }}
-                />
-                {type === "bullish"
-                  ? "Strong signal"
-                  : type === "alert"
-                    ? "High alert"
-                    : "Monitoring"}
-              </span>
-            </div>
-          </div>
-          <span
-            className="px-3 py-1 text-[10px] font-bold rounded-full"
-            style={{
-              background: "color-mix(in srgb, " + c.color + " 12%, transparent)",
-              color: c.color,
-              border: "1px solid " + c.borderColor,
-            }}
-          >
-            {c.badge}
-          </span>
-        </div>
-        <p
-          className="text-[12px] leading-relaxed"
-          style={{ color: "var(--color-muted-foreground)" }}
-        >
-          {description}
-        </p>
-        {actionLabel && (
-          <motion.button
-            onClick={onAction}
-            whileTap={{ scale: 0.95 }}
-            className="mt-4 px-5 py-2 text-[11px] font-bold rounded-xl flex items-center gap-2 cursor-pointer"
-            style={{
-              background: c.color,
-              color: "white",
-              boxShadow: "0 4px 20px " + c.glowColor,
-            }}
-          >
-            <Zap size={12} />
-            {actionLabel}
-          </motion.button>
-        )}
-      </div>
-    </motion.div>
-  );
+function pnlSign(val: number) {
+  return val >= 0 ? "+" : "";
 }
 
-// ─── Feature Card ───────────────────────────────────────────────────────────
-
-function FeatureCard({
-  icon: Icon,
-  title,
-  desc,
-  to,
-  accent = "var(--color-primary)",
-  badge,
-}: {
-  icon: React.ElementType;
-  title: string;
-  desc: string;
-  to: string;
-  accent?: string;
-  badge?: string;
-}) {
-  const navigate = useNavigate();
-  return (
-    <motion.button
-      onClick={() => navigate({ to: to as any })}
-      whileHover={{ y: -3, scale: 1.02 }}
-      whileTap={{ scale: 0.95 }}
-      className={"vx-card group relative w-full p-4 text-left overflow-hidden rounded-2xl"}
-      style={{
-        background: "color-mix(in srgb, " + accent + " 6%, var(--color-card))",
-        border: "1px solid color-mix(in srgb, " + accent + " 15%, transparent)",
-        cursor: "pointer",
-      }}
-    >
-      {badge && (
-        <span
-          className="absolute top-3 right-3 text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-lg z-10"
-          style={{
-            background: "color-mix(in srgb, " + accent + " 12%, transparent)",
-            color: accent,
-            border: "1px solid color-mix(in srgb, " + accent + " 20%, transparent)",
-          }}
-        >
-          {badge}
-        </span>
-      )}
-      <div
-        className="relative z-10 w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-transform duration-200 group-hover:scale-110"
-        style={{
-          background: "color-mix(in srgb, " + accent + " 10%, transparent)",
-          border: "1px solid color-mix(in srgb, " + accent + " 15%, transparent)",
-          boxShadow: "0 0 20px color-mix(in srgb, " + accent + " 8%, transparent)",
-        }}
-      >
-        <Icon size={16} style={{ color: accent }} />
-      </div>
-      <div className="relative z-10 text-[13px] font-bold text-foreground group-hover:text-white transition-colors">
-        {title}
-      </div>
-      <div className="relative z-10 text-[11px] text-muted-foreground mt-0.5">{desc}</div>
-    </motion.button>
-  );
+function formatMoney(val: number) {
+  return `${pnlSign(val)}$${Math.abs(val).toLocaleString()}`;
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// V3 — Contextual Dashboard (Single Flow)
-// ══════════════════════════════════════════════════════════════════════════════
+// ── Component ──────────────────────────────────────────────────────────────────
 
-function HomePageV3() {
+function TraderDashboard() {
   const navigate = useNavigate();
   const fetchDashboard = useStableServerFn(getDashboardData);
-  const fetchMe = useStableServerFn(getMe);
-  const fetchMarket = useStableServerFn(getHomeMarketData);
+  const [goldPulse, setGoldPulse] = useState(false);
 
-  // ── State ─────────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<SmartTabKey>("trending");
-  const [selectedAsset, setSelectedAsset] = useState<HomeTickerItem | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  // ── Live Prices ───────────────────────────────────────────────────────────
-  const { getPrice } = useLivePrices({
-    pairs: [
-      "BTC/USDT",
-      "ETH/USDT",
-      "SOL/USDT",
-      "BNB/USDT",
-      "XRP/USDT",
-      "DOGE/USDT",
-      "ADA/USDT",
-      "AVAX/USDT",
-      "DOT/USDT",
-      "LINK/USDT",
-    ],
-  });
-
-  // ── Queries ───────────────────────────────────────────────────────────────
-  const dashQuery = useQuery({
-    queryKey: ["dashboard"],
+  const dashboardQuery = useQuery({
+    queryKey: ["dashboard-vixor"],
     queryFn: () => fetchDashboard({}),
     staleTime: 30_000,
-    retry: 1,
   });
 
-  const meQuery = useQuery({
-    queryKey: ["me"],
-    queryFn: () => fetchMe({}),
-    staleTime: 60_000,
-    retry: 1,
+  // Live prices
+  const { getPrice } = useLivePrices({
+    pairs: ["BTC/USDT", "ETH/USDT", "SOL/USDT"],
   });
+  const btc = getPrice("BTC/USDT");
+  const eth = getPrice("ETH/USDT");
+  const sol = getPrice("SOL/USDT");
 
-  const marketQuery = useQuery({
-    queryKey: ["home-market"],
-    queryFn: () => fetchMarket({ data: undefined }),
-    staleTime: 60_000,
-    refetchInterval: 60_000,
-    retry: 2,
-  });
-
-  const marketData = marketQuery.data;
-  const user = meQuery.data;
-  const overview = marketData?.marketOverview ?? undefined;
-  const tickers = marketData?.tickers ?? [];
-
-  // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleMoxiPrompt = useCallback(
-    (prompt: string) => {
-      if (prompt) {
-        navigate({ to: "/analyze", search: { q: prompt } } as any);
-      }
-    },
-    [navigate],
-  );
-
-  const handleAssetClick = useCallback((ticker: HomeTickerItem) => {
-    setSelectedAsset(ticker);
-    setIsSheetOpen(true);
+  // Subtle gold pulse animation on mount
+  useEffect(() => {
+    const t = setTimeout(() => setGoldPulse(true), 800);
+    return () => clearTimeout(t);
   }, []);
 
-  const handleAnalyzeAsset = useCallback(
-    (ticker: HomeTickerItem) => {
-      handleMoxiPrompt(`Run a full SMC analysis on ${ticker.symbol}/USDT on the 1H timeframe`);
+  const stats = [
+    {
+      label: "Portfolio",
+      value: "$24,830",
+      color: "var(--color-foreground)",
+      sub: "Total Value",
+      icon: "💼",
     },
-    [handleMoxiPrompt],
-  );
+    {
+      label: "Daily PnL",
+      value: "+$781",
+      color: "var(--color-bullish)",
+      sub: "+3.24%",
+      icon: "📈",
+    },
+    {
+      label: "Win Rate",
+      value: "72%",
+      color: "var(--gold, #F0C419)",
+      sub: "Last 30 trades",
+      icon: "🎯",
+    },
+    {
+      label: "Positions",
+      value: "3",
+      color: "var(--color-foreground)",
+      sub: "Active now",
+      icon: "⚡",
+    },
+  ];
 
-  const userName = user?.profile?.display_name || user?.profile?.username || "Trader";
+  const marketPairs = [
+    {
+      pair: "BTC/USDT",
+      price: btc?.price ?? "94,230",
+      change: btc?.change24h ?? +2.4,
+      symbol: "₿",
+    },
+    {
+      pair: "ETH/USDT",
+      price: eth?.price ?? "3,285",
+      change: eth?.change24h ?? -0.8,
+      symbol: "Ξ",
+    },
+    {
+      pair: "SOL/USDT",
+      price: sol?.price ?? "184.50",
+      change: sol?.change24h ?? +5.2,
+      symbol: "◎",
+    },
+  ];
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[var(--color-background)] text-foreground font-sans pb-28">
-      {/* 3D MOXI Side Character */}
-      <MoxiCharacter3D onChatOpen={() => handleMoxiPrompt("")} />
+    <PageLayout
+      title="TRADER DASHBOARD"
+      badge="ACTIVE"
+      badgeColor="var(--gold, #F0C419)"
+      loading={dashboardQuery.isLoading}
+    >
+      {/* Stats Row */}
+      <StatsRow stats={stats} />
 
-      <div className="max-w-screen-2xl mx-auto px-4 py-4 space-y-4">
-        {/* ── 1. Smart Header: Greeting + Market Status + MOXI CTA ──────── */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-white">
-              {getGreeting()}, <span className="text-[#6366F1]">{userName}</span>
-            </h1>
-            <p className="text-xs text-[#9498A8] flex items-center gap-2 mt-1">
-              <span className="w-1.5 h-1.5 bg-[#22D3A6] rounded-full animate-pulse" />
-              {marketData?.tickers?.length
-                ? `Markets Active • ${tickers.length} assets tracked`
-                : "Loading market data..."}
-            </p>
-          </div>
-          <button
-            onClick={() => navigate({ to: "/trade" })}
-            className="px-4 py-2.5 bg-[#F59E0B]/10 text-[#F59E0B] text-xs font-bold rounded-xl border border-[#F59E0B]/20 flex items-center gap-2 hover:bg-[#F59E0B]/20 transition-all"
-          >
-            <Zap className="w-4 h-4" /> Trade Desk
-          </button>
+      <PageScrollArea>
+        {/* ── Market Brief ──────────────────────────────────────────────────── */}
+        <PageSectionTitle title="Market Brief" />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "1px",
+            background: "var(--color-border)",
+            borderBottom: "1px solid var(--color-border)",
+          }}
+        >
+          {marketPairs.map((m) => {
+            const isUp = Number(m.change) >= 0;
+            return (
+              <div
+                key={m.pair}
+                style={{
+                  background: "var(--color-card)",
+                  padding: "10px 12px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "var(--color-muted-foreground)",
+                    letterSpacing: "0.04em",
+                    marginBottom: "4px",
+                  }}
+                >
+                  {m.symbol} {m.pair}
+                </div>
+                <div
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    fontFamily: "var(--font-mono)",
+                    color: "var(--color-foreground)",
+                    marginBottom: "3px",
+                  }}
+                >
+                  ${typeof m.price === "number" ? m.price.toLocaleString() : m.price}
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    fontFamily: "var(--font-mono)",
+                    color: isUp ? "var(--color-bullish)" : "var(--color-bearish)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "2px",
+                  }}
+                >
+                  {isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                  {pnlSign(Number(m.change))}{Math.abs(Number(m.change)).toFixed(1)}%
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* ── 2. VIXOR Trading Hero (Compact V3) ─────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl p-4 vx-hero-gradient">
+        {/* ── Daily Challenge ───────────────────────────────────────────────── */}
+        <PageSectionTitle title="Daily Challenge" />
+        <div
+          style={{
+            background: "var(--color-card)",
+            borderBottom: "1px solid var(--color-border)",
+            padding: "14px 16px",
+          }}
+        >
           <div
-            className="absolute -right-20 -top-20 w-64 h-64 rounded-full pointer-events-none"
             style={{
-              background: "radial-gradient(ellipse, rgba(245, 158, 11, 0.12) 0%, transparent 70%)",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              marginBottom: "10px",
             }}
-          />
-          <div className="relative flex items-center gap-2.5 mb-3">
-            <span
-              className="text-base font-extrabold text-white"
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "var(--color-foreground)",
+                  marginBottom: "3px",
+                }}
+              >
+                {DAILY_CHALLENGE.title}
+              </div>
+              <div style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>
+                {DAILY_CHALLENGE.desc}
+              </div>
+            </div>
+            <div
               style={{
-                background: "linear-gradient(135deg, #F59E0B 0%, #6366F1 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
+                background: "color-mix(in srgb, var(--gold, #F0C419) 12%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--gold, #F0C419) 30%, transparent)",
+                borderRadius: "8px",
+                padding: "4px 10px",
+                textAlign: "center",
+                flexShrink: 0,
               }}
             >
-              VIXOR TERMINAL
-            </span>
-            <LiveDot size={6} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-[#F59E0B]">
-              PRO
-            </span>
-            <span className="text-[12px] text-foreground/50 ml-auto">Institutional Trading & Market Signals</span>
-          </div>
-          <div className="relative flex flex-wrap gap-2">
-            {VIXOR_QUICK_ACTIONS.map((action) => {
-              const ActionIcon = QUICK_ACTION_ICONS[action.icon] || Sparkles;
-              return (
-                <button
-                  key={action.id}
-                  onClick={() => handleMoxiPrompt(action.prompt)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.1] transition-all text-left"
-                >
-                  <ActionIcon size={11} className="text-primary/60" />
-                  <span className="text-[11px] text-foreground/50 font-medium">{action.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── 3. Live Market Ticker ──────────────────────────────────────── */}
-        <MarketTicker data={marketData} isLoading={marketQuery.isLoading} />
-
-        {/* ── 4. Market Overview Pills ──────────────────────────────────── */}
-        <div className="flex gap-3">
-          <MarketStatPill
-            icon={Activity}
-            label="24h Vol"
-            value={overview ? formatVolume(overview.totalVolume) : undefined}
-            accent="var(--color-primary)"
-            isLoading={marketQuery.isLoading}
-          />
-          <MarketStatPill
-            icon={Crown}
-            label="BTC Dom"
-            value={
-              overview && overview.btcDominance > 0
-                ? `${overview.btcDominance.toFixed(1)}%`
-                : undefined
-            }
-            accent="var(--color-gold)"
-            isLoading={marketQuery.isLoading}
-          />
-          <MarketStatPill
-            icon={Globe}
-            label="Fear & Greed"
-            value={
-              marketData?.fearGreedIndex
-                ? `${marketData.fearGreedIndex.value} — ${marketData.fearGreedIndex.label}`
-                : undefined
-            }
-            accent={
-              (marketData?.fearGreedIndex?.value ?? 50) >= 60
-                ? "var(--color-bullish)"
-                : (marketData?.fearGreedIndex?.value ?? 50) <= 30
-                  ? "var(--color-bearish)"
-                  : "var(--color-primary)"
-            }
-            isLoading={marketQuery.isLoading}
-          />
-        </div>
-
-        {/* ── 5. Insight Cards (Compact — 2 col) ──────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <InsightCard
-            title="Market Momentum Detected"
-            description="Strong buying pressure across SOL ecosystem. Volume surge 180% above 24h average."
-            type="bullish"
-            actionLabel="Analyze"
-            onAction={() => handleMoxiPrompt("Analyze SOL ecosystem momentum")}
-          />
-          <InsightCard
-            title="Whale Activity Alert"
-            description="Large transfers detected on ETH. Monitor for potential market impact in next 4-8 hours."
-            type="alert"
-            actionLabel="Track"
-            onAction={() => navigate({ to: "/pulse" })}
-          />
-        </div>
-
-        {/* ── 6. SMART TABS — The Core V3 Innovation ──────────────────── */}
-        <SmartTabs activeTab={activeTab} onChange={setActiveTab} />
-
-        {/* ── 7. UNIFIED FEED — Decision Cards ────────────────────────── */}
-        <UnifiedFeed
-          tab={activeTab}
-          tickers={tickers}
-          isLoading={marketQuery.isLoading}
-          onAssetClick={handleAssetClick}
-          onAnalyzeClick={handleAnalyzeAsset}
-        />
-
-        {/* ── 8. Quick Actions Grid ───────────────────────────────────── */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Zap size={14} className="text-primary" />
-            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-              Quick Actions
-            </span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <FeatureCard
-              icon={Zap}
-              title="Trade Desk"
-              desc="Execute trades"
-              to="/trade"
-              accent="var(--color-primary)"
-              badge="LIVE"
-            />
-            <FeatureCard
-              icon={LineChart}
-              title="Live Chart"
-              desc="View charts"
-              to="/trade/chart"
-              accent="var(--color-bullish)"
-            />
-            <FeatureCard
-              icon={Signal}
-              title="Signals Feed"
-              desc="Trade signals"
-              to="/trade/signals"
-              accent="var(--color-gold)"
-              badge="LIVE"
-            />
-            <FeatureCard
-              icon={PieChart}
-              title="PnL Tracker"
-              desc="Performance"
-              to="/trade/pnl"
-              accent="var(--color-primary)"
-            />
-            <FeatureCard
-              icon={Compass}
-              title="Discover"
-              desc="Trending tokens"
-              to="/discover"
-              accent="var(--color-primary)"
-            />
-            <FeatureCard
-              icon={Wallet}
-              title="Wallet"
-              desc="Connect & trade"
-              to="/wallet-web3"
-              accent="var(--color-primary)"
-            />
-            <FeatureCard
-              icon={Radio}
-              title="Radar"
-              desc="Market scanner"
-              to="/radar"
-              accent="var(--color-bullish)"
-            />
-            <FeatureCard
-              icon={Crown}
-              title="Premium"
-              desc="Pro analytics"
-              to="/premium"
-              accent="var(--color-gold)"
-            />
-          </div>
-        </div>
-
-        {/* ── 9. Premium Upgrade Card ──────────────────────────────────── */}
-        <Card variant="premium" className="flex items-center justify-between">
-          <CardGradientOverlay />
-          <div className="relative flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--gold-bg)] border border-[var(--gold-border)]">
-              <Crown size={18} className="text-[var(--color-gold)]" />
-            </div>
-            <div>
-              <h3 className="text-[13px] font-bold text-foreground">Premium</h3>
-              <p className="text-[11px] text-muted-foreground">Exclusive signals & analytics</p>
+              <div
+                style={{
+                  fontSize: "14px",
+                  fontWeight: 800,
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--gold, #F0C419)",
+                }}
+              >
+                +{DAILY_CHALLENGE.xp}
+              </div>
+              <div
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  color: "var(--gold, #F0C419)",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                XP
+              </div>
             </div>
           </div>
-          <button
-            onClick={() => navigate({ to: "/premium" })}
-            className="relative px-4 py-2 bg-[var(--color-gold)] text-black text-[11px] font-bold rounded-xl hover:opacity-90 transition-opacity shadow-[var(--shadow-gold-glow)]"
-          >
-            Upgrade
-          </button>
-        </Card>
-
-        {/* ── Market Error Fallback ────────────────────────────────────── */}
-        {marketQuery.isError && !marketData && (
-          <div className="vx-card p-5 text-center">
-            <RefreshCw size={20} className="text-foreground/20 mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground font-medium">Unable to load market data</p>
-            <button
-              onClick={() => marketQuery.refetch()}
-              className="vx-btn vx-btn-sm vx-btn-primary mt-3"
+          {/* Progress Bar */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div
+              style={{
+                flex: 1,
+                height: "6px",
+                background: "var(--color-border)",
+                borderRadius: "3px",
+                overflow: "hidden",
+              }}
             >
-              <RefreshCw size={12} /> Retry
-            </button>
+              <div
+                style={{
+                  width: `${(DAILY_CHALLENGE.progress / DAILY_CHALLENGE.total) * 100}%`,
+                  height: "100%",
+                  background: "var(--gold, #F0C419)",
+                  borderRadius: "3px",
+                  transition: "width 0.6s ease",
+                }}
+              />
+            </div>
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                fontFamily: "var(--font-mono)",
+                color: "var(--gold, #F0C419)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {DAILY_CHALLENGE.progress}/{DAILY_CHALLENGE.total}
+            </span>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* ── Smart Bottom Sheet ─────────────────────────────────────────── */}
-      <SmartBottomSheet
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
-        asset={selectedAsset}
-        onAnalyze={handleAnalyzeAsset}
-      />
-    </div>
+        {/* ── Recent Trades ─────────────────────────────────────────────────── */}
+        <PageSectionTitle title="Recent Trades" count={RECENT_TRADES.length} />
+        {RECENT_TRADES.map((trade) => (
+          <DataRow key={trade.id} leftAccent={trade.pnl >= 0 ? "var(--color-bullish)" : "var(--color-bearish)"}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+            >
+              {/* Left: pair + direction */}
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div>
+                  <div
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      fontFamily: "var(--font-mono)",
+                      color: "var(--color-foreground)",
+                    }}
+                  >
+                    {trade.pair}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "3px" }}>
+                    <PageBadge
+                      label={trade.dir}
+                      color={trade.dir === "LONG" ? "var(--color-bullish)" : "var(--color-bearish)"}
+                      small
+                    />
+                    <span style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
+                      {trade.time}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {/* Right: PnL */}
+              <div style={{ textAlign: "right" }}>
+                <div
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    fontFamily: "var(--font-mono)",
+                    color: pnlColor(trade.pnl),
+                  }}
+                >
+                  {formatMoney(trade.pnl)}
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontFamily: "var(--font-mono)",
+                    color: pnlColor(trade.pnlPct),
+                    marginTop: "2px",
+                  }}
+                >
+                  {pnlSign(trade.pnlPct)}{Math.abs(trade.pnlPct).toFixed(1)}%
+                </div>
+              </div>
+            </div>
+          </DataRow>
+        ))}
+
+        {/* ── Quick Actions ─────────────────────────────────────────────────── */}
+        <PageSectionTitle title="Quick Actions" />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: "1px",
+            background: "var(--color-border)",
+            borderBottom: "1px solid var(--color-border)",
+          }}
+        >
+          {QUICK_ACTIONS.map((action) => (
+            <button
+              key={action.id}
+              id={`quick-action-${action.id}`}
+              onClick={() => navigate({ to: action.path as Parameters<typeof navigate>[0]["to"] })}
+              style={{
+                background: "var(--color-card)",
+                border: "none",
+                padding: "16px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                cursor: "pointer",
+                minHeight: "56px",
+                transition: "background 0.15s ease",
+                textAlign: "left",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "var(--color-card-hover)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "var(--color-card)";
+              }}
+            >
+              <action.icon size={16} color="var(--gold, #F0C419)" />
+              <span
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "var(--color-foreground)",
+                  flex: 1,
+                }}
+              >
+                {action.label}
+              </span>
+              <ChevronRight size={14} color="var(--color-muted-foreground)" />
+            </button>
+          ))}
+        </div>
+
+        {/* Bottom clearance for nav bar */}
+        <div style={{ height: "28px" }} />
+      </PageScrollArea>
+    </PageLayout>
   );
 }
+
+export default TraderDashboard;
