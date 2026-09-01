@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
 import { PageLayout, PageScrollArea, PageBadge, ProgressBar } from "@/components/vixor/PageLayout";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { scanToken } from "@/domains/shield/functions";
+import type { ScanTokenResult } from "@/domains/shield/functions";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -18,70 +22,6 @@ type RugPullFlag = {
   name: string;
   severity: "low" | "medium" | "high" | "critical";
   description: string;
-};
-
-const MOCK_SCAN_RESULT = {
-  verdict: "CAUTION" as Verdict,
-  riskScore: 42,
-  flags: [
-    {
-      name: "Honeypot",
-      passed: true,
-      description: "No sell restriction detected",
-    },
-    {
-      name: "Mintable",
-      passed: false,
-      description: "Owner can mint new tokens",
-    },
-    {
-      name: "Proxy",
-      passed: true,
-      description: "Not a proxy contract",
-    },
-    {
-      name: "Open Source",
-      passed: false,
-      description: "Source not verified on explorer",
-    },
-  ] as SecurityFlag[],
-  buyTax: 2.5,
-  sellTax: 5.0,
-  topHoldersPct: 34.7,
-  totalHolders: 1842,
-  lpLockedPct: 78.5,
-  rugPullFlags: [
-    {
-      name: "Ownership Not Renounced",
-      severity: "medium",
-      description: "Contract owner retains administrative privileges",
-    },
-    {
-      name: "Mint Function Accessible",
-      severity: "high",
-      description: "Unlimited token minting possible by owner",
-    },
-    {
-      name: "LP Lock Expiring Soon",
-      severity: "medium",
-      description: "Liquidity pool lock expires in 12 days",
-    },
-    {
-      name: "Recent Large Holder Accumulation",
-      severity: "low",
-      description: "Top holder increased position by 8% in 24h",
-    },
-  ] as RugPullFlag[],
-  rawData: {
-    contractAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-    tokenName: "SampleToken",
-    symbol: "SMPL",
-    decimals: 18,
-    totalSupply: "1000000000",
-    holderCount: 1842,
-    lpLockedUntil: "2025-02-15T00:00:00Z",
-    creationDate: "2025-01-10T12:00:00Z",
-  },
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -138,6 +78,26 @@ function ShieldScannerPage() {
   const [rawExpanded, setRawExpanded] = useState(false);
   const [pasted, setPasted] = useState(false);
 
+  const [scanResult, setScanResult] = useState<ScanTokenResult | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const stableScan = useStableServerFn(scanToken);
+
+  const scanMutation = useMutation({
+    mutationFn: (input: { address: string; chain: string }) => stableScan({ data: input }),
+    onSuccess: (result) => {
+      setScanResult(result);
+      setScanError(null);
+      setScanned(true);
+      setRawExpanded(false);
+      queryClient.invalidateQueries({ queryKey: ["scan-history"] });
+    },
+    onError: (err: Error) => {
+      setScanError(err.message);
+      setScanned(false);
+    },
+  });
+
   const handlePaste = useCallback(async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -151,12 +111,39 @@ function ShieldScannerPage() {
 
   const handleScan = useCallback(() => {
     if (address.length < 10) return;
-    setScanned(true);
-    setRawExpanded(false);
-  }, [address]);
+    scanMutation.mutate({ address, chain: chain.toLowerCase() });
+  }, [address, chain, scanMutation]);
 
-  const result = MOCK_SCAN_RESULT;
-  const vColor = verdictColor(result.verdict);
+  const result = scanResult
+    ? {
+        verdict: (scanResult.trustScore.level === "safe"
+          ? "SAFE"
+          : scanResult.trustScore.level === "low"
+            ? "CAUTION"
+            : scanResult.trustScore.level === "medium"
+              ? "SUSPICIOUS"
+              : "DANGER") as Verdict,
+        riskScore: 100 - scanResult.trustScore.score,
+        flags: scanResult.trustScore.factors.map((f) => ({
+          name: f.name,
+          passed: f.status === "pass",
+          description: f.detail,
+        })),
+        buyTax: scanResult.security.buyTax,
+        sellTax: scanResult.security.sellTax,
+        topHoldersPct: scanResult.security.top10HolderPct ?? 0,
+        totalHolders: scanResult.market.holders,
+        lpLockedPct: 0,
+        rugPullFlags: scanResult.security.risks.map((r) => ({
+          name: r,
+          severity: "high" as any,
+          description: r,
+        })),
+        rawData: scanResult,
+      }
+    : null;
+
+  const vColor = result ? verdictColor(result.verdict) : "var(--shield-unknown)";
 
   return (
     <PageLayout
@@ -409,334 +396,347 @@ function ShieldScannerPage() {
         </div>
 
         {/* ── Scan Results ── */}
-        {scanned && (
-          <div>
-            {/* Verdict Banner */}
-            <div
-              style={{
-                padding: "16px",
-                background: `${vColor}12`,
-                borderBottom: `1px solid ${vColor}33`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div>
+        {scanMutation.isPending ? (
+          <div
+            style={{ padding: "20px", textAlign: "center", color: "var(--color-muted-foreground)" }}
+          >
+            Loading...
+          </div>
+        ) : scanError ? (
+          <div style={{ padding: "20px", color: "var(--shield-danger)" }}>{scanError}</div>
+        ) : (
+          scanned &&
+          result && (
+            <div>
+              {/* Verdict Banner */}
+              <div
+                style={{
+                  padding: "16px",
+                  background: `${vColor}12`,
+                  borderBottom: `1px solid ${vColor}33`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "var(--color-muted-foreground)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    Verdict
+                  </div>
+                  <PageBadge label={result.verdict} color={vColor} />
+                </div>
                 <div
                   style={{
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: "var(--color-muted-foreground)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      fontSize: "28px",
+                      fontWeight: 900,
+                      fontFamily: "var(--font-mono)",
+                      color: vColor,
+                    }}
+                  >
+                    {result.riskScore}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "var(--color-muted-foreground)",
+                    }}
+                  >
+                    /100
+                  </span>
+                </div>
+              </div>
+
+              {/* Risk Score ProgressBar */}
+              <div style={{ padding: "12px 16px" }}>
+                <ProgressBar
+                  value={result.riskScore}
+                  max={100}
+                  color={riskScoreColor(result.riskScore)}
+                  height={6}
+                  label="Risk Score"
+                  labelRight={`${result.riskScore}/100`}
+                />
+              </div>
+
+              {/* Security Flags 2x2 Grid */}
+              <div
+                style={{
+                  padding: "0 16px 12px",
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "8px",
+                }}
+              >
+                {result.flags.map((flag, i) => (
+                  <SecurityFlagCard key={flag.name} flag={flag} index={i} />
+                ))}
+              </div>
+
+              {/* Tax Info */}
+              <div
+                style={{
+                  padding: "0 16px 12px",
+                  display: "flex",
+                  gap: "8px",
+                }}
+              >
+                <TaxCard label="Buy Tax" value={result.buyTax} index={4} />
+                <TaxCard label="Sell Tax" value={result.sellTax} index={5} />
+              </div>
+
+              {/* Holder Analysis */}
+              <div
+                style={{
+                  padding: "12px 16px",
+                  background: "var(--color-card)",
+                  borderBottom: "1px solid var(--color-border)",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "var(--color-foreground)",
+                    marginBottom: "10px",
                     textTransform: "uppercase",
-                    letterSpacing: "0.06em",
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  <span aria-hidden="true" style={{ marginRight: "6px" }}>
+                    &#x1F465;
+                  </span>
+                  Holder Analysis
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
                     marginBottom: "4px",
                   }}
                 >
-                  Verdict
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--color-muted-foreground)",
+                    }}
+                  >
+                    Top 10 Holders
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      fontFamily: "var(--font-mono)",
+                      color:
+                        result.topHoldersPct > 50
+                          ? "var(--shield-danger)"
+                          : result.topHoldersPct > 30
+                            ? "var(--shield-caution)"
+                            : "var(--shield-safe)",
+                    }}
+                  >
+                    {result.topHoldersPct.toFixed(1)}%
+                  </span>
                 </div>
-                <PageBadge label={result.verdict} color={vColor} />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                  style={{
-                    fontSize: "28px",
-                    fontWeight: 900,
-                    fontFamily: "var(--font-mono)",
-                    color: vColor,
-                  }}
-                >
-                  {result.riskScore}
-                </span>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: "var(--color-muted-foreground)",
-                  }}
-                >
-                  /100
-                </span>
-              </div>
-            </div>
-
-            {/* Risk Score ProgressBar */}
-            <div style={{ padding: "12px 16px" }}>
-              <ProgressBar
-                value={result.riskScore}
-                max={100}
-                color={riskScoreColor(result.riskScore)}
-                height={6}
-                label="Risk Score"
-                labelRight={`${result.riskScore}/100`}
-              />
-            </div>
-
-            {/* Security Flags 2x2 Grid */}
-            <div
-              style={{
-                padding: "0 16px 12px",
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "8px",
-              }}
-            >
-              {result.flags.map((flag, i) => (
-                <SecurityFlagCard key={flag.name} flag={flag} index={i} />
-              ))}
-            </div>
-
-            {/* Tax Info */}
-            <div
-              style={{
-                padding: "0 16px 12px",
-                display: "flex",
-                gap: "8px",
-              }}
-            >
-              <TaxCard label="Buy Tax" value={result.buyTax} index={4} />
-              <TaxCard label="Sell Tax" value={result.sellTax} index={5} />
-            </div>
-
-            {/* Holder Analysis */}
-            <div
-              style={{
-                padding: "12px 16px",
-                background: "var(--color-card)",
-                borderBottom: "1px solid var(--color-border)",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: "var(--color-foreground)",
-                  marginBottom: "10px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                }}
-              >
-                <span aria-hidden="true" style={{ marginRight: "6px" }}>
-                  &#x1F465;
-                </span>
-                Holder Analysis
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "4px",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "11px",
-                    color: "var(--color-muted-foreground)",
-                  }}
-                >
-                  Top 10 Holders
-                </span>
-                <span
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    fontFamily: "var(--font-mono)",
-                    color:
-                      result.topHoldersPct > 50
-                        ? "var(--shield-danger)"
-                        : result.topHoldersPct > 30
-                          ? "var(--shield-caution)"
-                          : "var(--shield-safe)",
-                  }}
-                >
-                  {result.topHoldersPct.toFixed(1)}%
-                </span>
-              </div>
-              <ProgressBar
-                value={result.topHoldersPct}
-                max={100}
-                color={
-                  result.topHoldersPct > 50
-                    ? "var(--shield-danger)"
-                    : result.topHoldersPct > 30
-                      ? "var(--shield-caution)"
-                      : "var(--shield-safe)"
-                }
-                height={4}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: "10px",
-                  marginBottom: "4px",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "11px",
-                    color: "var(--color-muted-foreground)",
-                  }}
-                >
-                  Total Holders
-                </span>
-                <span
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    fontFamily: "var(--font-mono)",
-                    color: "var(--char-sly)",
-                  }}
-                >
-                  {result.totalHolders.toLocaleString()}
-                </span>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: "10px",
-                  marginBottom: "4px",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "11px",
-                    color: "var(--color-muted-foreground)",
-                  }}
-                >
-                  LP Locked
-                </span>
-                <span
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    fontFamily: "var(--font-mono)",
-                    color:
-                      result.lpLockedPct >= 80
-                        ? "var(--shield-safe)"
-                        : result.lpLockedPct >= 50
-                          ? "var(--shield-caution)"
-                          : "var(--shield-danger)",
-                  }}
-                >
-                  {result.lpLockedPct.toFixed(1)}%
-                </span>
-              </div>
-              <ProgressBar
-                value={result.lpLockedPct}
-                max={100}
-                color={
-                  result.lpLockedPct >= 80
-                    ? "var(--shield-safe)"
-                    : result.lpLockedPct >= 50
-                      ? "var(--shield-caution)"
-                      : "var(--shield-danger)"
-                }
-                height={4}
-              />
-            </div>
-
-            {/* Rug Pull Flags */}
-            <div
-              style={{
-                padding: "12px 16px",
-                background: "var(--color-card)",
-                borderBottom: "1px solid var(--color-border)",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: "var(--color-foreground)",
-                  marginBottom: "10px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                }}
-              >
-                <span aria-hidden="true" style={{ marginRight: "6px" }}>
-                  &#x26A0;
-                </span>
-                Rug Pull Flags
-              </div>
-              {result.rugPullFlags.map((flag, i) => (
-                <RugPullFlagRow key={flag.name} flag={flag} index={i} />
-              ))}
-            </div>
-
-            {/* Raw Data Expandable */}
-            <div
-              style={{
-                borderBottom: "1px solid var(--color-border)",
-                background: "var(--color-card)",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => setRawExpanded(!rawExpanded)}
-                aria-label={rawExpanded ? "Collapse raw contract data" : "Expand raw contract data"}
-                aria-expanded={rawExpanded}
-                style={{
-                  width: "100%",
-                  minHeight: "48px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: "var(--color-muted-foreground)",
-                  background: "transparent",
-                  border: "none",
-                  padding: "0 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  cursor: "pointer",
-                  transition: "color 0.15s ease",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "var(--color-foreground)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "var(--color-muted-foreground)";
-                }}
-              >
-                <span>Raw Contract Data</span>
-                <span
-                  aria-hidden="true"
-                  style={{
-                    fontSize: "10px",
-                    transition: "transform 0.2s ease",
-                    transform: rawExpanded ? "rotate(180deg)" : "rotate(0deg)",
-                  }}
-                >
-                  ▼
-                </span>
-              </button>
-              {rawExpanded && (
+                <ProgressBar
+                  value={result.topHoldersPct}
+                  max={100}
+                  color={
+                    result.topHoldersPct > 50
+                      ? "var(--shield-danger)"
+                      : result.topHoldersPct > 30
+                        ? "var(--shield-caution)"
+                        : "var(--shield-safe)"
+                  }
+                  height={4}
+                />
                 <div
                   style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    color: "var(--color-muted-foreground)",
-                    lineHeight: 1.8,
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-all",
-                    background: "var(--color-muted)",
-                    margin: "0 16px 12px",
-                    borderRadius: "8px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginTop: "10px",
+                    marginBottom: "4px",
                   }}
                 >
-                  {JSON.stringify(result.rawData, null, 2)}
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--color-muted-foreground)",
+                    }}
+                  >
+                    Total Holders
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      fontFamily: "var(--font-mono)",
+                      color: "var(--char-sly)",
+                    }}
+                  >
+                    {result.totalHolders.toLocaleString()}
+                  </span>
                 </div>
-              )}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginTop: "10px",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--color-muted-foreground)",
+                    }}
+                  >
+                    LP Locked
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      fontFamily: "var(--font-mono)",
+                      color:
+                        result.lpLockedPct >= 80
+                          ? "var(--shield-safe)"
+                          : result.lpLockedPct >= 50
+                            ? "var(--shield-caution)"
+                            : "var(--shield-danger)",
+                    }}
+                  >
+                    {result.lpLockedPct.toFixed(1)}%
+                  </span>
+                </div>
+                <ProgressBar
+                  value={result.lpLockedPct}
+                  max={100}
+                  color={
+                    result.lpLockedPct >= 80
+                      ? "var(--shield-safe)"
+                      : result.lpLockedPct >= 50
+                        ? "var(--shield-caution)"
+                        : "var(--shield-danger)"
+                  }
+                  height={4}
+                />
+              </div>
+
+              {/* Rug Pull Flags */}
+              <div
+                style={{
+                  padding: "12px 16px",
+                  background: "var(--color-card)",
+                  borderBottom: "1px solid var(--color-border)",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "var(--color-foreground)",
+                    marginBottom: "10px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  <span aria-hidden="true" style={{ marginRight: "6px" }}>
+                    &#x26A0;
+                  </span>
+                  Rug Pull Flags
+                </div>
+                {result.rugPullFlags.map((flag, i) => (
+                  <RugPullFlagRow key={flag.name} flag={flag} index={i} />
+                ))}
+              </div>
+
+              {/* Raw Data Expandable */}
+              <div
+                style={{
+                  borderBottom: "1px solid var(--color-border)",
+                  background: "var(--color-card)",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setRawExpanded(!rawExpanded)}
+                  aria-label={
+                    rawExpanded ? "Collapse raw contract data" : "Expand raw contract data"
+                  }
+                  aria-expanded={rawExpanded}
+                  style={{
+                    width: "100%",
+                    minHeight: "48px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "var(--color-muted-foreground)",
+                    background: "transparent",
+                    border: "none",
+                    padding: "0 16px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    cursor: "pointer",
+                    transition: "color 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.color = "var(--color-foreground)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.color = "var(--color-muted-foreground)";
+                  }}
+                >
+                  <span>Raw Contract Data</span>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      fontSize: "10px",
+                      transition: "transform 0.2s ease",
+                      transform: rawExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                    }}
+                  >
+                    ▼
+                  </span>
+                </button>
+                {rawExpanded && (
+                  <div
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "11px",
+                      color: "var(--color-muted-foreground)",
+                      lineHeight: 1.8,
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-all",
+                      background: "var(--color-muted)",
+                      margin: "0 16px 12px",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    {JSON.stringify(result.rawData, null, 2)}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )
         )}
 
         {/* ── VIX micro-moment ── */}
@@ -891,10 +891,7 @@ const RugPullFlagRow = memo(function RugPullFlagRow({ flag, index }: RugPullFlag
         alignItems: "flex-start",
         gap: "10px",
         padding: "10px 0",
-        borderBottom:
-          index < MOCK_SCAN_RESULT.rugPullFlags.length - 1
-            ? "1px solid var(--color-border)"
-            : "none",
+        borderBottom: "1px solid var(--color-border)",
         animation: `alert-stagger 0.3s ease-out ${(index + 6) * 0.04}s both`,
       }}
     >

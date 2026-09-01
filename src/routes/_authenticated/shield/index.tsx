@@ -9,6 +9,9 @@ import {
   PageSectionTitle,
   ProgressBar,
 } from "@/components/vixor/PageLayout";
+import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getShieldAlerts, getScanHistory } from "@/domains/shield/functions";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -157,6 +160,38 @@ function ShieldDashboardPage() {
     setHoveredAction(id);
   }, []);
 
+  const stableAlerts = useStableServerFn(getShieldAlerts);
+  const stableHistory = useStableServerFn(getScanHistory);
+
+  const { data: alertsData, isLoading: alertsLoading } = useQuery({
+    queryKey: ["shield-alerts"],
+    queryFn: () => stableAlerts({ data: { unreadOnly: false, limit: 5 } }),
+    staleTime: 30_000,
+  });
+
+  const { data: historyData, isLoading: historyLoading } = useQuery({
+    queryKey: ["scan-history"],
+    queryFn: () => stableHistory({ data: { page: 0, limit: 20 } }),
+    staleTime: 60_000,
+  });
+
+  const alerts = alertsData?.alerts ?? [];
+  const scans = historyData?.scans ?? [];
+
+  const tokensScanned = historyData?.total ?? 0;
+  const threatsBlocked = scans.filter((s: any) => s.verdict === "DANGER").length;
+  const activeCases = scans.filter(
+    (s: any) => s.verdict === "SUSPICIOUS" || s.verdict === "DANGER",
+  ).length;
+  const avgTrustScore =
+    scans.length > 0
+      ? (
+          scans.reduce((sum: number, s: any) => sum + (100 - (s.risk_score ?? 0)), 0) / scans.length
+        ).toFixed(1)
+      : "0.0";
+
+  const loading = alertsLoading || historyLoading;
+
   return (
     <PageLayout
       title="SHIELD"
@@ -168,25 +203,25 @@ function ShieldDashboardPage() {
         stats={[
           {
             label: "Tokens Scanned",
-            value: String(MOCK_STATS.tokensScanned),
+            value: String(tokensScanned),
             color: "var(--char-sly)",
             icon: "🔍",
           },
           {
             label: "Threats Blocked",
-            value: String(MOCK_STATS.threatsBlocked),
+            value: String(threatsBlocked),
             color: "var(--shield-danger)",
             icon: "🛡",
           },
           {
             label: "Avg Trust Score",
-            value: `${MOCK_STATS.avgTrustScore}`,
+            value: `${avgTrustScore}`,
             color: "var(--shield-safe)",
             icon: "✓",
           },
           {
             label: "Active Cases",
-            value: String(MOCK_STATS.activeCases),
+            value: String(activeCases),
             color: "var(--shield-caution)",
             icon: "📂",
           },
@@ -201,17 +236,24 @@ function ShieldDashboardPage() {
       `}</style>
 
       <PageScrollArea>
+        {loading && (
+          <div
+            style={{ padding: "20px", textAlign: "center", color: "var(--color-muted-foreground)" }}
+          >
+            Loading...
+          </div>
+        )}
         {/* ── Recent Alerts ── */}
         <PageSectionTitle
           title="Recent Alerts"
-          count={MOCK_RECENT_ALERTS.length}
+          count={alerts.length}
           action={{
             label: "View All",
             onClick: () => navigate({ to: "/shield/alerts" }),
           }}
         />
 
-        {MOCK_RECENT_ALERTS.map((alert, i) => (
+        {alerts.map((alert: any, i: number) => (
           <DataRow
             key={alert.id}
             leftAccent={severityColor(alert.severity)}
@@ -253,7 +295,7 @@ function ShieldDashboardPage() {
                   whiteSpace: "nowrap",
                 }}
               >
-                {alert.title}
+                {alert.title ?? "Alert"}
               </span>
               <span
                 style={{
@@ -263,7 +305,7 @@ function ShieldDashboardPage() {
                   flexShrink: 0,
                 }}
               >
-                {formatTimeAgo(alert.timestamp)}
+                {formatTimeAgo(alert.created_at)}
               </span>
             </div>
             <div style={{ paddingLeft: "16px" }}>
@@ -275,7 +317,7 @@ function ShieldDashboardPage() {
                   fontFamily: "var(--font-mono)",
                 }}
               >
-                {alert.token}
+                {alert.description ?? ""}
               </span>
             </div>
           </DataRow>

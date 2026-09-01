@@ -9,6 +9,7 @@ import {
   getReferralData,
   getRecentAnalyses,
 } from "@/shared/data";
+import { getDashboardData } from "@/domains/trade/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import {
   PageLayout,
@@ -139,14 +140,16 @@ function formatJoinDate(createdAt: string | undefined): string {
   return `Joined ${formatted} · ${daysAgo} days ago`;
 }
 
-function computeStats(trades: Array<{ pnl: number | null; status: string }>) {
+function computeStats(
+  trades: Array<{ pnl_usd?: number | null; pnl?: number | null; status: string }>,
+) {
   const totalTrades = trades.length;
   const closedTrades = trades.filter(
     (t) => t.status === "closed" || t.status === "won" || t.status === "lost",
   );
-  const wins = closedTrades.filter((t) => (t.pnl ?? 0) > 0);
+  const wins = closedTrades.filter((t) => (t.pnl_usd ?? t.pnl ?? 0) > 0);
   const winRate = closedTrades.length > 0 ? (wins.length / closedTrades.length) * 100 : 0;
-  const totalPnl = trades.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
+  const totalPnl = trades.reduce((sum, t) => sum + (t.pnl_usd ?? t.pnl ?? 0), 0);
 
   return { totalTrades, winRate, totalPnl };
 }
@@ -284,7 +287,7 @@ function ProfilePage() {
   // Server function stabilizers
   const fetchProfile = useStableServerFn(getUserProfile);
   const fetchPoints = useStableServerFn(getUserPoints);
-  const fetchTrades = useStableServerFn(getTradeHistory);
+  const fetchDashboard = useStableServerFn(getDashboardData);
   const fetchPortfolio = useStableServerFn(getPortfolioData);
   const fetchReferral = useStableServerFn(getReferralData);
   const fetchAnalyses = useStableServerFn(getRecentAnalyses);
@@ -302,9 +305,9 @@ function ProfilePage() {
     staleTime: 30_000,
   });
 
-  const tradesQuery = useQuery({
-    queryKey: ["trade-history-profile"],
-    queryFn: () => fetchTrades({ data: { limit: 100 } }),
+  const dashQuery = useQuery({
+    queryKey: ["dashboard-stats-profile"],
+    queryFn: () => fetchDashboard({}),
     staleTime: 60_000,
   });
 
@@ -332,13 +335,18 @@ function ProfilePage() {
   const streak =
     (pointsQuery.data?.streak as { current_streak?: number; longest_streak?: number } | undefined)
       ?.current_streak ?? 0;
-  const trades = useMemo(() => tradesQuery.data?.trades ?? [], [tradesQuery.data?.trades]);
+  const trades = useMemo(() => dashQuery.data?.recentTrades ?? [], [dashQuery.data?.recentTrades]);
 
-  const { totalTrades, winRate, totalPnl } = useMemo(() => computeStats(trades), [trades]);
+  const totalTrades = dashQuery.data?.totalTradesCount ?? 0;
+  const winRate = dashQuery.data?.winRatePct ?? 0;
+  const totalPnl = dashQuery.data?.totalPnlUsd ?? 0;
 
   // ── Dynamic badges ──
   const badgeData: BadgeData = useMemo(() => {
-    const bestTrade = trades.reduce((max, t) => Math.max(max, t.pnl ?? 0), 0);
+    const bestTrade = trades.reduce(
+      (max: number, t: any) => Math.max(max, t.pnl_usd ?? t.pnl ?? 0),
+      0,
+    );
     return {
       totalTrades,
       streak,
@@ -429,7 +437,7 @@ function ProfilePage() {
 
   const pnlColor = totalPnl >= 0 ? "var(--color-primary)" : "var(--color-bearish)";
 
-  const isLoading = profileQuery.isLoading || pointsQuery.isLoading || tradesQuery.isLoading;
+  const isLoading = profileQuery.isLoading || pointsQuery.isLoading || dashQuery.isLoading;
 
   // Portfolio derived
   const holdings = portfolioQuery.data?.holdings ?? [];

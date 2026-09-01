@@ -1,5 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getTrendingTokens } from "@/domains/hunt/functions";
 import {
   PageLayout,
   PageScrollArea,
@@ -182,13 +185,27 @@ function TokenRadarPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeChain, setActiveChain] = useState<string>("All");
 
-  const filteredTokens = MOCK_TOKENS.filter((t) => {
-    const matchesChain = activeChain === "All" || t.chain === activeChain;
+  const stableTrending = useStableServerFn(getTrendingTokens);
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: [
+      "trending-tokens-radar",
+      activeChain === "All" ? "solana" : activeChain.toLowerCase(),
+    ],
+    queryFn: () =>
+      stableTrending({
+        data: { chain: activeChain === "All" ? "solana" : activeChain.toLowerCase(), limit: 50 },
+      }),
+    staleTime: 60_000,
+  });
+
+  const tokens = data?.tokens ?? [];
+
+  const filteredTokens = tokens.filter((t) => {
     const matchesSearch =
       searchQuery === "" ||
       t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.symbol.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesChain && matchesSearch;
+    return matchesSearch;
   });
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -359,7 +376,20 @@ function TokenRadarPage() {
 
       {/* ── Token List ── */}
       <PageScrollArea>
-        {filteredTokens.length === 0 ? (
+        {isLoading && (
+          <div
+            style={{ padding: "20px", textAlign: "center", color: "var(--color-muted-foreground)" }}
+          >
+            Loading radar...
+          </div>
+        )}
+        {isError && (
+          <div style={{ padding: "20px", color: "var(--shield-danger)" }}>
+            Failed to load: {(error as Error).message}
+          </div>
+        )}
+
+        {!isLoading && filteredTokens.length === 0 ? (
           <div
             style={{
               padding: "48px 16px",
@@ -371,14 +401,105 @@ function TokenRadarPage() {
             No tokens match your search.
           </div>
         ) : (
-          filteredTokens.map((token, i) => (
-            <TokenRadarRow
-              key={token.id}
-              token={token}
-              index={i}
-              onClick={() => handleTokenClick(token.id)}
-            />
-          ))
+          !isLoading &&
+          filteredTokens.map((token, index) => {
+            const isPositive = token.priceChange24h >= 0;
+            const cColor = changeColor(token.priceChange24h);
+            const cText = changeText(token.priceChange24h);
+            const cChain = chainColor(token.chain);
+            return (
+              <DataRow
+                key={token.address}
+                onClick={() => handleTokenClick(token.address)}
+                leftAccent="var(--char-vix-border)"
+                style={{
+                  animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      flex: 1,
+                      minWidth: 0,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        color: "var(--color-foreground)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {token.name}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "var(--color-muted-foreground)",
+                      }}
+                    >
+                      ${token.symbol}
+                    </span>
+                    <PageBadge label={token.chain} color={cChain} small />
+                  </div>
+                </div>
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}
+                >
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      fontFamily: "var(--font-mono)",
+                      color: "var(--color-foreground)",
+                    }}
+                  >
+                    ${token.price.toFixed(6)}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      fontFamily: "var(--font-mono)",
+                      color: cColor,
+                      background: isPositive ? "var(--color-bullish)14" : "var(--color-bearish)14",
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {cText}
+                  </span>
+                  <span style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
+                    Score{" "}
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        fontFamily: "var(--font-mono)",
+                        color: "var(--color-foreground)",
+                      }}
+                    >
+                      {token.accelerationScore}
+                    </span>
+                  </span>
+                </div>
+              </DataRow>
+            );
+          })
         )}
 
         {/* ── VIX micro-moment ── */}

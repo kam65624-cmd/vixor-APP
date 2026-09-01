@@ -8,6 +8,9 @@ import {
   PageBadge,
   ProgressBar,
 } from "@/components/vixor/PageLayout";
+import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getWatchlist } from "@/domains/shield/functions";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -148,13 +151,33 @@ export const Route = createFileRoute("/_authenticated/shield/exposure")({
 function ExposurePage() {
   const [activeFilter, setActiveFilter] = useState<string>("All");
 
-  const totalExposure = MOCK_TOKENS.reduce((sum, t) => sum + t.exposure, 0);
-  const atRiskTokens = MOCK_TOKENS.filter((t) => t.riskLevel !== "Safe").length;
-  const highRiskPct =
-    (MOCK_TOKENS.filter((t) => t.riskLevel === "Danger").length / MOCK_TOKENS.length) * 100;
-  const protectedTokens = MOCK_TOKENS.filter((t) => t.riskLevel === "Safe").length;
+  const stableWatchlist = useStableServerFn(getWatchlist);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["watchlist"],
+    queryFn: () => stableWatchlist(),
+    staleTime: 60_000,
+  });
 
-  const filteredTokens = MOCK_TOKENS.filter((t) => {
+  const tokensData = (data?.tokens ?? []).map((t: any) => ({
+    id: t.id,
+    name: t.token_name ?? "Unknown",
+    symbol: t.token_symbol ?? "???",
+    chain: t.chain,
+    exposure: 0,
+    riskLevel: "Safe" as RiskLevel,
+    riskScore: 80,
+    allocation: 0,
+  }));
+
+  const totalExposure = tokensData.reduce((sum: number, t: any) => sum + t.exposure, 0);
+  const atRiskTokens = tokensData.filter((t: any) => t.riskLevel !== "Safe").length;
+  const highRiskPct =
+    tokensData.length > 0
+      ? (tokensData.filter((t: any) => t.riskLevel === "Danger").length / tokensData.length) * 100
+      : 0;
+  const protectedTokens = tokensData.filter((t: any) => t.riskLevel === "Safe").length;
+
+  const filteredTokens = tokensData.filter((t: any) => {
     if (activeFilter === "All") return true;
     return t.riskLevel === activeFilter;
   });
@@ -339,31 +362,48 @@ function ExposurePage() {
       </div>
 
       <PageScrollArea>
-        {filteredTokens.length > 0 ? (
-          filteredTokens.map((token, i) => <ExposureRow key={token.id} token={token} index={i} />)
-        ) : (
+        {isLoading && (
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "60px 20px",
-              color: "var(--color-muted-foreground)",
-            }}
+            style={{ padding: "20px", textAlign: "center", color: "var(--color-muted-foreground)" }}
           >
-            <span
-              aria-hidden="true"
-              style={{ fontSize: "32px", opacity: 0.3, marginBottom: "8px" }}
-            >
-              &#x1F4CA;
-            </span>
-            <span style={{ fontSize: "13px", fontWeight: 600 }}>No tokens match this filter</span>
-            <span style={{ fontSize: "12px", marginTop: "4px" }}>
-              Try selecting a different risk level
-            </span>
+            Loading...
           </div>
         )}
+        {isError && (
+          <div style={{ padding: "20px", color: "var(--shield-danger)" }}>
+            Error loading watchlist.
+          </div>
+        )}
+        {filteredTokens.length > 0 && !isLoading
+          ? filteredTokens.map((token: any, i: number) => (
+              <ExposureRow key={token.id} token={token} index={i} />
+            ))
+          : !isLoading &&
+            !isError && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "60px 20px",
+                  color: "var(--color-muted-foreground)",
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{ fontSize: "32px", opacity: 0.3, marginBottom: "8px" }}
+                >
+                  &#x1F4CA;
+                </span>
+                <span style={{ fontSize: "13px", fontWeight: 600 }}>
+                  No tokens match this filter
+                </span>
+                <span style={{ fontSize: "12px", marginTop: "4px" }}>
+                  Try selecting a different risk level
+                </span>
+              </div>
+            )}
 
         {/* Footer: Scan All Tokens button */}
         <div style={{ padding: "16px" }}>
@@ -415,7 +455,7 @@ function ExposurePage() {
 // ── Exposure Row Component ──────────────────────────────────────────────────
 
 interface ExposureRowProps {
-  token: (typeof MOCK_TOKENS)[number];
+  token: any;
   index: number;
 }
 

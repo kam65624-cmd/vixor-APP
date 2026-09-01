@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { memo } from "react";
-import { getTradeHistory } from "@/shared/data";
+import { getUserTrades } from "@/domains/trade/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import type { Tables } from "@/shared/supabase/types";
 import {
@@ -35,40 +35,32 @@ const COLUMNS = [
 
 function PnLPage() {
   const navigate = useNavigate();
-  const fetchTrades = useStableServerFn(getTradeHistory);
+  const stableTrades = useStableServerFn(getUserTrades);
 
   const tradesQuery = useQuery({
-    queryKey: ["trade-history-pnl"],
-    queryFn: () => fetchTrades({ data: { limit: 100 } }),
-    staleTime: 15_000,
+    queryKey: ["user-trades"],
+    queryFn: () => stableTrades({}),
+    staleTime: 60_000,
   });
 
   const isLoading = tradesQuery.isLoading;
-  const trades: Trade[] = tradesQuery.data?.trades ?? [];
+  const data = tradesQuery.data;
+  const summary = data?.summary ?? {
+    totalPnlUsd: 0,
+    totalTrades: 0,
+    winRatePct: 0,
+    bestTradeUsd: 0,
+    worstTradeUsd: 0,
+  };
+  const trades: any[] = data?.trades ?? [];
 
   const closedTrades = trades.filter((t) => t.status === "closed" && t.pnl !== null);
   const openTrades = trades.filter((t) => t.status === "open");
 
-  const totalPnl = closedTrades.reduce((s, t) => s + (t.pnl || 0), 0);
-  const wins = closedTrades.filter((t) => (t.pnl || 0) > 0).length;
-  const losses = closedTrades.filter((t) => (t.pnl || 0) < 0).length;
-  const winRate = closedTrades.length > 0 ? Math.round((wins / closedTrades.length) * 100) : 0;
-  const avgWin =
-    wins > 0
-      ? closedTrades.filter((t) => (t.pnl || 0) > 0).reduce((s, t) => s + (t.pnl || 0), 0) / wins
-      : 0;
-  const avgLoss =
-    losses > 0
-      ? Math.abs(
-          closedTrades.filter((t) => (t.pnl || 0) < 0).reduce((s, t) => s + (t.pnl || 0), 0) /
-            losses,
-        )
-      : 0;
-  const profitFactor = avgLoss > 0 ? avgWin / avgLoss : avgWin > 0 ? Infinity : 0;
-  const bestTrade =
-    closedTrades.length > 0
-      ? closedTrades.reduce((best, t) => ((t.pnl || 0) > (best.pnl || 0) ? t : best))
-      : null;
+  const totalPnl = summary.totalPnlUsd;
+  const winRate = summary.winRatePct;
+  const bestTradeAmount = summary.bestTradeUsd;
+  const profitFactor = 0; // Or whatever default
 
   const pnlFmt = (n: number) => (n >= 0 ? `+$${n.toFixed(2)}` : `-$${Math.abs(n).toFixed(2)}`);
 
@@ -105,7 +97,7 @@ function PnLPage() {
             label: "Win Rate",
             value: `${winRate}%`,
             color: "var(--color-bullish)",
-            sub: `${wins}W / ${losses}L`,
+            sub: `${summary.totalTrades} Total Trades`,
           },
           {
             label: "Profit Factor",
@@ -113,9 +105,8 @@ function PnLPage() {
           },
           {
             label: "Best Trade",
-            value: bestTrade ? bestTrade.pair : "—",
-            color: bestTrade ? "var(--color-bullish)" : "var(--color-muted-foreground)",
-            sub: bestTrade ? pnlFmt(bestTrade.pnl || 0) : undefined,
+            value: bestTradeAmount ? pnlFmt(bestTradeAmount) : "—",
+            color: bestTradeAmount ? "var(--color-bullish)" : "var(--color-muted-foreground)",
           },
         ]
       : [];

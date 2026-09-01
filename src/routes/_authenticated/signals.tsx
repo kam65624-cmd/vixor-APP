@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { memo, useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { getDailySignals } from "@/shared/data";
+import { getTechnicalSignals } from "@/domains/trade/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useLivePrices } from "@/shared/market-data";
 import { LiveDot } from "@/components/vixor/LiveDot";
@@ -179,7 +179,9 @@ const TABS = ["All", "BUY", "SELL", "WAIT"] as const;
 function SignalsPage() {
   const navigate = useNavigate();
   const { play } = useSound();
-  const fetchSignals = useStableServerFn(getDailySignals);
+  const fetchSignals = useStableServerFn(getTechnicalSignals);
+  const [symbol, setSymbol] = useState("BTCUSDT");
+  const [selectedInterval, setSelectedInterval] = useState("1h");
   const createTracking = useStableServerFn(createSignalTracking);
   const fetchTrackings = useStableServerFn(getUserSignalTrackings);
   const queryClient = useQueryClient();
@@ -251,13 +253,31 @@ function SignalsPage() {
   }, []);
 
   const query = useQuery({
-    queryKey: ["daily-signals"],
-    queryFn: () => fetchSignals({}),
+    queryKey: ["signals", symbol, selectedInterval],
+    queryFn: () => fetchSignals({ data: { symbol, interval: selectedInterval } }),
     staleTime: 60_000,
   });
 
-  const signals = useMemo((): Signal[] => query.data?.signals ?? [], [query.data?.signals]);
   const isLoading = query.isLoading;
+  const isError = query.isError;
+
+  const signals = useMemo((): Signal[] => {
+    return (query.data?.patterns ?? []).map((p: any, i: number) => ({
+      id: `sig-${i}`,
+      pair: symbol,
+      timeframe: selectedInterval,
+      recommendation:
+        p.direction === "bullish" ? "BUY" : p.direction === "bearish" ? "SELL" : "WAIT",
+      confidence: p.confidence,
+      entry: query.data?.lastPrice ?? null,
+      stop_loss: null,
+      take_profit: null,
+      reasons: [p.description],
+      pattern: p.type,
+      signal_date: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    }));
+  }, [query.data?.patterns, query.data?.lastPrice, symbol, selectedInterval]);
 
   // Play sound for newly appeared signals
   useEffect(() => {

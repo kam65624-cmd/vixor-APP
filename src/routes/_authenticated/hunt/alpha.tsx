@@ -1,5 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getTrendingTokens } from "@/domains/hunt/functions";
+import type { TrendingToken } from "@/domains/hunt/functions";
 import {
   PageLayout,
   PageScrollArea,
@@ -275,6 +279,16 @@ export const Route = createFileRoute("/_authenticated/hunt/alpha")({
 function AlphaSignalsPage() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [selectedChain, setSelectedChain] = useState("solana");
+  const stableTrending = useStableServerFn(getTrendingTokens);
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["trending-tokens", selectedChain],
+    queryFn: () => stableTrending({ data: { chain: selectedChain, limit: 20 } }),
+    staleTime: 60_000,
+  });
+
+  const tokens = data?.tokens ?? [];
 
   const filteredSignals = MOCK_SIGNALS.filter((s) => {
     if (activeCategory === "All") return true;
@@ -400,123 +414,167 @@ function AlphaSignalsPage() {
         ]}
       />
 
-      <PageScrollArea>
-        {/* ── Hot Tokens Section ── */}
-        <PageSectionTitle title="Hot Tokens" count={MOCK_HOT_TOKENS.length} />
-
-        {MOCK_HOT_TOKENS.map((token) => {
-          const sparkPoints = buildSparklinePoints(token.sparkline, 60, 24);
+      {/* ── Chain Filter Tabs ── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "4px",
+          padding: "8px 16px",
+          borderBottom: "1px solid var(--color-border)",
+          overflowX: "auto",
+        }}
+        className="scrollbar-hide"
+      >
+        {["solana", "ethereum", "bsc", "base"].map((chain) => {
+          const isActive = selectedChain === chain;
           return (
-            <DataRow
-              key={token.address}
-              onClick={() => handleHotTokenClick(token.address)}
-              leftAccent="var(--char-vix-border)"
+            <button
+              key={chain}
+              type="button"
+              onClick={() => setSelectedChain(chain)}
+              style={{
+                minHeight: "44px",
+                fontSize: "12px",
+                fontWeight: isActive ? 700 : 500,
+                padding: "8px 16px",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                color: isActive ? "var(--color-background)" : "var(--color-muted-foreground)",
+                background: isActive ? "var(--char-vix)" : "transparent",
+              }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                }}
-              >
-                {/* Rank */}
-                <div
-                  style={{
-                    width: "28px",
-                    height: "28px",
-                    borderRadius: "8px",
-                    background: "var(--char-vix-dim)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "13px",
-                    fontWeight: 800,
-                    color: "var(--char-vix)",
-                    fontFamily: "var(--font-mono)",
-                    flexShrink: 0,
-                  }}
-                >
-                  #{token.rank}
-                </div>
-
-                {/* Token info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: "14px",
-                        fontWeight: 700,
-                        color: "var(--color-foreground)",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {token.name}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        color: "var(--color-muted-foreground)",
-                      }}
-                    >
-                      ${token.symbol}
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <PageBadge
-                      label={`${token.signalCount} signals`}
-                      color="var(--char-vix)"
-                      small
-                    />
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        fontFamily: "var(--font-mono)",
-                        color: "var(--color-bullish)",
-                      }}
-                    >
-                      {formatReturn(token.totalReturn)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Sparkline */}
-                <svg
-                  width="60"
-                  height="24"
-                  viewBox="0 0 60 24"
-                  aria-hidden="true"
-                  style={{ flexShrink: 0 }}
-                >
-                  <polyline
-                    points={sparkPoints}
-                    fill="none"
-                    stroke="var(--char-vix)"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            </DataRow>
+              {chain.charAt(0).toUpperCase() + chain.slice(1)}
+            </button>
           );
         })}
+      </div>
+
+      <PageScrollArea>
+        {/* ── Hot Tokens Section ── */}
+        <PageSectionTitle title="Hot Tokens" count={tokens.length} />
+
+        {isLoading && (
+          <div
+            style={{ padding: "20px", textAlign: "center", color: "var(--color-muted-foreground)" }}
+          >
+            Loading tokens...
+          </div>
+        )}
+        {isError && (
+          <div style={{ padding: "20px", color: "var(--shield-danger)" }}>
+            Failed to load: {(error as Error).message}
+          </div>
+        )}
+        {!isLoading && tokens.length === 0 && (
+          <div
+            style={{ padding: "40px", textAlign: "center", color: "var(--color-muted-foreground)" }}
+          >
+            No trending tokens found
+          </div>
+        )}
+
+        {!isLoading &&
+          tokens.map((token, index) => {
+            const levelColors = {
+              hot: "var(--color-bearish)",
+              warm: "orange",
+              cool: "var(--color-bullish)",
+            } as Record<string, string>;
+            return (
+              <DataRow
+                key={token.address}
+                onClick={() => handleHotTokenClick(token.address)}
+                leftAccent="var(--char-vix-border)"
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                  }}
+                >
+                  {/* Rank */}
+                  <div
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "8px",
+                      background: "var(--char-vix-dim)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "13px",
+                      fontWeight: 800,
+                      color: "var(--char-vix)",
+                      fontFamily: "var(--font-mono)",
+                      flexShrink: 0,
+                    }}
+                  >
+                    #{index + 1}
+                  </div>
+
+                  {/* Token info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 700,
+                          color: "var(--color-foreground)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {token.name}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: "var(--color-muted-foreground)",
+                        }}
+                      >
+                        ${token.symbol}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <PageBadge
+                        label={token.accelerationLevel.toUpperCase()}
+                        color={levelColors[token.accelerationLevel]}
+                        small
+                      />
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          fontFamily: "var(--font-mono)",
+                          color: "var(--color-bullish)",
+                        }}
+                      >
+                        Score: {token.accelerationScore}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </DataRow>
+            );
+          })}
 
         {/* ── Signal List Section ── */}
         <PageSectionTitle title="Alpha Signals" count={filteredSignals.length} />

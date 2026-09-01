@@ -1,5 +1,8 @@
 import { createFileRoute, useNavigate, useRouter, useParams } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getTokenDetail } from "@/domains/hunt/functions";
 import { PageLayout, PageScrollArea, PageBadge, ProgressBar } from "@/components/vixor/PageLayout";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
@@ -112,18 +115,17 @@ function TokenDetailPage() {
   const router = useRouter();
   const { address } = useParams({ strict: false }) as { address: string };
   const [copied, setCopied] = useState(false);
+  const [selectedChain, setSelectedChain] = useState("solana");
+  const stableDetail = useStableServerFn(getTokenDetail);
 
-  const data = MOCK_TOKEN;
-  const displayAddress = address || data.contractAddress;
-  const sparkPoints = buildSparklinePoints(data.sparklineData, 280, 80);
-  const lastPoint = data.sparklineData.split(",").pop();
-  const lastVal = Number(lastPoint);
-  const allVals = data.sparklineData.split(",").map(Number);
-  const minV = Math.min(...allVals);
-  const maxV = Math.max(...allVals);
-  const rangeV = maxV - minV || 1;
-  const endX = 280;
-  const endY = 80 - ((lastVal - minV) / rangeV) * 76 - 2;
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["token-detail", address, selectedChain],
+    queryFn: () => stableDetail({ data: { address, chain: selectedChain } }),
+    staleTime: 120_000,
+    retry: 1,
+  });
+
+  const displayAddress = address || data?.address || "";
 
   const handleBack = useCallback(() => {
     router.history.back();
@@ -211,396 +213,346 @@ function TokenDetailPage() {
         </div>
 
         {/* ── Token Header ── */}
-        <div
-          style={{
-            padding: "16px 16px 12px",
-            borderBottom: "1px solid var(--color-border)",
-          }}
-        >
+        {isLoading && (
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              marginBottom: "6px",
-            }}
+            style={{ padding: "20px", textAlign: "center", color: "var(--color-muted-foreground)" }}
           >
-            <span
+            Loading token detail...
+          </div>
+        )}
+        {isError && (
+          <div style={{ padding: "20px", color: "var(--shield-danger)" }}>
+            Failed to load: {(error as Error).message}
+          </div>
+        )}
+
+        {!isLoading && data && (
+          <>
+            <div
               style={{
-                fontSize: "20px",
-                fontWeight: 800,
+                padding: "16px 16px 12px",
+                borderBottom: "1px solid var(--color-border)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "6px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: 800,
+                    color: "var(--color-foreground)",
+                  }}
+                >
+                  {data.name}
+                </span>
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    color: "var(--char-vix)",
+                  }}
+                >
+                  ${data.symbol}
+                </span>
+                <PageBadge label={data.chain} color="var(--char-vix)" small />
+              </div>
+              <span
+                style={{
+                  fontSize: "11px",
+                  color: "var(--color-muted-foreground)",
+                }}
+              >
+                Created recently
+              </span>
+            </div>
+
+            {/* ── Price Section ── */}
+            <div
+              style={{
+                padding: "20px 16px",
+                borderBottom: "1px solid var(--color-border)",
+                background: "var(--color-card)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "32px",
+                  fontWeight: 900,
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--color-foreground)",
+                  lineHeight: 1.1,
+                  marginBottom: "12px",
+                }}
+              >
+                ${data.price.toFixed(6)}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    fontFamily: "var(--font-mono)",
+                    color: changeColor(data.priceChange24h),
+                    background: changeBg(data.priceChange24h),
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                  }}
+                >
+                  24h {changeText(data.priceChange24h)}
+                </span>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    fontFamily: "var(--font-mono)",
+                    color: changeColor(data.priceChange1h),
+                    background: changeBg(data.priceChange1h),
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                  }}
+                >
+                  1h {changeText(data.priceChange1h)}
+                </span>
+              </div>
+            </div>
+
+            {/* ── Contract Address Row ── */}
+            <div
+              style={{
+                padding: "12px 16px",
+                borderBottom: "1px solid var(--color-border)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "8px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: "var(--color-muted-foreground)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                Contract
+              </span>
+              <button
+                type="button"
+                onClick={handleCopy}
+                aria-label={`Copy contract address ${displayAddress}`}
+                style={{
+                  minHeight: "36px",
+                  fontSize: "12px",
+                  fontFamily: "var(--font-mono)",
+                  fontWeight: 600,
+                  color: copied ? "var(--char-vix)" : "var(--color-muted-foreground)",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "6px",
+                  padding: "4px 10px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  cursor: "pointer",
+                  transition: "background 0.15s ease, color 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                }}
+              >
+                {copied ? "Copied!" : truncateAddress(displayAddress)}
+                <span aria-hidden="true" style={{ fontSize: "10px" }}>
+                  {copied ? "✓" : "📋"}
+                </span>
+              </button>
+            </div>
+
+            {/* ── 2x2 Stats Grid ── */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1px",
+                background: "var(--color-border)",
+                borderBottom: "1px solid var(--color-border)",
+              }}
+            >
+              <StatBlock label="Market Cap" value={`$${data.marketCap.toLocaleString()}`} />
+              <StatBlock label="24h Volume" value={`$${data.volume24h.toLocaleString()}`} />
+              <StatBlock label="Holders" value={data.holders.toLocaleString()} />
+              <StatBlock label="Liquidity" value={`$${data.liquidity.toLocaleString()}`} />
+            </div>
+
+            {/* ── SHIELD Deep Link ── */}
+            <div style={{ padding: "12px 16px 0" }}>
+              <button
+                type="button"
+                onClick={handleShieldLink}
+                aria-label="View Security Analysis"
+                style={{
+                  width: "100%",
+                  minHeight: "48px",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  color: "var(--char-vix)",
+                  background: "var(--char-vix-dim)",
+                  border: "1px solid var(--char-vix-border)",
+                  borderRadius: "10px",
+                  padding: "0 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  cursor: "pointer",
+                  transition: "background 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-border)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
+                }}
+              >
+                <span aria-hidden="true">&#x1F6E1;</span>
+                View Security Analysis
+              </button>
+            </div>
+
+            {/* ── Signals ── */}
+            <div
+              style={{
+                padding: "16px 16px 8px",
+                fontSize: "12px",
+                fontWeight: 700,
                 color: "var(--color-foreground)",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                borderBottom: "1px solid var(--color-border)",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
               }}
             >
-              {data.name}
-            </span>
-            <span
+              <span aria-hidden="true">&#x26A1;</span>
+              Signals
+            </div>
+            {MOCK_SIGNALS.map((signal, i) => (
+              <SignalRow key={signal.id} signal={signal} index={i} />
+            ))}
+
+            {/* ── DEX Link ── */}
+            <div style={{ padding: "12px 16px 0" }}>
+              <button
+                type="button"
+                onClick={handleDexLink}
+                aria-label="View on DEX"
+                style={{
+                  width: "100%",
+                  minHeight: "48px",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  color: "var(--color-foreground)",
+                  background: "var(--color-card)",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "10px",
+                  padding: "0 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  cursor: "pointer",
+                  transition: "background 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--color-muted)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--color-card)";
+                }}
+              >
+                <span aria-hidden="true">&#x1F310;</span>
+                View on DEX
+              </button>
+            </div>
+
+            {/* ── Buy / Sell CTA ── */}
+            <div
               style={{
-                fontSize: "14px",
-                fontWeight: 700,
-                color: "var(--char-vix)",
+                display: "flex",
+                gap: "8px",
+                padding: "16px",
               }}
             >
-              ${data.symbol}
-            </span>
-            <PageBadge label={data.chain} color="var(--char-vix)" small />
-          </div>
-          <span
-            style={{
-              fontSize: "11px",
-              color: "var(--color-muted-foreground)",
-            }}
-          >
-            {data.age}
-          </span>
-        </div>
-
-        {/* ── Price Section ── */}
-        <div
-          style={{
-            padding: "20px 16px",
-            borderBottom: "1px solid var(--color-border)",
-            background: "var(--color-card)",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "32px",
-              fontWeight: 900,
-              fontFamily: "var(--font-mono)",
-              color: "var(--color-foreground)",
-              lineHeight: 1.1,
-              marginBottom: "12px",
-            }}
-          >
-            {data.price}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "12px",
-                fontWeight: 700,
-                fontFamily: "var(--font-mono)",
-                color: changeColor(data.change24h),
-                background: changeBg(data.change24h),
-                padding: "4px 10px",
-                borderRadius: "6px",
-              }}
-            >
-              24h {changeText(data.change24h)}
-            </span>
-            <span
-              style={{
-                fontSize: "12px",
-                fontWeight: 700,
-                fontFamily: "var(--font-mono)",
-                color: changeColor(data.change7d),
-                background: changeBg(data.change7d),
-                padding: "4px 10px",
-                borderRadius: "6px",
-              }}
-            >
-              7d {changeText(data.change7d)}
-            </span>
-          </div>
-        </div>
-
-        {/* ── Contract Address Row ── */}
-        <div
-          style={{
-            padding: "12px 16px",
-            borderBottom: "1px solid var(--color-border)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "8px",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "11px",
-              fontWeight: 600,
-              color: "var(--color-muted-foreground)",
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-            }}
-          >
-            Contract
-          </span>
-          <button
-            type="button"
-            onClick={handleCopy}
-            aria-label={`Copy contract address ${displayAddress}`}
-            style={{
-              minHeight: "36px",
-              fontSize: "12px",
-              fontFamily: "var(--font-mono)",
-              fontWeight: 600,
-              color: copied ? "var(--char-vix)" : "var(--color-muted-foreground)",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid var(--color-border)",
-              borderRadius: "6px",
-              padding: "4px 10px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              cursor: "pointer",
-              transition: "background 0.15s ease, color 0.15s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
-            }}
-          >
-            {copied ? "Copied!" : truncateAddress(displayAddress)}
-            <span aria-hidden="true" style={{ fontSize: "10px" }}>
-              {copied ? "✓" : "📋"}
-            </span>
-          </button>
-        </div>
-
-        {/* ── Sparkline Chart ── */}
-        <div
-          style={{
-            padding: "16px",
-            borderBottom: "1px solid var(--color-border)",
-            background: "var(--color-card)",
-          }}
-        >
-          <svg
-            width="280"
-            height="80"
-            viewBox="0 0 280 80"
-            style={{ display: "block", margin: "0 auto" }}
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--char-vix)" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="var(--char-vix)" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
-            {/* Gradient fill under line */}
-            <polygon points={`0,80 ${sparkPoints} 280,80`} fill="url(#sparkGrad)" />
-            {/* Line */}
-            <polyline
-              points={sparkPoints}
-              fill="none"
-              stroke="var(--char-vix)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {/* End dot */}
-            <circle cx={endX} cy={endY} r="3" fill="var(--char-vix)" />
-            <circle cx={endX} cy={endY} r="6" fill="var(--char-vix)" opacity="0.3" />
-          </svg>
-        </div>
-
-        {/* ── 2x2 Stats Grid ── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "1px",
-            background: "var(--color-border)",
-            borderBottom: "1px solid var(--color-border)",
-          }}
-        >
-          <StatBlock label="Market Cap" value={data.marketCap} />
-          <StatBlock label="24h Volume" value={data.volume24h} />
-          <StatBlock label="Holders" value={data.holders} />
-          <StatBlock label="Liquidity" value={data.liquidity} />
-        </div>
-
-        {/* ── Confidence Bar ── */}
-        <div
-          style={{
-            padding: "12px 16px",
-            borderBottom: "1px solid var(--color-border)",
-            background: "var(--color-card)",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "11px",
-              fontWeight: 700,
-              color: "var(--color-muted-foreground)",
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              marginBottom: "8px",
-            }}
-          >
-            Confidence Score
-          </div>
-          <ProgressBar
-            value={data.confidence}
-            max={100}
-            color="var(--char-vix)"
-            height={6}
-            labelRight={`${data.confidence}/100`}
-          />
-        </div>
-
-        {/* ── SHIELD Deep Link ── */}
-        <div style={{ padding: "12px 16px 0" }}>
-          <button
-            type="button"
-            onClick={handleShieldLink}
-            aria-label="View Security Analysis"
-            style={{
-              width: "100%",
-              minHeight: "48px",
-              fontSize: "13px",
-              fontWeight: 700,
-              color: "var(--char-vix)",
-              background: "var(--char-vix-dim)",
-              border: "1px solid var(--char-vix-border)",
-              borderRadius: "10px",
-              padding: "0 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              cursor: "pointer",
-              transition: "background 0.15s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--char-vix-border)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
-            }}
-          >
-            <span aria-hidden="true">&#x1F6E1;</span>
-            View Security Analysis
-          </button>
-        </div>
-
-        {/* ── Signals ── */}
-        <div
-          style={{
-            padding: "16px 16px 8px",
-            fontSize: "12px",
-            fontWeight: 700,
-            color: "var(--color-foreground)",
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
-            borderBottom: "1px solid var(--color-border)",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          <span aria-hidden="true">&#x26A1;</span>
-          Signals
-        </div>
-        {MOCK_SIGNALS.map((signal, i) => (
-          <SignalRow key={signal.id} signal={signal} index={i} />
-        ))}
-
-        {/* ── DEX Link ── */}
-        <div style={{ padding: "12px 16px 0" }}>
-          <button
-            type="button"
-            onClick={handleDexLink}
-            aria-label="View on DEX"
-            style={{
-              width: "100%",
-              minHeight: "48px",
-              fontSize: "13px",
-              fontWeight: 700,
-              color: "var(--color-foreground)",
-              background: "var(--color-card)",
-              border: "1px solid var(--color-border)",
-              borderRadius: "10px",
-              padding: "0 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              cursor: "pointer",
-              transition: "background 0.15s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--color-muted)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--color-card)";
-            }}
-          >
-            <span aria-hidden="true">&#x1F310;</span>
-            View on DEX
-          </button>
-        </div>
-
-        {/* ── Buy / Sell CTA ── */}
-        <div
-          style={{
-            display: "flex",
-            gap: "8px",
-            padding: "16px",
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleBuy}
-            aria-label="Buy token"
-            style={{
-              flex: 1,
-              minHeight: "48px",
-              fontSize: "14px",
-              fontWeight: 800,
-              color: "var(--color-background)",
-              background: "var(--color-bullish)",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-              transition: "opacity 0.15s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = "0.85";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = "1";
-            }}
-          >
-            Buy
-          </button>
-          <button
-            type="button"
-            onClick={handleSell}
-            aria-label="Sell token"
-            style={{
-              flex: 1,
-              minHeight: "48px",
-              fontSize: "14px",
-              fontWeight: 800,
-              color: "var(--color-background)",
-              background: "var(--color-bearish)",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-              transition: "opacity 0.15s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = "0.85";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = "1";
-            }}
-          >
-            Sell
-          </button>
-        </div>
+              <button
+                type="button"
+                onClick={handleBuy}
+                aria-label="Buy token"
+                style={{
+                  flex: 1,
+                  minHeight: "48px",
+                  fontSize: "14px",
+                  fontWeight: 800,
+                  color: "var(--color-background)",
+                  background: "var(--color-bullish)",
+                  border: "none",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  transition: "opacity 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.opacity = "0.85";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.opacity = "1";
+                }}
+              >
+                Buy
+              </button>
+              <button
+                type="button"
+                onClick={handleSell}
+                aria-label="Sell token"
+                style={{
+                  flex: 1,
+                  minHeight: "48px",
+                  fontSize: "14px",
+                  fontWeight: 800,
+                  color: "var(--color-background)",
+                  background: "var(--color-bearish)",
+                  border: "none",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  transition: "opacity 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.opacity = "0.85";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.opacity = "1";
+                }}
+              >
+                Sell
+              </button>
+            </div>
+          </>
+        )}
 
         {/* ── VIX micro-moment ── */}
         <div

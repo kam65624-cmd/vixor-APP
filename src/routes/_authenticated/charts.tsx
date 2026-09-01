@@ -4,6 +4,9 @@ import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
 import { CandlestickChart } from "@/components/vixor/CandlestickChart";
 import { TradingViewChart, SYMBOL_MAP } from "@/components/vixor/TradingViewChart";
 import { useLivePrices } from "@/shared/market-data";
+import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getCandles, getTicker } from "@/domains/trade/functions";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/charts")({
@@ -55,12 +58,36 @@ function ChartsPage() {
   const [selectedPair, setSelectedPair] = useState<string>("BTC/USDT");
   const [selectedInterval, setSelectedInterval] = useState<string>("4H");
 
-  // Get live prices for price bar — include forex pairs for REST polling
-  const { getPrice } = useLivePrices({
-    pairs: [...CRYPTO_PAIRS, ...FOREX_PAIRS],
+  const symbol = selectedPair.replace("/", "");
+  const intervalMap: Record<string, string> = {
+    "1M": "1m",
+    "5M": "5m",
+    "15M": "15m",
+    "1H": "1h",
+    "4H": "4h",
+    "1D": "1d",
+    "1W": "1w",
+  };
+  const interval = intervalMap[selectedInterval] || "4h";
+
+  const stableCandles = useStableServerFn(getCandles);
+  const stableTicker = useStableServerFn(getTicker);
+
+  const {
+    data: candles,
+    isLoading: candlesLoading,
+    isError: candlesError,
+  } = useQuery({
+    queryKey: ["candles", symbol, interval],
+    queryFn: () => stableCandles({ data: { symbol, interval, limit: 200 } }),
+    staleTime: 60_000,
   });
 
-  const liveData = getPrice(selectedPair);
+  const { data: ticker } = useQuery({
+    queryKey: ["ticker", symbol],
+    queryFn: () => stableTicker({ data: { symbol } }),
+    staleTime: 30_000,
+  });
 
   const isCrypto = useMemo(
     () =>
@@ -71,7 +98,7 @@ function ChartsPage() {
     [selectedPair],
   );
 
-  const priceChange = liveData?.change24h ?? 0;
+  const priceChange = ticker ? parseFloat(ticker.priceChangePercent) : 0;
   const isUp = priceChange >= 0;
 
   return (
@@ -80,10 +107,10 @@ function ChartsPage() {
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
         <div className="flex items-center gap-3">
           <span className="text-lg font-extrabold text-foreground">{selectedPair}</span>
-          {liveData && (
+          {ticker && (
             <>
               <span className="text-lg font-bold font-mono text-foreground">
-                {formatPrice(liveData.price)}
+                {formatPrice(parseFloat(ticker.lastPrice))}
               </span>
               <div
                 className={`flex items-center gap-1 text-xs font-bold font-mono ${isUp ? "text-bullish" : "text-bearish"}`}
@@ -95,20 +122,24 @@ function ChartsPage() {
             </>
           )}
         </div>
-        {liveData && (
+        {ticker && (
           <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground">
             <span>
               H{" "}
-              <span className="text-foreground font-semibold">{formatPrice(liveData.high24h)}</span>
+              <span className="text-foreground font-semibold">
+                {formatPrice(parseFloat(ticker.highPrice))}
+              </span>
             </span>
             <span>
               L{" "}
-              <span className="text-foreground font-semibold">{formatPrice(liveData.low24h)}</span>
+              <span className="text-foreground font-semibold">
+                {formatPrice(parseFloat(ticker.lowPrice))}
+              </span>
             </span>
             <span>
               Vol{" "}
               <span className="text-foreground font-semibold">
-                {formatCompact(liveData.quoteVolume24h)}
+                {formatCompact(parseFloat(ticker.quoteVolume))}
               </span>
             </span>
           </div>
@@ -166,6 +197,7 @@ function ChartsPage() {
               interval={selectedInterval}
               height="70vh"
               onIntervalChange={setSelectedInterval}
+              initialData={candles}
             />
           ) : (
             <TradingViewChart

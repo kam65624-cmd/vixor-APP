@@ -1,6 +1,9 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
 import { PageLayout, PageScrollArea, PageBadge, ProgressBar } from "@/components/vixor/PageLayout";
+import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { scanToken } from "@/domains/shield/functions";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -195,18 +198,61 @@ export const Route = createFileRoute("/_authenticated/shield/trust/$address")({
 function TrustScorePage() {
   const navigate = useNavigate();
   const { address } = useParams({ strict: false }) as { address: string };
+  const [selectedChain, setSelectedChain] = useState("solana");
   const [copied, setCopied] = useState(false);
 
-  const data = MOCK_TRUST_DATA;
-  const displayAddress = address || data.contractAddress;
-  const vColor = verdictColor(data.verdict);
-  const vBg = verdictBg(data.verdict);
-  const gaugeColor = overallGaugeColor(data.overallScore);
+  const stableScan = useStableServerFn(scanToken);
+  const {
+    data: scanResult,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["trust-scan", address, selectedChain],
+    queryFn: () => stableScan({ data: { address, chain: selectedChain } }),
+    staleTime: 300_000,
+    retry: 1,
+  });
+
+  const data = scanResult
+    ? {
+        tokenName: scanResult.tokenName ?? "Unknown",
+        symbol: scanResult.tokenSymbol ?? "???",
+        chain: scanResult.chain ?? selectedChain,
+        contractAddress: scanResult.tokenAddress ?? address,
+        overallScore: scanResult.trustScore.score,
+        verdict: (scanResult.trustScore.level === "safe"
+          ? "SAFE TO TRADE"
+          : scanResult.trustScore.level === "low"
+            ? "EXERCISE CAUTION"
+            : scanResult.trustScore.level === "medium"
+              ? "HIGH RISK"
+              : "HIGH RISK") as any,
+        categories: scanResult.trustScore.factors.map((f) => ({
+          name: f.name,
+          score: f.status === "pass" ? 100 : 0,
+          description: f.detail,
+        })),
+        riskFlags: scanResult.security.risks.map((r, i) => ({
+          id: `rf${i}`,
+          name: r,
+          severity: "high" as any,
+          description: r,
+          detectedAt: new Date().toISOString(),
+        })),
+        relatedAlerts: [] as RelatedAlert[],
+      }
+    : null;
+
+  const displayAddress = data?.contractAddress ?? address;
+  const vColor = data ? verdictColor(data.verdict) : "var(--shield-unknown)";
+  const vBg = data ? verdictBg(data.verdict) : "transparent";
+  const gaugeColor = data ? overallGaugeColor(data.overallScore) : "var(--color-muted)";
 
   // SVG gauge calculations
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (data.overallScore / 100) * circumference;
+  const offset = circumference - ((data?.overallScore ?? 0) / 100) * circumference;
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(displayAddress).catch(() => {});
@@ -217,6 +263,68 @@ function TrustScorePage() {
   const handleBack = useCallback(() => {
     navigate({ to: "/shield/scanner" });
   }, [navigate]);
+
+  if (isLoading) {
+    return (
+      <PageLayout
+        title="Trust Score"
+        badge="ANALYSIS"
+        badgeColor="var(--char-sly)"
+        loadingColor="var(--char-sly)"
+      >
+        <PageScrollArea>
+          <div
+            style={{
+              padding: "60px 20px",
+              textAlign: "center",
+              color: "var(--color-muted-foreground)",
+            }}
+          >
+            <div
+              style={{ fontSize: "24px", marginBottom: "16px", animation: "pulse 1.5s infinite" }}
+            >
+              Scanning...
+            </div>
+            Loading trust data...
+          </div>
+        </PageScrollArea>
+      </PageLayout>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageLayout
+        title="Trust Score"
+        badge="ANALYSIS"
+        badgeColor="var(--char-sly)"
+        loadingColor="var(--char-sly)"
+      >
+        <PageScrollArea>
+          <div style={{ padding: "40px", color: "var(--shield-danger)" }}>
+            Error: {error?.message}
+          </div>
+        </PageScrollArea>
+      </PageLayout>
+    );
+  }
+
+  if (!data) {
+    return (
+      <PageLayout
+        title="Trust Score"
+        badge="ANALYSIS"
+        badgeColor="var(--char-sly)"
+        loadingColor="var(--char-sly)"
+      >
+        <PageScrollArea>
+          <div style={{ padding: "40px", color: "var(--color-muted-foreground)" }}>
+            No scan data found.
+          </div>
+        </PageScrollArea>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout
@@ -548,7 +656,7 @@ function TrustScorePage() {
 // ── Trust Category Row ─────────────────────────────────────────────────────
 
 interface TrustCategoryRowProps {
-  category: TrustCategory;
+  category: any;
   index: number;
 }
 
@@ -612,7 +720,7 @@ const TrustCategoryRow = memo(function TrustCategoryRow({
 // ── Risk Flag Row ──────────────────────────────────────────────────────────
 
 interface RiskFlagRowProps {
-  flag: RiskFlag;
+  flag: any;
   index: number;
 }
 
@@ -671,7 +779,7 @@ const RiskFlagRow = memo(function RiskFlagRow({ flag, index }: RiskFlagRowProps)
 // ── Related Alert Row ──────────────────────────────────────────────────────
 
 interface RelatedAlertRowProps {
-  alert: RelatedAlert;
+  alert: any;
   index: number;
 }
 

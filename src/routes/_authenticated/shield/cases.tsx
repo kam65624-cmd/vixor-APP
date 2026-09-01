@@ -7,6 +7,9 @@ import {
   DataRow,
   PageBadge,
 } from "@/components/vixor/PageLayout";
+import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getScanHistory } from "@/domains/shield/functions";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -162,15 +165,35 @@ export const Route = createFileRoute("/_authenticated/shield/cases")({
 function InvestigationCasesPage() {
   const [activeTab, setActiveTab] = useState<string>("All");
 
-  const filteredCases = MOCK_CASES.filter((c) => {
+  const stableHistory = useStableServerFn(getScanHistory);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["scan-history"],
+    queryFn: () => stableHistory({ data: { page: 0, limit: 50 } }),
+    staleTime: 60_000,
+  });
+
+  const casesData = (data?.scans ?? [])
+    .filter((s: any) => s.verdict === "DANGER" || s.verdict === "SUSPICIOUS")
+    .map((s: any) => ({
+      id: s.id,
+      title: s.token_name ?? s.contract_address.slice(0, 8),
+      tokenName: s.token_symbol ?? "???",
+      status: (s.verdict === "DANGER" ? "Open" : "Monitoring") as CaseStatus,
+      severity: (s.verdict === "DANGER" ? "critical" : "high") as CaseSeverity,
+      createdAt: s.created_at,
+      assignee: "Auto",
+      description: "",
+    }));
+
+  const filteredCases = casesData.filter((c: any) => {
     if (activeTab === "All") return true;
     return c.status === activeTab;
   });
 
-  const totalCount = MOCK_CASES.length;
-  const openCount = MOCK_CASES.filter((c) => c.status === "Open").length;
-  const closedCount = MOCK_CASES.filter((c) => c.status === "Closed").length;
-  const monitoringCount = MOCK_CASES.filter((c) => c.status === "Monitoring").length;
+  const totalCount = casesData.length;
+  const openCount = casesData.filter((c: any) => c.status === "Open").length;
+  const closedCount = casesData.filter((c: any) => c.status === "Closed").length;
+  const monitoringCount = casesData.filter((c: any) => c.status === "Monitoring").length;
 
   const tabCounts: Record<string, number> = {
     All: totalCount,
@@ -223,37 +246,50 @@ function InvestigationCasesPage() {
       `}</style>
 
       <PageScrollArea>
-        {filteredCases.length > 0 ? (
-          filteredCases.map((caseItem, i) => (
-            <CaseRow key={caseItem.id} caseItem={caseItem} index={i} />
-          ))
-        ) : (
+        {isLoading && (
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "60px 20px",
-              color: "var(--color-muted-foreground)",
-            }}
+            style={{ padding: "20px", textAlign: "center", color: "var(--color-muted-foreground)" }}
           >
-            <span
-              aria-hidden="true"
-              style={{
-                fontSize: "32px",
-                opacity: 0.3,
-                marginBottom: "8px",
-              }}
-            >
-              &#x1F50D;
-            </span>
-            <span style={{ fontSize: "13px", fontWeight: 600 }}>No cases match this filter</span>
-            <span style={{ fontSize: "12px", marginTop: "4px" }}>
-              Try selecting a different tab
-            </span>
+            Loading...
           </div>
         )}
+        {isError && (
+          <div style={{ padding: "20px", color: "var(--shield-danger)" }}>Error loading cases.</div>
+        )}
+        {filteredCases.length > 0 && !isLoading
+          ? filteredCases.map((caseItem: any, i: number) => (
+              <CaseRow key={caseItem.id} caseItem={caseItem} index={i} />
+            ))
+          : !isLoading &&
+            !isError && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "60px 20px",
+                  color: "var(--color-muted-foreground)",
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    fontSize: "32px",
+                    opacity: 0.3,
+                    marginBottom: "8px",
+                  }}
+                >
+                  &#x1F50D;
+                </span>
+                <span style={{ fontSize: "13px", fontWeight: 600 }}>
+                  No cases match this filter
+                </span>
+                <span style={{ fontSize: "12px", marginTop: "4px" }}>
+                  Try selecting a different tab
+                </span>
+              </div>
+            )}
 
         {/* VIX micro-moment */}
         <div
@@ -277,7 +313,7 @@ function InvestigationCasesPage() {
 // ── Case Row Component ─────────────────────────────────────────────────────
 
 interface CaseRowProps {
-  caseItem: (typeof MOCK_CASES)[number];
+  caseItem: any;
   index: number;
 }
 

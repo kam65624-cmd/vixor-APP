@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { memo, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getDashboardData, getHomeMarketData } from "@/shared/data";
+import { getHomeMarketData } from "@/shared/data";
 import type { HomeMarketData, HomeTickerItem } from "@/shared/data";
+import { getDashboardData } from "@/domains/trade/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getMe } from "@/domains/user/functions";
 import { useLivePrices } from "@/shared/market-data";

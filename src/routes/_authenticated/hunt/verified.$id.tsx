@@ -1,5 +1,8 @@
 import { createFileRoute, useNavigate, useRouter, useParams } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getTokenDetail } from "@/domains/hunt/functions";
 import {
   PageLayout,
   PageScrollArea,
@@ -215,16 +218,13 @@ function VerifiedTokensPage() {
   const { id } = useParams({ strict: false }) as { id: string };
   const [activeTier, setActiveTier] = useState<string>("All");
 
-  const filteredTokens = MOCK_VERIFIED.filter((t) => {
-    if (activeTier === "All") return true;
-    return tierLabel(t.tier) === activeTier;
-  });
+  const stableDetail = useStableServerFn(getTokenDetail);
 
-  const tier1Count = MOCK_VERIFIED.filter((t) => t.tier === 1).length;
-  const avgTrust = Math.round(
-    MOCK_VERIFIED.reduce((sum, t) => sum + t.trustScore, 0) / MOCK_VERIFIED.length,
-  );
-  const categories = new Set(MOCK_VERIFIED.map((t) => t.category)).size;
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["token-detail", id],
+    queryFn: () => stableDetail({ data: { address: id, chain: "solana" } }),
+    staleTime: 120_000,
+  });
 
   const handleBack = useCallback(() => {
     router.history.back();
@@ -348,31 +348,29 @@ function VerifiedTokensPage() {
       <StatsRow
         stats={[
           {
-            label: "Total Verified",
-            value: String(MOCK_VERIFIED.length),
-            color: "var(--color-foreground)",
-          },
-          {
-            label: "Tier 1",
-            value: String(tier1Count),
+            label: "Verified Status",
+            value: data ? "Verified" : "-",
             color: "var(--char-vix)",
-          },
-          {
-            label: "Avg Trust Score",
-            value: String(avgTrust),
-            color: "var(--color-foreground)",
-          },
-          {
-            label: "Categories",
-            value: String(categories),
-            color: "var(--color-info)",
           },
         ]}
       />
 
       {/* ── Verified Token List ── */}
       <PageScrollArea>
-        {filteredTokens.length === 0 ? (
+        {isLoading && (
+          <div
+            style={{ padding: "20px", textAlign: "center", color: "var(--color-muted-foreground)" }}
+          >
+            Loading...
+          </div>
+        )}
+        {isError && (
+          <div style={{ padding: "20px", color: "var(--shield-danger)" }}>
+            Failed to load: {(error as Error).message}
+          </div>
+        )}
+
+        {!isLoading && !data && (
           <div
             style={{
               padding: "48px 16px",
@@ -381,17 +379,41 @@ function VerifiedTokensPage() {
               fontSize: "13px",
             }}
           >
-            No verified tokens in this tier.
+            No verified token found.
           </div>
-        ) : (
-          filteredTokens.map((token, i) => (
-            <VerifiedTokenRow
-              key={token.id}
-              token={token}
-              index={i}
-              onClick={() => handleTokenClick(token.address)}
-            />
-          ))
+        )}
+
+        {!isLoading && data && (
+          <DataRow leftAccent="var(--char-vix-border)">
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+              >
+                <span
+                  style={{ fontSize: "16px", fontWeight: 700, color: "var(--color-foreground)" }}
+                >
+                  {data.name}
+                </span>
+                <PageBadge label={data.chain} color="var(--color-info)" small />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-muted-foreground)", fontSize: "14px" }}>
+                  Symbol
+                </span>
+                <span style={{ fontWeight: 700, color: "var(--color-foreground)" }}>
+                  ${data.symbol}
+                </span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-muted-foreground)", fontSize: "14px" }}>
+                  Price
+                </span>
+                <span style={{ fontWeight: 700, color: "var(--color-foreground)" }}>
+                  ${data.price}
+                </span>
+              </div>
+            </div>
+          </DataRow>
         )}
 
         {/* ── Trust Score Distribution ── */}

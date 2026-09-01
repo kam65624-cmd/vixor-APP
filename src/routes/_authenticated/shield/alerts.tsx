@@ -7,6 +7,9 @@ import {
   DataRow,
   PageBadge,
 } from "@/components/vixor/PageLayout";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
+import { getShieldAlerts, acknowledgeAlert } from "@/domains/shield/functions";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -195,22 +198,48 @@ function ShieldAlertsPage() {
     setTimeout(() => setCopiedId(null), 1500);
   }, []);
 
-  const filteredAlerts = MOCK_ALERTS.filter((a) => {
+  const queryClient = useQueryClient();
+  const stableAlerts = useStableServerFn(getShieldAlerts);
+  const stableAck = useStableServerFn(acknowledgeAlert);
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["shield-alerts", "all"],
+    queryFn: () => stableAlerts({ data: { limit: 50 } }),
+    staleTime: 30_000,
+  });
+
+  const ackMutation = useMutation({
+    mutationFn: (alertId: string) => stableAck({ data: { alertId } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shield-alerts"] }),
+  });
+
+  const alertsData = (data?.alerts ?? []).map((a: any) => ({
+    id: a.id,
+    severity: a.severity as Severity,
+    title: a.title,
+    token: a.description ?? "",
+    address: "0x0000000000000000000000000000000000000000",
+    description: a.description ?? "",
+    timestamp: a.created_at,
+    status: a.status as Status,
+  }));
+
+  const filteredAlerts = alertsData.filter((a: any) => {
     if (activeTab === "All") return true;
     return a.severity === activeTab.toLowerCase();
   });
 
-  const totalCount = MOCK_ALERTS.length;
-  const criticalCount = MOCK_ALERTS.filter((a) => a.severity === "critical").length;
-  const resolvedCount = MOCK_ALERTS.filter((a) => a.status === "Resolved").length;
-  const pendingCount = MOCK_ALERTS.filter((a) => a.status !== "Resolved").length;
+  const totalCount = alertsData.length;
+  const criticalCount = alertsData.filter((a: any) => a.severity === "critical").length;
+  const resolvedCount = alertsData.filter((a: any) => a.status === "Resolved").length;
+  const pendingCount = alertsData.filter((a: any) => a.status !== "Resolved").length;
 
   const tabCounts: Record<string, number> = {
     All: totalCount,
     Critical: criticalCount,
-    High: MOCK_ALERTS.filter((a) => a.severity === "high").length,
-    Medium: MOCK_ALERTS.filter((a) => a.severity === "medium").length,
-    Low: MOCK_ALERTS.filter((a) => a.severity === "low").length,
+    High: alertsData.filter((a: any) => a.severity === "high").length,
+    Medium: alertsData.filter((a: any) => a.severity === "medium").length,
+    Low: alertsData.filter((a: any) => a.severity === "low").length,
   };
 
   return (
@@ -257,43 +286,61 @@ function ShieldAlertsPage() {
       `}</style>
 
       <PageScrollArea>
-        {filteredAlerts.length > 0 ? (
-          filteredAlerts.map((alert, i) => (
-            <AlertRow
-              key={alert.id}
-              alert={alert}
-              index={i}
-              copiedId={copiedId}
-              onCopy={handleCopy}
-              onNavigate={() =>
-                navigate({
-                  to: "/hunt/token/$address",
-                  params: { address: alert.address },
-                })
-              }
-            />
-          ))
-        ) : (
+        {isLoading && (
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "60px 20px",
-              color: "var(--color-muted-foreground)",
-            }}
+            style={{ padding: "20px", textAlign: "center", color: "var(--color-muted-foreground)" }}
           >
-            <span
-              aria-hidden="true"
-              style={{ fontSize: "32px", opacity: 0.3, marginBottom: "8px" }}
-            >
-              &#x1F6E1;
-            </span>
-            <span style={{ fontSize: "13px", fontWeight: 600 }}>No alerts in this category</span>
-            <span style={{ fontSize: "12px", marginTop: "4px" }}>Try a different filter tab</span>
+            Loading...
           </div>
         )}
+        {isError && (
+          <div style={{ padding: "20px", color: "var(--shield-danger)" }}>
+            Error loading alerts.
+          </div>
+        )}
+        {filteredAlerts.length > 0 && !isLoading
+          ? filteredAlerts.map((alert: any, i: number) => (
+              <AlertRow
+                key={alert.id}
+                alert={alert}
+                index={i}
+                copiedId={copiedId}
+                onCopy={handleCopy}
+                onNavigate={() =>
+                  navigate({
+                    to: "/hunt/token/$address",
+                    params: { address: alert.address },
+                  })
+                }
+                onAcknowledge={() => ackMutation.mutate(alert.id)}
+              />
+            ))
+          : !isLoading &&
+            !isError && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "60px 20px",
+                  color: "var(--color-muted-foreground)",
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{ fontSize: "32px", opacity: 0.3, marginBottom: "8px" }}
+                >
+                  &#x1F6E1;
+                </span>
+                <span style={{ fontSize: "13px", fontWeight: 600 }}>
+                  No alerts in this category
+                </span>
+                <span style={{ fontSize: "12px", marginTop: "4px" }}>
+                  Try a different filter tab
+                </span>
+              </div>
+            )}
 
         {/* View All in HUNT button */}
         <div style={{ padding: "16px" }}>
@@ -346,11 +393,12 @@ function ShieldAlertsPage() {
 // ── Alert Row Component ─────────────────────────────────────────────────────
 
 interface AlertRowProps {
-  alert: (typeof MOCK_ALERTS)[number];
+  alert: any;
   index: number;
   copiedId: string | null;
   onCopy: (id: string, address: string) => void;
   onNavigate: () => void;
+  onAcknowledge: () => void;
 }
 
 const AlertRow = memo(function AlertRow({
@@ -359,6 +407,7 @@ const AlertRow = memo(function AlertRow({
   copiedId,
   onCopy,
   onNavigate,
+  onAcknowledge,
 }: AlertRowProps) {
   const sevColor = severityColor(alert.severity);
   const stColor = statusColor(alert.status);
@@ -408,6 +457,25 @@ const AlertRow = memo(function AlertRow({
         >
           {alert.title}
         </span>
+        {alert.status !== "Resolved" && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAcknowledge();
+            }}
+            style={{
+              fontSize: "10px",
+              padding: "2px 8px",
+              borderRadius: "4px",
+              background: "var(--char-sly)14",
+              border: "1px solid var(--char-sly-border)",
+              color: "var(--char-sly)",
+              cursor: "pointer",
+            }}
+          >
+            Ack
+          </button>
+        )}
         <PageBadge label={alert.status} color={stColor} small />
       </div>
 
