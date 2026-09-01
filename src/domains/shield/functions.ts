@@ -21,10 +21,7 @@ import { fetchGoPlusSecurity, CHAIN_IDS } from "./goplus-client";
 import { fetchRugCheckReport } from "./rugcheck-client";
 import { fetchBirdeyeTokenOverview } from "@/domains/hunt/birdeye-client";
 import { fetchTokenPairs } from "@/domains/discover/dexscreener-client";
-import {
-  calculateEvmTrustScore,
-  calculateSolanaTrustScore,
-} from "./trust-score";
+import { calculateEvmTrustScore, calculateSolanaTrustScore } from "./trust-score";
 import type { MarketContext } from "./trust-score";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -73,10 +70,7 @@ export interface ScanTokenResult {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-async function buildMarketContext(
-  tokenAddress: string,
-  chain: string,
-): Promise<MarketContext> {
+async function buildMarketContext(tokenAddress: string, chain: string): Promise<MarketContext> {
   // Try Birdeye first, then DexScreener
   const [birdeye, dexPairs] = await Promise.all([
     fetchBirdeyeTokenOverview(tokenAddress, chain).catch(() => null),
@@ -142,8 +136,21 @@ export const scanToken = createServerFn({ method: "POST" })
           tokenSymbol,
           tokenAddress: address,
           chain,
-          trustScore: { score: 0, level: "critical", verdict: "Unable to scan", honeypot: false, factors: [] },
-          market: { price: market.price, priceChange24h: 0, volume24h: market.volume24h, marketCap: market.marketCap, liquidity: market.liquidity, holders: market.holders },
+          trustScore: {
+            score: 0,
+            level: "critical",
+            verdict: "Unable to scan",
+            honeypot: false,
+            factors: [],
+          },
+          market: {
+            price: market.price,
+            priceChange24h: 0,
+            volume24h: market.volume24h,
+            marketCap: market.marketCap,
+            liquidity: market.liquidity,
+            holders: market.holders,
+          },
           security: securitySummary,
         };
       }
