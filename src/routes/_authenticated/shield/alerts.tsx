@@ -299,7 +299,7 @@ function ShieldAlertsPage() {
         <div style={{ padding: "16px" }}>
           <button
             type="button"
-            onClick={() => navigate({ to: "/hunt" })}
+            onClick={() => navigate({ to: "/hunt/radar" })}
             style={{
               width: "100%",
               minHeight: "48px",
@@ -368,11 +368,17 @@ const AlertRow = memo(function AlertRow({
     <DataRow
       leftAccent={sevColor}
       onClick={onNavigate}
+<<<<<<< HEAD
       style={
         {
           animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
         } as any
       }
+=======
+      style={{
+        animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
+      }}
+>>>>>>> c396228006949df31235762324e150be52553ecb
     >
       {/* Top line: severity dot + title + status badge */}
       <div

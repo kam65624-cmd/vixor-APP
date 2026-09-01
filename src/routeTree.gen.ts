@@ -50,6 +50,7 @@ import { Route as AuthenticatedShieldAlertsRouteImport } from './routes/_authent
 import { Route as AuthenticatedShieldCasesRouteImport } from './routes/_authenticated/shield/cases'
 import { Route as AuthenticatedShieldExposureRouteImport } from './routes/_authenticated/shield/exposure'
 import { Route as AuthenticatedShieldScannerRouteImport } from './routes/_authenticated/shield/scanner'
+<<<<<<< HEAD
 import { Route as AuthenticatedTokenSymbolRouteImport } from './routes/_authenticated/token.$symbol'
 import { Route as AuthenticatedHuntTokenAddressRouteImport } from './routes/_authenticated/hunt/token.$address'
 import { Route as AuthenticatedHuntVerifiedIdRouteImport } from './routes/_authenticated/hunt/verified.$id'
@@ -59,6 +60,16 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+=======
+import { Route as AuthenticatedShieldTrustAddrRouteImport } from './routes/_authenticated/shield/trust.$address'
+import { Route as AuthenticatedShieldCasesRouteImport } from './routes/_authenticated/shield/cases'
+import { Route as AuthenticatedHuntRadarRouteImport } from './routes/_authenticated/hunt/radar'
+import { Route as AuthenticatedHuntTokenAddrRouteImport } from './routes/_authenticated/hunt/token.$address'
+import { Route as AuthenticatedHuntVerifiedIdRouteImport } from './routes/_authenticated/hunt/verified.$id'
+import { Route as AuthenticatedHuntAlphaRouteImport } from './routes/_authenticated/hunt/alpha'
+import { Route as AuthenticatedHuntWhalesRouteImport } from './routes/_authenticated/hunt/whales'
+
+>>>>>>> c396228006949df31235762324e150be52553ecb
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -218,6 +229,7 @@ const AuthenticatedAdminApiKeysRoute =
     path: '/admin/api-keys',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+<<<<<<< HEAD
 const AuthenticatedAnalysisIdRoute = AuthenticatedAnalysisIdRouteImport.update({
   id: '/analysis/$id',
   path: '/analysis/$id',
@@ -292,6 +304,8 @@ const AuthenticatedShieldTrustAddressRoute =
     path: '/shield/trust/$address',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+=======
+>>>>>>> c396228006949df31235762324e150be52553ecb
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -326,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/whale': typeof AuthenticatedWhaleRoute
   '/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
+<<<<<<< HEAD
   '/hunt/alpha': typeof AuthenticatedHuntAlphaRoute
   '/hunt/radar': typeof AuthenticatedHuntRadarRoute
   '/hunt/whales': typeof AuthenticatedHuntWhalesRoute
@@ -333,6 +348,19 @@ export interface FileRoutesByFullPath {
   '/shield/cases': typeof AuthenticatedShieldCasesRoute
   '/shield/exposure': typeof AuthenticatedShieldExposureRoute
   '/shield/scanner': typeof AuthenticatedShieldScannerRoute
+=======
+  '/shield': typeof AuthenticatedShieldIndexRoute
+  '/shield/alerts': typeof AuthenticatedShieldAlertsRoute
+  '/shield/exposure': typeof AuthenticatedShieldExposureRoute
+  '/shield/scanner': typeof AuthenticatedShieldScannerRoute
+  '/shield/trust/$address': typeof AuthenticatedShieldTrustAddrRoute
+  '/shield/cases': typeof AuthenticatedShieldCasesRoute
+  '/hunt/radar': typeof AuthenticatedHuntRadarRoute
+  '/hunt/token/$address': typeof AuthenticatedHuntTokenAddrRoute
+  '/hunt/verified/$id': typeof AuthenticatedHuntVerifiedIdRoute
+  '/hunt/alpha': typeof AuthenticatedHuntAlphaRoute
+  '/hunt/whales': typeof AuthenticatedHuntWhalesRoute
+>>>>>>> c396228006949df31235762324e150be52553ecb
   '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
   '/shield/': typeof AuthenticatedShieldIndexRoute
   '/hunt/token/$address': typeof AuthenticatedHuntTokenAddressRoute
@@ -369,9 +397,21 @@ export interface FileRoutesByTo {
   '/vision': typeof AuthenticatedVisionRoute
   '/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/whale': typeof AuthenticatedWhaleRoute
+  '/shield': typeof AuthenticatedShieldIndexRoute
+  '/shield/alerts': typeof AuthenticatedShieldAlertsRoute
+  '/shield/exposure': typeof AuthenticatedShieldExposureRoute
+  '/shield/scanner': typeof AuthenticatedShieldScannerRoute
+  '/shield/trust/$address': typeof AuthenticatedShieldTrustAddrRoute
+  '/shield/cases': typeof AuthenticatedShieldCasesRoute
+  '/hunt/radar': typeof AuthenticatedHuntRadarRoute
+  '/hunt/token/$address': typeof AuthenticatedHuntTokenAddrRoute
+  '/hunt/verified/$id': typeof AuthenticatedHuntVerifiedIdRoute
+  '/hunt/alpha': typeof AuthenticatedHuntAlphaRoute
+  '/hunt/whales': typeof AuthenticatedHuntWhalesRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
+<<<<<<< HEAD
   '/hunt/alpha': typeof AuthenticatedHuntAlphaRoute
   '/hunt/radar': typeof AuthenticatedHuntRadarRoute
   '/hunt/whales': typeof AuthenticatedHuntWhalesRoute
@@ -379,6 +419,19 @@ export interface FileRoutesByTo {
   '/shield/cases': typeof AuthenticatedShieldCasesRoute
   '/shield/exposure': typeof AuthenticatedShieldExposureRoute
   '/shield/scanner': typeof AuthenticatedShieldScannerRoute
+=======
+  '/shield': typeof AuthenticatedShieldIndexRoute
+  '/shield/alerts': typeof AuthenticatedShieldAlertsRoute
+  '/shield/exposure': typeof AuthenticatedShieldExposureRoute
+  '/shield/scanner': typeof AuthenticatedShieldScannerRoute
+  '/shield/trust/$address': typeof AuthenticatedShieldTrustAddrRoute
+  '/shield/cases': typeof AuthenticatedShieldCasesRoute
+  '/hunt/radar': typeof AuthenticatedHuntRadarRoute
+  '/hunt/token/$address': typeof AuthenticatedHuntTokenAddrRoute
+  '/hunt/verified/$id': typeof AuthenticatedHuntVerifiedIdRoute
+  '/hunt/alpha': typeof AuthenticatedHuntAlphaRoute
+  '/hunt/whales': typeof AuthenticatedHuntWhalesRoute
+>>>>>>> c396228006949df31235762324e150be52553ecb
   '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
   '/shield': typeof AuthenticatedShieldIndexRoute
   '/hunt/token/$address': typeof AuthenticatedHuntTokenAddressRoute
@@ -420,6 +473,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/_authenticated/analysis/$id': typeof AuthenticatedAnalysisIdRoute
+<<<<<<< HEAD
   '/_authenticated/hunt/alpha': typeof AuthenticatedHuntAlphaRoute
   '/_authenticated/hunt/radar': typeof AuthenticatedHuntRadarRoute
   '/_authenticated/hunt/whales': typeof AuthenticatedHuntWhalesRoute
@@ -427,6 +481,19 @@ export interface FileRoutesById {
   '/_authenticated/shield/cases': typeof AuthenticatedShieldCasesRoute
   '/_authenticated/shield/exposure': typeof AuthenticatedShieldExposureRoute
   '/_authenticated/shield/scanner': typeof AuthenticatedShieldScannerRoute
+=======
+  '/_authenticated/shield/': typeof AuthenticatedShieldIndexRoute
+  '/_authenticated/shield/alerts': typeof AuthenticatedShieldAlertsRoute
+  '/_authenticated/shield/exposure': typeof AuthenticatedShieldExposureRoute
+  '/_authenticated/shield/scanner': typeof AuthenticatedShieldScannerRoute
+  '/_authenticated/shield/trust/$address': typeof AuthenticatedShieldTrustAddrRoute
+  '/_authenticated/shield/cases': typeof AuthenticatedShieldCasesRoute
+  '/_authenticated/hunt/radar': typeof AuthenticatedHuntRadarRoute
+  '/_authenticated/hunt/token/$address': typeof AuthenticatedHuntTokenAddrRoute
+  '/_authenticated/hunt/verified/$id': typeof AuthenticatedHuntVerifiedIdRoute
+  '/_authenticated/hunt/alpha': typeof AuthenticatedHuntAlphaRoute
+  '/_authenticated/hunt/whales': typeof AuthenticatedHuntWhalesRoute
+>>>>>>> c396228006949df31235762324e150be52553ecb
   '/_authenticated/token/$symbol': typeof AuthenticatedTokenSymbolRoute
   '/_authenticated/shield/': typeof AuthenticatedShieldIndexRoute
   '/_authenticated/hunt/token/$address': typeof AuthenticatedHuntTokenAddressRoute
@@ -466,6 +533,17 @@ export interface FileRouteTypes {
     | '/vision'
     | '/wallet-web3'
     | '/whale'
+    | '/shield'
+    | '/shield/alerts'
+    | '/shield/exposure'
+    | '/shield/scanner'
+    | '/shield/trust/$address'
+    | '/shield/cases'
+    | '/hunt/radar'
+    | '/hunt/token/$address'
+    | '/hunt/verified/$id'
+    | '/hunt/alpha'
+    | '/hunt/whales'
     | '/admin/api-keys'
     | '/analysis/$id'
     | '/hunt/alpha'
@@ -511,7 +589,29 @@ export interface FileRouteTypes {
     | '/vision'
     | '/wallet-web3'
     | '/whale'
+    | '/shield'
+    | '/shield/alerts'
+    | '/shield/exposure'
+    | '/shield/scanner'
+    | '/shield/trust/$address'
+    | '/shield/cases'
+    | '/hunt/radar'
+    | '/hunt/token/$address'
+    | '/hunt/verified/$id'
+    | '/hunt/alpha'
+    | '/hunt/whales'
     | '/'
+    | '/shield'
+    | '/shield/alerts'
+    | '/shield/exposure'
+    | '/shield/scanner'
+    | '/shield/trust/$address'
+    | '/shield/cases'
+    | '/hunt/radar'
+    | '/hunt/token/$address'
+    | '/hunt/verified/$id'
+    | '/hunt/alpha'
+    | '/hunt/whales'
     | '/admin/api-keys'
     | '/analysis/$id'
     | '/hunt/alpha'
@@ -559,6 +659,17 @@ export interface FileRouteTypes {
     | '/_authenticated/wallet-web3'
     | '/_authenticated/whale'
     | '/_authenticated/'
+    | '/_authenticated/shield/'
+    | '/_authenticated/shield/alerts'
+    | '/_authenticated/shield/exposure'
+    | '/_authenticated/shield/scanner'
+    | '/_authenticated/shield/trust/$address'
+    | '/_authenticated/shield/cases'
+    | '/_authenticated/hunt/radar'
+    | '/_authenticated/hunt/token/$address'
+    | '/_authenticated/hunt/verified/$id'
+    | '/_authenticated/hunt/alpha'
+    | '/_authenticated/hunt/whales'
     | '/_authenticated/admin/api-keys'
     | '/_authenticated/analysis/$id'
     | '/_authenticated/hunt/alpha'
@@ -799,6 +910,7 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWhaleRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+<<<<<<< HEAD
     '/_authenticated/admin/api-keys': {
       id: '/_authenticated/admin/api-keys'
       path: '/admin/api-keys'
@@ -834,6 +946,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHuntWhalesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+=======
+>>>>>>> c396228006949df31235762324e150be52553ecb
     '/_authenticated/shield/': {
       id: '/_authenticated/shield/'
       path: '/shield'
@@ -869,18 +983,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShieldScannerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+<<<<<<< HEAD
     '/_authenticated/token/$symbol': {
       id: '/_authenticated/token/$symbol'
       path: '/token/$symbol'
       fullPath: '/token/$symbol'
       preLoaderRoute: typeof AuthenticatedTokenSymbolRouteImport
+=======
+    '/_authenticated/shield/trust/$address': {
+      id: '/_authenticated/shield/trust/$address'
+      path: '/shield/trust/$address'
+      fullPath: '/shield/trust/$address'
+      preLoaderRoute: typeof AuthenticatedShieldTrustAddrRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shield/cases': {
+      id: '/_authenticated/shield/cases'
+      path: '/shield/cases'
+      fullPath: '/shield/cases'
+      preLoaderRoute: typeof AuthenticatedShieldCasesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hunt/radar': {
+      id: '/_authenticated/hunt/radar'
+      path: '/hunt/radar'
+      fullPath: '/hunt/radar'
+      preLoaderRoute: typeof AuthenticatedHuntRadarRouteImport
+>>>>>>> c396228006949df31235762324e150be52553ecb
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hunt/token/$address': {
       id: '/_authenticated/hunt/token/$address'
       path: '/hunt/token/$address'
       fullPath: '/hunt/token/$address'
-      preLoaderRoute: typeof AuthenticatedHuntTokenAddressRouteImport
+      preLoaderRoute: typeof AuthenticatedHuntTokenAddrRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hunt/verified/$id': {
@@ -895,6 +1031,13 @@ declare module '@tanstack/react-router' {
       path: '/shield/trust/$address'
       fullPath: '/shield/trust/$address'
       preLoaderRoute: typeof AuthenticatedShieldTrustAddressRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/api-keys': {
+      id: '/_authenticated/admin/api-keys'
+      path: '/admin/api-keys'
+      fullPath: '/admin/api-keys'
+      preLoaderRoute: typeof AuthenticatedAdminApiKeysRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }

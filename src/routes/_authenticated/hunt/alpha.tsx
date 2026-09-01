@@ -77,7 +77,8 @@ const MOCK_SIGNALS: AlphaSignal[] = [
     tokenName: "NeonPulse",
     tokenSymbol: "NPULSE",
     tokenAddress: "0xabc123def456789012345678901234567890abcd",
-    description: "Trading volume surged 340% in the last 15 minutes with increasing buy pressure on DEX.",
+    description:
+      "Trading volume surged 340% in the last 15 minutes with increasing buy pressure on DEX.",
     confidence: 87,
     potentialReturn: 24.5,
     timeDetected: "2m ago",
@@ -89,7 +90,8 @@ const MOCK_SIGNALS: AlphaSignal[] = [
     tokenName: "VortexFi",
     tokenSymbol: "VTX",
     tokenAddress: "0x4567890abcdef1234567890abcdef1234567890",
-    description: "Three known whale wallets accumulated 2.4M tokens in the past hour from multiple DEX pools.",
+    description:
+      "Three known whale wallets accumulated 2.4M tokens in the past hour from multiple DEX pools.",
     confidence: 91,
     potentialReturn: 18.3,
     timeDetected: "5m ago",
@@ -101,7 +103,8 @@ const MOCK_SIGNALS: AlphaSignal[] = [
     tokenName: "CryptoNinja",
     tokenSymbol: "CNINJA",
     tokenAddress: "0x567890abcdef01234567890abcdef0123456a1",
-    description: "Mentions spiked 520% across platforms with 89% positive sentiment in the last 30 minutes.",
+    description:
+      "Mentions spiked 520% across platforms with 89% positive sentiment in the last 30 minutes.",
     confidence: 72,
     potentialReturn: 15.8,
     timeDetected: "8m ago",
@@ -125,7 +128,8 @@ const MOCK_SIGNALS: AlphaSignal[] = [
     tokenName: "TitanRise",
     tokenSymbol: "TRISE",
     tokenAddress: "0x4567890abcdef01234567890abcdef01234569",
-    description: "Unusual volume spike detected: 180% above 24h average with strong bid-ask balance.",
+    description:
+      "Unusual volume spike detected: 180% above 24h average with strong bid-ask balance.",
     confidence: 78,
     potentialReturn: 12.4,
     timeDetected: "15m ago",
@@ -137,7 +141,8 @@ const MOCK_SIGNALS: AlphaSignal[] = [
     tokenName: "NeonPulse",
     tokenSymbol: "NPULSE",
     tokenAddress: "0xabc123def456789012345678901234567890abcd",
-    description: "Smart money wallet moved 500K USDC into NPULSE pool, matching historical accumulation pattern.",
+    description:
+      "Smart money wallet moved 500K USDC into NPULSE pool, matching historical accumulation pattern.",
     confidence: 94,
     potentialReturn: 28.7,
     timeDetected: "18m ago",
@@ -149,7 +154,8 @@ const MOCK_SIGNALS: AlphaSignal[] = [
     tokenName: "VortexFi",
     tokenSymbol: "VTX",
     tokenAddress: "0x4567890abcdef1234567890abcdef1234567890",
-    description: "Viral tweet thread from top KOL reached 45K impressions with 78% engagement rate.",
+    description:
+      "Viral tweet thread from top KOL reached 45K impressions with 78% engagement rate.",
     confidence: 68,
     potentialReturn: 11.2,
     timeDetected: "22m ago",
@@ -161,7 +167,8 @@ const MOCK_SIGNALS: AlphaSignal[] = [
     tokenName: "GhostChain",
     tokenSymbol: "GHOST",
     tokenAddress: "0xdef789abc012345678901234567890abcdef0123",
-    description: "On-chain transaction velocity doubled as 8 new active wallets appeared in 5 minutes.",
+    description:
+      "On-chain transaction velocity doubled as 8 new active wallets appeared in 5 minutes.",
     confidence: 63,
     potentialReturn: 9.8,
     timeDetected: "25m ago",
@@ -173,7 +180,8 @@ const MOCK_SIGNALS: AlphaSignal[] = [
     tokenName: "DarkMatter",
     tokenSymbol: "DMT",
     tokenAddress: "0x7890abcdef1234567890abcdef12345678abcd01",
-    description: "Volume breakout on 5-minute chart with 4 consecutive green candles and expanding range.",
+    description:
+      "Volume breakout on 5-minute chart with 4 consecutive green candles and expanding range.",
     confidence: 81,
     potentialReturn: 16.5,
     timeDetected: "30m ago",
@@ -185,7 +193,8 @@ const MOCK_SIGNALS: AlphaSignal[] = [
     tokenName: "QuantumLeap",
     tokenSymbol: "QLEAP",
     tokenAddress: "0x0123456789abcdef0123456789abcdef01234567",
-    description: "Whale cluster detected: 4 coordinated buys totaling 1.2M tokens within 2 minutes.",
+    description:
+      "Whale cluster detected: 4 coordinated buys totaling 1.2M tokens within 2 minutes.",
     confidence: 89,
     potentialReturn: 22.1,
     timeDetected: "35m ago",
@@ -343,25 +352,19 @@ function AlphaSignalsPage() {
                 borderRadius: "8px",
                 border: "none",
                 cursor: "pointer",
-                color: isActive
-                  ? "var(--color-background)"
-                  : "var(--color-muted-foreground)",
-                background: isActive
-                  ? "var(--char-vix)"
-                  : "transparent",
+                color: isActive ? "var(--color-background)" : "var(--color-muted-foreground)",
+                background: isActive ? "var(--char-vix)" : "transparent",
                 whiteSpace: "nowrap",
                 transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background =
-                    "var(--char-vix-dim)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background =
-                    "transparent";
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
                 }
               }}
             >
@@ -399,10 +402,7 @@ function AlphaSignalsPage() {
 
       <PageScrollArea>
         {/* ── Hot Tokens Section ── */}
-        <PageSectionTitle
-          title="Hot Tokens"
-          count={MOCK_HOT_TOKENS.length}
-        />
+        <PageSectionTitle title="Hot Tokens" count={MOCK_HOT_TOKENS.length} />
 
         {MOCK_HOT_TOKENS.map((token) => {
           const sparkPoints = buildSparklinePoints(token.sparkline, 60, 24);
@@ -519,10 +519,7 @@ function AlphaSignalsPage() {
         })}
 
         {/* ── Signal List Section ── */}
-        <PageSectionTitle
-          title="Alpha Signals"
-          count={filteredSignals.length}
-        />
+        <PageSectionTitle title="Alpha Signals" count={filteredSignals.length} />
 
         {filteredSignals.length === 0 ? (
           <div

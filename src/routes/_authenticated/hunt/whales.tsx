@@ -282,25 +282,19 @@ function WhaleTrackerPage() {
                 borderRadius: "8px",
                 border: "none",
                 cursor: "pointer",
-                color: isActive
-                  ? "var(--color-background)"
-                  : "var(--color-muted-foreground)",
-                background: isActive
-                  ? "var(--char-vix)"
-                  : "transparent",
+                color: isActive ? "var(--color-background)" : "var(--color-muted-foreground)",
+                background: isActive ? "var(--char-vix)" : "transparent",
                 whiteSpace: "nowrap",
                 transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background =
-                    "var(--char-vix-dim)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background =
-                    "transparent";
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
                 }
               }}
             >
@@ -338,10 +332,7 @@ function WhaleTrackerPage() {
 
       <PageScrollArea>
         {/* ── Whale Trade List ── */}
-        <PageSectionTitle
-          title="Recent Whale Activity"
-          count={filteredTrades.length}
-        />
+        <PageSectionTitle title="Recent Whale Activity" count={filteredTrades.length} />
 
         {filteredTrades.length === 0 ? (
           <div
@@ -413,9 +404,7 @@ const WhaleTradeRow = memo(function WhaleTradeRow({
         animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
         borderRight: isTop ? "2px solid var(--char-vix)" : undefined,
         borderTop: isTop ? "1px solid var(--char-vix-glow)" : undefined,
-        borderBottom: isTop
-          ? "1px solid var(--char-vix-glow)"
-          : "1px solid var(--color-border)",
+        borderBottom: isTop ? "1px solid var(--char-vix-glow)" : "1px solid var(--color-border)",
       }}
     >
       {/* Top line: trade type badge + whale address + token + time */}
@@ -487,12 +476,10 @@ const WhaleTradeRow = memo(function WhaleTradeRow({
               textUnderlineOffset: "2px",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.textDecorationStyle =
-                "solid";
+              (e.currentTarget as HTMLElement).style.textDecorationStyle = "solid";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.textDecorationStyle =
-                "dotted";
+              (e.currentTarget as HTMLElement).style.textDecorationStyle = "dotted";
             }}
           >
             {shortAddr}
@@ -622,12 +609,10 @@ const WhaleTradeRow = memo(function WhaleTradeRow({
             gap: "4px",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color =
-              "var(--color-foreground)";
+            (e.currentTarget as HTMLElement).style.color = "var(--color-foreground)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color =
-              "var(--color-muted-foreground)";
+            (e.currentTarget as HTMLElement).style.color = "var(--color-muted-foreground)";
           }}
         >
           <span aria-hidden="true" style={{ fontSize: "11px" }}>

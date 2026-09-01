@@ -222,8 +222,7 @@ function VerifiedTokensPage() {
 
   const tier1Count = MOCK_VERIFIED.filter((t) => t.tier === 1).length;
   const avgTrust = Math.round(
-    MOCK_VERIFIED.reduce((sum, t) => sum + t.trustScore, 0) /
-      MOCK_VERIFIED.length,
+    MOCK_VERIFIED.reduce((sum, t) => sum + t.trustScore, 0) / MOCK_VERIFIED.length,
   );
   const categories = new Set(MOCK_VERIFIED.map((t) => t.category)).size;
 
@@ -283,12 +282,10 @@ function VerifiedTokensPage() {
             transition: "background 0.15s ease",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background =
-              "var(--char-vix-border)";
+            (e.currentTarget as HTMLElement).style.background = "var(--char-vix-border)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background =
-              "var(--char-vix-dim)";
+            (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
           }}
         >
           <span aria-hidden="true">←</span>
@@ -325,25 +322,19 @@ function VerifiedTokensPage() {
                 borderRadius: "8px",
                 border: "none",
                 cursor: "pointer",
-                color: isActive
-                  ? "var(--color-background)"
-                  : "var(--color-muted-foreground)",
-                background: isActive
-                  ? "var(--char-vix)"
-                  : "transparent",
+                color: isActive ? "var(--color-background)" : "var(--color-muted-foreground)",
+                background: isActive ? "var(--char-vix)" : "transparent",
                 whiteSpace: "nowrap",
                 transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background =
-                    "var(--char-vix-dim)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background =
-                    "transparent";
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
                 }
               }}
             >

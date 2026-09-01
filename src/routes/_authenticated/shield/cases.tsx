@@ -293,11 +293,17 @@ const CaseRow = memo(function CaseRow({ caseItem, index }: CaseRowProps) {
     <DataRow
       leftAccent={sevColor}
       onClick={handleClick}
+<<<<<<< HEAD
       style={
         {
           animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
         } as any
       }
+=======
+      style={{
+        animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
+      }}
+>>>>>>> c396228006949df31235762324e150be52553ecb
     >
       {/* Top line: Case ID + Status Badge */}
       <div
