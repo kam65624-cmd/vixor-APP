@@ -201,15 +201,9 @@ function ShieldAlertsPage() {
   });
 
   const totalCount = MOCK_ALERTS.length;
-  const criticalCount = MOCK_ALERTS.filter(
-    (a) => a.severity === "critical",
-  ).length;
-  const resolvedCount = MOCK_ALERTS.filter(
-    (a) => a.status === "Resolved",
-  ).length;
-  const pendingCount = MOCK_ALERTS.filter(
-    (a) => a.status !== "Resolved",
-  ).length;
+  const criticalCount = MOCK_ALERTS.filter((a) => a.severity === "critical").length;
+  const resolvedCount = MOCK_ALERTS.filter((a) => a.status === "Resolved").length;
+  const pendingCount = MOCK_ALERTS.filter((a) => a.status !== "Resolved").length;
 
   const tabCounts: Record<string, number> = {
     All: totalCount,
@@ -296,12 +290,8 @@ function ShieldAlertsPage() {
             >
               &#x1F6E1;
             </span>
-            <span style={{ fontSize: "13px", fontWeight: 600 }}>
-              No alerts in this category
-            </span>
-            <span style={{ fontSize: "12px", marginTop: "4px" }}>
-              Try a different filter tab
-            </span>
+            <span style={{ fontSize: "13px", fontWeight: 600 }}>No alerts in this category</span>
+            <span style={{ fontSize: "12px", marginTop: "4px" }}>Try a different filter tab</span>
           </div>
         )}
 
@@ -324,12 +314,10 @@ function ShieldAlertsPage() {
               transition: "background 0.15s ease, transform 0.1s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--char-sly)22";
+              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)22";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--char-sly)14";
+              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)14";
             }}
           >
             View All in HUNT
@@ -380,9 +368,11 @@ const AlertRow = memo(function AlertRow({
     <DataRow
       leftAccent={sevColor}
       onClick={onNavigate}
-      style={{
-        animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
-      } as React.CSSProperties}
+      style={
+        {
+          animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
+        } as any
+      }
     >
       {/* Top line: severity dot + title + status badge */}
       <div
@@ -464,16 +454,12 @@ const AlertRow = memo(function AlertRow({
             transition: "background 0.15s ease, color 0.15s ease",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background =
-              "rgba(255,255,255,0.08)";
-            (e.currentTarget as HTMLElement).style.color =
-              "var(--color-foreground)";
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
+            (e.currentTarget as HTMLElement).style.color = "var(--color-foreground)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background =
-              "rgba(255,255,255,0.04)";
-            (e.currentTarget as HTMLElement).style.color =
-              "var(--color-muted-foreground)";
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+            (e.currentTarget as HTMLElement).style.color = "var(--color-muted-foreground)";
           }}
           aria-label={`Copy contract address ${alert.address}`}
         >

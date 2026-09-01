@@ -216,9 +216,11 @@ function ShieldDashboardPage() {
             key={alert.id}
             leftAccent={severityColor(alert.severity)}
             onClick={() => navigate({ to: "/shield/alerts" })}
-            style={{
-              animation: `alert-stagger 0.3s ease-out ${i * 0.04}s both`,
-            } as React.CSSProperties}
+            style={
+              {
+                animation: `alert-stagger 0.3s ease-out ${i * 0.04}s both`,
+              } as any
+            }
           >
             <div
               style={{
@@ -316,10 +318,7 @@ function ShieldDashboardPage() {
         </div>
 
         {/* ── Active Cases ── */}
-        <PageSectionTitle
-          title="Active Cases"
-          count={MOCK_ACTIVE_CASES.length}
-        />
+        <PageSectionTitle title="Active Cases" count={MOCK_ACTIVE_CASES.length} />
 
         {MOCK_ACTIVE_CASES.map((c, i) => (
           <CaseCard key={c.id} caseItem={c} index={i} />
@@ -429,9 +428,7 @@ const QuickActionButton = memo(function QuickActionButton({
         aria-hidden="true"
         style={{
           fontSize: "20px",
-          filter: isActive
-            ? "drop-shadow(0 0 4px var(--char-sly-glow))"
-            : "none",
+          filter: isActive ? "drop-shadow(0 0 4px var(--char-sly-glow))" : "none",
           transition: "filter 0.15s ease",
         }}
       >
@@ -549,129 +546,131 @@ interface TrustDistribution {
   danger: number;
 }
 
-const TrustDistributionChart = memo(
-  function TrustDistributionChart({ distribution }: { distribution: TrustDistribution }) {
-    const barHeight = 22;
-    const maxPct = Math.max(distribution.safe, distribution.caution, distribution.danger);
-    const total = distribution.safe + distribution.caution + distribution.danger;
+const TrustDistributionChart = memo(function TrustDistributionChart({
+  distribution,
+}: {
+  distribution: TrustDistribution;
+}) {
+  const barHeight = 22;
+  const maxPct = Math.max(distribution.safe, distribution.caution, distribution.danger);
+  const total = distribution.safe + distribution.caution + distribution.danger;
 
-    const bars: Array<{ label: string; value: number; color: string }> = [
-      { label: "Safe", value: distribution.safe, color: "var(--shield-safe)" },
-      { label: "Caution", value: distribution.caution, color: "var(--shield-caution)" },
-      { label: "Danger", value: distribution.danger, color: "var(--shield-danger)" },
-    ];
+  const bars: Array<{ label: string; value: number; color: string }> = [
+    { label: "Safe", value: distribution.safe, color: "var(--shield-safe)" },
+    { label: "Caution", value: distribution.caution, color: "var(--shield-caution)" },
+    { label: "Danger", value: distribution.danger, color: "var(--shield-danger)" },
+  ];
 
-    return (
-      <div>
-        {/* SVG horizontal bars */}
-        <svg
-          width="100%"
-          height={bars.length * (barHeight + 24) + 8}
-          viewBox="0 0 300 138"
-          preserveAspectRatio="xMidYMid meet"
-          role="img"
-          aria-label="Trust score distribution chart"
-        >
-          {bars.map((bar, i) => {
-            const y = i * (barHeight + 24);
-            const barWidth = Math.max(4, (bar.value / 100) * 220);
-            return (
-              <g key={bar.label}>
-                {/* Label */}
-                <text
-                  x="0"
-                  y={y + 12}
-                  fill="var(--color-muted-foreground)"
-                  fontSize="11"
-                  fontWeight="600"
-                  letterSpacing="0.04em"
-                >
-                  {bar.label.toUpperCase()}
-                </text>
-                {/* Background track */}
-                <rect
-                  x="70"
-                  y={y + 16}
-                  width="220"
-                  height={barHeight}
-                  rx="4"
-                  fill="var(--color-border)"
+  return (
+    <div>
+      {/* SVG horizontal bars */}
+      <svg
+        width="100%"
+        height={bars.length * (barHeight + 24) + 8}
+        viewBox="0 0 300 138"
+        preserveAspectRatio="xMidYMid meet"
+        role="img"
+        aria-label="Trust score distribution chart"
+      >
+        {bars.map((bar, i) => {
+          const y = i * (barHeight + 24);
+          const barWidth = Math.max(4, (bar.value / 100) * 220);
+          return (
+            <g key={bar.label}>
+              {/* Label */}
+              <text
+                x="0"
+                y={y + 12}
+                fill="var(--color-muted-foreground)"
+                fontSize="11"
+                fontWeight="600"
+                letterSpacing="0.04em"
+              >
+                {bar.label.toUpperCase()}
+              </text>
+              {/* Background track */}
+              <rect
+                x="70"
+                y={y + 16}
+                width="220"
+                height={barHeight}
+                rx="4"
+                fill="var(--color-border)"
+              />
+              {/* Filled bar */}
+              <rect
+                x="70"
+                y={y + 16}
+                width={barWidth}
+                height={barHeight}
+                rx="4"
+                fill={bar.color}
+                opacity="0.85"
+              >
+                <animate
+                  attributeName="width"
+                  from="0"
+                  to={String(barWidth)}
+                  dur="0.6s"
+                  fill="freeze"
                 />
-                {/* Filled bar */}
-                <rect
-                  x="70"
-                  y={y + 16}
-                  width={barWidth}
-                  height={barHeight}
-                  rx="4"
-                  fill={bar.color}
-                  opacity="0.85"
-                >
-                  <animate
-                    attributeName="width"
-                    from="0"
-                    to={String(barWidth)}
-                    dur="0.6s"
-                    fill="freeze"
-                  />
-                </rect>
-                {/* Value text */}
-                <text
-                  x={70 + barWidth + 8}
-                  y={y + 16 + barHeight / 2 + 4}
-                  fill={bar.color}
-                  fontSize="12"
-                  fontWeight="700"
-                  fontFamily="var(--font-mono)"
-                >
-                  {bar.value}%
-                </text>
-              </g>
-            );
-          })}
-        </svg>
+              </rect>
+              {/* Value text */}
+              <text
+                x={70 + barWidth + 8}
+                y={y + 16 + barHeight / 2 + 4}
+                fill={bar.color}
+                fontSize="12"
+                fontWeight="700"
+                fontFamily="var(--font-mono)"
+              >
+                {bar.value}%
+              </text>
+            </g>
+          );
+        })}
+      </svg>
 
-        {/* Summary text below chart */}
-        <div
+      {/* Summary text below chart */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "8px",
+          paddingTop: "8px",
+          borderTop: "1px solid var(--color-border)",
+        }}
+      >
+        <span
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: "8px",
-            paddingTop: "8px",
-            borderTop: "1px solid var(--color-border)",
+            fontSize: "11px",
+            color: "var(--color-muted-foreground)",
           }}
         >
+          Based on{" "}
           <span
             style={{
-              fontSize: "11px",
-              color: "var(--color-muted-foreground)",
-            }}
-          >
-            Based on{" "}
-            <span
-              style={{
-                fontWeight: 700,
-                fontFamily: "var(--font-mono)",
-                color: "var(--color-foreground)",
-              }}
-            >
-              {total}
-            </span>{" "}
-            scanned tokens
-          </span>
-          <span
-            style={{
-              fontSize: "11px",
               fontWeight: 700,
-              color: "var(--char-sly)",
               fontFamily: "var(--font-mono)",
+              color: "var(--color-foreground)",
             }}
           >
-            {maxPct}% max
-          </span>
-        </div>
+            {total}
+          </span>{" "}
+          scanned tokens
+        </span>
+        <span
+          style={{
+            fontSize: "11px",
+            fontWeight: 700,
+            color: "var(--char-sly)",
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          {maxPct}% max
+        </span>
       </div>
-    );
-  },
-);
+    </div>
+  );
+});

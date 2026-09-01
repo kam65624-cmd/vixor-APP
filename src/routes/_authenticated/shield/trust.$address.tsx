@@ -1,11 +1,6 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
-import {
-  PageLayout,
-  PageScrollArea,
-  PageBadge,
-  ProgressBar,
-} from "@/components/vixor/PageLayout";
+import { PageLayout, PageScrollArea, PageBadge, ProgressBar } from "@/components/vixor/PageLayout";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -69,8 +64,7 @@ const MOCK_TRUST_DATA = {
       id: "rf1",
       name: "Ownership Not Fully Renounced",
       severity: "medium",
-      description:
-        "Contract owner can still modify fees. Recommend verifying intention with team.",
+      description: "Contract owner can still modify fees. Recommend verifying intention with team.",
       detectedAt: "2025-01-14T08:00:00Z",
     },
     {
@@ -85,8 +79,7 @@ const MOCK_TRUST_DATA = {
       id: "rf3",
       name: "LP Lock Expiring in 14 Days",
       severity: "medium",
-      description:
-        "Liquidity pool lock expires soon. Monitor for re-lock or withdrawal.",
+      description: "Liquidity pool lock expires soon. Monitor for re-lock or withdrawal.",
       detectedAt: "2025-01-13T22:15:00Z",
     },
     {
@@ -152,9 +145,7 @@ function verdictBg(v: string): string {
   }
 }
 
-function flagSeverityColor(
-  s: "low" | "medium" | "high" | "critical",
-): string {
+function flagSeverityColor(s: "low" | "medium" | "high" | "critical"): string {
   switch (s) {
     case "critical":
       return "var(--shield-danger)";
@@ -264,12 +255,10 @@ function TrustScorePage() {
               transition: "background 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--char-sly)22";
+              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)22";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--char-sly)14";
+              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)14";
             }}
           >
             <span aria-hidden="true">←</span>
@@ -321,9 +310,7 @@ function TrustScorePage() {
               fontSize: "12px",
               fontFamily: "var(--font-mono)",
               fontWeight: 600,
-              color: copied
-                ? "var(--shield-safe)"
-                : "var(--color-muted-foreground)",
+              color: copied ? "var(--shield-safe)" : "var(--color-muted-foreground)",
               background: "rgba(255,255,255,0.04)",
               border: "1px solid var(--color-border)",
               borderRadius: "6px",
@@ -335,12 +322,10 @@ function TrustScorePage() {
               transition: "background 0.15s ease, color 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "rgba(255,255,255,0.08)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "rgba(255,255,255,0.04)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
             }}
           >
             {copied ? "Copied!" : truncateAddress(displayAddress)}
@@ -362,12 +347,7 @@ function TrustScorePage() {
           }}
         >
           <div style={{ position: "relative", width: "130px", height: "130px" }}>
-            <svg
-              width="130"
-              height="130"
-              viewBox="0 0 130 130"
-              aria-hidden="true"
-            >
+            <svg width="130" height="130" viewBox="0 0 130 130" aria-hidden="true">
               {/* Background circle */}
               <circle
                 cx="65"
@@ -514,11 +494,11 @@ function TrustScorePage() {
               lineHeight: 1.6,
             }}
           >
-            {data.verdict === "SAFE TO TRADE" &&
+            {(data.verdict as string) === "SAFE TO TRADE" &&
               "This token passes all major safety checks. Normal trading activity detected with healthy distribution."}
-            {data.verdict === "EXERCISE CAUTION" &&
+            {(data.verdict as string) === "EXERCISE CAUTION" &&
               "Some risk factors detected. Review the flags above before committing capital. Consider position sizing carefully."}
-            {data.verdict === "HIGH RISK" &&
+            {(data.verdict as string) === "HIGH RISK" &&
               "Multiple severe risk indicators present. Strongly recommend avoiding this token or limiting exposure to minimal amounts."}
           </div>
         </div>
@@ -615,12 +595,7 @@ const TrustCategoryRow = memo(function TrustCategoryRow({
           {category.score}
         </span>
       </div>
-      <ProgressBar
-        value={category.score}
-        max={100}
-        color={color}
-        height={4}
-      />
+      <ProgressBar value={category.score} max={100} color={color} height={4} />
       <div
         style={{
           fontSize: "11px",
@@ -641,10 +616,7 @@ interface RiskFlagRowProps {
   index: number;
 }
 
-const RiskFlagRow = memo(function RiskFlagRow({
-  flag,
-  index,
-}: RiskFlagRowProps) {
+const RiskFlagRow = memo(function RiskFlagRow({ flag, index }: RiskFlagRowProps) {
   const sevColor = flagSeverityColor(flag.severity);
 
   return (
@@ -703,10 +675,7 @@ interface RelatedAlertRowProps {
   index: number;
 }
 
-const RelatedAlertRow = memo(function RelatedAlertRow({
-  alert,
-  index,
-}: RelatedAlertRowProps) {
+const RelatedAlertRow = memo(function RelatedAlertRow({ alert, index }: RelatedAlertRowProps) {
   const sevColor =
     alert.severity === "critical"
       ? "var(--shield-danger)"

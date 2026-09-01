@@ -77,8 +77,7 @@ const MOCK_CASES = [
     severity: "medium" as CaseSeverity,
     createdAt: "2025-01-13T20:00:00Z",
     assignee: "Agent-9",
-    description:
-      "Contract owner retained admin privileges. Team confirmed renouncement timeline.",
+    description: "Contract owner retained admin privileges. Team confirmed renouncement timeline.",
   },
   {
     id: "SH-0037",
@@ -88,8 +87,7 @@ const MOCK_CASES = [
     severity: "medium" as CaseSeverity,
     createdAt: "2025-01-13T14:00:00Z",
     assignee: "Agent-2",
-    description:
-      "Combined buy+sell tax exceeded 15%. Confirmed as intended fee structure by team.",
+    description: "Combined buy+sell tax exceeded 15%. Confirmed as intended fee structure by team.",
   },
   {
     id: "SH-0036",
@@ -99,8 +97,7 @@ const MOCK_CASES = [
     severity: "low" as CaseSeverity,
     createdAt: "2025-01-12T10:00:00Z",
     assignee: "Agent-11",
-    description:
-      "Source code not verified on block explorer. Awaiting developer response.",
+    description: "Source code not verified on block explorer. Awaiting developer response.",
   },
   {
     id: "SH-0035",
@@ -171,15 +168,9 @@ function InvestigationCasesPage() {
   });
 
   const totalCount = MOCK_CASES.length;
-  const openCount = MOCK_CASES.filter(
-    (c) => c.status === "Open",
-  ).length;
-  const closedCount = MOCK_CASES.filter(
-    (c) => c.status === "Closed",
-  ).length;
-  const monitoringCount = MOCK_CASES.filter(
-    (c) => c.status === "Monitoring",
-  ).length;
+  const openCount = MOCK_CASES.filter((c) => c.status === "Open").length;
+  const closedCount = MOCK_CASES.filter((c) => c.status === "Closed").length;
+  const monitoringCount = MOCK_CASES.filter((c) => c.status === "Monitoring").length;
 
   const tabCounts: Record<string, number> = {
     All: totalCount,
@@ -257,11 +248,7 @@ function InvestigationCasesPage() {
             >
               &#x1F50D;
             </span>
-            <span
-              style={{ fontSize: "13px", fontWeight: 600 }}
-            >
-              No cases match this filter
-            </span>
+            <span style={{ fontSize: "13px", fontWeight: 600 }}>No cases match this filter</span>
             <span style={{ fontSize: "12px", marginTop: "4px" }}>
               Try selecting a different tab
             </span>
@@ -294,26 +281,23 @@ interface CaseRowProps {
   index: number;
 }
 
-const CaseRow = memo(function CaseRow({
-  caseItem,
-  index,
-}: CaseRowProps) {
+const CaseRow = memo(function CaseRow({ caseItem, index }: CaseRowProps) {
   const sevColor = severityColor(caseItem.severity);
   const stColor = statusColor(caseItem.status);
 
   const handleClick = useCallback(() => {
-    console.log(
-      `[SHIELD] Navigate to case detail: ${caseItem.id}`,
-    );
+    console.log(`[SHIELD] Navigate to case detail: ${caseItem.id}`);
   }, [caseItem.id]);
 
   return (
     <DataRow
       leftAccent={sevColor}
       onClick={handleClick}
-      style={{
-        animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
-      } as React.CSSProperties}
+      style={
+        {
+          animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
+        } as any
+      }
     >
       {/* Top line: Case ID + Status Badge */}
       <div
