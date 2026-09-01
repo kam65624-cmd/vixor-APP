@@ -721,10 +721,6 @@ function ShieldScannerPage() {
               {rawExpanded && (
                 <div
                   style={{
-<<<<<<< HEAD
-=======
-                    padding: "12px 16px",
->>>>>>> c396228006949df31235762324e150be52553ecb
                     fontFamily: "var(--font-mono)",
                     fontSize: "11px",
                     color: "var(--color-muted-foreground)",

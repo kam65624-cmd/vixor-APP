@@ -216,17 +216,11 @@ function ShieldDashboardPage() {
             key={alert.id}
             leftAccent={severityColor(alert.severity)}
             onClick={() => navigate({ to: "/shield/alerts" })}
-<<<<<<< HEAD
             style={
               {
                 animation: `alert-stagger 0.3s ease-out ${i * 0.04}s both`,
               } as any
             }
-=======
-            style={{
-              animation: `alert-stagger 0.3s ease-out ${i * 0.04}s both`,
-            }}
->>>>>>> c396228006949df31235762324e150be52553ecb
           >
             <div
               style={{

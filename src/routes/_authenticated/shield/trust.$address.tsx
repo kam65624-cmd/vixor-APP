@@ -494,19 +494,11 @@ function TrustScorePage() {
               lineHeight: 1.6,
             }}
           >
-<<<<<<< HEAD
-            {(data.verdict as string) === "SAFE TO TRADE" &&
-              "This token passes all major safety checks. Normal trading activity detected with healthy distribution."}
-            {(data.verdict as string) === "EXERCISE CAUTION" &&
-              "Some risk factors detected. Review the flags above before committing capital. Consider position sizing carefully."}
-            {(data.verdict as string) === "HIGH RISK" &&
-=======
             {String(data.verdict) === "SAFE TO TRADE" &&
               "This token passes all major safety checks. Normal trading activity detected with healthy distribution."}
             {String(data.verdict) === "EXERCISE CAUTION" &&
               "Some risk factors detected. Review the flags above before committing capital. Consider position sizing carefully."}
             {String(data.verdict) === "HIGH RISK" &&
->>>>>>> c396228006949df31235762324e150be52553ecb
               "Multiple severe risk indicators present. Strongly recommend avoiding this token or limiting exposure to minimal amounts."}
           </div>
         </div>
