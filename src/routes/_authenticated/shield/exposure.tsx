@@ -149,14 +149,10 @@ function ExposurePage() {
   const [activeFilter, setActiveFilter] = useState<string>("All");
 
   const totalExposure = MOCK_TOKENS.reduce((sum, t) => sum + t.exposure, 0);
-  const atRiskTokens = MOCK_TOKENS.filter(
-    (t) => t.riskLevel !== "Safe",
-  ).length;
+  const atRiskTokens = MOCK_TOKENS.filter((t) => t.riskLevel !== "Safe").length;
   const highRiskPct =
-    MOCK_TOKENS.filter((t) => t.riskLevel === "Danger").length / MOCK_TOKENS.length * 100;
-  const protectedTokens = MOCK_TOKENS.filter(
-    (t) => t.riskLevel === "Safe",
-  ).length;
+    (MOCK_TOKENS.filter((t) => t.riskLevel === "Danger").length / MOCK_TOKENS.length) * 100;
+  const protectedTokens = MOCK_TOKENS.filter((t) => t.riskLevel === "Safe").length;
 
   const filteredTokens = MOCK_TOKENS.filter((t) => {
     if (activeFilter === "All") return true;
@@ -251,9 +247,7 @@ function ExposurePage() {
                 fontWeight: isActive ? 700 : 600,
                 padding: "6px 14px",
                 borderRadius: "8px",
-                border: isActive
-                  ? `1px solid ${optColor}44`
-                  : "1px solid var(--color-border)",
+                border: isActive ? `1px solid ${optColor}44` : "1px solid var(--color-border)",
                 background: isActive ? `${optColor}18` : "transparent",
                 color: isActive ? optColor : "var(--color-muted-foreground)",
                 cursor: "pointer",
@@ -264,14 +258,12 @@ function ExposurePage() {
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background =
-                    "rgba(255,255,255,0.04)";
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background =
-                    "transparent";
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
                 }
               }}
             >
@@ -348,9 +340,7 @@ function ExposurePage() {
 
       <PageScrollArea>
         {filteredTokens.length > 0 ? (
-          filteredTokens.map((token, i) => (
-            <ExposureRow key={token.id} token={token} index={i} />
-          ))
+          filteredTokens.map((token, i) => <ExposureRow key={token.id} token={token} index={i} />)
         ) : (
           <div
             style={{
@@ -368,9 +358,7 @@ function ExposurePage() {
             >
               &#x1F4CA;
             </span>
-            <span style={{ fontSize: "13px", fontWeight: 600 }}>
-              No tokens match this filter
-            </span>
+            <span style={{ fontSize: "13px", fontWeight: 600 }}>No tokens match this filter</span>
             <span style={{ fontSize: "12px", marginTop: "4px" }}>
               Try selecting a different risk level
             </span>
@@ -395,12 +383,10 @@ function ExposurePage() {
               transition: "background 0.15s ease, transform 0.1s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--char-sly)22";
+              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)22";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--char-sly)14";
+              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)14";
             }}
           >
             Scan All Tokens
@@ -442,7 +428,7 @@ const ExposureRow = memo(function ExposureRow({ token, index }: ExposureRowProps
       leftAccent={rlColor}
       style={{
         animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
-      } as React.CSSProperties}
+      }}
     >
       {/* Token info + chain */}
       <div

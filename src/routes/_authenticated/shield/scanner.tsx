@@ -1,11 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
-import {
-  PageLayout,
-  PageScrollArea,
-  PageBadge,
-  ProgressBar,
-} from "@/components/vixor/PageLayout";
+import { PageLayout, PageScrollArea, PageBadge, ProgressBar } from "@/components/vixor/PageLayout";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -185,7 +180,7 @@ function ShieldScannerPage() {
             borderBottom: "1px solid var(--color-border)",
           }}
         >
-          {/* Contract Address Input */
+          {/* Contract Address Input */}
           <div
             style={{
               fontSize: "11px",
@@ -226,12 +221,10 @@ function ShieldScannerPage() {
                 transition: "border-color 0.15s ease",
               }}
               onFocus={(e) => {
-                (e.target as HTMLInputElement).style.borderColor =
-                  "var(--char-sly-border)";
+                (e.target as HTMLInputElement).style.borderColor = "var(--char-sly-border)";
               }}
               onBlur={(e) => {
-                (e.target as HTMLInputElement).style.borderColor =
-                  "var(--color-border)";
+                (e.target as HTMLInputElement).style.borderColor = "var(--color-border)";
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleScan();
@@ -246,12 +239,8 @@ function ShieldScannerPage() {
                 minWidth: "48px",
                 fontSize: "12px",
                 fontWeight: 700,
-                color: pasted
-                  ? "var(--shield-safe)"
-                  : "var(--char-sly)",
-                background: pasted
-                  ? "var(--shield-safe)14"
-                  : "var(--char-sly)14",
+                color: pasted ? "var(--shield-safe)" : "var(--char-sly)",
+                background: pasted ? "var(--shield-safe)14" : "var(--char-sly)14",
                 border: `1px solid ${pasted ? "var(--shield-safe)" : "var(--char-sly-border)"}`,
                 borderRadius: "10px",
                 padding: "0 14px",
@@ -259,8 +248,7 @@ function ShieldScannerPage() {
                 transition: "background 0.15s ease, transform 0.1s ease",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background =
-                  "var(--char-sly)22";
+                (e.currentTarget as HTMLElement).style.background = "var(--char-sly)22";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.background = pasted
@@ -308,12 +296,10 @@ function ShieldScannerPage() {
                 transition: "border-color 0.15s ease",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor =
-                  "var(--char-sly-border)";
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--char-sly-border)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor =
-                  "var(--color-border)";
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--color-border)";
               }}
             >
               <span>{chain}</span>
@@ -358,19 +344,11 @@ function ShieldScannerPage() {
                       minHeight: "44px",
                       fontSize: "13px",
                       fontWeight: chain === c ? 700 : 500,
-                      color:
-                        chain === c
-                          ? "var(--char-sly)"
-                          : "var(--color-foreground)",
-                      background:
-                        chain === c
-                          ? "var(--char-sly)14"
-                          : "transparent",
+                      color: chain === c ? "var(--char-sly)" : "var(--color-foreground)",
+                      background: chain === c ? "var(--char-sly)14" : "transparent",
                       border: "none",
                       borderBottom:
-                        c !== CHAINS[CHAINS.length - 1]
-                          ? "1px solid var(--color-border)"
-                          : "none",
+                        c !== CHAINS[CHAINS.length - 1] ? "1px solid var(--color-border)" : "none",
                       padding: "0 14px",
                       cursor: "pointer",
                       textAlign: "left",
@@ -378,13 +356,11 @@ function ShieldScannerPage() {
                     }}
                     onMouseEnter={(e) => {
                       if (chain !== c)
-                        (e.currentTarget as HTMLElement).style.background =
-                          "var(--color-muted)";
+                        (e.currentTarget as HTMLElement).style.background = "var(--color-muted)";
                     }}
                     onMouseLeave={(e) => {
                       if (chain !== c)
-                        (e.currentTarget as HTMLElement).style.background =
-                          "transparent";
+                        (e.currentTarget as HTMLElement).style.background = "transparent";
                     }}
                   >
                     {c}
@@ -408,37 +384,23 @@ function ShieldScannerPage() {
               letterSpacing: "0.04em",
               borderRadius: "12px",
               border: "none",
-              background:
-                address.length < 10
-                  ? "var(--color-muted)"
-                  : "var(--char-sly)",
+              background: address.length < 10 ? "var(--color-muted)" : "var(--char-sly)",
               color:
-                address.length < 10
-                  ? "var(--color-muted-foreground)"
-                  : "var(--color-background)",
-              cursor:
-                address.length < 10 ? "not-allowed" : "pointer",
-              boxShadow:
-                address.length >= 10
-                  ? "0 0 20px var(--char-sly-glow)"
-                  : "none",
-              transition:
-                "background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease",
+                address.length < 10 ? "var(--color-muted-foreground)" : "var(--color-background)",
+              cursor: address.length < 10 ? "not-allowed" : "pointer",
+              boxShadow: address.length >= 10 ? "0 0 20px var(--char-sly-glow)" : "none",
+              transition: "background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease",
             }}
             onMouseEnter={(e) => {
               if (address.length >= 10) {
-                (e.currentTarget as HTMLElement).style.transform =
-                  "scale(1.01)";
-                (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 0 28px var(--char-sly-glow)";
+                (e.currentTarget as HTMLElement).style.transform = "scale(1.01)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 0 28px var(--char-sly-glow)";
               }
             }}
             onMouseLeave={(e) => {
               if (address.length >= 10) {
-                (e.currentTarget as HTMLElement).style.transform =
-                  "scale(1)";
-                (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 0 20px var(--char-sly-glow)";
+                (e.currentTarget as HTMLElement).style.transform = "scale(1)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px var(--char-sly-glow)";
               }
             }}
           >
@@ -473,10 +435,7 @@ function ShieldScannerPage() {
                 >
                   Verdict
                 </div>
-                <PageBadge
-                  label={result.verdict}
-                  color={vColor}
-                />
+                <PageBadge label={result.verdict} color={vColor} />
               </div>
               <div
                 style={{
@@ -530,11 +489,7 @@ function ShieldScannerPage() {
               }}
             >
               {result.flags.map((flag, i) => (
-                <SecurityFlagCard
-                  key={flag.name}
-                  flag={flag}
-                  index={i}
-                />
+                <SecurityFlagCard key={flag.name} flag={flag} index={i} />
               ))}
             </div>
 
@@ -546,16 +501,8 @@ function ShieldScannerPage() {
                 gap: "8px",
               }}
             >
-              <TaxCard
-                label="Buy Tax"
-                value={result.buyTax}
-                index={4}
-              />
-              <TaxCard
-                label="Sell Tax"
-                value={result.sellTax}
-                index={5}
-              />
+              <TaxCard label="Buy Tax" value={result.buyTax} index={4} />
+              <TaxCard label="Sell Tax" value={result.sellTax} index={5} />
             </div>
 
             {/* Holder Analysis */}
@@ -721,11 +668,7 @@ function ShieldScannerPage() {
                 Rug Pull Flags
               </div>
               {result.rugPullFlags.map((flag, i) => (
-                <RugPullFlagRow
-                  key={flag.name}
-                  flag={flag}
-                  index={i}
-                />
+                <RugPullFlagRow key={flag.name} flag={flag} index={i} />
               ))}
             </div>
 
@@ -739,11 +682,7 @@ function ShieldScannerPage() {
               <button
                 type="button"
                 onClick={() => setRawExpanded(!rawExpanded)}
-                aria-label={
-                  rawExpanded
-                    ? "Collapse raw contract data"
-                    : "Expand raw contract data"
-                }
+                aria-label={rawExpanded ? "Collapse raw contract data" : "Expand raw contract data"}
                 aria-expanded={rawExpanded}
                 style={{
                   width: "100%",
@@ -761,12 +700,10 @@ function ShieldScannerPage() {
                   transition: "color 0.15s ease",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.color =
-                    "var(--color-foreground)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--color-foreground)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.color =
-                    "var(--color-muted-foreground)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--color-muted-foreground)";
                 }}
               >
                 <span>Raw Contract Data</span>
@@ -775,9 +712,7 @@ function ShieldScannerPage() {
                   style={{
                     fontSize: "10px",
                     transition: "transform 0.2s ease",
-                    transform: rawExpanded
-                      ? "rotate(180deg)"
-                      : "rotate(0deg)",
+                    transform: rawExpanded ? "rotate(180deg)" : "rotate(0deg)",
                   }}
                 >
                   ▼
@@ -786,7 +721,7 @@ function ShieldScannerPage() {
               {rawExpanded && (
                 <div
                   style={{
-                    padding: "0 16px 16px",
+                    padding: "12px 16px",
                     fontFamily: "var(--font-mono)",
                     fontSize: "11px",
                     color: "var(--color-muted-foreground)",
@@ -796,7 +731,6 @@ function ShieldScannerPage() {
                     background: "var(--color-muted)",
                     margin: "0 16px 12px",
                     borderRadius: "8px",
-                    padding: "12px",
                   }}
                 >
                   {JSON.stringify(result.rawData, null, 2)}
@@ -832,13 +766,8 @@ interface SecurityFlagCardProps {
   index: number;
 }
 
-const SecurityFlagCard = memo(function SecurityFlagCard({
-  flag,
-  index,
-}: SecurityFlagCardProps) {
-  const passColor = flag.passed
-    ? "var(--shield-safe)"
-    : "var(--shield-danger)";
+const SecurityFlagCard = memo(function SecurityFlagCard({ flag, index }: SecurityFlagCardProps) {
+  const passColor = flag.passed ? "var(--shield-safe)" : "var(--shield-danger)";
 
   return (
     <div
@@ -953,10 +882,7 @@ interface RugPullFlagRowProps {
   index: number;
 }
 
-const RugPullFlagRow = memo(function RugPullFlagRow({
-  flag,
-  index,
-}: RugPullFlagRowProps) {
+const RugPullFlagRow = memo(function RugPullFlagRow({ flag, index }: RugPullFlagRowProps) {
   const sevColor = flagSeverityColor(flag.severity);
 
   return (

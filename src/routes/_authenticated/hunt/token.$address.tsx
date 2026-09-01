@@ -1,11 +1,6 @@
 import { createFileRoute, useNavigate, useRouter, useParams } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
-import {
-  PageLayout,
-  PageScrollArea,
-  PageBadge,
-  ProgressBar,
-} from "@/components/vixor/PageLayout";
+import { PageLayout, PageScrollArea, PageBadge, ProgressBar } from "@/components/vixor/PageLayout";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -38,29 +33,25 @@ const MOCK_SIGNALS: Signal[] = [
   {
     id: "s1",
     name: "Volume Spike",
-    description:
-      "24h volume 340% above 7d average. Buying pressure accelerating.",
+    description: "24h volume 340% above 7d average. Buying pressure accelerating.",
     strength: 88,
   },
   {
     id: "s2",
     name: "Whale Activity",
-    description:
-      "3 new whale wallets accumulated in the last 6 hours.",
+    description: "3 new whale wallets accumulated in the last 6 hours.",
     strength: 72,
   },
   {
     id: "s3",
     name: "Social Buzz",
-    description:
-      "Mentions up 210% in the last 12h across tracked channels.",
+    description: "Mentions up 210% in the last 12h across tracked channels.",
     strength: 64,
   },
   {
     id: "s4",
     name: "Momentum",
-    description:
-      "Price above all short-term EMAs. RSI at 67, trending higher.",
+    description: "Price above all short-term EMAs. RSI at 67, trending higher.",
     strength: 81,
   },
 ];
@@ -125,9 +116,7 @@ function TokenDetailPage() {
   const data = MOCK_TOKEN;
   const displayAddress = address || data.contractAddress;
   const sparkPoints = buildSparklinePoints(data.sparklineData, 280, 80);
-  const lastPoint = data.sparklineData
-    .split(",")
-    .pop();
+  const lastPoint = data.sparklineData.split(",").pop();
   const lastVal = Number(lastPoint);
   const allVals = data.sparklineData.split(",").map(Number);
   const minV = Math.min(...allVals);
@@ -163,13 +152,13 @@ function TokenDetailPage() {
 
   const handleBuy = useCallback(() => {
     navigate({
-      to: "/trade",
+      to: "/swap",
     });
   }, [navigate]);
 
   const handleSell = useCallback(() => {
     navigate({
-      to: "/trade",
+      to: "/swap",
     });
   }, [navigate]);
 
@@ -210,12 +199,10 @@ function TokenDetailPage() {
               transition: "background 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--char-vix-border)";
+              (e.currentTarget as HTMLElement).style.background = "var(--char-vix-border)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--char-vix-dim)";
+              (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
             }}
           >
             <span aria-hidden="true">←</span>
@@ -355,9 +342,7 @@ function TokenDetailPage() {
               fontSize: "12px",
               fontFamily: "var(--font-mono)",
               fontWeight: 600,
-              color: copied
-                ? "var(--char-vix)"
-                : "var(--color-muted-foreground)",
+              color: copied ? "var(--char-vix)" : "var(--color-muted-foreground)",
               background: "rgba(255,255,255,0.04)",
               border: "1px solid var(--color-border)",
               borderRadius: "6px",
@@ -369,12 +354,10 @@ function TokenDetailPage() {
               transition: "background 0.15s ease, color 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "rgba(255,255,255,0.08)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "rgba(255,255,255,0.04)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
             }}
           >
             {copied ? "Copied!" : truncateAddress(displayAddress)}
@@ -400,30 +383,13 @@ function TokenDetailPage() {
             aria-hidden="true"
           >
             <defs>
-              <linearGradient
-                id="sparkGrad"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop
-                  offset="0%"
-                  stopColor="var(--char-vix)"
-                  stopOpacity="0.3"
-                />
-                <stop
-                  offset="100%"
-                  stopColor="var(--char-vix)"
-                  stopOpacity="0.0"
-                />
+              <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--char-vix)" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="var(--char-vix)" stopOpacity="0.0" />
               </linearGradient>
             </defs>
             {/* Gradient fill under line */}
-            <polygon
-              points={`0,80 ${sparkPoints} 280,80`}
-              fill="url(#sparkGrad)"
-            />
+            <polygon points={`0,80 ${sparkPoints} 280,80`} fill="url(#sparkGrad)" />
             {/* Line */}
             <polyline
               points={sparkPoints}
@@ -434,19 +400,8 @@ function TokenDetailPage() {
               strokeLinejoin="round"
             />
             {/* End dot */}
-            <circle
-              cx={endX}
-              cy={endY}
-              r="3"
-              fill="var(--char-vix)"
-            />
-            <circle
-              cx={endX}
-              cy={endY}
-              r="6"
-              fill="var(--char-vix)"
-              opacity="0.3"
-            />
+            <circle cx={endX} cy={endY} r="3" fill="var(--char-vix)" />
+            <circle cx={endX} cy={endY} r="6" fill="var(--char-vix)" opacity="0.3" />
           </svg>
         </div>
 
@@ -519,12 +474,10 @@ function TokenDetailPage() {
               transition: "background 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--char-vix-border)";
+              (e.currentTarget as HTMLElement).style.background = "var(--char-vix-border)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--char-vix-dim)";
+              (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
             }}
           >
             <span aria-hidden="true">&#x1F6E1;</span>
@@ -578,12 +531,10 @@ function TokenDetailPage() {
               transition: "background 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--color-muted)";
+              (e.currentTarget as HTMLElement).style.background = "var(--color-muted)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--color-card)";
+              (e.currentTarget as HTMLElement).style.background = "var(--color-card)";
             }}
           >
             <span aria-hidden="true">&#x1F310;</span>
