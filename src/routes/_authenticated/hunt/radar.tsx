@@ -183,8 +183,7 @@ function TokenRadarPage() {
   const [activeChain, setActiveChain] = useState<string>("All");
 
   const filteredTokens = MOCK_TOKENS.filter((t) => {
-    const matchesChain =
-      activeChain === "All" || t.chain === activeChain;
+    const matchesChain = activeChain === "All" || t.chain === activeChain;
     const matchesSearch =
       searchQuery === "" ||
       t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -192,12 +191,9 @@ function TokenRadarPage() {
     return matchesChain && matchesSearch;
   });
 
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery(e.target.value);
-    },
-    [],
-  );
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
 
   const handleChainChange = useCallback((chain: string) => {
     setActiveChain(chain);
@@ -275,12 +271,10 @@ function TokenRadarPage() {
               boxSizing: "border-box",
             }}
             onFocus={(e) => {
-              (e.target as HTMLInputElement).style.borderColor =
-                "var(--char-vix)";
+              (e.target as HTMLInputElement).style.borderColor = "var(--char-vix)";
             }}
             onBlur={(e) => {
-              (e.target as HTMLInputElement).style.borderColor =
-                "var(--color-border)";
+              (e.target as HTMLInputElement).style.borderColor = "var(--color-border)";
             }}
           />
         </div>
@@ -315,25 +309,19 @@ function TokenRadarPage() {
                 borderRadius: "8px",
                 border: "none",
                 cursor: "pointer",
-                color: isActive
-                  ? "var(--color-background)"
-                  : "var(--color-muted-foreground)",
-                background: isActive
-                  ? "var(--char-vix)"
-                  : "transparent",
+                color: isActive ? "var(--color-background)" : "var(--color-muted-foreground)",
+                background: isActive ? "var(--char-vix)" : "transparent",
                 whiteSpace: "nowrap",
                 transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background =
-                    "var(--char-vix-dim)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background =
-                    "transparent";
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
                 }
               }}
             >
@@ -420,11 +408,7 @@ interface TokenRadarRowProps {
   onClick: () => void;
 }
 
-const TokenRadarRow = memo(function TokenRadarRow({
-  token,
-  index,
-  onClick,
-}: TokenRadarRowProps) {
+const TokenRadarRow = memo(function TokenRadarRow({ token, index, onClick }: TokenRadarRowProps) {
   const sparkPoints = buildSparklinePoints(token.sparkline, 60, 24);
   const isPositive = token.change24h >= 0;
   const cColor = changeColor(token.change24h);
@@ -478,11 +462,7 @@ const TokenRadarRow = memo(function TokenRadarRow({
           >
             ${token.symbol}
           </span>
-          <PageBadge
-            label={token.chain}
-            color={cChain}
-            small
-          />
+          <PageBadge label={token.chain} color={cChain} small />
         </div>
 
         {/* Sparkline SVG placeholder */}
@@ -529,9 +509,7 @@ const TokenRadarRow = memo(function TokenRadarRow({
             fontWeight: 700,
             fontFamily: "var(--font-mono)",
             color: cColor,
-            background: isPositive
-              ? "var(--color-bullish)14"
-              : "var(--color-bearish)14",
+            background: isPositive ? "var(--color-bullish)14" : "var(--color-bearish)14",
             padding: "2px 8px",
             borderRadius: "4px",
           }}
