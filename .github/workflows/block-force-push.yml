@@ -1,0 +1,80 @@
+name: "Block Force Push on Main"
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  detect-and-revert:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect force push
+        id: detect
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+        run: |
+          if [[ "$BEFORE" == "0000000000000000000000000000000000000000" ]]; then
+            echo "force_pushed=false" >> "$GITHUB_OUTPUT"
+            echo "Normal: new branch push"
+            exit 0
+          fi
+
+          if [[ "$AFTER" == "0000000000000000000000000000000000000000" ]]; then
+            echo "force_pushed=false" >> "$GITHUB_OUTPUT"
+            echo "Normal: branch deletion"
+            exit 0
+          fi
+
+          git fetch origin "$BEFORE" 2>/dev/null || true
+
+          if git merge-base --is-ancestor "$BEFORE" "$AFTER" 2>/dev/null; then
+            echo "force_pushed=false" >> "$GITHUB_OUTPUT"
+            echo "Normal push detected - allowing"
+            exit 0
+          fi
+
+          echo "force_pushed=true" >> "$GITHUB_OUTPUT"
+          echo "FORCE PUSH DETECTED!"
+          echo "Before: $BEFORE"
+          echo "After: $AFTER"
+          echo "Actor: ${{ github.actor }}"
+          echo "BEFORE_SHA=$BEFORE" >> "$GITHUB_ENV"
+          echo "AFTER_SHA=$AFTER" >> "$GITHUB_ENV"
+          exit 0
+
+      - name: Create alert issue
+        if: steps.detect.outputs.force_pushed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { BEFORE_SHA, AFTER_SHA } = process.env;
+            const actor = '${{ github.actor }}';
+            const runUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'FORCE PUSH BLOCKED on main by @' + actor,
+              body: '## Force Push Reverted\n| Detail | Value |\n|--------|-------|\n| Actor | @' + actor + ' |\n| Original | `' + (BEFORE_SHA || '').substring(0, 8) + '` |\n| Force-push | `' + (AFTER_SHA || '').substring(0, 8) + '` |\n| Time | ' + new Date().toISOString() + ' |\n| Logs | [View](' + runUrl + ') |\n\n**main branch has been reverted.**\n\nDo NOT use `git push --force` to main. Use Pull Requests instead.',
+              labels: ['force-push', 'blocked']
+            });
+
+      - name: Revert force push
+        if: steps.detect.outputs.force_pushed == 'true'
+        run: |
+          echo "Reverting main to: $BEFORE_SHA"
+          git reset --hard "$BEFORE_SHA"
+          git push --force origin main
+          echo "Revert complete!"
