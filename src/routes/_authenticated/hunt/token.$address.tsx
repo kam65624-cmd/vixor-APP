@@ -7,58 +7,6 @@ import { PageLayout, PageScrollArea, PageBadge, ProgressBar } from "@/components
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
-type Signal = {
-  id: string;
-  name: string;
-  description: string;
-  strength: number;
-};
-
-const MOCK_TOKEN = {
-  name: "NeonPulse",
-  symbol: "NPULSE",
-  chain: "Solana",
-  age: "Created 3d ago",
-  contractAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-  price: "$0.00472",
-  change24h: 34.7,
-  change7d: 128.4,
-  marketCap: "$4.72M",
-  volume24h: "$1.2M",
-  holders: "4,312",
-  liquidity: "$890K",
-  confidence: 73,
-  sparklineData:
-    "2,4,3,6,5,8,7,10,9,12,11,14,13,16,15,18,17,20,19,22,21,24,23,26,25,28,27,30,29,32",
-};
-
-const MOCK_SIGNALS: Signal[] = [
-  {
-    id: "s1",
-    name: "Volume Spike",
-    description: "24h volume 340% above 7d average. Buying pressure accelerating.",
-    strength: 88,
-  },
-  {
-    id: "s2",
-    name: "Whale Activity",
-    description: "3 new whale wallets accumulated in the last 6 hours.",
-    strength: 72,
-  },
-  {
-    id: "s3",
-    name: "Social Buzz",
-    description: "Mentions up 210% in the last 12h across tracked channels.",
-    strength: 64,
-  },
-  {
-    id: "s4",
-    name: "Momentum",
-    description: "Price above all short-term EMAs. RSI at 67, trending higher.",
-    strength: 81,
-  },
-];
-
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function truncateAddress(addr: string): string {
@@ -92,13 +40,6 @@ function buildSparklinePoints(data: string, w: number, h: number): string {
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(" ");
-}
-
-function signalColor(strength: number): string {
-  if (strength >= 80) return "var(--char-vix)";
-  if (strength >= 60) return "var(--color-bullish)";
-  if (strength >= 40) return "var(--color-neutral-wait)";
-  return "var(--color-bearish)";
 }
 
 // ── Route ──────────────────────────────────────────────────────────────────
@@ -453,9 +394,31 @@ function TokenDetailPage() {
               <span aria-hidden="true">&#x26A1;</span>
               Signals
             </div>
-            {MOCK_SIGNALS.map((signal, i) => (
-              <SignalRow key={signal.id} signal={signal} index={i} />
-            ))}
+            {data?.pairAddress ? (
+              <div
+                style={{
+                  padding: "16px",
+                  background: "var(--color-card)",
+                  borderBottom: "1px solid var(--color-border)",
+                  fontSize: "12px",
+                  color: "var(--color-muted-foreground)",
+                }}
+              >
+                DEX pair active: {truncateAddress(data.pairAddress)}
+              </div>
+            ) : (
+              <div
+                style={{
+                  padding: "24px 16px",
+                  textAlign: "center",
+                  color: "var(--color-muted-foreground)",
+                  fontSize: "12px",
+                  borderBottom: "1px solid var(--color-border)",
+                }}
+              >
+                No active signals detected
+              </div>
+            )}
 
             {/* ── DEX Link ── */}
             <div style={{ padding: "12px 16px 0" }}>
@@ -608,83 +571,3 @@ function StatBlock({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
-// ── Signal Row ─────────────────────────────────────────────────────────────
-
-interface SignalRowProps {
-  signal: Signal;
-  index: number;
-}
-
-const SignalRow = memo(function SignalRow({ signal, index }: SignalRowProps) {
-  const sColor = signalColor(signal.strength);
-
-  return (
-    <div
-      style={{
-        padding: "12px 16px",
-        background: "var(--color-card)",
-        borderBottom: "1px solid var(--color-border)",
-        animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "4px",
-        }}
-      >
-        <span
-          style={{
-            fontSize: "13px",
-            fontWeight: 700,
-            color: "var(--color-foreground)",
-          }}
-        >
-          {signal.name}
-        </span>
-        <span
-          style={{
-            fontSize: "12px",
-            fontWeight: 800,
-            fontFamily: "var(--font-mono)",
-            color: sColor,
-          }}
-        >
-          {signal.strength}
-        </span>
-      </div>
-      <div
-        style={{
-          fontSize: "11px",
-          color: "var(--color-muted-foreground)",
-          lineHeight: 1.5,
-          marginBottom: "8px",
-        }}
-      >
-        {signal.description}
-      </div>
-      <div
-        style={{
-          width: "100%",
-          height: "4px",
-          background: "var(--color-border)",
-          borderRadius: "2px",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            width: `${signal.strength}%`,
-            height: "100%",
-            background: sColor,
-            borderRadius: "2px",
-            transition: "width 0.5s ease",
-          }}
-        />
-      </div>
-    </div>
-  );
-});
