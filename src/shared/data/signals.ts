@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
-import { fetchBinanceKlines, fetchBinancePrice } from "@/domains/market/server/price-fetcher";
+import { fetchBinanceKlines, fetchPrice } from "@/domains/market/server/price-fetcher";
 import { detectPatterns } from "@/domains/trade/pattern-detector";
 
 // ── Trading Journal ─────────────────────────
@@ -54,7 +54,7 @@ export const getDailySignals = createServerFn({ method: "GET" })
       try {
         const [klines, priceInfo] = await Promise.all([
           fetchBinanceKlines(pair, "1h", 50),
-          fetchBinancePrice(pair),
+          fetchPrice(pair),
         ]);
 
         if (!klines || klines.length < 10) continue;
@@ -71,12 +71,14 @@ export const getDailySignals = createServerFn({ method: "GET" })
         const takeProfit1 = isBull ? currentPrice * 1.05 : currentPrice * 0.95;
         const takeProfit2 = isBull ? currentPrice * 1.09 : currentPrice * 0.91;
 
+        const recommendation: "BUY" | "SELL" | "WAIT" =
+          primary.type === "bullish" ? "BUY" : primary.type === "bearish" ? "SELL" : "WAIT";
+
         liveSignals.push({
           id: `live-${pair.replace("/", "")}-${primary.name.toLowerCase().replace(/\s+/g, "-")}`,
           pair,
           timeframe: "1H",
-          recommendation:
-            primary.type === "bullish" ? "BUY" : primary.type === "bearish" ? "SELL" : "WAIT",
+          recommendation,
           confidence: primary.confidence,
           entry: Number(currentPrice.toFixed(4)),
           stop_loss: Number(stopLoss.toFixed(4)),
