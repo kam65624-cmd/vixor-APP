@@ -43,7 +43,17 @@ import { Route as AuthenticatedAlphaRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTokenSymbolRouteImport } from './routes/_authenticated/token.$symbol'
 import { Route as AuthenticatedAnalysisIdRouteImport } from './routes/_authenticated/analysis.$id'
 import { Route as AuthenticatedAdminApiKeysRouteImport } from './routes/_authenticated/admin/api-keys'
-
+import { Route as AuthenticatedShieldIndexRouteImport } from './routes/_authenticated/shield/index'
+import { Route as AuthenticatedShieldAlertsRouteImport } from './routes/_authenticated/shield/alerts'
+import { Route as AuthenticatedShieldExposureRouteImport } from './routes/_authenticated/shield/exposure'
+import { Route as AuthenticatedShieldScannerRouteImport } from './routes/_authenticated/shield/scanner'
+import { Route as AuthenticatedShieldTrustAddressRouteImport } from './routes/_authenticated/shield/trust.$address'
+import { Route as AuthenticatedShieldCasesRouteImport } from './routes/_authenticated/shield/cases'
+import { Route as AuthenticatedHuntRadarRouteImport } from './routes/_authenticated/hunt/radar'
+import { Route as AuthenticatedHuntTokenAddressRouteImport } from './routes/_authenticated/hunt/token.$address'
+import { Route as AuthenticatedHuntVerifiedIdRouteImport } from './routes/_authenticated/hunt/verified.$id'
+import { Route as AuthenticatedHuntAlphaRouteImport } from './routes/_authenticated/hunt/alpha'
+import { Route as AuthenticatedHuntWhalesRouteImport } from './routes/_authenticated/hunt/whales'
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -216,6 +226,61 @@ const AuthenticatedAdminApiKeysRoute =
   AuthenticatedAdminApiKeysRouteImport.update({
     id: '/admin/api-keys',
     path: '/admin/api-keys',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShieldIndexRoute = AuthenticatedShieldIndexRouteImport.update({
+    id: '/_authenticated/shield/',
+    path: '/shield',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShieldAlertsRoute = AuthenticatedShieldAlertsRouteImport.update({
+    id: '/_authenticated/shield/alerts',
+    path: '/shield/alerts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShieldExposureRoute = AuthenticatedShieldExposureRouteImport.update({
+    id: '/_authenticated/shield/exposure',
+    path: '/shield/exposure',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShieldScannerRoute = AuthenticatedShieldScannerRouteImport.update({
+    id: '/_authenticated/shield/scanner',
+    path: '/shield/scanner',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShieldTrustAddressRoute = AuthenticatedShieldTrustAddressRouteImport.update({
+    id: '/_authenticated/shield/trust/$address',
+    path: '/shield/trust/$address',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShieldCasesRoute = AuthenticatedShieldCasesRouteImport.update({
+    id: '/_authenticated/shield/cases',
+    path: '/shield/cases',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHuntRadarRoute = AuthenticatedHuntRadarRouteImport.update({
+    id: '/_authenticated/hunt/radar',
+    path: '/hunt/radar',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHuntTokenAddressRoute = AuthenticatedHuntTokenAddressRouteImport.update({
+    id: '/_authenticated/hunt/token/$address',
+    path: '/hunt/token/$address',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHuntVerifiedIdRoute = AuthenticatedHuntVerifiedIdRouteImport.update({
+    id: '/_authenticated/hunt/verified/$id',
+    path: '/hunt/verified/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHuntAlphaRoute = AuthenticatedHuntAlphaRouteImport.update({
+    id: '/_authenticated/hunt/alpha',
+    path: '/hunt/alpha',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHuntWhalesRoute = AuthenticatedHuntWhalesRouteImport.update({
+    id: '/_authenticated/hunt/whales',
+    path: '/hunt/whales',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -678,6 +743,83 @@ declare module '@tanstack/react-router' {
       path: '/admin/api-keys'
       fullPath: '/admin/api-keys'
       preLoaderRoute: typeof AuthenticatedAdminApiKeysRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shield/': {
+      id: '/_authenticated/shield/'
+      path: '/shield'
+      fullPath: '/shield'
+      preLoaderRoute: typeof AuthenticatedShieldIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shield/alerts': {
+      id: '/_authenticated/shield/alerts'
+      path: '/shield/alerts'
+      fullPath: '/shield/alerts'
+      preLoaderRoute: typeof AuthenticatedShieldAlertsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shield/exposure': {
+      id: '/_authenticated/shield/exposure'
+      path: '/shield/exposure'
+      fullPath: '/shield/exposure'
+      preLoaderRoute: typeof AuthenticatedShieldExposureRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shield/scanner': {
+      id: '/_authenticated/shield/scanner'
+      path: '/shield/scanner'
+      fullPath: '/shield/scanner'
+      preLoaderRoute: typeof AuthenticatedShieldScannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shield/trust/$address': {
+      id: '/_authenticated/shield/trust/$address'
+      path: '/shield/trust/$address'
+      fullPath: '/shield/trust/$address'
+      preLoaderRoute: typeof AuthenticatedShieldTrustAddressRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shield/cases': {
+      id: '/_authenticated/shield/cases'
+      path: '/shield/cases'
+      fullPath: '/shield/cases'
+      preLoaderRoute: typeof AuthenticatedShieldCasesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hunt/radar': {
+      id: '/_authenticated/hunt/radar'
+      path: '/hunt/radar'
+      fullPath: '/hunt/radar'
+      preLoaderRoute: typeof AuthenticatedHuntRadarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hunt/token/$address': {
+      id: '/_authenticated/hunt/token/$address'
+      path: '/hunt/token/$address'
+      fullPath: '/hunt/token/$address'
+      preLoaderRoute: typeof AuthenticatedHuntTokenAddressRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hunt/verified/$id': {
+      id: '/_authenticated/hunt/verified/$id'
+      path: '/hunt/verified/$id'
+      fullPath: '/hunt/verified/$id'
+      preLoaderRoute: typeof AuthenticatedHuntVerifiedIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hunt/alpha': {
+      id: '/_authenticated/hunt/alpha'
+      path: '/hunt/alpha'
+      fullPath: '/hunt/alpha'
+      preLoaderRoute: typeof AuthenticatedHuntAlphaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hunt/whales': {
+      id: '/_authenticated/hunt/whales'
+      path: '/hunt/whales'
+      fullPath: '/hunt/whales'
+      preLoaderRoute: typeof AuthenticatedHuntWhalesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }

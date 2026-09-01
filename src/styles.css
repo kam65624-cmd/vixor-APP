@@ -48,6 +48,26 @@
   --ease-decelerate: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
 
+  /* ── D14 Character Tokens ── */
+  /* VIX (HUNT) — Neon Lime accent */
+  --char-vix: #39FF14;
+  --char-vix-dim: rgba(57, 255, 20, 0.15);
+  --char-vix-border: rgba(57, 255, 20, 0.25);
+  --char-vix-glow: rgba(57, 255, 20, 0.08);
+
+  /* SLY (SHIELD) — Gold detective accent */
+  --char-sly: #FFD700;
+  --char-sly-dim: rgba(255, 215, 0, 0.15);
+  --char-sly-border: rgba(255, 215, 0, 0.25);
+  --char-sly-glow: rgba(255, 215, 0, 0.08);
+
+  /* SHIELD semantic tokens */
+  --shield-safe: #22D3EE;
+  --shield-caution: #FBBF24;
+  --shield-suspicious: #FB923C;
+  --shield-danger: #EF4444;
+  --shield-unknown: #9498A8;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -1899,6 +1919,18 @@
   50% {
     opacity: 0.4;
     transform: scale(0.85);
+  }
+}
+
+/* Alert stagger — D14 SHIELD/HUNT list animations */
+@keyframes alert-stagger {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
