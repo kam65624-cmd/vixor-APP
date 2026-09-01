@@ -21,7 +21,10 @@ import { fetchGoPlusSecurity, CHAIN_IDS } from "./goplus-client";
 import { fetchRugCheckReport } from "./rugcheck-client";
 import { fetchBirdeyeTokenOverview } from "@/domains/hunt/birdeye-client";
 import { fetchTokenPairs } from "@/domains/discover/dexscreener-client";
-import { calculateEvmTrustScore, calculateSolanaTrustScore } from "./trust-score";
+import {
+  calculateEvmTrustScore,
+  calculateSolanaTrustScore,
+} from "./trust-score";
 import type { MarketContext } from "./trust-score";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -70,7 +73,10 @@ export interface ScanTokenResult {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-async function buildMarketContext(tokenAddress: string, chain: string): Promise<MarketContext> {
+async function buildMarketContext(
+  tokenAddress: string,
+  chain: string,
+): Promise<MarketContext> {
   // Try Birdeye first, then DexScreener
   const [birdeye, dexPairs] = await Promise.all([
     fetchBirdeyeTokenOverview(tokenAddress, chain).catch(() => null),
@@ -136,21 +142,8 @@ export const scanToken = createServerFn({ method: "POST" })
           tokenSymbol,
           tokenAddress: address,
           chain,
-          trustScore: {
-            score: 0,
-            level: "critical",
-            verdict: "Unable to scan",
-            honeypot: false,
-            factors: [],
-          },
-          market: {
-            price: market.price,
-            priceChange24h: 0,
-            volume24h: market.volume24h,
-            marketCap: market.marketCap,
-            liquidity: market.liquidity,
-            holders: market.holders,
-          },
+          trustScore: { score: 0, level: "critical", verdict: "Unable to scan", honeypot: false, factors: [] },
+          market: { price: market.price, priceChange24h: 0, volume24h: market.volume24h, marketCap: market.marketCap, liquidity: market.liquidity, holders: market.holders },
           security: securitySummary,
         };
       }
@@ -175,8 +168,7 @@ export const scanToken = createServerFn({ method: "POST" })
       };
 
       // Save to DB
-      const { data: savedScan } = await supabase
-        .from("contract_scans")
+      const { data: savedScan } = await (supabase.from as any)("contract_scans")
         .insert({
           user_id: userId,
           contract_address: address,
@@ -204,7 +196,7 @@ export const scanToken = createServerFn({ method: "POST" })
 
       return {
         ok: true,
-        scanId: savedScan?.id ?? null,
+        scanId: (savedScan as any)?.id ?? null,
         error: null,
         tokenName,
         tokenSymbol,
@@ -317,8 +309,7 @@ export const scanToken = createServerFn({ method: "POST" })
       };
 
       // Save to DB
-      const { data: savedScan } = await supabase
-        .from("contract_scans")
+      const { data: savedScan } = await (supabase.from as any)("contract_scans")
         .insert({
           user_id: userId,
           contract_address: address,
@@ -350,7 +341,7 @@ export const scanToken = createServerFn({ method: "POST" })
 
       return {
         ok: true,
-        scanId: savedScan?.id ?? null,
+        scanId: (savedScan as any)?.id ?? null,
         error: null,
         tokenName,
         tokenSymbol,
@@ -386,8 +377,7 @@ export const getScanHistory = createServerFn({ method: "GET" })
     const limit = data?.limit ?? 20;
     const offset = page * limit;
 
-    const { data: scans, count } = await supabase
-      .from("contract_scans")
+    const { data: scans, count } = await (supabase.from as any)("contract_scans")
       .select("*", { count: "exact" })
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -415,8 +405,7 @@ export const getShieldAlerts = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const limit = data?.limit ?? 50;
 
-    let query = supabase
-      .from("hunt_shield_alerts")
+    let query = (supabase.from as any)("hunt_shield_alerts")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -431,7 +420,7 @@ export const getShieldAlerts = createServerFn({ method: "GET" })
     }
 
     const { data: alerts } = await query;
-    const unreadCount = (alerts || []).filter((a) => a.status === "active").length;
+    const unreadCount = ((alerts || []) as any[]).filter((a) => a.status === "active").length;
 
     return { alerts: alerts || [], unreadCount };
   });
@@ -442,8 +431,7 @@ export const acknowledgeAlert = createServerFn({ method: "POST" })
   .validator(z.object({ alertId: z.string() }))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await supabase
-      .from("hunt_shield_alerts")
+    await (supabase.from as any)("hunt_shield_alerts")
       .update({ status: "acknowledged", acknowledged_at: new Date().toISOString() })
       .eq("id", data.alertId)
       .eq("user_id", userId);
