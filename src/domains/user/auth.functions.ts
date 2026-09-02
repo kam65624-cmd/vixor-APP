@@ -100,27 +100,50 @@ export const telegramSignIn = createServerFn({ method: "POST" })
         // old HMAC password invalid.
         console.log("[Auth] Telegram user already exists, updating password:", email);
         try {
-          const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers({
-            // @ts-expect-error Supabase Admin API `filter` is not typed in the SDK
-            filter: `email eq "${email}"`,
-            perPage: 1,
-          });
-          const existingUser = existingUsers?.users?.[0];
-          if (existingUser) {
+          let existingUserId: string | null = null;
+
+          // 1. First search by telegram_id in profiles
+          const { data: profile } = await supabaseAdmin
+            .from("profiles")
+            .select("id")
+            .eq("telegram_id", String(tgUser.id))
+            .maybeSingle();
+
+          if (profile?.id) {
+            existingUserId = profile.id;
+          } else {
+            // 2. Fallback: page through users list to match email
+            let page = 1;
+            let hasMore = true;
+            while (hasMore && !existingUserId && page <= 5) {
+              const { data: listData } = await supabaseAdmin.auth.admin.listUsers({
+                page,
+                perPage: 100,
+              });
+              const users = listData?.users ?? [];
+              const found = users.find((u) => u.email === email);
+              if (found) {
+                existingUserId = found.id;
+              } else if (users.length < 100) {
+                hasMore = false;
+              } else {
+                page++;
+              }
+            }
+          }
+
+          if (existingUserId) {
             const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(
-              existingUser.id,
+              existingUserId,
               { password, email_confirm: true },
             );
             if (updateErr) {
               console.error("[Auth] Failed to update password:", updateErr.message);
-              // Continue anyway — maybe the password still matches
             } else {
               console.log("[Auth] Password updated successfully for:", email);
             }
 
-            // ── ALSO update profile with latest Telegram data for returning users ──
-            // This ensures the user's photo, name, and username stay in sync
-            // with their Telegram account on every login.
+            // ALSO update profile with latest Telegram data for returning users
             try {
               await supabaseAdmin
                 .from("profiles")
@@ -131,11 +154,13 @@ export const telegramSignIn = createServerFn({ method: "POST" })
                   display_name: displayName,
                   avatar_url: tgUser.photo_url || undefined,
                 })
-                .eq("id", existingUser.id);
+                .eq("id", existingUserId);
               console.log("[Auth] Profile updated with Telegram data for:", email);
             } catch (profileErr) {
               console.error("[Auth] Failed to update profile for existing user:", profileErr);
             }
+          } else {
+            console.error("[Auth] Could not find existing user ID for email:", email);
           }
         } catch (listErr) {
           console.error("[Auth] Failed to list/update user:", listErr);
