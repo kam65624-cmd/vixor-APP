@@ -15,87 +15,6 @@ import { getShieldAlerts, getScanHistory } from "@/domains/shield/functions";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
 
-const MOCK_STATS = {
-  tokensScanned: 1847,
-  threatsBlocked: 23,
-  avgTrustScore: 72.4,
-  activeCases: 4,
-} as const;
-
-const MOCK_RECENT_ALERTS = [
-  {
-    id: "r1",
-    severity: "critical" as const,
-    title: "Honeypot Contract Detected",
-    token: "SCAMCOIN",
-    timestamp: "2025-01-15T08:23:00Z",
-  },
-  {
-    id: "r2",
-    severity: "critical" as const,
-    title: "Rug Pull Risk — LP Withdrawn",
-    token: "FAKEPUMP",
-    timestamp: "2025-01-15T07:45:00Z",
-  },
-  {
-    id: "r3",
-    severity: "high" as const,
-    title: "Mint Function Unlocked",
-    token: "INFLATE",
-    timestamp: "2025-01-15T06:12:00Z",
-  },
-  {
-    id: "r4",
-    severity: "medium" as const,
-    title: "Ownership Not Renounced",
-    token: "NEWLAUNCH",
-    timestamp: "2025-01-15T04:15:00Z",
-  },
-  {
-    id: "r5",
-    severity: "low" as const,
-    title: "Unverified Contract Source",
-    token: "OPAQUE",
-    timestamp: "2025-01-15T02:20:00Z",
-  },
-] as const;
-
-const MOCK_ACTIVE_CASES = [
-  {
-    id: "c1",
-    title: "SCAMCOIN Honeypot Analysis",
-    token: "SCAMCOIN",
-    status: "In Progress" as const,
-    progress: 65,
-    findings: 12,
-    severity: "critical" as const,
-  },
-  {
-    id: "c2",
-    title: "FAKEPUMP Rug Pull Investigation",
-    token: "FAKEPUMP",
-    status: "Gathering Evidence" as const,
-    progress: 35,
-    findings: 7,
-    severity: "critical" as const,
-  },
-  {
-    id: "c3",
-    title: "INFLATE Mint Function Review",
-    token: "INFLATE",
-    status: "Under Review" as const,
-    progress: 80,
-    findings: 5,
-    severity: "high" as const,
-  },
-] as const;
-
-const MOCK_TRUST_DISTRIBUTION = {
-  safe: 54,
-  caution: 31,
-  danger: 15,
-} as const;
-
 type Severity = "critical" | "high" | "medium" | "low";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -189,6 +108,24 @@ function ShieldDashboardPage() {
           scans.reduce((sum: number, s: any) => sum + (100 - (s.risk_score ?? 0)), 0) / scans.length
         ).toFixed(1)
       : "0.0";
+
+  const activeCasesList = scans
+    .filter((s: any) => s.verdict === "SUSPICIOUS" || s.verdict === "DANGER")
+    .map((s: any) => ({
+      id: s.id,
+      title: `${s.token_name ?? s.contract_address.slice(0, 8)} ${s.verdict === "DANGER" ? "Honeypot Analysis" : "Security Review"}`,
+      token: s.token_symbol ?? "???",
+      status: s.verdict === "DANGER" ? ("In Progress" as const) : ("Under Review" as const),
+      progress: s.risk_score ?? 50,
+      findings: 1,
+      severity: s.verdict === "DANGER" ? ("critical" as const) : ("high" as const),
+    }));
+
+  const trustDist = {
+    safe: scans.filter((s: any) => s.verdict === "SAFE").length,
+    caution: scans.filter((s: any) => s.verdict === "CAUTION").length,
+    danger: scans.filter((s: any) => s.verdict === "DANGER" || s.verdict === "SUSPICIOUS").length,
+  };
 
   const loading = alertsLoading || historyLoading;
 
@@ -360,11 +297,23 @@ function ShieldDashboardPage() {
         </div>
 
         {/* ── Active Cases ── */}
-        <PageSectionTitle title="Active Cases" count={MOCK_ACTIVE_CASES.length} />
+        <PageSectionTitle title="Active Cases" count={activeCasesList.length} />
 
-        {MOCK_ACTIVE_CASES.map((c, i) => (
-          <CaseCard key={c.id} caseItem={c} index={i} />
-        ))}
+        {activeCasesList.length === 0 ? (
+          <div
+            style={{
+              padding: "24px 16px",
+              textAlign: "center",
+              color: "var(--color-muted-foreground)",
+              fontSize: "12px",
+              borderBottom: "1px solid var(--color-border)",
+            }}
+          >
+            No active threat cases
+          </div>
+        ) : (
+          activeCasesList.map((c: any, i: number) => <CaseCard key={c.id} caseItem={c} index={i} />)
+        )}
 
         {/* ── Trust Score Distribution ── */}
         <PageSectionTitle title="Trust Score Distribution" />
@@ -375,7 +324,7 @@ function ShieldDashboardPage() {
             borderBottom: "1px solid var(--color-border)",
           }}
         >
-          <TrustDistributionChart distribution={MOCK_TRUST_DISTRIBUTION} />
+          <TrustDistributionChart distribution={trustDist} />
         </div>
 
         {/* ── Footer CTA ── */}
@@ -494,7 +443,15 @@ const QuickActionButton = memo(function QuickActionButton({
 // ── Case Card ──────────────────────────────────────────────────────────────
 
 interface CaseCardProps {
-  caseItem: (typeof MOCK_ACTIVE_CASES)[number];
+  caseItem: {
+    id: string;
+    title: string;
+    token: string;
+    status: string;
+    progress: number;
+    findings: number;
+    severity: Severity;
+  };
   index: number;
 }
 

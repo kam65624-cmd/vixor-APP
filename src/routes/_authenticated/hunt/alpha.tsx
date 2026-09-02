@@ -43,168 +43,6 @@ type AlphaSignal = {
 
 const CATEGORY_FILTERS = ["All", "Volume", "Whale", "Social", "On-Chain"] as const;
 
-const MOCK_HOT_TOKENS: HotToken[] = [
-  {
-    rank: 1,
-    name: "NeonPulse",
-    symbol: "NPULSE",
-    address: "0xabc123def456789012345678901234567890abcd",
-    signalCount: 14,
-    totalReturn: 156.2,
-    sparkline: "2,4,3,6,5,8,7,10,9,12,11,14,13,16,15,18,17,20,19,22",
-  },
-  {
-    rank: 2,
-    name: "VortexFi",
-    symbol: "VTX",
-    address: "0x4567890abcdef1234567890abcdef1234567890",
-    signalCount: 11,
-    totalReturn: 89.7,
-    sparkline: "1,2,3,4,5,6,8,10,12,14,16,18,22,25,28,32,36,40,45,50",
-  },
-  {
-    rank: 3,
-    name: "SolarFlare",
-    symbol: "SFLR",
-    address: "0x234567890abcdef01234567890abcdef01234568",
-    signalCount: 9,
-    totalReturn: 67.9,
-    sparkline: "3,4,5,6,7,9,11,13,15,17,19,22,24,27,30,33,36,39,42,45",
-  },
-];
-
-const MOCK_SIGNALS: AlphaSignal[] = [
-  {
-    id: "sig01",
-    type: "volume",
-    category: "Volume",
-    tokenName: "NeonPulse",
-    tokenSymbol: "NPULSE",
-    tokenAddress: "0xabc123def456789012345678901234567890abcd",
-    description:
-      "Trading volume surged 340% in the last 15 minutes with increasing buy pressure on DEX.",
-    confidence: 87,
-    potentialReturn: 24.5,
-    timeDetected: "2m ago",
-  },
-  {
-    id: "sig02",
-    type: "whale",
-    category: "Whale",
-    tokenName: "VortexFi",
-    tokenSymbol: "VTX",
-    tokenAddress: "0x4567890abcdef1234567890abcdef1234567890",
-    description:
-      "Three known whale wallets accumulated 2.4M tokens in the past hour from multiple DEX pools.",
-    confidence: 91,
-    potentialReturn: 18.3,
-    timeDetected: "5m ago",
-  },
-  {
-    id: "sig03",
-    type: "social",
-    category: "Social",
-    tokenName: "CryptoNinja",
-    tokenSymbol: "CNINJA",
-    tokenAddress: "0x567890abcdef01234567890abcdef0123456a1",
-    description:
-      "Mentions spiked 520% across platforms with 89% positive sentiment in the last 30 minutes.",
-    confidence: 72,
-    potentialReturn: 15.8,
-    timeDetected: "8m ago",
-  },
-  {
-    id: "sig04",
-    type: "momentum",
-    category: "On-Chain",
-    tokenName: "SolarFlare",
-    tokenSymbol: "SFLR",
-    tokenAddress: "0x234567890abcdef01234567890abcdef01234568",
-    description: "On-chain momentum score reached 94 with 12 new holders in the last 10 minutes.",
-    confidence: 85,
-    potentialReturn: 31.2,
-    timeDetected: "12m ago",
-  },
-  {
-    id: "sig05",
-    type: "volume",
-    category: "Volume",
-    tokenName: "TitanRise",
-    tokenSymbol: "TRISE",
-    tokenAddress: "0x4567890abcdef01234567890abcdef01234569",
-    description:
-      "Unusual volume spike detected: 180% above 24h average with strong bid-ask balance.",
-    confidence: 78,
-    potentialReturn: 12.4,
-    timeDetected: "15m ago",
-  },
-  {
-    id: "sig06",
-    type: "whale",
-    category: "Whale",
-    tokenName: "NeonPulse",
-    tokenSymbol: "NPULSE",
-    tokenAddress: "0xabc123def456789012345678901234567890abcd",
-    description:
-      "Smart money wallet moved 500K USDC into NPULSE pool, matching historical accumulation pattern.",
-    confidence: 94,
-    potentialReturn: 28.7,
-    timeDetected: "18m ago",
-  },
-  {
-    id: "sig07",
-    type: "social",
-    category: "Social",
-    tokenName: "VortexFi",
-    tokenSymbol: "VTX",
-    tokenAddress: "0x4567890abcdef1234567890abcdef1234567890",
-    description:
-      "Viral tweet thread from top KOL reached 45K impressions with 78% engagement rate.",
-    confidence: 68,
-    potentialReturn: 11.2,
-    timeDetected: "22m ago",
-  },
-  {
-    id: "sig08",
-    type: "momentum",
-    category: "On-Chain",
-    tokenName: "GhostChain",
-    tokenSymbol: "GHOST",
-    tokenAddress: "0xdef789abc012345678901234567890abcdef0123",
-    description:
-      "On-chain transaction velocity doubled as 8 new active wallets appeared in 5 minutes.",
-    confidence: 63,
-    potentialReturn: 9.8,
-    timeDetected: "25m ago",
-  },
-  {
-    id: "sig09",
-    type: "volume",
-    category: "Volume",
-    tokenName: "DarkMatter",
-    tokenSymbol: "DMT",
-    tokenAddress: "0x7890abcdef1234567890abcdef12345678abcd01",
-    description:
-      "Volume breakout on 5-minute chart with 4 consecutive green candles and expanding range.",
-    confidence: 81,
-    potentialReturn: 16.5,
-    timeDetected: "30m ago",
-  },
-  {
-    id: "sig10",
-    type: "whale",
-    category: "Whale",
-    tokenName: "QuantumLeap",
-    tokenSymbol: "QLEAP",
-    tokenAddress: "0x0123456789abcdef0123456789abcdef01234567",
-    description:
-      "Whale cluster detected: 4 coordinated buys totaling 1.2M tokens within 2 minutes.",
-    confidence: 89,
-    potentialReturn: 22.1,
-    timeDetected: "35m ago",
-  },
-];
-
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function signalTypeIcon(type: SignalType): string {
@@ -290,14 +128,28 @@ function AlphaSignalsPage() {
 
   const tokens = data?.tokens ?? [];
 
-  const filteredSignals = MOCK_SIGNALS.filter((s) => {
+  const realSignals: AlphaSignal[] = tokens.map((token, i) => ({
+    id: `sig-${token.address}-${i}`,
+    type: token.accelerationLevel === "hot" ? "volume" : "momentum",
+    category: token.accelerationLevel === "hot" ? "Volume" : "On-Chain",
+    tokenName: token.name,
+    tokenSymbol: token.symbol,
+    tokenAddress: token.address,
+    description: `24h volume $${(token.volume24h / 1000).toFixed(1)}k with acceleration score ${token.accelerationScore}.`,
+    confidence: Math.min(99, Math.max(50, Math.round(token.accelerationScore))),
+    potentialReturn: token.priceChange24h,
+    timeDetected: token.priceChange1h ? "1h ago" : "Recently",
+  }));
+
+  const filteredSignals = realSignals.filter((s) => {
     if (activeCategory === "All") return true;
     return s.category === activeCategory;
   });
 
   const accuracy = 78.4;
-  const avgReturn = 19.1;
-  const signalsToday = MOCK_SIGNALS.length;
+  const avgReturn =
+    tokens.length > 0 ? tokens.reduce((acc, t) => acc + t.priceChange24h, 0) / tokens.length : 0;
+  const signalsToday = realSignals.length;
 
   const handleCategoryChange = useCallback((cat: string) => {
     setActiveCategory(cat);
@@ -393,7 +245,7 @@ function AlphaSignalsPage() {
         stats={[
           {
             label: "Active Signals",
-            value: String(MOCK_SIGNALS.length),
+            value: String(realSignals.length),
             color: "var(--char-vix)",
           },
           {
@@ -613,7 +465,7 @@ function AlphaSignalsPage() {
             opacity: 0.7,
           }}
         >
-          VIX DETECTED {MOCK_SIGNALS.length} ALPHA SIGNALS — {accuracy}% ACCURACY THIS WEEK
+          VIX DETECTED {realSignals.length} ALPHA SIGNALS — {accuracy}% ACCURACY THIS WEEK
         </div>
       </PageScrollArea>
     </PageLayout>
