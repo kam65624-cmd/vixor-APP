@@ -7,7 +7,6 @@ import {
   SWAP_PAIRS,
   TOKENS,
   MOCK_BALANCES,
-  useMockWallet,
   getSwapHistory,
   saveSwapHistory,
   formatUSD,
@@ -17,13 +16,16 @@ import {
   TokenDef,
   SwapRecord,
 } from "./constants";
+import { useWallet } from "@/domains/wallet/adapter/WalletProvider";
+import { WalletProviderSelector } from "@/domains/wallet/adapter/WalletProviderSelector";
 import { TokenIcon } from "./TokenIcon";
 import { TokenSelectorModal } from "./TokenSelectorModal";
 
 // ── Main Swap Page ──────────────────────────────────────────────────────────
 export function SwapPage() {
   const navigate = useNavigate();
-  const wallet = useMockWallet();
+  const { wallet, connect, disconnect } = useWallet();
+  const isConnected = wallet?.status === "connected";
 
   // ── Live Prices (replaces static PRICES map) ──
   const { getPrice: getLivePrice } = useLivePrices({ pairs: [...SWAP_PAIRS] });
@@ -50,6 +52,7 @@ export function SwapPage() {
   const [swapDirection, setSwapDirection] = useState<"normal" | "rotated">("normal");
   const [isSwapping, setIsSwapping] = useState(false);
   const [swapSuccess, setSwapSuccess] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [swapHistory, setSwapHistory] = useState<SwapRecord[]>(getSwapHistory);
 
   // ── Swap Calculation ──
@@ -118,12 +121,21 @@ export function SwapPage() {
     setFromAmount(String(balance));
   }, [fromToken]);
 
+  // ── Handle Swap Request (shows confirmation) ──
+  const handleSwapRequest = useCallback(() => {
+    if (!isConnected || !hasBalance || !fromAmount || swapResult.output <= 0) return;
+    setShowConfirm(true);
+  }, [isConnected, hasBalance, fromAmount, swapResult.output]);
+
   // ── Handle Swap Execution ──
   const handleSwap = useCallback(async () => {
-    if (!wallet.connected || !hasBalance || !fromAmount || swapResult.output <= 0) return;
-
+    setShowConfirm(false);
+    if (!isConnected || !hasBalance || !fromAmount || swapResult.output <= 0) return;
     setIsSwapping(true);
-    // Simulate network delay
+    // TODO: Route to real DEX based on chain:
+    //   Solana → Jupiter swap API
+    //   EVM → 1inch swap API
+    // For now, simulate with network delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const newRecord: SwapRecord = {
@@ -143,15 +155,7 @@ export function SwapPage() {
     setSwapSuccess(true);
     setFromAmount("");
     setTimeout(() => setSwapSuccess(false), 3000);
-  }, [
-    wallet.connected,
-    hasBalance,
-    fromAmount,
-    swapResult.output,
-    fromToken,
-    toToken,
-    swapHistory,
-  ]);
+  }, [isConnected, hasBalance, fromAmount, swapResult.output, fromToken, toToken, swapHistory]);
 
   // ── Popular Pairs ──
   const popularPairs = [
@@ -221,29 +225,13 @@ export function SwapPage() {
           }}
         >
           {/* ── Wallet Connection Banner ── */}
-          {!wallet.connected ? (
-            <button
-              onClick={() => navigate({ to: "/wallet-web3" })}
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: "12px",
-                border: "1px dashed var(--color-primary)",
-                background: "rgba(99,102,241,0.08)",
-                color: "var(--color-primary)",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                fontFamily: "var(--font-sans)",
-              }}
-            >
-              <span style={{ fontSize: "18px" }}>🔗</span>
-              Connect Wallet to Swap
-            </button>
+          {!isConnected ? (
+            <div className="flex flex-col gap-2.5">
+              <WalletProviderSelector />
+              <p className="text-center text-xs text-muted-foreground">
+                Connect your wallet to execute swaps
+              </p>
+            </div>
           ) : (
             <div
               style={{
@@ -273,22 +261,16 @@ export function SwapPage() {
                     color: "var(--color-foreground)",
                   }}
                 >
-                  {wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}
+                  {wallet?.address.slice(0, 4)}...{wallet?.address.slice(-4)}
                 </span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <span style={{ fontSize: "12px", color: "var(--color-muted-foreground)" }}>
-                  {wallet.chain}
-                </span>
-                <span
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    fontFamily: "var(--font-mono)",
-                    color: "var(--color-foreground)",
-                  }}
-                >
-                  {wallet.balance}
+                  {wallet?.chain === "solana"
+                    ? "Solana"
+                    : wallet?.chain === "evm"
+                      ? "EVM"
+                      : wallet?.chain?.toUpperCase()}
                 </span>
               </div>
             </div>
@@ -792,93 +774,85 @@ export function SwapPage() {
                 >
                   ✓ Swap Successful!
                 </div>
-              ) : !wallet.connected ? (
-                <button
-                  onClick={() => navigate({ to: "/wallet-web3" })}
-                  style={{
-                    width: "100%",
-                    height: "48px",
-                    borderRadius: "10px",
-                    background: "var(--color-primary)",
-                    color: "var(--color-primary-foreground)",
-                    fontSize: "15px",
-                    fontWeight: 700,
-                    border: "none",
-                    cursor: "pointer",
-                    fontFamily: "var(--font-sans)",
-                    transition: "opacity 0.15s ease",
-                  }}
-                >
-                  Connect Wallet
-                </button>
-              ) : !hasBalance ? (
-                <div
-                  style={{
-                    width: "100%",
-                    height: "48px",
-                    borderRadius: "10px",
-                    background: "rgba(251,70,103,0.20)",
-                    color: "var(--color-bearish)",
-                    fontSize: "15px",
-                    fontWeight: 700,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "1px solid rgba(251,70,103,0.30)",
-                  }}
-                >
-                  Insufficient Balance
+              ) : !isConnected ? (
+                <div className="flex flex-col gap-2.5">
+                  <WalletProviderSelector />
+                  <p className="text-center text-xs text-muted-foreground">
+                    Connect your wallet to execute swaps
+                  </p>
                 </div>
-              ) : (
-                <button
-                  onClick={handleSwap}
-                  disabled={isSwapping || !fromAmount || swapResult.output <= 0}
-                  style={{
-                    width: "100%",
-                    height: "48px",
-                    borderRadius: "10px",
-                    background:
-                      isSwapping || !fromAmount || swapResult.output <= 0
-                        ? "rgba(34,211,166,0.40)"
-                        : "var(--color-bullish)",
-                    color: isSwapping
-                      ? "var(--color-muted-foreground)"
-                      : "var(--color-buy-text, #04150D)",
-                    fontSize: "15px",
-                    fontWeight: 700,
-                    border: "none",
-                    cursor:
-                      isSwapping || !fromAmount || swapResult.output <= 0
-                        ? "not-allowed"
-                        : "pointer",
-                    fontFamily: "var(--font-sans)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px",
-                    transition: "all 0.15s ease",
-                    opacity: isSwapping || !fromAmount ? 0.6 : 1,
-                  }}
-                >
-                  {isSwapping ? (
-                    <>
-                      <div
-                        style={{
-                          width: "16px",
-                          height: "16px",
-                          border: "2px solid var(--color-muted-foreground)",
-                          borderTopColor: "var(--color-foreground)",
-                          borderRadius: "50%",
-                          animation: "spin 0.7s linear infinite",
-                        }}
-                      />
-                      Swapping...
-                    </>
+              ) : isConnected ? (
+                <>
+                  {!hasBalance ? (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "48px",
+                        borderRadius: "10px",
+                        background: "rgba(251,70,103,0.20)",
+                        color: "var(--color-bearish)",
+                        fontSize: "15px",
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: "1px solid rgba(251,70,103,0.30)",
+                      }}
+                    >
+                      Insufficient Balance
+                    </div>
                   ) : (
-                    `[Demo Simulation] Swap ${fromToken.symbol} → ${toToken.symbol}`
+                    <button
+                      onClick={handleSwapRequest}
+                      disabled={isSwapping || !fromAmount || swapResult.output <= 0}
+                      style={{
+                        width: "100%",
+                        height: "48px",
+                        borderRadius: "10px",
+                        background:
+                          isSwapping || !fromAmount || swapResult.output <= 0
+                            ? "rgba(34,211,166,0.40)"
+                            : "var(--color-bullish)",
+                        color: isSwapping
+                          ? "var(--color-muted-foreground)"
+                          : "var(--color-buy-text, #04150D)",
+                        fontSize: "15px",
+                        fontWeight: 700,
+                        border: "none",
+                        cursor:
+                          isSwapping || !fromAmount || swapResult.output <= 0
+                            ? "not-allowed"
+                            : "pointer",
+                        fontFamily: "var(--font-sans)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        transition: "all 0.15s ease",
+                        opacity: isSwapping || !fromAmount ? 0.6 : 1,
+                      }}
+                    >
+                      {isSwapping ? (
+                        <>
+                          <div
+                            style={{
+                              width: "16px",
+                              height: "16px",
+                              border: "2px solid var(--color-muted-foreground)",
+                              borderTopColor: "var(--color-foreground)",
+                              borderRadius: "50%",
+                              animation: "spin 0.7s linear infinite",
+                            }}
+                          />
+                          Swapping...
+                        </>
+                      ) : (
+                        `[Demo Simulation] Swap ${fromToken.symbol} → ${toToken.symbol}`
+                      )}
+                    </button>
                   )}
-                </button>
-              )}
+                </>
+              ) : null}
             </div>
           </div>
 
@@ -1048,6 +1022,90 @@ export function SwapPage() {
         onClose={() => setShowToModal(false)}
         excludeSymbol={fromToken.symbol}
       />
+
+      {/* ── Confirmation Dialog ── */}
+      {showConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{
+            background: "var(--overlay)",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <div
+            className="w-full max-w-[420px] rounded-t-3xl p-5"
+            style={{
+              background: "var(--glass-bg)",
+              backdropFilter: "var(--glass-blur)",
+              borderTop: "1px solid var(--glass-border)",
+            }}
+          >
+            <div className="flex justify-center pt-1 pb-4">
+              <div className="w-10 h-1 rounded-full" style={{ background: "var(--handle-bar)" }} />
+            </div>
+            <h3 className="text-base font-bold text-foreground text-center mb-1">Confirm Swap</h3>
+            <p className="text-center text-xs text-muted-foreground mb-4">
+              Review the transaction details below
+            </p>
+            <div className="space-y-2 mb-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">You pay</span>
+                <span className="font-mono font-medium text-foreground">
+                  {fromAmount} {fromToken.symbol}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">You receive</span>
+                <span className="font-mono font-medium text-foreground">
+                  {swapResult.output.toFixed(6)} {toToken.symbol}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Price impact</span>
+                <span className="font-mono" style={{ color: impactColor }}>
+                  {swapResult.priceImpact.toFixed(2)}%
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Network</span>
+                <span className="font-medium text-foreground">
+                  {wallet?.chain === "solana" ? "Solana" : "EVM"}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Route</span>
+                <span className="font-medium text-foreground">
+                  {wallet?.chain === "solana" ? "Jupiter" : "1inch"}
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 h-12 rounded-xl border font-bold text-sm transition-colors"
+                style={{
+                  borderColor: "var(--color-border)",
+                  color: "var(--color-foreground)",
+                  background: "var(--color-card)",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSwap}
+                disabled={isSwapping}
+                className="flex-1 h-12 rounded-xl font-bold text-sm transition-colors"
+                style={{
+                  background: "var(--color-bullish)",
+                  color: "var(--color-buy-text)",
+                }}
+              >
+                {isSwapping ? "Swapping..." : "Confirm Swap"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageLayout>
   );
 }
