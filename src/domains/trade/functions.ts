@@ -10,7 +10,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import { detectPatterns } from "./pattern-detector";
 import type { Candle } from "./pattern-detector";
-import { fetchJupiterQuote, SOLANA_MINTS } from "./jupiter-client";
+import { fetchJupiterQuote, fetchJupiterSwapTransaction, SOLANA_MINTS } from "./jupiter-client";
+import { fetch1inchQuote, fetch1inchSwapTransaction, EVM_SWAP_TOKENS } from "./oneinch-client";
 
 export interface DashboardStatsResult {
   totalPnlUsd: number;
@@ -286,4 +287,60 @@ export const saveUserTrade = createServerFn({ method: "POST" })
 /** 6. Get popular Jupiter SPL tokens list */
 export const getPopularSwapTokens = createServerFn({ method: "GET" }).handler(async () => {
   return SOLANA_MINTS;
+});
+
+/** 7. Build an unsigned Jupiter swap transaction for the connected Solana wallet to sign */
+export const getJupiterSwapTransaction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      quoteResponse: z.record(z.string(), z.unknown()),
+      userPublicKey: z.string(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    return fetchJupiterSwapTransaction(data.quoteResponse as any, data.userPublicKey);
+  });
+
+/** 8. Get an EVM swap quote via 1inch */
+export const get1inchSwapQuote = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      chainId: z.number(),
+      src: z.string(),
+      dst: z.string(),
+      amount: z.string(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    return fetch1inchQuote(data.chainId, data.src, data.dst, data.amount);
+  });
+
+/** 9. Build an unsigned EVM swap transaction via 1inch for MetaMask to sign */
+export const get1inchSwapTransaction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      chainId: z.number(),
+      src: z.string(),
+      dst: z.string(),
+      amount: z.string(),
+      fromAddress: z.string(),
+      slippage: z.number().optional().default(1),
+    }),
+  )
+  .handler(async ({ data }) => {
+    return fetch1inchSwapTransaction(
+      data.chainId,
+      data.src,
+      data.dst,
+      data.amount,
+      data.fromAddress,
+      data.slippage,
+    );
+  });
+
+/** 10. Get the supported EVM token list (per chain) for the swap selector */
+export const getEvmSwapTokens = createServerFn({ method: "GET" }).handler(async () => {
+  return EVM_SWAP_TOKENS;
 });

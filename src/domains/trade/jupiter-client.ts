@@ -115,6 +115,70 @@ export async function fetchJupiterQuote(
   }
 }
 
+export interface JupiterSwapTxResult {
+  ok: boolean;
+  error: string | null;
+  /** Base64-encoded serialized VersionedTransaction, ready to sign */
+  swapTransaction: string | null;
+  lastValidBlockHeight: number | null;
+}
+
+/**
+ * Build a serialized (unsigned) swap transaction from a Jupiter quote.
+ * The caller (wallet adapter) is responsible for signing + sending it.
+ *
+ * @param quoteResponse - The raw quote object returned by fetchJupiterQuote
+ * @param userPublicKey - The connected Solana wallet's public address
+ */
+export async function fetchJupiterSwapTransaction(
+  quoteResponse: JupiterQuoteResponse,
+  userPublicKey: string,
+): Promise<JupiterSwapTxResult> {
+  try {
+    const res = await fetch(`${JUPITER_QUOTE_BASE}/swap`, {
+      method: "POST",
+      signal: AbortSignal.timeout(15_000),
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        quoteResponse,
+        userPublicKey,
+        wrapAndUnwrapSol: true,
+        dynamicComputeUnitLimit: true,
+        prioritizationFeeLamports: "auto",
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return {
+        ok: false,
+        error: `Jupiter swap API returned HTTP ${res.status}${text ? `: ${text}` : ""}`,
+        swapTransaction: null,
+        lastValidBlockHeight: null,
+      };
+    }
+
+    const json = (await res.json()) as {
+      swapTransaction: string;
+      lastValidBlockHeight: number;
+    };
+
+    return {
+      ok: true,
+      error: null,
+      swapTransaction: json.swapTransaction,
+      lastValidBlockHeight: json.lastValidBlockHeight ?? null,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Failed to build Jupiter swap transaction",
+      swapTransaction: null,
+      lastValidBlockHeight: null,
+    };
+  }
+}
+
 /** Known Solana Mint Addresses for convenience */
 export const SOLANA_MINTS = {
   SOL: "So11111111111111111111111111111111111111112",

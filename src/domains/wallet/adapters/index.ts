@@ -1,9 +1,9 @@
-// VIXOR Wallet Adapters — Barrel Export
 export {
   isPhantomInstalled,
   connectPhantom,
   getPhantomSolBalance,
   getPhantomTokenBalances,
+  signAndSendSolanaTransaction,
 } from "./phantom-adapter";
 export {
   isMetaMaskInstalled,
@@ -11,6 +11,8 @@ export {
   switchChain,
   buildSIWEMessage,
   getEvmNativeBalance,
+  getCurrentEvmChainId,
+  sendEvmTransaction,
 } from "./metamask-adapter";
 export {
   isWalletConnectAvailable,

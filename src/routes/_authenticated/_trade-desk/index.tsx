@@ -12,17 +12,12 @@ import { GovernorRiskPanel } from "@/components/vixor/GovernorRiskPanel";
 import { PageLayout, ScrollArea } from "@/components/vixor/PageLayout";
 import { getExchangeStatus, executeTrade } from "@/domains/trading/gateway/functions";
 import type { ExchangeStatus, ExecuteTradeResult } from "@/domains/trading/gateway/functions";
-import {
-  getPopularSwapTokens,
-  getJupiterSwapQuote,
-  saveUserTrade,
-} from "@/domains/trade/functions";
-
 import { PIP_SIZES, LOT_SIZES } from "./constants";
 import type { RiskCalcResult, OrderSummary } from "./constants";
 import { RiskCalculator } from "./RiskCalculator";
 import { ActivePositions } from "./ActivePositions";
 import { ExecutionDialog } from "./ExecutionDialog";
+import { SwapPanel } from "./SwapPanel";
 
 // ── Main component ──
 
@@ -64,32 +59,6 @@ export function TradeDesk() {
   });
 
   const exchangeStatus = exchangeQuery.data as ExchangeStatus | undefined;
-
-  const stableTokens = useStableServerFn(getPopularSwapTokens);
-  const stableQuote = useStableServerFn(getJupiterSwapQuote);
-  const stableSave = useStableServerFn(saveUserTrade);
-
-  // Popular tokens for selector
-  const { data: tokensData } = useQuery({
-    queryKey: ["swap-tokens"],
-    queryFn: () => stableTokens({}),
-    staleTime: 600_000,
-  });
-  const availableTokens = tokensData ?? [];
-
-  // Quote state
-  const [inputMint, setInputMint] = useState("");
-  const [outputMint, setOutputMint] = useState("");
-  const [amount, setAmount] = useState(0);
-
-  const quoteMutation = useMutation({
-    mutationFn: () => stableQuote({ data: { inputMint, outputMint, amount, slippageBps: 100 } }),
-  });
-
-  const tradeMutation = useMutation({
-    mutationFn: (tradeData: any) => stableSave({ data: tradeData }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["user-trades"] }),
-  });
 
   // Pagination state for open positions
   const [tradesPage, setTradesPage] = useState(1);
@@ -390,6 +359,8 @@ export function TradeDesk() {
           showGovernor={showGovernor}
           setShowGovernor={setShowGovernor}
         />
+
+        <SwapPanel />
 
         <ActivePositions
           trades={openTrades}

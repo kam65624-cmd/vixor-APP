@@ -160,6 +160,43 @@ export async function connectMetaMask(chainId: EvmChainId = "0x1"): Promise<{
 }
 
 /**
+ * Get the EVM chain MetaMask is currently connected to (live read, not cached
+ * state — the user may switch networks in the extension after connecting).
+ */
+export async function getCurrentEvmChainId(): Promise<EvmChainId> {
+  const provider = getProvider();
+  const id = (await provider.request({ method: "eth_chainId" })) as string;
+  return id as EvmChainId;
+}
+
+/**
+ * Send an EVM transaction (e.g. a swap built by 1inch) through MetaMask.
+ * Returns the transaction hash once the user approves it in the wallet UI.
+ */
+export async function sendEvmTransaction(tx: {
+  to: string;
+  data: string;
+  value?: string;
+  from: string;
+  gas?: number;
+}): Promise<string> {
+  const provider = getProvider();
+  const txHash = (await provider.request({
+    method: "eth_sendTransaction",
+    params: [
+      {
+        to: tx.to,
+        data: tx.data,
+        value: tx.value ?? "0x0",
+        from: tx.from,
+        ...(tx.gas ? { gas: `0x${tx.gas.toString(16)}` } : {}),
+      },
+    ],
+  })) as string;
+  return txHash;
+}
+
+/**
  * Get native token (ETH/MATIC/AVAX) balance for an EVM address.
  */
 export async function getEvmNativeBalance(address: string, chainId: EvmChainId): Promise<number> {

@@ -19,6 +19,7 @@ interface PhantomSolana {
   connect(): Promise<{ publicKey: { toString(): string } }>;
   disconnect(): Promise<void>;
   signMessage(message: Uint8Array, encoding?: string): Promise<{ signature: Uint8Array }>;
+  signAndSendTransaction(transaction: unknown): Promise<{ signature: string }>;
 }
 
 declare global {
@@ -69,7 +70,7 @@ export async function connectPhantom(): Promise<{
       const encoded = new TextEncoder().encode(message);
       const { signature } = await phantom.signMessage(encoded, "utf8");
       try {
-        const bs58Module = await Function('return import("bs58")')();
+        const bs58Module = await import("bs58");
         const bs58 = bs58Module.default || bs58Module;
         return bs58.encode(signature);
       } catch {
@@ -94,8 +95,7 @@ export async function connectPhantom(): Promise<{
  */
 export async function getPhantomSolBalance(address: string): Promise<number> {
   try {
-    const web3 = await Function('return import("@solana/web3.js")')();
-    const { Connection, LAMPORTS_PER_SOL, PublicKey } = web3;
+    const { Connection, LAMPORTS_PER_SOL, PublicKey } = await import("@solana/web3.js");
     const rpcUrl = process.env.WALLET_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
     const connection = new Connection(rpcUrl, "confirmed");
     const balance = await connection.getBalance(new PublicKey(address));
@@ -113,8 +113,7 @@ export async function getPhantomTokenBalances(
   address: string,
 ): Promise<import("../types").TokenBalance[]> {
   try {
-    const web3 = await Function('return import("@solana/web3.js")')();
-    const { Connection, PublicKey } = web3;
+    const { Connection, PublicKey } = await import("@solana/web3.js");
     const TOKEN_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
     const heliusKey = process.env.HELIUS_API_KEY;
@@ -149,4 +148,53 @@ export async function getPhantomTokenBalances(
   } catch {
     return [];
   }
+}
+
+// ============================================================================
+// Swap execution
+// ============================================================================
+
+/** Extended Phantom interface with transaction signing */
+interface PhantomSolanaFull extends PhantomSolana {
+  signAndSendTransaction(
+    transaction: unknown,
+    options?: { skipPreflight?: boolean },
+  ): Promise<{ signature: string }>;
+}
+
+/**
+ * Sign and send a Solana transaction via Phantom wallet.
+ * Used for Jupiter swap execution after getting a swap transaction from the server.
+ *
+ * @param serializedTransaction - Base64-encoded serialized VersionedTransaction
+ * @param rpcUrl - Solana RPC endpoint to confirm the tx
+ * @returns Transaction signature (hash)
+ */
+export async function signAndSendSolanaTransaction(
+  serializedTransaction: string,
+  rpcUrl = "https://api.mainnet-beta.solana.com",
+): Promise<string> {
+  const phantomFull = getPhantom() as PhantomSolanaFull;
+  if (!phantomFull.signAndSendTransaction) {
+    throw new Error("Phantom does not support signAndSendTransaction");
+  }
+
+  const { VersionedTransaction } = await import("@solana/web3.js");
+  const txBuffer = Uint8Array.from(atob(serializedTransaction), (c) => c.charCodeAt(0));
+  const transaction = VersionedTransaction.deserialize(txBuffer);
+
+  const { signature } = await phantomFull.signAndSendTransaction(transaction, {
+    skipPreflight: false,
+  });
+
+  // Wait for confirmation
+  try {
+    const { Connection } = await import("@solana/web3.js");
+    const connection = new Connection(rpcUrl, "confirmed");
+    await connection.confirmTransaction(signature, "confirmed");
+  } catch {
+    // Non-blocking: return signature even if confirmation polling fails
+  }
+
+  return signature;
 }

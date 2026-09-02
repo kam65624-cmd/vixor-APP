@@ -1,12 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import {
-  TokenDef,
-  TOKENS,
-  MOCK_BALANCES,
-  FALLBACK_PRICES,
-  formatBalance,
-  formatUSD,
-} from "./constants";
+import { TokenDef, TOKENS, FALLBACK_PRICES, formatBalance, formatUSD } from "./constants";
 import { TokenIcon } from "./TokenIcon";
 
 // ── Token Selector Modal ────────────────────────────────────────────────────
@@ -169,12 +162,10 @@ export function TokenSelectorModal({
               </div>
               <div style={{ textAlign: "right" }}>
                 <div style={{ fontSize: "13px", fontWeight: 600, fontFamily: "var(--font-mono)" }}>
-                  {formatBalance(MOCK_BALANCES[token.symbol] || 0, token.symbol)}
+                  {formatBalance(0, token.symbol)}
                 </div>
                 <div style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
-                  {formatUSD(
-                    (MOCK_BALANCES[token.symbol] || 0) * (FALLBACK_PRICES[token.symbol] || 0),
-                  )}
+                  {formatUSD(0 * (FALLBACK_PRICES[token.symbol] || 0))}
                 </div>
               </div>
             </button>

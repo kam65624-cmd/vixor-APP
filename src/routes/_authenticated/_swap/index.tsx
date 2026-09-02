@@ -96,7 +96,7 @@ export function SwapPage() {
   const hasBalance = useMemo(() => {
     if (!fromAmount) return true;
     const inputNum = parseFloat(fromAmount);
-    const balance = MOCK_BALANCES[fromToken.symbol] || 0;
+    const balance = MOCK_BALANCES[fromToken.symbol] ?? 0;
     return inputNum <= balance;
   }, [fromAmount, fromToken]);
 
@@ -117,7 +117,7 @@ export function SwapPage() {
 
   // ── Handle MAX ──
   const handleMax = useCallback(() => {
-    const balance = MOCK_BALANCES[fromToken.symbol] || 0;
+    const balance = MOCK_BALANCES[fromToken.symbol] ?? 0;
     setFromAmount(String(balance));
   }, [fromToken]);
 
@@ -351,8 +351,7 @@ export function SwapPage() {
                     fontFamily: "var(--font-mono)",
                   }}
                 >
-                  Balance (Simulated):{" "}
-                  {formatBalance(MOCK_BALANCES[fromToken.symbol] || 0, fromToken.symbol)}
+                  Balance (Simulated): {formatBalance(0, fromToken.symbol)}
                 </span>
               </div>
 
@@ -534,8 +533,7 @@ export function SwapPage() {
                     fontFamily: "var(--font-mono)",
                   }}
                 >
-                  Balance (Simulated):{" "}
-                  {formatBalance(MOCK_BALANCES[toToken.symbol] || 0, toToken.symbol)}
+                  Balance (Simulated): {formatBalance(0, toToken.symbol)}
                 </span>
               </div>
 
