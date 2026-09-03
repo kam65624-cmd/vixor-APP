@@ -9,59 +9,59 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedAlphaRouteImport } from './routes/_authenticated/alpha'
-import { Route as AuthenticatedAnalyzeRouteImport } from './routes/_authenticated/analyze'
-import { Route as AuthenticatedBacktestRouteImport } from './routes/_authenticated/backtest'
-import { Route as AuthenticatedChartsRouteImport } from './routes/_authenticated/charts'
-import { Route as AuthenticatedDailyLoopRouteImport } from './routes/_authenticated/daily-loop'
-import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
-import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
-import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedOpportunitiesRouteImport } from './routes/_authenticated/opportunities'
-import { Route as AuthenticatedPnlRouteImport } from './routes/_authenticated/pnl'
-import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
-import { Route as AuthenticatedPredictionsRouteImport } from './routes/_authenticated/predictions'
-import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
-import { Route as AuthenticatedPulseRouteImport } from './routes/_authenticated/pulse'
-import { Route as AuthenticatedRadarRouteImport } from './routes/_authenticated/radar'
-import { Route as AuthenticatedReferralRouteImport } from './routes/_authenticated/referral'
-import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
-import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
-import { Route as AuthenticatedSwapRouteImport } from './routes/_authenticated/swap'
-import { Route as AuthenticatedTrackersRouteImport } from './routes/_authenticated/trackers'
-import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
-import { Route as AuthenticatedTradeDeskRouteImport } from './routes/_authenticated/trade-desk'
-import { Route as AuthenticatedVisionRouteImport } from './routes/_authenticated/vision'
-import { Route as AuthenticatedWalletWeb3RouteImport } from './routes/_authenticated/wallet-web3'
 import { Route as AuthenticatedWhaleRouteImport } from './routes/_authenticated/whale'
-import { Route as AuthenticatedAdminApiKeysRouteImport } from './routes/_authenticated/admin/api-keys'
-import { Route as AuthenticatedAnalysisIdRouteImport } from './routes/_authenticated/analysis.$id'
-import { Route as AuthenticatedHuntAlphaRouteImport } from './routes/_authenticated/hunt/alpha'
-import { Route as AuthenticatedHuntRadarRouteImport } from './routes/_authenticated/hunt/radar'
-import { Route as AuthenticatedHuntWhalesRouteImport } from './routes/_authenticated/hunt/whales'
+import { Route as AuthenticatedWalletWeb3RouteImport } from './routes/_authenticated/wallet-web3'
+import { Route as AuthenticatedVisionRouteImport } from './routes/_authenticated/vision'
+import { Route as AuthenticatedTradeDeskRouteImport } from './routes/_authenticated/trade-desk'
+import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
+import { Route as AuthenticatedTrackersRouteImport } from './routes/_authenticated/trackers'
+import { Route as AuthenticatedSwapRouteImport } from './routes/_authenticated/swap'
+import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
+import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
+import { Route as AuthenticatedReferralRouteImport } from './routes/_authenticated/referral'
+import { Route as AuthenticatedRadarRouteImport } from './routes/_authenticated/radar'
+import { Route as AuthenticatedPulseRouteImport } from './routes/_authenticated/pulse'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
+import { Route as AuthenticatedPredictionsRouteImport } from './routes/_authenticated/predictions'
+import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
+import { Route as AuthenticatedPnlRouteImport } from './routes/_authenticated/pnl'
+import { Route as AuthenticatedOpportunitiesRouteImport } from './routes/_authenticated/opportunities'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
+import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
+import { Route as AuthenticatedDailyLoopRouteImport } from './routes/_authenticated/daily-loop'
+import { Route as AuthenticatedChartsRouteImport } from './routes/_authenticated/charts'
+import { Route as AuthenticatedBacktestRouteImport } from './routes/_authenticated/backtest'
+import { Route as AuthenticatedAnalyzeRouteImport } from './routes/_authenticated/analyze'
+import { Route as AuthenticatedAlphaRouteImport } from './routes/_authenticated/alpha'
 import { Route as AuthenticatedShieldIndexRouteImport } from './routes/_authenticated/shield/index'
-import { Route as AuthenticatedShieldAlertsRouteImport } from './routes/_authenticated/shield/alerts'
-import { Route as AuthenticatedShieldCasesRouteImport } from './routes/_authenticated/shield/cases'
-import { Route as AuthenticatedShieldExposureRouteImport } from './routes/_authenticated/shield/exposure'
-import { Route as AuthenticatedShieldScannerRouteImport } from './routes/_authenticated/shield/scanner'
 import { Route as AuthenticatedTokenSymbolRouteImport } from './routes/_authenticated/token.$symbol'
-import { Route as AuthenticatedHuntTokenAddressRouteImport } from './routes/_authenticated/hunt/token.$address'
-import { Route as AuthenticatedHuntVerifiedIdRouteImport } from './routes/_authenticated/hunt/verified.$id'
+import { Route as AuthenticatedShieldScannerRouteImport } from './routes/_authenticated/shield/scanner'
+import { Route as AuthenticatedShieldExposureRouteImport } from './routes/_authenticated/shield/exposure'
+import { Route as AuthenticatedShieldCasesRouteImport } from './routes/_authenticated/shield/cases'
+import { Route as AuthenticatedShieldAlertsRouteImport } from './routes/_authenticated/shield/alerts'
+import { Route as AuthenticatedHuntWhalesRouteImport } from './routes/_authenticated/hunt/whales'
+import { Route as AuthenticatedHuntRadarRouteImport } from './routes/_authenticated/hunt/radar'
+import { Route as AuthenticatedHuntAlphaRouteImport } from './routes/_authenticated/hunt/alpha'
+import { Route as AuthenticatedAnalysisIdRouteImport } from './routes/_authenticated/analysis.$id'
+import { Route as AuthenticatedAdminApiKeysRouteImport } from './routes/_authenticated/admin/api-keys'
 import { Route as AuthenticatedShieldTrustAddressRouteImport } from './routes/_authenticated/shield/trust.$address'
+import { Route as AuthenticatedHuntVerifiedIdRouteImport } from './routes/_authenticated/hunt/verified.$id'
+import { Route as AuthenticatedHuntTokenAddressRouteImport } from './routes/_authenticated/hunt/token.$address'
 
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -69,61 +69,84 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAlphaRoute = AuthenticatedAlphaRouteImport.update({
-  id: '/alpha',
-  path: '/alpha',
+const AuthenticatedWhaleRoute = AuthenticatedWhaleRouteImport.update({
+  id: '/whale',
+  path: '/whale',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAnalyzeRoute = AuthenticatedAnalyzeRouteImport.update({
-  id: '/analyze',
-  path: '/analyze',
+const AuthenticatedWalletWeb3Route = AuthenticatedWalletWeb3RouteImport.update({
+  id: '/wallet-web3',
+  path: '/wallet-web3',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedBacktestRoute = AuthenticatedBacktestRouteImport.update({
-  id: '/backtest',
-  path: '/backtest',
+const AuthenticatedVisionRoute = AuthenticatedVisionRouteImport.update({
+  id: '/vision',
+  path: '/vision',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedChartsRoute = AuthenticatedChartsRouteImport.update({
-  id: '/charts',
-  path: '/charts',
+const AuthenticatedTradeDeskRoute = AuthenticatedTradeDeskRouteImport.update({
+  id: '/trade-desk',
+  path: '/trade-desk',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDailyLoopRoute = AuthenticatedDailyLoopRouteImport.update({
-  id: '/daily-loop',
-  path: '/daily-loop',
+const AuthenticatedTrackingRoute = AuthenticatedTrackingRouteImport.update({
+  id: '/tracking',
+  path: '/tracking',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDiscoverRoute = AuthenticatedDiscoverRouteImport.update({
-  id: '/discover',
-  path: '/discover',
+const AuthenticatedTrackersRoute = AuthenticatedTrackersRouteImport.update({
+  id: '/trackers',
+  path: '/trackers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
-  id: '/journal',
-  path: '/journal',
+const AuthenticatedSwapRoute = AuthenticatedSwapRouteImport.update({
+  id: '/swap',
+  path: '/swap',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedNotificationsRoute =
-  AuthenticatedNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedOpportunitiesRoute =
-  AuthenticatedOpportunitiesRouteImport.update({
-    id: '/opportunities',
-    path: '/opportunities',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedPnlRoute = AuthenticatedPnlRouteImport.update({
-  id: '/pnl',
-  path: '/pnl',
+const AuthenticatedSignalsRoute = AuthenticatedSignalsRouteImport.update({
+  id: '/signals',
+  path: '/signals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
-  id: '/portfolio',
-  path: '/portfolio',
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReferralRoute = AuthenticatedReferralRouteImport.update({
+  id: '/referral',
+  path: '/referral',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRadarRoute = AuthenticatedRadarRouteImport.update({
+  id: '/radar',
+  path: '/radar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPulseRoute = AuthenticatedPulseRouteImport.update({
+  id: '/pulse',
+  path: '/pulse',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPremiumRoute = AuthenticatedPremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPredictionsRoute =
@@ -132,110 +155,61 @@ const AuthenticatedPredictionsRoute =
     path: '/predictions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPremiumRoute = AuthenticatedPremiumRouteImport.update({
-  id: '/premium',
-  path: '/premium',
+const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
+const AuthenticatedPnlRoute = AuthenticatedPnlRouteImport.update({
+  id: '/pnl',
+  path: '/pnl',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedPulseRoute = AuthenticatedPulseRouteImport.update({
-  id: '/pulse',
-  path: '/pulse',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedRadarRoute = AuthenticatedRadarRouteImport.update({
-  id: '/radar',
-  path: '/radar',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedReferralRoute = AuthenticatedReferralRouteImport.update({
-  id: '/referral',
-  path: '/referral',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
-  id: '/rewards',
-  path: '/rewards',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSignalsRoute = AuthenticatedSignalsRouteImport.update({
-  id: '/signals',
-  path: '/signals',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSwapRoute = AuthenticatedSwapRouteImport.update({
-  id: '/swap',
-  path: '/swap',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedTrackersRoute = AuthenticatedTrackersRouteImport.update({
-  id: '/trackers',
-  path: '/trackers',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedTrackingRoute = AuthenticatedTrackingRouteImport.update({
-  id: '/tracking',
-  path: '/tracking',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedTradeDeskRoute = AuthenticatedTradeDeskRouteImport.update({
-  id: '/trade-desk',
-  path: '/trade-desk',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedVisionRoute = AuthenticatedVisionRouteImport.update({
-  id: '/vision',
-  path: '/vision',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedWalletWeb3Route = AuthenticatedWalletWeb3RouteImport.update({
-  id: '/wallet-web3',
-  path: '/wallet-web3',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedWhaleRoute = AuthenticatedWhaleRouteImport.update({
-  id: '/whale',
-  path: '/whale',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAdminApiKeysRoute =
-  AuthenticatedAdminApiKeysRouteImport.update({
-    id: '/admin/api-keys',
-    path: '/admin/api-keys',
+const AuthenticatedOpportunitiesRoute =
+  AuthenticatedOpportunitiesRouteImport.update({
+    id: '/opportunities',
+    path: '/opportunities',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAnalysisIdRoute = AuthenticatedAnalysisIdRouteImport.update({
-  id: '/analysis/$id',
-  path: '/analysis/$id',
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedHuntAlphaRoute = AuthenticatedHuntAlphaRouteImport.update({
-  id: '/hunt/alpha',
-  path: '/hunt/alpha',
+const AuthenticatedDiscoverRoute = AuthenticatedDiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedHuntRadarRoute = AuthenticatedHuntRadarRouteImport.update({
-  id: '/hunt/radar',
-  path: '/hunt/radar',
+const AuthenticatedDailyLoopRoute = AuthenticatedDailyLoopRouteImport.update({
+  id: '/daily-loop',
+  path: '/daily-loop',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedHuntWhalesRoute = AuthenticatedHuntWhalesRouteImport.update({
-  id: '/hunt/whales',
-  path: '/hunt/whales',
+const AuthenticatedChartsRoute = AuthenticatedChartsRouteImport.update({
+  id: '/charts',
+  path: '/charts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBacktestRoute = AuthenticatedBacktestRouteImport.update({
+  id: '/backtest',
+  path: '/backtest',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAnalyzeRoute = AuthenticatedAnalyzeRouteImport.update({
+  id: '/analyze',
+  path: '/analyze',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAlphaRoute = AuthenticatedAlphaRouteImport.update({
+  id: '/alpha',
+  path: '/alpha',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedShieldIndexRoute =
@@ -244,22 +218,10 @@ const AuthenticatedShieldIndexRoute =
     path: '/shield/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedShieldAlertsRoute =
-  AuthenticatedShieldAlertsRouteImport.update({
-    id: '/shield/alerts',
-    path: '/shield/alerts',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedShieldCasesRoute =
-  AuthenticatedShieldCasesRouteImport.update({
-    id: '/shield/cases',
-    path: '/shield/cases',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedShieldExposureRoute =
-  AuthenticatedShieldExposureRouteImport.update({
-    id: '/shield/exposure',
-    path: '/shield/exposure',
+const AuthenticatedTokenSymbolRoute =
+  AuthenticatedTokenSymbolRouteImport.update({
+    id: '/token/$symbol',
+    path: '/token/$symbol',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedShieldScannerRoute =
@@ -268,16 +230,54 @@ const AuthenticatedShieldScannerRoute =
     path: '/shield/scanner',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedTokenSymbolRoute =
-  AuthenticatedTokenSymbolRouteImport.update({
-    id: '/token/$symbol',
-    path: '/token/$symbol',
+const AuthenticatedShieldExposureRoute =
+  AuthenticatedShieldExposureRouteImport.update({
+    id: '/shield/exposure',
+    path: '/shield/exposure',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedHuntTokenAddressRoute =
-  AuthenticatedHuntTokenAddressRouteImport.update({
-    id: '/hunt/token/$address',
-    path: '/hunt/token/$address',
+const AuthenticatedShieldCasesRoute =
+  AuthenticatedShieldCasesRouteImport.update({
+    id: '/shield/cases',
+    path: '/shield/cases',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShieldAlertsRoute =
+  AuthenticatedShieldAlertsRouteImport.update({
+    id: '/shield/alerts',
+    path: '/shield/alerts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHuntWhalesRoute = AuthenticatedHuntWhalesRouteImport.update({
+  id: '/hunt/whales',
+  path: '/hunt/whales',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHuntRadarRoute = AuthenticatedHuntRadarRouteImport.update({
+  id: '/hunt/radar',
+  path: '/hunt/radar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHuntAlphaRoute = AuthenticatedHuntAlphaRouteImport.update({
+  id: '/hunt/alpha',
+  path: '/hunt/alpha',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAnalysisIdRoute = AuthenticatedAnalysisIdRouteImport.update({
+  id: '/analysis/$id',
+  path: '/analysis/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminApiKeysRoute =
+  AuthenticatedAdminApiKeysRouteImport.update({
+    id: '/admin/api-keys',
+    path: '/admin/api-keys',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShieldTrustAddressRoute =
+  AuthenticatedShieldTrustAddressRouteImport.update({
+    id: '/shield/trust/$address',
+    path: '/shield/trust/$address',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHuntVerifiedIdRoute =
@@ -286,10 +286,10 @@ const AuthenticatedHuntVerifiedIdRoute =
     path: '/hunt/verified/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedShieldTrustAddressRoute =
-  AuthenticatedShieldTrustAddressRouteImport.update({
-    id: '/shield/trust/$address',
-    path: '/shield/trust/$address',
+const AuthenticatedHuntTokenAddressRoute =
+  AuthenticatedHuntTokenAddressRouteImport.update({
+    id: '/hunt/token/$address',
+    path: '/hunt/token/$address',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -582,18 +582,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -603,186 +603,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/alpha': {
-      id: '/_authenticated/alpha'
-      path: '/alpha'
-      fullPath: '/alpha'
-      preLoaderRoute: typeof AuthenticatedAlphaRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/analyze': {
-      id: '/_authenticated/analyze'
-      path: '/analyze'
-      fullPath: '/analyze'
-      preLoaderRoute: typeof AuthenticatedAnalyzeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/backtest': {
-      id: '/_authenticated/backtest'
-      path: '/backtest'
-      fullPath: '/backtest'
-      preLoaderRoute: typeof AuthenticatedBacktestRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/charts': {
-      id: '/_authenticated/charts'
-      path: '/charts'
-      fullPath: '/charts'
-      preLoaderRoute: typeof AuthenticatedChartsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/daily-loop': {
-      id: '/_authenticated/daily-loop'
-      path: '/daily-loop'
-      fullPath: '/daily-loop'
-      preLoaderRoute: typeof AuthenticatedDailyLoopRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/discover': {
-      id: '/_authenticated/discover'
-      path: '/discover'
-      fullPath: '/discover'
-      preLoaderRoute: typeof AuthenticatedDiscoverRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/journal': {
-      id: '/_authenticated/journal'
-      path: '/journal'
-      fullPath: '/journal'
-      preLoaderRoute: typeof AuthenticatedJournalRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/notifications': {
-      id: '/_authenticated/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/opportunities': {
-      id: '/_authenticated/opportunities'
-      path: '/opportunities'
-      fullPath: '/opportunities'
-      preLoaderRoute: typeof AuthenticatedOpportunitiesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/pnl': {
-      id: '/_authenticated/pnl'
-      path: '/pnl'
-      fullPath: '/pnl'
-      preLoaderRoute: typeof AuthenticatedPnlRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/portfolio': {
-      id: '/_authenticated/portfolio'
-      path: '/portfolio'
-      fullPath: '/portfolio'
-      preLoaderRoute: typeof AuthenticatedPortfolioRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/predictions': {
-      id: '/_authenticated/predictions'
-      path: '/predictions'
-      fullPath: '/predictions'
-      preLoaderRoute: typeof AuthenticatedPredictionsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/premium': {
-      id: '/_authenticated/premium'
-      path: '/premium'
-      fullPath: '/premium'
-      preLoaderRoute: typeof AuthenticatedPremiumRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/profile': {
-      id: '/_authenticated/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/pulse': {
-      id: '/_authenticated/pulse'
-      path: '/pulse'
-      fullPath: '/pulse'
-      preLoaderRoute: typeof AuthenticatedPulseRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/radar': {
-      id: '/_authenticated/radar'
-      path: '/radar'
-      fullPath: '/radar'
-      preLoaderRoute: typeof AuthenticatedRadarRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/referral': {
-      id: '/_authenticated/referral'
-      path: '/referral'
-      fullPath: '/referral'
-      preLoaderRoute: typeof AuthenticatedReferralRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/review': {
-      id: '/_authenticated/review'
-      path: '/review'
-      fullPath: '/review'
-      preLoaderRoute: typeof AuthenticatedReviewRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/rewards': {
-      id: '/_authenticated/rewards'
-      path: '/rewards'
-      fullPath: '/rewards'
-      preLoaderRoute: typeof AuthenticatedRewardsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/signals': {
-      id: '/_authenticated/signals'
-      path: '/signals'
-      fullPath: '/signals'
-      preLoaderRoute: typeof AuthenticatedSignalsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/swap': {
-      id: '/_authenticated/swap'
-      path: '/swap'
-      fullPath: '/swap'
-      preLoaderRoute: typeof AuthenticatedSwapRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/trackers': {
-      id: '/_authenticated/trackers'
-      path: '/trackers'
-      fullPath: '/trackers'
-      preLoaderRoute: typeof AuthenticatedTrackersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/tracking': {
-      id: '/_authenticated/tracking'
-      path: '/tracking'
-      fullPath: '/tracking'
-      preLoaderRoute: typeof AuthenticatedTrackingRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/trade-desk': {
-      id: '/_authenticated/trade-desk'
-      path: '/trade-desk'
-      fullPath: '/trade-desk'
-      preLoaderRoute: typeof AuthenticatedTradeDeskRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/vision': {
-      id: '/_authenticated/vision'
-      path: '/vision'
-      fullPath: '/vision'
-      preLoaderRoute: typeof AuthenticatedVisionRouteImport
+    '/_authenticated/whale': {
+      id: '/_authenticated/whale'
+      path: '/whale'
+      fullPath: '/whale'
+      preLoaderRoute: typeof AuthenticatedWhaleRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/wallet-web3': {
@@ -792,46 +617,186 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWalletWeb3RouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/whale': {
-      id: '/_authenticated/whale'
-      path: '/whale'
-      fullPath: '/whale'
-      preLoaderRoute: typeof AuthenticatedWhaleRouteImport
+    '/_authenticated/vision': {
+      id: '/_authenticated/vision'
+      path: '/vision'
+      fullPath: '/vision'
+      preLoaderRoute: typeof AuthenticatedVisionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/admin/api-keys': {
-      id: '/_authenticated/admin/api-keys'
-      path: '/admin/api-keys'
-      fullPath: '/admin/api-keys'
-      preLoaderRoute: typeof AuthenticatedAdminApiKeysRouteImport
+    '/_authenticated/trade-desk': {
+      id: '/_authenticated/trade-desk'
+      path: '/trade-desk'
+      fullPath: '/trade-desk'
+      preLoaderRoute: typeof AuthenticatedTradeDeskRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/analysis/$id': {
-      id: '/_authenticated/analysis/$id'
-      path: '/analysis/$id'
-      fullPath: '/analysis/$id'
-      preLoaderRoute: typeof AuthenticatedAnalysisIdRouteImport
+    '/_authenticated/tracking': {
+      id: '/_authenticated/tracking'
+      path: '/tracking'
+      fullPath: '/tracking'
+      preLoaderRoute: typeof AuthenticatedTrackingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/hunt/alpha': {
-      id: '/_authenticated/hunt/alpha'
-      path: '/hunt/alpha'
-      fullPath: '/hunt/alpha'
-      preLoaderRoute: typeof AuthenticatedHuntAlphaRouteImport
+    '/_authenticated/trackers': {
+      id: '/_authenticated/trackers'
+      path: '/trackers'
+      fullPath: '/trackers'
+      preLoaderRoute: typeof AuthenticatedTrackersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/hunt/radar': {
-      id: '/_authenticated/hunt/radar'
-      path: '/hunt/radar'
-      fullPath: '/hunt/radar'
-      preLoaderRoute: typeof AuthenticatedHuntRadarRouteImport
+    '/_authenticated/swap': {
+      id: '/_authenticated/swap'
+      path: '/swap'
+      fullPath: '/swap'
+      preLoaderRoute: typeof AuthenticatedSwapRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/hunt/whales': {
-      id: '/_authenticated/hunt/whales'
-      path: '/hunt/whales'
-      fullPath: '/hunt/whales'
-      preLoaderRoute: typeof AuthenticatedHuntWhalesRouteImport
+    '/_authenticated/signals': {
+      id: '/_authenticated/signals'
+      path: '/signals'
+      fullPath: '/signals'
+      preLoaderRoute: typeof AuthenticatedSignalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rewards': {
+      id: '/_authenticated/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof AuthenticatedRewardsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/review': {
+      id: '/_authenticated/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof AuthenticatedReviewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/referral': {
+      id: '/_authenticated/referral'
+      path: '/referral'
+      fullPath: '/referral'
+      preLoaderRoute: typeof AuthenticatedReferralRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/radar': {
+      id: '/_authenticated/radar'
+      path: '/radar'
+      fullPath: '/radar'
+      preLoaderRoute: typeof AuthenticatedRadarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pulse': {
+      id: '/_authenticated/pulse'
+      path: '/pulse'
+      fullPath: '/pulse'
+      preLoaderRoute: typeof AuthenticatedPulseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/premium': {
+      id: '/_authenticated/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof AuthenticatedPremiumRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/predictions': {
+      id: '/_authenticated/predictions'
+      path: '/predictions'
+      fullPath: '/predictions'
+      preLoaderRoute: typeof AuthenticatedPredictionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/portfolio': {
+      id: '/_authenticated/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof AuthenticatedPortfolioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pnl': {
+      id: '/_authenticated/pnl'
+      path: '/pnl'
+      fullPath: '/pnl'
+      preLoaderRoute: typeof AuthenticatedPnlRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/opportunities': {
+      id: '/_authenticated/opportunities'
+      path: '/opportunities'
+      fullPath: '/opportunities'
+      preLoaderRoute: typeof AuthenticatedOpportunitiesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/journal': {
+      id: '/_authenticated/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof AuthenticatedJournalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/discover': {
+      id: '/_authenticated/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof AuthenticatedDiscoverRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/daily-loop': {
+      id: '/_authenticated/daily-loop'
+      path: '/daily-loop'
+      fullPath: '/daily-loop'
+      preLoaderRoute: typeof AuthenticatedDailyLoopRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/charts': {
+      id: '/_authenticated/charts'
+      path: '/charts'
+      fullPath: '/charts'
+      preLoaderRoute: typeof AuthenticatedChartsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/backtest': {
+      id: '/_authenticated/backtest'
+      path: '/backtest'
+      fullPath: '/backtest'
+      preLoaderRoute: typeof AuthenticatedBacktestRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/analyze': {
+      id: '/_authenticated/analyze'
+      path: '/analyze'
+      fullPath: '/analyze'
+      preLoaderRoute: typeof AuthenticatedAnalyzeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/alpha': {
+      id: '/_authenticated/alpha'
+      path: '/alpha'
+      fullPath: '/alpha'
+      preLoaderRoute: typeof AuthenticatedAlphaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/shield/': {
@@ -841,25 +806,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShieldIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/shield/alerts': {
-      id: '/_authenticated/shield/alerts'
-      path: '/shield/alerts'
-      fullPath: '/shield/alerts'
-      preLoaderRoute: typeof AuthenticatedShieldAlertsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/shield/cases': {
-      id: '/_authenticated/shield/cases'
-      path: '/shield/cases'
-      fullPath: '/shield/cases'
-      preLoaderRoute: typeof AuthenticatedShieldCasesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/shield/exposure': {
-      id: '/_authenticated/shield/exposure'
-      path: '/shield/exposure'
-      fullPath: '/shield/exposure'
-      preLoaderRoute: typeof AuthenticatedShieldExposureRouteImport
+    '/_authenticated/token/$symbol': {
+      id: '/_authenticated/token/$symbol'
+      path: '/token/$symbol'
+      fullPath: '/token/$symbol'
+      preLoaderRoute: typeof AuthenticatedTokenSymbolRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/shield/scanner': {
@@ -869,18 +820,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShieldScannerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/token/$symbol': {
-      id: '/_authenticated/token/$symbol'
-      path: '/token/$symbol'
-      fullPath: '/token/$symbol'
-      preLoaderRoute: typeof AuthenticatedTokenSymbolRouteImport
+    '/_authenticated/shield/exposure': {
+      id: '/_authenticated/shield/exposure'
+      path: '/shield/exposure'
+      fullPath: '/shield/exposure'
+      preLoaderRoute: typeof AuthenticatedShieldExposureRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/hunt/token/$address': {
-      id: '/_authenticated/hunt/token/$address'
-      path: '/hunt/token/$address'
-      fullPath: '/hunt/token/$address'
-      preLoaderRoute: typeof AuthenticatedHuntTokenAddressRouteImport
+    '/_authenticated/shield/cases': {
+      id: '/_authenticated/shield/cases'
+      path: '/shield/cases'
+      fullPath: '/shield/cases'
+      preLoaderRoute: typeof AuthenticatedShieldCasesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shield/alerts': {
+      id: '/_authenticated/shield/alerts'
+      path: '/shield/alerts'
+      fullPath: '/shield/alerts'
+      preLoaderRoute: typeof AuthenticatedShieldAlertsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hunt/whales': {
+      id: '/_authenticated/hunt/whales'
+      path: '/hunt/whales'
+      fullPath: '/hunt/whales'
+      preLoaderRoute: typeof AuthenticatedHuntWhalesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hunt/radar': {
+      id: '/_authenticated/hunt/radar'
+      path: '/hunt/radar'
+      fullPath: '/hunt/radar'
+      preLoaderRoute: typeof AuthenticatedHuntRadarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hunt/alpha': {
+      id: '/_authenticated/hunt/alpha'
+      path: '/hunt/alpha'
+      fullPath: '/hunt/alpha'
+      preLoaderRoute: typeof AuthenticatedHuntAlphaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/analysis/$id': {
+      id: '/_authenticated/analysis/$id'
+      path: '/analysis/$id'
+      fullPath: '/analysis/$id'
+      preLoaderRoute: typeof AuthenticatedAnalysisIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/api-keys': {
+      id: '/_authenticated/admin/api-keys'
+      path: '/admin/api-keys'
+      fullPath: '/admin/api-keys'
+      preLoaderRoute: typeof AuthenticatedAdminApiKeysRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shield/trust/$address': {
+      id: '/_authenticated/shield/trust/$address'
+      path: '/shield/trust/$address'
+      fullPath: '/shield/trust/$address'
+      preLoaderRoute: typeof AuthenticatedShieldTrustAddressRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hunt/verified/$id': {
@@ -890,11 +890,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHuntVerifiedIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/shield/trust/$address': {
-      id: '/_authenticated/shield/trust/$address'
-      path: '/shield/trust/$address'
-      fullPath: '/shield/trust/$address'
-      preLoaderRoute: typeof AuthenticatedShieldTrustAddressRouteImport
+    '/_authenticated/hunt/token/$address': {
+      id: '/_authenticated/hunt/token/$address'
+      path: '/hunt/token/$address'
+      fullPath: '/hunt/token/$address'
+      preLoaderRoute: typeof AuthenticatedHuntTokenAddressRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -1002,3 +1002,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
