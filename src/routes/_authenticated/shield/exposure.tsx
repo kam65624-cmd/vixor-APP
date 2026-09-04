@@ -340,7 +340,7 @@ function ExposurePage() {
           </button>
         </div>
 
-        {/* VIX micro-moment */}
+        {/* Activity micro-moment */}
         <div
           style={{
             textAlign: "center",
@@ -352,7 +352,7 @@ function ExposurePage() {
             opacity: 0.7,
           }}
         >
-          VIX +5.2% ON EXPOSURE ANALYSIS
+          +5.2% ON EXPOSURE ANALYSIS
         </div>
       </PageScrollArea>
     </PageLayout>

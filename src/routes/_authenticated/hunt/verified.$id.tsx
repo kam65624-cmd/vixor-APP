@@ -383,19 +383,19 @@ function VerifiedTokensPage() {
           </svg>
         </div>
 
-        {/* ── VIX micro-moment ── */}
+        {/* ── Activity micro-moment ── */}
         <div
           style={{
             textAlign: "center",
             padding: "8px 16px 32px",
             fontSize: "10px",
             fontWeight: 600,
-            color: "var(--char-vix)",
+            color: "var(--color-muted-foreground)",
             letterSpacing: "0.08em",
             opacity: 0.7,
           }}
         >
-          VIX VERIFIED TOKEN DIRECTORY
+          VERIFIED TOKEN DIRECTORY
         </div>
       </PageScrollArea>
     </PageLayout>

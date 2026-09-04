@@ -517,19 +517,19 @@ function TokenDetailPage() {
           </>
         )}
 
-        {/* ── VIX micro-moment ── */}
+        {/* ── Activity micro-moment ── */}
         <div
           style={{
             textAlign: "center",
             padding: "4px 16px 32px",
             fontSize: "10px",
             fontWeight: 600,
-            color: "var(--char-vix)",
+            color: "var(--color-muted-foreground)",
             letterSpacing: "0.08em",
             opacity: 0.7,
           }}
         >
-          VIX TRACKS 73 CONFIDENCE — SIGNALS CONVERGING BULLISH
+          CONFIDENCE 73 — SIGNALS CONVERGING BULLISH
         </div>
       </PageScrollArea>
     </PageLayout>

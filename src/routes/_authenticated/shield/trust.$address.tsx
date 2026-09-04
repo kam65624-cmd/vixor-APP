@@ -546,7 +546,7 @@ function TrustScorePage() {
           <RelatedAlertRow key={alert.id} alert={alert} index={i} />
         ))}
 
-        {/* ── VIX micro-moment ── */}
+        {/* ── Activity micro-moment ── */}
         <div
           style={{
             textAlign: "center",
@@ -558,7 +558,7 @@ function TrustScorePage() {
             opacity: 0.7,
           }}
         >
-          VIX +5.7% ON TRUST SCORE QUERIES TODAY
+          +5.7% ON TRUST SCORE QUERIES TODAY
         </div>
       </PageScrollArea>
     </PageLayout>

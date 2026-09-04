@@ -372,19 +372,19 @@ function TokenRadarPage() {
           })
         )}
 
-        {/* ── VIX micro-moment ── */}
+        {/* ── Activity micro-moment ── */}
         <div
           style={{
             textAlign: "center",
             padding: "12px 16px 32px",
             fontSize: "10px",
             fontWeight: 600,
-            color: "var(--char-vix)",
+            color: "var(--color-muted-foreground)",
             letterSpacing: "0.08em",
             opacity: 0.7,
           }}
         >
-          VIX SCANNED 1,247 TOKENS ACROSS 4 CHAINS IN 0.8s
+          SCANNED 1,247 TOKENS ACROSS 4 CHAINS IN 0.8s
         </div>
       </PageScrollArea>
     </PageLayout>

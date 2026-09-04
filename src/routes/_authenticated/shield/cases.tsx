@@ -203,7 +203,7 @@ function InvestigationCasesPage() {
               </div>
             )}
 
-        {/* VIX micro-moment */}
+        {/* Activity micro-moment */}
         <div
           style={{
             textAlign: "center",
@@ -215,7 +215,7 @@ function InvestigationCasesPage() {
             opacity: 0.7,
           }}
         >
-          VIX +9.1% ON ACTIVE INVESTIGATIONS
+          +9.1% ON ACTIVE INVESTIGATIONS
         </div>
       </PageScrollArea>
     </PageLayout>
