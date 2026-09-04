@@ -345,19 +345,19 @@ function WhaleTrackerPage() {
             </DataRow>
           ))}
 
-        {/* ── VIX micro-moment ── */}
+        {/* ── Activity micro-moment ── */}
         <div
           style={{
             textAlign: "center",
             padding: "12px 16px 32px",
             fontSize: "10px",
             fontWeight: 600,
-            color: "var(--char-vix)",
+            color: "var(--color-muted-foreground)",
             letterSpacing: "0.08em",
             opacity: 0.7,
           }}
         >
-          VIX TRACKING {whalesTracked} WHALE WALLETS
+          TRACKING {whalesTracked} WHALE WALLETS
         </div>
       </PageScrollArea>
     </PageLayout>

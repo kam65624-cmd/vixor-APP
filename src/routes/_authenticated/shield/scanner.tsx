@@ -739,7 +739,7 @@ function ShieldScannerPage() {
           )
         )}
 
-        {/* ── VIX micro-moment ── */}
+        {/* ── Activity micro-moment ── */}
         <div
           style={{
             textAlign: "center",
@@ -751,7 +751,7 @@ function ShieldScannerPage() {
             opacity: 0.7,
           }}
         >
-          VIX +8.2% ON SHIELD SCANS TODAY
+          +8.2% ON SHIELD SCANS TODAY
         </div>
       </PageScrollArea>
     </PageLayout>

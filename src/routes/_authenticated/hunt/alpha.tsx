@@ -453,19 +453,19 @@ function AlphaSignalsPage() {
           ))
         )}
 
-        {/* ── VIX micro-moment ── */}
+        {/* ── Activity micro-moment ── */}
         <div
           style={{
             textAlign: "center",
             padding: "12px 16px 32px",
             fontSize: "10px",
             fontWeight: 600,
-            color: "var(--char-vix)",
+            color: "var(--color-muted-foreground)",
             letterSpacing: "0.08em",
             opacity: 0.7,
           }}
         >
-          VIX DETECTED {realSignals.length} ALPHA SIGNALS — {accuracy}% ACCURACY THIS WEEK
+          DETECTED {realSignals.length} ALPHA SIGNALS — {accuracy}% ACCURACY THIS WEEK
         </div>
       </PageScrollArea>
     </PageLayout>

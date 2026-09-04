@@ -357,7 +357,7 @@ function ShieldDashboardPage() {
           </button>
         </div>
 
-        {/* VIX micro-moment */}
+        {/* Activity micro-moment */}
         <div
           style={{
             textAlign: "center",
@@ -369,7 +369,7 @@ function ShieldDashboardPage() {
             opacity: 0.7,
           }}
         >
-          VIX +8.7% ON SHIELD SCANS TODAY
+          +8.7% ON SHIELD SCANS TODAY
         </div>
       </PageScrollArea>
     </PageLayout>

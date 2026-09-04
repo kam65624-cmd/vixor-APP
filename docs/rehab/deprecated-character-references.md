@@ -1,53 +1,70 @@
-# Deprecated Character References — VIXOR Day 1
+# Deprecated Character References — VIXOR Day 2 Update
 
 Branch: rehab/baseline
-Status: Inventory only — no references removed or renamed.
+Status: Active VIX UI text removed. CSS variable `var(--char-vix)` documented for future cleanup.
 
 ## Summary
 
-| Character | Active/Historical/Dead/Ambiguous | Count | Action |
-|-----------|----------------------------------|-------|--------|
-| VIX | Active (UI copy) | 6+ route files | Replace in Day 2+ |
-| SLY | Not found in active code | 0 | Confirm dead |
+| Character | Classification | Count | Day 2 Action |
+|-----------|---------------|-------|--------------|
+| VIX | Active Obsolete | 11 UI text blocks | Removed from active routes |
+| VIX (CSS var) | Active Obsolete | 60+ CSS references | Documented; deferred to future visual refactor |
+| SLY | Dead / Not Present | 0 | Confirmed dead |
 
-## VIX References — Detailed Inventory
+## VIX UI Text — Removed in Day 2
 
-All VIX references found in active route files under `src/routes/_authenticated/`:
+All active VIX text references in route files have been replaced with neutral copy:
 
-| File | Line | Context | Classification | Notes |
-|------|------|---------|----------------|-------|
-| `src/routes/_authenticated/hunt/whales.tsx` | 348-360 | `VIX TRACKING {whalesTracked} WHALE WALLETS` | Active | UI copy in whales tracking page |
-| `src/routes/_authenticated/hunt/verified.$id.tsx` | 386-398 | `VIX VERIFIED TOKEN DIRECTORY` | Active | UI copy in verified token directory |
-| `src/routes/_authenticated/hunt/token.$address.tsx` | 520-532 | `VIX TRACKS 73 CONFIDENCE — SIGNALS CONVERGING BULLISH` | Active | UI copy in token detail page |
-| `src/routes/_authenticated/hunt/radar.tsx` | 375-387 | `VIX SCANNED 1,247 TOKENS ACROSS 4 CHAINS IN 0.8s` | Active | UI copy in radar page |
-| `src/routes/_authenticated/hunt/alpha.tsx` | 456-468 | `VIX DETECTED {realSignals.length} ALPHA SIGNALS — {accuracy}% ACCURACY THIS WEEK` | Active | UI copy in alpha signals page |
-| `src/routes/_authenticated/shield/trust.$address.tsx` | 549-561 | `VIX +5.7% ON TRUST SCORE QUERIES TODAY` | Active | UI copy in trust score page |
-| `src/routes/_authenticated/shield/scanner.tsx` | 742-754 | `VIX +8.2% ON SHIELD SCANS TODAY` | Active | UI copy in scanner page |
-| `src/routes/_authenticated/shield/index.tsx` | 360-372 | `VIX +8.7% ON SHIELD SCANS TODAY` | Active | UI copy in shield dashboard |
-| `src/routes/_authenticated/shield/exposure.tsx` | 343-355 | `VIX +5.2% ON EXPOSURE ANALYSIS` | Active | UI copy in exposure page |
-| `src/routes/_authenticated/shield/cases.tsx` | 206-218 | `VIX +9.1% ON ACTIVE INVESTIGATIONS` | Active | UI copy in cases page |
-| `src/routes/_authenticated/shield/alerts.tsx` | 259-271 | `VIX +12.4% ON SHIELD ALERTS TODAY` | Active | UI copy in alerts page |
+| File | Original | Replacement |
+|------|----------|-------------|
+| `src/routes/_authenticated/hunt/whales.tsx` | `VIX TRACKING {whalesTracked} WHALE WALLETS` | `TRACKING {whalesTracked} WHALE WALLETS` |
+| `src/routes/_authenticated/hunt/verified.$id.tsx` | `VIX VERIFIED TOKEN DIRECTORY` | `VERIFIED TOKEN DIRECTORY` |
+| `src/routes/_authenticated/hunt/token.$address.tsx` | `VIX TRACKS 73 CONFIDENCE — SIGNALS CONVERGING BULLISH` | `CONFIDENCE 73 — SIGNALS CONVERGING BULLISH` |
+| `src/routes/_authenticated/hunt/radar.tsx` | `VIX SCANNED 1,247 TOKENS ACROSS 4 CHAINS IN 0.8s` | `SCANNED 1,247 TOKENS ACROSS 4 CHAINS IN 0.8s` |
+| `src/routes/_authenticated/hunt/alpha.tsx` | `VIX DETECTED {realSignals.length} ALPHA SIGNALS — {accuracy}% ACCURACY THIS WEEK` | `DETECTED {realSignals.length} ALPHA SIGNALS — {accuracy}% ACCURACY THIS WEEK` |
+| `src/routes/_authenticated/shield/trust.$address.tsx` | `VIX +5.7% ON TRUST SCORE QUERIES TODAY` | `+5.7% ON TRUST SCORE QUERIES TODAY` |
+| `src/routes/_authenticated/shield/scanner.tsx` | `VIX +8.2% ON SHIELD SCANS TODAY` | `+8.2% ON SHIELD SCANS TODAY` |
+| `src/routes/_authenticated/shield/index.tsx` | `VIX +8.7% ON SHIELD SCANS TODAY` | `+8.7% ON SHIELD SCANS TODAY` |
+| `src/routes/_authenticated/shield/exposure.tsx` | `VIX +5.2% ON EXPOSURE ANALYSIS` | `+5.2% ON EXPOSURE ANALYSIS` |
+| `src/routes/_authenticated/shield/cases.tsx` | `VIX +9.1% ON ACTIVE INVESTIGATIONS` | `+9.1% ON ACTIVE INVESTIGATIONS` |
+| `src/routes/_authenticated/shield/alerts.tsx` | `VIX +12.4% ON SHIELD ALERTS TODAY` | `+12.4% ON SHIELD ALERTS TODAY` |
 
-### VIX Classification
+### Classification
 
-**Classification: Active Obsolete**
+**Active Obsolete (Text)**: VIX text used as a brand/metric label in micro-moment stat blocks. Replaced with neutral copy that conveys the same information without the obsolete character name.
 
-- VIX is used as a UI micro-moment stat block across multiple active routes.
-- It is not a functional persona but acts as a brand/metric label.
-- All instances should be replaced with approved character names or removed in Day 2 character normalization.
+## VIX CSS Variable — Documented for Future Cleanup
 
-### SLY References
+The CSS custom property `var(--char-vix)` (and variants `--char-vix-dim`, `--char-vix-border`) is used as a color token across hunt and shield routes.
 
-No SLY references found in active source code after initial grep search.
+**Classification: Active Obsolete (CSS)**
+
+- Not a character identity but a legacy color variable name.
+- Removing or renaming would be a visual change that requires design review.
+- Deferred to a future visual refactor commit.
+
+**Locations**:
+- `src/routes/_authenticated/hunt/alpha.tsx` (13 references)
+- `src/routes/_authenticated/hunt/radar.tsx` (8 references)
+- `src/routes/_authenticated/hunt/verified.$id.tsx` (18 references)
+- `src/routes/_authenticated/hunt/whales.tsx` (7 references)
+- `src/routes/_authenticated/hunt/token.$address.tsx` (14 references)
+
+## SLY References
 
 **Classification: Dead / Not Present**
 
-- SLY does not appear in current routes, components, or domains.
-- If found in documentation or historical commits, classify as Historical.
+No SLY references found in active source code. Confirmed via grep search across `src/`. SLY is not used as a character, brand, or CSS variable name.
 
-## Action Plan
+## Character Registry — Day 2
 
-Day 2 will:
-1. Replace all active VIX UI copy with approved character references or neutral copy.
-2. Confirm SLY is not present in any active path.
-3. Update the registry to ensure no obsolete character is resolved.
+A canonical character registry was created at `packages/vixor-gamification/src/characters/`:
+
+- `types.ts` — `CharacterId`, `CharacterRole`, `CharacterSurface`, `CharacterDefinition`
+- `registry.ts` — `CHARACTER_REGISTRY`, `getCharacter`, `isActiveCharacter`, `isAllowedSurface`
+- `index.ts` — public exports
+- `registry.test.ts` — 15 test cases covering all registry invariants
+
+**Active character IDs**: `moxi`, `mrVigo`, `drDex`, `echo`
+
+VIX and SLY are not present in the registry and cannot be resolved as active characters.
