@@ -10,8 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as V2RouteRouteImport } from './routes/v2/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as V2IndexRouteImport } from './routes/v2/index'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as V2OnboardingRouteImport } from './routes/v2/onboarding'
+import { Route as V2DiscoverRouteImport } from './routes/v2/discover'
 import { Route as AuthenticatedWhaleRouteImport } from './routes/_authenticated/whale'
 import { Route as AuthenticatedWalletWeb3RouteImport } from './routes/_authenticated/wallet-web3'
 import { Route as AuthenticatedVisionRouteImport } from './routes/_authenticated/vision'
@@ -41,6 +45,7 @@ import { Route as AuthenticatedBacktestRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAnalyzeRouteImport } from './routes/_authenticated/analyze'
 import { Route as AuthenticatedAlphaRouteImport } from './routes/_authenticated/alpha'
 import { Route as AuthenticatedShieldIndexRouteImport } from './routes/_authenticated/shield/index'
+import { Route as V2CaseCaseIdRouteImport } from './routes/v2/case/$caseId'
 import { Route as AuthenticatedTokenSymbolRouteImport } from './routes/_authenticated/token.$symbol'
 import { Route as AuthenticatedShieldScannerRouteImport } from './routes/_authenticated/shield/scanner'
 import { Route as AuthenticatedShieldExposureRouteImport } from './routes/_authenticated/shield/exposure'
@@ -51,6 +56,9 @@ import { Route as AuthenticatedHuntRadarRouteImport } from './routes/_authentica
 import { Route as AuthenticatedHuntAlphaRouteImport } from './routes/_authenticated/hunt/alpha'
 import { Route as AuthenticatedAnalysisIdRouteImport } from './routes/_authenticated/analysis.$id'
 import { Route as AuthenticatedAdminApiKeysRouteImport } from './routes/_authenticated/admin/api-keys'
+import { Route as V2CaseCaseIdRiskRouteImport } from './routes/v2/case/$caseId/risk'
+import { Route as V2CaseCaseIdEvidenceRouteImport } from './routes/v2/case/$caseId/evidence'
+import { Route as V2CaseCaseIdDecisionRouteImport } from './routes/v2/case/$caseId/decision'
 import { Route as AuthenticatedShieldTrustAddressRouteImport } from './routes/_authenticated/shield/trust.$address'
 import { Route as AuthenticatedHuntVerifiedIdRouteImport } from './routes/_authenticated/hunt/verified.$id'
 import { Route as AuthenticatedHuntTokenAddressRouteImport } from './routes/_authenticated/hunt/token.$address'
@@ -60,14 +68,34 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const V2RouteRoute = V2RouteRouteImport.update({
+  id: '/v2',
+  path: '/v2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
+} as any)
+const V2IndexRoute = V2IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => V2RouteRoute,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const V2OnboardingRoute = V2OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => V2RouteRoute,
+} as any)
+const V2DiscoverRoute = V2DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => V2RouteRoute,
 } as any)
 const AuthenticatedWhaleRoute = AuthenticatedWhaleRouteImport.update({
   id: '/whale',
@@ -218,6 +246,11 @@ const AuthenticatedShieldIndexRoute =
     path: '/shield/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const V2CaseCaseIdRoute = V2CaseCaseIdRouteImport.update({
+  id: '/case/$caseId',
+  path: '/case/$caseId',
+  getParentRoute: () => V2RouteRoute,
+} as any)
 const AuthenticatedTokenSymbolRoute =
   AuthenticatedTokenSymbolRouteImport.update({
     id: '/token/$symbol',
@@ -274,6 +307,21 @@ const AuthenticatedAdminApiKeysRoute =
     path: '/admin/api-keys',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const V2CaseCaseIdRiskRoute = V2CaseCaseIdRiskRouteImport.update({
+  id: '/risk',
+  path: '/risk',
+  getParentRoute: () => V2CaseCaseIdRoute,
+} as any)
+const V2CaseCaseIdEvidenceRoute = V2CaseCaseIdEvidenceRouteImport.update({
+  id: '/evidence',
+  path: '/evidence',
+  getParentRoute: () => V2CaseCaseIdRoute,
+} as any)
+const V2CaseCaseIdDecisionRoute = V2CaseCaseIdDecisionRouteImport.update({
+  id: '/decision',
+  path: '/decision',
+  getParentRoute: () => V2CaseCaseIdRoute,
+} as any)
 const AuthenticatedShieldTrustAddressRoute =
   AuthenticatedShieldTrustAddressRouteImport.update({
     id: '/shield/trust/$address',
@@ -295,6 +343,7 @@ const AuthenticatedHuntTokenAddressRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
+  '/v2': typeof V2RouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/alpha': typeof AuthenticatedAlphaRoute
   '/analyze': typeof AuthenticatedAnalyzeRoute
@@ -324,6 +373,9 @@ export interface FileRoutesByFullPath {
   '/vision': typeof AuthenticatedVisionRoute
   '/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/whale': typeof AuthenticatedWhaleRoute
+  '/v2/discover': typeof V2DiscoverRoute
+  '/v2/onboarding': typeof V2OnboardingRoute
+  '/v2/': typeof V2IndexRoute
   '/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
   '/hunt/alpha': typeof AuthenticatedHuntAlphaRoute
@@ -334,10 +386,14 @@ export interface FileRoutesByFullPath {
   '/shield/exposure': typeof AuthenticatedShieldExposureRoute
   '/shield/scanner': typeof AuthenticatedShieldScannerRoute
   '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
+  '/v2/case/$caseId': typeof V2CaseCaseIdRouteWithChildren
   '/shield/': typeof AuthenticatedShieldIndexRoute
   '/hunt/token/$address': typeof AuthenticatedHuntTokenAddressRoute
   '/hunt/verified/$id': typeof AuthenticatedHuntVerifiedIdRoute
   '/shield/trust/$address': typeof AuthenticatedShieldTrustAddressRoute
+  '/v2/case/$caseId/decision': typeof V2CaseCaseIdDecisionRoute
+  '/v2/case/$caseId/evidence': typeof V2CaseCaseIdEvidenceRoute
+  '/v2/case/$caseId/risk': typeof V2CaseCaseIdRiskRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -369,7 +425,10 @@ export interface FileRoutesByTo {
   '/vision': typeof AuthenticatedVisionRoute
   '/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/whale': typeof AuthenticatedWhaleRoute
+  '/v2/discover': typeof V2DiscoverRoute
+  '/v2/onboarding': typeof V2OnboardingRoute
   '/': typeof AuthenticatedIndexRoute
+  '/v2': typeof V2IndexRoute
   '/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/analysis/$id': typeof AuthenticatedAnalysisIdRoute
   '/hunt/alpha': typeof AuthenticatedHuntAlphaRoute
@@ -380,14 +439,19 @@ export interface FileRoutesByTo {
   '/shield/exposure': typeof AuthenticatedShieldExposureRoute
   '/shield/scanner': typeof AuthenticatedShieldScannerRoute
   '/token/$symbol': typeof AuthenticatedTokenSymbolRoute
+  '/v2/case/$caseId': typeof V2CaseCaseIdRouteWithChildren
   '/shield': typeof AuthenticatedShieldIndexRoute
   '/hunt/token/$address': typeof AuthenticatedHuntTokenAddressRoute
   '/hunt/verified/$id': typeof AuthenticatedHuntVerifiedIdRoute
   '/shield/trust/$address': typeof AuthenticatedShieldTrustAddressRoute
+  '/v2/case/$caseId/decision': typeof V2CaseCaseIdDecisionRoute
+  '/v2/case/$caseId/evidence': typeof V2CaseCaseIdEvidenceRoute
+  '/v2/case/$caseId/risk': typeof V2CaseCaseIdRiskRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/v2': typeof V2RouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/alpha': typeof AuthenticatedAlphaRoute
   '/_authenticated/analyze': typeof AuthenticatedAnalyzeRoute
@@ -417,7 +481,10 @@ export interface FileRoutesById {
   '/_authenticated/vision': typeof AuthenticatedVisionRoute
   '/_authenticated/wallet-web3': typeof AuthenticatedWalletWeb3Route
   '/_authenticated/whale': typeof AuthenticatedWhaleRoute
+  '/v2/discover': typeof V2DiscoverRoute
+  '/v2/onboarding': typeof V2OnboardingRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/v2/': typeof V2IndexRoute
   '/_authenticated/admin/api-keys': typeof AuthenticatedAdminApiKeysRoute
   '/_authenticated/analysis/$id': typeof AuthenticatedAnalysisIdRoute
   '/_authenticated/hunt/alpha': typeof AuthenticatedHuntAlphaRoute
@@ -428,15 +495,20 @@ export interface FileRoutesById {
   '/_authenticated/shield/exposure': typeof AuthenticatedShieldExposureRoute
   '/_authenticated/shield/scanner': typeof AuthenticatedShieldScannerRoute
   '/_authenticated/token/$symbol': typeof AuthenticatedTokenSymbolRoute
+  '/v2/case/$caseId': typeof V2CaseCaseIdRouteWithChildren
   '/_authenticated/shield/': typeof AuthenticatedShieldIndexRoute
   '/_authenticated/hunt/token/$address': typeof AuthenticatedHuntTokenAddressRoute
   '/_authenticated/hunt/verified/$id': typeof AuthenticatedHuntVerifiedIdRoute
   '/_authenticated/shield/trust/$address': typeof AuthenticatedShieldTrustAddressRoute
+  '/v2/case/$caseId/decision': typeof V2CaseCaseIdDecisionRoute
+  '/v2/case/$caseId/evidence': typeof V2CaseCaseIdEvidenceRoute
+  '/v2/case/$caseId/risk': typeof V2CaseCaseIdRiskRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/v2'
     | '/auth'
     | '/alpha'
     | '/analyze'
@@ -466,6 +538,9 @@ export interface FileRouteTypes {
     | '/vision'
     | '/wallet-web3'
     | '/whale'
+    | '/v2/discover'
+    | '/v2/onboarding'
+    | '/v2/'
     | '/admin/api-keys'
     | '/analysis/$id'
     | '/hunt/alpha'
@@ -476,10 +551,14 @@ export interface FileRouteTypes {
     | '/shield/exposure'
     | '/shield/scanner'
     | '/token/$symbol'
+    | '/v2/case/$caseId'
     | '/shield/'
     | '/hunt/token/$address'
     | '/hunt/verified/$id'
     | '/shield/trust/$address'
+    | '/v2/case/$caseId/decision'
+    | '/v2/case/$caseId/evidence'
+    | '/v2/case/$caseId/risk'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -511,7 +590,10 @@ export interface FileRouteTypes {
     | '/vision'
     | '/wallet-web3'
     | '/whale'
+    | '/v2/discover'
+    | '/v2/onboarding'
     | '/'
+    | '/v2'
     | '/admin/api-keys'
     | '/analysis/$id'
     | '/hunt/alpha'
@@ -522,13 +604,18 @@ export interface FileRouteTypes {
     | '/shield/exposure'
     | '/shield/scanner'
     | '/token/$symbol'
+    | '/v2/case/$caseId'
     | '/shield'
     | '/hunt/token/$address'
     | '/hunt/verified/$id'
     | '/shield/trust/$address'
+    | '/v2/case/$caseId/decision'
+    | '/v2/case/$caseId/evidence'
+    | '/v2/case/$caseId/risk'
   id:
     | '__root__'
     | '/_authenticated'
+    | '/v2'
     | '/auth'
     | '/_authenticated/alpha'
     | '/_authenticated/analyze'
@@ -558,7 +645,10 @@ export interface FileRouteTypes {
     | '/_authenticated/vision'
     | '/_authenticated/wallet-web3'
     | '/_authenticated/whale'
+    | '/v2/discover'
+    | '/v2/onboarding'
     | '/_authenticated/'
+    | '/v2/'
     | '/_authenticated/admin/api-keys'
     | '/_authenticated/analysis/$id'
     | '/_authenticated/hunt/alpha'
@@ -569,14 +659,19 @@ export interface FileRouteTypes {
     | '/_authenticated/shield/exposure'
     | '/_authenticated/shield/scanner'
     | '/_authenticated/token/$symbol'
+    | '/v2/case/$caseId'
     | '/_authenticated/shield/'
     | '/_authenticated/hunt/token/$address'
     | '/_authenticated/hunt/verified/$id'
     | '/_authenticated/shield/trust/$address'
+    | '/v2/case/$caseId/decision'
+    | '/v2/case/$caseId/evidence'
+    | '/v2/case/$caseId/risk'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  V2RouteRoute: typeof V2RouteRouteWithChildren
   AuthRoute: typeof AuthRoute
 }
 
@@ -589,6 +684,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/v2': {
+      id: '/v2'
+      path: '/v2'
+      fullPath: '/v2'
+      preLoaderRoute: typeof V2RouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -596,12 +698,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/v2/': {
+      id: '/v2/'
+      path: '/'
+      fullPath: '/v2/'
+      preLoaderRoute: typeof V2IndexRouteImport
+      parentRoute: typeof V2RouteRoute
+    }
     '/_authenticated/': {
       id: '/_authenticated/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/v2/onboarding': {
+      id: '/v2/onboarding'
+      path: '/onboarding'
+      fullPath: '/v2/onboarding'
+      preLoaderRoute: typeof V2OnboardingRouteImport
+      parentRoute: typeof V2RouteRoute
+    }
+    '/v2/discover': {
+      id: '/v2/discover'
+      path: '/discover'
+      fullPath: '/v2/discover'
+      preLoaderRoute: typeof V2DiscoverRouteImport
+      parentRoute: typeof V2RouteRoute
     }
     '/_authenticated/whale': {
       id: '/_authenticated/whale'
@@ -806,6 +929,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShieldIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/v2/case/$caseId': {
+      id: '/v2/case/$caseId'
+      path: '/case/$caseId'
+      fullPath: '/v2/case/$caseId'
+      preLoaderRoute: typeof V2CaseCaseIdRouteImport
+      parentRoute: typeof V2RouteRoute
+    }
     '/_authenticated/token/$symbol': {
       id: '/_authenticated/token/$symbol'
       path: '/token/$symbol'
@@ -875,6 +1005,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/api-keys'
       preLoaderRoute: typeof AuthenticatedAdminApiKeysRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/v2/case/$caseId/risk': {
+      id: '/v2/case/$caseId/risk'
+      path: '/risk'
+      fullPath: '/v2/case/$caseId/risk'
+      preLoaderRoute: typeof V2CaseCaseIdRiskRouteImport
+      parentRoute: typeof V2CaseCaseIdRoute
+    }
+    '/v2/case/$caseId/evidence': {
+      id: '/v2/case/$caseId/evidence'
+      path: '/evidence'
+      fullPath: '/v2/case/$caseId/evidence'
+      preLoaderRoute: typeof V2CaseCaseIdEvidenceRouteImport
+      parentRoute: typeof V2CaseCaseIdRoute
+    }
+    '/v2/case/$caseId/decision': {
+      id: '/v2/case/$caseId/decision'
+      path: '/decision'
+      fullPath: '/v2/case/$caseId/decision'
+      preLoaderRoute: typeof V2CaseCaseIdDecisionRouteImport
+      parentRoute: typeof V2CaseCaseIdRoute
     }
     '/_authenticated/shield/trust/$address': {
       id: '/_authenticated/shield/trust/$address'
@@ -995,8 +1146,42 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface V2CaseCaseIdRouteChildren {
+  V2CaseCaseIdDecisionRoute: typeof V2CaseCaseIdDecisionRoute
+  V2CaseCaseIdEvidenceRoute: typeof V2CaseCaseIdEvidenceRoute
+  V2CaseCaseIdRiskRoute: typeof V2CaseCaseIdRiskRoute
+}
+
+const V2CaseCaseIdRouteChildren: V2CaseCaseIdRouteChildren = {
+  V2CaseCaseIdDecisionRoute: V2CaseCaseIdDecisionRoute,
+  V2CaseCaseIdEvidenceRoute: V2CaseCaseIdEvidenceRoute,
+  V2CaseCaseIdRiskRoute: V2CaseCaseIdRiskRoute,
+}
+
+const V2CaseCaseIdRouteWithChildren = V2CaseCaseIdRoute._addFileChildren(
+  V2CaseCaseIdRouteChildren,
+)
+
+interface V2RouteRouteChildren {
+  V2DiscoverRoute: typeof V2DiscoverRoute
+  V2OnboardingRoute: typeof V2OnboardingRoute
+  V2IndexRoute: typeof V2IndexRoute
+  V2CaseCaseIdRoute: typeof V2CaseCaseIdRouteWithChildren
+}
+
+const V2RouteRouteChildren: V2RouteRouteChildren = {
+  V2DiscoverRoute: V2DiscoverRoute,
+  V2OnboardingRoute: V2OnboardingRoute,
+  V2IndexRoute: V2IndexRoute,
+  V2CaseCaseIdRoute: V2CaseCaseIdRouteWithChildren,
+}
+
+const V2RouteRouteWithChildren =
+  V2RouteRoute._addFileChildren(V2RouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  V2RouteRoute: V2RouteRouteWithChildren,
   AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
