@@ -14,6 +14,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import { assertLegacyExecutionEnabled } from "@/shared/security/legacy-execution";
 import {
   encryptCredential,
   decryptCredential,
@@ -144,6 +145,7 @@ export const executeTrade = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    assertLegacyExecutionEnabled();
     const { supabase, userId } = context;
 
     // ── 1. Resolve exchange credentials ──

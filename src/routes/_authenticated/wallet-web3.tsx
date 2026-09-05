@@ -1,7 +1,6 @@
 import { memo, useState, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useWallet } from "@/domains/wallet/adapter/WalletProvider";
-import { WalletProviderSelector } from "@/domains/wallet/adapter/WalletProviderSelector";
 import {
   WalletConnectButton,
   WalletIcon,
@@ -204,7 +203,9 @@ function WalletWeb3Page() {
           </button>
         </>
       ) : (
-        <WalletProviderSelector />
+        <div className="rounded-lg border border-[var(--color-neutral-wait)]/40 bg-[var(--color-neutral-wait)]/10 px-3 py-2 text-xs text-[var(--color-neutral-wait)]">
+          Wallet connection and signing are temporarily disabled during rehabilitation.
+        </div>
       )}
     </div>
   );

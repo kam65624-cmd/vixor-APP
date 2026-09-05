@@ -5,7 +5,6 @@ import {
   setResponseHeader,
   setResponseStatus,
   getRequestURL,
-  getQuery,
 } from "h3";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/shared/supabase/types";
@@ -91,7 +90,9 @@ export function rateLimit(event: H3Event): boolean {
 
 // --- Auth ---
 export function validateAdminKey(event: H3Event): boolean {
-  const key = getHeader(event, "x-admin-key") || (getQuery(event).admin_key as string | undefined);
+  // Never accept secrets in URLs: query strings are routinely logged and may
+  // leak through browser history, referrers, proxies, or analytics systems.
+  const key = getHeader(event, "x-admin-key");
   if (!key) return false;
   // Accept the key if it matches ADMIN_API_KEY env or CRON_SECRET
   if (key === process.env.ADMIN_API_KEY || key === process.env.CRON_SECRET) return true;
