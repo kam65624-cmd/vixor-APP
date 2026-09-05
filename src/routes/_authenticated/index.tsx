@@ -36,6 +36,8 @@ import {
   Compass,
   Signal,
   Wallet,
+  Search,
+  ShieldCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SmartTabs } from "@/components/vixor/SmartTabs";
@@ -640,6 +642,22 @@ function HomePageV3() {
               to="/discover"
               accent="var(--color-primary)"
               badge="LIVE"
+            />
+            <FeatureCard
+              icon={Search}
+              title="MR.VIGO"
+              desc="Investigate token"
+              to="/investigate"
+              accent="var(--color-primary)"
+              badge="NEW"
+            />
+            <FeatureCard
+              icon={ShieldCheck}
+              title="DR.DEX"
+              desc="Risk & decision"
+              to="/risk"
+              accent="var(--color-bullish)"
+              badge="NEW"
             />
             <FeatureCard
               icon={Bot}
