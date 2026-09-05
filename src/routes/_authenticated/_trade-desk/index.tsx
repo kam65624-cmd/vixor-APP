@@ -11,6 +11,7 @@ import { CoachOverlay } from "@/components/vixor/CoachOverlay";
 import { GovernorRiskPanel } from "@/components/vixor/GovernorRiskPanel";
 import { PageLayout, ScrollArea } from "@/components/vixor/PageLayout";
 import { getExchangeStatus, executeTrade } from "@/domains/trading/gateway/functions";
+import { LEGACY_EXECUTION_DISABLED_MESSAGE } from "@/shared/security/legacy-execution";
 import type { ExchangeStatus, ExecuteTradeResult } from "@/domains/trading/gateway/functions";
 import { PIP_SIZES, LOT_SIZES } from "./constants";
 import type { RiskCalcResult, OrderSummary } from "./constants";
@@ -202,37 +203,12 @@ export function TradeDesk() {
 
   const handleConfirmExecution = useCallback(() => {
     if (!entryPrice || !pair) return;
-
-    const sl = parseFloat(slPips) || 0;
-    const pipSize = PIP_SIZES[pair] || 0.0001;
-    const entry = parseFloat(entryPrice);
-    const slPrice =
-      sl > 0 ? (direction === "long" ? entry - sl * pipSize : entry + sl * pipSize) : null;
-    const tpPrice =
-      sl > 0
-        ? direction === "long"
-          ? entry + (sl * 2 * pipSize * sl) / sl
-          : null // No TP calc needed — use SL mirror
-        : null;
-
-    // Map symbol format for exchange (XAUUSD → XAUUSDT, EURUSD → EURUSDT, etc.)
-    const exchangeSymbol = pair.replace("USD", "USDT");
-
-    executeMutation.mutate({
-      exchangeId: exchangeStatus?.exchangeId ?? "",
-      symbol: exchangeSymbol,
-      side: direction === "long" ? "buy" : "sell",
-      quantity: result ? parseFloat(result.lots) : 0.01,
-      price: entry,
-      orderType: "market",
-      stopLoss: slPrice,
-      takeProfit: null,
-      pair,
-      direction,
-      notes: `Risk: ${riskPct}% · SL: ${slPips} pips`,
-      strategy: "Trade Desk",
+    setExecResult({
+      success: false,
+      error: LEGACY_EXECUTION_DISABLED_MESSAGE,
+      isPaperTrade: false,
     });
-  }, [entryPrice, pair, slPips, direction, result, riskPct, executeMutation, exchangeStatus]);
+  }, [entryPrice, pair]);
 
   const handleCloseDialog = useCallback(() => {
     if (executeMutation.isPending) return; // Don't close while executing

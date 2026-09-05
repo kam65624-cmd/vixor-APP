@@ -21,6 +21,7 @@ import {
 } from "@/domains/wallet/adapters/metamask-adapter";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useSound } from "@/shared/hooks/use-sound";
+import { assertLegacyExecutionEnabled } from "@/shared/security/legacy-execution";
 import { card, mono, labelStyle, inputStyle } from "./constants";
 
 const EVM_CHAIN_ID_TO_NUMBER: Record<EvmChainId, number> = {
@@ -130,6 +131,7 @@ export function SwapPanel() {
   // ── Execute ──
   const executeMutation = useMutation({
     mutationFn: async (): Promise<SwapResult> => {
+      assertLegacyExecutionEnabled();
       if (!wallet) throw new Error("Wallet not connected");
       const amountNum = parseFloat(amount);
 
@@ -423,6 +425,7 @@ export function SwapPanel() {
 
               <button
                 onClick={handleOpenConfirm}
+                disabled
                 style={{
                   width: "100%",
                   marginTop: "10px",
@@ -433,10 +436,11 @@ export function SwapPanel() {
                   color: "#fff",
                   fontWeight: 700,
                   fontSize: "13px",
-                  cursor: "pointer",
+                  cursor: "not-allowed",
+                  opacity: 0.5,
                 }}
               >
-                Execute Swap
+                Swap disabled during rehabilitation
               </button>
             </div>
           )}
@@ -509,7 +513,7 @@ export function SwapPanel() {
                   </button>
                   <button
                     onClick={handleConfirmSwap}
-                    disabled={executeMutation.isPending}
+                    disabled
                     style={{
                       flex: 1,
                       padding: "10px",
@@ -518,15 +522,15 @@ export function SwapPanel() {
                       background: "var(--color-bullish)",
                       color: "#fff",
                       fontWeight: 700,
-                      cursor: "pointer",
+                      cursor: "not-allowed",
+                      opacity: 0.5,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       gap: "6px",
                     }}
                   >
-                    {executeMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                    Confirm & Sign
+                    Execution disabled
                   </button>
                 </div>
               </>

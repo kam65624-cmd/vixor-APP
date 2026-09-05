@@ -8,7 +8,6 @@ import {
   TOKENS,
   MOCK_BALANCES,
   getSwapHistory,
-  saveSwapHistory,
   formatUSD,
   formatAmount,
   formatBalance,
@@ -17,14 +16,14 @@ import {
   SwapRecord,
 } from "./constants";
 import { useWallet } from "@/domains/wallet/adapter/WalletProvider";
-import { WalletProviderSelector } from "@/domains/wallet/adapter/WalletProviderSelector";
 import { TokenIcon } from "./TokenIcon";
 import { TokenSelectorModal } from "./TokenSelectorModal";
+import { LEGACY_EXECUTION_DISABLED_MESSAGE } from "@/shared/security/legacy-execution";
 
 // ── Main Swap Page ──────────────────────────────────────────────────────────
 export function SwapPage() {
   const navigate = useNavigate();
-  const { wallet, connect, disconnect } = useWallet();
+  const { wallet, disconnect } = useWallet();
   const isConnected = wallet?.status === "connected";
 
   // ── Live Prices (replaces static PRICES map) ──
@@ -50,10 +49,10 @@ export function SwapPage() {
   const [showFromModal, setShowFromModal] = useState(false);
   const [showToModal, setShowToModal] = useState(false);
   const [swapDirection, setSwapDirection] = useState<"normal" | "rotated">("normal");
-  const [isSwapping, setIsSwapping] = useState(false);
-  const [swapSuccess, setSwapSuccess] = useState(false);
+  const [isSwapping] = useState(false);
+  const [swapSuccess] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [swapHistory, setSwapHistory] = useState<SwapRecord[]>(getSwapHistory);
+  const [swapHistory] = useState<SwapRecord[]>(getSwapHistory);
 
   // ── Swap Calculation ──
   const swapResult = useMemo(() => {
@@ -123,39 +122,8 @@ export function SwapPage() {
 
   // ── Handle Swap Request (shows confirmation) ──
   const handleSwapRequest = useCallback(() => {
-    if (!isConnected || !hasBalance || !fromAmount || swapResult.output <= 0) return;
-    setShowConfirm(true);
-  }, [isConnected, hasBalance, fromAmount, swapResult.output]);
-
-  // ── Handle Swap Execution ──
-  const handleSwap = useCallback(async () => {
-    setShowConfirm(false);
-    if (!isConnected || !hasBalance || !fromAmount || swapResult.output <= 0) return;
-    setIsSwapping(true);
-    // TODO: Route to real DEX based on chain:
-    //   Solana → Jupiter swap API
-    //   EVM → 1inch swap API
-    // For now, simulate with network delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    const newRecord: SwapRecord = {
-      id: String(Date.now()),
-      fromToken: fromToken.symbol,
-      toToken: toToken.symbol,
-      fromAmount: parseFloat(fromAmount).toFixed(6),
-      toAmount: swapResult.output.toFixed(6),
-      date: new Date().toISOString(),
-      status: "success",
-    };
-
-    const updatedHistory = [newRecord, ...swapHistory].slice(0, 5);
-    setSwapHistory(updatedHistory);
-    saveSwapHistory(updatedHistory);
-    setIsSwapping(false);
-    setSwapSuccess(true);
-    setFromAmount("");
-    setTimeout(() => setSwapSuccess(false), 3000);
-  }, [isConnected, hasBalance, fromAmount, swapResult.output, fromToken, toToken, swapHistory]);
+    void LEGACY_EXECUTION_DISABLED_MESSAGE;
+  }, []);
 
   // ── Popular Pairs ──
   const popularPairs = [
@@ -226,11 +194,8 @@ export function SwapPage() {
         >
           {/* ── Wallet Connection Banner ── */}
           {!isConnected ? (
-            <div className="flex flex-col gap-2.5">
-              <WalletProviderSelector />
-              <p className="text-center text-xs text-muted-foreground">
-                Connect your wallet to execute swaps
-              </p>
+            <div className="rounded-lg border border-[var(--color-neutral-wait)]/40 bg-[var(--color-neutral-wait)]/10 px-3 py-2 text-center text-xs text-[var(--color-neutral-wait)]">
+              Wallet connection and swap signing are temporarily disabled during rehabilitation.
             </div>
           ) : (
             <div
@@ -773,11 +738,8 @@ export function SwapPage() {
                   ✓ Swap Successful!
                 </div>
               ) : !isConnected ? (
-                <div className="flex flex-col gap-2.5">
-                  <WalletProviderSelector />
-                  <p className="text-center text-xs text-muted-foreground">
-                    Connect your wallet to execute swaps
-                  </p>
+                <div className="rounded-lg border border-[var(--color-neutral-wait)]/40 bg-[var(--color-neutral-wait)]/10 px-3 py-2 text-center text-xs text-[var(--color-neutral-wait)]">
+                  Wallet connection and swap signing are temporarily disabled during rehabilitation.
                 </div>
               ) : isConnected ? (
                 <>
@@ -802,7 +764,7 @@ export function SwapPage() {
                   ) : (
                     <button
                       onClick={handleSwapRequest}
-                      disabled={isSwapping || !fromAmount || swapResult.output <= 0}
+                      disabled
                       style={{
                         width: "100%",
                         height: "48px",
@@ -845,7 +807,7 @@ export function SwapPage() {
                           Swapping...
                         </>
                       ) : (
-                        `[Demo Simulation] Swap ${fromToken.symbol} → ${toToken.symbol}`
+                        "Swap disabled during rehabilitation"
                       )}
                     </button>
                   )}
@@ -1090,15 +1052,15 @@ export function SwapPage() {
                 Cancel
               </button>
               <button
-                onClick={handleSwap}
-                disabled={isSwapping}
+                onClick={() => undefined}
+                disabled
                 className="flex-1 h-12 rounded-xl font-bold text-sm transition-colors"
                 style={{
                   background: "var(--color-bullish)",
                   color: "var(--color-buy-text)",
                 }}
               >
-                {isSwapping ? "Swapping..." : "Confirm Swap"}
+                "Execution disabled"
               </button>
             </div>
           </div>
