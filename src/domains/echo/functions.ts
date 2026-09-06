@@ -38,13 +38,13 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       eodReview: false,
     };
 
-    // ── 1. Signal trackings (most recent, status = active) ──────────
+    // ── 1. Signal tracking records (most recent, non-terminal status) ─
     try {
       const { data, error } = await supabase
-        .from("signal_trackings")
-        .select("id, token_address, chain, status, source, created_at, observed_at")
+        .from("signal_tracking")
+        .select("id, pair, status, source_type, created_at, activated_at, resolved_at")
         .eq("user_id", userId)
-        .in("status", ["OPEN", "MONITORING", "ACTIVE", "TP_HIT", "SL_HIT"])
+        .in("status", ["pending", "active", "tp1_hit", "tp2_hit", "tp3_hit"])
         .order("created_at", { ascending: false })
         .limit(20);
       if (error) throw error;
@@ -53,25 +53,24 @@ export const getEchoOverview = createServerFn({ method: "GET" })
         timeline.push({
           id: `sig-${t.id}`,
           type: "DECISION",
-          occurredAt: t.observed_at ?? t.created_at,
-          title: `Tracking: ${(t.token_address ?? "").slice(0, 6)}…`,
-          summary: `Status: ${t.status}. Source: ${t.source ?? "manual"}.`,
-          tokenAddress: t.token_address,
-          chain: t.chain,
+          occurredAt: t.activated_at ?? t.resolved_at ?? t.created_at,
+          title: `Tracking: ${t.pair}`,
+          summary: `Status: ${t.status}. Source: ${t.source_type ?? "manual"}.`,
           tag: t.status,
         });
       }
     } catch (err) {
-      errors.push(`signal_trackings: ${err instanceof Error ? err.message : "unknown"}`);
+      errors.push(`signal_tracking: ${err instanceof Error ? err.message : "unknown"}`);
     }
 
     // ── 2. Recent closed trades ─────────────────────────────────────
     try {
       const { data, error } = await supabase
         .from("trades")
-        .select("id, pair, direction, status, pnl, opened_at, closed_at, notes")
+        .select("id, pair, direction, status, pnl, entry_date, exit_date, notes")
         .eq("user_id", userId)
-        .order("closed_at", { ascending: false, nullsFirst: false })
+        .eq("status", "closed")
+        .order("exit_date", { ascending: false, nullsFirst: false })
         .limit(20);
       if (error) throw error;
       totalTrades = data?.length ?? 0;
@@ -80,7 +79,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
         timeline.push({
           id: `trade-${trade.id}`,
           type: "TRADE",
-          occurredAt: trade.closed_at ?? trade.opened_at,
+          occurredAt: trade.exit_date ?? trade.entry_date,
           title: `${(trade.direction ?? "TRADE").toUpperCase()} ${trade.pair ?? "—"}`,
           summary: trade.notes ?? `Status: ${trade.status}.`,
           value: pnl,
@@ -95,8 +94,8 @@ export const getEchoOverview = createServerFn({ method: "GET" })
     // ── 3. Recent notes ─────────────────────────────────────────────
     try {
       const { data, error } = await supabase
-        .from("notes")
-        .select("id, title, body, created_at")
+        .from("trading_notes")
+        .select("id, title, content, created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(20);
@@ -108,7 +107,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
           type: "NOTE",
           occurredAt: note.created_at,
           title: note.title ?? "Note",
-          summary: (note.body ?? "").slice(0, 100),
+          summary: (note.content ?? "").slice(0, 100),
           tag: "JOURNAL",
         });
       }
@@ -133,10 +132,10 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       const weekAgo = new Date(Date.now() - 7 * DAY_MS).toISOString();
       const { data, error } = await supabase
         .from("trades")
-        .select("id, pair, direction, pnl, status, closed_at")
+        .select("id, pair, direction, pnl, status, exit_date")
         .eq("user_id", userId)
         .eq("status", "closed")
-        .gte("closed_at", weekAgo);
+        .gte("exit_date", weekAgo);
       if (error) throw error;
       const trades = data ?? [];
       const wins = trades.filter((t) => (t.pnl ?? 0) > 0).length;
@@ -170,7 +169,9 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       const today = new Date().toISOString().slice(0, 10);
       const { data, error } = await supabase
         .from("daily_loops")
-        .select("id, date, morning_prep, session_tracking, eod_review, completed")
+        .select(
+          "id, date, morning_prep_completed, watchlist_reviewed, london_session_traded, ny_session_traded, asian_session_traded, eod_review_completed, completion_percentage",
+        )
         .eq("user_id", userId)
         .eq("date", today)
         .limit(1)
@@ -178,10 +179,14 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       if (error && error.code !== "PGRST116") throw error;
       if (data) {
         todayLoop = {
-          completed: !!data.completed,
-          morningPrep: !!data.morning_prep,
-          sessionTracking: !!data.session_tracking,
-          eodReview: !!data.eod_review,
+          completed: data.completion_percentage >= 100,
+          morningPrep: data.morning_prep_completed,
+          sessionTracking:
+            data.watchlist_reviewed ||
+            data.london_session_traded ||
+            data.ny_session_traded ||
+            data.asian_session_traded,
+          eodReview: data.eod_review_completed,
         };
         timeline.push({
           id: `loop-${data.id}`,
