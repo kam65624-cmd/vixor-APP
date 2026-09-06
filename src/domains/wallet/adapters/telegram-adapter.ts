@@ -78,7 +78,6 @@ async function loadTonConnectSdk(): Promise<unknown> {
 
   try {
     // Try to dynamically import the TON Connect SDK
-    // @ts-expect-error — SDK is optional, graceful fallback if not installed
     const mod = await import("@tonconnect/sdk");
     _tonConnect = mod;
     return mod;

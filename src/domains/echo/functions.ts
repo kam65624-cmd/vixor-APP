@@ -6,6 +6,15 @@
 //                  into a single view. Uses Supabase directly to avoid
 //                  coupling to the inconsistent APIs of upstream domains.
 //
+// Schema reference (see src/shared/supabase/types.ts):
+//   - signal_tracking: id, user_id, pair, direction, status, entry_price,
+//                       created_at, pnl, source_type, ...
+//   - trades: id, user_id, pair, direction, status, entry_date, exit_date,
+//              pnl, notes, tags, ...
+//   - watchlists: id, user_id, name, sort_order, created_at
+//   - daily_loops: id, user_id, date, morning_prep_completed,
+//                    eod_review_completed, completion_percentage, ...
+//
 // Design rules:
 //   1. GRACEFUL — every underlying call is wrapped in try/catch
 //   2. TIMELINE-ORDERED — entries are sorted by occurredAt desc
@@ -25,7 +34,6 @@ export const getEchoOverview = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<EchoOverview> => {
     const { supabase, userId } = context;
     const timeline: TimelineEntry[] = [];
-    const errors: string[] = [];
     let activeTrackings = 0;
     let totalTrades = 0;
     let watchlistCount = 0;
@@ -38,13 +46,13 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       eodReview: false,
     };
 
-    // ── 1. Signal trackings (most recent, status = active) ──────────
+    // ── 1. Signal trackings (most recent, active status) ───────────
     try {
       const { data, error } = await supabase
-        .from("signal_trackings")
-        .select("id, token_address, chain, status, source, created_at, observed_at")
+        .from("signal_tracking")
+        .select("id, pair, direction, status, created_at")
         .eq("user_id", userId)
-        .in("status", ["OPEN", "MONITORING", "ACTIVE", "TP_HIT", "SL_HIT"])
+        .in("status", ["active", "pending", "tp1_hit", "tp2_hit", "tp3_hit"])
         .order("created_at", { ascending: false })
         .limit(20);
       if (error) throw error;
@@ -53,90 +61,75 @@ export const getEchoOverview = createServerFn({ method: "GET" })
         timeline.push({
           id: `sig-${t.id}`,
           type: "DECISION",
-          occurredAt: t.observed_at ?? t.created_at,
-          title: `Tracking: ${(t.token_address ?? "").slice(0, 6)}…`,
-          summary: `Status: ${t.status}. Source: ${t.source ?? "manual"}.`,
-          tokenAddress: t.token_address,
-          chain: t.chain,
+          occurredAt: t.created_at,
+          title: `Tracking: ${t.pair}`,
+          summary: `${t.direction.toUpperCase()} • Status: ${t.status}.`,
           tag: t.status,
         });
       }
-    } catch (err) {
-      errors.push(`signal_trackings: ${err instanceof Error ? err.message : "unknown"}`);
+    } catch {
+      // Skip signal trackings if unavailable
     }
 
     // ── 2. Recent closed trades ─────────────────────────────────────
     try {
       const { data, error } = await supabase
         .from("trades")
-        .select("id, pair, direction, status, pnl, opened_at, closed_at, notes")
+        .select("id, pair, direction, status, pnl, entry_date, exit_date, notes, created_at")
         .eq("user_id", userId)
-        .order("closed_at", { ascending: false, nullsFirst: false })
+        .order("exit_date", { ascending: false, nullsFirst: false })
         .limit(20);
       if (error) throw error;
       totalTrades = data?.length ?? 0;
+      recentNotesCount = (data ?? []).filter((t) => t.notes && t.notes.length > 0).length;
       for (const trade of data ?? []) {
         const pnl = trade.pnl ?? 0;
         timeline.push({
           id: `trade-${trade.id}`,
           type: "TRADE",
-          occurredAt: trade.closed_at ?? trade.opened_at,
-          title: `${(trade.direction ?? "TRADE").toUpperCase()} ${trade.pair ?? "—"}`,
+          occurredAt: trade.exit_date ?? trade.entry_date ?? trade.created_at,
+          title: `${trade.direction.toUpperCase()} ${trade.pair}`,
           summary: trade.notes ?? `Status: ${trade.status}.`,
           value: pnl,
           unit: "USD",
           tag: trade.status,
         });
       }
-    } catch (err) {
-      errors.push(`trades: ${err instanceof Error ? err.message : "unknown"}`);
+    } catch {
+      // Skip trades if unavailable
     }
 
-    // ── 3. Recent notes ─────────────────────────────────────────────
-    try {
-      const { data, error } = await supabase
-        .from("notes")
-        .select("id, title, body, created_at")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(20);
-      if (error) throw error;
-      recentNotesCount = data?.length ?? 0;
-      for (const note of data ?? []) {
-        timeline.push({
-          id: `note-${note.id}`,
-          type: "NOTE",
-          occurredAt: note.created_at,
-          title: note.title ?? "Note",
-          summary: (note.body ?? "").slice(0, 100),
-          tag: "JOURNAL",
-        });
-      }
-    } catch (err) {
-      errors.push(`notes: ${err instanceof Error ? err.message : "unknown"}`);
-    }
-
-    // ── 4. Watchlist ────────────────────────────────────────────────
+    // ── 3. Watchlist ────────────────────────────────────────────────
     try {
       const { data, error } = await supabase
         .from("watchlists")
-        .select("id, name, sort_order, created_at")
+        .select("id, name, created_at")
         .eq("user_id", userId);
       if (error) throw error;
       watchlistCount = data?.length ?? 0;
-    } catch (err) {
-      errors.push(`watchlists: ${err instanceof Error ? err.message : "unknown"}`);
+      for (const w of data ?? []) {
+        timeline.push({
+          id: `watch-${w.id}`,
+          type: "WATCHLIST",
+          occurredAt: w.created_at,
+          title: `Watchlist: ${w.name}`,
+          summary: "Saved watchlist.",
+          tag: "WATCHING",
+        });
+      }
+    } catch {
+      // Skip watchlist if unavailable
     }
 
-    // ── 5. Weekly performance (from trades table) ───────────────────
+    // ── 4. Weekly performance (from trades table) ───────────────────
     try {
       const weekAgo = new Date(Date.now() - 7 * DAY_MS).toISOString();
       const { data, error } = await supabase
         .from("trades")
-        .select("id, pair, direction, pnl, status, closed_at")
+        .select("id, pair, direction, pnl, status, exit_date")
         .eq("user_id", userId)
         .eq("status", "closed")
-        .gte("closed_at", weekAgo);
+        .gte("exit_date", weekAgo);
       if (error) throw error;
       const trades = data ?? [];
       const wins = trades.filter((t) => (t.pnl ?? 0) > 0).length;
@@ -161,27 +154,31 @@ export const getEchoOverview = createServerFn({ method: "GET" })
           ? { title: `${worst.direction} ${worst.pair}`, pnlUsd: worst.pnl ?? 0 }
           : undefined,
       };
-    } catch (err) {
-      errors.push(`weekly: ${err instanceof Error ? err.message : "unknown"}`);
+    } catch {
+      // Skip weekly summary if unavailable
     }
 
-    // ── 6. Today's daily loop ───────────────────────────────────────
+    // ── 5. Today's daily loop ───────────────────────────────────────
     try {
       const today = new Date().toISOString().slice(0, 10);
       const { data, error } = await supabase
         .from("daily_loops")
-        .select("id, date, morning_prep, session_tracking, eod_review, completed")
+        .select(
+          "id, date, morning_prep_completed, eod_review_completed, london_session_traded, ny_session_traded, asian_session_traded, completion_percentage",
+        )
         .eq("user_id", userId)
         .eq("date", today)
         .limit(1)
         .maybeSingle();
       if (error && error.code !== "PGRST116") throw error;
       if (data) {
+        const sessionTraded =
+          data.london_session_traded || data.ny_session_traded || data.asian_session_traded;
         todayLoop = {
-          completed: !!data.completed,
-          morningPrep: !!data.morning_prep,
-          sessionTracking: !!data.session_tracking,
-          eodReview: !!data.eod_review,
+          completed: !!data.morning_prep_completed && !!data.eod_review_completed,
+          morningPrep: !!data.morning_prep_completed,
+          sessionTracking: sessionTraded,
+          eodReview: !!data.eod_review_completed,
         };
         timeline.push({
           id: `loop-${data.id}`,
@@ -189,7 +186,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
           occurredAt: data.date,
           title: "Daily Loop",
           summary: todayLoop.completed
-            ? "All three phases completed today."
+            ? "All phases completed today."
             : `${[
                 todayLoop.morningPrep ? "✓ Prep" : "○ Prep",
                 todayLoop.sessionTracking ? "✓ Session" : "○ Session",
@@ -198,8 +195,8 @@ export const getEchoOverview = createServerFn({ method: "GET" })
           tag: todayLoop.completed ? "COMPLETED" : "IN_PROGRESS",
         });
       }
-    } catch (err) {
-      errors.push(`daily_loops: ${err instanceof Error ? err.message : "unknown"}`);
+    } catch {
+      // Skip daily loop if unavailable
     }
 
     // ── Sort timeline newest first ─────────────────────────────────
@@ -208,11 +205,6 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       const bT = new Date(b.occurredAt).getTime();
       return bT - aT;
     });
-
-    if (errors.length > 0) {
-      // Surface partial-degradation info in console (not to user)
-      console.warn("[ECHO] Partial data:", errors);
-    }
 
     return {
       timeline: timeline.slice(0, 30),
