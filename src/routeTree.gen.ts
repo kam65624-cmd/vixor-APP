@@ -15,6 +15,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedWhaleRouteImport } from './routes/_authenticated/whale'
 import { Route as AuthenticatedInvestigateRouteImport } from './routes/_authenticated/investigate'
 import { Route as AuthenticatedRiskRouteImport } from './routes/_authenticated/risk'
+import { Route as AuthenticatedEchoRouteImport } from './routes/_authenticated/echo'
 import { Route as AuthenticatedWalletWeb3RouteImport } from './routes/_authenticated/wallet-web3'
 import { Route as AuthenticatedVisionRouteImport } from './routes/_authenticated/vision'
 import { Route as AuthenticatedTradeDeskRouteImport } from './routes/_authenticated/trade-desk'
@@ -84,6 +85,11 @@ const AuthenticatedInvestigateRoute = AuthenticatedInvestigateRouteImport.update
 const AuthenticatedRiskRoute = AuthenticatedRiskRouteImport.update({
   id: '/risk',
   path: '/risk',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEchoRoute = AuthenticatedEchoRouteImport.update({
+  id: '/echo',
+  path: '/echo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedWalletWeb3Route = AuthenticatedWalletWeb3RouteImport.update({
@@ -320,6 +326,7 @@ export interface FileRoutesByFullPath {
   '/pnl': typeof AuthenticatedPnlRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/risk': typeof AuthenticatedRiskRoute
+  '/echo': typeof AuthenticatedEchoRoute
   '/predictions': typeof AuthenticatedPredictionsRoute
   '/premium': typeof AuthenticatedPremiumRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -420,6 +427,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/pulse': typeof AuthenticatedPulseRoute
   '/_authenticated/risk': typeof AuthenticatedRiskRoute
+  '/_authenticated/echo': typeof AuthenticatedEchoRoute
   '/_authenticated/radar': typeof AuthenticatedRadarRoute
   '/_authenticated/referral': typeof AuthenticatedReferralRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
@@ -460,6 +468,7 @@ export interface FileRouteTypes {
     | '/charts'
     | '/daily-loop'
     | '/discover'
+    | '/echo'
     | '/journal'
     | '/notifications'
     | '/opportunities'
@@ -505,6 +514,7 @@ export interface FileRouteTypes {
     | '/charts'
     | '/daily-loop'
     | '/discover'
+    | '/echo'
     | '/journal'
     | '/notifications'
     | '/opportunities'
@@ -761,6 +771,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRiskRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/echo': {
+      id: '/_authenticated/echo'
+      path: '/echo'
+      fullPath: '/echo'
+      preLoaderRoute: typeof AuthenticatedEchoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/opportunities': {
       id: '/_authenticated/opportunities'
       path: '/opportunities'
@@ -943,6 +960,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedRiskRoute: typeof AuthenticatedRiskRoute
+  AuthenticatedEchoRoute: typeof AuthenticatedEchoRoute
   AuthenticatedOpportunitiesRoute: typeof AuthenticatedOpportunitiesRoute
   AuthenticatedPnlRoute: typeof AuthenticatedPnlRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
@@ -998,6 +1016,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPremiumRoute: AuthenticatedPremiumRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRiskRoute: AuthenticatedRiskRoute,
+  AuthenticatedEchoRoute: AuthenticatedEchoRoute,
   AuthenticatedPulseRoute: AuthenticatedPulseRoute,
   AuthenticatedRadarRoute: AuthenticatedRadarRoute,
   AuthenticatedReferralRoute: AuthenticatedReferralRoute,
