@@ -38,6 +38,7 @@ import {
   Wallet,
   Search,
   ShieldCheck,
+  GitBranch,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SmartTabs } from "@/components/vixor/SmartTabs";
@@ -657,6 +658,14 @@ function HomePageV3() {
               desc="Risk & decision"
               to="/risk"
               accent="var(--color-bullish)"
+              badge="NEW"
+            />
+            <FeatureCard
+              icon={GitBranch}
+              title="Decision Loop"
+              desc="4-character workflow"
+              to="/loop"
+              accent="var(--color-gold)"
               badge="NEW"
             />
             <FeatureCard

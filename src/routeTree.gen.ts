@@ -20,6 +20,7 @@ import { Route as AuthenticatedWhaleRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedInvestigateRouteImport } from './routes/_authenticated/investigate'
 import { Route as AuthenticatedRiskRouteImport } from './routes/_authenticated/risk'
 import { Route as AuthenticatedEchoRouteImport } from './routes/_authenticated/echo'
+import { Route as AuthenticatedLoopRouteImport } from './routes/_authenticated/loop'
 import { Route as AuthenticatedWalletWeb3RouteImport } from './routes/_authenticated/wallet-web3'
 import { Route as AuthenticatedVisionRouteImport } from './routes/_authenticated/vision'
 import { Route as AuthenticatedTradeDeskRouteImport } from './routes/_authenticated/trade-desk'
@@ -118,6 +119,11 @@ const AuthenticatedRiskRoute = AuthenticatedRiskRouteImport.update({
 const AuthenticatedEchoRoute = AuthenticatedEchoRouteImport.update({
   id: '/echo',
   path: '/echo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLoopRoute = AuthenticatedLoopRouteImport.update({
+  id: '/loop',
+  path: '/loop',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedWalletWeb3Route = AuthenticatedWalletWeb3RouteImport.update({
@@ -369,13 +375,17 @@ export interface FileRoutesByFullPath {
   '/charts': typeof AuthenticatedChartsRoute
   '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
+  '/investigate': typeof AuthenticatedInvestigateRoute
+  '/risk': typeof AuthenticatedRiskRoute
   '/journal': typeof AuthenticatedJournalRoute
+  '/loop': typeof AuthenticatedLoopRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
   '/pnl': typeof AuthenticatedPnlRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
 '/risk': typeof AuthenticatedRiskRoute
   '/echo': typeof AuthenticatedEchoRoute
+  '/loop': typeof AuthenticatedLoopRoute
 '/predictions': typeof AuthenticatedPredictionsRoute
   '/premium': typeof AuthenticatedPremiumRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -423,7 +433,10 @@ export interface FileRoutesByTo {
   '/charts': typeof AuthenticatedChartsRoute
   '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
+  '/investigate': typeof AuthenticatedInvestigateRoute
+  '/risk': typeof AuthenticatedRiskRoute
   '/journal': typeof AuthenticatedJournalRoute
+  '/loop': typeof AuthenticatedLoopRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
   '/pnl': typeof AuthenticatedPnlRoute
@@ -480,6 +493,7 @@ export interface FileRoutesById {
   '/_authenticated/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/_authenticated/discover': typeof AuthenticatedDiscoverRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
+  '/_authenticated/loop': typeof AuthenticatedLoopRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/opportunities': typeof AuthenticatedOpportunitiesRoute
   '/_authenticated/pnl': typeof AuthenticatedPnlRoute
@@ -540,6 +554,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/echo'
     | '/journal'
+    | '/loop'
     | '/notifications'
     | '/opportunities'
     | '/pnl'
@@ -593,6 +608,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/echo'
     | '/journal'
+    | '/loop'
     | '/notifications'
     | '/opportunities'
     | '/pnl'
@@ -648,6 +664,7 @@ export interface FileRouteTypes {
     | '/_authenticated/daily-loop'
     | '/_authenticated/discover'
     | '/_authenticated/journal'
+    | '/_authenticated/loop'
     | '/_authenticated/notifications'
     | '/_authenticated/opportunities'
     | '/_authenticated/pnl'
@@ -909,6 +926,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/loop': {
+      id: '/_authenticated/loop'
+      path: '/loop'
+      fullPath: '/loop'
+      preLoaderRoute: typeof AuthenticatedLoopRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/journal': {
