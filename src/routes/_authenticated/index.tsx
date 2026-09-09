@@ -38,7 +38,7 @@ import {
   Wallet,
   Search,
   ShieldCheck,
-  GitBranch,
+  History,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SmartTabs } from "@/components/vixor/SmartTabs";
@@ -661,11 +661,11 @@ function HomePageV3() {
               badge="NEW"
             />
             <FeatureCard
-              icon={GitBranch}
-              title="Decision Loop"
-              desc="4-character workflow"
-              to="/loop"
-              accent="var(--color-gold)"
+              icon={History}
+              title="ECHO"
+              desc="Track & learn"
+              to="/echo"
+              accent="var(--color-primary)"
               badge="NEW"
             />
             <FeatureCard

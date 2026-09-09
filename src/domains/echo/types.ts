@@ -1,5 +1,5 @@
 // ============================================================================
-// ECHO ΓÇö Tracking & Outcome & Learning ΓÇö Public Types
+// ECHO — Tracking & Outcome & Learning — Public Types
 // ============================================================================
 //
 // ECHO is the fourth character surface in the VIXOR decision loop. It
@@ -36,7 +36,7 @@ export interface TimelineEntry {
 }
 
 /**
- * Weekly performance summary ΓÇö pulled from trades performance
+ * Weekly performance summary — pulled from trades performance
  */
 export interface WeeklySummary {
   weekStart: string;
@@ -51,7 +51,7 @@ export interface WeeklySummary {
 }
 
 /**
- * The aggregated ECHO overview ΓÇö what the home page shows.
+ * The aggregated ECHO overview — what the home page shows.
  */
 export interface EchoOverview {
   /** Most recent items across all sources */

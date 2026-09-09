@@ -51,7 +51,7 @@ export const Route = createFileRoute("/_authenticated/echo")({
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function typeIcon(t: TimelineEntry["type"]): React.ElementType {
+function typeIcon(t: TimelineEntry["type"]) {
   switch (t) {
     case "DECISION":
       return TrendingUp;
@@ -63,8 +63,6 @@ function typeIcon(t: TimelineEntry["type"]): React.ElementType {
       return Star;
     case "LOOP":
       return Calendar;
-    default:
-      return Activity;
   }
 }
 
@@ -388,71 +386,61 @@ function TodayLoopCard({ loop }: { loop: EchoOverview["todayLoop"] }) {
             color: "var(--color-foreground)",
           }}
         >
-          Today&apos;s Loop
+          Today's Daily Loop
         </h3>
+        {loop.completed && (
+          <span
+            style={{
+              marginLeft: "auto",
+              fontSize: 9,
+              fontWeight: 700,
+              padding: "2px 6px",
+              borderRadius: 4,
+              background: "color-mix(in srgb, var(--color-bullish) 12%, transparent)",
+              color: "var(--color-bullish)",
+              border: "1px solid color-mix(in srgb, var(--color-bullish) 25%, transparent)",
+            }}
+          >
+            COMPLETED
+          </span>
+        )}
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-        }}
-      >
+      <div style={{ display: "flex", gap: 8 }}>
         {phases.map((p) => (
           <div
             key={p.label}
             style={{
               flex: 1,
-              padding: "8px 6px",
+              padding: "8px 10px",
               borderRadius: 8,
               background: p.done
                 ? "color-mix(in srgb, var(--color-bullish) 8%, transparent)"
-                : "var(--color-muted)",
-              border: `1px solid ${p.done ? "var(--color-bullish)" : "var(--color-border)"}`,
+                : "var(--color-muted, rgba(255,255,255,0.03))",
+              border: p.done
+                ? "1px solid color-mix(in srgb, var(--color-bullish) 25%, transparent)"
+                : "1px solid var(--color-border)",
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
-              gap: 4,
+              gap: 6,
             }}
           >
             {p.done ? (
-              <CheckCircle2 size={16} style={{ color: "var(--color-bullish)" }} />
+              <CheckCircle2 size={12} style={{ color: "var(--color-bullish)" }} />
             ) : (
-              <Clock size={16} style={{ color: "var(--color-muted-foreground)" }} />
+              <Clock size={12} style={{ color: "var(--color-muted-foreground)" }} />
             )}
             <span
               style={{
-                fontSize: 9,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
+                fontSize: 10,
+                fontWeight: 600,
                 color: p.done ? "var(--color-bullish)" : "var(--color-muted-foreground)",
-                textAlign: "center",
               }}
             >
               {p.label}
             </span>
           </div>
         ))}
-      </div>
-
-      <div
-        style={{
-          marginTop: 10,
-          fontSize: 10,
-          color: "var(--color-muted-foreground)",
-          textAlign: "center",
-        }}
-      >
-        <a
-          href="/daily-loop"
-          style={{
-            color: "var(--color-primary)",
-            textDecoration: "underline",
-          }}
-        >
-          Open Daily Loop →
-        </a>
       </div>
     </div>
   );
@@ -461,12 +449,14 @@ function TodayLoopCard({ loop }: { loop: EchoOverview["todayLoop"] }) {
 function TimelineRow({ entry }: { entry: TimelineEntry }) {
   const Icon = typeIcon(entry.type);
   const color = typeColor(entry.type);
-  const pnl = entry.value !== undefined ? formatPnl(entry.value, entry.unit ?? "USD") : undefined;
+  const pnl = entry.value !== undefined ? formatPnl(entry.value, entry.unit ?? "") : null;
 
   return (
     <div
       style={{
-        padding: "12px 14px",
+        display: "flex",
+        gap: 12,
+        padding: "10px 12px",
         borderRadius: 10,
         background: "var(--color-card)",
         border: "1px solid var(--color-border)",
@@ -474,94 +464,88 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
     >
       <div
         style={{
+          width: 32,
+          height: 32,
+          borderRadius: 8,
+          background: `color-mix(in srgb, ${color} 12%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          justifyContent: "center",
+          flexShrink: 0,
         }}
       >
+        <Icon size={14} style={{ color }} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            width: 28,
-            height: 28,
-            borderRadius: 8,
-            background: `color-mix(in srgb, ${color} 10%, transparent)`,
-            border: `1px solid color-mix(in srgb, ${color} 20%, transparent)`,
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
+            gap: 8,
+            flexWrap: "wrap",
           }}
         >
-          <Icon size={13} style={{ color }} />
-        </div>
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            color,
-          }}
-        >
-          {entry.type}
-        </span>
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "var(--color-foreground)",
-          }}
-        >
-          {entry.title}
-        </span>
-        {entry.tag && (
           <span
             style={{
-              fontSize: 9,
-              fontWeight: 700,
-              padding: "1px 5px",
-              borderRadius: 3,
-              background: "var(--color-muted)",
-              color: "var(--color-muted-foreground)",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "var(--color-foreground)",
             }}
           >
-            {entry.tag}
+            {entry.title}
           </span>
-        )}
-        {pnl && (
-          <span
+          {entry.tag && (
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+                padding: "1px 5px",
+                borderRadius: 4,
+                background: "var(--color-muted)",
+                color: "var(--color-muted-foreground)",
+              }}
+            >
+              {entry.tag}
+            </span>
+          )}
+          {pnl && (
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                fontFamily: "var(--font-mono)",
+                color: pnl.color,
+                marginLeft: "auto",
+              }}
+            >
+              {pnl.text}
+            </span>
+          )}
+        </div>
+        {entry.summary && (
+          <div
             style={{
               fontSize: 11,
-              fontWeight: 700,
-              fontFamily: "var(--font-mono)",
-              color: pnl.color,
-              marginLeft: "auto",
+              color: "var(--color-muted-foreground)",
+              marginTop: 2,
+              lineHeight: 1.4,
             }}
           >
-            {pnl.text}
-          </span>
+            {entry.summary}
+          </div>
         )}
-      </div>
-      {entry.summary && (
         <div
           style={{
-            fontSize: 11,
+            fontSize: 10,
             color: "var(--color-muted-foreground)",
-            marginTop: 2,
-            lineHeight: 1.4,
+            marginTop: 4,
           }}
         >
-          {entry.summary}
+          {formatDate(entry.occurredAt)}
         </div>
-      )}
-      <div
-        style={{
-          fontSize: 10,
-          color: "var(--color-muted-foreground)",
-          marginTop: 4,
-        }}
-      >
-        {formatDate(entry.occurredAt)}
       </div>
     </div>
   );
@@ -677,7 +661,7 @@ function EchoPage() {
                     color: "var(--color-bearish)",
                   }}
                 >
-                  Couldn&apos;t load your timeline
+                  Couldn't load your timeline
                 </div>
                 <div
                   style={{

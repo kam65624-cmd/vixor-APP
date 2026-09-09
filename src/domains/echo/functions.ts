@@ -1,5 +1,5 @@
 // ============================================================================
-// ECHO ΓÇö Tracking & Outcome & Learning ΓÇö Server Functions
+// ECHO — Tracking & Outcome & Learning — Server Functions
 // ============================================================================
 //
 // getEchoOverview: Aggregates the user's decision/trade/note timeline
@@ -7,9 +7,9 @@
 //                  coupling to the inconsistent APIs of upstream domains.
 //
 // Design rules:
-//   1. GRACEFUL ΓÇö every underlying call is wrapped in try/catch
-//   2. TIMELINE-ORDERED ΓÇö entries are sorted by occurredAt desc
-//   3. READ-ONLY ΓÇö ECHO never mutates anything
+//   1. GRACEFUL — every underlying call is wrapped in try/catch
+//   2. TIMELINE-ORDERED — entries are sorted by occurredAt desc
+//   3. READ-ONLY — ECHO never mutates anything
 // ============================================================================
 
 import { createServerFn } from "@tanstack/react-start";
@@ -18,7 +18,7 @@ import type { EchoOverview, TimelineEntry, WeeklySummary } from "./types";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// ΓöÇΓöÇ Server Function: getEchoOverview ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── Server Function: getEchoOverview ────────────────────────────────────────
 
 export const getEchoOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -38,7 +38,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       eodReview: false,
     };
 
-    // ΓöÇΓöÇ 1. Signal tracking records (most recent, non-terminal status) ΓöÇ
+    // ── 1. Signal tracking records (most recent, non-terminal status) ─
     try {
       const { data, error } = await supabase
         .from("signal_tracking")
@@ -63,7 +63,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       errors.push(`signal_tracking: ${err instanceof Error ? err.message : "unknown"}`);
     }
 
-    // ΓöÇΓöÇ 2. Recent closed trades ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    // ── 2. Recent closed trades ─────────────────────────────────────
     try {
       const { data, error } = await supabase
         .from("trades")
@@ -80,7 +80,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
           id: `trade-${trade.id}`,
           type: "TRADE",
           occurredAt: trade.exit_date ?? trade.entry_date,
-          title: `${(trade.direction ?? "TRADE").toUpperCase()} ${trade.pair ?? "ΓÇö"}`,
+          title: `${(trade.direction ?? "TRADE").toUpperCase()} ${trade.pair ?? "—"}`,
           summary: trade.notes ?? `Status: ${trade.status}.`,
           value: pnl,
           unit: "USD",
@@ -91,7 +91,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       errors.push(`trades: ${err instanceof Error ? err.message : "unknown"}`);
     }
 
-    // ΓöÇΓöÇ 3. Recent notes ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    // ── 3. Recent notes ─────────────────────────────────────────────
     try {
       const { data, error } = await supabase
         .from("trading_notes")
@@ -115,7 +115,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       errors.push(`notes: ${err instanceof Error ? err.message : "unknown"}`);
     }
 
-    // ΓöÇΓöÇ 4. Watchlist ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    // ── 4. Watchlist ────────────────────────────────────────────────
     try {
       const { data, error } = await supabase
         .from("watchlists")
@@ -127,7 +127,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       errors.push(`watchlists: ${err instanceof Error ? err.message : "unknown"}`);
     }
 
-    // ΓöÇΓöÇ 5. Weekly performance (from trades table) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    // ── 5. Weekly performance (from trades table) ───────────────────
     try {
       const weekAgo = new Date(Date.now() - 7 * DAY_MS).toISOString();
       const { data, error } = await supabase
@@ -164,7 +164,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       errors.push(`weekly: ${err instanceof Error ? err.message : "unknown"}`);
     }
 
-    // ΓöÇΓöÇ 6. Today's daily loop ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    // ── 6. Today's daily loop ───────────────────────────────────────
     try {
       const today = new Date().toISOString().slice(0, 10);
       const { data, error } = await supabase
@@ -196,10 +196,10 @@ export const getEchoOverview = createServerFn({ method: "GET" })
           summary: todayLoop.completed
             ? "All three phases completed today."
             : `${[
-                todayLoop.morningPrep ? "Γ£ô Prep" : "Γùï Prep",
-                todayLoop.sessionTracking ? "Γ£ô Session" : "Γùï Session",
-                todayLoop.eodReview ? "Γ£ô Review" : "Γùï Review",
-              ].join(" ΓÇó ")}`,
+                todayLoop.morningPrep ? "✓ Prep" : "○ Prep",
+                todayLoop.sessionTracking ? "✓ Session" : "○ Session",
+                todayLoop.eodReview ? "✓ Review" : "○ Review",
+              ].join(" • ")}`,
           tag: todayLoop.completed ? "COMPLETED" : "IN_PROGRESS",
         });
       }
@@ -207,7 +207,7 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       errors.push(`daily_loops: ${err instanceof Error ? err.message : "unknown"}`);
     }
 
-    // ΓöÇΓöÇ Sort timeline newest first ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    // ── Sort timeline newest first ─────────────────────────────────
     timeline.sort((a, b) => {
       const aT = new Date(a.occurredAt).getTime();
       const bT = new Date(b.occurredAt).getTime();
