@@ -10,17 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as V2RouteRouteImport } from './routes/v2/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as V2IndexRouteImport } from './routes/v2/index'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as V2OnboardingRouteImport } from './routes/v2/onboarding'
 import { Route as V2DiscoverRouteImport } from './routes/v2/discover'
 import { Route as AuthenticatedWhaleRouteImport } from './routes/_authenticated/whale'
-import { Route as AuthenticatedInvestigateRouteImport } from './routes/_authenticated/investigate'
-import { Route as AuthenticatedRiskRouteImport } from './routes/_authenticated/risk'
-import { Route as AuthenticatedEchoRouteImport } from './routes/_authenticated/echo'
-import { Route as AuthenticatedLoopRouteImport } from './routes/_authenticated/loop'
 import { Route as AuthenticatedWalletWeb3RouteImport } from './routes/_authenticated/wallet-web3'
 import { Route as AuthenticatedVisionRouteImport } from './routes/_authenticated/vision'
 import { Route as AuthenticatedTradeDeskRouteImport } from './routes/_authenticated/trade-desk'
@@ -29,6 +24,7 @@ import { Route as AuthenticatedTrackersRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSwapRouteImport } from './routes/_authenticated/swap'
 import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRiskRouteImport } from './routes/_authenticated/risk'
 import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
 import { Route as AuthenticatedReferralRouteImport } from './routes/_authenticated/referral'
@@ -41,7 +37,10 @@ import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPnlRouteImport } from './routes/_authenticated/pnl'
 import { Route as AuthenticatedOpportunitiesRouteImport } from './routes/_authenticated/opportunities'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedLoopRouteImport } from './routes/_authenticated/loop'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
+import { Route as AuthenticatedInvestigateRouteImport } from './routes/_authenticated/investigate'
+import { Route as AuthenticatedEchoRouteImport } from './routes/_authenticated/echo'
 import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
 import { Route as AuthenticatedDailyLoopRouteImport } from './routes/_authenticated/daily-loop'
 import { Route as AuthenticatedChartsRouteImport } from './routes/_authenticated/charts'
@@ -72,19 +71,14 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const V2RouteRoute = V2RouteRouteImport.update({
-  id: '/v2',
-  path: '/v2',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const V2IndexRoute = V2IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => V2RouteRoute,
+  id: '/v2/',
+  path: '/v2/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
@@ -92,38 +86,18 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const V2OnboardingRoute = V2OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => V2RouteRoute,
+  id: '/v2/onboarding',
+  path: '/v2/onboarding',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const V2DiscoverRoute = V2DiscoverRouteImport.update({
-  id: '/discover',
-  path: '/discover',
-  getParentRoute: () => V2RouteRoute,
+  id: '/v2/discover',
+  path: '/v2/discover',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWhaleRoute = AuthenticatedWhaleRouteImport.update({
   id: '/whale',
   path: '/whale',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedInvestigateRoute = AuthenticatedInvestigateRouteImport.update({
-  id: '/investigate',
-  path: '/investigate',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedRiskRoute = AuthenticatedRiskRouteImport.update({
-  id: '/risk',
-  path: '/risk',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedEchoRoute = AuthenticatedEchoRouteImport.update({
-  id: '/echo',
-  path: '/echo',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedLoopRoute = AuthenticatedLoopRouteImport.update({
-  id: '/loop',
-  path: '/loop',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedWalletWeb3Route = AuthenticatedWalletWeb3RouteImport.update({
@@ -164,6 +138,11 @@ const AuthenticatedSignalsRoute = AuthenticatedSignalsRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRiskRoute = AuthenticatedRiskRouteImport.update({
+  id: '/risk',
+  path: '/risk',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
@@ -229,9 +208,25 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLoopRoute = AuthenticatedLoopRouteImport.update({
+  id: '/loop',
+  path: '/loop',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
   id: '/journal',
   path: '/journal',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedInvestigateRoute =
+  AuthenticatedInvestigateRouteImport.update({
+    id: '/investigate',
+    path: '/investigate',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEchoRoute = AuthenticatedEchoRouteImport.update({
+  id: '/echo',
+  path: '/echo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDiscoverRoute = AuthenticatedDiscoverRouteImport.update({
@@ -271,9 +266,9 @@ const AuthenticatedShieldIndexRoute =
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const V2CaseCaseIdRoute = V2CaseCaseIdRouteImport.update({
-  id: '/case/$caseId',
-  path: '/case/$caseId',
-  getParentRoute: () => V2RouteRoute,
+  id: '/v2/case/$caseId',
+  path: '/v2/case/$caseId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedTokenSymbolRoute =
   AuthenticatedTokenSymbolRouteImport.update({
@@ -367,7 +362,6 @@ const AuthenticatedHuntTokenAddressRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
-  '/v2': typeof V2RouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/alpha': typeof AuthenticatedAlphaRoute
   '/analyze': typeof AuthenticatedAnalyzeRoute
@@ -375,18 +369,15 @@ export interface FileRoutesByFullPath {
   '/charts': typeof AuthenticatedChartsRoute
   '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
+  '/echo': typeof AuthenticatedEchoRoute
   '/investigate': typeof AuthenticatedInvestigateRoute
-  '/risk': typeof AuthenticatedRiskRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/loop': typeof AuthenticatedLoopRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
   '/pnl': typeof AuthenticatedPnlRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
-'/risk': typeof AuthenticatedRiskRoute
-  '/echo': typeof AuthenticatedEchoRoute
-  '/loop': typeof AuthenticatedLoopRoute
-'/predictions': typeof AuthenticatedPredictionsRoute
+  '/predictions': typeof AuthenticatedPredictionsRoute
   '/premium': typeof AuthenticatedPremiumRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/pulse': typeof AuthenticatedPulseRoute
@@ -394,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/referral': typeof AuthenticatedReferralRoute
   '/review': typeof AuthenticatedReviewRoute
   '/rewards': typeof AuthenticatedRewardsRoute
+  '/risk': typeof AuthenticatedRiskRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/signals': typeof AuthenticatedSignalsRoute
   '/swap': typeof AuthenticatedSwapRoute
@@ -433,8 +425,8 @@ export interface FileRoutesByTo {
   '/charts': typeof AuthenticatedChartsRoute
   '/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/discover': typeof AuthenticatedDiscoverRoute
+  '/echo': typeof AuthenticatedEchoRoute
   '/investigate': typeof AuthenticatedInvestigateRoute
-  '/risk': typeof AuthenticatedRiskRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/loop': typeof AuthenticatedLoopRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -449,6 +441,7 @@ export interface FileRoutesByTo {
   '/referral': typeof AuthenticatedReferralRoute
   '/review': typeof AuthenticatedReviewRoute
   '/rewards': typeof AuthenticatedRewardsRoute
+  '/risk': typeof AuthenticatedRiskRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/signals': typeof AuthenticatedSignalsRoute
   '/swap': typeof AuthenticatedSwapRoute
@@ -484,7 +477,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/v2': typeof V2RouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/alpha': typeof AuthenticatedAlphaRoute
   '/_authenticated/analyze': typeof AuthenticatedAnalyzeRoute
@@ -492,6 +484,8 @@ export interface FileRoutesById {
   '/_authenticated/charts': typeof AuthenticatedChartsRoute
   '/_authenticated/daily-loop': typeof AuthenticatedDailyLoopRoute
   '/_authenticated/discover': typeof AuthenticatedDiscoverRoute
+  '/_authenticated/echo': typeof AuthenticatedEchoRoute
+  '/_authenticated/investigate': typeof AuthenticatedInvestigateRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/loop': typeof AuthenticatedLoopRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -502,12 +496,11 @@ export interface FileRoutesById {
   '/_authenticated/premium': typeof AuthenticatedPremiumRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/pulse': typeof AuthenticatedPulseRoute
-'/_authenticated/risk': typeof AuthenticatedRiskRoute
-  '/_authenticated/echo': typeof AuthenticatedEchoRoute
-'/_authenticated/radar': typeof AuthenticatedRadarRoute
+  '/_authenticated/radar': typeof AuthenticatedRadarRoute
   '/_authenticated/referral': typeof AuthenticatedReferralRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/rewards': typeof AuthenticatedRewardsRoute
+  '/_authenticated/risk': typeof AuthenticatedRiskRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/signals': typeof AuthenticatedSignalsRoute
   '/_authenticated/swap': typeof AuthenticatedSwapRoute
@@ -544,7 +537,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/v2'
     | '/auth'
     | '/alpha'
     | '/analyze'
@@ -553,6 +545,7 @@ export interface FileRouteTypes {
     | '/daily-loop'
     | '/discover'
     | '/echo'
+    | '/investigate'
     | '/journal'
     | '/loop'
     | '/notifications'
@@ -567,6 +560,7 @@ export interface FileRouteTypes {
     | '/referral'
     | '/review'
     | '/rewards'
+    | '/risk'
     | '/settings'
     | '/signals'
     | '/swap'
@@ -607,6 +601,7 @@ export interface FileRouteTypes {
     | '/daily-loop'
     | '/discover'
     | '/echo'
+    | '/investigate'
     | '/journal'
     | '/loop'
     | '/notifications'
@@ -621,6 +616,7 @@ export interface FileRouteTypes {
     | '/referral'
     | '/review'
     | '/rewards'
+    | '/risk'
     | '/settings'
     | '/signals'
     | '/swap'
@@ -655,7 +651,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_authenticated'
-    | '/v2'
     | '/auth'
     | '/_authenticated/alpha'
     | '/_authenticated/analyze'
@@ -663,6 +658,8 @@ export interface FileRouteTypes {
     | '/_authenticated/charts'
     | '/_authenticated/daily-loop'
     | '/_authenticated/discover'
+    | '/_authenticated/echo'
+    | '/_authenticated/investigate'
     | '/_authenticated/journal'
     | '/_authenticated/loop'
     | '/_authenticated/notifications'
@@ -677,6 +674,7 @@ export interface FileRouteTypes {
     | '/_authenticated/referral'
     | '/_authenticated/review'
     | '/_authenticated/rewards'
+    | '/_authenticated/risk'
     | '/_authenticated/settings'
     | '/_authenticated/signals'
     | '/_authenticated/swap'
@@ -712,8 +710,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  V2RouteRoute: typeof V2RouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  V2DiscoverRoute: typeof V2DiscoverRoute
+  V2OnboardingRoute: typeof V2OnboardingRoute
+  V2IndexRoute: typeof V2IndexRoute
+  V2CaseCaseIdRoute: typeof V2CaseCaseIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -725,13 +726,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/v2': {
-      id: '/v2'
-      path: '/v2'
-      fullPath: '/v2'
-      preLoaderRoute: typeof V2RouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -741,10 +735,10 @@ declare module '@tanstack/react-router' {
     }
     '/v2/': {
       id: '/v2/'
-      path: '/'
+      path: '/v2'
       fullPath: '/v2/'
       preLoaderRoute: typeof V2IndexRouteImport
-      parentRoute: typeof V2RouteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
       id: '/_authenticated/'
@@ -755,17 +749,17 @@ declare module '@tanstack/react-router' {
     }
     '/v2/onboarding': {
       id: '/v2/onboarding'
-      path: '/onboarding'
+      path: '/v2/onboarding'
       fullPath: '/v2/onboarding'
       preLoaderRoute: typeof V2OnboardingRouteImport
-      parentRoute: typeof V2RouteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/v2/discover': {
       id: '/v2/discover'
-      path: '/discover'
+      path: '/v2/discover'
       fullPath: '/v2/discover'
       preLoaderRoute: typeof V2DiscoverRouteImport
-      parentRoute: typeof V2RouteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/whale': {
       id: '/_authenticated/whale'
@@ -828,6 +822,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/risk': {
+      id: '/_authenticated/risk'
+      path: '/risk'
+      fullPath: '/risk'
+      preLoaderRoute: typeof AuthenticatedRiskRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rewards': {
@@ -900,21 +901,7 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPnlRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-'/_authenticated/risk': {
-      id: '/_authenticated/risk'
-      path: '/risk'
-      fullPath: '/risk'
-      preLoaderRoute: typeof AuthenticatedRiskRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/echo': {
-      id: '/_authenticated/echo'
-      path: '/echo'
-      fullPath: '/echo'
-      preLoaderRoute: typeof AuthenticatedEchoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-'/_authenticated/opportunities': {
+    '/_authenticated/opportunities': {
       id: '/_authenticated/opportunities'
       path: '/opportunities'
       fullPath: '/opportunities'
@@ -942,11 +929,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJournalRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/discover': {
-      id: '/_authenticated/discover'
-      path: '/discover'
-      fullPath: '/discover'
-      preLoaderRoute: typeof AuthenticatedDiscoverRouteImport
+    '/_authenticated/investigate': {
+      id: '/_authenticated/investigate'
+      path: '/investigate'
+      fullPath: '/investigate'
+      preLoaderRoute: typeof AuthenticatedInvestigateRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/echo': {
@@ -956,18 +943,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEchoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/investigate': {
-      id: '/_authenticated/investigate'
-      path: '/investigate'
-      fullPath: '/investigate'
-      preLoaderRoute: typeof AuthenticatedInvestigateRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/risk': {
-      id: '/_authenticated/risk'
-      path: '/risk'
-      fullPath: '/risk'
-      preLoaderRoute: typeof AuthenticatedRiskRouteImport
+    '/_authenticated/discover': {
+      id: '/_authenticated/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof AuthenticatedDiscoverRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/daily-loop': {
@@ -1014,10 +994,10 @@ declare module '@tanstack/react-router' {
     }
     '/v2/case/$caseId': {
       id: '/v2/case/$caseId'
-      path: '/case/$caseId'
+      path: '/v2/case/$caseId'
       fullPath: '/v2/case/$caseId'
       preLoaderRoute: typeof V2CaseCaseIdRouteImport
-      parentRoute: typeof V2RouteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/token/$symbol': {
       id: '/_authenticated/token/$symbol'
@@ -1141,11 +1121,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChartsRoute: typeof AuthenticatedChartsRoute
   AuthenticatedDailyLoopRoute: typeof AuthenticatedDailyLoopRoute
   AuthenticatedDiscoverRoute: typeof AuthenticatedDiscoverRoute
-  AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
-  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
-AuthenticatedRiskRoute: typeof AuthenticatedRiskRoute
   AuthenticatedEchoRoute: typeof AuthenticatedEchoRoute
-AuthenticatedOpportunitiesRoute: typeof AuthenticatedOpportunitiesRoute
+  AuthenticatedInvestigateRoute: typeof AuthenticatedInvestigateRoute
+  AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
+  AuthenticatedLoopRoute: typeof AuthenticatedLoopRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedOpportunitiesRoute: typeof AuthenticatedOpportunitiesRoute
   AuthenticatedPnlRoute: typeof AuthenticatedPnlRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
   AuthenticatedPredictionsRoute: typeof AuthenticatedPredictionsRoute
@@ -1156,6 +1137,7 @@ AuthenticatedOpportunitiesRoute: typeof AuthenticatedOpportunitiesRoute
   AuthenticatedReferralRoute: typeof AuthenticatedReferralRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedRewardsRoute: typeof AuthenticatedRewardsRoute
+  AuthenticatedRiskRoute: typeof AuthenticatedRiskRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRoute
   AuthenticatedSwapRoute: typeof AuthenticatedSwapRoute
@@ -1189,7 +1171,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChartsRoute: AuthenticatedChartsRoute,
   AuthenticatedDailyLoopRoute: AuthenticatedDailyLoopRoute,
   AuthenticatedDiscoverRoute: AuthenticatedDiscoverRoute,
+  AuthenticatedEchoRoute: AuthenticatedEchoRoute,
+  AuthenticatedInvestigateRoute: AuthenticatedInvestigateRoute,
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
+  AuthenticatedLoopRoute: AuthenticatedLoopRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOpportunitiesRoute: AuthenticatedOpportunitiesRoute,
   AuthenticatedPnlRoute: AuthenticatedPnlRoute,
@@ -1197,13 +1182,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPredictionsRoute: AuthenticatedPredictionsRoute,
   AuthenticatedPremiumRoute: AuthenticatedPremiumRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
-AuthenticatedRiskRoute: AuthenticatedRiskRoute,
-  AuthenticatedEchoRoute: AuthenticatedEchoRoute,
-AuthenticatedPulseRoute: AuthenticatedPulseRoute,
+  AuthenticatedPulseRoute: AuthenticatedPulseRoute,
   AuthenticatedRadarRoute: AuthenticatedRadarRoute,
   AuthenticatedReferralRoute: AuthenticatedReferralRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedRewardsRoute: AuthenticatedRewardsRoute,
+  AuthenticatedRiskRoute: AuthenticatedRiskRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSignalsRoute: AuthenticatedSignalsRoute,
   AuthenticatedSwapRoute: AuthenticatedSwapRoute,
@@ -1249,27 +1233,13 @@ const V2CaseCaseIdRouteWithChildren = V2CaseCaseIdRoute._addFileChildren(
   V2CaseCaseIdRouteChildren,
 )
 
-interface V2RouteRouteChildren {
-  V2DiscoverRoute: typeof V2DiscoverRoute
-  V2OnboardingRoute: typeof V2OnboardingRoute
-  V2IndexRoute: typeof V2IndexRoute
-  V2CaseCaseIdRoute: typeof V2CaseCaseIdRouteWithChildren
-}
-
-const V2RouteRouteChildren: V2RouteRouteChildren = {
+const rootRouteChildren: RootRouteChildren = {
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   V2DiscoverRoute: V2DiscoverRoute,
   V2OnboardingRoute: V2OnboardingRoute,
   V2IndexRoute: V2IndexRoute,
   V2CaseCaseIdRoute: V2CaseCaseIdRouteWithChildren,
-}
-
-const V2RouteRouteWithChildren =
-  V2RouteRoute._addFileChildren(V2RouteRouteChildren)
-
-const rootRouteChildren: RootRouteChildren = {
-  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  V2RouteRoute: V2RouteRouteWithChildren,
-  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
