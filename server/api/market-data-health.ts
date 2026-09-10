@@ -18,32 +18,55 @@ interface ProviderHealth {
   note: string;
 }
 
-export default defineEventHandler(async (): Promise<{ providers: ProviderHealth[]; checkedAt: string }> => {
-  const results = await Promise.allSettled([
-    checkBirdeye(),
-    checkDexScreener(),
-    checkBinanceTicker(),
-  ]);
+export default defineEventHandler(
+  async (): Promise<{ providers: ProviderHealth[]; checkedAt: string }> => {
+    const results = await Promise.allSettled([
+      checkBirdeye(),
+      checkDexScreener(),
+      checkBinanceTicker(),
+    ]);
 
-  const providers: ProviderHealth[] = [];
-  const [birdeyeResult, dexscreenerResult, binanceResult] = results;
+    const providers: ProviderHealth[] = [];
+    const [birdeyeResult, dexscreenerResult, binanceResult] = results;
 
-  if (birdeyeResult.status === "fulfilled") providers.push(birdeyeResult.value);
-  else providers.push({ name: "Birdeye", status: "down", latencyMs: null, error: "Request failed", note: "Set BIRDEYE_API_KEY for richer data" });
+    if (birdeyeResult.status === "fulfilled") providers.push(birdeyeResult.value);
+    else
+      providers.push({
+        name: "Birdeye",
+        status: "down",
+        latencyMs: null,
+        error: "Request failed",
+        note: "Set BIRDEYE_API_KEY for richer data",
+      });
 
-  if (dexscreenerResult.status === "fulfilled") providers.push(dexscreenerResult.value);
-  else providers.push({ name: "DexScreener", status: "down", latencyMs: null, error: "Request failed", note: "Free, no key" });
+    if (dexscreenerResult.status === "fulfilled") providers.push(dexscreenerResult.value);
+    else
+      providers.push({
+        name: "DexScreener",
+        status: "down",
+        latencyMs: null,
+        error: "Request failed",
+        note: "Free, no key",
+      });
 
-  if (binanceResult.status === "fulfilled") providers.push(binanceResult.value);
-  else providers.push({ name: "Binance", status: "down", latencyMs: null, error: "Request failed", note: "Already in /api/shield-health too" });
+    if (binanceResult.status === "fulfilled") providers.push(binanceResult.value);
+    else
+      providers.push({
+        name: "Binance",
+        status: "down",
+        latencyMs: null,
+        error: "Request failed",
+        note: "Already in /api/shield-health too",
+      });
 
-  const anyDown = providers.some((p) => p.status === "down");
-  if (anyDown) {
-    throw createError({ statusCode: 503, message: "One or more market data providers are down" });
-  }
+    const anyDown = providers.some((p) => p.status === "down");
+    if (anyDown) {
+      throw createError({ statusCode: 503, message: "One or more market data providers are down" });
+    }
 
-  return { providers, checkedAt: new Date().toISOString() };
-});
+    return { providers, checkedAt: new Date().toISOString() };
+  },
+);
 
 // ── Individual provider checks ─────────────────────────────────────────────────
 
@@ -62,22 +85,37 @@ async function checkBirdeye(): Promise<ProviderHealth> {
   const start = Date.now();
   try {
     // Test Birdeye with a public endpoint
-    const res = await fetch("https://public-api.birdeye.so/defi/tokenlist?sort_by=v24hChangePercent&sort_type=desc&offset=0&limit=1", {
-      headers: { "X-API-KEY": apiKey, Accept: "application/json" },
-      signal: AbortSignal.timeout(8_000),
-    });
+    const res = await fetch(
+      "https://public-api.birdeye.so/defi/tokenlist?sort_by=v24hChangePercent&sort_type=desc&offset=0&limit=1",
+      {
+        headers: { "X-API-KEY": apiKey, Accept: "application/json" },
+        signal: AbortSignal.timeout(8_000),
+      },
+    );
     const latencyMs = Date.now() - start;
 
     if (!res.ok) {
-      return { name: "Birdeye", status: "degraded", latencyMs, error: `HTTP ${res.status}`, note: "Token overview + market data" };
+      return {
+        name: "Birdeye",
+        status: "degraded",
+        latencyMs,
+        error: `HTTP ${res.status}`,
+        note: "Token overview + market data",
+      };
     }
 
-    const data = await res.json() as { data?: unknown };
+    const data = (await res.json()) as { data?: unknown };
     if (!data.data) {
       return { name: "Birdeye", status: "degraded", latencyMs, error: "Empty response", note: "" };
     }
 
-    return { name: "Birdeye", status: "ok", latencyMs, error: null, note: "Hunt domain market data" };
+    return {
+      name: "Birdeye",
+      status: "ok",
+      latencyMs,
+      error: null,
+      note: "Hunt domain market data",
+    };
   } catch (err) {
     const latencyMs = Date.now() - start;
     return {
@@ -99,15 +137,33 @@ async function checkDexScreener(): Promise<ProviderHealth> {
     const latencyMs = Date.now() - start;
 
     if (!res.ok) {
-      return { name: "DexScreener", status: "degraded", latencyMs, error: `HTTP ${res.status}`, note: "Free, no key" };
+      return {
+        name: "DexScreener",
+        status: "degraded",
+        latencyMs,
+        error: `HTTP ${res.status}`,
+        note: "Free, no key",
+      };
     }
 
     const data = await res.json();
     if (!data.pairs) {
-      return { name: "DexScreener", status: "degraded", latencyMs, error: "Empty response", note: "" };
+      return {
+        name: "DexScreener",
+        status: "degraded",
+        latencyMs,
+        error: "Empty response",
+        note: "",
+      };
     }
 
-    return { name: "DexScreener", status: "ok", latencyMs, error: null, note: "Free, no key — Hunt fallback" };
+    return {
+      name: "DexScreener",
+      status: "ok",
+      latencyMs,
+      error: null,
+      note: "Free, no key — Hunt fallback",
+    };
   } catch (err) {
     const latencyMs = Date.now() - start;
     return {
@@ -129,15 +185,33 @@ async function checkBinanceTicker(): Promise<ProviderHealth> {
     const latencyMs = Date.now() - start;
 
     if (!res.ok) {
-      return { name: "Binance Ticker", status: "degraded", latencyMs, error: `HTTP ${res.status}`, note: "" };
+      return {
+        name: "Binance Ticker",
+        status: "degraded",
+        latencyMs,
+        error: `HTTP ${res.status}`,
+        note: "",
+      };
     }
 
     const data = await res.json();
     if (!data.symbol) {
-      return { name: "Binance Ticker", status: "degraded", latencyMs, error: "Empty response", note: "" };
+      return {
+        name: "Binance Ticker",
+        status: "degraded",
+        latencyMs,
+        error: "Empty response",
+        note: "",
+      };
     }
 
-    return { name: "Binance Ticker", status: "ok", latencyMs, error: null, note: "Public — DR.DEX candlestick fallback" };
+    return {
+      name: "Binance Ticker",
+      status: "ok",
+      latencyMs,
+      error: null,
+      note: "Public — DR.DEX candlestick fallback",
+    };
   } catch (err) {
     const latencyMs = Date.now() - start;
     return {

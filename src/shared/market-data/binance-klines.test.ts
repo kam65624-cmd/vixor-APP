@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { getKlines, getRecentBars, getMultiTimeframeBars, resolveSymbol, BINANCE_REST_URL } from "./binance-klines";
+import {
+  getKlines,
+  getRecentBars,
+  getMultiTimeframeBars,
+  resolveSymbol,
+  BINANCE_REST_URL,
+} from "./binance-klines";
 
 /**
  * Unit tests for the Binance klines client.
@@ -8,17 +14,17 @@ import { getKlines, getRecentBars, getMultiTimeframeBars, resolveSymbol, BINANCE
 
 const sampleKline = [
   1700000000000, // openTime
-  "30000.00",    // open
-  "30500.00",    // high
-  "29900.00",    // low
-  "30250.50",    // close
-  "123.45",      // volume
+  "30000.00", // open
+  "30500.00", // high
+  "29900.00", // low
+  "30250.50", // close
+  "123.45", // volume
   1700003599999, // closeTime
-  "3700000.00",  // quoteVolume
-  100,           // numTrades
-  "60.00",       // taker buy base
-  "1800000.00",  // taker buy quote
-  "0",           // ignore
+  "3700000.00", // quoteVolume
+  100, // numTrades
+  "60.00", // taker buy base
+  "1800000.00", // taker buy quote
+  "0", // ignore
 ];
 
 const sampleResponse = [sampleKline, sampleKline, sampleKline];
