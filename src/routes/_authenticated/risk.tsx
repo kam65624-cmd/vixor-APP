@@ -41,6 +41,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { assessToken, logPaperDecision } from "@/domains/dr-dex";
 import type { GovernorAction, PaperDecision, RiskAssessment, RiskVerdict } from "@/domains/dr-dex";
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
+import { CharacterHero } from "@/components/characters/CharacterHero";
 
 // ── Route Definition ────────────────────────────────────────────────────────
 
@@ -807,6 +808,16 @@ function DexRiskPage() {
             gap: 20,
           }}
         >
+          {/* ── Character Hero (DR.DEX) ─────────────────────────────────── */}
+          <CharacterHero
+            character="dex"
+            title="DR.DEX"
+            subtitle="The Risk Surgeon — paper-only decisions, governor-enforced"
+            description="Every move passes through RiskGovernor. PROCEED, REDUCE_SIZE, WAIT, or BLOCK — never a coin flip, never a real trade."
+            live
+            compact
+          />
+
           {/* ── 1. Search Bar ──────────────────────────────────────────── */}
           <div
             style={{
