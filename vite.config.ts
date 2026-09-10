@@ -62,6 +62,7 @@ export default defineConfig({
         { route: "/api/sol-price", handler: "./server/api/sol-price.ts" },
         { route: "/api/shield-health", handler: "./server/api/shield-health.ts" },
         { route: "/api/market-data-health", handler: "./server/api/market-data-health.ts" },
+        { route: "/api/echo-stats", handler: "./server/api/echo-stats.ts" },
         { route: "/api/market-overview", handler: "./server/api/market-overview.ts" },
         { route: "/api/wallet/connect", handler: "./server/api/wallet/connect.ts" },
         { route: "/api/wallet/session", handler: "./server/api/wallet/session.ts" },

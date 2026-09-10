@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  detectPatternsFromBars,
-  formatPatternForDisplay,
-} from "./pattern-detector";
+import { detectPatternsFromBars, formatPatternForDisplay } from "./pattern-detector";
 import type { OHLCVBar } from "@/domains/analysis/engine/core/types";
 
 /**
