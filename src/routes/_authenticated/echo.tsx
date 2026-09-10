@@ -39,6 +39,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getEchoOverview } from "@/domains/echo";
 import type { EchoOverview, TimelineEntry, WeeklySummary } from "@/domains/echo";
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
+import { EchoStatsPanel } from "@/components/echo/EchoStatsPanel";
 
 // ── Route Definition ────────────────────────────────────────────────────────
 
@@ -638,6 +639,9 @@ function EchoPage() {
               Refresh
             </button>
           </div>
+
+          {/* ── Aggregate stats panel (from /api/echo-stats) ────────── */}
+          <EchoStatsPanel />
 
           {/* ── Error state ───────────────────────────────────────────── */}
           {isError && (
