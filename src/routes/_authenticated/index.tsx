@@ -9,6 +9,7 @@ import { getMe } from "@/domains/user/functions";
 import { useLivePrices } from "@/shared/market-data";
 import { LiveDot } from "@/components/vixor/LiveDot";
 import { MoxiCharacter3D } from "@/components/vixor/MoxiCharacter3D";
+import { CharacterGuide } from "@/components/characters/CharacterGuide";
 import { Card, CardGradientOverlay } from "@/components/ui/card";
 import { MOXI_QUICK_ACTIONS } from "@/domains/moxi/types";
 import { AnimatedNumber } from "@/components/vixor/animations/AnimatedNumber";
@@ -554,6 +555,13 @@ function HomePageV3() {
             })}
           </div>
         </div>
+
+        {/* ── 2b. MOXI Guide — unified character card (v2 P1 wiring) ──── */}
+        <CharacterGuide
+          character="moxi"
+          compact
+          action={{ label: "Open MOXI", onClick: () => navigate({ to: "/alpha" as any }) }}
+        />
 
         {/* ── 3. Live Market Ticker ──────────────────────────────────────── */}
         <MarketTicker data={marketData} isLoading={marketQuery.isLoading} />

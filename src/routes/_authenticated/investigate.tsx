@@ -36,7 +36,7 @@ import type {
   EvidenceValue,
 } from "@/domains/mr-vigo";
 import { PageLayout, PageScrollArea, PageBadge } from "@/components/vixor/PageLayout";
-import { CharacterHero } from "@/components/characters/CharacterHero";
+import { CharacterGuide } from "@/components/characters/CharacterGuide";
 
 // ── Route Definition ────────────────────────────────────────────────────────
 
@@ -441,15 +441,8 @@ function VigoInvestigationPage() {
             gap: 20,
           }}
         >
-          {/* ── Character Hero (MR.VIGO) ─────────────────────────────────── */}
-          <CharacterHero
-            character="vigo"
-            title="MR.VIGO"
-            subtitle="The Investigator — evidence-first, unknowns surfaced"
-            description="Every claim is sourced. Every unknown is named. No anonymous facts, no inferred trust."
-            live
-            compact
-          />
+          {/* ── Character guide — unified identity (v2 P1) ─────────────── */}
+          <CharacterGuide character="mrVigo" />
 
           {/* ── 1. Search Bar ──────────────────────────────────────────────── */}
           <div

@@ -39,8 +39,8 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getEchoOverview } from "@/domains/echo";
 import type { EchoOverview, TimelineEntry, WeeklySummary } from "@/domains/echo";
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
+import { CharacterGuide } from "@/components/characters/CharacterGuide";
 import { EchoStatsPanel } from "@/components/echo/EchoStatsPanel";
-import { CharacterHero } from "@/components/characters/CharacterHero";
 
 // ── Route Definition ────────────────────────────────────────────────────────
 
@@ -641,15 +641,8 @@ function EchoPage() {
             </button>
           </div>
 
-          {/* ── Aggregate stats panel (from /api/echo-stats) ────────── */}
-          <CharacterHero
-            character="echo"
-            title="ECHO"
-            subtitle="The Tracker — outcome learning, decision memory"
-            description="Every decision recorded, every outcome measured. Read-only timeline of what you did and how it played out."
-            live
-            compact
-          />
+          {/* ── Character guide — unified identity (v2 P1) ─────────────── */}
+          <CharacterGuide character="echo" />
           <EchoStatsPanel />
 
           {/* ── Error state ───────────────────────────────────────────── */}
