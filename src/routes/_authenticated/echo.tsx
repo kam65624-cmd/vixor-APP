@@ -41,6 +41,7 @@ import type { EchoOverview, TimelineEntry, WeeklySummary } from "@/domains/echo"
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
 import { CharacterGuide } from "@/components/characters/CharacterGuide";
 import { EchoStatsPanel } from "@/components/echo/EchoStatsPanel";
+import { ParticleNetwork } from "@/components/vixor/fx/ParticleNetwork";
 
 // ── Route Definition ────────────────────────────────────────────────────────
 
@@ -642,7 +643,13 @@ function EchoPage() {
           </div>
 
           {/* ── Character guide — unified identity (v2 P1) ─────────────── */}
-          <CharacterGuide character="echo" />
+          {/* v2 P2: outcome-web ambient behind ECHO's guide */}
+          <div className="relative overflow-hidden rounded-2xl">
+            <ParticleNetwork colorVar="--char-echo" density={0.7} opacity={0.4} />
+            <div className="relative">
+              <CharacterGuide character="echo" />
+            </div>
+          </div>
           <EchoStatsPanel />
 
           {/* ── Error state ───────────────────────────────────────────── */}

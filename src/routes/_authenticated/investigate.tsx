@@ -37,6 +37,7 @@ import type {
 } from "@/domains/mr-vigo";
 import { PageLayout, PageScrollArea, PageBadge } from "@/components/vixor/PageLayout";
 import { CharacterGuide } from "@/components/characters/CharacterGuide";
+import { ParticleNetwork } from "@/components/vixor/fx/ParticleNetwork";
 
 // ── Route Definition ────────────────────────────────────────────────────────
 
@@ -442,7 +443,13 @@ function VigoInvestigationPage() {
           }}
         >
           {/* ── Character guide — unified identity (v2 P1) ─────────────── */}
-          <CharacterGuide character="mrVigo" />
+          {/* v2 P2: evidence-web ambient behind MR.VIGO's guide */}
+          <div className="relative overflow-hidden rounded-2xl">
+            <ParticleNetwork colorVar="--char-vigo" density={0.7} opacity={0.4} />
+            <div className="relative">
+              <CharacterGuide character="mrVigo" />
+            </div>
+          </div>
 
           {/* ── 1. Search Bar ──────────────────────────────────────────────── */}
           <div
