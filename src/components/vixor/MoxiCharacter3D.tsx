@@ -170,6 +170,29 @@ function MoxiCharacterStyles({ c1, c2 }: { c1: string; c2: string }) {
   pointer-events: auto;
 }
 
+/* ═══ RTL Mirror (v2 P1) ═══
+   <html dir="rtl"> gets the .rtl class from the I18nProvider — MOXI floats
+   on the LEFT and the bubble/tail/slide direction mirror accordingly. */
+.rtl .moxi-3d-wrapper {
+  right: auto;
+  left: 8px;
+}
+.rtl .moxi-hidden {
+  transform: translateX(-30px) scale(0.8);
+}
+.rtl .moxi-speech-bubble {
+  right: auto;
+  left: -4px;
+  border-radius: 12px 12px 12px 4px;
+}
+.rtl .moxi-bubble-tail {
+  right: auto;
+  left: 16px;
+  border-right: none;
+  border-left: 1px solid color-mix(in srgb, ${c1} 25%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, ${c1} 25%, transparent);
+}
+
 /* ═══ Speech Bubble ═══ */
 .moxi-speech-bubble {
   position: absolute;

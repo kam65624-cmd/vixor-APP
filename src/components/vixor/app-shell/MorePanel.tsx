@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 
+import { LanguageToggle } from "@/components/vixor/i18n/LanguageToggle";
 import {
   RadarIcon,
   PulseIcon,
@@ -201,6 +202,24 @@ export function MorePanel({ currentPath, onClose }: MorePanelProps) {
               <line x1="6" x2="18" y1="6" y2="18" />
             </svg>
           </motion.button>
+        </div>
+
+        {/* Language — v2 P1: one-tap EN/العربية switch (persists + RTL) */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 16px",
+            borderBottom: "1px solid var(--color-border)",
+          }}
+        >
+          <span
+            style={{ fontSize: "12px", fontWeight: 600, color: "var(--color-muted-foreground)" }}
+          >
+            Language
+          </span>
+          <LanguageToggle />
         </div>
 
         {/* Categories */}

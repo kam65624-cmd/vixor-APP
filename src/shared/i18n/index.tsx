@@ -128,6 +128,15 @@ export function useI18n(): I18nContextType {
   return ctx;
 }
 
+/**
+ * Non-throwing variant of useI18n for components that must also work outside
+ * an I18nProvider (unit tests, isolated renders). Returns null when no
+ * provider is mounted — callers fall back to their canonical English copy.
+ */
+export function useI18nSafe(): I18nContextType | null {
+  return useContext(I18nContext);
+}
+
 // Re-export types and utilities for convenience
 export type { Language } from "./translations";
 export { LANGUAGES, getLanguageConfig } from "./translations";

@@ -618,6 +618,49 @@ const ar: Translations = {
     invalidCode: "كود غير صالح",
     alreadyApplied: "تم تطبيق إحالة بالفعل",
   },
+
+  // ═══ الشخصيات (نظام شخصيات v2) ═══
+  // أسماء الشخصيات تُترك بحروفها اللاتينية (علامات تجارية) — تُترجم الأدوار والنصوص.
+  characters: {
+    roles: {
+      main_guide: "الاستكشاف",
+      investigator: "التحقيق",
+      risk_analyst: "تقييم المخاطر",
+      memory_learning: "التتبع والتعلّم",
+    },
+    moxi: {
+      tagline: "يكتشف الفرصة",
+      description:
+        "يمسح السوق ويُبرز العملات التي تطابق معاييرك — الزخم، حجم التداول، نشاط الحيتان، أو فلاتر مخصصة.",
+      surfaceLabel: "افتح MOXI",
+    },
+    mrVigo: {
+      tagline: "يجمع الأدلة",
+      description:
+        "يجمع إشارات الأمان من Shield وحركات الحيتان من Hunt وسياق السوق — ثم يبني ملف أدلة منظّمًا.",
+      surfaceLabel: "افتح MR.VIGO",
+    },
+    drDex: {
+      tagline: "يحدّد حجم المخاطرة",
+      description:
+        "شغّل محرك RiskGovernor على ملف الأدلة. يُخرج حجم المركز وأقصى تعرّض وحكمًا واضحًا: تقدّم / انتظر / أوقف.",
+      surfaceLabel: "افتح DR.DEX",
+    },
+    echo: {
+      tagline: "يسجّل النتيجة",
+      description:
+        "يتتبع كل قرار ومبرراته والنتيجة الفعلية. الملخصات الأسبوعية تُظهر ما ينجح وما يحتاج تعديلًا.",
+      surfaceLabel: "افتح ECHO",
+    },
+    guide: {
+      loading: "جارٍ جمع الإشارات…",
+      ready: "الإرشاد جاهز.",
+      working: "جارٍ التنفيذ…",
+      success: "تم التسجيل.",
+      error: "حدث خطأ ما.",
+      ariaLabel: "دليل {name}",
+    },
+  },
 };
 
 export default ar;

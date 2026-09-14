@@ -25,26 +25,22 @@
 //
 // Colors always resolve through the canonical --char-* tokens via
 // @/shared/characters — never pass hex literals to this component.
+//
+// Copy (tagline, description, state messages, actions) resolves through the
+// i18n layer via @/shared/characters-i18n. Outside an I18nProvider (unit
+// tests) it deterministically falls back to the canonical bridge copy.
 // ============================================================================
 
 import { AlertTriangle, CheckCircle2, Loader2, Sparkles, type LucideIcon } from "lucide-react";
 import type { CSSProperties } from "react";
 
 import { characterMonogram, getCharacterPresentation, type CharacterId } from "@/shared/characters";
+import { useCharacterStrings, useGuideStrings } from "@/shared/characters-i18n";
 import { cn } from "@/shared/utils/cn";
 
 export type CharacterGuideState = "idle" | "loading" | "ready" | "working" | "success" | "error";
 
 const BUSY_STATES: ReadonlySet<CharacterGuideState> = new Set(["loading", "working"]);
-
-const DEFAULT_MESSAGES: Record<CharacterGuideState, string | null> = {
-  idle: null, // falls back to the character tagline
-  loading: "Gathering signals…",
-  ready: "Guidance is ready.",
-  working: "Working on it…",
-  success: "Recorded.",
-  error: "Something went wrong.",
-};
 
 const STATE_ICONS: Record<CharacterGuideState, LucideIcon | null> = {
   idle: null,
@@ -89,10 +85,14 @@ export function CharacterGuide({
   style,
 }: CharacterGuideProps) {
   const char = getCharacterPresentation(character);
+  const strings = useCharacterStrings(character);
+  const guide = useGuideStrings();
   const Icon = char.icon;
   const StateIcon = STATE_ICONS[state];
   const busy = BUSY_STATES.has(state);
-  const text = message ?? DEFAULT_MESSAGES[state] ?? char.tagline;
+  // "idle" has no message — the tagline stands in (same contract as P0).
+  const stateMessage = state === "idle" ? undefined : guide[state];
+  const text = message ?? stateMessage ?? strings.tagline;
 
   // In non-compact idle the tagline already appears in the header — rendering
   // the live region too would duplicate copy and double-announce for screen
@@ -115,7 +115,7 @@ export function CharacterGuide({
       data-character={char.id}
       data-state={state}
       aria-busy={busy}
-      aria-label={`${char.displayName} guide`}
+      aria-label={guide.ariaLabel(strings.name)}
       className={cn(
         "rounded-2xl border p-5 transition-colors",
         "focus-within:outline-2 focus-within:outline-offset-2",
@@ -140,13 +140,13 @@ export function CharacterGuide({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold tracking-wide" style={{ color: char.colorVar }}>
-                {char.displayName}
+                {strings.name}
               </span>
               <span
                 className="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
                 style={{ background: char.dimVar, color: char.colorVar }}
               >
-                {char.roleLabel}
+                {strings.role}
               </span>
             </div>
             {!compact && (
@@ -154,7 +154,7 @@ export function CharacterGuide({
                 className="mt-0.5 text-xs font-medium"
                 style={{ color: "var(--color-muted-foreground)" }}
               >
-                {char.tagline}
+                {strings.tagline}
               </p>
             )}
           </div>
@@ -194,7 +194,7 @@ export function CharacterGuide({
           className="mt-2 text-sm leading-relaxed"
           style={{ color: "var(--color-muted-foreground)" }}
         >
-          {char.description}
+          {strings.description}
         </p>
       )}
 
@@ -212,7 +212,7 @@ export function CharacterGuide({
                 border: `1px solid ${char.borderVar}`,
               }}
             >
-              Retry
+              {guide.retry}
             </button>
           )}
           {action && action.href && (

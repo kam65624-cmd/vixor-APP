@@ -10,6 +10,7 @@ import { useLivePrices } from "@/shared/market-data";
 import { LiveDot } from "@/components/vixor/LiveDot";
 import { MoxiCharacter3D } from "@/components/vixor/MoxiCharacter3D";
 import { CharacterGuide } from "@/components/characters/CharacterGuide";
+import { useCharacterStrings } from "@/shared/characters-i18n";
 import { Card, CardGradientOverlay } from "@/components/ui/card";
 import { MOXI_QUICK_ACTIONS } from "@/domains/moxi/types";
 import { AnimatedNumber } from "@/components/vixor/animations/AnimatedNumber";
@@ -408,6 +409,7 @@ function FeatureCard({
 
 function HomePageV3() {
   const navigate = useNavigate();
+  const moxiStrings = useCharacterStrings("moxi");
   const fetchDashboard = useStableServerFn(getDashboardData);
   const fetchMe = useStableServerFn(getMe);
   const fetchMarket = useStableServerFn(getHomeMarketData);
@@ -560,7 +562,10 @@ function HomePageV3() {
         <CharacterGuide
           character="moxi"
           compact
-          action={{ label: "Open MOXI", onClick: () => navigate({ to: "/alpha" as any }) }}
+          action={{
+            label: moxiStrings.surfaceLabel,
+            onClick: () => navigate({ to: "/alpha" as any }),
+          }}
         />
 
         {/* ── 3. Live Market Ticker ──────────────────────────────────────── */}
