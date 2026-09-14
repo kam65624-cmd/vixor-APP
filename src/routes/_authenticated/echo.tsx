@@ -39,8 +39,9 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getEchoOverview } from "@/domains/echo";
 import type { EchoOverview, TimelineEntry, WeeklySummary } from "@/domains/echo";
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
+import { CharacterGuide } from "@/components/characters/CharacterGuide";
 import { EchoStatsPanel } from "@/components/echo/EchoStatsPanel";
-import { CharacterHero } from "@/components/characters/CharacterHero";
+import { ParticleNetwork } from "@/components/vixor/fx/ParticleNetwork";
 
 // ── Route Definition ────────────────────────────────────────────────────────
 
@@ -641,15 +642,14 @@ function EchoPage() {
             </button>
           </div>
 
-          {/* ── Aggregate stats panel (from /api/echo-stats) ────────── */}
-          <CharacterHero
-            character="echo"
-            title="ECHO"
-            subtitle="The Tracker — outcome learning, decision memory"
-            description="Every decision recorded, every outcome measured. Read-only timeline of what you did and how it played out."
-            live
-            compact
-          />
+          {/* ── Character guide — unified identity (v2 P1) ─────────────── */}
+          {/* v2 P2: outcome-web ambient behind ECHO's guide */}
+          <div className="relative overflow-hidden rounded-2xl">
+            <ParticleNetwork colorVar="--char-echo" density={0.7} opacity={0.4} />
+            <div className="relative">
+              <CharacterGuide character="echo" />
+            </div>
+          </div>
           <EchoStatsPanel />
 
           {/* ── Error state ───────────────────────────────────────────── */}

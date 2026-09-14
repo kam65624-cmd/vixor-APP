@@ -9,6 +9,9 @@ import { getMe } from "@/domains/user/functions";
 import { useLivePrices } from "@/shared/market-data";
 import { LiveDot } from "@/components/vixor/LiveDot";
 import { MoxiCharacter3D } from "@/components/vixor/MoxiCharacter3D";
+import { EnergyOrb } from "@/components/vixor/fx/EnergyOrb";
+import { CharacterGuide } from "@/components/characters/CharacterGuide";
+import { useCharacterStrings } from "@/shared/characters-i18n";
 import { Card, CardGradientOverlay } from "@/components/ui/card";
 import { MOXI_QUICK_ACTIONS } from "@/domains/moxi/types";
 import { AnimatedNumber } from "@/components/vixor/animations/AnimatedNumber";
@@ -407,6 +410,7 @@ function FeatureCard({
 
 function HomePageV3() {
   const navigate = useNavigate();
+  const moxiStrings = useCharacterStrings("moxi");
   const fetchDashboard = useStableServerFn(getDashboardData);
   const fetchMe = useStableServerFn(getMe);
   const fetchMarket = useStableServerFn(getHomeMarketData);
@@ -514,6 +518,8 @@ function HomePageV3() {
 
         {/* ── 2. MOXI Hero — AI Input (Compact V3) ─────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl p-4 vx-hero-gradient">
+          {/* v2 P2: ambient AI-core glow behind the hero (decorative, mirrors in RTL) */}
+          <EnergyOrb colorVar="--char-moxi" size={280} opacity={0.45} className="-end-16 -top-20" />
           <div
             className="absolute -right-20 -top-20 w-64 h-64 rounded-full pointer-events-none"
             style={{
@@ -554,6 +560,16 @@ function HomePageV3() {
             })}
           </div>
         </div>
+
+        {/* ── 2b. MOXI Guide — unified character card (v2 P1 wiring) ──── */}
+        <CharacterGuide
+          character="moxi"
+          compact
+          action={{
+            label: moxiStrings.surfaceLabel,
+            onClick: () => navigate({ to: "/alpha" as any }),
+          }}
+        />
 
         {/* ── 3. Live Market Ticker ──────────────────────────────────────── */}
         <MarketTicker data={marketData} isLoading={marketQuery.isLoading} />

@@ -3,29 +3,27 @@ import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 
+import { LanguageToggle } from "@/components/vixor/i18n/LanguageToggle";
 import {
   RadarIcon,
   PulseIcon,
-  CurvesIcon,
   PredictionsIcon,
   DailyLoopIcon,
   StrategyLabIcon,
   VisionIcon,
-  PerpetualsIcon,
   TrackersIcon,
-  ArbitrageIcon,
   PnlIcon,
   JournalIcon,
-  BagsIcon,
   SettingsIcon,
   ProfileIcon,
   PremiumIcon,
   RewardsIcon,
-  BrokersIcon,
   ReferralIcon,
 } from "./icons";
 
-// ── Navigation Data (More Panel — reorganized into 5 smart groups) ──
+// ── Navigation Data (More Panel — reorganized into 4 smart groups) ──
+// v2 cleanup: dead links removed (/curves /perpetuals /arbitrage /bags /brokers)
+// — those surfaces never had routes. Only link to routes that exist.
 
 // "More" panel: organized into categories
 export interface MoreNavItem {
@@ -46,7 +44,6 @@ export const moreNavCategories: MoreNavCategory[] = [
     items: [
       { to: "/radar", label: "Radar", icon: <RadarIcon /> },
       { to: "/pulse", label: "Pulse & Whale", icon: <PulseIcon /> },
-      { to: "/curves", label: "Bonding Curves", icon: <CurvesIcon /> },
       { to: "/predictions", label: "Predictions", icon: <PredictionsIcon /> },
     ],
   },
@@ -57,14 +54,8 @@ export const moreNavCategories: MoreNavCategory[] = [
       { to: "/daily-loop", label: "Daily Loop", icon: <DailyLoopIcon /> },
       { to: "/backtest", label: "Strategy Lab", icon: <StrategyLabIcon /> },
       { to: "/vision", label: "Vision AI", icon: <VisionIcon /> },
-      { to: "/perpetuals", label: "Perpetuals", icon: <PerpetualsIcon /> },
       { to: "/trackers", label: "Trackers", icon: <TrackersIcon /> },
     ],
-  },
-  // ── Trading ──
-  {
-    title: "Trading",
-    items: [{ to: "/arbitrage", label: "Arbitrage", icon: <ArbitrageIcon /> }],
   },
   // ── Performance ──
   {
@@ -72,7 +63,6 @@ export const moreNavCategories: MoreNavCategory[] = [
     items: [
       { to: "/pnl", label: "PnL Tracker", icon: <PnlIcon /> },
       { to: "/journal", label: "Journal", icon: <JournalIcon /> },
-      { to: "/bags", label: "Bags", icon: <BagsIcon /> },
     ],
   },
   // ── Platform ──
@@ -83,7 +73,6 @@ export const moreNavCategories: MoreNavCategory[] = [
       { to: "/profile", label: "Profile", icon: <ProfileIcon /> },
       { to: "/premium", label: "Premium", icon: <PremiumIcon /> },
       { to: "/rewards", label: "Rewards", icon: <RewardsIcon /> },
-      { to: "/brokers", label: "Brokers", icon: <BrokersIcon /> },
       { to: "/referral", label: "Referral", icon: <ReferralIcon /> },
     ],
   },
@@ -213,6 +202,24 @@ export function MorePanel({ currentPath, onClose }: MorePanelProps) {
               <line x1="6" x2="18" y1="6" y2="18" />
             </svg>
           </motion.button>
+        </div>
+
+        {/* Language — v2 P1: one-tap EN/العربية switch (persists + RTL) */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 16px",
+            borderBottom: "1px solid var(--color-border)",
+          }}
+        >
+          <span
+            style={{ fontSize: "12px", fontWeight: 600, color: "var(--color-muted-foreground)" }}
+          >
+            Language
+          </span>
+          <LanguageToggle />
         </div>
 
         {/* Categories */}

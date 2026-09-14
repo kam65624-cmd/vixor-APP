@@ -1,86 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, ShieldCheck, Activity, BarChart3, ArrowRight, GitBranch } from "lucide-react";
+import { ArrowRight, GitBranch } from "lucide-react";
+
+import { CHARACTERS, type CharacterPresentation } from "@/shared/characters";
 
 export const Route = createFileRoute("/_authenticated/loop")({
   head: () => ({ meta: [{ title: "Decision Loop — VIXOR" }] }),
   component: LoopOnboardingPage,
 });
 
-// ─── Route type (re-exported from routeTree.gen to avoid importing from .gen directly) ─
-type RouteId = "/alpha" | "/investigate" | "/risk" | "/echo";
-
-// ─── Character definitions ──────────────────────────────────────────────────
-
-const CHARACTERS: Array<{
-  id: string;
-  name: string;
-  role: string;
-  icon: React.ElementType;
-  color: string;
-  bgColor: string;
-  borderColor: string;
-  tagline: string;
-  description: string;
-  routeId: RouteId;
-  surfaceLabel: string;
-}> = [
-  {
-    id: "moxi",
-    name: "MOXI",
-    role: "Discovery",
-    icon: Activity,
-    color: "#F59E0B",
-    bgColor: "rgba(245,158,11,0.08)",
-    borderColor: "rgba(245,158,11,0.25)",
-    tagline: "Finds the opportunity",
-    description:
-      "Scans the market and surfaces tokens that match your criteria — momentum, volume, whale activity, or custom filters.",
-    routeId: "/alpha",
-    surfaceLabel: "Open MOXI",
-  },
-  {
-    id: "mr-vigo",
-    name: "MR.VIGO",
-    role: "Investigation",
-    icon: Search,
-    color: "#6366F1",
-    bgColor: "rgba(99,102,241,0.08)",
-    borderColor: "rgba(99,102,241,0.25)",
-    tagline: "Gathers the evidence",
-    description:
-      "Aggregates security signals from Shield, whale movements from Hunt, and market context — then builds a structured evidence file.",
-    routeId: "/investigate",
-    surfaceLabel: "Open MR.VIGO",
-  },
-  {
-    id: "dr-dex",
-    name: "DR.DEX",
-    role: "Risk Assessment",
-    icon: ShieldCheck,
-    color: "#10B981",
-    bgColor: "rgba(16,185,129,0.08)",
-    borderColor: "rgba(16,185,129,0.25)",
-    tagline: "Quantifies the risk",
-    description:
-      "Runs the RiskGovernor engine against the evidence file. Outputs position sizing, maximum exposure, and a clear GO / WAIT / BLOCK verdict.",
-    routeId: "/risk",
-    surfaceLabel: "Open DR.DEX",
-  },
-  {
-    id: "echo",
-    name: "ECHO",
-    role: "Tracking & Learning",
-    icon: BarChart3,
-    color: "#EC4899",
-    bgColor: "rgba(236,72,153,0.08)",
-    borderColor: "rgba(236,72,153,0.25)",
-    tagline: "Records the outcome",
-    description:
-      "Tracks every decision, its rationale, and the actual result. Weekly summaries show what is working and what needs adjustment.",
-    routeId: "/echo",
-    surfaceLabel: "Open ECHO",
-  },
-];
+// Characters come from the stable bridge (@/shared/characters) so colors,
+// routes, and copy can never drift from the canonical registry and
+// --char-* design tokens (v2 audit fix: four conflicting color systems).
 
 // ─── Flow arrow ─────────────────────────────────────────────────────────────
 
@@ -94,14 +24,14 @@ function FlowArrow() {
 
 // ─── Character card ─────────────────────────────────────────────────────────
 
-function CharacterCard({ char, index }: { char: (typeof CHARACTERS)[number]; index: number }) {
+function CharacterCard({ char, index }: { char: CharacterPresentation; index: number }) {
   const Icon = char.icon;
   return (
     <div
       className="rounded-2xl border p-5 transition-all"
       style={{
-        background: char.bgColor,
-        borderColor: char.borderColor,
+        background: char.glowVar,
+        borderColor: char.borderVar,
       }}
     >
       {/* Header */}
@@ -109,23 +39,23 @@ function CharacterCard({ char, index }: { char: (typeof CHARACTERS)[number]; ind
         <div className="flex items-center gap-3">
           <div
             className="flex h-10 w-10 items-center justify-center rounded-xl"
-            style={{ background: `color-mix(in srgb, ${char.color} 15%, transparent)` }}
+            style={{ background: char.dimVar }}
           >
-            <Icon size={18} style={{ color: char.color }} />
+            <Icon size={18} style={{ color: char.colorVar }} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold tracking-wide" style={{ color: char.color }}>
-                {char.name}
+              <span className="text-sm font-bold tracking-wide" style={{ color: char.colorVar }}>
+                {char.displayName}
               </span>
               <span
                 className="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
                 style={{
-                  background: `color-mix(in srgb, ${char.color} 12%, transparent)`,
-                  color: char.color,
+                  background: char.dimVar,
+                  color: char.colorVar,
                 }}
               >
-                {char.role}
+                {char.roleLabel}
               </span>
             </div>
             <p
@@ -139,7 +69,7 @@ function CharacterCard({ char, index }: { char: (typeof CHARACTERS)[number]; ind
         <span
           className="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold"
           style={{
-            background: char.color,
+            background: char.colorVar,
             color: "#fff",
           }}
         >
@@ -157,12 +87,12 @@ function CharacterCard({ char, index }: { char: (typeof CHARACTERS)[number]; ind
 
       {/* CTA */}
       <Link
-        to={char.routeId as any}
+        to={char.route as any}
         className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold transition-opacity hover:opacity-80"
         style={{
-          background: `color-mix(in srgb, ${char.color} 15%, transparent)`,
-          color: char.color,
-          border: `1px solid ${char.borderColor}`,
+          background: char.dimVar,
+          color: char.colorVar,
+          border: `1px solid ${char.borderVar}`,
         }}
       >
         {char.surfaceLabel}
@@ -258,18 +188,18 @@ export function LoopOnboardingPage() {
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Icon size={14} style={{ color: char.color }} />
-                      <span className="font-semibold" style={{ color: char.color }}>
-                        {char.name}
+                      <Icon size={14} style={{ color: char.colorVar }} />
+                      <span className="font-semibold" style={{ color: char.colorVar }}>
+                        {char.displayName}
                       </span>
                     </div>
                   </td>
                   <td className="px-4 py-3" style={{ color: "var(--color-muted-foreground)" }}>
-                    {char.role}
+                    {char.roleLabel}
                   </td>
                   <td className="px-4 py-3" style={{ color: "var(--color-muted-foreground)" }}>
                     <span className="rounded bg-[var(--color-muted)] px-2 py-0.5 font-mono text-xs">
-                      {char.routeId}
+                      {char.route}
                     </span>
                   </td>
                 </tr>
