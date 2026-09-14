@@ -4,6 +4,8 @@ import { getUserSettings, updateUserSettings } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { soundManager } from "@/shared/sound-manager";
 import { PageLayout, ScrollArea } from "@/components/vixor/PageLayout";
+import { LanguageToggle } from "@/components/vixor/i18n/LanguageToggle";
+import { useI18nSafe } from "@/shared/i18n";
 import { toast } from "sonner";
 import {
   getExchangeCredentials,
@@ -29,6 +31,10 @@ import { ExchangeCard } from "./ExchangeCard";
 // ── Main Component ────────────────────────────────────────────────────────────
 export function SettingsPage() {
   const queryClient = useQueryClient();
+  // v2 P1: section titles localize when the provider is mounted (safe fallback otherwise)
+  const i18n = useI18nSafe();
+  const langTitle = i18n ? i18n.t("settings.language") : "Language";
+  const langDesc = i18n ? i18n.t("settings.selectLanguage") : "Select Language";
 
   // Server function wrappers (stable references)
   const fetchSettings = useStableServerFn(getUserSettings);
@@ -694,6 +700,54 @@ export function SettingsPage() {
               }}
             />
           ))}
+        </div>
+
+        {/* Language section — v2 P1: client-side preference (localStorage + RTL),
+            rendered outside the typed sections array like Exchange Connections */}
+        <div style={{ marginBottom: "12px" }}>
+          <div
+            style={{
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "var(--color-muted-foreground)",
+              padding: "6px 0",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            {langTitle}
+          </div>
+          <div
+            style={{
+              background: "var(--color-card-hover)",
+              borderRadius: "8px",
+              border: "1px solid var(--color-border)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 16px",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "12px", fontWeight: 600 }}>{langDesc}</div>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--color-muted-foreground)",
+                    marginTop: "2px",
+                  }}
+                >
+                  English · العربية
+                </div>
+              </div>
+              <LanguageToggle />
+            </div>
+          </div>
         </div>
 
         {sections.map((section) => (
