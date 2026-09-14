@@ -50,23 +50,23 @@
 
   /* ── D14 Character Tokens ── */
   /* VIX (HUNT) — Neon Lime accent */
-  --char-vix: #39FF14;
+  --char-vix: #39ff14;
   --char-vix-dim: rgba(57, 255, 20, 0.15);
   --char-vix-border: rgba(57, 255, 20, 0.25);
   --char-vix-glow: rgba(57, 255, 20, 0.08);
 
   /* SLY (SHIELD) — Gold detective accent */
-  --char-sly: #FFD700;
+  --char-sly: #ffd700;
   --char-sly-dim: rgba(255, 215, 0, 0.15);
   --char-sly-border: rgba(255, 215, 0, 0.25);
   --char-sly-glow: rgba(255, 215, 0, 0.08);
 
   /* SHIELD semantic tokens */
-  --shield-safe: #22D3EE;
-  --shield-caution: #FBBF24;
-  --shield-suspicious: #FB923C;
-  --shield-danger: #EF4444;
-  --shield-unknown: #9498A8;
+  --shield-safe: #22d3ee;
+  --shield-caution: #fbbf24;
+  --shield-suspicious: #fb923c;
+  --shield-danger: #ef4444;
+  --shield-unknown: #9498a8;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -103,6 +103,31 @@
   --color-chart-1: #6366f1;
   --color-chart-2: #8c9eff;
   --color-chart-3: #7b61ff;
+
+  /* ── Character Tokens — VIXOR 4-Character Decision Loop ── */
+  /* MOXI — Orchestrator, conversational AI (Cyan/Teal) */
+  --char-moxi: #06b6d4;
+  --char-moxi-dim: rgba(6, 182, 212, 0.15);
+  --char-moxi-border: rgba(6, 182, 212, 0.28);
+  --char-moxi-glow: rgba(6, 182, 212, 0.1);
+
+  /* MR.VIGO — Investigator, evidence-based (Indigo/Purple — Mr. Persona) */
+  --char-vigo: #8b5cf6;
+  --char-vigo-dim: rgba(139, 92, 246, 0.15);
+  --char-vigo-border: rgba(139, 92, 246, 0.28);
+  --char-vigo-glow: rgba(139, 92, 246, 0.1);
+
+  /* DR.DEX — Risk & Decision Surgeon (Crimson/Red — Dr. Persona) */
+  --char-dex: #ef4444;
+  --char-dex-dim: rgba(239, 68, 68, 0.15);
+  --char-dex-border: rgba(239, 68, 68, 0.28);
+  --char-dex-glow: rgba(239, 68, 68, 0.1);
+
+  /* ECHO — Tracker & Learning (Emerald/Green — Sonar-style) */
+  --char-echo: #10b981;
+  --char-echo-dim: rgba(16, 185, 129, 0.15);
+  --char-echo-border: rgba(16, 185, 129, 0.28);
+  --char-echo-glow: rgba(16, 185, 129, 0.1);
 
   /* Surface aliases — 4-layer depth hierarchy */
   --color-surface: var(--surface);
@@ -1068,6 +1093,150 @@
     }
   }
 
+  /* ====== Character-Themed Animated Backgrounds ====== */
+  /* Each character has a unique gradient that moves subtly. */
+  .vx-char-bg {
+    position: relative;
+    overflow: hidden;
+  }
+  .vx-char-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.85;
+    z-index: 0;
+  }
+  .vx-char-bg > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* MOXI — Cyan/Teal ocean wave (slow horizontal drift) */
+  .vx-char-bg-moxi::before {
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 20%, var(--char-moxi-glow), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 80% 80%, var(--char-moxi-dim), transparent 60%),
+      linear-gradient(135deg, var(--char-moxi-dim), transparent 50%);
+    background-size:
+      200% 200%,
+      200% 200%,
+      100% 100%;
+    animation: char-moxi-gradient 14s ease-in-out infinite;
+  }
+
+  /* MR.VIGO — Purple investigator grid (subtle pulse + corner glow) */
+  .vx-char-bg-vigo::before {
+    background:
+      radial-gradient(circle at 0% 0%, var(--char-vigo-glow), transparent 40%),
+      radial-gradient(circle at 100% 100%, var(--char-vigo-dim), transparent 40%),
+      radial-gradient(circle at 50% 50%, transparent, var(--char-vigo-glow) 90%),
+      linear-gradient(45deg, var(--char-vigo-dim), transparent 60%);
+    background-size:
+      200% 200%,
+      200% 200%,
+      100% 100%,
+      100% 100%;
+    animation: char-vigo-gradient 10s ease-in-out infinite;
+  }
+
+  /* DR.DEX — Crimson scan sweep (top-to-bottom) */
+  .vx-char-bg-dex::before {
+    background:
+      linear-gradient(
+        180deg,
+        var(--char-dex-dim) 0%,
+        transparent 30%,
+        transparent 70%,
+        var(--char-dex-glow) 100%
+      ),
+      radial-gradient(ellipse 60% 40% at 50% 0%, var(--char-dex-border), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 50% 100%, var(--char-dex-dim), transparent 70%);
+    background-size:
+      100% 200%,
+      100% 100%,
+      100% 100%;
+    animation: char-dex-gradient 7s linear infinite;
+  }
+
+  /* ECHO — Emerald radar/sonar ripple */
+  .vx-char-bg-echo::before {
+    background:
+      radial-gradient(circle 40% at 50% 50%, var(--char-echo-glow), transparent 70%),
+      radial-gradient(circle at 50% 50%, var(--char-echo-dim), transparent 30%),
+      radial-gradient(circle at 0% 50%, var(--char-echo-border), transparent 40%),
+      radial-gradient(circle at 100% 50%, var(--char-echo-border), transparent 40%);
+    background-size:
+      100% 100%,
+      200% 200%,
+      100% 100%,
+      100% 100%;
+    animation: char-echo-gradient 9s ease-in-out infinite;
+  }
+
+  /* Character badge — small pill for color identity */
+  .vx-char-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 1px solid;
+  }
+  .vx-char-badge-moxi {
+    background: var(--char-moxi-dim);
+    color: var(--char-moxi);
+    border-color: var(--char-moxi-border);
+  }
+  .vx-char-badge-vigo {
+    background: var(--char-vigo-dim);
+    color: var(--char-vigo);
+    border-color: var(--char-vigo-border);
+  }
+  .vx-char-badge-dex {
+    background: var(--char-dex-dim);
+    color: var(--char-dex);
+    border-color: var(--char-dex-border);
+  }
+  .vx-char-badge-echo {
+    background: var(--char-echo-dim);
+    color: var(--char-echo);
+    border-color: var(--char-echo-border);
+  }
+
+  /* Character glow ring — pulse around a character avatar */
+  .vx-char-glow {
+    position: relative;
+    border-radius: 50%;
+  }
+  .vx-char-glow::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(12px);
+    opacity: 0.6;
+    animation: glow-drift 6s ease-in-out infinite;
+  }
+  .vx-char-glow-moxi::after {
+    background: var(--char-moxi-glow);
+  }
+  .vx-char-glow-vigo::after {
+    background: var(--char-vigo-glow);
+  }
+  .vx-char-glow-dex::after {
+    background: var(--char-dex-glow);
+  }
+  .vx-char-glow-echo::after {
+    background: var(--char-echo-glow);
+  }
+
   /* ====== V6 Filter Chip ====== */
   .vx-filter-chip {
     display: inline-flex;
@@ -1803,6 +1972,98 @@
   }
   75% {
     transform: translate(-5%, -2%) scale(1.03);
+  }
+}
+
+/* ── Character-themed animated gradient backgrounds ── */
+
+/* MOXI — Cyan/teal: slow ocean wave */
+@keyframes char-moxi-gradient {
+  0%,
+  100% {
+    background-position:
+      0% 50%,
+      100% 50%,
+      50% 0%;
+  }
+  50% {
+    background-position:
+      100% 50%,
+      0% 50%,
+      50% 100%;
+  }
+}
+
+/* MR.VIGO — Purple: subtle "investigation grid" pulse */
+@keyframes char-vigo-gradient {
+  0%,
+  100% {
+    background-position:
+      0% 0%,
+      100% 100%;
+    opacity: 0.85;
+  }
+  50% {
+    background-position:
+      100% 0%,
+      0% 100%;
+    opacity: 1;
+  }
+}
+
+/* DR.DEX — Crimson: surgical scan sweep (top to bottom) */
+@keyframes char-dex-gradient {
+  0% {
+    background-position:
+      50% 0%,
+      0% 50%,
+      100% 50%;
+  }
+  50% {
+    background-position:
+      50% 100%,
+      0% 50%,
+      100% 50%;
+  }
+  100% {
+    background-position:
+      50% 0%,
+      0% 50%,
+      100% 50%;
+  }
+}
+
+/* ECHO — Emerald: radar/sonar ripple */
+@keyframes char-echo-gradient {
+  0% {
+    background-position:
+      50% 50%,
+      0% 0%,
+      100% 0%;
+    background-size:
+      100% 100%,
+      100% 100%,
+      100% 100%;
+  }
+  50% {
+    background-position:
+      50% 50%,
+      20% 30%,
+      80% 30%;
+    background-size:
+      100% 100%,
+      120% 120%,
+      120% 120%;
+  }
+  100% {
+    background-position:
+      50% 50%,
+      0% 0%,
+      100% 0%;
+    background-size:
+      100% 100%,
+      100% 100%,
+      100% 100%;
   }
 }
 

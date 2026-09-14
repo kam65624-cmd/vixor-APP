@@ -25,10 +25,20 @@ import { RiskGovernor, DEFAULT_RISK_PROFILE } from "@/domains/risk-governor";
 import { scanToken } from "@/domains/shield/functions";
 import { getTokenDetail } from "@/domains/hunt/functions";
 import type { AnalysisResult } from "@/domains/analysis/server/run-analysis";
+import type { CandlePattern } from "@/domains/analysis/engine/core/types";
+export type { CandlePattern };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type { CandlePattern } from "@/domains/analysis/engine/core/types";
+export interface PatternSummary {
+  totalPatterns: number;
+  bullishCount: number;
+  bearishCount: number;
+  strongestSignal: CandlePattern | null;
+  overallBias: "BULLISH" | "BEARISH" | "NEUTRAL" | "NO_SIGNAL";
+  confidenceScore: number;
+  riskImplication: "SUPPORTS_ENTRY" | "AGAINST_ENTRY" | "NEUTRAL";
+}
 
 export interface PatternAnalysisResult {
   /** Symbol (e.g. "BTCUSDT") */
@@ -59,6 +69,17 @@ export interface PatternAnalysisResult {
   error?: string;
   /** Timestamp of analysis */
   analyzedAt: string;
+  /** Raw OHLCV bars (for chart rendering) */
+  bars?: Array<{
+    time: number;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+  }>;
+  /** Decision summary for DR.DEX UI */
+  summary: PatternSummary;
 }
 
 export interface CandlestickAnalysisResult {
@@ -146,6 +167,15 @@ export const assessTokenWithPatterns = createServerFn({ method: "POST" })
           primaryTimeframe: interval,
           error: `Insufficient data: only ${bars.length} bars available`,
           analyzedAt: new Date().toISOString(),
+          summary: {
+            totalPatterns: 0,
+            bullishCount: 0,
+            bearishCount: 0,
+            strongestSignal: null,
+            overallBias: "NO_SIGNAL",
+            confidenceScore: 0,
+            riskImplication: "NEUTRAL",
+          },
         };
       } else {
         const patterns = detectCandlestickPatterns(bars);
@@ -184,6 +214,15 @@ export const assessTokenWithPatterns = createServerFn({ method: "POST" })
           patternConfidence = Math.min(Math.round((patterns[0]?.reliability ?? 0) * 0.5), 100);
         }
 
+        const strongest = patterns[0] ?? null;
+
+        let riskImplication: PatternSummary["riskImplication"] = "NEUTRAL";
+        if (patternBias === "BULLISH" && patternConfidence >= 60) {
+          riskImplication = "SUPPORTS_ENTRY";
+        } else if (patternBias === "BEARISH" && patternConfidence >= 60) {
+          riskImplication = "AGAINST_ENTRY";
+        }
+
         patternResult = {
           symbol,
           dataAvailable: true,
@@ -201,6 +240,23 @@ export const assessTokenWithPatterns = createServerFn({ method: "POST" })
           patternConfidence,
           primaryTimeframe: interval,
           analyzedAt: new Date().toISOString(),
+          bars: bars.map((b) => ({
+            time: b.time,
+            open: b.open,
+            high: b.high,
+            low: b.low,
+            close: b.close,
+            volume: b.volume,
+          })),
+          summary: {
+            totalPatterns: patterns.length,
+            bullishCount: bullish.length,
+            bearishCount: bearish.length,
+            strongestSignal: strongest,
+            overallBias: patternBias,
+            confidenceScore: patternConfidence,
+            riskImplication,
+          },
         };
       }
     } catch (err) {
@@ -216,6 +272,15 @@ export const assessTokenWithPatterns = createServerFn({ method: "POST" })
         primaryTimeframe: interval,
         error: err instanceof Error ? err.message : "Binance fetch failed",
         analyzedAt: new Date().toISOString(),
+        summary: {
+          totalPatterns: 0,
+          bullishCount: 0,
+          bearishCount: 0,
+          strongestSignal: null,
+          overallBias: "NO_SIGNAL",
+          confidenceScore: 0,
+          riskImplication: "NEUTRAL",
+        },
       };
     }
 

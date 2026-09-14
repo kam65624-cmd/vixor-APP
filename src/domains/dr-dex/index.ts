@@ -12,5 +12,11 @@ export {
 } from "./types";
 
 export { assessToken, logPaperDecision } from "./functions";
+export { assessTokenWithPatterns } from "./candlestick-analyzer";
+export type {
+  CandlestickAnalysisResult,
+  PatternAnalysisResult,
+  PatternSummary,
+} from "./candlestick-analyzer";
 
 export { DEFAULT_RISK_PROFILE } from "@/domains/risk-governor";

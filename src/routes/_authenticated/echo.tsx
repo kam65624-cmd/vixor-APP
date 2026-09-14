@@ -40,6 +40,7 @@ import { getEchoOverview } from "@/domains/echo";
 import type { EchoOverview, TimelineEntry, WeeklySummary } from "@/domains/echo";
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
 import { EchoStatsPanel } from "@/components/echo/EchoStatsPanel";
+import { CharacterHero } from "@/components/characters/CharacterHero";
 
 // ── Route Definition ────────────────────────────────────────────────────────
 
@@ -641,6 +642,14 @@ function EchoPage() {
           </div>
 
           {/* ── Aggregate stats panel (from /api/echo-stats) ────────── */}
+          <CharacterHero
+            character="echo"
+            title="ECHO"
+            subtitle="The Tracker — outcome learning, decision memory"
+            description="Every decision recorded, every outcome measured. Read-only timeline of what you did and how it played out."
+            live
+            compact
+          />
           <EchoStatsPanel />
 
           {/* ── Error state ───────────────────────────────────────────── */}
