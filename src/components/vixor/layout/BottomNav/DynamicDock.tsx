@@ -2,6 +2,8 @@ import { memo, useState, useEffect, useRef, type ReactNode } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 
+import { useMoreNavStrings } from "@/shared/i18n/nav-strings";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface DockItem {
@@ -37,6 +39,8 @@ export const DynamicDock = memo(function DynamicDock({
   const dockRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  // Localized dock strings (falls back to canonical English copy)
+  const nav = useMoreNavStrings();
 
   // Auto-scroll to active item on mount / route change
   useEffect(() => {
@@ -61,7 +65,10 @@ export const DynamicDock = memo(function DynamicDock({
   const handleDragEnd = (_: unknown, info: PanInfo) => {
     const container = dockRef.current;
     if (!container) return;
-    const delta = -info.offset.x;
+    // RTL flips the scroll coordinate space — read direction at event time so
+    // the swipe always reveals items in the direction the finger moved.
+    const dirFactor = document.documentElement.dir === "rtl" ? -1 : 1;
+    const delta = -info.offset.x * dirFactor;
     container.scrollBy({ left: delta * 1.5, behavior: "smooth" });
     setIsDragging(false);
   };
@@ -92,12 +99,14 @@ export const DynamicDock = memo(function DynamicDock({
           className="relative flex flex-col items-center justify-center min-w-[72px] h-[68px] px-2 rounded-2xl transition-all duration-200 text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
           whileHover={{ y: -6, transition: { duration: 0.2 } }}
           whileTap={{ scale: 0.88 }}
-          aria-label="More navigation"
+          aria-label={nav.moreNavAria}
         >
           <span className="w-[26px] h-[26px] flex items-center justify-center opacity-60">
             {item.icon}
           </span>
-          <span className="text-[9px] font-semibold mt-1 tracking-wide">{item.label}</span>
+          <span className="text-[9px] font-semibold mt-1 tracking-wide">
+            {nav.dockItemLabel(item.to, item.label)}
+          </span>
         </motion.button>,
       );
     } else {
@@ -136,7 +145,7 @@ export const DynamicDock = memo(function DynamicDock({
             to={item.to}
             data-active={isActive}
             className="flex flex-col items-center justify-center min-w-[72px] h-[68px] px-2 rounded-2xl transition-all duration-200"
-            aria-label={item.label}
+            aria-label={nav.dockItemLabel(item.to, item.label)}
             aria-current={isActive ? "page" : undefined}
           >
             <span
@@ -147,7 +156,7 @@ export const DynamicDock = memo(function DynamicDock({
             <span
               className={`text-[9px] font-semibold mt-1 tracking-wide transition-colors duration-200 ${isActive ? "text-[var(--color-primary)]" : "text-[var(--color-muted-foreground)]"}`}
             >
-              {item.label}
+              {nav.dockItemLabel(item.to, item.label)}
             </span>
             {/* Active dot below label */}
             {isActive && (
@@ -163,7 +172,7 @@ export const DynamicDock = memo(function DynamicDock({
           {/* Badge (e.g. LIVE, PRO) */}
           {item.badge && (
             <span
-              className="absolute top-1 right-2 text-[7px] font-bold tracking-wider px-1.5 py-0.5 rounded-md"
+              className="absolute top-1 end-2 text-[7px] font-bold tracking-wider px-1.5 py-0.5 rounded-md"
               style={{
                 background: item.badgeColor
                   ? `color-mix(in srgb, ${item.badgeColor} 15%, transparent)`
@@ -201,7 +210,7 @@ export const DynamicDock = memo(function DynamicDock({
           boxShadow: "0 -4px 40px rgba(0,0,0,0.4)",
         }}
         role="navigation"
-        aria-label="Main navigation"
+        aria-label={nav.mainNavAria}
       >
         {/* Gradient glow line at top */}
         <div
@@ -263,6 +272,8 @@ const MorePanel = memo(function MorePanel({ currentPath, categories, onClose }: 
   }, []);
 
   const totalItems = categories.reduce((acc, c) => acc + c.items.length, 0);
+  // Localized strings for the sheet (falls back to canonical English copy)
+  const nav = useMoreNavStrings();
 
   return (
     <>
@@ -294,7 +305,7 @@ const MorePanel = memo(function MorePanel({ currentPath, categories, onClose }: 
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
           <div className="flex items-center gap-2">
             <span className="text-[15px] font-extrabold text-[var(--color-foreground)]">
-              Explore
+              {nav.explore}
             </span>
             <span
               className="text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded-lg"
@@ -304,7 +315,7 @@ const MorePanel = memo(function MorePanel({ currentPath, categories, onClose }: 
                 border: "1px solid var(--primary-border)",
               }}
             >
-              {totalItems} items
+              {nav.itemsCount(totalItems)}
             </span>
           </div>
           <motion.button
@@ -332,7 +343,7 @@ const MorePanel = memo(function MorePanel({ currentPath, categories, onClose }: 
           {categories.map((category) => (
             <div key={category.title} className="mb-3 last:mb-0">
               <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--color-muted-foreground)] px-2 pb-1.5">
-                {category.title}
+                {nav.categoryTitle(category.title)}
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {category.items.map((item) => {
@@ -351,7 +362,7 @@ const MorePanel = memo(function MorePanel({ currentPath, categories, onClose }: 
                       }}
                     >
                       <span className="flex-shrink-0">{item.icon}</span>
-                      {item.label}
+                      {nav.itemLabel(item.to, item.label)}
                     </Link>
                   );
                 })}

@@ -48,18 +48,21 @@
   --ease-decelerate: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
 
-  /* ── D14 Character Tokens ── */
-  /* VIX (HUNT) — Neon Lime accent */
-  --char-vix: #39ff14;
-  --char-vix-dim: rgba(57, 255, 20, 0.15);
-  --char-vix-border: rgba(57, 255, 20, 0.25);
-  --char-vix-glow: rgba(57, 255, 20, 0.08);
+  /* ── D14 Character Tokens (official registry: MOXI / MR.VIGO / DR.DEX / ECHO) ── */
+  /* See src/shared/characters.ts — the only character-named tokens allowed. */
 
-  /* SLY (SHIELD) — Gold detective accent */
-  --char-sly: #ffd700;
-  --char-sly-dim: rgba(255, 215, 0, 0.15);
-  --char-sly-border: rgba(255, 215, 0, 0.25);
-  --char-sly-glow: rgba(255, 215, 0, 0.08);
+  /* ── Domain Accents (NOT characters — page-domain colors) ── */
+  /* HUNT domain — Neon Lime accent (pages: /hunt/*) */
+  --accent-hunt: #39ff14;
+  --accent-hunt-dim: rgba(57, 255, 20, 0.15);
+  --accent-hunt-border: rgba(57, 255, 20, 0.25);
+  --accent-hunt-glow: rgba(57, 255, 20, 0.08);
+
+  /* SHIELD domain — Gold detective accent (pages: /shield/*) */
+  --accent-shield: #ffd700;
+  --accent-shield-dim: rgba(255, 215, 0, 0.15);
+  --accent-shield-border: rgba(255, 215, 0, 0.25);
+  --accent-shield-glow: rgba(255, 215, 0, 0.08);
 
   /* SHIELD semantic tokens */
   --shield-safe: #22d3ee;

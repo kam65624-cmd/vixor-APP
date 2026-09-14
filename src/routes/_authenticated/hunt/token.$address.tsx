@@ -109,8 +109,8 @@ function TokenDetailPage() {
     <PageLayout
       title="Token Detail"
       badge="HUNT"
-      badgeColor="var(--char-vix)"
-      loadingColor="var(--char-vix)"
+      badgeColor="var(--accent-hunt)"
+      loadingColor="var(--accent-hunt)"
     >
       <style>{`
         @keyframes alert-stagger {
@@ -130,9 +130,9 @@ function TokenDetailPage() {
               minHeight: "44px",
               fontSize: "12px",
               fontWeight: 700,
-              color: "var(--char-vix)",
-              background: "var(--char-vix-dim)",
-              border: "1px solid var(--char-vix-border)",
+              color: "var(--accent-hunt)",
+              background: "var(--accent-hunt-dim)",
+              border: "1px solid var(--accent-hunt-border)",
               borderRadius: "10px",
               padding: "0 16px",
               display: "inline-flex",
@@ -142,10 +142,10 @@ function TokenDetailPage() {
               transition: "background 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--char-vix-border)";
+              (e.currentTarget as HTMLElement).style.background = "var(--accent-hunt-border)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
+              (e.currentTarget as HTMLElement).style.background = "var(--accent-hunt-dim)";
             }}
           >
             <span aria-hidden="true">←</span>
@@ -196,12 +196,12 @@ function TokenDetailPage() {
                   style={{
                     fontSize: "14px",
                     fontWeight: 700,
-                    color: "var(--char-vix)",
+                    color: "var(--accent-hunt)",
                   }}
                 >
                   ${data.symbol}
                 </span>
-                <PageBadge label={data.chain} color="var(--char-vix)" small />
+                <PageBadge label={data.chain} color="var(--accent-hunt)" small />
               </div>
               <span
                 style={{
@@ -300,7 +300,7 @@ function TokenDetailPage() {
                   fontSize: "12px",
                   fontFamily: "var(--font-mono)",
                   fontWeight: 600,
-                  color: copied ? "var(--char-vix)" : "var(--color-muted-foreground)",
+                  color: copied ? "var(--accent-hunt)" : "var(--color-muted-foreground)",
                   background: "rgba(255,255,255,0.04)",
                   border: "1px solid var(--color-border)",
                   borderRadius: "6px",
@@ -352,9 +352,9 @@ function TokenDetailPage() {
                   minHeight: "48px",
                   fontSize: "13px",
                   fontWeight: 700,
-                  color: "var(--char-vix)",
-                  background: "var(--char-vix-dim)",
-                  border: "1px solid var(--char-vix-border)",
+                  color: "var(--accent-hunt)",
+                  background: "var(--accent-hunt-dim)",
+                  border: "1px solid var(--accent-hunt-border)",
                   borderRadius: "10px",
                   padding: "0 16px",
                   display: "flex",
@@ -365,10 +365,10 @@ function TokenDetailPage() {
                   transition: "background 0.15s ease",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-border)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--accent-hunt-border)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--accent-hunt-dim)";
                 }}
               >
                 <span aria-hidden="true">&#x1F6E1;</span>
