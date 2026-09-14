@@ -76,7 +76,7 @@ function signalTypeColor(type: SignalType): string {
     case "volume":
       return "var(--color-bullish)";
     case "whale":
-      return "var(--char-vix)";
+      return "var(--accent-hunt)";
     case "social":
       return "var(--color-info)";
     case "momentum":
@@ -179,8 +179,8 @@ function AlphaSignalsPage() {
     <PageLayout
       title="Alpha Signals"
       badge="EARLY"
-      badgeColor="var(--char-vix)"
-      loadingColor="var(--char-vix)"
+      badgeColor="var(--accent-hunt)"
+      loadingColor="var(--accent-hunt)"
     >
       <style>{`
         @keyframes alert-stagger {
@@ -219,13 +219,13 @@ function AlphaSignalsPage() {
                 border: "none",
                 cursor: "pointer",
                 color: isActive ? "var(--color-background)" : "var(--color-muted-foreground)",
-                background: isActive ? "var(--char-vix)" : "transparent",
+                background: isActive ? "var(--accent-hunt)" : "transparent",
                 whiteSpace: "nowrap",
                 transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--accent-hunt-dim)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -246,7 +246,7 @@ function AlphaSignalsPage() {
           {
             label: "Active Signals",
             value: String(realSignals.length),
-            color: "var(--char-vix)",
+            color: "var(--accent-hunt)",
           },
           {
             label: "Accuracy",
@@ -294,7 +294,7 @@ function AlphaSignalsPage() {
                 border: "none",
                 cursor: "pointer",
                 color: isActive ? "var(--color-background)" : "var(--color-muted-foreground)",
-                background: isActive ? "var(--char-vix)" : "transparent",
+                background: isActive ? "var(--accent-hunt)" : "transparent",
               }}
             >
               {chain.charAt(0).toUpperCase() + chain.slice(1)}
@@ -338,7 +338,7 @@ function AlphaSignalsPage() {
               <DataRow
                 key={token.address}
                 onClick={() => handleHotTokenClick(token.address)}
-                leftAccent="var(--char-vix-border)"
+                leftAccent="var(--accent-hunt-border)"
               >
                 <div
                   style={{
@@ -353,13 +353,13 @@ function AlphaSignalsPage() {
                       width: "28px",
                       height: "28px",
                       borderRadius: "8px",
-                      background: "var(--char-vix-dim)",
+                      background: "var(--accent-hunt-dim)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: "13px",
                       fontWeight: 800,
-                      color: "var(--char-vix)",
+                      color: "var(--accent-hunt)",
                       fontFamily: "var(--font-mono)",
                       flexShrink: 0,
                     }}
@@ -492,7 +492,7 @@ const AlphaSignalRow = memo(function AlphaSignalRow({
   return (
     <DataRow
       onClick={onClick}
-      leftAccent="var(--char-vix-border)"
+      leftAccent="var(--accent-hunt-border)"
       style={{
         animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
       }}
@@ -626,7 +626,7 @@ const AlphaSignalRow = memo(function AlphaSignalRow({
               style={{
                 width: `${signal.confidence}%`,
                 height: "100%",
-                background: "var(--char-vix)",
+                background: "var(--accent-hunt)",
                 borderRadius: "2px",
                 transition: "width 0.5s ease",
               }}
@@ -637,7 +637,7 @@ const AlphaSignalRow = memo(function AlphaSignalRow({
               fontSize: "12px",
               fontWeight: 800,
               fontFamily: "var(--font-mono)",
-              color: "var(--char-vix)",
+              color: "var(--accent-hunt)",
               flexShrink: 0,
             }}
           >

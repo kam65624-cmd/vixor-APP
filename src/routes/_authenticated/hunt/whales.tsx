@@ -144,8 +144,8 @@ function WhaleTrackerPage() {
     <PageLayout
       title="Whale Tracker"
       badge="WHALE"
-      badgeColor="var(--char-vix)"
-      loadingColor="var(--char-vix)"
+      badgeColor="var(--accent-hunt)"
+      loadingColor="var(--accent-hunt)"
     >
       <style>{`
         @keyframes alert-stagger {
@@ -184,13 +184,13 @@ function WhaleTrackerPage() {
                 border: "none",
                 cursor: "pointer",
                 color: isActive ? "var(--color-background)" : "var(--color-muted-foreground)",
-                background: isActive ? "var(--char-vix)" : "transparent",
+                background: isActive ? "var(--accent-hunt)" : "transparent",
                 whiteSpace: "nowrap",
                 transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--accent-hunt-dim)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -216,7 +216,7 @@ function WhaleTrackerPage() {
           {
             label: "24h Trades",
             value: String(trades24h),
-            color: "var(--char-vix)",
+            color: "var(--accent-hunt)",
           },
           {
             label: "Total Volume",
@@ -255,7 +255,7 @@ function WhaleTrackerPage() {
                 padding: "8px 16px",
                 borderRadius: "8px",
                 border: "none",
-                background: "var(--char-vix)",
+                background: "var(--accent-hunt)",
                 color: "var(--color-background)",
                 fontWeight: 700,
                 cursor: "pointer",
@@ -293,7 +293,7 @@ function WhaleTrackerPage() {
           whales.map((wallet: any, i: number) => (
             <DataRow
               key={wallet.id}
-              leftAccent="var(--char-vix)"
+              leftAccent="var(--accent-hunt)"
               style={{ borderBottom: "1px solid var(--color-border)" }}
             >
               <div

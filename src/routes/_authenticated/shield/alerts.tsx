@@ -36,7 +36,7 @@ function severityColor(sev: Severity): string {
 function statusColor(status: Status): string {
   switch (status) {
     case "New":
-      return "var(--char-sly)";
+      return "var(--accent-shield)";
     case "Investigating":
       return "var(--shield-caution)";
     case "Resolved":
@@ -131,19 +131,19 @@ function ShieldAlertsPage() {
     <PageLayout
       title="Security Alerts"
       badge="SHIELD"
-      badgeColor="var(--char-sly)"
+      badgeColor="var(--accent-shield)"
       tabs={[...TABS]}
       activeTab={activeTab}
       onTabChange={setActiveTab}
       tabCounts={tabCounts}
-      loadingColor="var(--char-sly)"
+      loadingColor="var(--accent-shield)"
     >
       <StatsRow
         stats={[
           {
             label: "Total Alerts",
             value: String(totalCount),
-            color: "var(--char-sly)",
+            color: "var(--accent-shield)",
           },
           {
             label: "Critical",
@@ -239,17 +239,17 @@ function ShieldAlertsPage() {
               fontWeight: 700,
               letterSpacing: "0.04em",
               borderRadius: "10px",
-              border: `1px solid var(--char-sly-border)`,
-              background: `var(--char-sly)14`,
-              color: "var(--char-sly)",
+              border: `1px solid var(--accent-shield-border)`,
+              background: `var(--accent-shield)14`,
+              color: "var(--accent-shield)",
               cursor: "pointer",
               transition: "background 0.15s ease, transform 0.1s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)22";
+              (e.currentTarget as HTMLElement).style.background = "var(--accent-shield)22";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)14";
+              (e.currentTarget as HTMLElement).style.background = "var(--accent-shield)14";
             }}
           >
             View All in HUNT
@@ -352,9 +352,9 @@ const AlertRow = memo(function AlertRow({
               fontSize: "10px",
               padding: "2px 8px",
               borderRadius: "4px",
-              background: "var(--char-sly)14",
-              border: "1px solid var(--char-sly-border)",
-              color: "var(--char-sly)",
+              background: "var(--accent-shield)14",
+              border: "1px solid var(--accent-shield-border)",
+              color: "var(--accent-shield)",
               cursor: "pointer",
             }}
           >
@@ -378,7 +378,7 @@ const AlertRow = memo(function AlertRow({
           style={{
             fontSize: "12px",
             fontWeight: 700,
-            color: "var(--char-sly)",
+            color: "var(--accent-shield)",
             fontFamily: "var(--font-mono)",
           }}
         >
