@@ -8,7 +8,6 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getMe } from "@/domains/user/functions";
 import { useLivePrices } from "@/shared/market-data";
 import { LiveDot } from "@/components/vixor/LiveDot";
-import { MoxiCharacter3D } from "@/components/vixor/MoxiCharacter3D";
 import { EnergyOrb } from "@/components/vixor/fx/EnergyOrb";
 import { CharacterGuide } from "@/components/characters/CharacterGuide";
 import { useCharacterStrings } from "@/shared/characters-i18n";
@@ -491,9 +490,6 @@ function HomePageV3() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[var(--color-background)] text-foreground font-sans pb-28">
-      {/* 3D MOXI Side Character */}
-      <MoxiCharacter3D onChatOpen={() => handleMoxiPrompt("")} />
-
       <div className="max-w-screen-2xl mx-auto px-4 py-4 space-y-4">
         {/* ── 1. Smart Header: Greeting + Market Status + MOXI CTA ──────── */}
         <div className="flex items-center justify-between">
