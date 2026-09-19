@@ -2241,3 +2241,23 @@
     color: black !important;
   }
 }
+
+/* ====== VIXOR FX — EnergyOrb (v2 P2) ====== */
+.vixor-energy-orb {
+  animation: vixor-orb-pulse 7s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes vixor-orb-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vixor-energy-orb {
+    animation: none !important;
+  }
+}

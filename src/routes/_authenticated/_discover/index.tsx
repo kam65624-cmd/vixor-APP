@@ -2,6 +2,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageLayout, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
+import { CharacterGuide } from "@/components/characters/CharacterGuide";
 import { RefreshCw, X, Link2 } from "lucide-react";
 import { usePullToRefresh } from "@/shared/hooks/use-pull-to-refresh";
 import { PullIndicator } from "@/components/vixor/PullIndicator";
@@ -523,6 +524,7 @@ export function DiscoverPage() {
       badgeColor={isForexMode ? GOLD_COLOR : "var(--color-bullish)"}
       loading={effectiveLoading}
       loadingColor={isForexMode ? GOLD_COLOR : "var(--color-bullish)"}
+      banner={<CharacterGuide character="moxi" compact className="mx-4 mt-3" />}
     >
       {/* ── Workspace Switcher Bar ── */}
       <div

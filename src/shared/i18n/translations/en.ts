@@ -617,6 +617,50 @@ const en = {
     invalidCode: "Invalid code",
     alreadyApplied: "Referral already applied",
   },
+
+  // ═══ CHARACTERS (v2 Character System) ═══
+  // Canonical English copy mirrors src/shared/characters.ts — a parity test
+  // (characters-i18n.test.tsx) fails if the two drift apart.
+  characters: {
+    roles: {
+      main_guide: "Discovery",
+      investigator: "Investigation",
+      risk_analyst: "Risk Assessment",
+      memory_learning: "Tracking & Learning",
+    },
+    moxi: {
+      tagline: "Finds the opportunity",
+      description:
+        "Scans the market and surfaces tokens that match your criteria — momentum, volume, whale activity, or custom filters.",
+      surfaceLabel: "Open MOXI",
+    },
+    mrVigo: {
+      tagline: "Gathers the evidence",
+      description:
+        "Aggregates security signals from Shield, whale movements from Hunt, and market context — then builds a structured evidence file.",
+      surfaceLabel: "Open MR.VIGO",
+    },
+    drDex: {
+      tagline: "Quantifies the risk",
+      description:
+        "Runs the RiskGovernor engine against the evidence file. Outputs position sizing, maximum exposure, and a clear GO / WAIT / BLOCK verdict.",
+      surfaceLabel: "Open DR.DEX",
+    },
+    echo: {
+      tagline: "Records the outcome",
+      description:
+        "Tracks every decision, its rationale, and the actual result. Weekly summaries show what is working and what needs adjustment.",
+      surfaceLabel: "Open ECHO",
+    },
+    guide: {
+      loading: "Gathering signals…",
+      ready: "Guidance is ready.",
+      working: "Working on it…",
+      success: "Recorded.",
+      error: "Something went wrong.",
+      ariaLabel: "{name} guide",
+    },
+  },
 };
 
 export default en;

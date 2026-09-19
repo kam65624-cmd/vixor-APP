@@ -18,8 +18,7 @@
 
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useState, useCallback, useEffect } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { OHLCVBar } from "@/domains/analysis/engine/core/types";
+import { useMutation } from "@tanstack/react-query";
 import {
   Shield,
   ShieldCheck,
@@ -39,20 +38,11 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { assessToken, logPaperDecision, assessTokenWithPatterns } from "@/domains/dr-dex";
-import type {
-  GovernorAction,
-  PaperDecision,
-  RiskAssessment,
-  RiskVerdict,
-  CandlestickAnalysisResult,
-} from "@/domains/dr-dex";
+import { assessToken, logPaperDecision } from "@/domains/dr-dex";
+import type { GovernorAction, PaperDecision, RiskAssessment, RiskVerdict } from "@/domains/dr-dex";
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
-import { CharacterHero } from "@/components/characters/CharacterHero";
-import {
-  CandlestickChartReact,
-  CandlestickChartSkeleton,
-} from "@/components/vixor/CandlestickChartReact";
+import { CharacterGuide } from "@/components/characters/CharacterGuide";
+import { ParticleNetwork } from "@/components/vixor/fx/ParticleNetwork";
 
 // ── Route Definition ────────────────────────────────────────────────────────
 
@@ -77,12 +67,6 @@ const CHAINS = [
 ] as const;
 
 type ChainId = (typeof CHAINS)[number]["id"];
-
-/** Map server-side pattern-analysis bars to OHLCVBar for the chart component. */
-function getBarsFromQuery(data: CandlestickAnalysisResult | null | undefined): OHLCVBar[] {
-  if (!data?.patternAnalysis?.bars) return [];
-  return data.patternAnalysis.bars;
-}
 
 function verdictConfig(v: RiskVerdict) {
   switch (v) {
@@ -765,19 +749,10 @@ function DexRiskPage() {
   const [debouncedAddress, setDebouncedAddress] = useState(search.address || "");
 
   const fetchAssessment = useStableServerFn(assessToken);
-  const fetchCandles = useStableServerFn(assessTokenWithPatterns);
   const logDecision = useStableServerFn(logPaperDecision);
 
   const assessmentMutation = useMutation({
     mutationFn: (vars: { address: string; chain: string }) => fetchAssessment({ data: vars }),
-  });
-
-  const candleQuery = useQuery<CandlestickAnalysisResult | null>({
-    queryKey: ["candles", debouncedAddress, chain],
-    queryFn: () => fetchCandles({ data: { address: debouncedAddress, chain } }),
-    enabled: debouncedAddress.length >= 10,
-    staleTime: 60_000,
-    retry: 1,
   });
 
   const decisionMutation = useMutation({
@@ -834,15 +809,14 @@ function DexRiskPage() {
             gap: 20,
           }}
         >
-          {/* ── Character Hero (DR.DEX) ─────────────────────────────────── */}
-          <CharacterHero
-            character="dex"
-            title="DR.DEX"
-            subtitle="The Risk Surgeon — paper-only decisions, governor-enforced"
-            description="Every move passes through RiskGovernor. PROCEED, REDUCE_SIZE, WAIT, or BLOCK — never a coin flip, never a real trade."
-            live
-            compact
-          />
+          {/* ── Character guide — unified identity (v2 P1) ─────────────── */}
+          {/* v2 P2: risk-signal ambient behind DR.DEX's guide */}
+          <div className="relative overflow-hidden rounded-2xl">
+            <ParticleNetwork colorVar="--char-dex" density={0.7} opacity={0.4} />
+            <div className="relative">
+              <CharacterGuide character="drDex" />
+            </div>
+          </div>
 
           {/* ── 1. Search Bar ──────────────────────────────────────────── */}
           <div
@@ -980,58 +954,6 @@ function DexRiskPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <ActionCard assessment={result} />
               <SecuritySummaryCard assessment={result} />
-
-              {/* ── Candlestick chart (from /binance klines) ─────────── */}
-              <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: 8,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: 0.8,
-                      color: "var(--color-muted-foreground)",
-                    }}
-                  >
-                    Candlestick · Binance · 1h
-                  </div>
-                  {candleQuery.data?.patternAnalysis && (
-                    <div
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 600,
-                        color:
-                          candleQuery.data.patternAnalysis.summary.overallBias === "BULLISH"
-                            ? "var(--color-bullish)"
-                            : candleQuery.data.patternAnalysis.summary.overallBias === "BEARISH"
-                              ? "var(--color-bearish)"
-                              : "var(--color-muted-foreground)",
-                      }}
-                    >
-                      Bias: {candleQuery.data.patternAnalysis.summary.overallBias}
-                      {" · "}
-                      {candleQuery.data.patternAnalysis.summary.confidenceScore}%
-                    </div>
-                  )}
-                </div>
-                {candleQuery.isLoading ? (
-                  <CandlestickChartSkeleton height={300} />
-                ) : (
-                  <CandlestickChartReact
-                    bars={getBarsFromQuery(candleQuery.data)}
-                    height={300}
-                    showVolume
-                    visibleCount={120}
-                  />
-                )}
-              </div>
 
               {/* Unknowns */}
               {result.unknowns.length > 0 && (
