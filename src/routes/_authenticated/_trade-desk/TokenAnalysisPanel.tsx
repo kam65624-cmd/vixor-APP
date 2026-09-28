@@ -183,13 +183,16 @@ function PatternRow({
 export function TokenAnalysisPanel() {
   const [address, setAddress] = useState("");
   const [chain, setChain] = useState("solana");
-  const [interval, setInterval] = useState("1h");
+  const [interval, setInterval] = useState<"1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d">("1h");
   const [expanded, setExpanded] = useState(false);
   const [showPatterns, setShowPatterns] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: (vars: { address: string; chain: string; interval: string }) =>
-      assessTokenWithPatterns({ data: vars }),
+    mutationFn: (vars: {
+      address: string;
+      chain: string;
+      interval: "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d";
+    }) => assessTokenWithPatterns({ data: vars }),
   });
 
   const result = mutation.data as CandlestickAnalysisResult | undefined;
@@ -290,7 +293,7 @@ export function TokenAnalysisPanel() {
             </select>
             <select
               value={interval}
-              onChange={(e) => setInterval(e.target.value)}
+              onChange={(e) => setInterval(e.target.value as "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d")}
               style={{
                 ...inputStyle,
                 padding: "6px 8px",
