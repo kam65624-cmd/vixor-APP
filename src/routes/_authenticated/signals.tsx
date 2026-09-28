@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { memo, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { getTechnicalSignals } from "@/domains/trade/functions";
+import { getDailySignals } from "@/shared/data/signals";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { useLivePrices } from "@/shared/market-data";
 import { LiveDot } from "@/components/vixor/LiveDot";
@@ -180,6 +181,7 @@ function SignalsPage() {
   const navigate = useNavigate();
   const { play } = useSound();
   const fetchSignals = useStableServerFn(getTechnicalSignals);
+  const fetchDailySignals = useStableServerFn(getDailySignals);
   const [symbol, setSymbol] = useState("BTCUSDT");
   const [selectedInterval, setSelectedInterval] = useState("1h");
   const createTracking = useStableServerFn(createSignalTracking);
@@ -194,6 +196,13 @@ function SignalsPage() {
     queryKey: ["my-signal-trackings"],
     queryFn: () => fetchTrackings({}),
     staleTime: 30_000,
+  });
+
+  // Fetch daily signals (cron-generated + live fallback) — Phase 2.7 wiring
+  const dailySignalsQuery = useQuery({
+    queryKey: ["daily-signals-feed"],
+    queryFn: () => fetchDailySignals({}),
+    staleTime: 300_000,
   });
 
   // Signal monitor for real-time TP/SL checking
@@ -344,6 +353,94 @@ function SignalsPage() {
             : []),
         ]}
       />
+
+      {/* AI Signals Feed — from daily_signals table (Phase 2.7) */}
+      <SectionTitle title="AI Signals Feed" count={dailySignalsQuery.data?.signals?.length ?? 0} />
+      {dailySignalsQuery.isLoading ? (
+        <div style={{ padding: "12px 16px" }}>
+          {[1, 2, 3].map((i) => (
+            <SkeletonRow key={i} />
+          ))}
+        </div>
+      ) : dailySignalsQuery.data?.signals && dailySignalsQuery.data.signals.length > 0 ? (
+        <ScrollArea>
+          <div
+            style={{ padding: "0 16px 8px", display: "flex", flexDirection: "column", gap: "6px" }}
+          >
+            {dailySignalsQuery.data.signals.slice(0, 10).map((sig: Signal) => {
+              const recColor =
+                sig.recommendation === "BUY"
+                  ? "var(--color-bullish)"
+                  : sig.recommendation === "SELL"
+                    ? "var(--color-bearish)"
+                    : "var(--color-neutral-wait)";
+              return (
+                <div
+                  key={sig.id}
+                  onClick={() =>
+                    navigate({
+                      to: "/trade-desk",
+                      search: {
+                        symbol: sig.pair.split("/")[0],
+                        direction: sig.recommendation.toLowerCase(),
+                      },
+                    })
+                  }
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "8px 12px",
+                    borderRadius: "10px",
+                    border: "1px solid var(--color-border)",
+                    background: "var(--color-card)",
+                    cursor: "pointer",
+                    transition: "border-color 0.2s",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: "13px" }}>{sig.pair}</div>
+                      <div style={{ fontSize: "10px", color: "var(--color-muted-foreground)" }}>
+                        {sig.pattern || sig.timeframe}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontWeight: 700, fontSize: "12px", color: recColor }}>
+                        {sig.recommendation}
+                      </div>
+                      <div style={{ fontSize: "10px", color: "var(--color-muted-foreground)" }}>
+                        {sig.confidence}% conf
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        padding: "2px 8px",
+                        borderRadius: "6px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: recColor,
+                        background: `color-mix(in srgb, ${recColor} 15%, transparent)`,
+                        border: `1px solid color-mix(in srgb, ${recColor} 30%, transparent)`,
+                      }}
+                    >
+                      {sig.recommendation}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      ) : (
+        <div style={{ padding: "12px 16px", textAlign: "center" }}>
+          <p style={{ fontSize: "12px", color: "var(--color-muted-foreground)", margin: 0 }}>
+            No AI signals yet — cron job populates this feed daily
+          </p>
+        </div>
+      )}
 
       <SectionTitle title="Active Signals" count={filtered.length} />
 
