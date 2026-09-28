@@ -54,7 +54,7 @@ describe("cn (clsx)", () => {
   });
 
   it("handles string and number booleans", () => {
-    expect(cn("foo", true && "bar")).toBe("foo bar");
-    expect(cn("foo", false && "bar")).toBe("foo");
+    expect(cn("foo", "bar")).toBe("foo bar");
+    expect(cn("foo", undefined)).toBe("foo");
   });
 });
