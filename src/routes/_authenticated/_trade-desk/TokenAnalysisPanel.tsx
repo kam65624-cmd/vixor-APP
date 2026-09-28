@@ -293,7 +293,9 @@ export function TokenAnalysisPanel() {
             </select>
             <select
               value={interval}
-              onChange={(e) => setInterval(e.target.value as "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d")}
+              onChange={(e) =>
+                setInterval(e.target.value as "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d")
+              }
               style={{
                 ...inputStyle,
                 padding: "6px 8px",
