@@ -31,6 +31,7 @@ export type RiskVerdict =
  * tracking later.
  */
 export interface PaperDecision {
+  id?: string;
   tokenAddress: string;
   chain: string;
   action: "BUY" | "SELL" | "WAIT";

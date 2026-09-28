@@ -20,7 +20,7 @@
  */
 export interface TimelineEntry {
   id: string;
-  type: "DECISION" | "TRADE" | "NOTE" | "WATCHLIST" | "LOOP";
+  type: "DECISION" | "TRADE" | "NOTE" | "WATCHLIST" | "LOOP" | "PAPER_DECISION";
   occurredAt: string;
   title: string;
   summary: string;

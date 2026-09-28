@@ -191,10 +191,8 @@ export const assessToken = createServerFn({ method: "POST" })
 
 // ── Server Function: logPaperDecision ───────────────────────────────────────
 //
-// This is a PERSIST-FREE function: it returns the decision object back to the
-// caller so the client can store it. We deliberately do not write to any
-// database table for now — that wiring belongs to ECHO (the next surface
-// we're building) and should happen with a proper migrations review.
+// Persists a DR.DEX paper decision to the paper_decisions table.
+// Paper-only — we DO NOT execute anything, even if user has API keys.
 
 export const logPaperDecision = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -212,9 +210,31 @@ export const logPaperDecision = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data, context }): Promise<PaperDecision> => {
-    // Paper-only — we DO NOT execute anything, even if user has API keys.
-    // We just record the decision and return it.
+    const { supabase, userId } = context;
+
+    // Paper-only — no real execution path exists in this codebase.
+    const { data: saved, error } = await (supabase.from as any)("paper_decisions")
+      .insert({
+        user_id: userId,
+        token_address: data.tokenAddress,
+        chain: data.chain,
+        action: data.action,
+        rationale: data.rationale,
+        invalidation_condition: data.invalidationCondition,
+        target_price: data.targetPrice ?? null,
+        stop_loss: data.stopLoss ?? null,
+        position_size_pct: data.positionSizePct,
+        governor_action: data.governorAction,
+      })
+      .select("id, decided_at")
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to save paper decision: ${error.message}`);
+    }
+
     return {
+      id: (saved as any)?.id,
       tokenAddress: data.tokenAddress,
       chain: data.chain,
       action: data.action,
@@ -224,6 +244,33 @@ export const logPaperDecision = createServerFn({ method: "POST" })
       stopLoss: data.stopLoss,
       positionSizePct: data.positionSizePct,
       governorAction: data.governorAction,
-      decidedAt: new Date().toISOString(),
+      decidedAt: (saved as any)?.decided_at ?? new Date().toISOString(),
     };
+  });
+
+// ── Server Function: resolvePaperDecision ───────────────────────────────────
+//
+// Updates the outcome of a paper decision after the trade resolves.
+
+export const resolvePaperDecision = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      decisionId: z.string().uuid(),
+      outcome: z.enum(["tp_hit", "sl_hit", "invalidated", "expired", "unknown"]),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    const { error } = await (supabase.from as any)("paper_decisions")
+      .update({
+        outcome: data.outcome,
+        resolved_at: new Date().toISOString(),
+      })
+      .eq("id", data.decisionId)
+      .eq("user_id", userId);
+
+    if (error) throw new Error(`Failed to resolve paper decision: ${error.message}`);
+    return { ok: true, decisionId: data.decisionId, outcome: data.outcome };
   });

@@ -230,6 +230,7 @@ export const getUserTrades = createServerFn({ method: "GET" })
 
 /** 5. Trade Execute / Swap Quote via Jupiter V6 */
 export const getJupiterSwapQuote = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .validator(
     z.object({
       inputMint: z.string(),

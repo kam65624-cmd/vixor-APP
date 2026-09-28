@@ -14,21 +14,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CandlePattern } from "@/domains/analysis/engine/core/types";
 
 // Re-export the types so this file is self-contained
-import type {
-  PatternSummary,
-  PatternAnalysisResult,
-} from "./candlestick-analyzer";
+import type { PatternSummary, PatternAnalysisResult } from "./candlestick-analyzer";
 
 // ── Mock bars helper ─────────────────────────────────────────────────────────
 
-function makeBar(over: Partial<{
-  time: number;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-}> = {}): { time: number; open: number; high: number; low: number; close: number; volume: number } {
+function makeBar(
+  over: Partial<{
+    time: number;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+  }> = {},
+): { time: number; open: number; high: number; low: number; close: number; volume: number } {
   return {
     time: 1700000000000,
     open: 100,
@@ -70,7 +69,10 @@ function deriveBias(
     return { bias: "BEARISH", confidence };
   }
   const strongest = [...bullish, ...bearish].sort((a, b) => b.reliability - a.reliability)[0];
-  return { bias: "NEUTRAL", confidence: Math.min(Math.round(strongest?.reliability ?? 0 * 0.5), 100) };
+  return {
+    bias: "NEUTRAL",
+    confidence: Math.min(Math.round(strongest?.reliability ?? 0 * 0.5), 100),
+  };
 }
 
 function buildSummary(
@@ -106,7 +108,13 @@ describe("deriveBias", () => {
   it("returns BULLISH when bullish >> bearish", () => {
     const bullish: CandlePattern[] = [
       { name: "Hammer", index: 0, type: "BULLISH", reliability: 80, description: "test" },
-      { name: "Bullish Engulfing", index: 1, type: "BULLISH", reliability: 75, description: "test" },
+      {
+        name: "Bullish Engulfing",
+        index: 1,
+        type: "BULLISH",
+        reliability: 75,
+        description: "test",
+      },
       { name: "Morning Star", index: 2, type: "BULLISH", reliability: 70, description: "test" },
     ];
     const result = deriveBias(bullish, []);
@@ -191,7 +199,13 @@ describe("buildSummary", () => {
   it("counts bullish and bearish correctly", () => {
     const patterns: CandlePattern[] = [
       { name: "Hammer", index: 0, type: "BULLISH", reliability: 80, description: "test" },
-      { name: "Bullish Engulfing", index: 1, type: "BULLISH", reliability: 75, description: "test" },
+      {
+        name: "Bullish Engulfing",
+        index: 1,
+        type: "BULLISH",
+        reliability: 75,
+        description: "test",
+      },
       { name: "Shooting Star", index: 2, type: "BEARISH", reliability: 70, description: "test" },
     ];
     const summary = buildSummary(patterns, "BULLISH", 80);
@@ -207,7 +221,13 @@ describe("PatternAnalysisResult interface completeness", () => {
       totalPatterns: 5,
       bullishCount: 3,
       bearishCount: 2,
-      strongestSignal: { name: "Hammer", index: 0, type: "BULLISH", reliability: 80, description: "test" },
+      strongestSignal: {
+        name: "Hammer",
+        index: 0,
+        type: "BULLISH",
+        reliability: 80,
+        description: "test",
+      },
       overallBias: "BULLISH",
       confidenceScore: 80,
       riskImplication: "SUPPORTS_ENTRY",

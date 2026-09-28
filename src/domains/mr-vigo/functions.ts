@@ -181,7 +181,7 @@ export const investigateToken = createServerFn({ method: "POST" })
     const liquidityEvidence: Evidence[] = [];
     let tokenName = "Unknown";
     let tokenSymbol = "???";
-    let tokenImage: string | undefined;
+    let tokenImage: string | null | undefined;
 
     try {
       const detail = await getTokenDetail({ data: { address, chain } });
@@ -325,7 +325,7 @@ export const investigateToken = createServerFn({ method: "POST" })
         chain,
         name: tokenName,
         symbol: tokenSymbol,
-        imageUrl: tokenImage,
+        imageUrl: tokenImage ?? undefined,
       },
       verdict,
       evidence: {
@@ -339,5 +339,5 @@ export const investigateToken = createServerFn({ method: "POST" })
       unknowns,
       investigatedAt,
       complete,
-    };
+    } as InvestigationResult as unknown as InvestigationResult;
   });

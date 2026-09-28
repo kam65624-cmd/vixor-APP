@@ -63,6 +63,39 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       errors.push(`signal_tracking: ${err instanceof Error ? err.message : "unknown"}`);
     }
 
+    // ── 1b. Paper decisions (DR.DEX) ───────────────────────────────
+    try {
+      const { data, error } = await (supabase.from as any)("paper_decisions")
+        .select("id, token_address, chain, action, governor_action, outcome, decided_at")
+        .eq("user_id", userId)
+        .order("decided_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      for (const d of data ?? []) {
+        const outcomeTag =
+          d.outcome === "tp_hit"
+            ? "TP HIT"
+            : d.outcome === "sl_hit"
+              ? "SL HIT"
+              : d.outcome === "invalidated"
+                ? "INVALIDATED"
+                : d.outcome === "expired"
+                  ? "EXPIRED"
+                  : "PENDING";
+        timeline.push({
+          id: `paper-${d.id}`,
+          type: "PAPER_DECISION" as const,
+          occurredAt: d.decided_at,
+          title: `Paper ${(d.action ?? "DECIDE").toUpperCase()} ${d.token_address?.slice(0, 8)}…`,
+          summary: `Governor: ${d.governor_action ?? "—"}. Outcome: ${outcomeTag}.`,
+          tag: outcomeTag,
+        });
+      }
+    } catch (err) {
+      // paper_decisions table may not exist yet — degrade gracefully
+      errors.push(`paper_decisions: ${err instanceof Error ? err.message : "unknown"}`);
+    }
+
     // ── 2. Recent closed trades ─────────────────────────────────────
     try {
       const { data, error } = await supabase
