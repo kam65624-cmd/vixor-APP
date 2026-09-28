@@ -59,6 +59,41 @@ const en = {
     settings: "Settings",
     backtest: "Backtest",
     experiments: "Experiments",
+    // Bottom dock items (dockItems in BottomBar.tsx — rendered by DynamicDock)
+    swap: "Swap",
+    desk: "Desk",
+    alpha: "Alpha",
+    moreButton: "More",
+    moreNavAria: "More navigation",
+    mainNavAria: "Main navigation",
+    // "More" sheet (MorePanel + DynamicDock) — canonical English strings live in
+    // the nav data; these keys are mapped at render time by useMoreNavStrings().
+    more: {
+      explore: "Explore",
+      itemsCount: "{count} items",
+      categories: {
+        market: "Market Intelligence",
+        ai: "AI & Automation",
+        performance: "Performance",
+        platform: "Platform",
+      },
+      items: {
+        radar: "Radar",
+        pulse: "Pulse & Whale",
+        predictions: "Predictions",
+        dailyLoop: "Daily Loop",
+        strategyLab: "Strategy Lab",
+        visionAi: "Vision AI",
+        trackers: "Trackers",
+        pnl: "PnL Tracker",
+        journal: "Journal",
+        settings: "Settings",
+        profile: "Profile",
+        premium: "Premium",
+        rewards: "Rewards",
+        referral: "Referral",
+      },
+    },
   },
 
   // ═══ HEADER ═══

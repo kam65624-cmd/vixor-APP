@@ -28,8 +28,8 @@ type VerifiedToken = {
 const TIER_FILTERS = ["All", "Tier 1", "Tier 2", "Tier 3"] as const;
 
 const TRUST_DISTRIBUTION = [
-  { range: "90-100", count: 3, color: "var(--char-vix)" },
-  { range: "80-89", count: 1, color: "var(--char-vix)" },
+  { range: "90-100", count: 3, color: "var(--accent-hunt)" },
+  { range: "80-89", count: 1, color: "var(--accent-hunt)" },
   { range: "70-79", count: 3, color: "var(--color-bullish)" },
   { range: "60-69", count: 1, color: "var(--color-neutral-wait)" },
   { range: "50-59", count: 1, color: "var(--color-neutral-wait)" },
@@ -45,7 +45,7 @@ function tierLabel(tier: number): string {
 function tierColor(tier: number): string {
   switch (tier) {
     case 1:
-      return "var(--char-vix)";
+      return "var(--accent-hunt)";
     case 2:
       return "var(--color-neutral-wait)";
     case 3:
@@ -58,7 +58,7 @@ function tierColor(tier: number): string {
 function tierBg(tier: number): string {
   switch (tier) {
     case 1:
-      return "var(--char-vix-dim)";
+      return "var(--accent-hunt-dim)";
     case 2:
       return "var(--color-neutral-wait)";
     case 3:
@@ -69,7 +69,7 @@ function tierBg(tier: number): string {
 }
 
 function trustBarColor(score: number): string {
-  if (score >= 80) return "var(--char-vix)";
+  if (score >= 80) return "var(--accent-hunt)";
   if (score >= 60) return "var(--color-bullish)";
   if (score >= 40) return "var(--color-neutral-wait)";
   return "var(--color-bearish)";
@@ -86,7 +86,7 @@ function formatDate(dateStr: string): string {
 function categoryColor(cat: string): string {
   switch (cat) {
     case "DeFi":
-      return "var(--char-vix)";
+      return "var(--accent-hunt)";
     case "Yield":
       return "var(--color-bullish)";
     case "Payments":
@@ -147,8 +147,8 @@ function VerifiedTokensPage() {
     <PageLayout
       title="Verified Tokens"
       badge="VETTED"
-      badgeColor="var(--char-vix)"
-      loadingColor="var(--char-vix)"
+      badgeColor="var(--accent-hunt)"
+      loadingColor="var(--accent-hunt)"
     >
       <style>{`
         @keyframes alert-stagger {
@@ -167,9 +167,9 @@ function VerifiedTokensPage() {
             minHeight: "44px",
             fontSize: "12px",
             fontWeight: 700,
-            color: "var(--char-vix)",
-            background: "var(--char-vix-dim)",
-            border: "1px solid var(--char-vix-border)",
+            color: "var(--accent-hunt)",
+            background: "var(--accent-hunt-dim)",
+            border: "1px solid var(--accent-hunt-border)",
             borderRadius: "10px",
             padding: "0 16px",
             display: "inline-flex",
@@ -179,10 +179,10 @@ function VerifiedTokensPage() {
             transition: "background 0.15s ease",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "var(--char-vix-border)";
+            (e.currentTarget as HTMLElement).style.background = "var(--accent-hunt-border)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
+            (e.currentTarget as HTMLElement).style.background = "var(--accent-hunt-dim)";
           }}
         >
           <span aria-hidden="true">←</span>
@@ -220,13 +220,13 @@ function VerifiedTokensPage() {
                 border: "none",
                 cursor: "pointer",
                 color: isActive ? "var(--color-background)" : "var(--color-muted-foreground)",
-                background: isActive ? "var(--char-vix)" : "transparent",
+                background: isActive ? "var(--accent-hunt)" : "transparent",
                 whiteSpace: "nowrap",
                 transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--accent-hunt-dim)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -247,7 +247,7 @@ function VerifiedTokensPage() {
           {
             label: "Verified Status",
             value: data ? "Verified" : "-",
-            color: "var(--char-vix)",
+            color: "var(--accent-hunt)",
           },
         ]}
       />
@@ -281,7 +281,7 @@ function VerifiedTokensPage() {
         )}
 
         {!isLoading && data && (
-          <DataRow leftAccent="var(--char-vix-border)">
+          <DataRow leftAccent="var(--accent-hunt-border)">
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div
                 style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}

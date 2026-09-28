@@ -25,9 +25,15 @@ interface LanguageToggleProps {
 export function LanguageToggle({ className }: LanguageToggleProps) {
   const i18n = useI18nSafe();
   const active = i18n?.lang ?? "en";
+  // Accessible group name follows the active language (settings.language key).
+  const groupLabel = i18n ? i18n.t("settings.language") : "Language";
 
   return (
-    <div className={cn("flex items-center gap-2.5", className)} role="group" aria-label="Language">
+    <div
+      className={cn("flex items-center gap-2.5", className)}
+      role="group"
+      aria-label={groupLabel}
+    >
       <Languages size={15} className="shrink-0 text-muted-foreground" aria-hidden="true" />
       <div
         className="flex items-center rounded-xl p-0.5"

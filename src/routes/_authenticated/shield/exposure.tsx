@@ -97,15 +97,15 @@ function ExposurePage() {
     <PageLayout
       title="Exposure Monitor"
       badge="RISK"
-      badgeColor="var(--char-sly)"
-      loadingColor="var(--char-sly)"
+      badgeColor="var(--accent-shield)"
+      loadingColor="var(--accent-shield)"
     >
       <StatsRow
         stats={[
           {
             label: "Total Exposure",
             value: formatUSD(totalExposure),
-            color: "var(--char-sly)",
+            color: "var(--accent-shield)",
           },
           {
             label: "At Risk Tokens",
@@ -166,7 +166,7 @@ function ExposurePage() {
                 ? "var(--shield-caution)"
                 : opt === "Danger"
                   ? "var(--shield-danger)"
-                  : "var(--char-sly)";
+                  : "var(--accent-shield)";
           return (
             <button
               key={opt}
@@ -323,17 +323,17 @@ function ExposurePage() {
               fontWeight: 700,
               letterSpacing: "0.04em",
               borderRadius: "10px",
-              border: `1px solid var(--char-sly-border)`,
-              background: "var(--char-sly)14",
-              color: "var(--char-sly)",
+              border: `1px solid var(--accent-shield-border)`,
+              background: "var(--accent-shield)14",
+              color: "var(--accent-shield)",
               cursor: "pointer",
               transition: "background 0.15s ease, transform 0.1s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)22";
+              (e.currentTarget as HTMLElement).style.background = "var(--accent-shield)22";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)14";
+              (e.currentTarget as HTMLElement).style.background = "var(--accent-shield)14";
             }}
           >
             Scan All Tokens
@@ -405,7 +405,7 @@ const ExposureRow = memo(function ExposureRow({ token, index }: ExposureRowProps
             style={{
               fontSize: "11px",
               fontWeight: 600,
-              color: "var(--char-sly)",
+              color: "var(--accent-shield)",
               fontFamily: "var(--font-mono)",
               flexShrink: 0,
             }}

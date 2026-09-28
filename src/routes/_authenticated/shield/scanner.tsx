@@ -149,8 +149,8 @@ function ShieldScannerPage() {
     <PageLayout
       title="Contract Scanner"
       badge="SCAN"
-      badgeColor="var(--char-sly)"
-      loadingColor="var(--char-sly)"
+      badgeColor="var(--accent-shield)"
+      loadingColor="var(--accent-shield)"
     >
       <style>{`
         @keyframes alert-stagger {
@@ -208,7 +208,7 @@ function ShieldScannerPage() {
                 transition: "border-color 0.15s ease",
               }}
               onFocus={(e) => {
-                (e.target as HTMLInputElement).style.borderColor = "var(--char-sly-border)";
+                (e.target as HTMLInputElement).style.borderColor = "var(--accent-shield-border)";
               }}
               onBlur={(e) => {
                 (e.target as HTMLInputElement).style.borderColor = "var(--color-border)";
@@ -226,21 +226,21 @@ function ShieldScannerPage() {
                 minWidth: "48px",
                 fontSize: "12px",
                 fontWeight: 700,
-                color: pasted ? "var(--shield-safe)" : "var(--char-sly)",
-                background: pasted ? "var(--shield-safe)14" : "var(--char-sly)14",
-                border: `1px solid ${pasted ? "var(--shield-safe)" : "var(--char-sly-border)"}`,
+                color: pasted ? "var(--shield-safe)" : "var(--accent-shield)",
+                background: pasted ? "var(--shield-safe)14" : "var(--accent-shield)14",
+                border: `1px solid ${pasted ? "var(--shield-safe)" : "var(--accent-shield-border)"}`,
                 borderRadius: "10px",
                 padding: "0 14px",
                 cursor: "pointer",
                 transition: "background 0.15s ease, transform 0.1s ease",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "var(--char-sly)22";
+                (e.currentTarget as HTMLElement).style.background = "var(--accent-shield)22";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.background = pasted
                   ? "var(--shield-safe)14"
-                  : "var(--char-sly)14";
+                  : "var(--accent-shield)14";
               }}
             >
               {pasted ? "✓" : "Paste"}
@@ -283,7 +283,7 @@ function ShieldScannerPage() {
                 transition: "border-color 0.15s ease",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--char-sly-border)";
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-shield-border)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.borderColor = "var(--color-border)";
@@ -331,8 +331,8 @@ function ShieldScannerPage() {
                       minHeight: "44px",
                       fontSize: "13px",
                       fontWeight: chain === c ? 700 : 500,
-                      color: chain === c ? "var(--char-sly)" : "var(--color-foreground)",
-                      background: chain === c ? "var(--char-sly)14" : "transparent",
+                      color: chain === c ? "var(--accent-shield)" : "var(--color-foreground)",
+                      background: chain === c ? "var(--accent-shield)14" : "transparent",
                       border: "none",
                       borderBottom:
                         c !== CHAINS[CHAINS.length - 1] ? "1px solid var(--color-border)" : "none",
@@ -371,23 +371,25 @@ function ShieldScannerPage() {
               letterSpacing: "0.04em",
               borderRadius: "12px",
               border: "none",
-              background: address.length < 10 ? "var(--color-muted)" : "var(--char-sly)",
+              background: address.length < 10 ? "var(--color-muted)" : "var(--accent-shield)",
               color:
                 address.length < 10 ? "var(--color-muted-foreground)" : "var(--color-background)",
               cursor: address.length < 10 ? "not-allowed" : "pointer",
-              boxShadow: address.length >= 10 ? "0 0 20px var(--char-sly-glow)" : "none",
+              boxShadow: address.length >= 10 ? "0 0 20px var(--accent-shield-glow)" : "none",
               transition: "background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease",
             }}
             onMouseEnter={(e) => {
               if (address.length >= 10) {
                 (e.currentTarget as HTMLElement).style.transform = "scale(1.01)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 0 28px var(--char-sly-glow)";
+                (e.currentTarget as HTMLElement).style.boxShadow =
+                  "0 0 28px var(--accent-shield-glow)";
               }
             }}
             onMouseLeave={(e) => {
               if (address.length >= 10) {
                 (e.currentTarget as HTMLElement).style.transform = "scale(1)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px var(--char-sly-glow)";
+                (e.currentTarget as HTMLElement).style.boxShadow =
+                  "0 0 20px var(--accent-shield-glow)";
               }
             }}
           >
@@ -589,7 +591,7 @@ function ShieldScannerPage() {
                       fontSize: "12px",
                       fontWeight: 700,
                       fontFamily: "var(--font-mono)",
-                      color: "var(--char-sly)",
+                      color: "var(--accent-shield)",
                     }}
                   >
                     {result.totalHolders.toLocaleString()}

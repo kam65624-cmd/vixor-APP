@@ -47,7 +47,7 @@ function severityColor(s: CaseSeverity): string {
 function statusColor(s: CaseStatus): string {
   switch (s) {
     case "Open":
-      return "var(--char-sly)";
+      return "var(--accent-shield)";
     case "Monitoring":
       return "var(--shield-caution)";
     case "Closed":
@@ -118,19 +118,19 @@ function InvestigationCasesPage() {
     <PageLayout
       title="Investigation Cases"
       badge="CASES"
-      badgeColor="var(--char-sly)"
+      badgeColor="var(--accent-shield)"
       tabs={[...TABS]}
       activeTab={activeTab}
       onTabChange={setActiveTab}
       tabCounts={tabCounts}
-      loadingColor="var(--char-sly)"
+      loadingColor="var(--accent-shield)"
     >
       <StatsRow
         stats={[
           {
             label: "Total Cases",
             value: String(totalCount),
-            color: "var(--char-sly)",
+            color: "var(--accent-shield)",
           },
           {
             label: "Open",
@@ -261,7 +261,7 @@ const CaseRow = memo(function CaseRow({ caseItem, index }: CaseRowProps) {
             fontSize: "12px",
             fontWeight: 800,
             fontFamily: "var(--font-mono)",
-            color: "var(--char-sly)",
+            color: "var(--accent-shield)",
           }}
         >
           {caseItem.id}
@@ -299,7 +299,7 @@ const CaseRow = memo(function CaseRow({ caseItem, index }: CaseRowProps) {
           style={{
             fontSize: "12px",
             fontWeight: 700,
-            color: "var(--char-sly)",
+            color: "var(--accent-shield)",
           }}
         >
           {caseItem.tokenName}

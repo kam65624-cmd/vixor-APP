@@ -29,7 +29,7 @@ function changeText(change: number): string {
 function chainColor(chain: string): string {
   switch (chain) {
     case "Solana":
-      return "var(--char-vix)";
+      return "var(--accent-hunt)";
     case "ETH":
       return "var(--color-info)";
     case "BSC":
@@ -100,8 +100,8 @@ function TokenRadarPage() {
     <PageLayout
       title="Token Radar"
       badge="HUNT"
-      badgeColor="var(--char-vix)"
-      loadingColor="var(--char-vix)"
+      badgeColor="var(--accent-hunt)"
+      loadingColor="var(--accent-hunt)"
     >
       <style>{`
         @keyframes alert-stagger {
@@ -158,7 +158,7 @@ function TokenRadarPage() {
               boxSizing: "border-box",
             }}
             onFocus={(e) => {
-              (e.target as HTMLInputElement).style.borderColor = "var(--char-vix)";
+              (e.target as HTMLInputElement).style.borderColor = "var(--accent-hunt)";
             }}
             onBlur={(e) => {
               (e.target as HTMLInputElement).style.borderColor = "var(--color-border)";
@@ -197,13 +197,13 @@ function TokenRadarPage() {
                 border: "none",
                 cursor: "pointer",
                 color: isActive ? "var(--color-background)" : "var(--color-muted-foreground)",
-                background: isActive ? "var(--char-vix)" : "transparent",
+                background: isActive ? "var(--accent-hunt)" : "transparent",
                 whiteSpace: "nowrap",
                 transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background = "var(--char-vix-dim)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--accent-hunt-dim)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -229,7 +229,7 @@ function TokenRadarPage() {
           {
             label: "New Today",
             value: "38",
-            color: "var(--char-vix)",
+            color: "var(--accent-hunt)",
           },
           {
             label: "Trending",
@@ -281,7 +281,7 @@ function TokenRadarPage() {
               <DataRow
                 key={token.address}
                 onClick={() => handleTokenClick(token.address)}
-                leftAccent="var(--char-vix-border)"
+                leftAccent="var(--accent-hunt-border)"
                 style={{
                   animation: `alert-stagger 0.3s ease-out ${index * 0.04}s both`,
                 }}

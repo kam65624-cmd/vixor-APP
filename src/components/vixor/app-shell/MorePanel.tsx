@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 
 import { LanguageToggle } from "@/components/vixor/i18n/LanguageToggle";
+import { useI18nSafe } from "@/shared/i18n";
+import { useMoreNavStrings } from "@/shared/i18n/nav-strings";
 import {
   RadarIcon,
   PulseIcon,
@@ -88,6 +90,11 @@ export interface MorePanelProps {
 }
 
 export function MorePanel({ currentPath, onClose }: MorePanelProps) {
+  // Localized strings for the sheet (falls back to canonical English copy)
+  const nav = useMoreNavStrings();
+  const i18n = useI18nSafe();
+  const languageLabel = i18n ? i18n.t("settings.language") : "Language";
+
   // Prevent body scroll when panel is open
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -170,7 +177,7 @@ export function MorePanel({ currentPath, onClose }: MorePanelProps) {
             {" "}
             <span style={{ fontSize: "15px", fontWeight: 800, color: "var(--color-foreground)" }}>
               {" "}
-              Explore{" "}
+              {nav.explore}{" "}
             </span>{" "}
             <span
               className="text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded-lg"
@@ -181,7 +188,9 @@ export function MorePanel({ currentPath, onClose }: MorePanelProps) {
               }}
             >
               {" "}
-              {moreNavCategories.reduce((acc, cat) => acc + cat.items.length, 0)} items{" "}
+              {nav.itemsCount(
+                moreNavCategories.reduce((acc, cat) => acc + cat.items.length, 0),
+              )}{" "}
             </span>{" "}
           </div>{" "}
           <motion.button
@@ -217,7 +226,7 @@ export function MorePanel({ currentPath, onClose }: MorePanelProps) {
           <span
             style={{ fontSize: "12px", fontWeight: 600, color: "var(--color-muted-foreground)" }}
           >
-            Language
+            {languageLabel}
           </span>
           <LanguageToggle />
         </div>
@@ -237,7 +246,7 @@ export function MorePanel({ currentPath, onClose }: MorePanelProps) {
                   padding: "4px 8px 6px",
                 }}
               >
-                {category.title}
+                {nav.categoryTitle(category.title)}
               </div>
 
               {/* Items Grid */}
@@ -283,7 +292,7 @@ export function MorePanel({ currentPath, onClose }: MorePanelProps) {
                       >
                         {item.icon}
                       </span>
-                      {item.label}
+                      {nav.itemLabel(item.to, item.label)}
                     </Link>
                   );
                 })}

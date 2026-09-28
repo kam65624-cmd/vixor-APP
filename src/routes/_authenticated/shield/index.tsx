@@ -133,15 +133,15 @@ function ShieldDashboardPage() {
     <PageLayout
       title="SHIELD"
       badge="FORENSICS"
-      badgeColor="var(--char-sly)"
-      loadingColor="var(--char-sly)"
+      badgeColor="var(--accent-shield)"
+      loadingColor="var(--accent-shield)"
     >
       <StatsRow
         stats={[
           {
             label: "Tokens Scanned",
             value: String(tokensScanned),
-            color: "var(--char-sly)",
+            color: "var(--accent-shield)",
             icon: "🔍",
           },
           {
@@ -250,7 +250,7 @@ function ShieldDashboardPage() {
                 style={{
                   fontSize: "12px",
                   fontWeight: 700,
-                  color: "var(--char-sly)",
+                  color: "var(--accent-shield)",
                   fontFamily: "var(--font-mono)",
                 }}
               >
@@ -340,11 +340,11 @@ function ShieldDashboardPage() {
               letterSpacing: "0.04em",
               borderRadius: "10px",
               border: "none",
-              background: "var(--char-sly)",
+              background: "var(--accent-shield)",
               color: "var(--color-background)",
               cursor: "pointer",
               transition: "opacity 0.15s ease, transform 0.1s ease",
-              boxShadow: `0 4px 16px var(--char-sly-glow)`,
+              boxShadow: `0 4px 16px var(--accent-shield-glow)`,
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.opacity = "0.85";
@@ -419,7 +419,7 @@ const QuickActionButton = memo(function QuickActionButton({
         aria-hidden="true"
         style={{
           fontSize: "20px",
-          filter: isActive ? "drop-shadow(0 0 4px var(--char-sly-glow))" : "none",
+          filter: isActive ? "drop-shadow(0 0 4px var(--accent-shield-glow))" : "none",
           transition: "filter 0.15s ease",
         }}
       >
@@ -429,7 +429,7 @@ const QuickActionButton = memo(function QuickActionButton({
         style={{
           fontSize: "11px",
           fontWeight: 700,
-          color: isActive ? "var(--char-sly)" : "var(--color-foreground)",
+          color: isActive ? "var(--accent-shield)" : "var(--color-foreground)",
           letterSpacing: "0.02em",
           transition: "color 0.15s ease",
         }}
@@ -509,7 +509,7 @@ const CaseCard = memo(function CaseCard({ caseItem, index }: CaseCardProps) {
           style={{
             fontSize: "12px",
             fontWeight: 700,
-            color: "var(--char-sly)",
+            color: "var(--accent-shield)",
             fontFamily: "var(--font-mono)",
           }}
         >
@@ -663,7 +663,7 @@ const TrustDistributionChart = memo(function TrustDistributionChart({
           style={{
             fontSize: "11px",
             fontWeight: 700,
-            color: "var(--char-sly)",
+            color: "var(--accent-shield)",
             fontFamily: "var(--font-mono)",
           }}
         >

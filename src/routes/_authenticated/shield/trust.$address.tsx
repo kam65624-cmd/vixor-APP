@@ -181,8 +181,8 @@ function TrustScorePage() {
       <PageLayout
         title="Trust Score"
         badge="ANALYSIS"
-        badgeColor="var(--char-sly)"
-        loadingColor="var(--char-sly)"
+        badgeColor="var(--accent-shield)"
+        loadingColor="var(--accent-shield)"
       >
         <PageScrollArea>
           <div
@@ -209,8 +209,8 @@ function TrustScorePage() {
       <PageLayout
         title="Trust Score"
         badge="ANALYSIS"
-        badgeColor="var(--char-sly)"
-        loadingColor="var(--char-sly)"
+        badgeColor="var(--accent-shield)"
+        loadingColor="var(--accent-shield)"
       >
         <PageScrollArea>
           <div style={{ padding: "40px", color: "var(--shield-danger)" }}>
@@ -226,8 +226,8 @@ function TrustScorePage() {
       <PageLayout
         title="Trust Score"
         badge="ANALYSIS"
-        badgeColor="var(--char-sly)"
-        loadingColor="var(--char-sly)"
+        badgeColor="var(--accent-shield)"
+        loadingColor="var(--accent-shield)"
       >
         <PageScrollArea>
           <div style={{ padding: "40px", color: "var(--color-muted-foreground)" }}>
@@ -242,8 +242,8 @@ function TrustScorePage() {
     <PageLayout
       title="Trust Score"
       badge="ANALYSIS"
-      badgeColor="var(--char-sly)"
-      loadingColor="var(--char-sly)"
+      badgeColor="var(--accent-shield)"
+      loadingColor="var(--accent-shield)"
     >
       <style>{`
         @keyframes alert-stagger {
@@ -263,9 +263,9 @@ function TrustScorePage() {
               minHeight: "44px",
               fontSize: "12px",
               fontWeight: 700,
-              color: "var(--char-sly)",
-              background: "var(--char-sly)14",
-              border: "1px solid var(--char-sly-border)",
+              color: "var(--accent-shield)",
+              background: "var(--accent-shield)14",
+              border: "1px solid var(--accent-shield-border)",
               borderRadius: "10px",
               padding: "0 16px",
               display: "inline-flex",
@@ -275,10 +275,10 @@ function TrustScorePage() {
               transition: "background 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)22";
+              (e.currentTarget as HTMLElement).style.background = "var(--accent-shield)22";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--char-sly)14";
+              (e.currentTarget as HTMLElement).style.background = "var(--accent-shield)14";
             }}
           >
             <span aria-hidden="true">←</span>
@@ -314,12 +314,12 @@ function TrustScorePage() {
               style={{
                 fontSize: "14px",
                 fontWeight: 700,
-                color: "var(--char-sly)",
+                color: "var(--accent-shield)",
               }}
             >
               ${data.symbol}
             </span>
-            <PageBadge label={data.chain} color="var(--char-sly-dim)" small />
+            <PageBadge label={data.chain} color="var(--accent-shield-dim)" small />
           </div>
           <button
             type="button"
