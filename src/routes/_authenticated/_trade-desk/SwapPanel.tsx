@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback } from "react";
 import { ArrowDownUp, Loader2, ShieldAlert, Wallet2, CheckCircle2, XCircle } from "lucide-react";
+import { TokenAnalysisPanel } from "./TokenAnalysisPanel";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { useWallet } from "@/domains/wallet/adapter/WalletProvider";
@@ -251,7 +252,17 @@ export function SwapPanel() {
 
   return (
     <div style={{ ...card, padding: "20px", marginTop: "16px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+      <TokenAnalysisPanel />
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          marginBottom: "16px",
+          marginTop: "4px",
+        }}
+      >
         <ArrowDownUp className="size-4" style={{ color: "var(--color-accent)" }} />
         <span style={{ fontSize: "14px", fontWeight: 700 }}>On-Chain Swap</span>
         <span
