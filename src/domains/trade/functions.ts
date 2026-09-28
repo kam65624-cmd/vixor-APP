@@ -285,6 +285,45 @@ export const saveUserTrade = createServerFn({ method: "POST" })
     return { ok: !error, tradeId: (inserted as any)?.id ?? null, error: error?.message ?? null };
   });
 
+/** 5c. Save a swap execution record to the canonical trades table (Phase 2.8) */
+export const saveSwapExecution = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      tokenAddress: z.string(),
+      tokenSymbol: z.string(),
+      chain: z.string().default("solana"),
+      side: z.enum(["buy", "sell"]),
+      amount: z.number(),
+      priceUsd: z.number().optional(),
+      totalUsd: z.number().optional(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    if (!userId) return { ok: false, tradeId: null, error: "Unauthorized" };
+
+    // Map swap fields to canonical trades table schema
+    const { data: inserted, error } = await (supabase.from as any)("trades")
+      .insert({
+        user_id: userId,
+        pair: `${data.tokenSymbol}/USDC`,
+        direction: data.side === "buy" ? "long" : "short",
+        entry_price: data.priceUsd ?? 0,
+        quantity: data.amount,
+        status: "pending",
+        source: "swap",
+        token_address: data.tokenAddress,
+        chain: data.chain,
+        strategy: `swap:${data.chain}`,
+        tags: [data.chain, "swap"],
+      })
+      .select("id")
+      .single();
+
+    return { ok: !error, tradeId: (inserted as any)?.id ?? null, error: error?.message ?? null };
+  });
+
 /** 6. Get popular Jupiter SPL tokens list */
 export const getPopularSwapTokens = createServerFn({ method: "GET" }).handler(async () => {
   return SOLANA_MINTS;

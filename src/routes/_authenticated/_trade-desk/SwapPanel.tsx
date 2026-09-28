@@ -13,7 +13,7 @@ import {
   get1inchSwapQuote,
   get1inchSwapTransaction,
   getEvmSwapTokens,
-  saveUserTrade,
+  saveSwapExecution,
 } from "@/domains/trade/functions";
 import { signAndSendSolanaTransaction } from "@/domains/wallet/adapters/phantom-adapter";
 import {
@@ -45,7 +45,7 @@ export function SwapPanel() {
   const stableJupiterTx = useStableServerFn(getJupiterSwapTransaction);
   const stable1inchQuote = useStableServerFn(get1inchSwapQuote);
   const stable1inchTx = useStableServerFn(get1inchSwapTransaction);
-  const stableSaveTrade = useStableServerFn(saveUserTrade);
+  const stableSaveTrade = useStableServerFn(saveSwapExecution);
 
   const { data: solTokens } = useQuery({
     queryKey: ["swap-tokens", "solana"],
@@ -160,7 +160,6 @@ export function SwapPanel() {
             chain: "solana",
             side: "buy",
             amount: amountNum,
-            status: "confirmed",
           },
         });
 
@@ -199,7 +198,6 @@ export function SwapPanel() {
             chain: "evm",
             side: "buy",
             amount: amountNum,
-            status: "pending",
           },
         });
 
