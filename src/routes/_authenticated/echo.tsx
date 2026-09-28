@@ -66,6 +66,8 @@ function typeIcon(t: TimelineEntry["type"]) {
       return Star;
     case "LOOP":
       return Calendar;
+    case "PAPER_DECISION":
+      return Activity;
   }
 }
 
@@ -81,6 +83,8 @@ function typeColor(t: TimelineEntry["type"]) {
       return "var(--color-accent, #8B5CF6)";
     case "LOOP":
       return "var(--color-neutral-wait, #F59E0B)";
+    case "PAPER_DECISION":
+      return "var(--color-primary)";
   }
 }
 
