@@ -14,10 +14,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CandlePattern } from "@/domains/analysis/engine/core/types";
 
 // Re-export the types so this file is self-contained
-import type {
-  PatternSummary,
-  PatternAnalysisResult,
-} from "./candlestick-analyzer";
+import type { PatternSummary, PatternAnalysisResult } from "./candlestick-analyzer";
 
 // ── Mock bars helper ─────────────────────────────────────────────────────────
 
@@ -28,7 +25,8 @@ function makeBar(over: Partial<{
   low: number;
   close: number;
   volume: number;
-}> = {}): { time: number; open: number; high: number; low: number; close: number; volume: number } {
+}> = {},
+): { time: number; open: number; high: number; low: number; close: number; volume: number } {
   return {
     time: 1700000000000,
     open: 100,
@@ -70,7 +68,7 @@ function deriveBias(
     return { bias: "BEARISH", confidence };
   }
   const strongest = [...bullish, ...bearish].sort((a, b) => b.reliability - a.reliability)[0];
-  return { bias: "NEUTRAL", confidence: Math.min(Math.round(strongest?.reliability ?? 0 * 0.5), 100) };
+  return { bias: "NEUTRAL", confidence: Math.min(Math.round(strongest?.reliability ?? 0 * 0.5), 100), };
 }
 
 function buildSummary(
