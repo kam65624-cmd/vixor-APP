@@ -73,11 +73,15 @@ export const getEchoOverview = createServerFn({ method: "GET" })
       if (error) throw error;
       for (const d of data ?? []) {
         const outcomeTag =
-          d.outcome === "tp_hit" ? "TP HIT" :
-          d.outcome === "sl_hit" ? "SL HIT" :
-          d.outcome === "invalidated" ? "INVALIDATED" :
-          d.outcome === "expired" ? "EXPIRED" :
-          "PENDING";
+          d.outcome === "tp_hit"
+            ? "TP HIT"
+            : d.outcome === "sl_hit"
+              ? "SL HIT"
+              : d.outcome === "invalidated"
+                ? "INVALIDATED"
+                : d.outcome === "expired"
+                  ? "EXPIRED"
+                  : "PENDING";
         timeline.push({
           id: `paper-${d.id}`,
           type: "PAPER_DECISION" as const,
