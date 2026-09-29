@@ -6,7 +6,10 @@
 // For Solana tokens, we defer to RugCheck.
 //
 // Docs: https://docs.gopluslabs.io/reference/token-security-api
+//
+// Rate limiting: integrated via shared rate-limiter.ts (Phase 4.2).
 // ============================================================================
+import { goplusLimiter } from "@/shared/utils/rate-limiter";
 
 const GOPLUS_BASE = "https://api.gopluslabs.io/api/v1";
 
@@ -90,6 +93,12 @@ export async function fetchGoPlusSecurity(
   // Solana tokens aren't supported by GoPlus — caller should use RugCheck
   if (!chainId) {
     return { success: false, data: null, error: `Chain ${chain} not supported by GoPlus` };
+  }
+
+  // Rate limiting (60 req/min free tier)
+  const limiter = goplusLimiter();
+  if (!limiter.tryRecord()) {
+    return { success: false, data: null, error: "GoPlus rate limited, retry shortly" };
   }
 
   try {

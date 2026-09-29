@@ -8,7 +8,9 @@
 // Docs: https://docs.birdeye.so/reference
 //
 // Graceful degradation: If no API key, returns empty results.
+// Rate limiting: integrated via shared rate-limiter.ts (Phase 4.2).
 // ============================================================================
+import { birdeyeLimiter } from "@/shared/utils/rate-limiter";
 
 const BIRDEYE_BASE = "https://public-api.birdeye.so";
 
@@ -103,6 +105,9 @@ export async function fetchBirdeyeTokenOverview(
 ): Promise<BirdeyeTokenOverview | null> {
   if (!hasBirdeyeKey()) return null;
 
+  const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
+  if (!limiter.tryRecord()) return null;
+
   const birdeyeChain = BIRDEYE_CHAINS[chain.toLowerCase()] || "solana";
 
   try {
@@ -126,6 +131,9 @@ export async function fetchBirdeyeTrending(
   limit: number = 20,
 ): Promise<BirdeyeTrendingToken[]> {
   if (!hasBirdeyeKey()) return [];
+
+  const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
+  if (!limiter.tryRecord()) return [];
 
   const birdeyeChain = BIRDEYE_CHAINS[chain.toLowerCase()] || "solana";
 
@@ -153,6 +161,9 @@ export async function fetchBirdeyePrice(
   chain: string = "solana",
 ): Promise<{ price: number; liquidity: number } | null> {
   if (!hasBirdeyeKey()) return null;
+
+  const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
+  if (!limiter.tryRecord()) return null;
 
   const birdeyeChain = BIRDEYE_CHAINS[chain.toLowerCase()] || "solana";
 
@@ -189,6 +200,9 @@ export async function fetchBirdeyeOHLCV(
   limit: number = 100,
 ): Promise<BirdeyeOHLCV[]> {
   if (!hasBirdeyeKey()) return [];
+
+  const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
+  if (!limiter.tryRecord()) return [];
 
   const birdeyeChain = BIRDEYE_CHAINS[chain.toLowerCase()] || "solana";
   const endTime = Math.floor(Date.now() / 1000);
@@ -241,6 +255,9 @@ export async function fetchBirdeyeWalletTxns(
 ): Promise<BirdeyeWalletTx[]> {
   if (!hasBirdeyeKey()) return [];
 
+  const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
+  if (!limiter.tryRecord()) return [];
+
   const birdeyeChain = BIRDEYE_CHAINS[chain.toLowerCase()] || "solana";
 
   try {
@@ -267,6 +284,9 @@ export async function fetchBirdeyeTopTraders(
   chain: string = "solana",
 ): Promise<Array<{ address: string; pnl: number; volume: number; tradeCount: number }>> {
   if (!hasBirdeyeKey()) return [];
+
+  const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
+  if (!limiter.tryRecord()) return [];
 
   const birdeyeChain = BIRDEYE_CHAINS[chain.toLowerCase()] || "solana";
 
