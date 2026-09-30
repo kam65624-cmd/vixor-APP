@@ -7,6 +7,11 @@
 //
 // Docs: https://docs.birdeye.so/reference
 //
+// Endpoints covered:
+//   - Token overview, price, OHLCV, trending
+//   - Wallet transactions, top traders, wallet identity
+//   - Smart Money token list, money flow, token fees
+//
 // Graceful degradation: If no API key, returns empty results.
 // Rate limiting: integrated via shared rate-limiter.ts (Phase 4.2).
 // ============================================================================
@@ -272,6 +277,219 @@ export async function fetchBirdeyeWalletTxns(
     if (!res.ok) return [];
     const json = await res.json();
     return (json.data?.solana || json.data?.items || []) as BirdeyeWalletTx[];
+  } catch {
+    return [];
+  }
+}
+
+// ── Smart Money Token List ───────────────────────────────────────────────────
+
+export interface BirdeyeSmartMoneyToken {
+  address: string;
+  name: string;
+  symbol: string;
+  price: number;
+  priceChange24hPercent: number;
+  volume24h: number;
+  liquidity: number;
+  logoURI: string;
+  smartTradersNo: number;
+  smartMoneyInflow: number;
+  smartMoneyOutflow: number;
+  smartMoneyNetFlow: number;
+  traderStyle: string;
+}
+
+/**
+ * Fetch tokens ranked by smart money activity (Solana only).
+ * trader_style: all | sniper | degen | whale | institutional
+ * sort_by: smart_traders_no | smart_money_inflow | smart_money_outflow | smart_money_net_flow
+ */
+export async function fetchBirdeyeSmartMoneyTokens(
+  chain: string = "solana",
+  options: {
+    interval?: "1h" | "4h" | "1d" | "7d";
+    traderStyle?: "all" | "sniper" | "degen" | "whale" | "institutional";
+    sortBy?: "smart_traders_no" | "smart_money_inflow" | "smart_money_outflow" | "smart_money_net_flow";
+    sortType?: "desc" | "asc";
+    limit?: number;
+  } = {},
+): Promise<BirdeyeSmartMoneyToken[]> {
+  if (!hasBirdeyeKey()) return [];
+
+  const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
+  if (!limiter.tryRecord()) return [];
+
+  const birdeyeChain = BIRDEYE_CHAINS[chain.toLowerCase()] || "solana";
+  const {
+    interval = "1d",
+    traderStyle = "all",
+    sortBy = "smart_traders_no",
+    sortType = "desc",
+    limit = 20,
+  } = options;
+
+  try {
+    const url = `${BIRDEYE_BASE}/smart-money/v1/token/list?interval=${interval}&trader_style=${traderStyle}&sort_by=${sortBy}&sort_type=${sortType}&limit=${limit}`;
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(10_000),
+      headers: { ...getBirdeyeHeaders(), "x-chain": birdeyeChain },
+    });
+
+    if (!res.ok) return [];
+    const json = await res.json();
+    return (json.data?.tokens || json.data || []) as BirdeyeSmartMoneyToken[];
+  } catch {
+    return [];
+  }
+}
+
+// ── Token Money Flow ───────────────────────────────────────────────────────
+
+export interface BirdeyeMoneyFlow {
+  tokenAddress: string;
+  inflow: number;
+  outflow: number;
+  netFlow: number;
+  smartMoneyInflow: number;
+  smartMoneyOutflow: number;
+  smartMoneyNetFlow: number;
+  smartTradersNo: number;
+  frames: Record<string, { inflow: number; outflow: number; netFlow: number }>;
+}
+
+/**
+ * Fetch money flow data for a specific token (Solana only).
+ */
+export async function fetchBirdeyeTokenMoneyFlow(
+  tokenAddress: string,
+  options: {
+    wallets?: string[];
+    walletTags?: ("kol" | "whale" | "program")[];
+    frames?: ("1m" | "5m" | "30m" | "1h" | "2h" | "4h" | "8h" | "24h")[];
+  } = {},
+): Promise<BirdeyeMoneyFlow | null> {
+  if (!hasBirdeyeKey()) return null;
+
+  const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
+  if (!limiter.tryRecord()) return null;
+
+  const {
+    wallets = [],
+    walletTags = [],
+    frames = ["1h", "4h", "24h"],
+  } = options;
+
+  try {
+    const res = await fetch(`${BIRDEYE_BASE}/defi/v3/token/money-flow`, {
+      method: "POST",
+      signal: AbortSignal.timeout(10_000),
+      headers: {
+        ...getBirdeyeHeaders(),
+        "Content-Type": "application/json",
+        "x-chain": "solana",
+      },
+      body: JSON.stringify({
+        token_address: tokenAddress,
+        wallets: wallets.length > 0 ? wallets : undefined,
+        wallet_tags: walletTags.length > 0 ? walletTags : undefined,
+        frames,
+      }),
+    });
+
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data as BirdeyeMoneyFlow;
+  } catch {
+    return null;
+  }
+}
+
+// ── Wallet Identity ─────────────────────────────────────────────────────────
+
+export interface BirdeyeWalletIdentity {
+  address: string;
+  type: "wallet" | "exchange" | "protocol" | "token" | "program" | "unknown";
+  entity?: string;
+  label: string;
+  category: string;
+  tags: string[];
+  domains: string[];
+  domainsTotal: number;
+}
+
+/**
+ * Resolve a wallet address or .sol domain to its identity.
+ */
+export async function fetchBirdeyeWalletIdentity(
+  address: string,
+): Promise<BirdeyeWalletIdentity | null> {
+  if (!hasBirdeyeKey()) return null;
+
+  const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
+  if (!limiter.tryRecord()) return null;
+
+  try {
+    const res = await fetch(`${BIRDEYE_BASE}/identity/v1/single?address=${encodeURIComponent(address)}`, {
+      signal: AbortSignal.timeout(8_000),
+      headers: getBirdeyeHeaders(),
+    });
+
+    if (!res.ok) return null;
+    const json = await res.json();
+    const d = json.data || {};
+    return {
+      address: d.address || address,
+      type: d.type || "unknown",
+      entity: d.entity,
+      label: d.label || address.slice(0, 8),
+      category: d.category || "",
+      tags: d.tags || [],
+      domains: d.domains || [],
+      domainsTotal: d.domains_total || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ── Token Fees ─────────────────────────────────────────────────────────────
+
+export interface BirdeyeTokenFee {
+  interval: string;
+  fees: number;
+  revenue: number;
+  uniqueTokens: number;
+  uniqueWallets: number;
+}
+
+/**
+ * Fetch fee data for a token across multiple timeframes (Solana only).
+ * intervals: alltime, 24h, 8h, 4h, 2h, 1h, 30m, 15m, 5m, 1m (max 3 per request)
+ */
+export async function fetchBirdeyeTokenFees(
+  tokenAddress: string,
+  intervals: Array<"alltime" | "24h" | "8h" | "4h" | "2h" | "1h" | "30m" | "15m" | "5m" | "1m"> = ["24h", "4h", "1h"],
+): Promise<BirdeyeTokenFee[]> {
+  if (!hasBirdeyeKey()) return [];
+
+  const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
+  if (!limiter.tryRecord()) return [];
+
+  const intervalStr = intervals.slice(0, 3).join(",");
+
+  try {
+    const res = await fetch(
+      `${BIRDEYE_BASE}/defi/v3/token/fee/single?address=${tokenAddress}&interval=${intervalStr}`,
+      {
+        signal: AbortSignal.timeout(10_000),
+        headers: { ...getBirdeyeHeaders(), "x-chain": "solana" },
+      },
+    );
+
+    if (!res.ok) return [];
+    const json = await res.json();
+    return (json.data || []) as BirdeyeTokenFee[];
   } catch {
     return [];
   }
