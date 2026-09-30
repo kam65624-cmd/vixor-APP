@@ -24,6 +24,8 @@ import {
   fetchBirdeyeTokenOverview,
   fetchBirdeyeWalletTxns,
   fetchBirdeyeTopTraders,
+  fetchBirdeyeSmartMoneyTokens,
+  fetchBirdeyeTokenMoneyFlow,
 } from "./birdeye-client";
 import { calculateAccelerationScore } from "./acceleration";
 import { classifyWallet } from "./whale-classifier";
@@ -270,4 +272,73 @@ export const getTopTraders = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const traders = await fetchBirdeyeTopTraders(data.tokenAddress, data.chain).catch(() => []);
     return { traders };
+  });
+
+// ── Smart Money ───────────────────────────────────────────────────────────────
+
+export interface SmartMoneyToken {
+  address: string;
+  name: string;
+  symbol: string;
+  price: number;
+  priceChange24h: number;
+  volume24h: number;
+  liquidity: number;
+  smartTradersNo: number;
+  smartMoneyNetFlow: number;
+  smartMoneyInflow: number;
+  smartMoneyOutflow: number;
+  traderStyle: string;
+  imageUrl?: string;
+}
+
+export const getSmartMoneyTokens = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      chain: z.string().optional(),
+      interval: z.enum(["1h", "4h", "1d", "7d"]).optional(),
+      traderStyle: z.enum(["all", "sniper", "degen", "whale", "institutional"]).optional(),
+      sortBy: z
+        .enum([
+          "smart_traders_no",
+          "smart_money_inflow",
+          "smart_money_outflow",
+          "smart_money_net_flow",
+        ])
+        .optional(),
+      limit: z.number().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const tokens = await fetchBirdeyeSmartMoneyTokens(data?.chain || "solana", {
+      interval: data?.interval || "1d",
+      traderStyle: data?.traderStyle || "all",
+      sortBy: data?.sortBy || "smart_traders_no",
+      limit: data?.limit || 20,
+    }).catch(() => []);
+
+    return {
+      tokens: tokens.map((t) => ({
+        address: t.address,
+        name: t.name,
+        symbol: t.symbol,
+        price: t.price,
+        priceChange24h: t.priceChange24hPercent,
+        volume24h: t.volume24h,
+        liquidity: t.liquidity,
+        smartTradersNo: t.smartTradersNo,
+        smartMoneyNetFlow: t.smartMoneyNetFlow,
+        smartMoneyInflow: t.smartMoneyInflow,
+        smartMoneyOutflow: t.smartMoneyOutflow,
+        traderStyle: t.traderStyle,
+        imageUrl: t.logoURI,
+      })) as SmartMoneyToken[],
+    };
+  });
+
+export const getTokenMoneyFlow = createServerFn({ method: "GET" })
+  .validator(z.object({ tokenAddress: z.string() }))
+  .handler(async ({ data }) => {
+    const flow = await fetchBirdeyeTokenMoneyFlow(data.tokenAddress).catch(() => null);
+    return { flow };
   });

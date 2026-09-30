@@ -2,8 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { getTrendingTokens } from "@/domains/hunt/functions";
-import type { TrendingToken } from "@/domains/hunt/functions";
+import { getTrendingTokens, getSmartMoneyTokens } from "@/domains/hunt/functions";
+import type { TrendingToken, SmartMoneyToken } from "@/domains/hunt/functions";
 import {
   PageLayout,
   PageScrollArea,
@@ -118,12 +118,23 @@ function AlphaSignalsPage() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [selectedChain, setSelectedChain] = useState("solana");
+  const [smInterval, setSmInterval] = useState<"1h" | "4h" | "1d" | "7d">("1d");
   const stableTrending = useStableServerFn(getTrendingTokens);
+  const stableSmartMoney = useStableServerFn(getSmartMoneyTokens);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["trending-tokens", selectedChain],
     queryFn: () => stableTrending({ data: { chain: selectedChain, limit: 20 } }),
     staleTime: 60_000,
+  });
+
+  const { data: smData, isLoading: smLoading } = useQuery({
+    queryKey: ["smart-money-tokens", selectedChain, smInterval],
+    queryFn: () =>
+      stableSmartMoney({
+        data: { chain: selectedChain, interval: smInterval, limit: 10 },
+      }),
+    staleTime: 120_000,
   });
 
   const tokens = data?.tokens ?? [];
@@ -427,6 +438,154 @@ function AlphaSignalsPage() {
               </DataRow>
             );
           })}
+
+        {/* ── Smart Money Section ── */}
+        <div style={{ padding: "0 16px", marginTop: "8px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "8px",
+            }}
+          >
+            <PageSectionTitle title="Smart Money" count={smData?.tokens?.length ?? 0} />
+            <div style={{ display: "flex", gap: "4px" }}>
+              {(["1h", "4h", "1d", "7d"] as const).map((iv) => (
+                <button
+                  key={iv}
+                  type="button"
+                  onClick={() => setSmInterval(iv)}
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: smInterval === iv ? 700 : 500,
+                    padding: "4px 8px",
+                    borderRadius: "6px",
+                    border: "none",
+                    cursor: "pointer",
+                    color:
+                      smInterval === iv
+                        ? "var(--color-background)"
+                        : "var(--color-muted-foreground)",
+                    background: smInterval === iv ? "var(--accent-hunt)" : "transparent",
+                  }}
+                >
+                  {iv}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {smLoading && (
+          <div
+            style={{
+              padding: "12px 16px",
+              color: "var(--color-muted-foreground)",
+              fontSize: "12px",
+            }}
+          >
+            Loading Smart Money...
+          </div>
+        )}
+
+        {!smLoading &&
+          (smData?.tokens ?? []).map((token: SmartMoneyToken, i: number) => (
+            <DataRow
+              key={token.address}
+              onClick={() => handleHotTokenClick(token.address)}
+              leftAccent="var(--accent-hunt)"
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    background: "var(--accent-hunt-dim)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    color: "var(--accent-hunt)",
+                    fontFamily: "var(--font-mono)",
+                    flexShrink: 0,
+                  }}
+                >
+                  #{i + 1}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      marginBottom: "2px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        color: "var(--color-foreground)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {token.name}
+                    </span>
+                    <PageBadge
+                      label={token.traderStyle.toUpperCase()}
+                      color="var(--accent-hunt)"
+                      small
+                    />
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "11px",
+                      color: "var(--color-muted-foreground)",
+                    }}
+                  >
+                    <span style={{ fontFamily: "var(--font-mono)" }}>
+                      {token.smartTradersNo} SM
+                    </span>
+                    <span
+                      style={{
+                        color:
+                          token.smartMoneyNetFlow >= 0
+                            ? "var(--color-bullish)"
+                            : "var(--color-bearish)",
+                        fontFamily: "var(--font-mono)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {token.smartMoneyNetFlow >= 0 ? "+" : ""}$
+                      {(token.smartMoneyNetFlow / 1000).toFixed(1)}k
+                    </span>
+                  </div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      fontFamily: "var(--font-mono)",
+                      color:
+                        token.priceChange24h >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
+                    }}
+                  >
+                    {token.priceChange24h >= 0 ? "+" : ""}
+                    {token.priceChange24h.toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+            </DataRow>
+          ))}
 
         {/* ── Signal List Section ── */}
         <PageSectionTitle title="Alpha Signals" count={filteredSignals.length} />
