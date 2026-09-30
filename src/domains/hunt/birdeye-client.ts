@@ -310,7 +310,11 @@ export async function fetchBirdeyeSmartMoneyTokens(
   options: {
     interval?: "1h" | "4h" | "1d" | "7d";
     traderStyle?: "all" | "sniper" | "degen" | "whale" | "institutional";
-    sortBy?: "smart_traders_no" | "smart_money_inflow" | "smart_money_outflow" | "smart_money_net_flow";
+    sortBy?:
+      | "smart_traders_no"
+      | "smart_money_inflow"
+      | "smart_money_outflow"
+      | "smart_money_net_flow";
     sortType?: "desc" | "asc";
     limit?: number;
   } = {},
@@ -374,11 +378,7 @@ export async function fetchBirdeyeTokenMoneyFlow(
   const limiter = birdeyeLimiter(process.env.BIRDEYE_API_KEY || "");
   if (!limiter.tryRecord()) return null;
 
-  const {
-    wallets = [],
-    walletTags = [],
-    frames = ["1h", "4h", "24h"],
-  } = options;
+  const { wallets = [], walletTags = [], frames = ["1h", "4h", "24h"] } = options;
 
   try {
     const res = await fetch(`${BIRDEYE_BASE}/defi/v3/token/money-flow`, {
@@ -430,7 +430,8 @@ export async function fetchBirdeyeWalletIdentity(
   if (!limiter.tryRecord()) return null;
 
   try {
-    const res = await fetch(`${BIRDEYE_BASE}/identity/v1/single?address=${encodeURIComponent(address)}`, {
+    const url = `${BIRDEYE_BASE}/identity/v1/single?address=${encodeURIComponent(address)}`;
+    const res = await fetch(url, {
       signal: AbortSignal.timeout(8_000),
       headers: getBirdeyeHeaders(),
     });
@@ -469,7 +470,9 @@ export interface BirdeyeTokenFee {
  */
 export async function fetchBirdeyeTokenFees(
   tokenAddress: string,
-  intervals: Array<"alltime" | "24h" | "8h" | "4h" | "2h" | "1h" | "30m" | "15m" | "5m" | "1m"> = ["24h", "4h", "1h"],
+  intervals: Array<
+    "alltime" | "24h" | "8h" | "4h" | "2h" | "1h" | "30m" | "15m" | "5m" | "1m"
+  > = ["24h", "4h", "1h"],
 ): Promise<BirdeyeTokenFee[]> {
   if (!hasBirdeyeKey()) return [];
 
