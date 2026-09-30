@@ -311,10 +311,7 @@ export async function fetchBirdeyeSmartMoneyTokens(
     interval?: "1h" | "4h" | "1d" | "7d";
     traderStyle?: "all" | "sniper" | "degen" | "whale" | "institutional";
     sortBy?:
-      | "smart_traders_no"
-      | "smart_money_inflow"
-      | "smart_money_outflow"
-      | "smart_money_net_flow";
+      "smart_traders_no" | "smart_money_inflow" | "smart_money_outflow" | "smart_money_net_flow";
     sortType?: "desc" | "asc";
     limit?: number;
   } = {},
@@ -470,9 +467,11 @@ export interface BirdeyeTokenFee {
  */
 export async function fetchBirdeyeTokenFees(
   tokenAddress: string,
-  intervals: Array<
-    "alltime" | "24h" | "8h" | "4h" | "2h" | "1h" | "30m" | "15m" | "5m" | "1m"
-  > = ["24h", "4h", "1h"],
+  intervals: Array<"alltime" | "24h" | "8h" | "4h" | "2h" | "1h" | "30m" | "15m" | "5m" | "1m"> = [
+    "24h",
+    "4h",
+    "1h",
+  ],
 ): Promise<BirdeyeTokenFee[]> {
   if (!hasBirdeyeKey()) return [];
 
