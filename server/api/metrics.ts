@@ -9,6 +9,7 @@ import {
 import { getMetricsStore } from "../_metrics-store";
 import { withRateLimit } from "../utils/with-rate-limit";
 import { handlePreflight, validateAdminKey } from "./_security";
+import { hasValidBearerSecret, isNonProductionEnvironment } from "@/shared/security/api-auth";
 
 /**
  * GET /api/metrics
@@ -32,9 +33,8 @@ const handler = defineEventHandler((event) => {
     const cronSecret = process.env.CRON_SECRET;
     const healthToken = process.env.HEALTH_TOKEN;
     const authorized =
-      (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-      (healthToken && authHeader === `Bearer ${healthToken}`) ||
-      process.env.NODE_ENV !== "production";
+      hasValidBearerSecret(authHeader, cronSecret, healthToken) ||
+      isNonProductionEnvironment(process.env.NODE_ENV);
     if (!authorized) {
       setResponseStatus(event, 401);
       return { error: "Unauthorized" };

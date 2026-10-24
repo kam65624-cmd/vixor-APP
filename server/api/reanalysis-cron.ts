@@ -1,13 +1,13 @@
 import { defineEventHandler, getMethod, getHeader, createError, setResponseStatus } from "h3";
 import { reanalyzeAllActiveAnalysisSignals } from "@/domains/analysis/reanalysis";
 import { withRateLimit } from "../utils/with-rate-limit";
-import { handlePreflight, validateAdminKey } from "./_security";
+import { handlePreflight, isCronRequestAuthorized, validateAdminKey } from "./_security";
 
 /**
  * Vercel Cron endpoint for re-analyzing tracked analysis signals.
  *
  * Triggered by: GET /api/reanalysis-cron
- * Security: x-vercel-cron header OR Bearer CRON_SECRET OR x-admin-key
+ * Security: CRON_SECRET bearer or x-admin-key.
  *
  * Flow:
  *   1. Find all active/pending signal_trackings with source_type = "analysis"
@@ -28,24 +28,28 @@ const handler = defineEventHandler(async (event) => {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
 
-  // Security: Admin key (fast path) OR Vercel Cron OR Bearer CRON_SECRET
+  // Admin key or configured CRON_SECRET bearer is required in production.
   if (validateAdminKey(event)) {
     // Authenticated via admin key — proceed
   } else {
-    const isVercelCron = getHeader(event, "x-vercel-cron") === "1";
     const cronSecret = process.env.CRON_SECRET;
+    const isAuthorizedCron = isCronRequestAuthorized(
+      getHeader(event, "authorization"),
+      cronSecret,
+      process.env.NODE_ENV,
+    );
 
-    if (isVercelCron) {
-      // Vercel Cron requests are automatically authenticated by Vercel's infrastructure
+    if (isAuthorizedCron) {
+      // Authorized by CRON_SECRET or an explicit development/test environment.
     } else if (cronSecret) {
       const authHeader = getHeader(event, "authorization");
       if (authHeader !== `Bearer ${cronSecret}`) {
         setResponseStatus(event, 401);
         return { error: "Unauthorized" };
       }
-    } else if (process.env.NODE_ENV === "production") {
+    } else {
       console.error(
-        "[REANALYSIS CRON SECURITY] Request is not from Vercel Cron and CRON_SECRET is not set. Refusing.",
+        "[REANALYSIS CRON SECURITY] CRON_SECRET is unset outside development/test. Refusing.",
       );
       setResponseStatus(event, 500);
       return { error: "Cron not configured" };

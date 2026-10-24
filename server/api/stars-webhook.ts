@@ -2,6 +2,7 @@ import { defineEventHandler, getMethod, getHeader, readBody, createError } from 
 import { supabaseAdmin } from "@/shared/supabase/client.server";
 import { withRateLimit } from "../utils/with-rate-limit";
 import { handlePreflight } from "./_security";
+import { isNonProductionEnvironment } from "@/shared/security/api-auth";
 
 // ============================================================================
 // Telegram Stars Payment Webhook
@@ -165,8 +166,10 @@ const handler = defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
   } else {
-    if (process.env.NODE_ENV === "production") {
-      console.error("[Stars Webhook] CRITICAL: TELEGRAM_WEBHOOK_SECRET not set in production!");
+    if (!isNonProductionEnvironment(process.env.NODE_ENV)) {
+      console.error(
+        "[Stars Webhook] CRITICAL: TELEGRAM_WEBHOOK_SECRET required outside development/test.",
+      );
       throw createError({ statusCode: 500, statusMessage: "Webhook not configured" });
     }
     console.warn("[Stars Webhook] WARNING: No TELEGRAM_WEBHOOK_SECRET set (development only)");

@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
+import { CONTENT_SECURITY_POLICY } from "./src/shared/security/content-security-policy";
 
 export default defineConfig({
   envPrefix: "VITE_",
@@ -36,15 +37,7 @@ export default defineConfig({
             "X-Content-Type-Options": "nosniff",
             "Referrer-Policy": "strict-origin-when-cross-origin",
             "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-            "Content-Security-Policy": [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://s3.tradingview.com https://s3.tradingview.com/tv.js https://telegram.org",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https: https://s3.tradingview.com https://cdn.dexscreener.com",
-              "connect-src 'self' https://*.supabase.co https://api.twelvedata.com https://api.binance.com https://api.telegram.org https://finnhub.io https://api.finnhub.io wss://*.supabase.co https://s3.tradingview.com https://*.tradingview.com https://public-api.birdeye.so https://mainnet.helius-rpc.com https://api.twitter.com https://api.dexscreener.com https://lunarcrush.com https://api.lunarcrush.com https://api.coingecko.com",
-              "frame-ancestors 'self' https://web.telegram.org https://t.me",
-            ].join("; "),
+            "Content-Security-Policy": CONTENT_SECURITY_POLICY,
           },
         },
       },
@@ -88,12 +81,7 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 700,
     rollupOptions: {
-      external: [
-        "ccxt",
-        "@walletconnect/sign-client",
-        "@tonconnect/sdk",
-        "node:crypto",
-      ],
+      external: ["ccxt", "@walletconnect/sign-client", "@tonconnect/sdk", "node:crypto"],
     },
   },
   server: {

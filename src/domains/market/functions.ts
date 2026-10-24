@@ -157,29 +157,6 @@ export const getOHLCV = createServerFn({ method: "GET" })
       );
     }
 
-    // Fallback: return price data from market prices (deterministic — no Math.random())
-    try {
-      const { fetchPrice } = await import("@/domains/market/server/price-fetcher");
-      const priceData = await fetchPrice(pair);
-      if (priceData) {
-        // Deterministic offsets based on pair name hash (no Math.random)
-        const hash = pair.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-        const openOff = ((hash % 20) - 10) * 0.0001;
-        const highOff = ((hash % 50) + 10) * 0.0001;
-        const lowOff = -((hash % 50) + 10) * 0.0001;
-        return {
-          open: priceData.price * (1 + openOff),
-          high: priceData.price * (1 + highOff),
-          low: priceData.price * (1 + lowOff),
-          close: priceData.price,
-          volume: 0,
-          source: priceData.source,
-        };
-      }
-    } catch {
-      // Non-fatal
-    }
-
     return null;
   });
 

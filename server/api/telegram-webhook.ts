@@ -2,6 +2,7 @@ import { defineEventHandler, getMethod, readBody, getHeader, createError } from 
 import { supabaseAdmin } from "@/shared/supabase/client.server";
 import { withRateLimit } from "../utils/with-rate-limit";
 import { handlePreflight } from "./_security";
+import { isWebhookSecretBypassAllowed } from "@/shared/security/api-auth";
 
 const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
@@ -23,7 +24,10 @@ const handler = defineEventHandler(async (event) => {
   } else {
     // SECURITY: Reject all requests when webhook secret is not configured
     // Use VIXOR_ALLOW_NO_AUTH=true explicitly for local development
-    const allowNoAuth = process.env.VIXOR_ALLOW_NO_AUTH === "true";
+    const allowNoAuth = isWebhookSecretBypassAllowed(
+      process.env.NODE_ENV,
+      process.env.VIXOR_ALLOW_NO_AUTH === "true",
+    );
     if (!allowNoAuth) {
       console.error(
         "[Telegram Webhook] TELEGRAM_WEBHOOK_SECRET not set and VIXOR_ALLOW_NO_AUTH is not true. Rejecting request.",
