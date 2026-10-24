@@ -2,6 +2,7 @@ import { defineEventHandler, getMethod, getHeader, createError, setResponseStatu
 import { checkMigrations, getPendingMigrationsSQL } from "@/shared/migrate.server";
 import { withRateLimit } from "../utils/with-rate-limit";
 import { handlePreflight, validateAdminKey } from "./_security";
+import { isNonProductionEnvironment } from "@/shared/security/api-auth";
 
 const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
@@ -17,9 +18,11 @@ const handler = defineEventHandler(async (event) => {
         setResponseStatus(event, 401);
         return { error: "Unauthorized" };
       }
-    } else if (process.env.NODE_ENV === "production") {
+    } else if (!isNonProductionEnvironment(process.env.NODE_ENV)) {
       setResponseStatus(event, 403);
-      return { error: "Migrations not accessible in production without CRON_SECRET" };
+      return {
+        error: "Migrations require an admin key, CRON_SECRET, or explicit development/test mode",
+      };
     }
   }
 

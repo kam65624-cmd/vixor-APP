@@ -8,6 +8,7 @@ import {
 } from "h3";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/shared/supabase/types";
+import { isWebhookSecretBypassAllowed } from "@/shared/security/api-auth";
 
 // --- CORS ---
 const ALLOWED_ORIGINS = [
@@ -98,6 +99,8 @@ export function validateAdminKey(event: H3Event): boolean {
   if (key === process.env.ADMIN_API_KEY || key === process.env.CRON_SECRET) return true;
   return false;
 }
+
+export { isCronRequestAuthorized } from "@/shared/security/api-auth";
 
 /**
  * Result of a successful authentication.

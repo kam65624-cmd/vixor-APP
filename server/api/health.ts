@@ -1,6 +1,7 @@
 import { defineEventHandler, getMethod, getHeader, createError } from "h3";
 import { withRateLimit } from "../utils/with-rate-limit";
 import { handlePreflight } from "./_security";
+import { hasValidBearerSecret, isNonProductionEnvironment } from "@/shared/security/api-auth";
 
 /**
  * GET /api/health
@@ -10,7 +11,7 @@ import { handlePreflight } from "./_security";
  *  - redis: ping Upstash via REST (if configured)
  *  - env: which critical env vars are present
  *
- * Auth: same gate as other /api routes — Vercel Cron header OR CRON_SECRET OR HEALTH_TOKEN.
+ * Auth: CRON_SECRET or HEALTH_TOKEN in production.
  */
 const handler = defineEventHandler(async (event) => {
   if (handlePreflight(event)) return;
@@ -20,16 +21,12 @@ const handler = defineEventHandler(async (event) => {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
 
-  // Allow CRON_SECRET OR a health-check token (HEALTH_TOKEN) OR Vercel cron
-  const isVercelCron = getHeader(event, "x-vercel-cron") === "1";
   const authHeader = getHeader(event, "authorization");
   const cronSecret = process.env.CRON_SECRET;
   const healthToken = process.env.HEALTH_TOKEN;
   const authorized =
-    isVercelCron ||
-    (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-    (healthToken && authHeader === `Bearer ${healthToken}`) ||
-    process.env.NODE_ENV !== "production";
+    hasValidBearerSecret(authHeader, cronSecret, healthToken) ||
+    isNonProductionEnvironment(process.env.NODE_ENV);
   if (!authorized) {
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
   }
