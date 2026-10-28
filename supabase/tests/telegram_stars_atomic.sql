@@ -102,7 +102,7 @@ $$;
 
 -- Simulate Supabase's table grants and prove authenticated users cannot insert or mutate payment records.
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
-VALUES ('00000000-0000-0000-0000-000000000088', 'rls-protected-payment-row', NULL, NULL);
+VALUES ('00000000-0000-0000-0000-000000000088', '33333333-0000-0000-0000-000000000001', NULL, NULL);
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.payments TO authenticated;
 SET ROLE authenticated;
 DO $$
@@ -116,12 +116,12 @@ BEGIN
   END;
   BEGIN
     UPDATE public.payments SET status = 'confirmed'
-     WHERE payload = 'rls-protected-payment-row';
+     WHERE payload = '33333333-0000-0000-0000-000000000001';
   EXCEPTION WHEN insufficient_privilege THEN
     NULL;
   END;
   BEGIN
-    DELETE FROM public.payments WHERE payload = 'rls-protected-payment-row';
+    DELETE FROM public.payments WHERE payload = '33333333-0000-0000-0000-000000000001';
   EXCEPTION WHEN insufficient_privilege THEN
     NULL;
   END;
@@ -130,10 +130,10 @@ $$;
 RESET ROLE;
 DO $$
 BEGIN
-  IF (SELECT status FROM public.payments WHERE payload = 'rls-protected-payment-row') <> 'pending' THEN
+  IF (SELECT status FROM public.payments WHERE payload = '33333333-0000-0000-0000-000000000001') <> 'pending' THEN
     RAISE EXCEPTION 'authenticated user changed payment status';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.payments WHERE payload = 'rls-protected-payment-row') THEN
+  IF NOT EXISTS (SELECT 1 FROM public.payments WHERE payload = '33333333-0000-0000-0000-000000000001') THEN
     RAISE EXCEPTION 'authenticated user deleted payment row';
   END IF;
 END;
