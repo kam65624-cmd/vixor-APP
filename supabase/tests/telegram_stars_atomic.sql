@@ -100,10 +100,12 @@ $$;
 -- Execute the exact new migration against a disposable PostgreSQL schema.
 \ir ../migrations/20261028000000_atomic_telegram_stars_fulfillment.sql
 
--- Simulate Supabase's table grants and prove authenticated users still cannot mutate payments.
+-- Simulate Supabase's table grants and prove authenticated users cannot insert or mutate payment records.
+INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
+VALUES ('00000000-0000-0000-0000-000000000088', 'rls-protected-payment-row', 1, NULL);
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.payments TO authenticated;
 SET ROLE authenticated;
-DO $$
+DO $
 BEGIN
   BEGIN
     INSERT INTO public.payments(user_id, payload, amount_stars)
@@ -112,8 +114,21 @@ BEGIN
   EXCEPTION WHEN insufficient_privilege THEN
     NULL;
   END;
+  BEGIN
+    UPDATE public.payments SET status = 'confirmed'
+     WHERE payload = 'rls-protected-payment-row';
+    RAISE EXCEPTION 'authenticated user unexpectedly updated payment status';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
+  BEGIN
+    DELETE FROM public.payments WHERE payload = 'rls-protected-payment-row';
+    RAISE EXCEPTION 'authenticated user unexpectedly deleted a payment';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
 END;
-$$;
+$;
 RESET ROLE;
 
 INSERT INTO public.point_packs(id, name, points, bonus_points)
