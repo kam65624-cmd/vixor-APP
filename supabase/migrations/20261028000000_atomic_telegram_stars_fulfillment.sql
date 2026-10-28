@@ -40,6 +40,7 @@ $$;
 
 -- End-user sessions may read their own payment history, but cannot create or mutate payment records.
 DROP POLICY IF EXISTS "users access own payments" ON public.payments;
+DROP POLICY IF EXISTS "users read own payments" ON public.payments;
 CREATE POLICY "users read own payments"
   ON public.payments FOR SELECT TO authenticated
   USING (auth.uid() = user_id);
