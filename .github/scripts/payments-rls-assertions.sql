@@ -38,7 +38,7 @@ RESET ROLE;
 
 -- Trusted server role must retain the ability to record verified transitions.
 SET ROLE service_role;
-DO $
+DO $$
 DECLARE
   affected INTEGER;
 BEGIN
@@ -47,5 +47,5 @@ BEGIN
   IF affected <> 1 THEN
     RAISE EXCEPTION 'service role could not update payment status';
   END IF;
-END $;
+END $$;
 RESET ROLE;
