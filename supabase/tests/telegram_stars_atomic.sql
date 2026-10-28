@@ -60,8 +60,8 @@ CREATE TABLE public.payments (
   telegram_charge_id text UNIQUE,
   payload text NOT NULL,
   amount_stars integer,
-  pack_id uuid,
-  plan_id uuid,
+  pack_id text,
+  plan_id text,
   status text NOT NULL DEFAULT 'pending',
   telegram_invoice_url text,
   confirmed_at timestamptz,
@@ -122,7 +122,7 @@ INSERT INTO public.premium_plans(id, name, interval)
 VALUES ('22222222-2222-2222-2222-222222222222', 'Test Pro', 'month');
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
-VALUES ('00000000-0000-0000-0000-000000000001', 'order-pack-0001', 50, '11111111-1111-1111-1111-111111111111');
+VALUES ('00000000-0000-0000-0000-000000000001', 'order-pack-0001', 50, '11111111-1111-1111-1111-111111111111'::uuid::text);
 
 SELECT public.process_telegram_stars_payment('order-pack-0001', 'charge-pack-0001', 'XTR', 50, NULL);
 SELECT public.process_telegram_stars_payment('order-pack-0001', 'charge-pack-0001', 'XTR', 50, NULL);
@@ -141,7 +141,7 @@ END;
 $$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
-VALUES ('00000000-0000-0000-0000-000000000002', 'order-pack-0002', 60, '11111111-1111-1111-1111-111111111111');
+VALUES ('00000000-0000-0000-0000-000000000002', 'order-pack-0002', 60, '11111111-1111-1111-1111-111111111111'::uuid::text);
 DO $$
 BEGIN
   BEGIN
@@ -163,10 +163,13 @@ END;
 $$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, plan_id)
-VALUES ('00000000-0000-0000-0000-000000000003', 'order-premium-0001', 100, '22222222-2222-2222-2222-222222222222');
+VALUES ('00000000-0000-0000-0000-000000000003', 'order-premium-0001', 100, NULL, '22222222-2222-2222-2222-222222222222'::uuid::text);
 SELECT public.process_telegram_stars_payment('order-premium-0001', 'charge-premium-0001', 'XTR', 100, NULL);
 SELECT public.process_telegram_stars_payment('order-premium-0001', 'charge-premium-0001', 'XTR', 100, NULL);
-DO $$
+DO $
+DECLARE
+  v_old_end timestamptz;
+  v_new_end timestamptz;
 BEGIN
   IF (SELECT count(*) FROM public.premium_subscriptions WHERE user_id = '00000000-0000-0000-0000-000000000003' AND status = 'active') <> 1 THEN
     RAISE EXCEPTION 'premium subscription missing or duplicated';
@@ -174,11 +177,28 @@ BEGIN
   IF (SELECT status FROM public.payments WHERE payload = 'order-premium-0001') <> 'confirmed' THEN
     RAISE EXCEPTION 'premium payment was not confirmed';
   END IF;
+  SELECT current_period_end INTO v_old_end
+    FROM public.premium_subscriptions
+   WHERE user_id = '00000000-0000-0000-0000-000000000003'
+     AND status = 'active';
+  INSERT INTO public.payments(user_id, payload, amount_stars, pack_id, plan_id)
+  VALUES ('00000000-0000-0000-0000-000000000003', 'order-premium-renewal-0001', 100, NULL, '22222222-2222-2222-2222-222222222222'::uuid::text);
+  PERFORM public.process_telegram_stars_payment('order-premium-renewal-0001', 'charge-premium-renewal-0001', 'XTR', 100, NULL);
+  SELECT current_period_end INTO v_new_end
+    FROM public.premium_subscriptions
+   WHERE user_id = '00000000-0000-0000-0000-000000000003'
+     AND status = 'active';
+  IF v_new_end < v_old_end + interval '29 days' THEN
+    RAISE EXCEPTION 'Premium renewal shortened the previously paid period';
+  END IF;
+  IF (SELECT count(*) FROM public.premium_subscriptions WHERE user_id = '00000000-0000-0000-0000-000000000003' AND status = 'active') <> 1 THEN
+    RAISE EXCEPTION 'Premium renewal created duplicate active subscriptions';
+  END IF;
 END;
-$$;
+$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
-VALUES ('00000000-0000-0000-0000-000000000099', 'order-pack-rollback', 70, '11111111-1111-1111-1111-111111111111');
+VALUES ('00000000-0000-0000-0000-000000000099', 'order-pack-rollback', 70, '11111111-1111-1111-1111-111111111111'::uuid::text, NULL);
 DO $$
 BEGIN
   BEGIN
