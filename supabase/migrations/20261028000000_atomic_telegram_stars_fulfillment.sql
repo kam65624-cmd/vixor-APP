@@ -10,8 +10,19 @@ ALTER TABLE public.point_packs
 ALTER TABLE public.premium_plans
   ADD COLUMN IF NOT EXISTS stars_price integer;
 
-ALTER TABLE public.payments
-  ADD CONSTRAINT payments_stars_price_positive CHECK (amount_stars IS NULL OR amount_stars > 0) NOT VALID;
+DO $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conname = 'payments_stars_price_positive'
+       AND conrelid = 'public.payments'::regclass
+  ) THEN
+    ALTER TABLE public.payments
+      ADD CONSTRAINT payments_stars_price_positive
+      CHECK (amount_stars IS NULL OR amount_stars > 0) NOT VALID;
+  END IF;
+END;
+$;
 ALTER TABLE public.payments
   VALIDATE CONSTRAINT payments_stars_price_positive;
 
