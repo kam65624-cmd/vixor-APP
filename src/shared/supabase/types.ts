@@ -178,6 +178,7 @@ export type Database = {
           points: number;
           price_cents: number;
           sort_order?: number;
+          stars_price?: number | null;
         };
         Update: {
           badge?: string | null;
@@ -188,6 +189,7 @@ export type Database = {
           points?: number;
           price_cents?: number;
           sort_order?: number;
+          stars_price?: number | null;
         };
         Relationships: [];
       };
@@ -249,6 +251,7 @@ export type Database = {
           name: string;
           price_cents: number;
           sort_order: number;
+          stars_price: number | null;
         };
         Insert: {
           badge?: string | null;
@@ -259,6 +262,7 @@ export type Database = {
           name: string;
           price_cents: number;
           sort_order?: number;
+          stars_price?: number | null;
         };
         Update: {
           badge?: string | null;
@@ -269,6 +273,7 @@ export type Database = {
           name?: string;
           price_cents?: number;
           sort_order?: number;
+          stars_price?: number | null;
         };
         Relationships: [];
       };
