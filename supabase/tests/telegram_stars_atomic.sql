@@ -105,7 +105,7 @@ INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
 VALUES ('00000000-0000-0000-0000-000000000088', 'rls-protected-payment-row', 1, NULL);
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.payments TO authenticated;
 SET ROLE authenticated;
-DO $
+DO $$
 BEGIN
   BEGIN
     INSERT INTO public.payments(user_id, payload, amount_stars)
@@ -117,19 +117,27 @@ BEGIN
   BEGIN
     UPDATE public.payments SET status = 'confirmed'
      WHERE payload = 'rls-protected-payment-row';
-    RAISE EXCEPTION 'authenticated user unexpectedly updated payment status';
   EXCEPTION WHEN insufficient_privilege THEN
     NULL;
   END;
   BEGIN
     DELETE FROM public.payments WHERE payload = 'rls-protected-payment-row';
-    RAISE EXCEPTION 'authenticated user unexpectedly deleted a payment';
   EXCEPTION WHEN insufficient_privilege THEN
     NULL;
   END;
 END;
 $;
 RESET ROLE;
+DO $
+BEGIN
+  IF (SELECT status FROM public.payments WHERE payload = 'rls-protected-payment-row') <> 'pending' THEN
+    RAISE EXCEPTION 'authenticated user changed payment status';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.payments WHERE payload = 'rls-protected-payment-row') THEN
+    RAISE EXCEPTION 'authenticated user deleted payment row';
+  END IF;
+END;
+$;
 
 INSERT INTO public.point_packs(id, name, points, bonus_points)
 VALUES ('11111111-1111-1111-1111-111111111111', 'Test pack', 100, 10);
@@ -159,7 +167,7 @@ INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
 VALUES ('00000000-0000-0000-0000-000000000002', 'order-pack-0002', 60, '11111111-1111-1111-1111-111111111111'::uuid::text);
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
 VALUES ('00000000-0000-0000-0000-000000000004', 'order-charge-reuse-0001', 50, '11111111-1111-1111-1111-111111111111'::uuid::text);
-DO $
+DO $$
 BEGIN
   BEGIN
     PERFORM public.process_telegram_stars_payment('order-pack-0002', 'charge-pack-0002', 'XTR', 59, NULL);
@@ -186,13 +194,13 @@ BEGIN
     RAISE EXCEPTION 'reused charge mutated second pending order';
   END IF;
 END;
-$;
+$$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id, plan_id)
 VALUES ('00000000-0000-0000-0000-000000000003', 'order-premium-0001', 100, NULL, '22222222-2222-2222-2222-222222222222'::uuid::text);
 SELECT public.process_telegram_stars_payment('order-premium-0001', 'charge-premium-0001', 'XTR', 100, NULL);
 SELECT public.process_telegram_stars_payment('order-premium-0001', 'charge-premium-0001', 'XTR', 100, NULL);
-DO $
+DO $$
 DECLARE
   v_old_end timestamptz;
   v_new_end timestamptz;
@@ -221,7 +229,7 @@ BEGIN
     RAISE EXCEPTION 'Premium renewal created duplicate active subscriptions';
   END IF;
 END;
-$;
+$$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id, plan_id)
 VALUES ('00000000-0000-0000-0000-000000000099', 'order-pack-rollback', 70, '11111111-1111-1111-1111-111111111111'::uuid::text, NULL);
