@@ -9,6 +9,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import { log } from "@/shared/structured-logger";
+import { isConfirmedPaymentForPurchase } from "./payment-verification";
 
 // ---------- ME / PROFILE ----------
 export const getMe = createServerFn({ method: "GET" })
@@ -80,28 +81,21 @@ export const getPremiumPlans = createServerFn({ method: "GET" })
  * Returns true only if the payment is confirmed and matches the expected payload.
  */
 async function verifyStarsPayment(
-  botToken: string,
   chargeId: string,
-  _expectedPayload: string | null,
+  userId: string,
+  resource: { kind: "pack" | "premium"; id: string },
 ): Promise<boolean> {
   try {
     const { supabaseAdmin } = await import("@/shared/supabase/client.server");
-
-    // ── Method 1: Database lookup (webhook-confirmed payments) ──
-    // Check if this chargeId was confirmed by the Telegram webhook
-    const { data: confirmedPayment } = await supabaseAdmin
+    const { data: payment, error } = await supabaseAdmin
       .from("payments")
-      .select("id, status")
+      .select("id, user_id, pack_id, plan_id, status")
       .eq("telegram_charge_id", chargeId)
       .eq("status", "confirmed")
       .maybeSingle();
 
-    if (confirmedPayment) {
-      return true;
-    }
-
-    // No need for fallback API call — webhook confirmation is the source of truth
-    return false;
+    if (error || !payment) return false;
+    return isConfirmedPaymentForPurchase(payment, userId, resource);
   } catch {
     log.error("verification_failed", { chargeId });
     return false;
@@ -133,13 +127,14 @@ export const purchasePack = createServerFn({ method: "POST" })
     // --- Payment verification ---
     const isFree = !pack.price_cents || pack.price_cents === 0;
     if (data.paymentMethod === "stars" && !isFree) {
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      if (!botToken) throw new Error("Server configuration error: Telegram bot token not set");
       if (!data.telegramChargeId) {
         throw new Error("Payment verification failed: missing charge ID");
       }
-      // Verify charge exists in confirmed payments (webhook auto-credits points)
-      const verified = await verifyStarsPayment(botToken, data.telegramChargeId, null);
+      // Verify the confirmed charge belongs to this user and this exact pack.
+      const verified = await verifyStarsPayment(data.telegramChargeId, userId, {
+        kind: "pack",
+        id: pack.id,
+      });
       if (!verified) {
         throw new Error("Payment verification failed: charge could not be confirmed");
       }
@@ -193,13 +188,14 @@ export const subscribePremium = createServerFn({ method: "POST" })
     // --- Payment verification ---
     const isFree = !plan.price_cents || plan.price_cents === 0;
     if (data.paymentMethod === "stars" && !isFree) {
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      if (!botToken) throw new Error("Server configuration error: Telegram bot token not set");
       if (!data.telegramChargeId) {
         throw new Error("Payment verification failed: missing charge ID");
       }
-      // Verify charge exists in confirmed payments (webhook auto-credits premium)
-      const verified = await verifyStarsPayment(botToken, data.telegramChargeId, null);
+      // A pack payment must not be reusable to grant a premium subscription.
+      const verified = await verifyStarsPayment(data.telegramChargeId, userId, {
+        kind: "premium",
+        id: plan.id,
+      });
       if (!verified) {
         throw new Error("Payment verification failed: charge could not be confirmed");
       }
