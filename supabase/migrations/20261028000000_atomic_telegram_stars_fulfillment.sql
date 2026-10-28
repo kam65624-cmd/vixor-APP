@@ -69,6 +69,7 @@ DECLARE
   v_period_end timestamptz;
   v_plan_interval text;
   v_existing_charge uuid;
+  v_subscription_id uuid;
 BEGIN
   IF _payload IS NULL OR length(_payload) < 8 OR length(_payload) > 512
      OR _charge_id IS NULL OR length(_charge_id) < 1 OR length(_charge_id) > 256
@@ -161,30 +162,32 @@ BEGIN
          confirmed_at = now()
    WHERE id = p.id;
 
-  -- Serialize subscription updates per user without assuming a legacy unique constraint.
+  -- Serialize subscription updates per user and keep a single active entitlement.
   PERFORM pg_advisory_xact_lock(hashtextextended(p.user_id::text, 0));
-  PERFORM 1 FROM public.premium_subscriptions
+  SELECT id INTO v_subscription_id
+    FROM public.premium_subscriptions
    WHERE user_id = p.user_id
    ORDER BY current_period_end DESC
    LIMIT 1
    FOR UPDATE;
 
   UPDATE public.premium_subscriptions
-     SET plan_id = p.plan_id,
-         status = 'active',
-         payment_provider = 'telegram_stars',
-         payment_id = _charge_id,
-         current_period_start = now(),
-         current_period_end = v_period_end,
-         updated_at = now()
-   WHERE id = (
-     SELECT id FROM public.premium_subscriptions
-      WHERE user_id = p.user_id
-      ORDER BY current_period_end DESC
-      LIMIT 1
-   );
+     SET status = 'cancelled', updated_at = now()
+   WHERE user_id = p.user_id
+     AND status = 'active'
+     AND id IS DISTINCT FROM v_subscription_id;
 
-  IF NOT FOUND THEN
+  IF v_subscription_id IS NOT NULL THEN
+    UPDATE public.premium_subscriptions
+       SET plan_id = p.plan_id,
+           status = 'active',
+           payment_provider = 'telegram_stars',
+           payment_id = _charge_id,
+           current_period_start = now(),
+           current_period_end = v_period_end,
+           updated_at = now()
+     WHERE id = v_subscription_id;
+  ELSE
     INSERT INTO public.premium_subscriptions
       (user_id, plan_id, status, current_period_start, current_period_end, payment_provider, payment_id)
     VALUES
