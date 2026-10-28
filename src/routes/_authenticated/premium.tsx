@@ -14,26 +14,17 @@ export const Route = createFileRoute("/_authenticated/premium")({
   component: PremiumPage,
 });
 
-// Server function to subscribe to a plan
+// Direct activation was granting paid access without a verified payment.
+// Keep the authenticated endpoint fail-closed until it is wired to a trusted,
+// server-side payment record. Premium access must only be granted after the
+// payment webhook has verified and recorded the charge.
 export const subscribeToPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ planId: z.string() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-
-    // Upsert subscription
-    const { error } = await supabase.from("premium_subscriptions").upsert(
-      {
-        user_id: userId,
-        plan_id: data.planId,
-        status: "active",
-        current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-      },
-      { onConflict: "user_id" },
+  .validator((d: unknown) => z.object({ planId: z.string().min(1) }).parse(d))
+  .handler(async () => {
+    throw new Error(
+      "Premium activation requires a verified payment. Direct activation is disabled.",
     );
-
-    if (error) throw new Error(error.message);
-    return { success: true };
   });
 
 function PremiumPage() {
