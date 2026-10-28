@@ -38,14 +38,14 @@ RESET ROLE;
 
 -- Trusted server role must retain the ability to record verified transitions.
 SET ROLE service_role;
-UPDATE public.payments SET status = 'confirmed' WHERE payload = 'payload-a';
-DO $$
+DO $
 DECLARE
   affected INTEGER;
 BEGIN
+  UPDATE public.payments SET status = 'confirmed' WHERE payload = 'payload-a';
   GET DIAGNOSTICS affected = ROW_COUNT;
   IF affected <> 1 THEN
     RAISE EXCEPTION 'service role could not update payment status';
   END IF;
-END $$;
+END $;
 RESET ROLE;
