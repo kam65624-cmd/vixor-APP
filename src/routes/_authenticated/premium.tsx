@@ -22,7 +22,9 @@ export const subscribeToPlan = createServerFn({ method: "POST" })
   .handler(async () => {
     // Subscription status is granted only by the verified Telegram Stars webhook.
     // Keep this endpoint fail-closed for clients that still call the legacy action.
-    throw new Error("Premium activation requires a confirmed payment. Use Telegram Stars checkout.");
+    throw new Error(
+      "Premium activation requires a confirmed payment. Use Telegram Stars checkout.",
+    );
   });
 
 function PremiumPage() {
@@ -31,7 +33,8 @@ function PremiumPage() {
   const [subscribeError, setSubscribeError] = useState<string | null>(null);
 
   const subscribeMutation = useMutation({
-    mutationFn: (planId: string) => createStarsInvoice({ data: { kind: "premium", resourceId: planId } }),
+    mutationFn: (planId: string) =>
+      createStarsInvoice({ data: { kind: "premium", resourceId: planId } }),
     onMutate: (planId) => {
       setSubscribing(planId);
       setSubscribeError(null);
