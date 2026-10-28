@@ -152,10 +152,10 @@ function PremiumPage() {
             {visiblePlans.map((plan) => {
               const isCurrent = plan.id === currentPlanId;
               const starsPrice = (plan as { stars_price?: number | null }).stars_price;
+              const hasStarsPrice = Number.isSafeInteger(starsPrice) && (starsPrice ?? 0) > 0;
               const canCheckout =
                 /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(plan.id) &&
-                Number.isSafeInteger(starsPrice) &&
-                (starsPrice ?? 0) > 0;
+                hasStarsPrice;
               const features = Array.isArray((plan as any).features)
                 ? ((plan as any).features as string[])
                 : [];
@@ -201,7 +201,7 @@ function PremiumPage() {
                       color: "var(--color-foreground)",
                     }}
                   >
-                    ${(plan.price_cents / 100).toFixed(0)}
+                    {hasStarsPrice ? String(starsPrice) + " Stars" : "$" + (plan.price_cents / 100).toFixed(0)}
                     <span
                       style={{
                         fontSize: "13px",
@@ -209,7 +209,7 @@ function PremiumPage() {
                         color: "var(--color-muted-foreground)",
                       }}
                     >
-                      /mo
+                      {plan.interval === "year" ? "/year" : "/month"}
                     </span>
                   </div>
                   {(plan as any).badge && (
