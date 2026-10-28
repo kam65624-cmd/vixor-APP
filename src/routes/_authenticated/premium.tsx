@@ -2,39 +2,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { subscribePremium } from "@/domains/user/functions";
 import { getPremiumData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
-import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import { PageLayout, Badge, ScrollArea, EmptyState } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/premium")({
   head: () => ({ meta: [{ title: "Premium — Vixor" }] }),
   component: PremiumPage,
 });
-
-// Server function to subscribe to a plan
-export const subscribeToPlan = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ planId: z.string() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-
-    // Upsert subscription
-    const { error } = await supabase.from("premium_subscriptions").upsert(
-      {
-        user_id: userId,
-        plan_id: data.planId,
-        status: "active",
-        current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-      },
-      { onConflict: "user_id" },
-    );
-
-    if (error) throw new Error(error.message);
-    return { success: true };
-  });
 
 function PremiumPage() {
   const queryClient = useQueryClient();
@@ -44,7 +20,7 @@ function PremiumPage() {
   const [subscribeSuccess, setSubscribeSuccess] = useState<string | null>(null);
 
   const subscribeMutation = useMutation({
-    mutationFn: (planId: string) => subscribeToPlan({ data: { planId } }),
+    mutationFn: (planId: string) => subscribePremium({ data: { planId, paymentMethod: "free" } }),
     onMutate: (planId) => {
       setSubscribing(planId);
     },

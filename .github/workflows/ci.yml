@@ -64,8 +64,33 @@ jobs:
       - name: Test
         run: pnpm vitest run
 
+  payments-rls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert payment RLS blocks client writes
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f .github/scripts/payments-rls-setup.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261028000000_lock_down_payment_client_writes.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f .github/scripts/payments-rls-assertions.sql
+
   build:
-    needs: [lint-and-typecheck, test]
+    needs: [lint-and-typecheck, test, payments-rls]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
