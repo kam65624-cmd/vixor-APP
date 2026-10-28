@@ -7,6 +7,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import { rejectUnverifiedPremiumActivation } from "@/shared/security/premium-activation";
 import { PageLayout, Badge, ScrollArea, EmptyState } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/premium")({
@@ -21,11 +22,7 @@ export const Route = createFileRoute("/_authenticated/premium")({
 export const subscribeToPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => z.object({ planId: z.string().min(1) }).parse(d))
-  .handler(async () => {
-    throw new Error(
-      "Premium activation requires a verified payment. Direct activation is disabled.",
-    );
-  });
+  .handler(async () => rejectUnverifiedPremiumActivation());
 
 function PremiumPage() {
   const queryClient = useQueryClient();
