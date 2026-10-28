@@ -201,7 +201,9 @@ function PremiumPage() {
                       color: "var(--color-foreground)",
                     }}
                   >
-                    {hasStarsPrice ? String(starsPrice) + " Stars" : "$" + (plan.price_cents / 100).toFixed(0)}
+                    {hasStarsPrice
+                      ? String(starsPrice) + " Stars"
+                      : "$" + (plan.price_cents / 100).toFixed(0)}
                     <span
                       style={{
                         fontSize: "13px",
