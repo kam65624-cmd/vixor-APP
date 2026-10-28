@@ -129,7 +129,10 @@ export const purchasePack = createServerFn({ method: "POST" })
     if (!pack) throw new Error("Pack not found");
 
     // --- Payment verification ---
-    const isFree = !pack.price_cents || pack.price_cents === 0;
+    // A zero fiat price does not make a Stars-priced catalog item free.
+    const isFree =
+      (!pack.price_cents || pack.price_cents === 0) &&
+      (!pack.stars_price || pack.stars_price === 0);
     if (data.paymentMethod === "stars" && !isFree) {
       if (!data.telegramChargeId) {
         throw new Error("Payment verification failed: missing charge ID");
