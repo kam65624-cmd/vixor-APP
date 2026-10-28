@@ -148,6 +148,11 @@ function PremiumPage() {
           >
             {visiblePlans.map((plan) => {
               const isCurrent = plan.id === currentPlanId;
+              const starsPrice = (plan as { stars_price?: number | null }).stars_price;
+              const canCheckout =
+                /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(plan.id) &&
+                Number.isSafeInteger(starsPrice) &&
+                (starsPrice ?? 0) > 0;
               const features = Array.isArray((plan as any).features)
                 ? ((plan as any).features as string[])
                 : [];
@@ -264,7 +269,7 @@ function PremiumPage() {
                     </button>
                   ) : (
                     <button
-                      disabled={subscribing === plan.id}
+                      disabled={subscribing === plan.id || !canCheckout}
                       onClick={() => subscribeMutation.mutate(plan.id)}
                       style={{
                         width: "100%",
@@ -280,7 +285,7 @@ function PremiumPage() {
                         fontFamily: "var(--font-sans)",
                       }}
                     >
-                      {subscribing === plan.id ? "Creating invoice..." : "Pay with Telegram Stars"}
+                      {subscribing === plan.id ? "Creating invoice..." : canCheckout ? `Pay ${starsPrice} ⭐ with Telegram Stars` : "Telegram Stars unavailable"}
                     </button>
                   )}
                 </div>
