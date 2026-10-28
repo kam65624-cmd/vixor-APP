@@ -190,7 +190,7 @@ BEGIN
 
   RETURN jsonb_build_object('status', 'confirmed', 'payment_id', p.id, 'kind', 'premium');
 END;
-$$$;
+$$;
 
 REVOKE ALL ON FUNCTION public.process_telegram_stars_payment(text, text, text, integer, bigint) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.process_telegram_stars_payment(text, text, text, integer, bigint) TO service_role;
