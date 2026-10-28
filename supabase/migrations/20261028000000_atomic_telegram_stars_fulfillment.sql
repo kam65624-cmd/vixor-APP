@@ -4,6 +4,35 @@
 ALTER TABLE public.point_packs
   ADD COLUMN IF NOT EXISTS bonus_points integer NOT NULL DEFAULT 0;
 
+-- Telegram Stars prices are explicitly configured in Stars; never derive them from client input.
+ALTER TABLE public.point_packs
+  ADD COLUMN IF NOT EXISTS stars_price integer;
+ALTER TABLE public.premium_plans
+  ADD COLUMN IF NOT EXISTS stars_price integer;
+
+ALTER TABLE public.payments
+  ADD CONSTRAINT payments_stars_price_positive CHECK (amount_stars IS NULL OR amount_stars > 0) NOT VALID;
+ALTER TABLE public.payments
+  VALIDATE CONSTRAINT payments_stars_price_positive;
+
+-- Payloads are opaque order IDs; one payload must resolve to exactly one pending order.
+DO $
+BEGIN
+  IF EXISTS (
+    SELECT payload FROM public.payments GROUP BY payload HAVING count(*) > 1
+  ) THEN
+    RAISE EXCEPTION 'Duplicate payment payloads exist; reconcile them before enabling Stars fulfillment';
+  END IF;
+  CREATE UNIQUE INDEX IF NOT EXISTS payments_payload_unique ON public.payments(payload);
+END;
+$;
+
+-- End-user sessions may read their own payment history, but cannot create or mutate payment records.
+DROP POLICY IF EXISTS "users access own payments" ON public.payments;
+CREATE POLICY "users read own payments"
+  ON public.payments FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
+
 ALTER TABLE public.payments
   ADD CONSTRAINT payments_amount_stars_positive CHECK (amount_stars > 0) NOT VALID;
 
