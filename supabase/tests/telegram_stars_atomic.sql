@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE SCHEMA IF NOT EXISTS auth;
 
-DO $$$
+DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN CREATE ROLE anon NOLOGIN; END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
@@ -126,7 +126,7 @@ VALUES ('00000000-0000-0000-0000-000000000001', 'order-pack-0001', 50, '11111111
 
 SELECT public.process_telegram_stars_payment('order-pack-0001', 'charge-pack-0001', 'XTR', 50, NULL);
 SELECT public.process_telegram_stars_payment('order-pack-0001', 'charge-pack-0001', 'XTR', 50, NULL);
-DO $$$
+DO $$
 BEGIN
   IF (SELECT balance FROM public.points_balances WHERE user_id = '00000000-0000-0000-0000-000000000001') <> 110 THEN
     RAISE EXCEPTION 'duplicate pack webhook changed points balance';
@@ -142,7 +142,7 @@ $$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
 VALUES ('00000000-0000-0000-0000-000000000002', 'order-pack-0002', 60, '11111111-1111-1111-1111-111111111111');
-DO $$$
+DO $$
 BEGIN
   BEGIN
     PERFORM public.process_telegram_stars_payment('order-pack-0002', 'charge-pack-0002', 'XTR', 59, NULL);
@@ -166,7 +166,7 @@ INSERT INTO public.payments(user_id, payload, amount_stars, plan_id)
 VALUES ('00000000-0000-0000-0000-000000000003', 'order-premium-0001', 100, '22222222-2222-2222-2222-222222222222');
 SELECT public.process_telegram_stars_payment('order-premium-0001', 'charge-premium-0001', 'XTR', 100, NULL);
 SELECT public.process_telegram_stars_payment('order-premium-0001', 'charge-premium-0001', 'XTR', 100, NULL);
-DO $$$
+DO $$
 BEGIN
   IF (SELECT count(*) FROM public.premium_subscriptions WHERE user_id = '00000000-0000-0000-0000-000000000003' AND status = 'active') <> 1 THEN
     RAISE EXCEPTION 'premium subscription missing or duplicated';
@@ -179,7 +179,7 @@ $$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
 VALUES ('00000000-0000-0000-0000-000000000099', 'order-pack-rollback', 70, '11111111-1111-1111-1111-111111111111');
-DO $$$
+DO $$
 BEGIN
   BEGIN
     PERFORM public.process_telegram_stars_payment('order-pack-rollback', 'charge-rollback', 'XTR', 70, NULL);
