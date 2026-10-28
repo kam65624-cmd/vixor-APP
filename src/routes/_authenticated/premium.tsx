@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { getPremiumData } from "@/shared/data";
+import { createStarsInvoice } from "@/domains/user/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -18,22 +19,10 @@ export const Route = createFileRoute("/_authenticated/premium")({
 export const subscribeToPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => z.object({ planId: z.string() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-
-    // Upsert subscription
-    const { error } = await supabase.from("premium_subscriptions").upsert(
-      {
-        user_id: userId,
-        plan_id: data.planId,
-        status: "active",
-        current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-      },
-      { onConflict: "user_id" },
-    );
-
-    if (error) throw new Error(error.message);
-    return { success: true };
+  .handler(async () => {
+    // Subscription status is granted only by the verified Telegram Stars webhook.
+    // Keep this endpoint fail-closed for clients that still call the legacy action.
+    throw new Error("Premium activation requires a confirmed payment. Use Telegram Stars checkout.");
   });
 
 function PremiumPage() {
@@ -44,19 +33,18 @@ function PremiumPage() {
   const [subscribeSuccess, setSubscribeSuccess] = useState<string | null>(null);
 
   const subscribeMutation = useMutation({
-    mutationFn: (planId: string) => subscribeToPlan({ data: { planId } }),
+    mutationFn: (planId: string) => createStarsInvoice({ data: { kind: "premium", resourceId: planId } }),
     onMutate: (planId) => {
       setSubscribing(planId);
-    },
-    onSuccess: (_data, planId) => {
-      queryClient.invalidateQueries({ queryKey: ["premium-data"] });
-      setSubscribeSuccess(planId);
       setSubscribeError(null);
-      setTimeout(() => setSubscribeSuccess(null), 3000);
+    },
+    onSuccess: (result) => {
+      // Telegram owns the checkout UI; premium is enabled only after the verified webhook.
+      window.location.assign(result.invoiceUrl);
     },
     onError: (err: Error) => {
-      setSubscribeError(err.message || "Subscription failed. Please try again.");
-      setTimeout(() => setSubscribeError(null), 4000);
+      setSubscribeError(err.message || "Could not create Telegram Stars invoice.");
+      setTimeout(() => setSubscribeError(null), 5000);
     },
     onSettled: () => {
       setSubscribing(null);
@@ -312,7 +300,7 @@ function PremiumPage() {
                         fontFamily: "var(--font-sans)",
                       }}
                     >
-                      {subscribing === plan.id ? "Processing..." : "Upgrade"}
+                      {subscribing === plan.id ? "Creating invoice..." : "Pay with Telegram Stars"}
                     </button>
                   )}
                 </div>
