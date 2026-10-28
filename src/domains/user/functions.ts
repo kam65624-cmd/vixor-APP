@@ -6,6 +6,7 @@
 // ============================================================================
 
 import { createServerFn } from "@tanstack/react-start";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import { log } from "@/shared/structured-logger";
@@ -56,6 +57,96 @@ export const getPremiumPlans = createServerFn({ method: "GET" })
       .eq("is_active", true)
       .order("sort_order");
     return data ?? [];
+  });
+
+// ---------- TELEGRAM STARS CHECKOUT ----------
+// Stars prices are explicit server-side catalog values. Client input only chooses an active item.
+export const createStarsInvoice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) =>
+    z.object({ kind: z.enum(["pack", "premium"]), resourceId: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) throw new Error("Telegram Stars checkout is not configured");
+
+    let item: { id: string; name: string; description?: string | null; stars_price?: number | null; is_active: boolean } | null = null;
+    if (data.kind === "pack") {
+      const { data: pack, error } = await supabaseAdmin
+        .from("point_packs")
+        .select("*")
+        .eq("id", data.resourceId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (error) throw new Error("Could not load point pack");
+      item = pack as typeof item;
+    } else {
+      const { data: plan, error } = await supabaseAdmin
+        .from("premium_plans")
+        .select("*")
+        .eq("id", data.resourceId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (error) throw new Error("Could not load premium plan");
+      item = plan as typeof item;
+    }
+
+    const starsPrice = item?.stars_price;
+    if (!item || !Number.isSafeInteger(starsPrice) || (starsPrice as number) <= 0) {
+      throw new Error("This item is not configured for Telegram Stars");
+    }
+
+    const payload = randomUUID();
+    const order = {
+      user_id: userId,
+      payload,
+      amount_stars: starsPrice as number,
+      pack_id: data.kind === "pack" ? item.id : null,
+      plan_id: data.kind === "premium" ? item.id : null,
+      status: "pending",
+    };
+    const { data: payment, error: insertError } = await supabaseAdmin
+      .from("payments")
+      .insert(order)
+      .select("id")
+      .single();
+    if (insertError || !payment) throw new Error("Could not create payment order");
+
+    const title = (data.kind === "pack" ? item.name : `Vixor Pro - ${item.name}`).slice(0, 32);
+    const description = (item.description || `Purchase ${item.name}`).slice(0, 255);
+    let invoiceUrl: string;
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${botToken}/createInvoiceLink`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          payload,
+          provider_token: "",
+          currency: "XTR",
+          prices: [{ label: title, amount: starsPrice }],
+        }),
+      });
+      const result = (await response.json()) as { ok?: boolean; result?: unknown };
+      if (!response.ok || result.ok !== true || typeof result.result !== "string") {
+        throw new Error("Telegram did not create an invoice link");
+      }
+      invoiceUrl = result.result;
+    } catch {
+      await supabaseAdmin.from("payments").update({ status: "failed" }).eq("id", payment.id).eq("status", "pending");
+      throw new Error("Could not create Telegram Stars invoice");
+    }
+
+    const { error: urlError } = await supabaseAdmin
+      .from("payments")
+      .update({ telegram_invoice_url: invoiceUrl })
+      .eq("id", payment.id)
+      .eq("status", "pending");
+    if (urlError) throw new Error("Invoice created but order update failed; contact support before retrying");
+    return { paymentId: payment.id, invoiceUrl, amountStars: starsPrice };
   });
 
 // ---------- PURCHASES ----------
