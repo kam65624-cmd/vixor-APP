@@ -85,6 +85,10 @@ BEGIN
     RAISE EXCEPTION 'pending Stars order not found' USING ERRCODE = 'P0002';
   END IF;
 
+  IF p.amount_stars IS NULL OR p.amount_stars <> _amount THEN
+    RAISE EXCEPTION 'Stars amount does not match pending order' USING ERRCODE = '22023';
+  END IF;
+
   IF p.status = 'confirmed' THEN
     IF p.telegram_charge_id = _charge_id THEN
       RETURN jsonb_build_object('status', 'duplicate', 'payment_id', p.id);
@@ -94,10 +98,6 @@ BEGIN
 
   IF p.status <> 'pending' THEN
     RAISE EXCEPTION 'Stars order is not pending' USING ERRCODE = '55000';
-  END IF;
-
-  IF p.amount_stars IS NULL OR p.amount_stars <> _amount THEN
-    RAISE EXCEPTION 'Stars amount does not match pending order' USING ERRCODE = '22023';
   END IF;
 
   IF (p.pack_id IS NULL) = (p.plan_id IS NULL) THEN
