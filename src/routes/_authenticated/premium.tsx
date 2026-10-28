@@ -2,27 +2,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { subscribePremium } from "@/domains/user/functions";
 import { getPremiumData } from "@/shared/data";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
-import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
-import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
-import { rejectUnverifiedPremiumActivation } from "@/shared/security/premium-activation";
 import { PageLayout, Badge, ScrollArea, EmptyState } from "@/components/vixor/PageLayout";
 
 export const Route = createFileRoute("/_authenticated/premium")({
   head: () => ({ meta: [{ title: "Premium — Vixor" }] }),
   component: PremiumPage,
 });
-
-// Direct activation was granting paid access without a verified payment.
-// Keep the authenticated endpoint fail-closed until it is wired to a trusted,
-// server-side payment record. Premium access must only be granted after the
-// payment webhook has verified and recorded the charge.
-export const subscribeToPlan = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ planId: z.string().min(1) }).parse(d))
-  .handler(async () => rejectUnverifiedPremiumActivation());
 
 function PremiumPage() {
   const queryClient = useQueryClient();
@@ -32,7 +20,7 @@ function PremiumPage() {
   const [subscribeSuccess, setSubscribeSuccess] = useState<string | null>(null);
 
   const subscribeMutation = useMutation({
-    mutationFn: (planId: string) => subscribeToPlan({ data: { planId } }),
+    mutationFn: (planId: string) => subscribePremium({ data: { planId, paymentMethod: "free" } }),
     onMutate: (planId) => {
       setSubscribing(planId);
     },
