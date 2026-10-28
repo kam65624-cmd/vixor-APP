@@ -2404,6 +2404,16 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      process_telegram_stars_payment: {
+        Args: {
+          _payload: string;
+          _charge_id: string;
+          _currency: string;
+          _amount: number;
+          _subscription_expiration?: number | null;
+        };
+        Returns: Json;
+      };
       credit_points: {
         Args: {
           _amount: number;
