@@ -288,7 +288,11 @@ function PremiumPage() {
                         fontFamily: "var(--font-sans)",
                       }}
                     >
-                      {subscribing === plan.id ? "Creating invoice..." : canCheckout ? `Pay ${starsPrice} ⭐ with Telegram Stars` : "Telegram Stars unavailable"}
+                      {subscribing === plan.id
+                        ? "Creating invoice..."
+                        : canCheckout
+                          ? `Pay ${starsPrice} Stars`
+                          : "Telegram Stars unavailable"}
                     </button>
                   )}
                 </div>
