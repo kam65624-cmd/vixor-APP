@@ -44,12 +44,6 @@ CREATE POLICY "users read own payments"
   ON public.payments FOR SELECT TO authenticated
   USING (auth.uid() = user_id);
 
-ALTER TABLE public.payments
-  ADD CONSTRAINT payments_amount_stars_positive CHECK (amount_stars > 0) NOT VALID;
-
-ALTER TABLE public.payments
-  VALIDATE CONSTRAINT payments_amount_stars_positive;
-
 CREATE OR REPLACE FUNCTION public.process_telegram_stars_payment(
   _payload text,
   _charge_id text,
