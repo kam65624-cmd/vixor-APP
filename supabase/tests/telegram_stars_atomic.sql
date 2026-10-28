@@ -162,7 +162,7 @@ BEGIN
 END;
 $$;
 
-INSERT INTO public.payments(user_id, payload, amount_stars, plan_id)
+INSERT INTO public.payments(user_id, payload, amount_stars, pack_id, plan_id)
 VALUES ('00000000-0000-0000-0000-000000000003', 'order-premium-0001', 100, NULL, '22222222-2222-2222-2222-222222222222'::uuid::text);
 SELECT public.process_telegram_stars_payment('order-premium-0001', 'charge-premium-0001', 'XTR', 100, NULL);
 SELECT public.process_telegram_stars_payment('order-premium-0001', 'charge-premium-0001', 'XTR', 100, NULL);
@@ -197,7 +197,7 @@ BEGIN
 END;
 $;
 
-INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
+INSERT INTO public.payments(user_id, payload, amount_stars, pack_id, plan_id)
 VALUES ('00000000-0000-0000-0000-000000000099', 'order-pack-rollback', 70, '11111111-1111-1111-1111-111111111111'::uuid::text, NULL);
 DO $$
 BEGIN
