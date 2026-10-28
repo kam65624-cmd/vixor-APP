@@ -10,6 +10,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import { log } from "@/shared/structured-logger";
+import { isPackFree } from "./payment-pricing";
 
 // ---------- ME / PROFILE ----------
 export const getMe = createServerFn({ method: "GET" })
@@ -129,10 +130,7 @@ export const purchasePack = createServerFn({ method: "POST" })
     if (!pack) throw new Error("Pack not found");
 
     // --- Payment verification ---
-    // A zero fiat price does not make a Stars-priced catalog item free.
-    const isFree =
-      (!pack.price_cents || pack.price_cents === 0) &&
-      (!pack.stars_price || pack.stars_price === 0);
+    const isFree = isPackFree(pack);
     if (data.paymentMethod === "stars" && !isFree) {
       if (!data.telegramChargeId) {
         throw new Error("Payment verification failed: missing charge ID");
