@@ -87,15 +87,16 @@ BEGIN
            confirmed_at = now()
      WHERE id = p.id;
 
-    INSERT INTO public.points_balances (user_id, balance, lifetime_earned, updated_at)
-    VALUES (p.user_id, v_points + v_bonus, v_points + v_bonus, now())
-    ON CONFLICT (user_id) DO UPDATE
-      SET balance = public.points_balances.balance + EXCLUDED.balance,
-          lifetime_earned = public.points_balances.lifetime_earned + EXCLUDED.lifetime_earned,
-          updated_at = now();
-
-    INSERT INTO public.points_transactions (user_id, amount, reason, source)
-    VALUES (p.user_id, v_points + v_bonus, 'telegram_stars_purchase', 'telegram_stars:' || _charge_id);
+    PERFORM public.credit_points(
+      _user := p.user_id,
+      _amount := v_points + v_bonus,
+      _reason := 'telegram_stars_purchase',
+      _meta := jsonb_build_object(
+        'pack_id', p.pack_id,
+        'telegram_charge_id', _charge_id,
+        'payment_method', 'stars'
+      )
+    );
 
     RETURN jsonb_build_object('status', 'confirmed', 'payment_id', p.id, 'kind', 'pack');
   END IF;
