@@ -353,16 +353,29 @@ export const createStarsInvoice = createServerFn({ method: "POST" })
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     if (!botToken) throw new Error("Telegram Stars checkout is not configured");
 
-    type CatalogItem = { id: string; name: string; description?: string | null; stars_price?: number | null };
+    type CatalogItem = {
+      id: string;
+      name: string;
+      description?: string | null;
+      stars_price?: number | null;
+    };
     let item: CatalogItem | null = null;
     if (data.kind === "pack") {
       const { data: row, error } = await supabaseAdmin
-        .from("point_packs").select("*").eq("id", data.resourceId).eq("is_active", true).maybeSingle();
+        .from("point_packs")
+        .select("*")
+        .eq("id", data.resourceId)
+        .eq("is_active", true)
+        .maybeSingle();
       if (error) throw new Error("Could not load point pack");
       if (row) item = row as unknown as CatalogItem;
     } else {
       const { data: row, error } = await supabaseAdmin
-        .from("premium_plans").select("*").eq("id", data.resourceId).eq("is_active", true).maybeSingle();
+        .from("premium_plans")
+        .select("*")
+        .eq("id", data.resourceId)
+        .eq("is_active", true)
+        .maybeSingle();
       if (error) throw new Error("Could not load premium plan");
       if (row) item = row as unknown as CatalogItem;
     }
@@ -395,7 +408,11 @@ export const createStarsInvoice = createServerFn({ method: "POST" })
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title, description, payload, provider_token: "", currency: "XTR",
+          title,
+          description,
+          payload,
+          provider_token: "",
+          currency: "XTR",
           prices: [{ label: title, amount }],
         }),
       });
@@ -405,12 +422,19 @@ export const createStarsInvoice = createServerFn({ method: "POST" })
       }
       invoiceUrl = result.result;
     } catch {
-      await supabaseAdmin.from("payments").update({ status: "failed" }).eq("id", payment.id).eq("status", "pending");
+      await supabaseAdmin
+        .from("payments")
+        .update({ status: "failed" })
+        .eq("id", payment.id)
+        .eq("status", "pending");
       throw new Error("Could not create Telegram Stars invoice");
     }
 
     const { error: updateError } = await supabaseAdmin
-      .from("payments").update({ telegram_invoice_url: invoiceUrl }).eq("id", payment.id).eq("status", "pending");
+      .from("payments")
+      .update({ telegram_invoice_url: invoiceUrl })
+      .eq("id", payment.id)
+      .eq("status", "pending");
     if (updateError) log.warn("stars_invoice_url_persist_failed", { paymentId: payment.id });
     return { paymentId: payment.id, invoiceUrl, amountStars: amount };
   });
