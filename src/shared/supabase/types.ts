@@ -167,6 +167,7 @@ export type Database = {
           points: number;
           price_cents: number;
           sort_order: number;
+          stars_price: number | null;
         };
         Insert: {
           badge?: string | null;
