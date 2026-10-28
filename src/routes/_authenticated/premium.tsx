@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { getPremiumData } from "@/shared/data";
 import { createStarsInvoice } from "@/domains/user/functions";
@@ -26,11 +26,9 @@ export const subscribeToPlan = createServerFn({ method: "POST" })
   });
 
 function PremiumPage() {
-  const queryClient = useQueryClient();
   const fetchPremium = useStableServerFn(getPremiumData);
   const [subscribing, setSubscribing] = useState<string | null>(null);
   const [subscribeError, setSubscribeError] = useState<string | null>(null);
-  const [subscribeSuccess, setSubscribeSuccess] = useState<string | null>(null);
 
   const subscribeMutation = useMutation({
     mutationFn: (planId: string) => createStarsInvoice({ data: { kind: "premium", resourceId: planId } }),
@@ -246,25 +244,7 @@ function PremiumPage() {
                       </div>
                     )}
                   </div>
-                  {subscribeSuccess === plan.id ? (
-                    <button
-                      disabled
-                      style={{
-                        width: "100%",
-                        padding: "10px",
-                        borderRadius: "8px",
-                        border: `1px solid ${"var(--color-bullish)"}33`,
-                        background: `${"var(--color-bullish)"}14`,
-                        color: "var(--color-bullish)",
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        cursor: "default",
-                        fontFamily: "var(--font-sans)",
-                      }}
-                    >
-                      ✓ Subscribed!
-                    </button>
-                  ) : isCurrent ? (
+                  {isCurrent ? (
                     <button
                       disabled
                       style={{
