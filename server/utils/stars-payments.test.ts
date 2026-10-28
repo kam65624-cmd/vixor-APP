@@ -8,11 +8,7 @@ vi.mock("@/shared/supabase/client.server", () => ({
 }));
 
 import { supabaseAdmin } from "@/shared/supabase/client.server";
-import {
-  answerStarsPreCheckout,
-  fulfillStarsPayment,
-  validateStarsOrder,
-} from "./stars-payments";
+import { answerStarsPreCheckout, fulfillStarsPayment, validateStarsOrder } from "./stars-payments";
 
 const admin = supabaseAdmin as unknown as {
   from: ReturnType<typeof vi.fn>;
@@ -38,7 +34,13 @@ describe("Telegram Stars payment contract", () => {
 
   it("rejects missing, non-pending, or amount-mismatched orders before pre-checkout approval", async () => {
     const maybeSingle = vi.fn().mockResolvedValue({
-      data: { id: "order-id", amount_stars: 50, status: "pending", pack_id: "pack-id", plan_id: null },
+      data: {
+        id: "order-id",
+        amount_stars: 50,
+        status: "pending",
+        pack_id: "pack-id",
+        plan_id: null,
+      },
       error: null,
     });
     const query = {
