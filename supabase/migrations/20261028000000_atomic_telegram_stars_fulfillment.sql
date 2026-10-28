@@ -5,9 +5,6 @@ ALTER TABLE public.point_packs
   ADD COLUMN IF NOT EXISTS bonus_points integer NOT NULL DEFAULT 0;
 
 ALTER TABLE public.payments
-  ALTER COLUMN amount_stars SET NOT NULL;
-
-ALTER TABLE public.payments
   ADD CONSTRAINT payments_amount_stars_positive CHECK (amount_stars > 0) NOT VALID;
 
 ALTER TABLE public.payments
@@ -59,7 +56,7 @@ BEGIN
     RAISE EXCEPTION 'Stars order is not pending' USING ERRCODE = '55000';
   END IF;
 
-  IF p.amount_stars <> _amount THEN
+  IF p.amount_stars IS NULL OR p.amount_stars <> _amount THEN
     RAISE EXCEPTION 'Stars amount does not match pending order' USING ERRCODE = '22023';
   END IF;
 
