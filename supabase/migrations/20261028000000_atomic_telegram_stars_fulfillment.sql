@@ -10,7 +10,7 @@ ALTER TABLE public.point_packs
 ALTER TABLE public.premium_plans
   ADD COLUMN IF NOT EXISTS stars_price integer;
 
-DO $
+DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
@@ -22,12 +22,12 @@ BEGIN
       CHECK (amount_stars IS NULL OR amount_stars > 0) NOT VALID;
   END IF;
 END;
-$;
+$$;
 ALTER TABLE public.payments
   VALIDATE CONSTRAINT payments_stars_price_positive;
 
 -- Payloads are opaque order IDs; one payload must resolve to exactly one pending order.
-DO $
+DO $$
 BEGIN
   IF EXISTS (
     SELECT payload FROM public.payments GROUP BY payload HAVING count(*) > 1
@@ -36,7 +36,7 @@ BEGIN
   END IF;
   CREATE UNIQUE INDEX IF NOT EXISTS payments_payload_unique ON public.payments(payload);
 END;
-$;
+$$;
 
 -- End-user sessions may read their own payment history, but cannot create or mutate payment records.
 DROP POLICY IF EXISTS "users access own payments" ON public.payments;
@@ -190,7 +190,7 @@ BEGIN
 
   RETURN jsonb_build_object('status', 'confirmed', 'payment_id', p.id, 'kind', 'premium');
 END;
-$$;
+$$$;
 
 REVOKE ALL ON FUNCTION public.process_telegram_stars_payment(text, text, text, integer, bigint) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.process_telegram_stars_payment(text, text, text, integer, bigint) TO service_role;
