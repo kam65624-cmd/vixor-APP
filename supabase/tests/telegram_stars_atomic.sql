@@ -102,7 +102,7 @@ $$;
 
 -- Simulate Supabase's table grants and prove authenticated users cannot insert or mutate payment records.
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
-VALUES ('00000000-0000-0000-0000-000000000088', 'rls-protected-payment-row', 1, NULL);
+VALUES ('00000000-0000-0000-0000-000000000088', 'rls-protected-payment-row', NULL, NULL);
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.payments TO authenticated;
 SET ROLE authenticated;
 DO $$
@@ -145,16 +145,16 @@ INSERT INTO public.premium_plans(id, name, interval)
 VALUES ('22222222-2222-2222-2222-222222222222', 'Test Pro', 'month');
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
-VALUES ('00000000-0000-0000-0000-000000000001', 'order-pack-0001', 50, '11111111-1111-1111-1111-111111111111'::uuid::text);
+VALUES ('00000000-0000-0000-0000-000000000001', '11111111-0000-0000-0000-000000000001', 50, '11111111-1111-1111-1111-111111111111'::uuid::text);
 
-SELECT public.process_telegram_stars_payment('order-pack-0001', 'charge-pack-0001', 'XTR', 50, NULL);
-SELECT public.process_telegram_stars_payment('order-pack-0001', 'charge-pack-0001', 'XTR', 50, NULL);
+SELECT public.process_telegram_stars_payment('11111111-0000-0000-0000-000000000001', 'charge-pack-0001', 'XTR', 50, NULL);
+SELECT public.process_telegram_stars_payment('11111111-0000-0000-0000-000000000001', 'charge-pack-0001', 'XTR', 50, NULL);
 DO $$
 BEGIN
   IF (SELECT balance FROM public.points_balances WHERE user_id = '00000000-0000-0000-0000-000000000001') <> 110 THEN
     RAISE EXCEPTION 'duplicate pack webhook changed points balance';
   END IF;
-  IF (SELECT status FROM public.payments WHERE payload = 'order-pack-0001') <> 'confirmed' THEN
+  IF (SELECT status FROM public.payments WHERE payload = '11111111-0000-0000-0000-000000000001') <> 'confirmed' THEN
     RAISE EXCEPTION 'pack payment was not confirmed';
   END IF;
   IF (SELECT count(*) FROM public.points_transactions WHERE user_id = '00000000-0000-0000-0000-000000000001') <> 1 THEN
@@ -164,42 +164,42 @@ END;
 $$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
-VALUES ('00000000-0000-0000-0000-000000000002', 'order-pack-0002', 60, '11111111-1111-1111-1111-111111111111'::uuid::text);
+VALUES ('00000000-0000-0000-0000-000000000002', '11111111-0000-0000-0000-000000000002', 60, '11111111-1111-1111-1111-111111111111'::uuid::text);
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
-VALUES ('00000000-0000-0000-0000-000000000004', 'order-charge-reuse-0001', 50, '11111111-1111-1111-1111-111111111111'::uuid::text);
+VALUES ('00000000-0000-0000-0000-000000000004', '11111111-0000-0000-0000-000000000003', 50, '11111111-1111-1111-1111-111111111111'::uuid::text);
 DO $$
 BEGIN
   BEGIN
-    PERFORM public.process_telegram_stars_payment('order-pack-0002', 'charge-pack-0002', 'XTR', 59, NULL);
+    PERFORM public.process_telegram_stars_payment('11111111-0000-0000-0000-000000000002', 'charge-pack-0002', 'XTR', 59, NULL);
     RAISE EXCEPTION 'amount mismatch was accepted';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM = 'amount mismatch was accepted' THEN RAISE; END IF;
   END;
   BEGIN
-    PERFORM public.process_telegram_stars_payment('order-pack-0002', 'charge-pack-0002', 'USD', 60, NULL);
+    PERFORM public.process_telegram_stars_payment('11111111-0000-0000-0000-000000000002', 'charge-pack-0002', 'USD', 60, NULL);
     RAISE EXCEPTION 'wrong currency was accepted';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM = 'wrong currency was accepted' THEN RAISE; END IF;
   END;
-  IF (SELECT status FROM public.payments WHERE payload = 'order-pack-0002') <> 'pending' THEN
+  IF (SELECT status FROM public.payments WHERE payload = '11111111-0000-0000-0000-000000000002') <> 'pending' THEN
     RAISE EXCEPTION 'rejected payment mutated pending order';
   END IF;
   BEGIN
-    PERFORM public.process_telegram_stars_payment('order-charge-reuse-0001', 'charge-pack-0001', 'XTR', 50, NULL);
+    PERFORM public.process_telegram_stars_payment('11111111-0000-0000-0000-000000000003', 'charge-pack-0001', 'XTR', 50, NULL);
     RAISE EXCEPTION 'charge reuse across orders was accepted';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM = 'charge reuse across orders was accepted' THEN RAISE; END IF;
   END;
-  IF (SELECT status FROM public.payments WHERE payload = 'order-charge-reuse-0001') <> 'pending' THEN
+  IF (SELECT status FROM public.payments WHERE payload = '11111111-0000-0000-0000-000000000003') <> 'pending' THEN
     RAISE EXCEPTION 'reused charge mutated second pending order';
   END IF;
 END;
 $$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id, plan_id)
-VALUES ('00000000-0000-0000-0000-000000000003', 'order-premium-0001', 100, NULL, '22222222-2222-2222-2222-222222222222'::uuid::text);
-SELECT public.process_telegram_stars_payment('order-premium-0001', 'charge-premium-0001', 'XTR', 100, NULL);
-SELECT public.process_telegram_stars_payment('order-premium-0001', 'charge-premium-0001', 'XTR', 100, NULL);
+VALUES ('00000000-0000-0000-0000-000000000003', '22222222-0000-0000-0000-000000000001', 100, NULL, '22222222-2222-2222-2222-222222222222'::uuid::text);
+SELECT public.process_telegram_stars_payment('22222222-0000-0000-0000-000000000001', 'charge-premium-0001', 'XTR', 100, NULL);
+SELECT public.process_telegram_stars_payment('22222222-0000-0000-0000-000000000001', 'charge-premium-0001', 'XTR', 100, NULL);
 DO $$
 DECLARE
   v_old_end timestamptz;
@@ -208,7 +208,7 @@ BEGIN
   IF (SELECT count(*) FROM public.premium_subscriptions WHERE user_id = '00000000-0000-0000-0000-000000000003' AND status = 'active') <> 1 THEN
     RAISE EXCEPTION 'premium subscription missing or duplicated';
   END IF;
-  IF (SELECT status FROM public.payments WHERE payload = 'order-premium-0001') <> 'confirmed' THEN
+  IF (SELECT status FROM public.payments WHERE payload = '22222222-0000-0000-0000-000000000001') <> 'confirmed' THEN
     RAISE EXCEPTION 'premium payment was not confirmed';
   END IF;
   SELECT current_period_end INTO v_old_end
@@ -216,8 +216,8 @@ BEGIN
    WHERE user_id = '00000000-0000-0000-0000-000000000003'
      AND status = 'active';
   INSERT INTO public.payments(user_id, payload, amount_stars, pack_id, plan_id)
-  VALUES ('00000000-0000-0000-0000-000000000003', 'order-premium-renewal-0001', 100, NULL, '22222222-2222-2222-2222-222222222222'::uuid::text);
-  PERFORM public.process_telegram_stars_payment('order-premium-renewal-0001', 'charge-premium-renewal-0001', 'XTR', 100, NULL);
+  VALUES ('00000000-0000-0000-0000-000000000003', '22222222-0000-0000-0000-000000000002', 100, NULL, '22222222-2222-2222-2222-222222222222'::uuid::text);
+  PERFORM public.process_telegram_stars_payment('22222222-0000-0000-0000-000000000002', 'charge-premium-renewal-0001', 'XTR', 100, NULL);
   SELECT current_period_end INTO v_new_end
     FROM public.premium_subscriptions
    WHERE user_id = '00000000-0000-0000-0000-000000000003'
@@ -232,17 +232,17 @@ END;
 $$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id, plan_id)
-VALUES ('00000000-0000-0000-0000-000000000099', 'order-pack-rollback', 70, '11111111-1111-1111-1111-111111111111'::uuid::text, NULL);
+VALUES ('00000000-0000-0000-0000-000000000099', '11111111-0000-0000-0000-000000000004', 70, '11111111-1111-1111-1111-111111111111'::uuid::text, NULL);
 DO $$
 BEGIN
   BEGIN
-    PERFORM public.process_telegram_stars_payment('order-pack-rollback', 'charge-rollback', 'XTR', 70, NULL);
+    PERFORM public.process_telegram_stars_payment('11111111-0000-0000-0000-000000000004', 'charge-rollback', 'XTR', 70, NULL);
     RAISE EXCEPTION 'expected credit_points failure was not raised';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM = 'expected credit_points failure was not raised' THEN RAISE; END IF;
     IF SQLERRM <> 'simulated credit_points failure' THEN RAISE; END IF;
   END;
-  IF (SELECT status FROM public.payments WHERE payload = 'order-pack-rollback') <> 'pending' THEN
+  IF (SELECT status FROM public.payments WHERE payload = '11111111-0000-0000-0000-000000000004') <> 'pending' THEN
     RAISE EXCEPTION 'payment confirmation was not rolled back after credit failure';
   END IF;
   IF EXISTS (SELECT 1 FROM public.points_balances WHERE user_id = '00000000-0000-0000-0000-000000000099') THEN
