@@ -142,7 +142,9 @@ $$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
 VALUES ('00000000-0000-0000-0000-000000000002', 'order-pack-0002', 60, '11111111-1111-1111-1111-111111111111'::uuid::text);
-DO $$
+INSERT INTO public.payments(user_id, payload, amount_stars, pack_id)
+VALUES ('00000000-0000-0000-0000-000000000004', 'order-charge-reuse-0001', 50, '11111111-1111-1111-1111-111111111111'::uuid::text);
+DO $
 BEGIN
   BEGIN
     PERFORM public.process_telegram_stars_payment('order-pack-0002', 'charge-pack-0002', 'XTR', 59, NULL);
@@ -159,8 +161,17 @@ BEGIN
   IF (SELECT status FROM public.payments WHERE payload = 'order-pack-0002') <> 'pending' THEN
     RAISE EXCEPTION 'rejected payment mutated pending order';
   END IF;
+  BEGIN
+    PERFORM public.process_telegram_stars_payment('order-charge-reuse-0001', 'charge-pack-0001', 'XTR', 50, NULL);
+    RAISE EXCEPTION 'charge reuse across orders was accepted';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM = 'charge reuse across orders was accepted' THEN RAISE; END IF;
+  END;
+  IF (SELECT status FROM public.payments WHERE payload = 'order-charge-reuse-0001') <> 'pending' THEN
+    RAISE EXCEPTION 'reused charge mutated second pending order';
+  END IF;
 END;
-$$;
+$;
 
 INSERT INTO public.payments(user_id, payload, amount_stars, pack_id, plan_id)
 VALUES ('00000000-0000-0000-0000-000000000003', 'order-premium-0001', 100, NULL, '22222222-2222-2222-2222-222222222222'::uuid::text);
