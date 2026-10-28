@@ -30,7 +30,12 @@ export async function validateStarsOrder(
   currency: unknown,
   amount: unknown,
 ): Promise<StarsOrderCheck> {
-  if (!validPayload(payload) || currency !== "XTR" || !Number.isSafeInteger(amount) || (amount as number) <= 0) {
+  if (
+    !validPayload(payload) ||
+    currency !== "XTR" ||
+    !Number.isSafeInteger(amount) ||
+    (amount as number) <= 0
+  ) {
     return { ok: false, errorMessage: "Invalid payment details." };
   }
 
@@ -53,7 +58,9 @@ export async function validateStarsOrder(
 }
 
 /** Atomically confirms the payment and grants its purchased entitlement in PostgreSQL. */
-export async function fulfillStarsPayment(payment: SuccessfulPayment): Promise<"confirmed" | "duplicate"> {
+export async function fulfillStarsPayment(
+  payment: SuccessfulPayment,
+): Promise<"confirmed" | "duplicate"> {
   if (
     !validPayload(payment.invoice_payload) ||
     payment.currency !== "XTR" ||
@@ -90,7 +97,11 @@ export async function answerStarsPreCheckout(query: PreCheckoutQuery): Promise<v
 
   let validation: StarsOrderCheck;
   try {
-    validation = await validateStarsOrder(query.invoice_payload, query.currency, query.total_amount);
+    validation = await validateStarsOrder(
+      query.invoice_payload,
+      query.currency,
+      query.total_amount,
+    );
   } catch {
     validation = { ok: false, errorMessage: "Payment validation is temporarily unavailable." };
   }
@@ -101,7 +112,9 @@ export async function answerStarsPreCheckout(query: PreCheckoutQuery): Promise<v
     body: JSON.stringify({
       pre_checkout_query_id: query.id,
       ok: validation.ok,
-      ...(!validation.ok ? { error_message: validation.errorMessage ?? "Payment could not be verified." } : {}),
+      ...(!validation.ok
+        ? { error_message: validation.errorMessage ?? "Payment could not be verified." }
+        : {}),
     }),
   });
 
