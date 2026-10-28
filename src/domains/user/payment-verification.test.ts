@@ -46,12 +46,12 @@ describe("confirmed Stars payment binding", () => {
   });
 
   it("rejects pending payments", () => {
+    const pendingPayment = { ...confirmedPackPayment, status: "pending" };
     expect(
-      isConfirmedPaymentForPurchase(
-        { ...confirmedPackPayment, status: "pending" },
-        "user-a",
-        { kind: "pack", id: "pack-a" },
-      ),
+      isConfirmedPaymentForPurchase(pendingPayment, "user-a", {
+        kind: "pack",
+        id: "pack-a",
+      }),
     ).toBe(false);
   });
 });
