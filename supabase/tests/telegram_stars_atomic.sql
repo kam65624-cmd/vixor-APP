@@ -126,9 +126,9 @@ BEGIN
     NULL;
   END;
 END;
-$;
+$$;
 RESET ROLE;
-DO $
+DO $$
 BEGIN
   IF (SELECT status FROM public.payments WHERE payload = 'rls-protected-payment-row') <> 'pending' THEN
     RAISE EXCEPTION 'authenticated user changed payment status';
@@ -137,7 +137,7 @@ BEGIN
     RAISE EXCEPTION 'authenticated user deleted payment row';
   END IF;
 END;
-$;
+$$;
 
 INSERT INTO public.point_packs(id, name, points, bonus_points)
 VALUES ('11111111-1111-1111-1111-111111111111', 'Test pack', 100, 10);
