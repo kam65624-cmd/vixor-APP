@@ -67,7 +67,7 @@ DECLARE
 BEGIN
   IF _payload IS NULL OR length(_payload) < 8 OR length(_payload) > 512
      OR _charge_id IS NULL OR length(_charge_id) < 1 OR length(_charge_id) > 256
-     OR _currency <> 'XTR' OR _amount IS NULL OR _amount <= 0 THEN
+     OR _currency IS DISTINCT FROM 'XTR' OR _amount IS NULL OR _amount <= 0 THEN
     RAISE EXCEPTION 'invalid Stars payment fields' USING ERRCODE = '22023';
   END IF;
 
