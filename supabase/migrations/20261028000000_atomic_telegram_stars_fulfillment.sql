@@ -61,7 +61,9 @@ DECLARE
   p public.payments%ROWTYPE;
   v_points integer;
   v_bonus integer;
+  v_period_start timestamptz;
   v_period_end timestamptz;
+  v_existing_period_end timestamptz;
   v_plan_interval text;
   v_existing_charge uuid;
   v_subscription_id uuid;
@@ -112,7 +114,7 @@ BEGIN
   IF p.pack_id IS NOT NULL THEN
     SELECT points, bonus_points INTO v_points, v_bonus
       FROM public.point_packs
-     WHERE id = p.pack_id;
+     WHERE id::text = p.pack_id;
     IF NOT FOUND THEN
       RAISE EXCEPTION 'ordered point pack no longer exists' USING ERRCODE = 'P0002';
     END IF;
@@ -139,16 +141,28 @@ BEGIN
 
   SELECT interval INTO v_plan_interval
     FROM public.premium_plans
-   WHERE id = p.plan_id;
+   WHERE id::text = p.plan_id;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'ordered premium plan no longer exists' USING ERRCODE = 'P0002';
   END IF;
 
+  -- Serialize subscription updates per user before reading the existing paid-through date.
+  PERFORM pg_advisory_xact_lock(hashtextextended(p.user_id::text, 0));
+  SELECT id, current_period_end
+    INTO v_subscription_id, v_existing_period_end
+    FROM public.premium_subscriptions
+   WHERE user_id = p.user_id
+   ORDER BY current_period_end DESC
+   LIMIT 1
+   FOR UPDATE;
+
+  v_period_start := GREATEST(COALESCE(v_existing_period_end, now()), now());
   IF _subscription_expiration IS NOT NULL
      AND _subscription_expiration > extract(epoch FROM now())::bigint THEN
     v_period_end := to_timestamp(_subscription_expiration);
   ELSE
-    v_period_end := now() + CASE WHEN v_plan_interval = 'year' THEN interval '365 days' ELSE interval '30 days' END;
+    v_period_end := v_period_start
+      + CASE WHEN v_plan_interval = 'year' THEN interval '365 days' ELSE interval '30 days' END;
   END IF;
 
   UPDATE public.payments
@@ -156,15 +170,6 @@ BEGIN
          status = 'confirmed',
          confirmed_at = now()
    WHERE id = p.id;
-
-  -- Serialize subscription updates per user and keep a single active entitlement.
-  PERFORM pg_advisory_xact_lock(hashtextextended(p.user_id::text, 0));
-  SELECT id INTO v_subscription_id
-    FROM public.premium_subscriptions
-   WHERE user_id = p.user_id
-   ORDER BY current_period_end DESC
-   LIMIT 1
-   FOR UPDATE;
 
   UPDATE public.premium_subscriptions
      SET status = 'cancelled', updated_at = now()
@@ -174,11 +179,11 @@ BEGIN
 
   IF v_subscription_id IS NOT NULL THEN
     UPDATE public.premium_subscriptions
-       SET plan_id = p.plan_id,
+       SET plan_id = p.plan_id::uuid,
            status = 'active',
            payment_provider = 'telegram_stars',
            payment_id = _charge_id,
-           current_period_start = now(),
+           current_period_start = v_period_start,
            current_period_end = v_period_end,
            updated_at = now()
      WHERE id = v_subscription_id;
@@ -186,7 +191,7 @@ BEGIN
     INSERT INTO public.premium_subscriptions
       (user_id, plan_id, status, current_period_start, current_period_end, payment_provider, payment_id)
     VALUES
-      (p.user_id, p.plan_id, 'active', now(), v_period_end, 'telegram_stars', _charge_id);
+      (p.user_id, p.plan_id::uuid, 'active', v_period_start, v_period_end, 'telegram_stars', _charge_id);
   END IF;
 
   RETURN jsonb_build_object('status', 'confirmed', 'payment_id', p.id, 'kind', 'premium');
