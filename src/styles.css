@@ -2264,3 +2264,51 @@
     animation: none !important;
   }
 }
+
+/* ====== V6.1 — UI/UX Phase 3 additions (Agent 3 · branch uiux/vixor-app-phase-1) ======
+ * Additive only — no existing token renamed or removed.
+ * Spec: docs/uiux/design-system.md §1 · Direction: docs/uiux/design-direction.md
+ * ================================================================================ */
+
+/* ── Verified-source family (cyan = checked; coherent with --shield-safe).
+   Green stays exclusively market-positive — semantic apartheid law. ── */
+:root {
+  --verified: #0891b2; /* light: readable cyan on white */
+  --verified-dim: rgba(8, 145, 178, 0.12);
+  --verified-border: rgba(8, 145, 178, 0.25);
+}
+.dark {
+  --verified: #22d3ee;
+  --verified-dim: rgba(34, 211, 238, 0.15);
+  --verified-border: rgba(34, 211, 238, 0.28);
+}
+
+/* ── Strong weight (replaces visual 700 during Phase 4 migration) ── */
+:root {
+  --text-weight-strong: 590;
+}
+
+/* ── Focus ring: single visible focus treatment for interactive elements ── */
+:root {
+  --focus-ring: 0 0 0 2px var(--background), 0 0 0 4px var(--color-primary);
+}
+
+/* ── Numerics law: mono + tabular figures for all money/score/time values ── */
+.vx-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.01em;
+}
+
+/* ── Focus visibility utility (a11y — WCAG 2.2 AA floor) ── */
+.vx-focus-ring:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--focus-ring);
+}
+
+/* ── RTL: mirror directional icons only (never text) ── */
+[dir="rtl"] [data-flip] {
+  transform: scaleX(-1);
+}
