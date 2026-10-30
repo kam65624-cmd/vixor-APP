@@ -114,11 +114,11 @@ Every "Done + Verified" claim requires evidence (test, screenshot, browser journ
 - **Status:** Not Started (Phase 4, after Gate 2). **Verify:** token-hygiene test + visual + reduced-motion emulation.
 
 ### UX-18 — No character artwork layer (monogram-only avatars)
-- **Severity:** P2 (dependency). **Found:** 2026-10-30 Gate 2 revision.
-- **Impact:** character identity currently renders as monograms + Lucide icons only; illustrated assets are the missing layer of the character experience. VIXOR must not invent artwork (owner rule) — assets arrive via the Agent 1 / Character Studio integration contract (`character-experience-map.md` §5).
-- **Evidence:** `characters.ts` (monogram function), `MoxiAvatar.tsx` (gradient monograms); no illustrated character assets in repo.
-- **Proposed:** monogram fallback is the complete, shippable state today; asset consumption layer + manifest contract after R-4 approval (`owner-decisions.md`).
-- **Status:** Blocked on Agent 1 coordination (owner-routed). Not a Phase 4 blocker — fallback design is final-quality.
+- **Severity:** P2 (dependency). **Found:** 2026-10-30 Gate 2 revision. **Updated:** 2026-10-30 (pause directive).
+- **Impact:** character identity currently renders as monograms + Lucide icons only; illustrated assets are the missing layer of the character experience. **The owner has taken direct control of character creation and visual identity** — VIXOR does not invent artwork and does not treat monograms as the final system (they are the fallback).
+- **Evidence:** `characters.ts` (monogram function), `MoxiAvatar.tsx` (gradient monograms); `public/` contains only `favicon.ico`; no illustrated character assets in repo.
+- **Proposed:** monogram fallback remains the complete, shippable state; consumption of **owner-approved** assets via the manifest contract specified in `character-asset-readiness.md` (§5–§8) after the owner approves the readiness package (R-6) and delivers assets (DEP-1…DEP-5).
+- **Status:** **Blocked on owner-approved character assets (owner-controlled). Character Studio ownership TBD — not assumed to be Agent 1** (Agent 1 current scope: TG Content Bot + Content Operations). Not a Phase 4 blocker — fallback design is final-quality. **All Phase 4 work paused per D-10.**
 
 ### UX-19 — Copilot drawer: generic chat, no persona chrome / tool visibility / crew attribution
 - **Severity:** P1 (character experience). **Found:** 2026-10-30 Gate 2 revision.
@@ -173,3 +173,4 @@ Every "Done + Verified" claim requires evidence (test, screenshot, browser journ
 - 2026-10-30 (later): **Typecheck re-verification:** `tsc --noEmit` **PASS clean** on `main@b893b62` (run this session) — disproves `AUDIT_FULL_2026.md` item #1 (TS errors in `investigate.tsx` + `mr-vigo/functions.ts`) at current main. Evidence: this session's command log; carried into `page-inventory.md` / `feature-preservation-map.md`.
 - 2026-10-30 (later): **`pnpm install --frozen-lockfile` PASS** (30.1s) + dev server boots (port 8080) — dependency-scan warning ENG-01 persists (walletconnect) without blocking.
 - 2026-10-30 (Gate 2 revision): **UX-01 + UX-03 recommendations updated** to IA Option B "Crew Rail" (`ia-proposal.md`); Option A withdrawn (owner vision: crew must not be a navigation category alone). **UX-17, UX-18, UX-19 added** from the character-experience review (orb identity drift + motion violation; missing artwork layer pending Agent 1 contract; generic copilot drawer). 19 UX + 3 ENG + 4 DATA entries. No code changed this round.
+- 2026-10-30 (pause directive): **ALL Phase-4 implementation work paused** (owner takes direct control of character creation and visual identity — `owner-decisions.md` D-10). UX-17/UX-19 fixes and every "Phase 4" item below remain proposals only. **UX-18 updated:** blocked on **owner-approved assets** (not Agent 1 coordination); Character Studio ownership TBD. New deliverable: `character-asset-readiness.md` (readiness package R-6). **IA reachability claim corrected** in `ia-proposal.md` (HUNT sub-routes are 2–3 taps, not ≤2) — UX-01 verification criteria unchanged (full route-by-route matrix due when IA resumes). No code changed.

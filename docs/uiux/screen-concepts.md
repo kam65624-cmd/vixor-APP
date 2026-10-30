@@ -1,12 +1,12 @@
 # VIXOR APP — Screen-Level Concepts (Gate 2 Revision)
 
 **Agent:** Agent 3 — UI/UX · **Date:** 2026-10-30 · **Branch:** `uiux/vixor-app-phase-1`
-**Status: PROPOSED (Gate 2).** Visual companion: **`docs/uiux/concepts/gate2-concepts.html`** (self-contained, real V6 dark tokens, monogram avatars only — open in a browser).
+**Status: PROPOSED (Gate 2). [PAUSED 2026-10-30: the owner has taken direct control of character creation and visual identity — these concepts are ON HOLD and nothing has been implemented. Monogram placeholders in the mockup are the current fallback system, NOT a substitute for the planned owner-approved character asset system. Asset dependencies and the consumption contract now live in `character-asset-readiness.md`. No navigation restructuring or Phase 4 work until owner go-ahead (D-10).]** Visual companion: **`docs/uiux/concepts/gate2-concepts.html`** (self-contained, real V6 dark tokens, monogram avatars only — open in a browser).
 
 **Reading rules for every concept below.**
 - `[EXISTS]` = feature/data/component exists today at the referenced route (see `feature-preservation-map.md` / `page-inventory.md`). Nothing `[EXISTS]` is removed.
 - `[NEW]` = proposed composition/interaction, built from existing data sources and components. `[NEW]` never means "invented capability" — where a data source does not exist, the concept states the dependency instead of assuming it.
-- Wireframes are mobile-first (390–430px), dark-first, and use V6 tokens only. All character art is monogram placeholders until the Agent 1 asset contract delivers.
+- Wireframes are mobile-first (390–430px), dark-first, and use V6 tokens only. All character art is monogram placeholders until the owner-controlled asset pipeline delivers approved assets (monograms are the fallback, never the final system).
 - Every concept must define the states matrix (loading/empty/error/degraded/offline/stale/RTL) before Phase 4 build — sketched per concept.
 
 ---
@@ -55,7 +55,7 @@
 **Shell:** existing `OnboardingModal.tsx` (first-run, `vixor-onboarded` flag) extended from a single modal into a 4-step flow — same trigger, same dismissal memory. `/v2/onboarding` (MOXI-guided, `[EXISTS]`) remains the deeper demo-case walkthrough it already is.
 
 1. **Welcome — MOXI.** "I'm MOXI. VIXOR gives you decisions with evidence — no wallet needed." Value props ×3 (from existing auth-page feature list `[EXISTS]`). 200-free-points hook `[EXISTS]`.
-2. **Meet the crew.** 4 identity cards (registry data `[EXISTS]`, monograms; artwork via Agent 1 contract later). One line each: *MOXI finds · VIGO verifies · DEX quantifies · ECHO remembers.*
+2. **Meet the crew.** 4 identity cards (registry data `[EXISTS]`, monograms; artwork via the owner-controlled asset pipeline when approved). One line each: *MOXI finds · VIGO verifies · DEX quantifies · ECHO remembers.*
 3. **Focus picker.** Assets (crypto/forex/meme/commodity — existing asset classes) + risk style (conservative/balanced/aggressive). Persists to existing user settings — no new backend.
 4. **First task.** Two doors: "Scan the market with MOXI" (→ Discover) or "Walk a demo case" (→ `/v2/onboarding` `[EXISTS]`). Skippable; re-openable from Crew hub.
 

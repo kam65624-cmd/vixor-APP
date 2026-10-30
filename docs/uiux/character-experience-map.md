@@ -2,6 +2,8 @@
 
 **Agent:** Agent 3 — UI/UX Design Director · **Date:** 2026-10-30 · **Branch:** `uiux/vixor-app-phase-1`
 **Status: PROPOSED — requires owner approval (Gate 2, revised) before Phase 4 implementation.**
+
+> **⚠️ PAUSE NOTICE (2026-10-30, later — supersedes implementation aspects of this document):** the owner has taken **direct control of character creation and visual identity**. All UX-behavior proposals in this map are **on hold**; no Phase 4 implementation, no navigation restructuring, no character identity changes. The artwork layer (§5) is now owner-controlled: VIXOR APP waits for **owner-approved character sheets, expressions, poses, animations, and interaction specifications**. The detailed consumption spec now lives in **`character-asset-readiness.md`** (verified integration points, asset formats/sizes, states, loading/fallback, a11y/i18n/RTL, manifest contract, asset→surface mapping, dependency list) — it supersedes §5 below wherever they differ. **Ownership correction:** Character Studio / Meme & Character App ownership is **TBD** (not assumed to be Agent 1, whose current scope is TG Content Bot + Content Operations). Monogram avatars remain the current fallback system — **not a substitute for the planned owner-approved asset system**.
 **Companions:** `design-direction.md` (rev. 2) · `ia-proposal.md` · `screen-concepts.md` · `owner-decisions.md`
 
 **Why this document exists.** The owner's confirmed product vision (2026-10-30): VIXOR APP is a *premium, modern, independently valuable SaaS product* — not a traditional trading terminal or dashboard-heavy interface — and the four characters are **part of the actual product experience, not decorative mascots or a Crew navigation category alone**. This map defines what that means at the level of roles, screens, interactions, and identity — building only on capabilities that exist in the code today, and clearly separating what is proposed.
@@ -172,7 +174,7 @@ Five rules, all implemented with existing primitives plus the two proposed ones 
 |---|---|---|
 | 1. Semantic (who they are) | `packages/vixor-gamification/src/characters/registry.ts` | ✅ exists, tested (`character-registry.test.ts`) |
 | 2. Presentation (how they render) | `src/shared/characters.ts` bridge → `--char-*` tokens + icons + monograms; `CharacterGuide` as the single card primitive; per-character gradient backdrops (`styles.css` L1121–1170) | ✅ exists, tested (`characters-i18n.test.tsx`, `design-token-hygiene.test.ts`) |
-| 3. Artwork (illustrated assets) | **External — Character Studio (Agent 1)**, consumed via the integration contract (§5) | ❌ not present today — monogram avatars are the complete current state |
+| 3. Artwork (illustrated assets) | **External — owner-controlled** (Character Studio direction, ownership TBD), consumed via the owner-approved asset contract (§5; detailed spec `character-asset-readiness.md` §7) | ❌ not present today — monogram avatars are the complete current state (fallback, not final) |
 
 **Consistency laws (existing, restated as gates):**
 - Character color ONLY via `--char-*` CSS variables — never hex literals (bridge enforces; hygiene test guards).
@@ -184,29 +186,33 @@ Five rules, all implemented with existing primitives plus the two proposed ones 
 
 ---
 
-## 5. Integration contract with Agent 1 (Meme & Character App / Character Studio)
+## 5. Integration contract for owner-approved character assets
 
-**Principle (owner-set):** VIXOR APP consumes character identities and approved assets through a **stable integration contract**. It does not generate, fork, or replace character IP. The independent Character Studio product remains the single creative source.
+> **Amended 2026-10-30 (pause directive):** the counterparties below are corrected — the **owner** directly controls character creation and visual identity; **Character Studio ownership is TBD** (its repository/product owner must be established separately); **Agent 1's current scope is TG Content Bot & Content Operations** (a fellow consumer, not the Studio owner). The authoritative, more detailed contract spec is now `character-asset-readiness.md` §7 (manifest schema, intake rules, approval flow). This section is retained for context.
 
-**Division of ownership:**
+**Principle (owner-set):** VIXOR APP consumes character identities and approved assets through a **stable integration contract**. It does not generate, fork, or replace character IP. The independent Character Studio product (ownership TBD) remains a separate creative source; the owner is the direct approval authority for all character art.
+
+**Division of ownership (corrected):**
 
 | Concern | Owner |
 |---|---|
-| Character identities, roles, tones, canon (semantic truth) | VIXOR registry (mirrors Character Studio canon; changes need owner approval on both sides) |
-| Artwork creation, variants, brand expression | Character Studio (Agent 1) |
-| In-product behavior, UX, attribution, surfaces | VIXOR APP (Agent 3) |
+| Character creation, visual identity, sheets, expressions, poses, animations | **Owner (direct control)** |
+| Character Studio / Meme & Character App product | **TBD — to be established separately; not assumed to be Agent 1** |
+| TG Content Bot — content production & publishing from approved identities | Agent 1 (current scope) |
+| In-product behavior, UX, attribution, surfaces | VIXOR APP (Agent 3) — asset **consumer** + presentation owner |
 | Asset approval for product use | Owner |
+| Semantic registry (roles/surfaces/tones) | VIXOR repo (`vixor-gamification`) — mirrors canon; changes need owner approval |
 
-**Proposed asset manifest contract** (for Agent 1 coordination — no code in this phase; schema proposal only):
+**Proposed asset manifest contract** (schema proposal only, no code; **superseded in detail by `character-asset-readiness.md` §7** — counterparties are the owner and, once established, the separately-owned Character Studio):
 - Versioned manifest (JSON) keyed by `CharacterId` (`moxi | mrVigo | drDex | echo` — matching the registry, machine ids as canonical keys).
 - Per character: `avatar` (24/32/48/64/128 px, PNG/SVG), `states` (`neutral | thinking | success | error` — mapping 1:1 to `CharacterGuide` states), `fullBody` (onboarding moments only), optional `animation` (Lottie, ≤120KB, reduced-motion-safe static fallback REQUIRED), `altText` (a11y), `dark`/`light` variants, `rtl` variant where art is directional.
 - Color references by **token name** (`char-moxi`), never hex — VIXOR's `styles.css` stays the color source of truth in-app.
 - `approvedFor` usage field + semver version. VIXOR pins a version per release and degrades gracefully: **missing asset → monogram avatar** (the current system) — no broken states, ever.
 - Rejection criteria we will enforce on intake: assets that violate the token quarantine, exceed motion laws (ambient loops), or arrive without alt-text.
 
-**What VIXOR will NOT do:** no invented artwork, no AI-generated stand-in characters, no new characters without owner approval + registry change + asset pack, no forked identity variants (persona customization stays within the existing `moxi_personas` system: name/style/variant — never identity).
+**What VIXOR will NOT do:** no invented artwork, no AI-generated stand-in characters, no new characters without owner approval + registry change + asset pack, no forked identity variants (persona customization stays within the existing `moxi_personas` system: name/style/variant — never identity), **and monograms are never treated as the final character asset system — they are the fallback until owner-approved art arrives**.
 
-**Coordination items logged for Agent 1** (via owner, not direct code changes): manifest schema sign-off, state list confirmation, first asset pack target date, versioning cadence. Tracked in `owner-decisions.md` §3.
+**Coordination items logged for the owner** (character assets; via the decision log, not direct code changes): approved character sheets, expression/state library (neutral/thinking/success/error), poses & interaction specs, animation specs with static posters, asset pack + manifest hosting, Character Identity Contract sign-off, Character Studio ownership establishment. Full dependency list: `character-asset-readiness.md` §10 (DEP-1…DEP-10). Tracked in `owner-decisions.md` §3.
 
 ---
 
@@ -214,7 +220,7 @@ Five rules, all implemented with existing primitives plus the two proposed ones 
 
 | # | Capability | Status today (evidence) | Proposed in this revision | Phase |
 |---|---|---|---|---|
-| 1 | Character registry (roles/surfaces/tones) | ✅ `vixor-gamification/registry.ts` + tests | unchanged (contract with Agent 1 adds assets, not roles) | — |
+| 1 | Character registry (roles/surfaces/tones) | ✅ `vixor-gamification/registry.ts` + tests | unchanged (the owner-controlled asset contract adds assets, not roles) | — |
 | 2 | Presentation bridge + `--char-*` tokens | ✅ `shared/characters.ts`, `styles.css` | unchanged; consumed more consistently | 4 |
 | 3 | CharacterGuide card (6 states, a11y) | ✅ used on Home/Discover/Investigate/Risk/Echo | unchanged; becomes the standard for all guidance moments | 4 |
 | 4 | EN/AR character copy | ✅ `characters-i18n.ts` + tests | extended copy for new surfaces (same pipeline) | 4 |
@@ -232,7 +238,7 @@ Five rules, all implemented with existing primitives plus the two proposed ones 
 | 16 | Signal tracking + transitions | ✅ `domains/signal-tracking` (auto-track, transitions, invariant tests) | loop-closure receipts surfaced in Home feed | 4 |
 | 17 | Weekly review / daily loop | ✅ `/review`, `/daily-loop` | ECHO identity on review moments | 4 |
 | 18 | v2 case workflow (stage→character map) | ✅ `/v2/*` with fixtures (experimental) | pattern reference; promotion to main IA is a separate owner decision (mock-data rule) | — |
-| 19 | Character artwork/illustration | ❌ none (monograms only) | **NOT proposed as built** — consumed via Agent 1 contract when available; monogram fallback until then | gate |
+| 19 | Character artwork/illustration | ❌ none (monograms only) | **NOT proposed as built — owner-controlled.** Consumed via owner-approved asset pack + manifest contract when delivered; monogram fallback until then. Monograms are the fallback, **not a substitute** for the planned asset system | gate (paused) |
 | 20 | New character abilities (memory APIs, multi-character chat, voice) | ❌ none | **NOT proposed** — any such capability is a separate proposal with Agent 2 | — |
 
 ---
@@ -244,5 +250,6 @@ Using the existing analytics layer (`src/shared/analytics.ts`, Mixpanel) — ins
 ## 8. Preservation & risk notes
 
 - Zero routes removed/renamed; zero API changes; zero token changes in this revision. Everything in §1 "proposed" is presentation-layer composition of existing data and functions.
-- Biggest risks: (a) character presence degrading into noise — mitigated by §3.5 rationing; (b) attribution ambiguity between DEX-verdict and trading semantics — mitigated by token quarantine (§4); (c) asset dependency on Agent 1 timing — mitigated by monogram fallback (§5); (d) dock change displacing muscle memory — mitigated by IA option choice + reachability table (`ia-proposal.md` §3.5) + More-panel stability.
+- Biggest risks: (a) character presence degrading into noise — mitigated by §3.5 rationing; (b) attribution ambiguity between DEX-verdict and trading semantics — mitigated by token quarantine (§4); (c) asset dependency on **owner approval timing** (no longer an agent-side dependency) — mitigated by monogram fallback (§5) and the readiness package; (d) dock change displacing muscle memory — mitigated by IA option choice + reachability table (`ia-proposal.md` §3.5) + More-panel stability.
+- **Pause-state risk note (2026-10-30):** all §1 "Proposed UX behavior" items and the C1–C5 concepts are on hold until the owner approves both the character assets and the Phase-4 go-ahead. Nothing in this map has been implemented.
 - Open owner questions consolidated in `owner-decisions.md`.

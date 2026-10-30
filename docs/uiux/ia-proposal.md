@@ -1,8 +1,10 @@
 # VIXOR APP — Information Architecture Proposal (Gate 2 Revision)
 
 **Agent:** Agent 3 — UI/UX · **Date:** 2026-10-30 · **Branch:** `uiux/vixor-app-phase-1`
-**Status: PROPOSED — replaces the IA section of `design-direction.md` v1 §9. Requires owner approval (Gate 2).**
+**Status: PROPOSED — ON HOLD. Replaces the IA section of `design-direction.md` v1 §9. Requires owner approval (Gate 2), and per the owner's pause directive (2026-10-30, later) **no navigation restructuring may be implemented based on unapproved character concepts** — this proposal is documentation only until the owner both approves the direction AND delivers the character-asset go-ahead. No route structure has been changed.**
 **Rule of record:** no route is removed, renamed, or hidden in any option. The preservation map (`feature-preservation-map.md`) governs; dock/panel labels may change only with this approval.
+
+> **Accuracy correction (2026-10-30, later):** the original T3 claim "every orphaned route reachable within 2 taps" overstated the table below — **HUNT group sub-routes are 2–3 taps** via the Crew workflow group (the table's own row). The claim is corrected throughout this document. A complete route-by-route reachability matrix (direct vs. contextual vs. nested navigation, per the owner's review request) will be produced when IA work resumes; the link-topology research behind it is retained. **No approved route structure changed in this correction.**
 
 ---
 
@@ -13,7 +15,7 @@ Phase 3 asked: *how do we fit 47 routes into a 390px dock?* The owner's confirme
 Three tests every option must now pass:
 - **T1 — Crew test:** characters are product experience, not a navigation category *alone*. IA must give the crew first-class presence AND the crew must inhabit every workflow (see `character-experience-map.md` §3).
 - **T2 — SaaS test:** the app must read as an independently valuable product — intelligence, safety, decision loop first; execution is a feature, not the identity. Not a terminal, not a dashboard.
-- **T3 — Reachability test (UX-01):** every one of the 23 orphaned routes (all `/hunt/*`, `/shield/*`, `/echo`, `/investigate`, `/risk`, `/tracking`, `/review`, `/analysis/$id`, …) reachable within **2 taps** from Home.
+- **T3 — Reachability test (UX-01):** the 23 orphaned routes (all `/hunt/*`, `/shield/*`, `/echo`, `/investigate`, `/risk`, `/tracking`, `/review`, `/analysis/$id`, …) reachable within **2 taps** from Home for workflow-entry routes, and **≤3 taps** for HUNT sub-routes reached via the Investigate workflow group (corrected 2026-10-30 — see header).
 
 ## 2. The three options, re-examined
 
@@ -29,7 +31,7 @@ Dock → **5: `Today · Discover · Crew · Desk · More`** + global omnibox (ca
 
 - **Passes T1:** the crew is a first-level destination — a hub with live status, workflows, and activity — while attribution chips, seals, guide cards, and hand-offs put characters *inside* every workflow. The tab is the doorway, not the ghetto.
 - **Passes T2:** the dock reads as a product narrative — *orient (Today) → explore (Discover) → consult your specialists (Crew) → execute (Desk) → everything else (More)* — instead of a tool shelf. Execution gets exactly one slot, deliberately.
-- **Passes T3:** see reachability table §3.6 — all orphaned routes ≤2 taps.
+- **Passes T3:** see reachability table §3.6 — orphaned routes at ≤2 taps **except HUNT sub-routes at 2–3 taps** (corrected).
 - Cost: dock items Analyze, Signals, Swap, Alpha, Portfolio, Charts are displaced to stable, grouped positions in More + contextual entries (§3.4). This is a Gate-2 approval item (dock is 🔒 in the preservation map).
 - **Recommended.**
 
@@ -110,17 +112,20 @@ Swap lives contextually (Desk, token pages, Today quick actions) and in Markets 
 ### 3.5 What changes technically (Phase 4, after approval)
 `BottomBar.tsx` dockItems (5), `MorePanel.tsx` categories, new `/crew` route + page, `nav-strings.ts` EN/AR + `nav-strings.test.tsx` updates, `characters-i18n` additions, Mixpanel nav events. Tests stay green; no backend changes. Displaced-item analytics before/after (dock click paths) reported at the end of the IA stage.
 
-### 3.6 Reachability table (T3 proof — orphaned routes under Option B)
+### 3.6 Reachability table (T3 — orphaned routes under Option B; corrected 2026-10-30)
 
-| Route | Tap path | Taps |
-|---|---|---|
-| `/investigate` | Crew → VIGO card / Investigate | 2 |
-| `/hunt/radar` · `/hunt/whales` · `/hunt/token/$addr` · `/hunt/verified/$id` | Crew → Investigate group | 2–3 |
-| `/shield` (all 6) · `/risk` | Crew → DEX card / Security group | 2 |
-| `/echo` · `/tracking` · `/review` | Crew → ECHO card / Track group | 2 |
-| `/analysis/$id` | Today feed / Crew activity / token page | 1–2 |
-| `/notifications`, `/wallet-web3`, `/admin/api-keys`, `/opportunities` | More (grouped) / existing in-page links | 2 |
-| `/v2/*` | More → Research footer link "Experimental (v2)" | 2 |
+| Route | Tap path | Taps | Navigation type |
+|---|---|---|---|
+| `/investigate` | Crew → VIGO card / Investigate | 2 | direct (hub card) + contextual |
+| `/hunt/radar` | Crew → Investigate group → Radar | 3 | nested (workflow group) |
+| `/hunt/whales` · `/hunt/token/$addr` · `/hunt/verified/$id` · `/hunt/alpha` | Crew → Investigate group → item (or 2 taps via `/hunt/radar` → token row) | 2–3 | nested + contextual |
+| `/shield` (all 6) · `/risk` | Crew → DEX card / Security group | 2 | direct (hub card) + contextual |
+| `/echo` · `/tracking` · `/review` | Crew → ECHO card / Track group | 2 | direct + contextual |
+| `/analysis/$id` | Today feed / Crew activity / token page | 1–2 | contextual (deep) |
+| `/notifications`, `/wallet-web3`, `/admin/api-keys`, `/opportunities` | More (grouped) / existing in-page links | 2 | direct (panel) + contextual |
+| `/v2/*` | More → Research footer link "Experimental (v2)" | 2 | direct (panel) |
+
+**Honest limits (owner review finding acknowledged):** tap counts describe the *proposed* interaction — not implemented. The contextual entry points cited as existing today are real (home quick actions → `/investigate` `/risk` `/echo` `/wallet-web3` `/alpha` `/signals` `/charts`; NotificationBell → `/notifications`; hunt token row → `/shield/trust/$address`), but the Crew hub cards, workflow groups, and omnibox do not exist and depend on this proposal being approved and built. A complete route-by-route matrix — distinguishing **direct, contextual, and nested** navigation for every route — will be produced when IA work resumes; the verified link-topology research behind it is retained. No approved route structure has changed.
 
 ## 4. Why not a "Cases" tab instead of "Crew"?
 The decision-loop *case* pattern (v2) is the right long-term product shape, but today it runs on fixtures (`domains/case/fixtures.ts` + mock providers). Promoting a mock-data surface to the dock would violate the no-mock-data law and over-promise. The Crew hub expresses the same loop through **real** surfaces now; the case workflow can graduate into the Crew tab later as a separate owner decision when its providers are real (`owner-decisions.md` D-14).

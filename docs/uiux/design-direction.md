@@ -1,7 +1,7 @@
 # VIXOR — Design Direction (Phase 3, Rev. 2 — Gate 2 Revision)
 
 **Agent:** Agent 3 — UI/UX Design Director · **Date:** 2026-10-30 · **Branch:** `uiux/vixor-app-phase-1`
-**Status: PROPOSED — requires owner approval (Gate 2) before Phase 4 implementation.**
+**Status: PROPOSED — requires owner approval (Gate 2) before Phase 4 implementation. [PAUSED 2026-10-30: no Phase 4 visual implementation until the owner approves the direction AND delivers owner-approved character assets/go-ahead — see `owner-decisions.md` D-10 and `character-asset-readiness.md`. Character artwork references below ("Agent 1 contract") now mean the **owner-controlled asset pipeline**; Character Studio ownership is TBD, not Agent 1.]**
 
 **Positioning brief (owner-confirmed, 2026-10-30):** VIXOR APP is a **premium, modern, independently valuable SaaS product** run by a crew of specialists — **not a traditional trading terminal, not a dashboard-heavy interface.** The four characters (MOXI, MR.VIGO, DR.DEX, ECHO) are part of the actual product experience, not decorative mascots.
 
@@ -68,4 +68,4 @@ Unchanged: 44×44 targets · visible `:focus-visible` ring (`--focus-ring`) · d
 
 ## 12. What we deliberately do NOT do
 
-No rebrand · no new brand hues · no new UI library · no chart library swap · no decorative pastel tints · no glass on content cards · no mega-menus · no pay-for-visibility · no mock data anywhere. **Rev. 2 additions:** no mascot gimmicks (no confetti, no sticker reactions, no talking-head interruptions) · no ambient character animations · no invented character artwork (assets arrive only via the Agent 1 integration contract; monogram fallback until then) · no "crew purple" or any single-color crew branding · no dashboard walls where a narrative answers better · **no destructive redesign — every existing feature, route, and token preserved per `feature-preservation-map.md`**.
+No rebrand · no new brand hues · no new UI library · no chart library swap · no decorative pastel tints · no glass on content cards · no mega-menus · no pay-for-visibility · no mock data anywhere. **Rev. 2 additions:** no mascot gimmicks (no confetti, no sticker reactions, no talking-head interruptions) · no ambient character animations · no invented character artwork (assets arrive only via the **owner-controlled** asset pipeline — see `character-asset-readiness.md`; monogram fallback until then, and monograms are never the final system) · no "crew purple" or any single-color crew branding · no dashboard walls where a narrative answers better · **no destructive redesign — every existing feature, route, and token preserved per `feature-preservation-map.md`**.
