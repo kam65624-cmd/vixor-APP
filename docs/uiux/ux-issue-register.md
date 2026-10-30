@@ -41,11 +41,12 @@ Every "Done + Verified" claim requires evidence (test, screenshot, browser journ
 - **Proposed:** fallback fetch-by-symbol when params absent (server fn exists in hunt `getTokenDetail` family); params remain as override.
 - **Status:** Not Started (Phase 4; backend fn reuse — coordinate Agent 2 if a new server fn is needed).
 
-### UX-06 — `prefers-reduced-motion` not respected on ambient animations
-- **Severity:** P2 (a11y) · **Impact:** ticker marquee, flash highlights, dock springs run regardless of user preference; vestibular accessibility risk.
-- **Evidence:** home `MarketTicker` keyframes + `animate-ticker`; styles.css animation utilities; no `@media (prefers-reduced-motion)` gate found.
-- **Proposed:** global reduced-motion gate in `styles.css` + per-component respect; keep state-change motion.
-- **Status:** Not Started (Phase 4) · **Verify:** emulate reduced-motion in browser → animations paused.
+### UX-06 — Reduced-motion: global gate EXISTS; JS-driven motion not covered (corrected 2026-10-30)
+- **Severity:** P3 (a11y) — **corrected down from P2 after evidence check.**
+- **Impact:** a global `prefers-reduced-motion` gate IS present (`src/styles.css` L2201–2232: universal 0.01ms durations + per-class overrides for shimmer/pulse-dot/card-stagger/live-badge/page-enter, plus `.vixor-energy-orb`). The remaining gaps: (a) **JS-driven motion** (framer-motion springs on the dock, `whileHover`/`whileTap`) is not gated — CSS media rules do not affect it; (b) the home ticker marquee relies on the universal rule (duration→0.01ms, iteration→1), which freezes it at end-state — verify the frozen frame is acceptable.
+- **Evidence:** `src/styles.css` read (L2200–2266) during Phase 3 preparation; initial register entry wrongly claimed no gate existed — corrected here per evidence-first policy.
+- **Proposed:** Phase 4 — gate framer-motion usage with `useReducedMotion()`; verify ticker frozen-state quality; keep all state-change motion.
+- **Status:** Partial (CSS gate: Done pre-existing; JS gating: Not Started) · **Verify:** emulate reduced-motion → dock springs disabled, page transitions instant.
 
 ### UX-07 — RTL/AR coverage unverified at baseline
 - **Severity:** P1 · **Impact:** AR is a first-class locale (Amiri fonts, RTL layout required); no baseline AR pass exists; directional paddings/margins and icon mirroring are regression-prone during visual changes.
@@ -147,3 +148,6 @@ Every "Done + Verified" claim requires evidence (test, screenshot, browser journ
 
 ## Change log for this register
 - 2026-10-30: initial register created from Phase 0/1 evidence (static + local dev render). 16 UX + 3 ENG + 4 DATA entries. No items marked Done + Verified.
+- 2026-10-30 (later): **UX-06 corrected** — global reduced-motion gate already exists in V6 (styles.css L2201–2232); gap narrowed to JS-driven motion (framer springs). Severity P2→P3. Evidence-first policy applied.
+- 2026-10-30 (later): **Typecheck re-verification:** `tsc --noEmit` **PASS clean** on `main@b893b62` (run this session) — disproves `AUDIT_FULL_2026.md` item #1 (TS errors in `investigate.tsx` + `mr-vigo/functions.ts`) at current main. Evidence: this session's command log; carried into `page-inventory.md` / `feature-preservation-map.md`.
+- 2026-10-30 (later): **`pnpm install --frozen-lockfile` PASS** (30.1s) + dev server boots (port 8080) — dependency-scan warning ENG-01 persists (walletconnect) without blocking.
