@@ -1,7 +1,9 @@
 # VIXOR APP — Character Implementation Readiness Package
 
-**Agent:** Agent 3 — UI/UX · **Date:** 2026-10-30 · **Branch:** `uiux/vixor-app-phase-1` (base commit `06828f7`) · **PR:** #29 (Draft)
-**Status: READINESS DOCUMENTATION ONLY.**
+**Agent:** Agent 3 — UI/UX · **Date:** 2026-10-30 · **Branch:** `uiux/vixor-app-phase-1` · **PR:** #29 (Draft)
+**Status: READINESS DOCUMENTATION ONLY. — Rev. 2 (final corrections round; see `implementation-changelog.md` Stage 5)**
+
+**Commit lineage (verification metadata — full table in Appendix A):** Phase-0 baseline `main@b893b62` → `main` after PR #28 merge `62df4b0` → Gate 2 revision `06828f7` = **the exact commit used for all code inspection in this package** → readiness package Rev. 1 `bd212f6` → **this corrections commit (Rev. 2, branch HEAD at delivery)**. No application code changed from `06828f7` through HEAD — verified docs-only diffs.
 
 **Why this document exists.** Per the owner's pause directive (2026-10-30): the owner is taking **direct control of character creation and visual identity**. Until owner-approved character sheets, expressions, poses, animations, and interaction specifications are delivered:
 
@@ -122,6 +124,16 @@ Per character: `icon` (Lucide: MOXI `Activity` · MR.VIGO `Search` · DR.DEX `Sh
 
 These are the **consumption slots** where owner-approved assets would render. Sizes are the *actual rendered CSS pixels in current code* (source of truth for required resolutions). Raster assets require **@1x/@2x/@3x**; **SVG is preferred** wherever the art allows (infinitely dense, theme-adaptable, tiny).
 
+**Approved asset-delivery direction (owner decision D-12, 2026-10-30 — an approved decision, not an open question; resolves former question B1):** the owner has approved delivery of **BOTH 2D and 3D** character assets. Three distinct deliverable classes:
+
+| Deliverable class | What it is | Role in the pipeline | Consumed at runtime by VIXOR? |
+|---|---|---|---|
+| **3D source / model deliverables** | canonical 3D character models and their source files | owner-side canonical sources — all future renders and derivations come from these | **No** — never loaded by the app |
+| **Cinematic 3D renders** | rendered stills/sequences produced from the 3D models | cinematic / marketing / reference material; may serve as the visual source for raster stills | Only as **derived raster stills** that pass the intake rules below |
+| **2D adaptations** | derived 2D artwork (SVG / PNG / Lottie) produced from the approved designs | the **runtime consumption class** — what this entire spec (slots, formats, budgets, manifest) governs | **Yes** — via the manifest contract (§7) |
+
+Everything in the slot table and format rules below therefore applies to the **2D-adaptation outputs** (and to render-derived stills that meet the same rules). 3D sources and cinematic renders are owner-pipeline deliverables — honored, versioned, and referenced — but they are **not runtime manifest entries**.
+
 | Slot ID | Component (existing) | Rendered size | Today's content | Required formats | Priority |
 |---|---|---|---|---|---|
 | S1 `guide-avatar` | `CharacterGuide` monogram box | 40×40 (rounded-xl) | 2-letter monogram text | SVG **or** PNG 48/80/120px, transparent | P0 (highest-traffic character surface) |
@@ -137,12 +149,17 @@ These are the **consumption slots** where owner-approved assets would render. Si
 | S11 `energy-orb-fx` | Home `EnergyOrb` | 280px decorative | code-generated orb (CSS/canvas) | *(no asset required — decorative FX stays code-generated)* | — |
 | S12 `persona-avatars` | `MoxiAvatar` 8 variants (currently unused in live UI) | default 40px, scalable | gradient circles + letter | PNG/SVG per variant @3x ≥120px | P3 (decide with owner: keep variants as *user-chosen frames* around approved art, or retire) |
 
-**Animation formats `[PROPOSED]`:**
+**Animation formats `[PROPOSED]` (runtime engineering contract):**
 - **Lottie JSON** (`lottie-web`-compatible) is the only accepted rich-animation format — vector, small, runtime-controllable, frame-seekable for reduced-motion statics.
 - CSS/SVG-native animation acceptable for simple effects.
-- **Video (MP4/WebM/GIF) is NOT accepted** (size, pause control, reduced-motion safety).
+- **Video (MP4/WebM/GIF) is NOT accepted at runtime** (size, pause control, reduced-motion safety).
 - Any animated asset **MUST** ship a static poster/first-frame (SVG or PNG) — this is a hard intake requirement (§6).
 - Size budgets: avatar-class assets ≤ 50 KB each; Lottie ≤ 120 KB each; full-body ≤ 250 KB.
+
+**Reference deliverables vs. runtime formats — two different contract classes (correction, D-13):**
+- **Creative production references** — character design sheets, expression sheets, pose sheets, animation storyboards, animatics, and AI-video explorations (e.g., Google Flow / Veo outputs) — are **owner-side creative reference deliverables**. They define *what the character looks like and how it behaves*; they are inputs to the owner's production pipeline.
+- **Runtime animation requirements** (this block, plus the §4.3 motion laws, §5 loading/fallback, §6 a11y, §7 manifest) are a **separate engineering contract** defining *what the app can load*.
+- **No automatic conversion is assumed or implied:** a storyboard, animatic, or Google Flow video does **not** become a production-ready Lottie animation by itself. Producing runtime assets from references (rebuild as Lottie/SVG, export posters, meet size budgets) is an owner-pipeline production step, and only its **outputs** are validated at VIXOR intake. This is exactly why video remains non-consumable at runtime *even though* video is a legitimate creative reference format.
 
 **File naming/versioning `[PROPOSED]`:** content-hashed filenames (`moxi-state-thinking@3x-a1b2c3.png`), immutable URLs, no query-string cache busting.
 
@@ -152,7 +169,7 @@ These are the **consumption slots** where owner-approved assets would render. Si
 
 ### 4.1 States `[EXISTING state machine → PROPOSED asset mapping]`
 
-`CharacterGuide` already defines the canonical 6-state machine (`CharacterGuideState`, `CharacterGuide.tsx` L41): `idle · loading · ready · working · success · error`, with `aria-busy` on async states and a polite `role="status"` live region. **The owner-approved asset set must cover these four visual states per character** (they collapse the six UI states):
+`CharacterGuide` already defines the canonical 6-state machine (`CharacterGuideState`, `CharacterGuide.tsx` L41): `idle · loading · ready · working · success · error`, with `aria-busy` on async states and a polite `role="status"` live region. **The owner-approved asset set must cover, at minimum, these four runtime UI states per character** (they collapse the six UI states):
 
 | Asset state | Covers UI states | Current visual | Asset requirement `[PROPOSED]` |
 |---|---|---|---|
@@ -162,6 +179,8 @@ These are the **consumption slots** where owner-approved assets would render. Si
 | `error` | error | monogram + AlertTriangle | static (same rules) |
 
 States map 1:1 to `CharacterGuide` — the component is the rendering contract, so assets drop into a system that already announces state changes accessibly.
+
+**Scope clarification (owner direction D-13, 2026-10-30 — resolves former question B5):** `neutral / thinking / success / error` is the **minimum runtime UI state mapping** — the floor required by the existing `CharacterGuide` machine — **NOT the complete creative expression library**. The owner's production direction includes **full expression sheets, poses, animation references, and interaction specifications** for each character. A richer creative library is expected and welcome: the mapping above only guarantees that, whatever the library contains, at least these four states can be rendered per character in the current UI. Mapping additional expressions and poses from the creative library onto specific surfaces is precisely what DEP-3 (interaction specifications) governs — and that mapping stays owner-defined.
 
 ### 4.2 Interaction events `[EXISTING mechanics → PROPOSED character moments]`
 
@@ -260,7 +279,7 @@ Verified: no character-asset infrastructure exists (§1.5). The following is the
 }
 ```
 
-**Hard intake rules (VIXOR enforces on consumption):** keys = registry machine ids · poster REQUIRED for every animation · `altText` REQUIRED in both locales · `loop:true` only for `thinking` · colors of in-app chrome still come from `--char-*` tokens (art must be consistent with the character's identity hue; the app never recolors art) · checksums (sha256) on every file · size budgets §3.
+**Hard intake rules (VIXOR enforces on consumption):** keys = registry machine ids · poster REQUIRED for every animation · `altText` REQUIRED in both locales · `loop:true` only for `thinking` · colors of in-app chrome still come from `--char-*` tokens (art must be consistent with the character's identity hue; the app never recolors art) · checksums (sha256) on every file · size budgets §3 · manifest entries are **runtime assets only** (2D adaptations / render-derived stills — §3 deliverable classes, D-12); 3D sources and cinematic renders are owner-side deliverables, not manifest entries.
 
 ### 7.3 Approval → consumption flow
 1. Owner approves character sheets / expressions / poses / animations / interaction specs.
@@ -321,10 +340,10 @@ When the owner delivers assets, each manifest entry maps to these exact surfaces
 **Blocked-on-owner (hard sequence — nothing below starts without these):**
 
 - **DEP-1 — Owner-approved character sheets** (per character): canonical name, role, palette, silhouette, proportions, expression set. *Owner.*
-- **DEP-2 — Approved expression/state library** mapped to the four asset states (`neutral/thinking/success/error`) per character (§4.1). *Owner.*
+- **DEP-2 — Approved creative library** (owner's production direction: full expression sheets, poses, animation references, interaction specifications), which must include — **at minimum** — the four runtime UI states (`neutral/thinking/success/error`) per character (§4.1, D-13). *Owner.*
 - **DEP-3 — Approved poses & interaction specifications** (which pose/expression for which surface & event, §4.2). *Owner.*
-- **DEP-4 — Approved animation specifications** (format, durations, posters, reduced-motion statics, §4.3). *Owner.*
-- **DEP-5 — Published asset pack + versioned manifest** (or in-repo delivery) — includes the **hosting decision** (owner-controlled location vs. VIXOR repo). *Owner.*
+- **DEP-4 — Approved runtime animation deliverables** (format, durations, posters, reduced-motion statics, §4.3) — the engineering-contract **outputs** produced from the creative references; a storyboard, animatic, or Google Flow video is a reference, not a runtime asset (§3, D-13). *Owner.*
+- **DEP-5 — Published asset pack + versioned manifest** (or in-repo delivery) covering the **2D-adaptation runtime class** plus render-derived stills that pass intake; 3D sources and cinematic renders stay owner-side (D-12) — includes the **hosting decision** (owner-controlled location vs. VIXOR repo). *Owner.*
 - **DEP-6 — Canonical Character Identity Contract sign-off** (schema §7.2) — one versioned schema binding all consumers (VIXOR APP, TG Content Bot, future Studio). *Owner.*
 - **DEP-7 — Character Studio repository/product ownership established** (TBD, separate from Agent 1's current TG Content Bot scope). *Owner decision.*
 - **DEP-8 — Localization & direction decisions per asset:** EN/AR alt text, RTL variant or direction-neutrality, text-in-art policy (§6). *Owner, informed by this package.*
@@ -337,14 +356,31 @@ When the owner delivers assets, each manifest entry maps to these exact surfaces
 
 ---
 
-## Appendix A — Verification log (this session, commit `06828f7`)
+## Appendix A — Verification metadata & log (corrected 2026-10-30, Rev. 2)
 
-Method: direct file reads + `rg` searches over `src/`, `packages/`, `public/`. Key evidence: registry (`packages/vixor-gamification/src/characters/registry.ts` complete read) · bridge (`src/shared/characters.ts` complete read, L31–164) · tokens (`src/styles.css` L112–133, L1118–1175) · CharacterGuide (complete read; states L41, live region L171–189, avatar L134–139) · CharacterHero (props L36–52) · FloatingCopilot (L22–36 bob, L71–72 64×64) · CopilotDrawer (L34/87/97/137/209 Bot+MOXI) · MoxiAvatar + AVATAR_VARIANTS (`domains/moxi/persona.ts` L29–68) · MoxiCharacter3D unused (usage scan) · OnboardingModal no-character (L4–19) · GovernorRiskPanel "Risk Governor" (L230) · CharacterGuide usage sites (5 routes) · CharacterHero usage (investigate only) · hunt/shield/tracking/review identity absence (zero refs) · `/loop` all-four flow (L110–193) · v2 stage→character map (`v2/case/$caseId.tsx` L26–35) · v2 onboarding moxi (L20/38) · `public/` = favicon.ico only · `asset-registry` = trading pairs (types.ts read) · persona table (persona.ts L83–129).
+**Commit lineage — four distinct facts, never conflated:**
 
-## Appendix B — Open questions for the owner (no action until answered)
+| Commit | Role | Verified fact |
+|---|---|---|
+| `b893b62` | **Original Phase-0 baseline** — `main` when this branch was created | Phase 0–1 audits ran against it (changelog Stages 0–1) |
+| `62df4b0` | `main` after the owner merged PR #28 (2026-10-30T03:12:31Z); branch fast-forward point for the Gate 2 revision | Stage 3 branch base |
+| `06828f7` | **Gate 2 revision commit — the EXACT commit used for all code inspection in this package** (it was branch HEAD at inspection time) | every `[EXISTING]` file:line evidence in §1–§2, §4, §9 was read at this commit |
+| `bd212f6` | **Readiness package Rev. 1** — the commit that added this document + the pause records | documentation only: `git diff 06828f7..bd212f6` touches `docs/uiux/` only — **zero application code** (verified) |
+| *(this commit)* | **Readiness corrections Rev. 2 — current branch HEAD at delivery of this round** | documentation only; no code re-inspection performed, because no application code changed since the `06828f7` inspection (verified by diff) |
 
-1. **B1:** Will approved art be **2D, 3D-rendered, or both**? (Affects slot formats: SVG pipeline vs. PNG/WebP sprite sets; §3.)
-2. **B2:** Should the **8 MOXI persona variants** (M2.1/M9) survive as user-selectable *frames* around approved art, be replaced by approved alternates, or retire? (S12, DEP-8.)
-3. **B3:** Hosting: owner-controlled asset location vs. delivery into the VIXOR repo? (DEP-5.)
-4. **B4:** Is **full-body art** desired for onboarding/first-run moments (S10), or avatar-class assets only for v1?
-5. **B5:** Confirm the **four-state minimum** (neutral/thinking/success/error) is the right v1 expression scope per character (§4.1) — or a reduced/expanded set.
+**Correction recorded:** the Rev. 1 header said "base commit `06828f7`" and this appendix was titled "this session, commit `06828f7`" — phrasing that risked reading `06828f7` as the *latest* verification commit. The table above is the accurate statement: **inspection happened at `06828f7`; the document landed at `bd212f6`; the corrections round is the commit after `bd212f6`** (exact SHA in `implementation-changelog.md` Stage 5 and the delivery report). All Rev. 1 `[EXISTING]` evidence remains valid — no application code changed between these commits.
+
+**Method (inspection at `06828f7`):** direct file reads + `rg` searches over `src/`, `packages/`, `public/`. Key evidence: registry (`packages/vixor-gamification/src/characters/registry.ts` complete read) · bridge (`src/shared/characters.ts` complete read, L31–164) · tokens (`src/styles.css` L112–133, L1118–1175) · CharacterGuide (complete read; states L41, live region L171–189, avatar L134–139) · CharacterHero (props L36–52) · FloatingCopilot (L22–36 bob, L71–72 64×64) · CopilotDrawer (L34/87/97/137/209 Bot+MOXI) · MoxiAvatar + AVATAR_VARIANTS (`domains/moxi/persona.ts` L29–68) · MoxiCharacter3D unused (usage scan) · OnboardingModal no-character (L4–19) · GovernorRiskPanel "Risk Governor" (L230) · CharacterGuide usage sites (5 routes) · CharacterHero usage (investigate only) · hunt/shield/tracking/review identity absence (zero refs) · `/loop` all-four flow (L110–193) · v2 stage→character map (`v2/case/$caseId.tsx` L26–35) · v2 onboarding moxi (L20/38) · `public/` = favicon.ico only · `asset-registry` = trading pairs (types.ts read) · persona table (persona.ts L83–129).
+
+## Appendix B — Questions to the owner (B1 & B5 now resolved decisions; B2–B4 remain open)
+
+**Resolved / clarified by owner decision (2026-10-30 — recorded as decisions in `owner-decisions.md`, no longer open questions):**
+
+- **B1 — RESOLVED (D-12):** approved asset delivery is **BOTH 2D and 3D**, as three distinct deliverable classes — **3D source/model deliverables** (owner-side canonical sources, never loaded by the app), **cinematic 3D renders** (cinematic/reference material; may seed render-derived raster stills), and **2D adaptations** (the runtime consumption class governed by §3/§7). See the deliverable-class table in §3.
+- **B5 — CLARIFIED (D-13):** `neutral/thinking/success/error` is the **minimum runtime UI state mapping** required by the existing `CharacterGuide` machine — **not the complete creative expression library**. The owner's production direction includes full expression sheets, poses, animation references, and interaction specifications (§4.1 scope clarification). Creative references remain separate from runtime animation formats (§3).
+
+**Still open (no action until answered):**
+
+1. **B2:** Should the **8 MOXI persona variants** (M2.1/M9) survive as user-selectable *frames* around approved art, be replaced by approved alternates, or retire? (S12, DEP-8.)
+2. **B3:** Hosting: owner-controlled asset location vs. delivery into the VIXOR repo? (DEP-5.)
+3. **B4:** Is **full-body art** desired for onboarding/first-run moments (S10), or avatar-class assets only for v1?
