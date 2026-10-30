@@ -1,81 +1,71 @@
-# VIXOR — Design Direction (Phase 3)
+# VIXOR — Design Direction (Phase 3, Rev. 2 — Gate 2 Revision)
 
 **Agent:** Agent 3 — UI/UX Design Director · **Date:** 2026-10-30 · **Branch:** `uiux/vixor-app-phase-1`
 **Status: PROPOSED — requires owner approval (Gate 2) before Phase 4 implementation.**
 
-**Positioning brief:** Premium + Modern + Intelligent + Distinctive + Trend-aware + Highly Usable.
-**Chosen spine:** **"Signal over Chrome"** (benchmark §5, Direction 2) — extended with Direction 1's surface/border grammar ("Mission Briefing Room") and Direction 3's "Evidence Glass" treatment reserved for AI-insight cards and premium moments. This is an **evolution of VIXOR V6**, not a rebrand: every existing token survives; we add rules, not hues.
+**Positioning brief (owner-confirmed, 2026-10-30):** VIXOR APP is a **premium, modern, independently valuable SaaS product** run by a crew of specialists — **not a traditional trading terminal, not a dashboard-heavy interface.** The four characters (MOXI, MR.VIGO, DR.DEX, ECHO) are part of the actual product experience, not decorative mascots.
+
+**Revision note (v1 → v2).** Rev. 1 framed the product as an *instrument* ("Signal over Chrome", briefing-room grammar). The owner's vision keeps the discipline but changes the product's center of gravity: the loudest signal is the **crew's judgment, with evidence**. Rev. 2 recalibrates positioning, composition, and the character system; it **withdraws nothing from V6** — every token, law, and preservation rule from Rev. 1 survives. New companions: `character-experience-map.md` (roles/attribution), `ia-proposal.md` (replaces §9 below), `screen-concepts.md` (C1–C5), `owner-decisions.md`.
 
 ---
 
 ## 1. Why this direction (product-grounded, not taste-grounded)
 
-1. **The product is an instrument.** VIXOR's users make financial decisions on a mobile screen, often in Telegram, often in AR or EN, often on flaky data. The interface's job is to make the *signal* the loudest thing on screen (Direction 1) and to make *color mean something* (Direction 2). Every decorative element competes with money-information.
-2. **The differentiator is a crew with evidence.** MOXI/MR.VIGO/DR.DEX/ECHO justify trust only if their output carries receipts — source chips, timestamps, confidence. That is Direction 3's "Evidence Glass", applied narrowly where AI speaks.
-3. **The existing system is already 70% there.** V6's 4-layer surface ladder, semantic trading colors, mono-numeral rule and token hygiene tests mean the cheapest premium win is *discipline*, not reinvention. The benchmark's top patterns (luminance elevation, `tnum`, one-accent-per-view, states-as-gate) all map onto existing tokens.
+1. **The product is a decision, not a dashboard.** VIXOR's users don't want more data — DexScreener has data. They want to know *what deserves attention, whether it's safe, and what happened last time*. Every screen's first job is to answer a question, not to fill a grid.
+2. **The differentiator is a crew with receipts.** MOXI/MR.VIGO/DR.DEX/ECHO justify trust only if their output carries evidence — source chips, timestamps, confidence (Evidence Glass). Attribution is a first-class system (`character-experience-map.md` §3), not a decorative flourish.
+3. **Independently valuable = valuable before any trade.** The product must deliver worth with zero wallet connected: intelligence (Today briefing), safety (DEX verdicts), decision craft (structured rationale + tracked outcomes). Execution (Desk/Swap) is a feature — one dock slot — not the identity.
+4. **The existing system is already 70% there.** V6's surface ladder, semantic trading colors, mono-numeral rule, character token registry, and `CharacterGuide` mean the cheapest premium win is *discipline + composition*, not reinvention.
 
 ## 2. Light/dark strategy
 
-**Dark-first; light maintained at parity.** Rationale: (a) the product is a live terminal used inside Telegram — dark is the native ambient and the deployed default; (b) semantic trading colors were tuned for dark first (bullish `#22d3a6` on `#08090c` passes contrast; light variants already exist and stay maintained); (c) competitor evidence (Linear, Perplexity, TradingView dark-default in trading contexts) supports dark as the *working* theme. Light mode remains fully supported (it exists today and is preserved) — any new token ships with both values. **No automatic theme switching** — user setting stays authoritative.
+**Dark-first; light maintained at parity.** Rationale unchanged from Rev. 1: Telegram-native ambient, semantic colors tuned for dark, deployed default. Light stays fully supported; every new token ships both values; **no automatic theme switching** — the user setting is authoritative.
 
 ## 3. Color architecture (rules layered on V6 tokens — no new brand hues)
 
-1. **Semantic apartheid (law):** `--bullish/--bearish/--neutral-wait` appear ONLY as data meaning (direction/PnL/status). Never decorative. Never on chrome, never as section theming.
-2. **One accent per view:** indigo `--primary` = primary actions only; purple `--secondary-accent` = AI/crew identity only (avatar rings, copilot chrome, character moments); gold = premium only (existing law, restated).
-3. **Domain accents stay quarantined:** HUNT lime and SHIELD gold remain inside their domains; they never leak into global chrome.
-4. **New token (the only color addition):** `--verified: #22d3ee` (+dim/border) — the "source verified" color for evidence chips, deliberately the same family as `--shield-safe` (cross-domain coherence: cyan = checked). **Green stays exclusively market-positive** — this resolves the Perplexity-pattern conflict (their verified-green would corrupt VIXOR's semantic green).
-5. **Borders become whispers:** in dark, solid border grays migrate to `rgba(255,255,255,0.06–0.10)` hairlines (Linear grammar) — `--border-subtle/hover` retune within existing token names; light mode keeps solid hairlines.
+1. **Semantic apartheid (law):** `--bullish/--bearish/--neutral-wait` appear ONLY as data meaning. Never decorative, never chrome, never section theming.
+2. **Character identity law (revised from Rev. 1 — correction):** each character's identity chrome uses **that character's own `--char-*` token** (moxi cyan · vigo violet · dex red · echo green) — avatar rings, persona chips, drawer chrome, stage chips. Rev. 1's "purple = crew identity" rule is **withdrawn**: violet is MR.VIGO's identity, and one shared crew color would destroy attribution (single-owner rule). The crew's *collective* moments (dock icon, hub header) either stay neutral or show all four tokens together — never a single "crew purple". `--secondary-accent` remains a brand accent for marketing/gradient moments only.
+3. **Character tokens are quarantined to identity chrome** — they never encode data semantics. Risk levels use `--shield-*`; direction uses `--bullish/--bearish`. `--char-dex` red is DEX's *name tag*, not a risk scale.
+4. **One accent per view:** indigo `--primary` = primary actions only; gold = premium only. Domain accents (HUNT lime, SHIELD gold) stay inside their domains.
+5. **`--verified` cyan (V6.1 addition, already in `styles.css`):** source-verified chips. Green stays exclusively market-positive.
+6. **Borders become whispers:** dark-mode hairlines at `rgba(255,255,255,0.06–0.10)` via the existing `--border`/`--border-subtle` names; light keeps solid hairlines.
 
 ## 4. Typography (laws, not suggestions)
 
-1. Inter for narrative/UI — weights **400 / 500 / 590** only; 590 replaces 700 everywhere (Linear discipline). Existing `font-bold` usages migrate to 590-class (`--text-weight-strong`) during Phase 4 page passes.
-2. **JetBrains Mono + `tnum` for ALL numerics** — prices, PnL, percentages, scores, timestamps. New utility `.vx-num` (Phase 3 token file) applies `font-variant-numeric: tabular-nums` + mono stack. Live-updating numbers must never reflow.
-3. Bold is reserved for **verdicts** ("VERDICT: LONG", "CONFIRMED"), never inline emphasis (Perplexity law).
-4. **Arabic:** Amiri remains the AR display face. **Gap found:** Inter has no Arabic glyphs — AR body text currently falls back to system fonts (uncontrolled). *Recommendation (owner decision, Phase 4):* add an Arabic UI face (IBM Plex Sans Arabic or Noto Kufi Arabic, OFL) for AR body/UI; Amiri stays for display/quotes. Recorded as UX-15/UX-07 dependency.
+Unchanged from Rev. 1: Inter 400/500/590 (590 replaces 700 via `--text-weight-strong`); **JetBrains Mono + `tnum` (`.vx-num`) for ALL numerics**; bold reserved for verdicts; Arabic display = Amiri with an Arabic UI body face as an owner decision (IBM Plex Sans Arabic / Noto Kufi Arabic recommended). Additions for character voice: MOXI's card copy ≤2 sentences, one action; DEX verdicts are always mono-numeral; VIGO evidence lines always end with a source chip.
 
 ## 5. Surfaces, elevation & borders
 
-- Ladder unchanged (4 layers max — benchmark says cap at 3; VIXOR's 4th `--surface-hero` is reserved for hero/premium moments only, which satisfies the spirit: **3 working layers + 1 ceremonial**).
-- **Elevation = luminance step, never a new shadow** (Linear law). Shadows reserved for overlays/floating only (existing 6-level system stays).
-- Chart containers get **sunken wells** (inset 1px + inner shadow) instead of floating cards — charts are read, not clicked.
-- Glass 2.0 stays for top nav, dock, sheets — and nowhere else (no glass content cards; data must be crisp).
+Unchanged: 4-layer ladder (3 working + 1 ceremonial `--surface-hero`); elevation = luminance step, shadows only for overlays; chart wells sunken; Glass 2.0 only on nav/dock/sheets. **Composition law added (Rev. 2):** vertical rhythm per view = **one hero question + ranked supporting blocks** (see §6).
 
-## 6. Data visualization grammar
+## 6. Composition rules — "premium SaaS, not dashboard-heavy" (new in Rev. 2)
 
-1. Sparkline-in-row as the default density pattern (TradingView); full charts on drill-down.
-2. **Per-widget timeframe chips** (24H/7D/30D) — standard on all metric cards (Datadog pattern).
-3. Every live block carries **provenance + age**: "BINANCE · 12s ago" mono micro-label; every AI claim carries **source chips + confidence** (Evidence Glass).
-4. Chart series palette extended from 3 to 6 (new: `#22d3ee`, `#f5a623`, `#f0c419` family — drawn from EXISTING semantic hues but used as *series* colors only in multi-series contexts, never re-colored per-chart on semantic single-series). No new hues introduced.
-5. Direction is never color-only: every delta gets an arrow glyph (▲▼) + sign (UX-14 fix).
+1. **The hero question:** every primary screen opens with the question it answers ("What deserves attention?", "Is this token safe?", "What did I decide and what happened?") — as a single narrative card, not a stat grid.
+2. **Density is a tool, not a default.** Comparison jobs (Discover rows, positions, evidence stacks, case tables) may be dense. Orientation jobs (Today, Crew, onboarding) must not exceed **one hero + crew strip + ranked feed** on mobile.
+3. **Widget budget:** no more than **6 equal-weight tiles per mobile view**; where a view would exceed it, tiles become ranked feed rows (ranked by relevance, not by module).
+4. **Charts:** max **one chart per mobile view by default**; sparklines in rows; full charts on drill-down. The chart is copilot-annotated evidence, never a toolbar wall.
+5. **The loop is visible:** wherever a decision-in-progress appears, its stage chip + owner character appear with it (Experience map §3).
+6. **The one terminal:** `/trade-desk` is deliberately the densest surface (execution = focus mode) — everywhere else composes down.
 
-## 7. Motion philosophy (state-driven only)
+## 7. Data visualization grammar
 
-- Durations 120–250ms, `--ease-decelerate` entrances; nothing bounces; nothing loops (the dock's active indicator is the single persistent motion).
-- **Number-first motion:** prices tick, sparklines draw, gauges fill — the *data* animates, not the containers (Direction 2).
-- Evidence cards assemble with 100ms stagger (Direction 3) on copilot output only.
-- **Reduced-motion:** a global CSS gate **already exists in V6** (`styles.css` L2201–2232 — verified during Phase 3); the remaining gap is **JS-driven motion** (framer-motion springs on the dock) — Phase 4 gates those with `useReducedMotion()`. (Issue UX-06, corrected.)
-- The one ceremonial moment per cycle: **streak milestone** (annual-sparkle budget).
+Unchanged from Rev. 1: sparkline-in-row default; per-widget timeframe chips; provenance + age on every live block; source chips + confidence on every AI claim; 6-color series palette from existing hues; direction never color-only (arrow + sign).
 
-## 8. States discipline (the Geist-style gate)
+## 8. Motion philosophy (state-driven only)
 
-Every screen must define, as named states: **loading (skeleton) · empty (EmptyState + action) · error (retry affordance) · degraded (source chip "unavailable") · offline (existing banner) · stale (age indicator) · RTL (mirrored)**. Phase 4 implements per page; Phase 6 verifies per page. `/discover`'s silent-empty (UX-04) is the first target. No page ships a state it hasn't designed.
+Unchanged: 120–250ms, decelerate entrances, nothing bounces, **nothing loops** — with one correction now logged as UX-17: the MOXI orb's infinite bob + pulsing glow ring violates this law today and is re-skinned in Phase 4 (identity + motion together). Number-first motion; evidence cards assemble with 100ms stagger; reduced-motion: CSS gate exists (V6), JS-driven motion gated via `useReducedMotion()` in Phase 4. **Character motion rule (new):** characters express state (thinking/success/error) through `CharacterGuide` state changes and at most a 200ms entrance — no idle character animations, no ambient mascot behavior. The streak milestone remains the single ceremonial moment per cycle.
 
-## 9. IA & navigation concept (Gate-2 decision — options, not fait accompli)
+## 9. IA & navigation
 
-- **Option A (recommended):** dock reduces to **5** (Home, Discover, Signals, Desk, More) — all displaced items land in a re-grouped More panel with a new **"Crew"** category (HUNT/SHIELD/ECHO/Investigate/Risk) making the character system discoverable in ≤2 taps (fixes UX-01 + UX-03 with zero route changes).
-- **Option B:** keep 10-item dock; add character-hub screen as a "Crew" tab.
-- **Option C:** status-quo + omnibox only.
-- In all options: **global omnibox** (paste address/symbol/@wallet → auto-route to token/case/whale) is added to the top nav (Birdeye/Linear pattern) — this is the single highest-value interaction addition.
-- No route is removed, renamed, or hidden in any option (preservation map governs).
+**Superseded by `ia-proposal.md`** (Gate 2 decision): recommended **Option B "Crew Rail"** — dock 5 (`Today · Discover · Crew · Desk · More`) + global omnibox + character presence in every surface. Rev. 1's Option A ("Crew" as a More-panel category) is **withdrawn** as inconsistent with the owner's vision (crew as a navigation category alone is what the owner rejected). No route is removed or renamed in any option.
 
 ## 10. Desktop composition (fixing "stretched mobile")
 
-At ≥1024px: content grids become **two-column** (`main + 360px context rail`) on Home/Discover/Trade-desk/Analysis — the rail carries crew context, source chips, and quick actions (Evidence Glass lives naturally there). Dock remains but centers as an island; top nav gains breadcrumb context. Pages keep `PageLayout` scaffolding; only grid rules change at `lg:`. Mobile (390–430px) remains the primary target — desktop is composed, not scaled.
+Unchanged: at ≥1024px, `main + 360px context rail` on Today/Discover/Desk/Analysis — the rail carries crew context, evidence chips, quick actions. Dock centers as an island. **Addition (Rev. 2):** the Crew hub gets a wide activity rail (live crew activity + open loops) at ≥1024px. Mobile 390–430px remains primary.
 
-## 11. Accessibility floor (non-negotiable, verified per stage)
+## 11. Accessibility floor (non-negotiable)
 
-44×44px targets · visible `:focus-visible` ring (new token) · direction never color-only (arrows + signs) · heading order per page · `axe-core` per Phase 4/6 stage · keyboard journeys per stage · 200% zoom check. WCAG 2.2 AA is the target; **no compliance claim is made until tested** (UX-14/UX-06).
+Unchanged: 44×44 targets · visible `:focus-visible` ring (`--focus-ring`) · direction never color-only · heading order · axe-core per stage · keyboard journeys · 200% zoom. **Character rule (new):** character identity is never color-only — every persona chip carries monogram + name text; character art (when it lands via the Agent 1 contract) requires alt-text and a reduced-motion-safe static variant.
 
 ## 12. What we deliberately do NOT do
 
-No rebrand · no new brand hues (one utility addition: `--verified`) · no new UI library (shadcn stays; inline-style buttons migrate to cva variants) · no chart library swap · no decorative pastel tints · no ambient loops · no glass on content cards · no mega-menus · no pay-for-visibility anything · no mock data anywhere (degraded states are designed, never faked).
+No rebrand · no new brand hues · no new UI library · no chart library swap · no decorative pastel tints · no glass on content cards · no mega-menus · no pay-for-visibility · no mock data anywhere. **Rev. 2 additions:** no mascot gimmicks (no confetti, no sticker reactions, no talking-head interruptions) · no ambient character animations · no invented character artwork (assets arrive only via the Agent 1 integration contract; monogram fallback until then) · no "crew purple" or any single-color crew branding · no dashboard walls where a narrative answers better · **no destructive redesign — every existing feature, route, and token preserved per `feature-preservation-map.md`**.

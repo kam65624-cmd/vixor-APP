@@ -1,9 +1,15 @@
 # VIXOR APP — QA Report (Agent 3, UI/UX) — living document
 
-**Branch:** `uiux/vixor-app-phase-1` · Updated: 2026-10-30
+**Branch:** `uiux/vixor-app-phase-1` · Updated: 2026-10-30 (Gate 2 revision)
 **Policy:** nothing is marked Done+Verified without evidence; unavailable checks are marked **Not Verified** with the reason. No test result is ever fabricated.
 
 ---
+
+## 0. Gate 2 revision round (2026-10-30, later)
+
+- **Change type:** documentation only — 6 new docs + 2 revised (see `implementation-changelog.md` Stage 3). Zero application code changes → typecheck/lint/build outcomes structurally unaffected.
+- **Environment sanity re-run after owner merge of PR #28** (branch fast-forwarded to `main@62df4b0`): `design-token-hygiene` vitest — **PASS 4/4** (evidence: session command log this round). Confirms V6/V6.1 token layer intact on the merged base.
+- `concepts/gate2-concepts.html` is a documentation mockup (not a product surface); it uses real V6 dark token values copied from `styles.css` — token duplication there is intentional and inert (no runtime consumption).
 
 ## 1. Checks executed this session (with evidence)
 
@@ -36,15 +42,17 @@
 ## 3. Known issues carried (top items — full list in `ux-issue-register.md`)
 
 1. **ENG-01** — undeclared `@walletconnect/sign-client` import (dep-scan warning; needs owner-approved dependency fix).
-2. **UX-01** — HUNT/SHIELD/ECHO + 20 more routes have no global-nav entry (Gate-2 IA decision).
-3. **UX-03** — dock density (10 items) vs Telegram ergonomics (Gate-2).
-4. **UX-04** — `/discover` silent error swallowing (Phase 4).
-5. **UX-05** — `/token/$symbol` param-dependence (Phase 4).
-6. **UX-14** — a11y floor (targets/focus/color-only) (Phase 4).
-7. **DATA-01/02** — dual tables; premium activation — Agent 2 / payments stream.
-8. **UX-11** — route-level auth guard — Blocked on Agent 2 sign-off.
+2. **UX-01/UX-03** — orphaned routes + dock density (Gate-2 IA decision → **Option B "Crew Rail" recommended**, `ia-proposal.md`).
+3. **UX-17/19** — MOXI orb identity drift + generic copilot drawer (Phase 4 after Gate 2; concepts C5).
+4. **UX-18** — character artwork layer absent (Agent 1 contract dependency; monogram fallback is final-quality).
+5. **UX-04** — `/discover` silent error swallowing (Phase 4).
+6. **UX-05** — `/token/$symbol` param-dependence (Phase 4).
+7. **UX-14** — a11y floor (targets/focus/color-only) (Phase 4).
+8. **DATA-01/02** — dual tables; premium activation — Agent 2 / payments stream.
+9. **UX-11** — route-level auth guard — Blocked on Agent 2 sign-off.
 
 ## 4. Sign-off state
 
-- Phase 0 + Phase 1 + Phase 2 + Phase 3 (docs) complete on branch; **awaiting owner Gate 1 + Gate 2 review**.
+- Phase 0–3 complete and **merged to `main` by owner (PR #28, 2026-10-30T03:12:31Z)**. Gate 2 **revision** delivered on the same branch as a new draft PR: character experience map, IA Option B recommendation, revised direction, screen concepts, mockup, owner-decision package (R-1…R-5).
+- **No Phase 4 implementation until the owner approves R-1…R-5** (`owner-decisions.md`).
 - No merge, no deploy, no production changes, no migrations — per owner rules.
