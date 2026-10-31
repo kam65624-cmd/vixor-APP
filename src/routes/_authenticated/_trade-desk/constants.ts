@@ -1,6 +1,8 @@
 // ── Trading Pairs & Sizes ──
 
-export const PAIRS = ["XAUUSD", "EURUSD", "GBPUSD", "USDJPY", "BTCUSD"];
+// Stage 1 scope boundary (TASK 37): Crypto-only pair list — forex/gold
+// entries (XAUUSD, EURUSD, GBPUSD, USDJPY) removed.
+export const PAIRS = ["BTCUSD", "ETHUSD", "SOLUSD"];
 
 export const PIP_SIZES: Record<string, number> = {
   EURUSD: 0.0001,

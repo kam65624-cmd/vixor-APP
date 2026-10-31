@@ -25,6 +25,7 @@ import {
   RiskLevel,
   SwingPoint,
 } from "./core/types";
+import { AssetRegistry } from "@/shared/asset-registry";
 
 import { atr, formatPrice, avgRange } from "./core/candle-utils";
 // NOTE: generateOHLCV is intentionally NOT imported here. It is for
@@ -71,9 +72,15 @@ export interface AnalysisInput {
  * (compatible with `AnalysisSchema`).
  */
 export function runLocalAnalysis(input: AnalysisInput): LocalAnalysisResult {
-  const pair = input.pair || detectPairFromImage(input.imageBytes) || "EUR/USD";
+  // Stage 1 scope boundary (TASK 37): the analysis engine is a protected
+  // Crypto intelligence workflow. Non-crypto and unknown pairs are rejected
+  // with a scope error (never silently analyzed as crypto).
+  if (input.pair) {
+    AssetRegistry.assertCryptoPair(input.pair);
+  }
+  const pair = input.pair || detectPairFromImage(input.imageBytes) || "BTC/USDT";
   const timeframe = input.timeframe || "1H";
-  const config = PAIR_CONFIGS[pair] || PAIR_CONFIGS["EUR/USD"]!;
+  const config = PAIR_CONFIGS[pair] || PAIR_CONFIGS["BTC/USDT"]!;
   const decimals = config.decimals;
 
   // ── Step 1: Get OHLCV data ──────────────────────────────────────────

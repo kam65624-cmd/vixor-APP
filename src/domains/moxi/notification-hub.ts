@@ -24,8 +24,10 @@ const SEVERITY_ORDER: Record<string, number> = {
 // ── Insight Generators ────────────────────────────────────────────────────
 
 /**
- * Check if the user has correlated/overexposed positions.
- * E.g., 3 BUY signals on EUR/USD, GBP/USD, AUD/USD = long USD overexposure.
+ * Check if the user has correlated/overexposed research signals.
+ * E.g., 3 bullish signals on BTC/USDT, ETH/USDT, SOL/USDT = correlated
+ * crypto exposure (S1-1: research framing; crypto-only data — see the
+ * crypto filter in generateMoxiInsights).
  */
 export function detectOverexposure(
   trackings: Array<{
@@ -64,7 +66,7 @@ export function detectOverexposure(
       return {
         type: "risk_warning",
         title: `Overexposed to ${curr}`,
-        body: `You have ${sameBase.length} active BUY signals on ${curr} pairs (${pairs}). Consider the correlation risk — if ${curr} weakens, all positions lose simultaneously.`,
+        body: `You have ${sameBase.length} active bullish research signals on ${curr} pairs (${pairs}). Correlation note — if ${curr} weakens, all of these signals would move the same way.`,
         severity: "warning",
         pair: sameBase[0].pair,
         detectedAt: new Date().toISOString(),
@@ -79,8 +81,8 @@ export function detectOverexposure(
       const pairs = sameQuote.map((t) => t.pair).join(", ");
       return {
         type: "risk_warning",
-        title: `Heavy ${curr} short exposure`,
-        body: `${sameQuote.length} active SELL signals involve selling ${curr} (${pairs}). Correlated risk — if ${curr} strengthens, all positions lose.`,
+        title: `Heavy ${curr} bearish exposure`,
+        body: `${sameQuote.length} active bearish research signals on ${pairs} share ${curr} as the quote. Correlation note — if ${curr} strengthens, these signals would move the same way.`,
         severity: "warning",
         pair: sameQuote[0].pair,
         detectedAt: new Date().toISOString(),
@@ -141,7 +143,7 @@ export function detectSignalProximity(
       insights.push({
         type: "signal_update",
         title: `${t.pair} near Take Profit`,
-        body: `Your ${t.direction} ${t.pair} is within 10% of TP (\`${tp}\`). Current: \`${current.toFixed(t.pair.includes("JPY") ? 3 : 2)}\`. Consider taking partial profits.`,
+        body: `Your ${t.direction === "SELL" ? "bearish" : "bullish"} research signal on ${t.pair} is within 10% of TP (\`${tp}\`). Current: \`${current.toFixed(t.pair.includes("JPY") ? 3 : 2)}\`.`,
         severity: "info",
         pair: t.pair,
         detectedAt: new Date().toISOString(),
@@ -152,7 +154,7 @@ export function detectSignalProximity(
       insights.push({
         type: "risk_warning",
         title: `${t.pair} approaching Stop Loss`,
-        body: `Your ${t.direction} ${t.pair} is within 15% of SL (\`${t.stop_loss}\`). Current: \`${current.toFixed(t.pair.includes("JPY") ? 3 : 2)}\`. Be ready.`,
+        body: `Your ${t.direction === "SELL" ? "bearish" : "bullish"} research signal on ${t.pair} is within 15% of SL (\`${t.stop_loss}\`). Current: \`${current.toFixed(t.pair.includes("JPY") ? 3 : 2)}\`.`,
         severity: "critical",
         pair: t.pair,
         detectedAt: new Date().toISOString(),
@@ -224,15 +226,24 @@ export async function generateMoxiInsights(
 ): Promise<MoxiProactiveInsight[]> {
   const ctx = await import("./context-engine").then((m) => m.buildMoxiContext(userId, supabase));
 
+  // Stage 1 scope boundary (S1-1/S1-3, TASK 38): insight generators operate
+  // on crypto pairs only. Legacy/stale non-crypto tracking rows must never
+  // produce VIXOR intelligence notifications — reuse the shared registry
+  // boundary instead of duplicating validation logic.
+  const { AssetRegistry } = await import("@/shared/asset-registry");
+  const cryptoTrackings = (ctx.activeTrackings ?? []).filter((t: { pair: string }) =>
+    AssetRegistry.isCrypto(t.pair),
+  );
+
   const insights: MoxiProactiveInsight[] = [];
 
   // Overexposure check
-  const overexposure = detectOverexposure(ctx.activeTrackings);
+  const overexposure = detectOverexposure(cryptoTrackings);
   if (overexposure) insights.push(overexposure);
 
   // Signal proximity check
   const proximityInsights = detectSignalProximity(
-    ctx.activeTrackings.map((t) => ({
+    cryptoTrackings.map((t) => ({
       ...t,
       take_profit: Array.isArray(t.take_profit) ? t.take_profit[0] : t.take_profit,
     })),
@@ -241,7 +252,7 @@ export async function generateMoxiInsights(
   insights.push(...proximityInsights);
 
   // Event risk check
-  const eventRisk = detectEventRisk(ctx.activeTrackings, ctx.notableEvents);
+  const eventRisk = detectEventRisk(cryptoTrackings, ctx.notableEvents);
   if (eventRisk) insights.push(eventRisk);
 
   // Sort by severity

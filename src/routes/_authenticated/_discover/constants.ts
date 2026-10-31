@@ -38,11 +38,11 @@ export interface DiscoverResponse {
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
+// S1-4 (TASK 38): FOREX removed — VIXOR discovery is Crypto-only.
 export const CATEGORY_TABS = [
   { key: "ALL", label: "All" },
   { key: "MEME", label: "Meme" },
   { key: "CRYPTO", label: "Crypto" },
-  { key: "FOREX", label: "Forex" },
 ] as const;
 
 export const SORT_OPTIONS = [

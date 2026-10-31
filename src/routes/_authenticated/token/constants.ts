@@ -1,3 +1,5 @@
+import { AssetRegistry } from "@/shared/asset-registry";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface TokenItem {
@@ -122,16 +124,75 @@ export function getRiskColor(risk?: string): string {
 
 // ── Asset Type Detection ─────────────────────────────────────────────────────
 
-export type AssetType = "meme" | "crypto" | "forex" | "commodity" | "unknown";
+// S1-3 (TASK 38): "stock" and "index" joined the union so legacy/deep-linked
+// out-of-scope assets classify explicitly instead of falling through to the
+// crypto display. "unknown" = a slash-pair that resolves to no registry asset
+// (unknown data must never silently become a valid crypto asset).
+export type AssetType = "meme" | "crypto" | "forex" | "commodity" | "stock" | "index" | "unknown";
+
+/** Asset types that may never render as valid VIXOR assets (S1-3). */
+export const OUT_OF_SCOPE_ASSET_TYPES: readonly AssetType[] = [
+  "forex",
+  "commodity",
+  "stock",
+  "index",
+] as const;
 
 export function detectAssetType(symbol: string, chain?: string): AssetType {
-  const s = symbol.toUpperCase();
-  // Forex pairs contain "/"
-  if (s.includes("/")) return "forex";
-  // Commodities
+  const s = symbol.toUpperCase().trim();
+
+  // ── Registry-first (S1-3): the Asset Master Registry is the canonical
+  // asset identity (shared Stage 1 boundary). Slash-pairs and registry-listed
+  // symbols resolve here, so valid crypto pairs (BTC/USDT) stay on the crypto
+  // path while legacy/deep-linked non-crypto data (EUR/USD, XAU/USD, NASDAQ,
+  // AAPL) is classified out-of-scope and can never render as a valid VIXOR
+  // asset.
+  const registryAsset = AssetRegistry.find(s);
+  if (registryAsset) {
+    switch (registryAsset.category) {
+      case "forex":
+        return "forex";
+      case "commodity":
+        return "commodity";
+      case "stock":
+        return "stock";
+      case "index":
+        return "index";
+      case "crypto":
+        // fall through to meme refinement below (e.g. DOGE/USDT stays meme)
+        break;
+    }
+  } else if (s.includes("/")) {
+    // Slash-pair not in the registry. Long-tail crypto pairs are quoted in
+    // crypto settlement assets — those follow the base-symbol logic below
+    // (WIF/USDT stays meme). Anything else (FAKE/PAIR, SCAM/USD, fiat/fiat
+    // pairs that the registry does not list) fails closed as unknown —
+    // unknown data must never silently become a valid crypto asset.
+    const quote = s.split("/")[1];
+    const CRYPTO_QUOTES = [
+      "USDT",
+      "USDC",
+      "FDUSD",
+      "TUSD",
+      "DAI",
+      "USDS",
+      "USDE",
+      "BTC",
+      "ETH",
+      "SOL",
+      "BNB",
+      "WETH",
+      "WSOL",
+    ];
+    if (!CRYPTO_QUOTES.includes(quote)) return "unknown";
+  }
+
+  // Commodities by symbol (legacy display data not present as a registry pair)
   if (["XAU", "XAG", "XPT", "OIL", "WTI", "BRENT", "GOLD", "SILVER"].some((c) => s.includes(c)))
     return "commodity";
-  // Meme coins (common meme tokens)
+
+  // Meme coins (common meme tokens) — checked on the base symbol so quoted
+  // pairs (DOGE/USDT) keep their meme display
   const memeTokens = [
     "BONK",
     "WIF",
@@ -151,7 +212,8 @@ export function detectAssetType(symbol: string, chain?: string): AssetType {
     "NEIRO",
     "BUBBA",
   ];
-  if (memeTokens.includes(s)) return "meme";
+  const base = s.includes("/") ? s.split("/")[0] : s;
+  if (memeTokens.includes(base)) return "meme";
   // Chain-specific meme detection
   if (chain && ["solana", "base", "eth"].includes(chain.toLowerCase())) {
     const majorCrypto = [
@@ -169,7 +231,7 @@ export function detectAssetType(symbol: string, chain?: string): AssetType {
       "MATIC",
       "UNI",
     ];
-    if (!majorCrypto.includes(s)) return "meme";
+    if (!majorCrypto.includes(base)) return "meme";
   }
   return "crypto";
 }
@@ -184,6 +246,12 @@ export function getAssetTypeBadge(assetType: AssetType): { label: string; color:
       return { label: "FOREX \uD83D\uDCB1", color: "#A78BFA" };
     case "commodity":
       return { label: "COMMODITY \uD83C\uDFC7", color: "var(--color-gold)" };
+    case "stock":
+      return { label: "STOCK", color: "#A78BFA" };
+    case "index":
+      return { label: "INDEX", color: "#A78BFA" };
+    case "unknown":
+      return { label: "UNVERIFIED", color: "var(--color-muted-foreground)" };
     default:
       return { label: "TOKEN", color: "var(--color-muted-foreground)" };
   }
