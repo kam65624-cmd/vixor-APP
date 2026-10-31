@@ -13,8 +13,8 @@ Every "Done + Verified" claim requires evidence (test, screenshot, browser journ
 - **Severity:** P0 (IA) · **User impact:** entire character domains (HUNT, SHIELD, ECHO — the product's differentiators) depend on in-page cross-links; new users cannot discover them; `/echo`, `/investigate`, `/risk`, `/tracking`, `/opportunities`, `/notifications`, `/wallet-web3`, `/review`, `/analysis/$id`, all `/v2/*` have no dock/panel entry.
 - **Evidence:** `BottomBar.tsx` `dockItems` + `MorePanel.tsx` `moreNavCategories` vs. full route list (page-inventory §1).
 - **Root cause:** organic growth of routes without IA governance; dock optimized for trading actions, not domains.
-- **Proposed solution:** Gate-2 decision — either domain-aware grouping (More panel restructure + dock density reduction) or character-hub entry (MOXI-crew screen linking domains). No route deletions.
-- **Status:** Requires Owner Approval (Gate 2). **Verification (when implemented):** journey test — every route in page-inventory reachable within 2 taps from home.
+- **Proposed solution (Gate 2 revision):** IA **Option B "Crew Rail"** (`ia-proposal.md`) — new first-level `/crew` hub (character status cards + workflow groups + activity) puts every character domain ≤2 taps from home. Option A ("Crew" as a More-panel category) **withdrawn** — inconsistent with the owner's vision (crew must not be a navigation category alone). No route deletions.
+- **Status:** Requires Owner Approval (Gate 2) — recommendation updated 2026-10-30. **Verification (when implemented):** journey test — every route in page-inventory reachable within 2 taps from home.
 - **Remaining risk:** low after IA decision; high if left unaddressed (product story invisible).
 
 ### UX-02 — Home page identity confusion
@@ -26,8 +26,8 @@ Every "Done + Verified" claim requires evidence (test, screenshot, browser journ
 ### UX-03 — Dock density (10 items) vs. Telegram mini-app ergonomics
 - **Severity:** P1 · **Impact:** on 390px the dock requires horizontal drag/scroll (auto-center helps); mis-taps near separators; benchmark guidance: ≤5 primary + More.
 - **Evidence:** `BottomBar.tsx` (groups core/trading/ai/more) + baseline screenshots 02/10; competitor benchmark §B (avoid mega-nav).
-- **Proposed:** Gate-2: reduce dock to 5 (Home, Discover, Signals, Desk, More) — relocated items remain reachable via More panel (preservation rule respected).
-- **Status:** Requires Owner Approval (Gate 2).
+- **Proposed (Gate 2 revision):** dock → 5 per IA Option B: **Today · Discover · Crew · Desk · More** (`ia-proposal.md` §3.1). Displaced items (Analyze, Signals, Swap, Alpha, Portfolio, Charts) land in a regrouped More panel at stable positions + contextual entries (IA §3.4).
+- **Status:** Requires Owner Approval (Gate 2) — recommendation updated 2026-10-30.
 
 ### UX-04 — `/discover` silently swallows fetch errors
 - **Severity:** P1 · **Impact:** on DexScreener/exchangerate failure the feed renders empty with no reason — users cannot distinguish "no results" from "data unavailable" (data-integrity perception risk).
@@ -106,6 +106,27 @@ Every "Done + Verified" claim requires evidence (test, screenshot, browser journ
 - **Proposed:** owner provides production/staging URL (read-only) or approves a preview deployment path.
 - **Status:** Blocked (owner input requested).
 
+### UX-17 — MOXI copilot orb: identity drift + motion-law violation
+- **Severity:** P1 (brand consistency — the crew's most-seen surface). **Found:** 2026-10-30 Gate 2 revision.
+- **Impact:** `FloatingCopilot.tsx` renders MOXI's orb with a hardcoded indigo/violet gradient (`#8B5CF6→#6366F1→#4338CA`) + generic `Bot` icon + infinite sine-wave bob + looping glow ring. It matches neither MOXI's canonical identity (`--char-moxi` `#06b6d4`, `Activity` icon, `MO` monogram — `src/shared/characters.ts`) nor the motion law (no ambient loops; design-direction §8). Under the character-driven product vision this is the highest-visibility identity defect.
+- **Evidence:** `src/components/vixor/FloatingCopilot.tsx` L22–36, L89–119 (read 2026-10-30).
+- **Proposed:** Phase 4 re-skin to `--char-moxi` token chrome + monogram/avatar slot + static or state-driven motion gated by `useReducedMotion()`; concept C5 (`screen-concepts.md`).
+- **Status:** Not Started (Phase 4, after Gate 2). **Verify:** token-hygiene test + visual + reduced-motion emulation.
+
+### UX-18 — No character artwork layer (monogram-only avatars)
+- **Severity:** P2 (dependency). **Found:** 2026-10-30 Gate 2 revision. **Updated:** 2026-10-30 (pause directive); 2026-10-30 (final corrections — D-12 recorded).
+- **Impact:** character identity currently renders as monograms + Lucide icons only; illustrated assets are the missing layer of the character experience. **The owner has taken direct control of character creation and visual identity** — VIXOR does not invent artwork and does not treat monograms as the final system (they are the fallback). **Asset-delivery direction now an approved decision (D-12):** both **2D and 3D** approved — 3D source/model deliverables and cinematic 3D renders stay owner-side; runtime consumption is via **2D adaptations** (SVG/PNG/Lottie) per the readiness spec.
+- **Evidence:** `characters.ts` (monogram function), `MoxiAvatar.tsx` (gradient monograms); `public/` contains only `favicon.ico`; no illustrated character assets in repo.
+- **Proposed:** monogram fallback remains the complete, shippable state; consumption of **owner-approved** assets via the manifest contract specified in `character-asset-readiness.md` (§5–§8) after the owner approves the readiness package (R-6) and delivers assets (DEP-1…DEP-5).
+- **Status:** **Blocked on owner-approved character assets (owner-controlled). Character Studio ownership TBD — not assumed to be Agent 1** (Agent 1 current scope: TG Content Bot + Content Operations). Not a Phase 4 blocker — fallback design is final-quality. **All Phase 4 work paused per D-10.**
+
+### UX-19 — Copilot drawer: generic chat, no persona chrome / tool visibility / crew attribution
+- **Severity:** P1 (character experience). **Found:** 2026-10-30 Gate 2 revision.
+- **Impact:** `CopilotDrawer.tsx` is an unbranded chat ("Type your message…" placeholder, no MOXI identity, no visible tool use, no source chips) while the backend already exposes MOXI tools (`analyzePair`, `trackSignal`, `createPriceAlert`) and persona customization (`moxi_personas`). The product's flagship AI surface undersells existing capability and breaks attribution rules (experience map §3).
+- **Evidence:** `src/components/vixor/CopilotDrawer.tsx` (read 2026-10-30); `src/domains/moxi/tools.ts`; `src/domains/moxi/persona.ts`.
+- **Proposed:** Crew Console concept C5 (`screen-concepts.md`): persona chrome, tool receipts with sources, crew-delegated replies (single-owner rule), digest, persona entry point — all consuming existing functions.
+- **Status:** Not Started (Phase 4, after Gate 2).
+
 ---
 
 ## Engineering issues (frontend-owned unless noted)
@@ -151,3 +172,6 @@ Every "Done + Verified" claim requires evidence (test, screenshot, browser journ
 - 2026-10-30 (later): **UX-06 corrected** — global reduced-motion gate already exists in V6 (styles.css L2201–2232); gap narrowed to JS-driven motion (framer springs). Severity P2→P3. Evidence-first policy applied.
 - 2026-10-30 (later): **Typecheck re-verification:** `tsc --noEmit` **PASS clean** on `main@b893b62` (run this session) — disproves `AUDIT_FULL_2026.md` item #1 (TS errors in `investigate.tsx` + `mr-vigo/functions.ts`) at current main. Evidence: this session's command log; carried into `page-inventory.md` / `feature-preservation-map.md`.
 - 2026-10-30 (later): **`pnpm install --frozen-lockfile` PASS** (30.1s) + dev server boots (port 8080) — dependency-scan warning ENG-01 persists (walletconnect) without blocking.
+- 2026-10-30 (Gate 2 revision): **UX-01 + UX-03 recommendations updated** to IA Option B "Crew Rail" (`ia-proposal.md`); Option A withdrawn (owner vision: crew must not be a navigation category alone). **UX-17, UX-18, UX-19 added** from the character-experience review (orb identity drift + motion violation; missing artwork layer pending Agent 1 contract; generic copilot drawer). 19 UX + 3 ENG + 4 DATA entries. No code changed this round.
+- 2026-10-30 (pause directive): **ALL Phase-4 implementation work paused** (owner takes direct control of character creation and visual identity — `owner-decisions.md` D-10). UX-17/UX-19 fixes and every "Phase 4" item below remain proposals only. **UX-18 updated:** blocked on **owner-approved assets** (not Agent 1 coordination); Character Studio ownership TBD. New deliverable: `character-asset-readiness.md` (readiness package R-6). **IA reachability claim corrected** in `ia-proposal.md` (HUNT sub-routes are 2–3 taps, not ≤2) — UX-01 verification criteria unchanged (full route-by-route matrix due when IA resumes). No code changed.
+- 2026-10-30 (final corrections): **readiness package corrected (docs only — zero code changes).** B1 resolved as approved decision **D-12** (both 2D and 3D asset delivery approved; three distinct deliverable classes: 3D sources/models · cinematic renders · 2D adaptations as the runtime consumption class). B5 clarified as **D-13** (four states = minimum runtime UI state mapping, NOT the complete creative expression library — owner's production direction includes full expression sheets, poses, animation references, interaction specs). Creative production references (design sheets/storyboards/animatics/Google Flow videos) separated from runtime animation formats — no auto-conversion to production Lottie is assumed. Verification metadata corrected (baseline vs. inspection commit vs. HEAD distinguished in readiness doc Appendix A). UX-18 note updated. No code changed.

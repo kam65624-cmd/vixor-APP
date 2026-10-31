@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIXOR — Gate 2 Concepts (CONCEPT MOCKUP — NOT IMPLEMENTED)</title>
+<!--
+  VIXOR APP — Gate 2 Revision concept mockups (Agent 3, 2026-10-30)
+  Self-contained visual companion to docs/uiux/screen-concepts.md
+  - Colors are REAL V6 dark tokens from src/styles.css (mapped below)
+  - Character avatars are MONOGRAM placeholders (no invented artwork —
+    illustrated assets arrive only via the Agent 1 Character Studio contract)
+  - All data shown is ILLUSTRATIVE. This is a design concept, not a build.
+-->
+<style>
+  /* V6 tokens (src/styles.css :root dark) */
+  :root{
+    --background:#08090c; --card:#101114; --card-hover:#16171c; --surface-elevated:#16171c;
+    --surface-hero:#0c0d12; --foreground:#ffffff; --text-secondary:#9498a8; --text-tertiary:#565a66;
+    --primary:#6366f1; --primary-glow:#818cf8; --secondary-accent:#8b5cf6; --gold:#f0c419;
+    --border:rgba(255,255,255,0.08); --border-subtle:rgba(255,255,255,0.04);
+    --border-hover:rgba(255,255,255,0.15);
+    --bullish:#22d3a6; --bearish:#fb4667; --neutral-wait:#f5a623;
+    --shield-safe:#22d3ee; --shield-caution:#fbbf24; --shield-danger:#ef4444; --shield-unknown:#9498a8;
+    --verified:#22d3ee; --verified-dim:rgba(34,211,238,0.15); --verified-border:rgba(34,211,238,0.28);
+    --char-moxi:#06b6d4; --char-moxi-dim:rgba(6,182,212,0.15); --char-moxi-border:rgba(6,182,212,0.28);
+    --char-vigo:#8b5cf6; --char-vigo-dim:rgba(139,92,246,0.15); --char-vigo-border:rgba(139,92,246,0.28);
+    --char-dex:#ef4444; --char-dex-dim:rgba(239,68,68,0.15); --char-dex-border:rgba(239,68,68,0.28);
+    --char-echo:#10b981; --char-echo-dim:rgba(16,185,129,0.15); --char-echo-border:rgba(16,185,129,0.28);
+    --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:20px;
+    --shadow-elevated:0 8px 24px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#050507;color:var(--foreground);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:14px;line-height:1.45;padding:32px 16px 80px}
+  .num{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+  /* ── gallery chrome ── */
+  .wrap{max-width:1240px;margin:0 auto}
+  h1{font-size:22px;font-weight:590;letter-spacing:-.02em}
+  .sub{color:var(--text-secondary);font-size:13px;margin-top:6px;max-width:860px}
+  .banner{display:inline-block;margin-top:14px;padding:6px 12px;border:1px solid var(--neutral-wait);
+    color:var(--neutral-wait);border-radius:999px;font-size:11px;font-weight:590;letter-spacing:.08em}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;color:var(--text-secondary);font-size:12px}
+  .legend b{color:var(--foreground);font-weight:590}
+  nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 8px}
+  nav.toc a{color:var(--text-secondary);text-decoration:none;font-size:12px;padding:6px 12px;
+    border:1px solid var(--border);border-radius:999px}
+  nav.toc a:hover{color:var(--foreground);border-color:var(--border-hover)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(390px,1fr));gap:40px;margin-top:34px}
+  section{scroll-margin-top:20px}
+  .cap{margin:14px 2px 0;max-width:420px}
+  .cap h2{font-size:15px;font-weight:590}
+  .cap p{color:var(--text-secondary);font-size:12.5px;margin-top:4px}
+  /* ── annotation tags ── */
+  .tag{position:absolute;top:8px;right:8px;font-size:8.5px;font-weight:590;letter-spacing:.07em;
+    padding:2px 6px;border-radius:4px;text-transform:uppercase;z-index:5}
+  .tag.exists{color:#08090c;background:#9498a8}
+  .tag.new{color:#fff;background:var(--primary)}
+  .tag.gate{color:var(--gold);border:1px solid rgba(240,196,25,.4);background:rgba(240,196,25,.06)}
+  /* ── phone frame ── */
+  .phone{width:390px;height:800px;background:var(--background);border:1px solid var(--border-hover);
+    border-radius:36px;overflow:hidden;position:relative;margin:0 auto;
+    box-shadow:0 24px 64px rgba(0,0,0,.6);display:flex;flex-direction:column}
+  .status{display:flex;justify-content:space-between;padding:12px 22px 6px;font-size:12px;
+    color:var(--text-secondary);font-weight:590}
+  .screen{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  /* ── app chrome ── */
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 10px;
+    border-bottom:1px solid var(--border-subtle)}
+  .logo{font-weight:590;letter-spacing:.14em;font-size:13px}
+  .tnav-right{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-secondary)}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border:1px solid var(--border);
+    border-radius:999px;font-size:10.5px;color:var(--text-secondary)}
+  .up{color:var(--bullish)} .down{color:var(--bearish)} .wait{color:var(--neutral-wait)}
+  .content{flex:1;overflow:hidden;padding:12px 14px 8px;display:flex;flex-direction:column;gap:10px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:12px;position:relative}
+  .card.hero{background:var(--surface-hero);border-color:var(--char-moxi-border)}
+  .eyebrow{font-size:9.5px;font-weight:590;letter-spacing:.12em;color:var(--text-tertiary);text-transform:uppercase}
+  /* characters */
+  .ava{width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:590;letter-spacing:.02em;flex-shrink:0}
+  .ava.lg{width:40px;height:40px;font-size:11px}
+  .ava.moxi{background:var(--char-moxi-dim);color:var(--char-moxi);border:1px solid var(--char-moxi-border)}
+  .ava.vigo{background:var(--char-vigo-dim);color:var(--char-vigo);border:1px solid var(--char-vigo-border)}
+  .ava.dex{background:var(--char-dex-dim);color:var(--char-dex);border:1px solid var(--char-dex-border)}
+  .ava.echo{background:var(--char-echo-dim);color:var(--char-echo);border:1px solid var(--char-echo-border)}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;font-size:10px;
+    font-weight:590;border:1px solid var(--border);color:var(--text-secondary)}
+  .chip.moxi{border-color:var(--char-moxi-border);color:var(--char-moxi);background:var(--char-moxi-dim)}
+  .chip.vigo{border-color:var(--char-vigo-border);color:var(--char-vigo);background:var(--char-vigo-dim)}
+  .chip.dex{border-color:var(--char-dex-border);color:var(--char-dex);background:var(--char-dex-dim)}
+  .chip.echo{border-color:var(--char-echo-border);color:var(--char-echo);background:var(--char-echo-dim)}
+  .chip.verified{border-color:var(--verified-border);color:var(--verified);background:var(--verified-dim)}
+  .src{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:var(--text-tertiary);
+    font-family:"JetBrains Mono",ui-monospace,monospace;letter-spacing:.02em}
+  .dot{width:5px;height:5px;border-radius:99px;display:inline-block}
+  .dot.v{background:var(--verified)}
+  /* rows / feed */
+  .row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-subtle)}
+  .row:last-child{border-bottom:none}
+  .sym{font-weight:590;font-size:13px}
+  .meta{font-size:10.5px;color:var(--text-secondary)}
+  .grow{flex:1;min-width:0}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;
+    border-radius:var(--radius-sm);font-size:12px;font-weight:590;border:1px solid transparent;cursor:default}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.ghost{background:transparent;color:var(--text-secondary);border-color:var(--border)}
+  .btn.block{width:100%}
+  .link{color:var(--primary);font-size:11.5px;font-weight:590}
+  /* dock */
+  .dock{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 22px;
+    background:rgba(16,17,20,.72);backdrop-filter:blur(20px) saturate(180%);
+    border-top:1px solid var(--border)}
+  .dock .item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9.5px;
+    color:var(--text-tertiary);font-weight:590}
+  .dock .item.active{color:var(--foreground)}
+  .dock .ic{width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+    font-size:10px;color:var(--text-tertiary)}
+  .dock .item.active .ic{background:var(--card-hover);color:var(--foreground)}
+  .crewdots{display:flex;gap:2.5px}
+  .crewdots i{width:5px;height:5px;border-radius:99px;display:block}
+  .ticker{overflow:hidden;border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle);
+    padding:5px 0;white-space:nowrap;font-size:10px;color:var(--text-secondary)}
+  .ticker span{padding:0 14px}
+  /* verdict / timeline */
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:var(--radius-sm);
+    font-weight:590;font-size:14px;letter-spacing:.04em}
+  .verdict.caution{background:rgba(251,191,36,.12);color:var(--shield-caution);border:1px solid rgba(251,191,36,.35)}
+  .finding{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border-subtle);
+    font-size:12px}
+  .finding:last-child{border-bottom:none}
+  .fx{width:14px;text-align:center;font-weight:590;flex-shrink:0}
+  .timeline{position:relative;padding-left:16px}
+  .timeline:before{content:"";position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:var(--border)}
+  .tl{position:relative;padding:5px 0 5px 8px;font-size:11.5px;color:var(--text-secondary)}
+  .tl:before{content:"";position:absolute;left:-15px;top:11px;width:7px;height:7px;border-radius:99px;
+    background:var(--card);border:1.5px solid var(--char-echo)}
+  .tl.hit:before{background:var(--bullish);border-color:var(--bullish)}
+  /* chat */
+  .bubble{max-width:82%;padding:9px 12px;border-radius:14px;font-size:12.5px}
+  .bubble.bot{background:var(--card);border:1px solid var(--char-moxi-border);border-bottom-left-radius:4px;align-self:flex-start}
+  .bubble.me{background:var(--primary);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+  .chat{display:flex;flex-direction:column;gap:8px}
+  .toolrc{border:1px dashed var(--border-hover);border-radius:10px;padding:8px 10px;font-size:10.5px;
+    color:var(--text-secondary);font-family:"JetBrains Mono",ui-monospace,monospace}
+  .handoff{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:12px;
+    background:var(--char-vigo-dim);border:1px solid var(--char-vigo-border);font-size:11.5px}
+  .spark{width:64px;height:22px;flex-shrink:0}
+  .swaprow{display:flex;gap:8px}
+  .swaprow>*{flex:1}
+  .orb{position:absolute;right:14px;bottom:96px;width:56px;height:56px;border-radius:99px;
+    background:radial-gradient(circle at 35% 35%, #22c9e8, var(--char-moxi) 55%, #0891b2);
+    box-shadow:0 8px 40px rgba(6,182,212,.5);display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:590;color:#fff;border:1px solid rgba(255,255,255,.18)}
+  .drawer{position:absolute;left:0;right:0;bottom:0;background:rgba(12,13,18,.97);
+    border-top:1px solid var(--char-moxi-border);border-radius:22px 22px 0 0;padding:14px 14px 18px;
+    box-shadow:0 -16px 48px rgba(0,0,0,.55)}
+  .handle{width:36px;height:4px;border-radius:99px;background:var(--border-hover);margin:0 auto 12px}
+  .dim{position:absolute;inset:0;background:rgba(8,9,12,.55)}
+  .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:9px 11px;position:relative}
+  .stat b{display:block;font-size:15px;font-weight:590;margin-top:2px}
+  .stat .lbl{font-size:9.5px;color:var(--text-tertiary);letter-spacing:.06em;text-transform:uppercase;font-weight:590}
+  .qrow{display:flex;gap:8px;overflow:hidden}
+  .qa{flex:1;text-align:center;padding:9px 4px;border:1px solid var(--border);border-radius:12px;
+    font-size:10px;color:var(--text-secondary)}
+  footer{margin-top:60px;color:var(--text-tertiary);font-size:11px;text-align:center}
+  @media (max-width:480px){.phone{width:100%;border-radius:24px;height:760px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>VIXOR — Gate 2 Revision: Screen Concepts</h1>
+  <p class="sub">Character-driven standalone SaaS · Agent 3 (UI/UX) · 2026-10-30 · branch <span class="num">uiux/vixor-app-phase-1</span><br>
+  Companion to <span class="num">docs/uiux/screen-concepts.md</span> · IA per <span class="num">ia-proposal.md</span> (Option B — Crew Rail) · Roles per <span class="num">character-experience-map.md</span></p>
+  <span class="banner">CONCEPT MOCKUP — NOT IMPLEMENTED · ALL DATA ILLUSTRATIVE</span>
+
+  <div class="legend">
+    <span><span class="tag exists" style="position:static">exists</span>&nbsp; in the codebase today (preserved)</span>
+    <span><span class="tag new" style="position:static">new</span>&nbsp; proposed composition of existing data/components</span>
+    <span><span class="tag gate" style="position:static">gate</span>&nbsp; depends on owner decision / Agent 1 contract</span>
+    <span>Avatars are <b>monogram placeholders</b> — no character artwork is invented; illustrated assets arrive via the Character Studio integration contract.</span>
+  </div>
+
+  <nav class="toc">
+    <a href="#c1">C1 Onboarding</a><a href="#c1a">C1a Today</a><a href="#c2">C2 Discovery</a>
+    <a href="#c3">C3 Risk (DR.DEX)</a><a href="#c4">C4 Decision</a><a href="#c5">C5 Crew Console</a>
+  </nav>
+
+  <div class="grid">
+
+  <!-- ══════════════ C1 ONBOARDING ══════════════ -->
+  <section id="c1">
+    <div class="phone"><div class="screen">
+      <div class="status"><span>21:42</span><span>▮▮▮ ⌁ ▰</span></div>
+      <div class="content" style="gap:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+          <span class="ava lg moxi">MO</span>
+          <div><div style="font-weight:590">MOXI</div>
+          <div class="meta">Your guide — finds the opportunity</div></div>
+          <span style="margin-left:auto;font-size:10px;color:var(--text-tertiary)">Step 2 / 4</span>
+        </div>
+        <p style="font-size:13.5px">Welcome, Ali. VIXOR gives you <b>decisions with evidence</b> — no wallet needed. You don't work alone. You have a crew.</p>
+        <div class="statgrid" style="grid-template-columns:1fr 1fr">
+          <div class="card" style="padding:11px"><span class="tag exists">exists</span>
+            <div style="display:flex;gap:8px;align-items:center"><span class="ava moxi">MO</span><b style="font-size:12.5px">MOXI</b></div>
+            <p class="meta" style="margin-top:6px">Finds the opportunity — scans, briefs, guides.</p></div>
+          <div class="card" style="padding:11px"><span class="tag exists">exists</span>
+            <div style="display:flex;gap:8px;align-items:center"><span class="ava vigo">MR</span><b style="font-size:12.5px">MR.VIGO</b></div>
+            <p class="meta" style="margin-top:6px">Gathers the evidence — sources, not stories.</p></div>
+          <div class="card" style="padding:11px"><span class="tag exists">exists</span>
+            <div style="display:flex;gap:8px;align-items:center"><span class="ava dex">DR</span><b style="font-size:12.5px">DR.DEX</b></div>
+            <p class="meta" style="margin-top:6px">Quantifies the risk — GO / CAUTION / BLOCK.</p></div>
+          <div class="card" style="padding:11px"><span class="tag exists">exists</span>
+            <div style="display:flex;gap:8px;align-items:center"><span class="ava echo">EC</span><b style="font-size:12.5px">ECHO</b></div>
+            <p class="meta" style="margin-top:6px">Records the outcome — your memory.</p></div>
+        </div>
+        <div class="card"><span class="tag exists">exists</span>
+          <div class="eyebrow">Registry data · EN/AR tested</div>
+          <p class="meta" style="margin-top:4px">Identity cards render from <span class="num">characters.ts</span> + <span class="num">characters-i18n.ts</span> — no new data source. <span class="tag gate" style="position:static">gate</span> illustrated artwork slots in here via Agent 1 asset pack.</p></div>
+        <button class="btn primary block">Continue</button>
+        <div style="text-align:center"><span class="link">Skip — I'll explore myself</span></div>
+      </div>
+    </div></div>
+    <div class="cap"><h2>C1 · Onboarding — “Meet the crew”</h2>
+    <p>4-step first-run flow inside the existing OnboardingModal shell: MOXI welcome → crew → focus picker → first task. The crew is introduced as the product, before any feature.</p></div>
+  </section>
+
+  <!-- ══════════════ C1a TODAY ══════════════ -->
+  <section id="c1a">
+    <div class="phone"><div class="screen">
+      <div class="status"><span>21:42</span><span>▮▮▮ ⌁ ▰</span></div>
+      <div class="topnav">
+        <span class="logo">VIXOR</span>
+        <div class="tnav-right">
+          <span class="pill"><span class="num">SOL 178.42</span> <span class="num up">▲0.8%</span></span>
+          <span class="pill">◦ 1,240</span><span>⚙</span><span>👤</span>
+        </div>
+      </div>
+      <div class="ticker num"><span>BTC 67,240 ▲1.2%</span><span>ETH 3,512 ▲0.4%</span><span>$XYZ 0.842 ▲42.1%</span><span>FNG 61 · Greed</span><span>SOL 178.42 ▲0.8%</span></div>
+      <div class="content">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="ava moxi">MO</span>
+          <div><div style="font-weight:590;font-size:14.5px">Good evening, Ali</div>
+          <div class="meta">Greed 61 · BTC 24h +1.2% · 3h 12m to NY session</div></div>
+        </div>
+        <div class="card hero"><span class="tag new">new</span>
+          <div style="display:flex;gap:9px">
+            <span class="ava moxi">MO</span>
+            <div class="grow">
+              <div class="eyebrow" style="color:var(--char-moxi)">MOXI'S BRIEFING · ONE THING TODAY</div>
+              <p style="font-size:12.5px;margin-top:5px"><b>$XYZ</b> is trending with smart-money inflow — <b>still unverified</b>. Worth a look before it moves further.</p>
+              <div class="swaprow" style="margin-top:9px">
+                <button class="btn primary" style="font-size:11px;padding:7px 10px">Investigate with VIGO →</button>
+                <button class="btn ghost" style="font-size:11px;padding:7px 10px">Dismiss</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card"><span class="tag new">new</span>
+          <div class="eyebrow">CREW STATUS</div>
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+            <span class="chip moxi"><span class="ava moxi" style="width:14px;height:14px;font-size:7px">MO</span> 3 new finds</span>
+            <span class="chip vigo"><span class="ava vigo" style="width:14px;height:14px;font-size:7px">MR</span> 2 files open</span>
+            <span class="chip dex"><span class="ava dex" style="width:14px;height:14px;font-size:7px">DR</span> 1 alert</span>
+            <span class="chip echo"><span class="ava echo" style="width:14px;height:14px;font-size:7px">EC</span> EOD ready</span>
+          </div>
+          <p class="meta" style="margin-top:7px;font-size:10px">Counts from existing sources only — feed · scan history · shield alerts · today loop. No data → chip hidden, never faked.</p>
+        </div>
+        <div class="card"><span class="tag exists">exists</span><span class="tag new" style="right:66px">new</span>
+          <div class="eyebrow">ATTENTION FEED · RANKED</div>
+          <div class="row">
+            <div class="grow"><span class="sym">$XYZ</span> <span class="chip vigo" style="padding:1px 6px;font-size:9px">MR file ready</span>
+              <div class="meta">4 evidence cards · 1 conflict — whale netflow negative · 4m ago</div></div>
+            <span class="link">Open</span>
+          </div>
+          <div class="row">
+            <span class="ava echo" style="width:20px;height:20px;font-size:8px">EC</span>
+            <div class="grow"><span class="sym" style="font-size:12px">Closed loop</span>
+              <div class="meta">LONG 10/24 hit TP1 <span class="num up">+4.2%</span> · lesson logged to your review</div></div>
+            <span class="link">Review</span>
+          </div>
+          <div class="row">
+            <div class="grow"><span class="sym">SOL/USDT</span> <span class="chip" style="padding:1px 6px;font-size:9px">signal</span>
+              <div class="meta">Higher lows on 4H · confidence 68% · <span class="src">BINANCE <span class="dot v"></span> 12s</span></div></div>
+            <span class="link">Track</span>
+          </div>
+          <div style="margin-top:8px;text-align:center"><span class="link">See all signals →</span></div>
+        </div>
+        <div><span class="tag exists">exists</span>
+          <div class="qrow">
+            <span class="qa">What's the market doing?</span><span class="qa">Check my signals</span><span class="qa">Scan a token</span>
+          </div>
+        </div>
+      </div>
+      <div class="dock">
+        <div class="item active"><span class="ic">⌂</span>Today</div>
+        <div class="item"><span class="ic">◎</span>Discover</div>
+        <div class="item"><span class="ic"><span class="crewdots"><i style="background:var(--char-moxi)"></i><i style="background:var(--char-vigo)"></i><i style="background:var(--char-dex)"></i><i style="background:var(--char-echo)"></i></span></span>Crew</div>
+        <div class="item"><span class="ic">▤</span>Desk</div>
+        <div class="item"><span class="ic">⋯</span>More</div>
+      </div>
+    </div></div>
+    <div class="cap"><h2>C1a · Today — MOXI's briefing</h2>
+    <p>Home re-titled (fixes UX-02). One hero question + crew status + ranked attention feed. Existing greeting, ticker, stat pills, unified feed, quick actions — recomposed, not replaced. Dock = IA Option B.</p></div>
+  </section>
+
+  <!-- ══════════════ C2 DISCOVERY ══════════════ -->
+  <section id="c2">
+    <div class="phone"><div class="screen">
+      <div class="status"><span>21:42</span><span>▮▮▮ ⌁ ▰</span></div>
+      <div class="topnav"><span class="logo">DISCOVER</span>
+        <div class="tnav-right"><span class="pill">⌘K Search</span><span class="pill">Filters ▾</span></div></div>
+      <div class="content">
+        <div style="display:flex;gap:6px">
+          <span class="chip" style="border-color:var(--primary);color:var(--primary)">Crypto</span>
+          <span class="chip">Forex</span><span class="chip">Smart Money</span>
+        </div>
+        <div class="card hero"><span class="tag new">new</span>
+          <div style="display:flex;gap:9px"><span class="ava moxi">MO</span>
+            <div><div class="eyebrow" style="color:var(--char-moxi)">MOXI SCAN · RESULT SUMMARY</div>
+            <p style="font-size:12.5px;margin-top:5px"><b class="num">6</b> tokens match your filters. Two show unusual smart-money inflow — flagged below.</p></div>
+          </div>
+        </div>
+        <div class="card"><span class="tag exists">exists</span><span class="tag new" style="right:66px">new</span>
+          <div class="row" style="padding-top:4px">
+            <div class="grow">
+              <div><span class="sym">$XYZ</span> <span class="num up" style="font-size:12px">▲ +42.1%</span></div>
+              <div class="meta"><span class="num">$1.2M</span> vol · <span class="num">0.842</span></div>
+              <div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">
+                <span class="chip vigo" style="padding:1px 6px;font-size:9px"><span class="dot" style="background:var(--char-vigo)"></span>MR checked 4m</span>
+                <span class="chip dex" style="padding:1px 6px;font-size:9px"><span class="dot" style="background:var(--shield-caution)"></span>DR ⚠ 2 flags</span>
+              </div>
+            </div>
+            <svg class="spark" viewBox="0 0 64 22"><polyline points="0,18 10,16 20,17 30,10 40,12 50,5 63,2" fill="none" stroke="var(--bullish)" stroke-width="1.5"/></svg>
+          </div>
+          <div class="row">
+            <div class="grow">
+              <div><span class="sym">$ABC</span> <span class="num down" style="font-size:12px">▼ −3.1%</span></div>
+              <div class="meta"><span class="num">$890K</span> vol · <span class="num">1.204</span></div>
+            </div>
+            <svg class="spark" viewBox="0 0 64 22"><polyline points="0,4 10,7 20,6 30,12 40,10 50,15 63,17" fill="none" stroke="var(--bearish)" stroke-width="1.5"/></svg>
+          </div>
+          <div class="row">
+            <div class="grow">
+              <div><span class="sym">$GHI</span> <span class="num up" style="font-size:12px">▲ +8.4%</span></div>
+              <div class="meta"><span class="num">$2.1M</span> vol · smart money ▲</div>
+              <div style="margin-top:5px"><span class="chip vigo" style="padding:1px 6px;font-size:9px"><span class="dot" style="background:var(--char-vigo)"></span>MR file open</span></div>
+            </div>
+            <svg class="spark" viewBox="0 0 64 22"><polyline points="0,15 10,14 20,11 30,13 40,9 50,8 63,6" fill="none" stroke="var(--bullish)" stroke-width="1.5"/></svg>
+          </div>
+          <p class="meta" style="font-size:10px;margin-top:6px">Crew chips render ONLY when a scan/case exists (scan history source). No data → no chip. Rows, sparklines, filters, pull-to-refresh: existing.</p>
+        </div>
+        <div class="handoff"><span class="ava vigo" style="width:22px;height:22px;font-size:8px">MR</span>
+          <div class="grow"><b>MR.VIGO</b> would open an evidence file on <b>$XYZ</b> — sources: Birdeye · GoPlus · whale flows.
+          <div class="meta" style="font-size:10px">Hand-off pattern · transfer banner on arrival</div></div>
+          <span class="link">Investigate →</span>
+        </div>
+        <div style="text-align:center;color:var(--text-tertiary);font-size:11px">pull-to-refresh ↓</div>
+      </div>
+      <div class="dock">
+        <div class="item"><span class="ic">⌂</span>Today</div>
+        <div class="item active"><span class="ic">◎</span>Discover</div>
+        <div class="item"><span class="ic"><span class="crewdots"><i style="background:var(--char-moxi)"></i><i style="background:var(--char-vigo)"></i><i style="background:var(--char-dex)"></i><i style="background:var(--char-echo)"></i></span></span>Crew</div>
+        <div class="item"><span class="ic">▤</span>Desk</div>
+        <div class="item"><span class="ic">⋯</span>More</div>
+      </div>
+    </div></div>
+    <div class="cap"><h2>C2 · Character-led discovery</h2>
+    <p>MOXI summarizes what matched (hero question); VIGO/DEX micro-chips surface known verification state per row — only from real scan data. “Investigate” hands off to MR.VIGO.</p></div>
+  </section>
+
+  <!-- ══════════════ C3 RISK ══════════════ -->
+  <section id="c3">
+    <div class="phone"><div class="screen">
+      <div class="status"><span>21:42</span><span>▮▮▮ ⌁ ▰</span></div>
+      <div class="topnav"><span class="logo">DR.DEX · SCANNER</span>
+        <div class="tnav-right"><span class="ava dex">DR</span></div></div>
+      <div class="content">
+        <div class="card"><span class="tag exists">exists</span>
+          <div style="display:flex;gap:8px">
+            <div class="grow" style="padding:9px 11px;border:1px solid var(--border);border-radius:8px;color:var(--text-tertiary);font-size:11.5px;font-family:'JetBrains Mono',monospace">paste contract address…</div>
+            <button class="btn primary" style="font-size:11.5px">Scan</button>
+          </div>
+          <p class="meta" style="margin-top:7px;font-size:10px">Existing <span class="num">scanToken</span>: GoPlus + rugcheck. No new API.</p>
+        </div>
+        <div class="card"><span class="tag new">new</span>
+          <div style="display:flex;gap:9px;align-items:flex-start">
+            <span class="ava dex">DR</span>
+            <div class="grow">
+              <div class="eyebrow" style="color:var(--char-dex)">DR.DEX IS WORKING…</div>
+              <div class="meta" style="margin-top:5px">✓ honeypot checked &nbsp;·&nbsp; ▸ tokenomics… &nbsp;·&nbsp; ○ holders</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="border-color:rgba(251,191,36,.35)"><span class="tag new">new</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="verdict caution">⚠ CAUTION</span>
+            <div class="grow" style="text-align:right">
+              <span class="eyebrow">TRUST SCORE</span>
+              <div class="num" style="font-size:17px;font-weight:590;color:var(--shield-caution)">54<span style="font-size:11px;color:var(--text-tertiary)">/100</span></div>
+            </div>
+          </div>
+          <div style="margin-top:11px">
+            <div class="eyebrow">FINDINGS · BY SOURCE</div>
+            <div class="finding" style="margin-top:4px"><span class="fx down">✖</span>
+              <div class="grow">Owner can change fees
+              <div class="src"><span class="dot v"></span>GOPLUS · 8s ago</div></div></div>
+            <div class="finding"><span class="fx down">✖</span>
+              <div class="grow">Top-10 holders own 34%
+              <div class="src"><span class="dot v"></span>GOPLUS · 8s ago</div></div></div>
+            <div class="finding"><span class="fx" style="color:var(--shield-safe)">✔</span>
+              <div class="grow">LP locked 12 months
+              <div class="src"><span class="dot v"></span>RUGCHECK · 6s ago</div></div></div>
+          </div>
+          <div style="margin-top:10px;padding-top:9px;border-top:1px solid var(--border-subtle)">
+            <div class="eyebrow">EXPOSURE GUIDANCE</div>
+            <p style="font-size:12px;margin-top:4px">Max suggested <b class="num">1.5%</b> of portfolio · invalidation: LP unlock &lt; 90 days remaining</p>
+          </div>
+          <div class="swaprow" style="margin-top:11px">
+            <button class="btn primary" style="font-size:11px">Save as case</button>
+            <button class="btn ghost" style="font-size:11px">Ask VIGO for evidence</button>
+          </div>
+        </div>
+        <div class="card"><span class="tag exists">exists</span>
+          <div class="eyebrow">ALERTS · SHIELD</div>
+          <div class="row" style="padding-top:6px">
+            <span class="dot" style="background:var(--shield-suspicious)"></span>
+            <div class="grow"><span class="sym" style="font-size:12px">$ABC LP unlocked early</span>
+              <div class="meta">2h ago · watchlist token</div></div><span class="link">Review</span></div>
+          <div class="row">
+            <span class="dot" style="background:var(--shield-danger)"></span>
+            <div class="grow"><span class="sym" style="font-size:12px">$DEF honeypot signature</span>
+              <div class="meta">yesterday · scanned by you</div></div><span class="link">Review</span></div>
+        </div>
+      </div>
+      <div class="dock">
+        <div class="item"><span class="ic">⌂</span>Today</div>
+        <div class="item"><span class="ic">◎</span>Discover</div>
+        <div class="item active"><span class="ic"><span class="crewdots"><i style="background:var(--char-moxi)"></i><i style="background:var(--char-vigo)"></i><i style="background:var(--char-dex)"></i><i style="background:var(--char-echo)"></i></span></span>Crew</div>
+        <div class="item"><span class="ic">▤</span>Desk</div>
+        <div class="item"><span class="ic">⋯</span>More</div>
+      </div>
+    </div></div>
+    <div class="cap"><h2>C3 · Risk intelligence — DR.DEX</h2>
+    <p>Existing scanner + trust score, recomposed into the canonical <b>Risk Verdict card</b>: verdict pill on the shield semantic scale, findings with source chips + age, exposure sizing from the existing risk-governor engine, invalidation line, hand-off to VIGO.</p></div>
+  </section>
+
+  <!-- ══════════════ C4 DECISION ══════════════ -->
+  <section id="c4">
+    <div class="phone"><div class="screen">
+      <div class="status"><span>21:42</span><span>▮▮▮ ⌁ ▰</span></div>
+      <div class="topnav"><span class="logo">ANALYSIS · $XYZ</span>
+        <div class="tnav-right"><span class="pill">Saved</span></div></div>
+      <div class="content">
+        <div class="card"><span class="tag exists">exists</span>
+          <div class="eyebrow">HERO SIGNAL · ANALYSIS ENGINE</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:5px">
+            <span class="verdict" style="background:rgba(34,211,166,.12);color:var(--bullish);border:1px solid rgba(34,211,166,.35);font-size:12.5px;padding:4px 10px">▲ LONG</span>
+            <span class="num meta">conf 68% · 4H</span>
+          </div>
+          <p class="meta" style="margin-top:7px">Higher lows into demand · pattern: ascending triangle · news impact: neutral</p>
+          <div style="margin-top:8px;height:54px;border-radius:8px;background:var(--surface-hero);border:1px solid var(--border-subtle);position:relative;overflow:hidden">
+            <svg viewBox="0 0 330 54" style="width:100%;height:100%"><polyline points="0,42 30,44 60,38 90,40 120,30 150,33 180,26 210,28 240,20 270,22 300,12 330,8" fill="none" stroke="var(--bullish)" stroke-width="1.6"/><line x1="0" y1="14" x2="330" y2="14" stroke="var(--neutral-wait)" stroke-dasharray="4 4" stroke-width="1"/><line x1="0" y1="46" x2="330" y2="46" stroke="var(--bearish)" stroke-dasharray="4 4" stroke-width="1"/></svg>
+          </div>
+        </div>
+        <div class="card"><span class="tag new">new</span>
+          <div style="display:flex;gap:9px"><span class="ava dex">DR</span>
+            <div class="grow"><div class="eyebrow" style="color:var(--char-dex)">RISK · DR.DEX</div>
+            <p style="font-size:12px;margin-top:4px"><b style="color:var(--shield-safe)">GO</b> · sizing <span class="num">0.5–1%</span> · invalidation: close below <span class="num">0.798</span></p></div>
+          </div>
+        </div>
+        <div class="card"><span class="tag new">new</span>
+          <div style="display:flex;gap:9px"><span class="ava vigo">MR</span>
+            <div class="grow"><div class="eyebrow" style="color:var(--char-vigo)">EVIDENCE · MR.VIGO</div>
+            <p style="font-size:12px;margin-top:4px"><span class="num">4</span> sources · <b style="color:var(--neutral-wait)">1 conflict</b> (whale netflow negative)
+            <span class="link" style="display:block;margin-top:4px">Open full file →</span></p></div>
+          </div>
+        </div>
+        <div class="card" style="border-color:var(--primary)"><span class="tag exists">exists</span><span class="tag new" style="right:66px">new</span>
+          <div class="eyebrow">DECISION · RECORD &amp; TRACK</div>
+          <div class="statgrid" style="margin-top:8px">
+            <div><div class="meta">Direction</div><b class="up" style="font-size:13px">LONG</b></div>
+            <div><div class="meta">Entry</div><b class="num" style="font-size:13px">0.842</b></div>
+            <div><div class="meta">Stop</div><b class="num down" style="font-size:13px">0.798</b></div>
+            <div><div class="meta">TP1</div><b class="num up" style="font-size:13px">0.910</b></div>
+          </div>
+          <p class="meta" style="margin-top:8px;font-size:10.5px">Rationale (required): “structure + smart money; conflict noted — sized down.” · invalidation auto-attached</p>
+          <button class="btn primary block" style="margin-top:9px;font-size:12px">Record decision &amp; start tracking</button>
+          <p class="meta" style="margin-top:6px;font-size:9.5px">Existing <span class="num">createSignalTracking</span> + <span class="num">logPaperDecision</span> (paper-only semantics unchanged)</p>
+        </div>
+        <div class="card"><span class="tag new">new</span>
+          <div style="display:flex;gap:9px"><span class="ava echo">EC</span>
+            <div class="grow"><div class="eyebrow" style="color:var(--char-echo)">OUTCOME TIMELINE · ECHO</div>
+            <div class="timeline" style="margin-top:7px">
+              <div class="tl">Decision recorded · 10/24 14:02 — rationale attached</div>
+              <div class="tl hit">TP1 hit 10/25 09:14 · <span class="num up">+4.2%</span> — receipt sent</div>
+              <div class="tl">EOD review logged · streak 6d — lesson: “sized-down entries held”</div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+      <div class="dock">
+        <div class="item"><span class="ic">⌂</span>Today</div>
+        <div class="item"><span class="ic">◎</span>Discover</div>
+        <div class="item active"><span class="ic"><span class="crewdots"><i style="background:var(--char-moxi)"></i><i style="background:var(--char-vigo)"></i><i style="background:var(--char-dex)"></i><i style="background:var(--char-echo)"></i></span></span>Crew</div>
+        <div class="item"><span class="ic">▤</span>Desk</div>
+        <div class="item"><span class="ic">⋯</span>More</div>
+      </div>
+    </div></div>
+    <div class="cap"><h2>C4 · Analysis → decision → outcome</h2>
+    <p>The relay on one symbol: existing analysis engine output + DEX risk block + VIGO evidence summary → a structured decision card (rationale + invalidation required) → ECHO outcome timeline. All routes exist; the loop becomes visible.</p></div>
+  </section>
+
+  <!-- ══════════════ C5 CREW CONSOLE ══════════════ -->
+  <section id="c5">
+    <div class="phone"><div class="screen">
+      <div class="status"><span>21:42</span><span>▮▮▮ ⌁ ▰</span></div>
+      <div class="topnav"><span class="logo">VIXOR</span>
+        <div class="tnav-right"><span class="pill"><span class="num">SOL 178.42</span> <span class="num up">▲0.8%</span></span></div></div>
+      <div class="content" style="opacity:.35">
+        <div style="display:flex;gap:10px;align-items:center"><span class="ava moxi">MO</span>
+          <div><div style="font-weight:590">Good evening, Ali</div><div class="meta">Greed 61 · BTC +1.2%</div></div></div>
+        <div class="card"><div class="eyebrow">ATTENTION FEED</div><div class="row"><div class="grow meta">…</div></div><div class="row"><div class="grow meta">…</div></div></div>
+      </div>
+      <div class="dim"></div>
+      <div class="orb">MO</div>
+      <div class="drawer">
+        <div class="handle"></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="ava moxi">MO</span><b style="font-size:13px">MOXI</b>
+          <span class="chip verified" style="margin-left:6px">● live</span>
+          <div style="margin-left:auto;display:flex;gap:5px">
+            <span class="ava vigo" style="width:22px;height:22px;font-size:8px">MR</span>
+            <span class="ava dex" style="width:22px;height:22px;font-size:8px">DR</span>
+            <span class="ava echo" style="width:22px;height:22px;font-size:8px">EC</span>
+          </div>
+        </div>
+        <div class="chat" style="margin-top:11px">
+          <div class="bubble bot">Evening, Ali. SOL is up <span class="num">0.8%</span> against rising funding — shorts are paying. Pattern watch.</div>
+          <div class="toolrc">⚙ analyzePair(SOL/USDT, 4h)<br>✓ pattern: higher lows · funding 0.012% · <span class="dot v"></span> BINANCE 12s</div>
+          <div class="bubble bot">Setup is forming above <span class="num">178.20</span>. Want me to track it?</div>
+          <div class="bubble me">yes — track above 185</div>
+          <div class="handoff"><span class="ava echo" style="width:22px;height:22px;font-size:8px">EC</span>
+            <div class="grow"><b>ECHO</b> — tracked above <span class="num">185</span>. I'll record the outcome and log the lesson to your weekly review.
+            <div class="link" style="margin-top:3px">View tracking →</div></div></div>
+        </div>
+        <div style="margin-top:11px">
+          <div class="eyebrow">CREW DIGEST · TODAY</div>
+          <div class="row" style="padding-top:6px"><span class="ava vigo" style="width:20px;height:20px;font-size:8px">MR</span>
+            <div class="grow"><span class="sym" style="font-size:12px">$XYZ evidence file ready</span><div class="meta">4 cards · 1 conflict · 4m ago</div></div><span class="link">Open</span></div>
+          <div class="row"><span class="ava dex" style="width:20px;height:20px;font-size:8px">DR</span>
+            <div class="grow"><span class="sym" style="font-size:12px">1 new alert on $ABC</span><div class="meta">LP unlock moved · 2h ago</div></div><span class="link">Review</span></div>
+          <div class="row"><span class="ava echo" style="width:20px;height:20px;font-size:8px">EC</span>
+            <div class="grow"><span class="sym" style="font-size:12px">EOD review due</span><div class="meta">3 questions · takes 2 min</div></div><span class="link">Start</span></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:11px;align-items:center">
+          <div class="grow" style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;color:var(--text-tertiary);font-size:11.5px">Type your message…</div>
+          <button class="btn primary" style="padding:9px 12px">↑</button>
+        </div>
+        <div style="text-align:center;margin-top:8px"><span class="link" style="font-size:10.5px">MOXI persona ⚙ · name · style · variant</span></div>
+      </div>
+    </div></div>
+    <div class="cap"><h2>C5 · Crew Console — assistance experience</h2>
+    <p>The existing orb + chat drawer, re-skinned to MOXI's true identity (fixes UX-17) and extended: visible tool receipts (existing moxi tools), crew-delegated replies in the acting character's identity (ECHO answers for tracking), crew digest, persona entry point. Only MOXI converses — the others report (single-owner rule).</p></div>
+  </section>
+
+  </div>
+
+  <footer>
+    VIXOR APP · Agent 3 (UI/UX) · Gate 2 revision deliverables · CONCEPT ONLY — no implementation until owner approval ·
+    V6 tokens preserved (no rebrand) · every existing route/feature preserved per feature-preservation-map.md
+  </footer>
+</div>
+</body>
+</html>
