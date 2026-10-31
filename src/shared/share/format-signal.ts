@@ -5,6 +5,13 @@
 // No external API keys needed — uses web intent URLs.
 // ============================================================================
 
+// S1-1 (TASK 38): shared signal copy uses neutral research language.
+// Machine-readable direction values (BUY/SELL/WAIT) are historical data
+// identifiers; user-facing text always renders the research wording.
+export function researchDirectionLabel(direction: "BUY" | "SELL" | "WAIT"): string {
+  return direction === "BUY" ? "BULLISH" : direction === "SELL" ? "BEARISH" : "NEUTRAL";
+}
+
 export interface ShareableSignal {
   pair: string;
   direction: "BUY" | "SELL" | "WAIT";
@@ -38,9 +45,11 @@ export function formatSignalText(signal: ShareableSignal): string {
 
   const lines: string[] = [];
 
-  // Header
+  // Header — research framing (S1-1): no BUY/SELL instruction wording
   const dirEmoji = direction === "BUY" ? "🟢" : direction === "SELL" ? "🔴" : "⏸️";
-  lines.push(`${dirEmoji} ${direction} ${pair}${timeframe ? ` | ${timeframe}` : ""}`);
+  lines.push(
+    `${dirEmoji} ${researchDirectionLabel(direction)} — research signal on ${pair}${timeframe ? ` | ${timeframe}` : ""}`,
+  );
   lines.push("");
 
   // Confidence
@@ -78,9 +87,9 @@ export function formatSignalText(signal: ShareableSignal): string {
     lines.push(displayReasons.map((r) => `• ${r}`).join("\n"));
   }
 
-  // Footer / branding
+  // Footer / branding — research attribution (S1-1)
   lines.push("");
-  lines.push(`via ${source ?? "VIXOR AI"} — Trade Intelligence`);
+  lines.push(`via ${source ?? "VIXOR AI"} — Market Research · Not financial advice`);
 
   return lines.join("\n");
 }
@@ -105,7 +114,9 @@ export function formatSignalTelegramHtml(signal: ShareableSignal): string {
   const dirEmoji = direction === "BUY" ? "🟢" : direction === "SELL" ? "🔴" : "⏸️";
   const lines: string[] = [];
 
-  lines.push(`<b>${dirEmoji} ${direction} ${pair}</b>${timeframe ? ` | ${timeframe}` : ""}`);
+  lines.push(
+    `<b>${dirEmoji} ${researchDirectionLabel(direction)} — research signal on ${pair}</b>${timeframe ? ` | ${timeframe}` : ""}`,
+  );
   lines.push("");
 
   if (confidence !== undefined) {
@@ -137,7 +148,7 @@ export function formatSignalTelegramHtml(signal: ShareableSignal): string {
   }
 
   lines.push("");
-  lines.push(`<i>via ${source ?? "VIXOR AI"} — Trade Intelligence</i>`);
+  lines.push(`<i>via ${source ?? "VIXOR AI"} — Market Research · Not financial advice</i>`);
 
   return lines.join("\n");
 }

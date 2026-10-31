@@ -28,6 +28,7 @@ import {
   getRiskColor,
   detectAssetType,
   getAssetTypeBadge,
+  OUT_OF_SCOPE_ASSET_TYPES,
   LEVERAGE_OPTIONS,
   isTelegramWebView,
 } from "./constants";
@@ -176,8 +177,9 @@ export function TokenPage() {
   // ── Live Binance price for this token (if listed) ──
   const binanceSymbol = useMemo(() => {
     const clean = symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
-    // Check if this is a known Binance pair (crypto, not forex/commodity)
-    if (assetType === "forex" || assetType === "commodity") return null;
+    // S1-3 (TASK 38): live crypto price paths only — out-of-scope and
+    // unverifiable asset types never enter the price pipeline
+    if (assetType !== "crypto" && assetType !== "meme") return null;
     return `${clean}USDT`;
   }, [symbol, assetType]);
 
@@ -236,14 +238,18 @@ export function TokenPage() {
 
   const isInitialLoading = tradesQuery.isLoading || discoveryQuery.isLoading;
 
-  // ── Forex / Commodity: show TradingView as primary view ──
-  const isTraditionalAsset = assetType === "forex" || assetType === "commodity";
+  // ── S1-3 (TASK 38): out-of-scope & unverifiable assets fail closed ──
+  // Forex/commodity/stock/index deep links (direct URL, stale watchlist data,
+  // legacy API rows) can never render as valid VIXOR assets; unknown
+  // slash-pairs are never silently treated as crypto. Crypto and Meme Coin
+  // display paths are unchanged.
+  const isOutOfScopeAsset = (OUT_OF_SCOPE_ASSET_TYPES as readonly string[]).includes(assetType);
   const tvSymbol = toTradingViewSymbol(symbol);
 
   // ── Telegram WebView: hide DEXTools link (blocked by CSP in Telegram) ──
   const showDexTools = !isTelegramWebView();
 
-  if (isTraditionalAsset) {
+  if (isOutOfScopeAsset || assetType === "unknown") {
     return (
       <PageLayout
         title={symbol.toUpperCase()}
@@ -251,94 +257,39 @@ export function TokenPage() {
         badgeColor={assetBadge.color}
       >
         <PageScrollArea>
-          <div style={{ padding: 0 }}>
-            <TradingViewChart symbol={tvSymbol} height="60vh" />
-            {/* Basic info below chart */}
+          <div
+            style={{
+              padding: "48px 24px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "12px",
+              textAlign: "center",
+            }}
+          >
             <div
               style={{
-                padding: "16px",
-                borderBottom: "1px solid var(--color-border)",
-                background: "var(--color-card)",
+                fontSize: "16px",
+                fontWeight: 800,
+                color: "var(--color-foreground)",
               }}
             >
-              <div
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
-              >
-                <div>
-                  <div
-                    style={{
-                      fontSize: "18px",
-                      fontWeight: 800,
-                      color: "var(--color-foreground)",
-                      margin: 0,
-                    }}
-                  >
-                    {symbol.toUpperCase()}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--color-muted-foreground)",
-                      marginTop: "4px",
-                    }}
-                  >
-                    {assetType === "commodity"
-                      ? "Commodity \u00B7 TradingView"
-                      : "Forex \u00B7 TradingView"}
-                  </div>
-                </div>
-                <Badge label={assetBadge.label} color={assetBadge.color} />
-              </div>
+              {assetType === "unknown"
+                ? "Asset could not be verified"
+                : "Outside VIXOR's research scope"}
             </div>
-            {/* Trade history for this pair */}
-            {tokenTrades.length > 0 && (
-              <>
-                <SectionTitle title="Trade History" count={tokenTrades.length} />
-                {tokenTrades.slice(0, 10).map((t: any) => (
-                  <DataRow key={t.id}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <Badge
-                          label={t.direction?.toUpperCase() || "N/A"}
-                          color={
-                            t.direction === "long" ? "var(--color-bullish)" : "var(--color-bearish)"
-                          }
-                          small
-                        />
-                        <span
-                          style={{
-                            fontSize: "13px",
-                            fontWeight: 700,
-                            color: "var(--color-foreground)",
-                          }}
-                        >
-                          {t.pair}
-                        </span>
-                      </div>
-                      <span
-                        style={{
-                          fontSize: "13px",
-                          fontWeight: 700,
-                          fontFamily: "var(--font-mono)",
-                          color:
-                            (t.pnl ?? 0) >= 0 ? "var(--color-bullish)" : "var(--color-bearish)",
-                        }}
-                      >
-                        {(t.pnl ?? 0) >= 0 ? "+" : ""}
-                        {t.pnl?.toFixed(2)}
-                      </span>
-                    </div>
-                  </DataRow>
-                ))}
-              </>
-            )}
+            <div
+              style={{
+                fontSize: "13px",
+                color: "var(--color-muted-foreground)",
+                lineHeight: 1.6,
+                maxWidth: 420,
+              }}
+            >
+              {assetType === "unknown"
+                ? `${symbol.toUpperCase()} is not a recognized VIXOR asset. Unknown data is never treated as a valid crypto asset.`
+                : `${symbol.toUpperCase()} is a ${assetType.toUpperCase()} asset. VIXOR is a Crypto Intelligence product — research covers crypto assets and meme coins only, so this asset cannot be displayed as a VIXOR asset.`}
+            </div>
           </div>
         </PageScrollArea>
       </PageLayout>

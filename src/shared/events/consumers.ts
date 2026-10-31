@@ -45,7 +45,10 @@ async function autoCreateJournalForTerminalTransition(
 
     const entryPrice = tracking.entry_price ?? 0;
     const direction = tracking.direction as "BUY" | "SELL";
-    const dirLabel = direction === "BUY" ? "LONG" : "SHORT";
+    // S1-1 (TASK 38): journal content uses neutral research language — the
+    // machine-readable BUY/SELL values stay internal, users never see them
+    // presented as trade instructions.
+    const dirLabel = direction === "BUY" ? "BULLISH" : "BEARISH";
 
     // Calculate P&L estimate
     let pnlPct = 0;
