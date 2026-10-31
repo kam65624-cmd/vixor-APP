@@ -10,6 +10,7 @@ import { ArrowUpRight, ArrowDownRight, Zap } from "lucide-react";
 import { createSignalTracking, getUserSignalTrackings } from "@/domains/signal-tracking";
 import { shareOnX, shareOnTelegram } from "@/shared/share";
 import type { ShareableSignal } from "@/shared/share";
+import { researchDirectionLabel } from "@/shared/share/format-signal";
 import type { SignalTracking } from "@/domains/signal-tracking";
 import { SIGNAL_STATUS_CONFIG } from "@/domains/signal-tracking";
 import { useSignalMonitor } from "@/shared/hooks/use-signal-monitor";
@@ -175,7 +176,10 @@ const LiveMarketBar = memo(function LiveMarketBar() {
   );
 });
 
-const TABS = ["All", "BUY", "SELL", "WAIT"] as const;
+const TABS = ["All", "BULLISH", "BEARISH", "NEUTRAL"] as const;
+// S1-1 (TASK 38): tab labels are neutral research language; the machine-
+// readable recommendation values in stored data are mapped back here.
+const TAB_FILTER: Record<string, string> = { BULLISH: "BUY", BEARISH: "SELL", NEUTRAL: "WAIT" };
 
 function SignalsPage() {
   const navigate = useNavigate();
@@ -306,7 +310,9 @@ function SignalsPage() {
   }, [signals, isLoading, play]);
 
   const filtered =
-    activeTab === "All" ? signals : signals.filter((s) => s.recommendation === activeTab);
+    activeTab === "All"
+      ? signals
+      : signals.filter((s) => s.recommendation === TAB_FILTER[activeTab]);
 
   const buyCount = signals.filter((s) => s.recommendation === "BUY").length;
   const sellCount = signals.filter((s) => s.recommendation === "SELL").length;
@@ -335,8 +341,8 @@ function SignalsPage() {
       <StatsRow
         stats={[
           { label: "Total Signals", value: String(signals.length), color: "var(--color-bullish)" },
-          { label: "Buy Signals", value: String(buyCount), color: "var(--color-bullish)" },
-          { label: "Sell Signals", value: String(sellCount), color: "var(--color-bearish)" },
+          { label: "Bullish Signals", value: String(buyCount), color: "var(--color-bullish)" },
+          { label: "Bearish Signals", value: String(sellCount), color: "var(--color-bearish)" },
           {
             label: "Avg Confidence",
             value: `${avgConfidence}%`,
@@ -570,7 +576,7 @@ const SignalRow = memo(function SignalRow({
               letterSpacing: "0.06em",
             }}
           >
-            {signal.recommendation}
+            {researchDirectionLabel(signal.recommendation)}
           </div>
           <span
             style={{

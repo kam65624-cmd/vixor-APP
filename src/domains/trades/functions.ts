@@ -9,6 +9,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import { assertCryptoPair } from "@/shared/asset-registry";
 import type { TablesInsert } from "@/shared/supabase/types";
 import type { Trade, TradeDirection, TradeStatus } from "./types";
 
@@ -87,6 +88,10 @@ export const createTrade = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(createTradeSchema)
   .handler(async ({ data, context }) => {
+    // Stage 1 scope boundary (TASK 37): the trade journal is a Crypto paper/
+    // research journal. Forex, gold, commodity, index and stock pairs are
+    // rejected; unknown pairs are rejected (never silently accepted).
+    assertCryptoPair(data.pair);
     // Build the insert row — only fields that exist in the DB schema
     // user_id comes from the authenticated session (server-authoritative)
     const insertRow: TradeInsertRow = {

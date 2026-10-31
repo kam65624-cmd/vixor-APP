@@ -414,7 +414,7 @@ const ASSETS: AssetDefinition[] = [
       tradingView: "OANDA:XAUUSD",
     },
     config: { pipSize: 0.01, decimals: 2, volatility: 0.012, typicalRange: 0.015, basePrice: 3300 },
-    active: true,
+    active: false,
     popular: true,
     priority: 4,
   },
@@ -441,7 +441,7 @@ const ASSETS: AssetDefinition[] = [
       typicalRange: 0.008,
       basePrice: 1.13,
     },
-    active: true,
+    active: false,
     popular: true,
     priority: 5,
   },
@@ -466,7 +466,7 @@ const ASSETS: AssetDefinition[] = [
       typicalRange: 0.009,
       basePrice: 1.34,
     },
-    active: true,
+    active: false,
     popular: false,
     priority: 20,
   },
@@ -485,7 +485,7 @@ const ASSETS: AssetDefinition[] = [
       exchangeRate: { base: "USD", quote: "JPY" },
     },
     config: { pipSize: 0.01, decimals: 2, volatility: 0.007, typicalRange: 0.01, basePrice: 145 },
-    active: true,
+    active: false,
     popular: false,
     priority: 21,
   },
@@ -504,7 +504,7 @@ const ASSETS: AssetDefinition[] = [
       exchangeRate: { base: "GBP", quote: "JPY" },
     },
     config: { pipSize: 0.01, decimals: 2, volatility: 0.008, typicalRange: 0.012, basePrice: 195 },
-    active: true,
+    active: false,
     popular: true,
     priority: 6,
   },
@@ -529,7 +529,7 @@ const ASSETS: AssetDefinition[] = [
       typicalRange: 0.009,
       basePrice: 0.65,
     },
-    active: true,
+    active: false,
     popular: false,
     priority: 22,
   },
@@ -554,7 +554,7 @@ const ASSETS: AssetDefinition[] = [
       typicalRange: 0.009,
       basePrice: 0.6,
     },
-    active: true,
+    active: false,
     popular: false,
     priority: 23,
   },
@@ -579,7 +579,7 @@ const ASSETS: AssetDefinition[] = [
       typicalRange: 0.007,
       basePrice: 1.37,
     },
-    active: true,
+    active: false,
     popular: false,
     priority: 24,
   },
@@ -604,7 +604,7 @@ const ASSETS: AssetDefinition[] = [
       typicalRange: 0.007,
       basePrice: 0.82,
     },
-    active: true,
+    active: false,
     popular: false,
     priority: 25,
   },
@@ -629,7 +629,7 @@ const ASSETS: AssetDefinition[] = [
       typicalRange: 0.006,
       basePrice: 0.84,
     },
-    active: true,
+    active: false,
     popular: false,
     priority: 26,
   },
@@ -648,7 +648,7 @@ const ASSETS: AssetDefinition[] = [
       exchangeRate: { base: "EUR", quote: "JPY" },
     },
     config: { pipSize: 0.01, decimals: 2, volatility: 0.007, typicalRange: 0.01, basePrice: 164 },
-    active: true,
+    active: false,
     popular: false,
     priority: 27,
   },
@@ -673,7 +673,7 @@ const ASSETS: AssetDefinition[] = [
       typicalRange: 0.018,
       basePrice: 18500,
     },
-    active: true,
+    active: false,
     popular: false,
     priority: 30,
   },
@@ -692,7 +692,7 @@ const ASSETS: AssetDefinition[] = [
       tradingView: "NASDAQ:AAPL",
     },
     config: { pipSize: 0.01, decimals: 2, volatility: 0.015, typicalRange: 0.02, basePrice: 195 },
-    active: true,
+    active: false,
     popular: false,
     priority: 40,
   },
@@ -769,9 +769,19 @@ class AssetRegistryClass {
     return ASSETS.filter((a) => a.popular && a.active).map((a) => a.pair);
   }
 
-  /** Get signal generation pairs (used by daily signal cron) */
+  /**
+   * Get signal generation pairs (used by daily signal cron).
+   *
+   * Stage 1 scope boundary (TASK 37): VIXOR is Crypto-only. Signal generation
+   * is a protected intelligence workflow — only crypto assets may enter.
+   * The `category` filter is defense-in-depth on top of `active` flags:
+   * unknown/non-crypto definitions can never produce daily signals even if
+   * re-activated.
+   */
   signalPairs(): string[] {
-    return ASSETS.filter((a) => a.popular && a.active).map((a) => a.pair);
+    return ASSETS.filter((a) => a.popular && a.active && a.category === "crypto").map(
+      (a) => a.pair,
+    );
   }
 
   // ── Symbol Mapping Methods ────────────────────────────────────────────
@@ -801,6 +811,27 @@ class AssetRegistryClass {
   /** Check if a pair is a crypto pair */
   isCrypto(pair: string): boolean {
     return this.find(pair)?.category === "crypto";
+  }
+
+  /**
+   * Stage 1 scope boundary (TASK 37): reject any pair that is not a known,
+   * active, crypto asset. Throws:
+   *   - SCOPE_UNKNOWN_ASSET — pair not in the registry (unknown data must
+   *     never silently become a valid crypto asset),
+   *   - SCOPE_NON_CRYPTO    — pair exists but is forex/commodity/index/stock.
+   * Shared boundary: reuse this at every user-input entry point instead of
+   * writing per-domain validation.
+   */
+  assertCryptoPair(pair: string): AssetDefinition {
+    const normalized = pair.trim().toUpperCase();
+    const asset = this.find(normalized);
+    if (!asset) {
+      throw new Error(`SCOPE_UNKNOWN_ASSET: "${pair}" is not a known asset`);
+    }
+    if (asset.category !== "crypto" || !asset.active) {
+      throw new Error(`SCOPE_NON_CRYPTO: "${pair}" is outside the Crypto-only product boundary`);
+    }
+    return asset;
   }
 
   /** Check if a pair is a forex pair */
@@ -874,14 +905,12 @@ export const AssetRegistry = new AssetRegistryClass();
 
 // ── Lazy Exports to prevent TDZ initialization errors ───────────────────────
 
-/** Popular pairs in the format expected by price-fetcher.ts */
+/** Popular pairs in the format expected by price-fetcher.ts.
+ *  Stage 1 scope boundary (TASK 37): Crypto-only — forex/gold entries removed. */
 export const POPULAR_PAIRS = [
   { pair: "BTC/USDT", icon: "₿" },
   { pair: "ETH/USDT", icon: "Ξ" },
   { pair: "SOL/USDT", icon: "◎" },
-  { pair: "XAU/USD", icon: "Au" },
-  { pair: "EUR/USD", icon: "€" },
-  { pair: "GBP/JPY", icon: "£" },
   { pair: "LINK/USDT", icon: "⬡" },
 ];
 

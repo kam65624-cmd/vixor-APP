@@ -141,7 +141,7 @@ function DecisionCard({
               : "bg-[#6366F1] text-white shadow-[#6366F1]/30 hover:bg-[#4F46E5]"
           }`}
         >
-          {isPositive ? "شراء" : "تحليل"}
+          {isPositive ? "اتجاه صاعد" : "تحليل"}
         </button>
       </div>
     </motion.div>

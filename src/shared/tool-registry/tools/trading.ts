@@ -95,7 +95,7 @@ ToolRegistry.register({
 ToolRegistry.register({
   name: "fetchSignals",
   description:
-    "Fetch today's daily trading signals. Returns BUY/SELL/WAIT recommendations with confidence scores, entry/exit levels.",
+    "Fetch today's daily crypto research signals. Returns research bias (bullish/bearish/neutral) with confidence scores and reference levels. Research information only — not trade execution or financial advice.",
   category: "trading",
   permissions: ["authenticated"],
   mutative: false,

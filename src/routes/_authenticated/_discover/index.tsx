@@ -3,21 +3,13 @@ import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageLayout, EmptyState, SkeletonRow } from "@/components/vixor/PageLayout";
 import { CharacterGuide } from "@/components/characters/CharacterGuide";
-import { RefreshCw, X, Link2 } from "lucide-react";
+import { RefreshCw, X } from "lucide-react";
 import { usePullToRefresh } from "@/shared/hooks/use-pull-to-refresh";
 import { PullIndicator } from "@/components/vixor/PullIndicator";
 import { useDiscoverLivePrices } from "@/shared/market-data/use-discover-live-prices";
 import {
-  FOREX_TOTAL_COUNT,
-  FOREX_MAJOR_COUNT,
-  FOREX_MINOR_COUNT,
-  FOREX_PAIRS_CONFIG,
-  type ForexPair,
-} from "../-discover-forex-data";
-import {
   CATEGORY_TABS,
   SORT_OPTIONS,
-  GOLD_COLOR,
   GOLD_BG,
   fmtCompact,
   fmtPrice,
@@ -25,8 +17,6 @@ import {
   type SortKey,
   type CategoryKey,
 } from "./constants";
-import { ForexSectionHeader } from "./ForexSectionHeader";
-import { ForexPairRow } from "./ForexPairRow";
 import { TokenRow } from "./TokenRow";
 import { FilterPanel } from "./FilterPanel";
 
@@ -35,8 +25,6 @@ import { FilterPanel } from "./FilterPanel";
 export function DiscoverPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/_authenticated/discover" });
-
-  const [brokerToast, setBrokerToast] = useState<string | null>(null);
 
   // Local filter state (for the filter panel UI — before applying)
   const [filterState, setFilterState] = useState({
@@ -50,7 +38,13 @@ export function DiscoverPage() {
   // Search state
   const [searchInput, setSearchInput] = useState(search.search || "");
   const [sortBy, setSortBy] = useState<SortKey>(search.sortBy as SortKey);
-  const [category, setCategory] = useState<CategoryKey>(search.category as CategoryKey);
+  // S1-3/S1-4 (TASK 38): fail closed — a crafted ?category=FOREX deep link
+  // falls back to ALL; FOREX is no longer a valid discovery category.
+  const DISCOVERY_CATEGORY_KEYS: readonly string[] = ["ALL", "MEME", "CRYPTO"];
+  const initialCategory = DISCOVERY_CATEGORY_KEYS.includes(search.category as string)
+    ? (search.category as CategoryKey)
+    : "ALL";
+  const [category, setCategory] = useState<CategoryKey>(initialCategory);
 
   const queryParams = useMemo(() => {
     const params = new URLSearchParams();
@@ -66,7 +60,9 @@ export function DiscoverPage() {
     return params.toString();
   }, [sortBy, category, search]);
 
-  const isForexMode = category === "FOREX";
+  // Stage 1 scope boundary (TASK 37 + S1-4, TASK 38): VIXOR discovery is
+  // Crypto-only. The forex/"Markets" mode was fully removed — there is no
+  // forex query, no forex rows and no Markets surface left in this module.
 
   // ── DexScreener New + Boosted tokens (real-time discover feed via client CORS) ──
   const isSearching = Boolean(search.search?.trim());
@@ -125,7 +121,7 @@ export function DiscoverPage() {
     },
     refetchInterval: 15_000,
     staleTime: 10_000,
-    enabled: !isForexMode && !isSearching,
+    enabled: !isSearching,
   });
 
   // Merge new + boosted tokens into a flat list for the main view
@@ -188,7 +184,7 @@ export function DiscoverPage() {
         return [];
       }
     },
-    enabled: !isForexMode && isSearching,
+    enabled: isSearching,
     staleTime: 30_000,
   });
 
@@ -238,41 +234,10 @@ export function DiscoverPage() {
   );
   const { overlay: liveOverlay } = useDiscoverLivePrices({
     tokens: liveTokens,
-    enabled: !isForexMode && tokens.length > 0,
+    enabled: tokens.length > 0,
   });
 
   const stats = useMemo(() => {
-    if (isForexMode) {
-      const forexItems = forexQuery.data ?? [];
-      const bullish = forexItems.filter((p) => (p.change24h ?? 0) > 0).length;
-      const bearish = forexItems.filter((p) => (p.change24h ?? 0) < 0).length;
-      return [
-        {
-          label: "Pairs",
-          value: String(FOREX_TOTAL_COUNT),
-          color: GOLD_COLOR,
-          icon: "💱",
-        },
-        {
-          label: "Bullish",
-          value: String(bullish),
-          color: "var(--color-bullish)",
-          icon: "🟢",
-        },
-        {
-          label: "Bearish",
-          value: String(bearish),
-          color: "var(--color-bearish)",
-          icon: "🔴",
-        },
-        {
-          label: "Live",
-          value: "API",
-          color: "var(--color-info)",
-          icon: "📊",
-        },
-      ];
-    }
     const bullish = tokens.filter((t) => (t.change24h ?? 0) > 0).length;
     const bearish = tokens.filter((t) => (t.change24h ?? 0) < 0).length;
     const totalVol = tokens.reduce((sum, t) => sum + t.volume24h, 0);
@@ -302,8 +267,7 @@ export function DiscoverPage() {
         icon: "📊",
       },
     ];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokens, isForexMode]);
+  }, [tokens]);
 
   // Category counts
   const categoryCounts = useMemo(() => {
@@ -315,7 +279,6 @@ export function DiscoverPage() {
         (t) =>
           t.category === "CRYPTO" || ["eth", "btc", "sol", "bnb"].includes(t.symbol.toLowerCase()),
       ).length,
-      FOREX: FOREX_TOTAL_COUNT,
     };
   }, [tokens]);
 
@@ -422,92 +385,6 @@ export function DiscoverPage() {
     [navigate],
   );
 
-  // Forex pair click
-  const handleForexClick = useCallback(
-    (pair: ForexPair) => {
-      const cleanSymbol = pair.pair.replace("/", "-");
-      navigate({ to: "/token/$symbol", params: { symbol: cleanSymbol } } as any);
-    },
-    [navigate],
-  );
-
-  // Live forex data query (prices, change24h, sparklines via client CORS API)
-  const forexQuery = useQuery({
-    queryKey: ["live-forex-discover-data"],
-    queryFn: async (): Promise<ForexPair[]> => {
-      try {
-        const res = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
-        const rates = res.ok ? (await res.json())?.rates : {};
-        return FOREX_PAIRS_CONFIG.map((config) => {
-          let price: number | null = null;
-          if (config.pair === "XAU/USD") {
-            price = 3320.5;
-          } else if (config.pair.includes("/")) {
-            const [base, quote] = config.pair.split("/");
-            if (base === "USD" && rates[quote]) {
-              price = rates[quote];
-            } else if (quote === "USD" && rates[base]) {
-              price = 1 / rates[base];
-            } else if (rates[base] && rates[quote]) {
-              price = rates[quote] / rates[base];
-            }
-          }
-          return {
-            pair: config.pair,
-            name: config.name,
-            price,
-            change24h: 0.12,
-            volume24h: 120000,
-            type: config.type,
-            badge: config.badge,
-            sparkline: price
-              ? [price * 0.998, price * 0.999, price, price * 1.001, price * 1.002]
-              : [],
-          };
-        });
-      } catch {
-        return FOREX_PAIRS_CONFIG.map((c) => ({
-          pair: c.pair,
-          name: c.name,
-          price: null,
-          change24h: null,
-          volume24h: 0,
-          type: c.type,
-          badge: c.badge,
-          sparkline: [],
-        }));
-      }
-    },
-    staleTime: 15_000,
-    refetchInterval: 30_000,
-    enabled: isForexMode,
-  });
-
-  // Sorted forex pairs (live data from server)
-  const sortedForexPairs = useMemo(() => {
-    if (!forexQuery.data) return [];
-    const pairs = [...forexQuery.data];
-    switch (sortBy) {
-      case "change":
-        pairs.sort((a, b) => (b.change24h ?? 0) - (a.change24h ?? 0));
-        break;
-      default:
-        // "trending" / "volume" — gold first (default order from server)
-        break;
-    }
-    // Apply search filter
-    if (search.search?.trim()) {
-      const q = search.search.trim().toLowerCase();
-      return pairs.filter(
-        (p) =>
-          p.pair.toLowerCase().includes(q) ||
-          p.name.toLowerCase().includes(q) ||
-          p.badge.toLowerCase().includes(q),
-      );
-    }
-    return pairs;
-  }, [sortBy, search.search, forexQuery.data]);
-
   const handleManualRefresh = useCallback(() => {
     effectiveRefetch();
   }, [effectiveRefetch]);
@@ -520,10 +397,10 @@ export function DiscoverPage() {
   return (
     <PageLayout
       title="Discover"
-      badge={isForexMode ? "MARKETS" : "ON-CHAIN"}
-      badgeColor={isForexMode ? GOLD_COLOR : "var(--color-bullish)"}
+      badge="ON-CHAIN"
+      badgeColor="var(--color-bullish)"
       loading={effectiveLoading}
-      loadingColor={isForexMode ? GOLD_COLOR : "var(--color-bullish)"}
+      loadingColor="var(--color-bullish)"
       banner={<CharacterGuide character="moxi" compact className="mx-4 mt-3" />}
     >
       {/* ── Workspace Switcher Bar ── */}
@@ -571,10 +448,8 @@ export function DiscoverPage() {
               fontWeight: 700,
               cursor: "pointer",
               transition: "all 0.18s ease",
-              background: !isForexMode ? "var(--color-primary)" : "transparent",
-              color: !isForexMode
-                ? "var(--color-primary-foreground)"
-                : "var(--color-muted-foreground)",
+              background: "var(--color-primary)",
+              color: "var(--color-primary-foreground)",
               fontFamily: "var(--font-sans)",
               display: "flex",
               alignItems: "center",
@@ -584,29 +459,8 @@ export function DiscoverPage() {
             <span style={{ fontSize: "11px" }}>⚡</span>
             On-Chain
           </button>
-          <button
-            onClick={() => handleCategoryChange("FOREX")}
-            style={{
-              padding: "4px 12px",
-              borderRadius: "8px",
-              border: "none",
-              fontSize: "11px",
-              fontWeight: 700,
-              cursor: "pointer",
-              transition: "all 0.18s ease",
-              background: isForexMode
-                ? `linear-gradient(135deg, ${GOLD_COLOR}, color-mix(in srgb, ${GOLD_COLOR} 70%, #f97316))`
-                : "transparent",
-              color: isForexMode ? "#000" : "var(--color-muted-foreground)",
-              fontFamily: "var(--font-sans)",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
-            <span style={{ fontSize: "11px" }}>📈</span>
-            Markets
-          </button>
+          {/* Stage 1 scope boundary (TASK 37): the "Markets" (forex/gold)
+              discovery mode was removed — VIXOR is Crypto-only. */}
         </div>
       </div>
 
@@ -656,8 +510,8 @@ export function DiscoverPage() {
         ))}
       </div>
 
-      {/* Category Sub-Tabs — only shown when in On-Chain mode */}
-      {!isForexMode && (
+      {/* Category Sub-Tabs (On-Chain mode — S1-4: the forex mode was removed) */}
+      {
         <div
           className="scrollbar-hide"
           style={{
@@ -670,7 +524,7 @@ export function DiscoverPage() {
             borderBottom: "1px solid var(--color-border)",
           }}
         >
-          {CATEGORY_TABS.filter((t) => t.key !== "FOREX").map((tab) => {
+          {CATEGORY_TABS.map((tab) => {
             const isActive = category === tab.key;
             const count = categoryCounts[tab.key as keyof typeof categoryCounts];
             return (
@@ -775,7 +629,7 @@ export function DiscoverPage() {
             </button>
           </div>
         </div>
-      )}
+      }
 
       {/* Search + Sort Bar */}
       <div
@@ -806,7 +660,7 @@ export function DiscoverPage() {
           </span>
           <input
             type="text"
-            placeholder={isForexMode ? "Search pairs..." : "Search tokens..."}
+            placeholder="Search tokens..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -846,7 +700,7 @@ export function DiscoverPage() {
           )}
         </div>
 
-        {/* Sort Pills — show relevant subset for forex */}
+        {/* Sort Pills */}
         <div
           className="scrollbar-hide"
           style={{
@@ -855,12 +709,7 @@ export function DiscoverPage() {
             flexShrink: 0,
           }}
         >
-          {(isForexMode
-            ? SORT_OPTIONS.filter(
-                (o) => o.key === "trending" || o.key === "volume" || o.key === "change",
-              )
-            : SORT_OPTIONS
-          ).map((opt) => (
+          {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.key}
               onClick={() => handleSortBy(opt.key)}
@@ -887,20 +736,18 @@ export function DiscoverPage() {
         </div>
       </div>
 
-      {/* Filter Panel — hidden in forex mode */}
-      {!isForexMode && (
-        <FilterPanel
-          filters={filterState}
-          onChange={handleFilterChange}
-          onApply={handleApplyFilters}
-          onReset={handleResetFilters}
-          isOpen={filtersOpen}
-          onToggle={() => setFiltersOpen((v) => !v)}
-        />
-      )}
+      {/* Filter Panel */}
+      <FilterPanel
+        filters={filterState}
+        onChange={handleFilterChange}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+        isOpen={filtersOpen}
+        onToggle={() => setFiltersOpen((v) => !v)}
+      />
 
       {/* Error state — subtle, not alarming (crypto only) */}
-      {cryptoError && !isForexMode && (
+      {cryptoError && (
         <EmptyState
           icon="📡"
           title="Unable to Load"
@@ -908,9 +755,9 @@ export function DiscoverPage() {
         />
       )}
 
-      {/* List area — forex or crypto */}
+      {/* List area */}
       <div
-        ref={isForexMode ? undefined : pullToRefresh.containerRef}
+        ref={pullToRefresh.containerRef}
         style={{
           flex: 1,
           overflowY: "auto",
@@ -918,143 +765,18 @@ export function DiscoverPage() {
           minHeight: 0,
         }}
         className="scrollbar-hide"
-        {...(isForexMode ? {} : pullToRefresh.pullHandlers)}
+        {...pullToRefresh.pullHandlers}
       >
-        {/* Pull-to-refresh indicator (crypto only) */}
-        {!isForexMode && (
-          <div style={pullToRefresh.pullIndicatorStyle}>
-            <PullIndicator
-              distance={pullToRefresh.pullDistance}
-              isRefreshing={pullToRefresh.isRefreshing}
-            />
-          </div>
-        )}
-
-        {/* ── FOREX LIST ── */}
-        {isForexMode && (
-          <div style={{ padding: "4px 0" }}>
-            {/* Broker toast notification */}
-            {brokerToast && (
-              <div
-                style={{
-                  margin: "6px 12px",
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  background: "var(--color-card)",
-                  border: `1px solid var(--color-border)`,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  animation: "vixor-fade-in 0.2s ease",
-                }}
-              >
-                <Link2 size={14} style={{ color: "var(--color-primary)", flexShrink: 0 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      color: "var(--color-foreground)",
-                      fontFamily: "var(--font-sans)",
-                    }}
-                  >
-                    {brokerToast} — Connect Broker
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "9px",
-                      color: "var(--color-muted-foreground)",
-                      marginTop: "1px",
-                    }}
-                  >
-                    Link a forex broker to trade {brokerToast} with live charts.
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {forexQuery.isLoading ? (
-              Array.from({ length: 14 }).map((_, i) => (
-                <div key={i} style={{ padding: "6px 12px" }}>
-                  <SkeletonRow />
-                </div>
-              ))
-            ) : sortedForexPairs.length === 0 ? (
-              <EmptyState
-                icon="💱"
-                title="No Pairs Found"
-                message={
-                  search.search
-                    ? `No forex pairs matching "${search.search}".`
-                    : "No forex pairs available."
-                }
-              />
-            ) : (
-              <>
-                {/* Gold section */}
-                <ForexSectionHeader title="Precious Metals" count={1} />
-                {sortedForexPairs
-                  .filter((p) => p.type === "gold")
-                  .map((pair) => (
-                    <ForexPairRow
-                      key={pair.pair}
-                      item={pair}
-                      onClick={() => handleForexClick(pair)}
-                    />
-                  ))}
-
-                {/* Major pairs section */}
-                {sortedForexPairs.some((p) => p.type === "major") && (
-                  <>
-                    <ForexSectionHeader title="Major Pairs" count={FOREX_MAJOR_COUNT} />
-                    {sortedForexPairs
-                      .filter((p) => p.type === "major")
-                      .map((pair) => (
-                        <ForexPairRow
-                          key={pair.pair}
-                          item={pair}
-                          onClick={() => handleForexClick(pair)}
-                        />
-                      ))}
-                  </>
-                )}
-
-                {/* Minor / Cross pairs section */}
-                {sortedForexPairs.some((p) => p.type === "minor") && (
-                  <>
-                    <ForexSectionHeader title="Minor / Cross Pairs" count={FOREX_MINOR_COUNT} />
-                    {sortedForexPairs
-                      .filter((p) => p.type === "minor")
-                      .map((pair) => (
-                        <ForexPairRow
-                          key={pair.pair}
-                          item={pair}
-                          onClick={() => handleForexClick(pair)}
-                        />
-                      ))}
-                  </>
-                )}
-
-                {/* Footer */}
-                <div
-                  style={{
-                    padding: "10px 12px",
-                    textAlign: "center",
-                    fontSize: "9px",
-                    color: "var(--color-muted-foreground)",
-                    borderTop: "1px solid var(--color-border)",
-                    fontFamily: "var(--font-mono)",
-                  }}
-                >
-                  {FOREX_TOTAL_COUNT} pairs · Live data via TwelveData
-                </div>
-              </>
-            )}
-          </div>
-        )}
+        {/* Pull-to-refresh indicator */}
+        <div style={pullToRefresh.pullIndicatorStyle}>
+          <PullIndicator
+            distance={pullToRefresh.pullDistance}
+            isRefreshing={pullToRefresh.isRefreshing}
+          />
+        </div>
 
         {/* ── CRYPTO TOKEN LIST ── */}
-        {!isForexMode && (
+        {
           <div style={{ padding: "4px 0" }}>
             {/* Top Movers / Trending Section — DexScreener live data */}
             {!effectiveLoading && dexTokens.length > 0 && (
@@ -1214,10 +936,10 @@ export function DiscoverPage() {
                     />
                   )}
           </div>
-        )}
+        }
 
-        {/* Footer info (crypto only) */}
-        {!isForexMode && tokens.length > 0 && (
+        {/* Footer info */}
+        {tokens.length > 0 && (
           <div
             style={{
               padding: "8px 12px",

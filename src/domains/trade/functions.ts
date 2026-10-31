@@ -8,6 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import { assertLegacyExecutionEnabled } from "@/shared/security/legacy-execution";
 import { detectPatterns } from "./pattern-detector";
 import type { Candle } from "./pattern-detector";
 import { fetchJupiterQuote, fetchJupiterSwapTransaction, SOLANA_MINTS } from "./jupiter-client";
@@ -339,6 +340,11 @@ export const getJupiterSwapTransaction = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
+    // Stage 1 scope boundary (TASK 37): building swap transactions enables
+    // exchange execution / user-fund movement — outside the approved VIXOR
+    // scope. The shared legacy-execution boundary applies (same guard as
+    // executeTrade); the swap UI is separately disabled client-side.
+    assertLegacyExecutionEnabled();
     return fetchJupiterSwapTransaction(data.quoteResponse as any, data.userPublicKey);
   });
 
@@ -370,6 +376,9 @@ export const get1inchSwapTransaction = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
+    // Stage 1 scope boundary (TASK 37): same shared execution boundary as the
+    // Solana leg — no swap transaction building while execution is disabled.
+    assertLegacyExecutionEnabled();
     return fetch1inchSwapTransaction(
       data.chainId,
       data.src,

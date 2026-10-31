@@ -144,13 +144,14 @@ export const SmartBottomSheet: React.FC<SmartBottomSheetProps> = ({
               </div>
             )}
 
-            {/* Action Buttons */}
+            {/* Research Trend Buttons — S1-1 (TASK 38): neutral research
+                language (upward/downward trend), never BUY/SELL instructions */}
             <div className="grid grid-cols-3 gap-3 mb-3">
               <button className="flex-1 py-3.5 bg-[#22D3A6] text-black font-bold rounded-xl shadow-[0_4px_20px_rgba(34,211,166,0.3)] flex items-center justify-center gap-2 text-sm hover:brightness-110 transition-all">
-                <TrendingUp className="w-4 h-4" /> شراء
+                <TrendingUp className="w-4 h-4" /> اتجاه صاعد
               </button>
               <button className="flex-1 py-3.5 bg-[#FB4667] text-white font-bold rounded-xl shadow-[0_4px_20px_rgba(251,70,103,0.3)] flex items-center justify-center gap-2 text-sm hover:brightness-110 transition-all">
-                <TrendingDown className="w-4 h-4" /> بيع
+                <TrendingDown className="w-4 h-4" /> اتجاه هابط
               </button>
               <button className="flex-1 py-3.5 bg-[#16171C] text-[#9498A8] font-bold rounded-xl border border-[rgba(255,255,255,0.04)] flex items-center justify-center gap-2 text-sm hover:text-white hover:bg-[#1e1f26] transition-all">
                 <Bell className="w-4 h-4" /> تنبيه

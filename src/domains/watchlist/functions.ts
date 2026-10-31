@@ -8,6 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
+import { assertCryptoPair } from "@/shared/asset-registry";
 
 export const getWatchlists = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -55,12 +56,17 @@ export const addToWatchlist = createServerFn({ method: "POST" })
       .object({
         watchlistId: z.string().uuid().optional(),
         pair: z.string().min(1).max(20),
-        category: z.enum(["forex", "crypto", "commodity", "stocks"]).default("forex"),
+        // Stage 1 scope boundary (TASK 37): VIXOR watchlists are Crypto research
+        // watchlists — forex/commodity/stocks categories are no longer accepted.
+        category: z.enum(["crypto"]),
         notes: z.string().max(200).optional(),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    // Stage 1 scope boundary (TASK 37): unknown data must never silently become
+    // a valid crypto asset — reject non-crypto and unknown pairs here.
+    assertCryptoPair(data.pair);
     const { userId, supabase } = context;
     let watchlistId = data.watchlistId;
 

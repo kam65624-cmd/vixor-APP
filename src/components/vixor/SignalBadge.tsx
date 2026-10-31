@@ -1,6 +1,9 @@
 import { cn } from "@/shared/utils";
 import { withAlpha } from "@/shared/color-utils";
 
+// Machine-readable signal identifiers (legacy data format, kept for DB/API
+// compatibility — see Stage 1 scope decision S1-1). Human-facing labels are
+// rendered as neutral research language by SIGNAL_CONFIG below.
 export type SignalKind = "BUY" | "SELL" | "WAIT" | "STRONG_BUY" | "STRONG_SELL";
 
 interface SignalConfig {
@@ -11,38 +14,42 @@ interface SignalConfig {
   icon: string;
 }
 
+// Stage 1 scope decision (S1-1, TASK 38): VIXOR presents research signals in
+// neutral research language (bullish/bearish/neutral), never as BUY/SELL
+// trading instructions. Machine-readable SignalKind values are historical
+// identifiers only.
 const SIGNAL_CONFIG: Record<SignalKind, SignalConfig> = {
   STRONG_BUY: {
-    label: "STRONG BUY",
-    short: "\u25B2 BUY",
+    label: "STRONG BULLISH",
+    short: "\u25B2 BULLISH",
     color: "var(--bullish)",
     bg: "var(--bullish-bg)",
     icon: "\u25B2\u25B2",
   },
   BUY: {
-    label: "BUY",
-    short: "BUY",
+    label: "BULLISH",
+    short: "BULLISH",
     color: "var(--bullish)",
     bg: "var(--bullish-bg)",
     icon: "\u25B2",
   },
   WAIT: {
-    label: "WAIT",
-    short: "WAIT",
+    label: "NEUTRAL",
+    short: "NEUTRAL",
     color: "var(--neutral-wait)",
     bg: "var(--neutral-wait-bg)",
     icon: "\u25C6",
   },
   SELL: {
-    label: "SELL",
-    short: "SELL",
+    label: "BEARISH",
+    short: "BEARISH",
     color: "var(--bearish)",
     bg: "var(--bearish-bg)",
     icon: "\u25BC",
   },
   STRONG_SELL: {
-    label: "STRONG SELL",
-    short: "\u25BC SELL",
+    label: "STRONG BEARISH",
+    short: "\u25BC BEARISH",
     color: "var(--bearish)",
     bg: "var(--bearish-bg)",
     icon: "\u25BC\u25BC",
@@ -86,7 +93,7 @@ export function SignalBadge({
         border: `1px solid ${withAlpha(c.color, 0.2)}`,
       }}
       role="status"
-      aria-label={`Signal: ${c.label}`}
+      aria-label={`Research signal: ${c.label}`}
     >
       {showIcon && (
         <span aria-hidden="true" className="leading-none">
@@ -94,6 +101,7 @@ export function SignalBadge({
         </span>
       )}
       {label && <span>{label}</span>}
+      {/* research framing — no trade instruction (S1-1) */}
     </span>
   );
 }

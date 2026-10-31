@@ -47,6 +47,14 @@ export function SectionTitle({
 // RECOMMENDATION BADGE
 // ═══════════════════════════════════════════════
 
+// S1-1 (TASK 38): machine-readable Recommendation values render as neutral
+// research language — never as BUY/SELL trade instructions.
+const RESEARCH_LABELS: Record<Recommendation, string> = {
+  BUY: "BULLISH",
+  SELL: "BEARISH",
+  WAIT: "NEUTRAL",
+};
+
 export function RecBadge({ rec, size = "sm" }: { rec: Recommendation; size?: "sm" | "lg" }) {
   const map = {
     BUY: {
@@ -81,7 +89,7 @@ export function RecBadge({ rec, size = "sm" }: { rec: Recommendation; size?: "sm
       )}
     >
       <Icon className={size === "lg" ? "size-4" : "size-3"} strokeWidth={2.5} />
-      {rec}
+      {RESEARCH_LABELS[rec]}
     </span>
   );
 }
