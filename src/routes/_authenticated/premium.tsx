@@ -1,8 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { getPremiumData } from "@/shared/data";
+import { createStarsInvoice } from "@/domains/user/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -18,45 +19,33 @@ export const Route = createFileRoute("/_authenticated/premium")({
 export const subscribeToPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => z.object({ planId: z.string() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-
-    // Upsert subscription
-    const { error } = await supabase.from("premium_subscriptions").upsert(
-      {
-        user_id: userId,
-        plan_id: data.planId,
-        status: "active",
-        current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-      },
-      { onConflict: "user_id" },
+  .handler(async () => {
+    // Subscription status is granted only by the verified Telegram Stars webhook.
+    // Keep this endpoint fail-closed for clients that still call the legacy action.
+    throw new Error(
+      "Premium activation requires a confirmed payment. Use Telegram Stars checkout.",
     );
-
-    if (error) throw new Error(error.message);
-    return { success: true };
   });
 
 function PremiumPage() {
-  const queryClient = useQueryClient();
   const fetchPremium = useStableServerFn(getPremiumData);
   const [subscribing, setSubscribing] = useState<string | null>(null);
   const [subscribeError, setSubscribeError] = useState<string | null>(null);
-  const [subscribeSuccess, setSubscribeSuccess] = useState<string | null>(null);
 
   const subscribeMutation = useMutation({
-    mutationFn: (planId: string) => subscribeToPlan({ data: { planId } }),
+    mutationFn: (planId: string) =>
+      createStarsInvoice({ data: { kind: "premium", resourceId: planId } }),
     onMutate: (planId) => {
       setSubscribing(planId);
-    },
-    onSuccess: (_data, planId) => {
-      queryClient.invalidateQueries({ queryKey: ["premium-data"] });
-      setSubscribeSuccess(planId);
       setSubscribeError(null);
-      setTimeout(() => setSubscribeSuccess(null), 3000);
+    },
+    onSuccess: (result) => {
+      // Telegram owns the checkout UI; premium is enabled only after the verified webhook.
+      window.location.assign(result.invoiceUrl);
     },
     onError: (err: Error) => {
-      setSubscribeError(err.message || "Subscription failed. Please try again.");
-      setTimeout(() => setSubscribeError(null), 4000);
+      setSubscribeError(err.message || "Could not create Telegram Stars invoice.");
+      setTimeout(() => setSubscribeError(null), 5000);
     },
     onSettled: () => {
       setSubscribing(null);
@@ -162,6 +151,11 @@ function PremiumPage() {
           >
             {visiblePlans.map((plan) => {
               const isCurrent = plan.id === currentPlanId;
+              const starsPrice = (plan as { stars_price?: number | null }).stars_price;
+              const hasStarsPrice = Number.isSafeInteger(starsPrice) && (starsPrice ?? 0) > 0;
+              const canCheckout =
+                /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(plan.id) &&
+                hasStarsPrice;
               const features = Array.isArray((plan as any).features)
                 ? ((plan as any).features as string[])
                 : [];
@@ -207,7 +201,9 @@ function PremiumPage() {
                       color: "var(--color-foreground)",
                     }}
                   >
-                    ${(plan.price_cents / 100).toFixed(0)}
+                    {hasStarsPrice
+                      ? String(starsPrice) + " Stars"
+                      : "$" + (plan.price_cents / 100).toFixed(0)}
                     <span
                       style={{
                         fontSize: "13px",
@@ -215,7 +211,7 @@ function PremiumPage() {
                         color: "var(--color-muted-foreground)",
                       }}
                     >
-                      /mo
+                      {plan.interval === "year" ? "/year" : "/month"}
                     </span>
                   </div>
                   {(plan as any).badge && (
@@ -258,25 +254,7 @@ function PremiumPage() {
                       </div>
                     )}
                   </div>
-                  {subscribeSuccess === plan.id ? (
-                    <button
-                      disabled
-                      style={{
-                        width: "100%",
-                        padding: "10px",
-                        borderRadius: "8px",
-                        border: `1px solid ${"var(--color-bullish)"}33`,
-                        background: `${"var(--color-bullish)"}14`,
-                        color: "var(--color-bullish)",
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        cursor: "default",
-                        fontFamily: "var(--font-sans)",
-                      }}
-                    >
-                      ✓ Subscribed!
-                    </button>
-                  ) : isCurrent ? (
+                  {isCurrent ? (
                     <button
                       disabled
                       style={{
@@ -296,7 +274,7 @@ function PremiumPage() {
                     </button>
                   ) : (
                     <button
-                      disabled={subscribing === plan.id}
+                      disabled={subscribing === plan.id || !canCheckout}
                       onClick={() => subscribeMutation.mutate(plan.id)}
                       style={{
                         width: "100%",
@@ -312,7 +290,11 @@ function PremiumPage() {
                         fontFamily: "var(--font-sans)",
                       }}
                     >
-                      {subscribing === plan.id ? "Processing..." : "Upgrade"}
+                      {subscribing === plan.id
+                        ? "Creating invoice..."
+                        : canCheckout
+                          ? `Pay ${starsPrice} Stars`
+                          : "Telegram Stars unavailable"}
                     </button>
                   )}
                 </div>

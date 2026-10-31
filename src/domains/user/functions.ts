@@ -6,9 +6,11 @@
 // ============================================================================
 
 import { createServerFn } from "@tanstack/react-start";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import { log } from "@/shared/structured-logger";
+import { isPackFree } from "./payment-pricing";
 
 // ---------- ME / PROFILE ----------
 export const getMe = createServerFn({ method: "GET" })
@@ -80,28 +82,25 @@ export const getPremiumPlans = createServerFn({ method: "GET" })
  * Returns true only if the payment is confirmed and matches the expected payload.
  */
 async function verifyStarsPayment(
-  botToken: string,
   chargeId: string,
-  _expectedPayload: string | null,
+  userId: string,
+  resourceKind: "pack" | "premium",
+  resourceId: string,
 ): Promise<boolean> {
   try {
     const { supabaseAdmin } = await import("@/shared/supabase/client.server");
-
-    // ── Method 1: Database lookup (webhook-confirmed payments) ──
-    // Check if this chargeId was confirmed by the Telegram webhook
-    const { data: confirmedPayment } = await supabaseAdmin
+    const { data: payment, error } = await supabaseAdmin
       .from("payments")
-      .select("id, status")
+      .select("id, status, user_id, pack_id, plan_id")
       .eq("telegram_charge_id", chargeId)
       .eq("status", "confirmed")
+      .eq("user_id", userId)
       .maybeSingle();
 
-    if (confirmedPayment) {
-      return true;
-    }
-
-    // No need for fallback API call — webhook confirmation is the source of truth
-    return false;
+    if (error || !payment) return false;
+    return resourceKind === "pack"
+      ? payment.pack_id === resourceId
+      : payment.plan_id === resourceId;
   } catch {
     log.error("verification_failed", { chargeId });
     return false;
@@ -131,15 +130,13 @@ export const purchasePack = createServerFn({ method: "POST" })
     if (!pack) throw new Error("Pack not found");
 
     // --- Payment verification ---
-    const isFree = !pack.price_cents || pack.price_cents === 0;
+    const isFree = isPackFree(pack);
     if (data.paymentMethod === "stars" && !isFree) {
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      if (!botToken) throw new Error("Server configuration error: Telegram bot token not set");
       if (!data.telegramChargeId) {
         throw new Error("Payment verification failed: missing charge ID");
       }
       // Verify charge exists in confirmed payments (webhook auto-credits points)
-      const verified = await verifyStarsPayment(botToken, data.telegramChargeId, null);
+      const verified = await verifyStarsPayment(data.telegramChargeId, userId, "pack", pack.id);
       if (!verified) {
         throw new Error("Payment verification failed: charge could not be confirmed");
       }
@@ -179,45 +176,10 @@ export const subscribePremium = createServerFn({ method: "POST" })
       })
       .parse(d),
   )
-  .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
-    const { data: plan } = await supabaseAdmin
-      .from("premium_plans")
-      .select("*")
-      .eq("id", data.planId)
-      .eq("is_active", true)
-      .maybeSingle();
-    if (!plan) throw new Error("Plan not found");
-
-    // --- Payment verification ---
-    const isFree = !plan.price_cents || plan.price_cents === 0;
-    if (data.paymentMethod === "stars" && !isFree) {
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      if (!botToken) throw new Error("Server configuration error: Telegram bot token not set");
-      if (!data.telegramChargeId) {
-        throw new Error("Payment verification failed: missing charge ID");
-      }
-      // Verify charge exists in confirmed payments (webhook auto-credits premium)
-      const verified = await verifyStarsPayment(botToken, data.telegramChargeId, null);
-      if (!verified) {
-        throw new Error("Payment verification failed: charge could not be confirmed");
-      }
-      // Premium subscription is granted — webhook confirms payment, we grant subscription here
-    } else if (!isFree) {
-      throw new Error("Payment required: this plan is not free");
-    }
-
-    const days = plan.interval === "year" ? 365 : 30;
-    const periodEnd = new Date(Date.now() + days * 86400 * 1000).toISOString();
-    const { error } = await supabaseAdmin.from("premium_subscriptions").insert({
-      user_id: userId,
-      plan_id: plan.id,
-      status: "active",
-      current_period_end: periodEnd,
-    });
-    if (error) throw new Error(error.message);
-    return { ok: true, current_period_end: periodEnd };
+  .handler(async () => {
+    // All subscription writes are owned by the atomic verified-payment RPC.
+    // Never allow a browser/server-function call to activate or renew Premium.
+    throw new Error("Premium activation requires a verified payment webhook.");
   });
 
 // ---------- NOTIFICATIONS ----------
@@ -384,42 +346,98 @@ export const syncTelegramProfile = createServerFn({ method: "POST" })
 
 export const createStarsInvoice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ packId: z.string(), amountStars: z.number() }).parse(d))
+  .validator((d: unknown) =>
+    z.object({ kind: z.enum(["pack", "premium"]), resourceId: z.string().uuid() }).parse(d),
+  )
   .handler(async ({ data, context }) => {
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    if (!botToken) throw new Error("Bot token not configured");
-
-    const payload = `${context.userId}_${data.packId}_${Date.now()}`;
-
-    const res = await fetch(`https://api.telegram.org/bot${botToken}/createInvoiceLink`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: "Vixor Points",
-        description: `Purchase Vixor Points Pack`,
-        payload: payload,
-        provider_token: "",
-        currency: "XTR",
-        prices: [{ label: "Points", amount: data.amountStars }],
-      }),
-    });
-
-    const result = await res.json();
-    if (!result.ok) throw new Error(result.description || "Failed to create invoice");
-
-    // Store the payment record so the webhook and verification can find it
     const { supabaseAdmin } = await import("@/shared/supabase/client.server");
-    await supabaseAdmin.from("payments").insert({
-      user_id: context.userId,
-      telegram_charge_id: null, // Will be set when webhook confirms
-      payload: payload,
-      amount_stars: data.amountStars,
-      pack_id: data.packId,
-      status: "pending",
-      telegram_invoice_url: result.result,
-    });
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) throw new Error("Telegram Stars checkout is not configured");
 
-    return { invoiceUrl: result.result };
+    type CatalogItem = {
+      id: string;
+      name: string;
+      description?: string | null;
+      stars_price?: number | null;
+    };
+    let item: CatalogItem | null = null;
+    if (data.kind === "pack") {
+      const { data: row, error } = await supabaseAdmin
+        .from("point_packs")
+        .select("*")
+        .eq("id", data.resourceId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (error) throw new Error("Could not load point pack");
+      if (row) item = row as unknown as CatalogItem;
+    } else {
+      const { data: row, error } = await supabaseAdmin
+        .from("premium_plans")
+        .select("*")
+        .eq("id", data.resourceId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (error) throw new Error("Could not load premium plan");
+      if (row) item = row as unknown as CatalogItem;
+    }
+
+    const amount = item?.stars_price;
+    if (!item || typeof amount !== "number" || !Number.isSafeInteger(amount) || amount <= 0) {
+      throw new Error("This item is not configured for Telegram Stars");
+    }
+
+    const payload = randomUUID();
+    const { data: payment, error: insertError } = await supabaseAdmin
+      .from("payments")
+      .insert({
+        user_id: context.userId,
+        payload,
+        amount_stars: amount,
+        pack_id: data.kind === "pack" ? item.id : null,
+        plan_id: data.kind === "premium" ? item.id : null,
+        status: "pending",
+      })
+      .select("id")
+      .single();
+    if (insertError || !payment) throw new Error("Could not create payment order");
+
+    const title = (data.kind === "pack" ? item.name : `Vixor Pro - ${item.name}`).slice(0, 32);
+    const description = (item.description || `Purchase ${item.name}`).slice(0, 255);
+    let invoiceUrl: string;
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${botToken}/createInvoiceLink`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          payload,
+          provider_token: "",
+          currency: "XTR",
+          prices: [{ label: title, amount }],
+        }),
+      });
+      const result = (await response.json()) as { ok?: boolean; result?: unknown };
+      if (!response.ok || result.ok !== true || typeof result.result !== "string") {
+        throw new Error("Invoice link creation failed");
+      }
+      invoiceUrl = result.result;
+    } catch {
+      await supabaseAdmin
+        .from("payments")
+        .update({ status: "failed" })
+        .eq("id", payment.id)
+        .eq("status", "pending");
+      throw new Error("Could not create Telegram Stars invoice");
+    }
+
+    const { error: updateError } = await supabaseAdmin
+      .from("payments")
+      .update({ telegram_invoice_url: invoiceUrl })
+      .eq("id", payment.id)
+      .eq("status", "pending");
+    if (updateError) log.warn("stars_invoice_url_persist_failed", { paymentId: payment.id });
+    return { paymentId: payment.id, invoiceUrl, amountStars: amount };
   });
 
 // ---------- REWARDS REDEMPTION ----------
