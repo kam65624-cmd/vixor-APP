@@ -131,16 +131,18 @@ describe("Analysis Pipeline Integration", () => {
   });
 
   it("produces valid result structure on bearish synthetic data", () => {
-    const bars = generateBearishBars(100, 1.085);
-    const result = runLocalAnalysis({ pair: "EUR/USD", timeframe: "1H", bars });
-    const errors = validateResultStructure(result, "EUR/USD");
+    // Stage 1 (TASK 37): was EUR/USD — non-crypto pairs are out of scope.
+    const bars = generateBearishBars(100, 3450);
+    const result = runLocalAnalysis({ pair: "ETH/USDT", timeframe: "1H", bars });
+    const errors = validateResultStructure(result, "ETH/USDT");
     expect(errors, errors.join("; ")).toHaveLength(0);
   });
 
   it("produces valid result structure on ranging synthetic data", () => {
-    const bars = generateRangingBars(100, 2330);
-    const result = runLocalAnalysis({ pair: "XAU/USD", timeframe: "4H", bars });
-    const errors = validateResultStructure(result, "XAU/USD");
+    // Stage 1 (TASK 37): was XAU/USD — non-crypto pairs are out of scope.
+    const bars = generateRangingBars(100, 155);
+    const result = runLocalAnalysis({ pair: "SOL/USDT", timeframe: "4H", bars });
+    const errors = validateResultStructure(result, "SOL/USDT");
     expect(errors, errors.join("; ")).toHaveLength(0);
   });
 
@@ -151,10 +153,11 @@ describe("Analysis Pipeline Integration", () => {
   it("confidence stays within valid 0-100 range for all data types", () => {
     const testCases = [
       { bars: generateBullishBars(100, 67000), pair: "BTC/USDT" },
-      { bars: generateBearishBars(100, 1.085), pair: "EUR/USD" },
-      { bars: generateRangingBars(100, 2330), pair: "XAU/USD" },
+      // Stage 1 (TASK 37): crypto-only test data (was EUR/USD, XAU/USD)
+      { bars: generateBearishBars(100, 3450), pair: "ETH/USDT" },
+      { bars: generateRangingBars(100, 155), pair: "SOL/USDT" },
       { bars: generateBullishBars(50, 67000), pair: "BTC/USDT" },
-      { bars: generateBearishBars(50, 1.085), pair: "EUR/USD" },
+      { bars: generateBearishBars(50, 3450), pair: "ETH/USDT" },
     ];
 
     for (const tc of testCases) {

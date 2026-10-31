@@ -66,7 +66,11 @@ export function DiscoverPage() {
     return params.toString();
   }, [sortBy, category, search]);
 
-  const isForexMode = category === "FOREX";
+  // Stage 1 scope boundary (TASK 37): VIXOR discovery is Crypto-only. The
+  // forex/"Markets" mode is removed — the flag is forced false so a crafted
+  // ?category=FOREX deep link fails closed to the crypto discovery list and
+  // the forex data query never fires (enabled: isForexMode → never true).
+  const isForexMode = false as boolean;
 
   // ── DexScreener New + Boosted tokens (real-time discover feed via client CORS) ──
   const isSearching = Boolean(search.search?.trim());
@@ -584,29 +588,8 @@ export function DiscoverPage() {
             <span style={{ fontSize: "11px" }}>⚡</span>
             On-Chain
           </button>
-          <button
-            onClick={() => handleCategoryChange("FOREX")}
-            style={{
-              padding: "4px 12px",
-              borderRadius: "8px",
-              border: "none",
-              fontSize: "11px",
-              fontWeight: 700,
-              cursor: "pointer",
-              transition: "all 0.18s ease",
-              background: isForexMode
-                ? `linear-gradient(135deg, ${GOLD_COLOR}, color-mix(in srgb, ${GOLD_COLOR} 70%, #f97316))`
-                : "transparent",
-              color: isForexMode ? "#000" : "var(--color-muted-foreground)",
-              fontFamily: "var(--font-sans)",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
-            <span style={{ fontSize: "11px" }}>📈</span>
-            Markets
-          </button>
+          {/* Stage 1 scope boundary (TASK 37): the "Markets" (forex/gold)
+              discovery mode was removed — VIXOR is Crypto-only. */}
         </div>
       </div>
 

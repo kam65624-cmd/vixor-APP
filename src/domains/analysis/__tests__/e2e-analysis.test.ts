@@ -78,18 +78,21 @@ describe("E2E: Analysis Pipeline", () => {
       expect(errors, errors.join("\n")).toHaveLength(0);
     });
 
-    it("EUR/USD with real bars", () => {
-      const bars = generateTestBars(100, 1.085, 0.003);
-      const result = runLocalAnalysis({ pair: "EUR/USD", timeframe: "1H", bars });
-      const errors = validateResultShape(result, "EUR/USD");
-      expect(errors, errors.join("\n")).toHaveLength(0);
+    // Stage 1 scope boundary (TASK 37): forex/gold analysis was removed —
+    // the engine must reject non-crypto pairs with a scope error instead of
+    // producing BUY/SELL analysis for them.
+    it("rejects non-crypto pairs (EUR/USD, XAU/USD) with scope error", () => {
+      for (const pair of ["EUR/USD", "XAU/USD"]) {
+        const bars = generateTestBars(100, pair === "EUR/USD" ? 1.085 : 2330, 0.004);
+        expect(() => runLocalAnalysis({ pair, timeframe: "1H", bars })).toThrowError(
+          /SCOPE_NON_CRYPTO/,
+        );
+      }
     });
 
-    it("XAU/USD with real bars", () => {
-      const bars = generateTestBars(100, 2330, 0.005);
-      const result = runLocalAnalysis({ pair: "XAU/USD", timeframe: "4H", bars });
-      const errors = validateResultShape(result, "XAU/USD");
-      expect(errors, errors.join("\n")).toHaveLength(0);
+    it("defaults to a crypto pair (BTC/USDT) when no pair is given", () => {
+      const result = runLocalAnalysis({ timeframe: "1H" });
+      expect(result.pair).toBe("BTC/USDT");
     });
 
     it("synthetic fallback when no bars", () => {
@@ -170,23 +173,20 @@ describe("E2E: Analysis Pipeline", () => {
   });
 
   describe("PAIR_CONFIGS", () => {
-    [
-      "BTC/USDT",
-      "ETH/USDT",
-      "SOL/USDT",
-      "EUR/USD",
-      "XAU/USD",
-      "GBP/USD",
-      "GBP/JPY",
-      "AAPL",
-      "NASDAQ",
-    ].forEach((pair) => {
+    // Stage 1 scope boundary (TASK 37): only crypto pairs carry configs.
+    ["BTC/USDT", "ETH/USDT", "SOL/USDT"].forEach((pair) => {
       it(pair + " has valid config", () => {
         const cfg = PAIR_CONFIGS[pair];
         expect(cfg).toBeDefined();
         expect(cfg.basePrice).toBeGreaterThan(0);
         expect(typeof cfg.decimals).toBe("number");
       });
+    });
+
+    it("non-crypto pairs have no config (crypto-only boundary)", () => {
+      for (const pair of ["EUR/USD", "XAU/USD", "GBP/USD", "GBP/JPY", "AAPL", "NASDAQ"]) {
+        expect(PAIR_CONFIGS[pair], pair).toBeUndefined();
+      }
     });
   });
 });

@@ -15,6 +15,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/shared/supabase/auth-middleware";
 import { assertLegacyExecutionEnabled } from "@/shared/security/legacy-execution";
+import { assertCryptoPair } from "@/shared/asset-registry";
 import {
   encryptCredential,
   decryptCredential,
@@ -145,6 +146,12 @@ export const executeTrade = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    // Stage 1 scope boundary (TASK 37): execution paths are Crypto-only even
+    // if execution is ever re-enabled — no forex/gold/stock orders may pass.
+    // Desk-style symbols ("BTCUSD") normalize to registry pairs ("BTC/USDT");
+    // anything that does not resolve to a known crypto asset is rejected.
+    const orderPair = data.pair.includes("/") ? data.pair : data.pair.replace(/USD$/i, "");
+    assertCryptoPair(orderPair.includes("/") ? orderPair : `${orderPair}/USDT`);
     assertLegacyExecutionEnabled();
     const { supabase, userId } = context;
 

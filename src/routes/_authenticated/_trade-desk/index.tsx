@@ -34,7 +34,10 @@ export function TradeDesk() {
   const [balance, setBalance] = useState("10000");
   const [riskPct, setRiskPct] = useState("1");
   const [slPips, setSlPips] = useState("30");
-  const [pair, setPair] = useState(search.symbol || "XAUUSD");
+  const [pair, setPair] = useState(
+    // Stage 1 scope boundary (TASK 37): Crypto-only default (was XAUUSD/gold).
+    search.symbol || "BTCUSD",
+  );
   const [direction, setDirection] = useState<TradeDirection>(
     (search.direction as TradeDirection) || "long",
   );

@@ -28,12 +28,11 @@ interface TradingViewTickerTapeProps {
 
 function TradingViewTickerTapeInner({
   symbols = [
+    // Stage 1 scope boundary (TASK 37): Crypto-only defaults — gold/forex
+    // ticker symbols (OANDA:XAUUSD, FX:EURUSD, FX:GBPJPY) removed.
     "BINANCE:BTCUSDT",
     "BINANCE:ETHUSDT",
     "BINANCE:SOLUSDT",
-    "OANDA:XAUUSD",
-    "FX:EURUSD",
-    "FX:GBPJPY",
   ],
   theme = "dark",
   showSymbolLogo = true,
