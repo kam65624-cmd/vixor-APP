@@ -9,7 +9,6 @@ on:
       - scripts/fix-vercel-bundle.mjs
       - src/server.ts
       - src/start.ts
-      - .github/workflows/regen-tanstack-lock.yml
 
 permissions:
   contents: write
