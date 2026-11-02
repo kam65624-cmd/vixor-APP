@@ -282,6 +282,16 @@ export const linkTelegramAccount = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/shared/supabase/client.server");
 
+    const { data: existingLink, error: lookupError } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("telegram_id", user.id)
+      .maybeSingle();
+    if (lookupError) throw new Error("Could not verify Telegram account ownership");
+    if (existingLink && existingLink.id !== userId) {
+      throw new Error("This Telegram account is already linked to another VIXOR account");
+    }
+
     const { error } = await supabaseAdmin
       .from("profiles")
       .update({
@@ -300,48 +310,6 @@ export const linkTelegramAccount = createServerFn({ method: "POST" })
       telegram_photo_url: photoUrl,
       display_name: displayName,
     };
-  });
-
-// ---------- TELEGRAM AUTO-SYNC ----------
-// Called on every app open from Telegram WebApp to keep profile data fresh.
-// Updates display_name, telegram_username, telegram_photo_url, telegram_id.
-export const syncTelegramProfile = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
-    z
-      .object({
-        telegramId: z.number(),
-        firstName: z.string(),
-        lastName: z.string().optional(),
-        username: z.string().optional(),
-        photoUrl: z.string().optional(),
-      })
-      .parse(d),
-  )
-  .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const { supabaseAdmin } = await import("@/shared/supabase/client.server");
-
-    const displayName =
-      [data.firstName, data.lastName].filter(Boolean).join(" ") || data.username || "Trader";
-
-    const { error } = await supabaseAdmin
-      .from("profiles")
-      .update({
-        telegram_id: String(data.telegramId) as any,
-        telegram_username: data.username || null,
-        telegram_photo_url: data.photoUrl || null,
-        display_name: displayName,
-      })
-      .eq("id", userId);
-
-    if (error) {
-      log.warn("sync_telegram_failed", { userId, error: error.message });
-      // Don't throw — this is a background sync, failure should not block the app
-      return { ok: false, error: error.message };
-    }
-
-    return { ok: true, display_name: displayName };
   });
 
 export const createStarsInvoice = createServerFn({ method: "POST" })
@@ -386,11 +354,22 @@ export const createStarsInvoice = createServerFn({ method: "POST" })
       throw new Error("This item is not configured for Telegram Stars");
     }
 
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("telegram_id")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const telegramUserId = Number(profile?.telegram_id);
+    if (profileError || !Number.isSafeInteger(telegramUserId) || telegramUserId <= 0) {
+      throw new Error("Link and verify your Telegram account before purchasing with Stars");
+    }
+
     const payload = randomUUID();
     const { data: payment, error: insertError } = await supabaseAdmin
       .from("payments")
       .insert({
         user_id: context.userId,
+        telegram_user_id: telegramUserId,
         payload,
         amount_stars: amount,
         pack_id: data.kind === "pack" ? item.id : null,
