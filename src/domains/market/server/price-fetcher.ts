@@ -75,6 +75,9 @@ async function fetchBinancePrice(pair: string): Promise<PriceResult | null> {
         { signal: AbortSignal.timeout(12000) },
       );
       if (!statsRes.ok) {
+        console.warn(
+          `[PriceFetcher] Binance ticker returned HTTP ${statsRes.status} for ${pair}`,
+        );
         if (attempt === 0) continue; // Retry once
         return null;
       }
