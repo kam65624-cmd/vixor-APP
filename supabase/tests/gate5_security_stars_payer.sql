@@ -118,10 +118,12 @@ END $$;
 \ir ../migrations/20261102000000_gate5_security_and_stars_payer_binding.sql
 
 -- G5-01: authenticated users cannot forge or mutate point balances.
+SET ROLE service_role;
 INSERT INTO public.profiles(id,telegram_id) VALUES
  ('00000000-0000-0000-0000-000000000001',12345),
  ('00000000-0000-0000-0000-000000000002',23456),
  ('00000000-0000-0000-0000-000000000099',99999);
+RESET ROLE;
 SET request.jwt.claim.sub='00000000-0000-0000-0000-000000000001';
 SET request.jwt.claim.role='authenticated';
 SET ROLE authenticated;
