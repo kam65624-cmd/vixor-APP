@@ -19,7 +19,7 @@ if (!existsSync(ssrDir)) {
 }
 
 const chunks = readdirSync(ssrDir)
-  .filter((file) => /^(start|server|router|empty-plugin-adapters)-[A-Za-z0-9_-]+\\.mjs$/.test(file))
+  .filter((file) => /^(start|server|router|empty-plugin-adapters)-[A-Za-z0-9_-]+\.mjs$/.test(file))
   .sort();
 
 if (chunks.length === 0) {
