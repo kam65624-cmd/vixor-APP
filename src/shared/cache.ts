@@ -21,7 +21,8 @@ const KEY_PREFIX = "vixor:";
 function safeRedisError(error: unknown): Record<string, string> {
   const err = error instanceof Error ? error : new Error("Unknown error");
   const cause = (err as Error & { cause?: unknown }).cause;
-  const causeRecord = cause && typeof cause === "object" ? (cause as Record<string, unknown>) : undefined;
+  const causeRecord =
+    cause && typeof cause === "object" ? (cause as Record<string, unknown>) : undefined;
   return {
     name: err.name,
     message: err.message === "fetch failed" ? "fetch failed" : "Redis request failed",
