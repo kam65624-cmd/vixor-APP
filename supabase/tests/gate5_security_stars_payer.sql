@@ -115,7 +115,7 @@ END $$;
 
 \ir ../migrations/20260811000001_execute_signal_transition_rpc.sql
 \ir ../migrations/20261028000000_atomic_telegram_stars_fulfillment.sql
-\ir ../migrations/20261103000000_gate5_security_and_stars_payer_binding.sql
+\ir ../migrations/20261102000000_gate5_security_and_stars_payer_binding.sql
 
 -- G5-01: authenticated users cannot forge or mutate point balances.
 INSERT INTO public.profiles(id,telegram_id) VALUES
