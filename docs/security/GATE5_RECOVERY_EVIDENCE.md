@@ -23,8 +23,8 @@ This register is append-only. Evidence below is from files fetched directly from
 - Status: **Confirmed**.
 - Evidence: baseline `src/domains/user/functions.ts` exports `syncTelegramProfile`, accepts `telegramId` as client input and writes it to `profiles.telegram_id` using the admin client. Baseline AppShell passes `initDataUnsafe.user.id`. Baseline profile UPDATE policy permits own-row updates without column protection. Verified `linkTelegramAccount` already validates signed Telegram initData.
 - Impact: client-controlled identity data could overwrite the Telegram identity used for account association/payment.
-- Remediation on PR #31: remove sync function and caller; keep signed initData linking; reject cross-account collisions and silent relinking; add DB trigger blocking client-side telegram_id changes.
-- Verification: PostgreSQL suite attempts authenticated telegram_id update and expects denial. Awaiting CI.
+- Remediation on recovery PR #32: remove sync function and caller; keep signed initData linking; reject cross-account collisions and silent relinking; add DB trigger plus column-level INSERT/UPDATE grants that explicitly exclude telegram_id.
+- Verification: first PostgreSQL run showed the trigger-only defense did not block the test update; this was not accepted as a pass. Added column-level privilege revocation/grants and a regression assertion that ordinary profile display-name updates still work. Retest is pending.
 
 ## G5-08 — migration-chain reproducibility
 - Status: **Not verified**.
