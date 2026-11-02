@@ -285,7 +285,7 @@ export const linkTelegramAccount = createServerFn({ method: "POST" })
     const { data: existingLink, error: lookupError } = await supabaseAdmin
       .from("profiles")
       .select("id")
-      .eq("telegram_id", user.id)
+      .eq("telegram_id", String(user.id))
       .maybeSingle();
     if (lookupError) throw new Error("Could not verify Telegram account ownership");
     if (existingLink && existingLink.id !== userId) {
