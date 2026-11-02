@@ -6,6 +6,7 @@ import { answerStarsPreCheckout, fulfillStarsPayment } from "../utils/stars-paym
 
 type PreCheckoutQuery = {
   id: string;
+  from: { id: number };
   currency: string;
   total_amount: number;
   invoice_payload: string;
@@ -47,9 +48,15 @@ const handler = defineEventHandler(async (event) => {
       return "OK";
     }
 
-    const message = body.message as { successful_payment?: SuccessfulPayment } | undefined;
+    const message = body.message as
+      | { from?: { id?: number }; successful_payment?: SuccessfulPayment }
+      | undefined;
     if (message?.successful_payment) {
-      await fulfillStarsPayment(message.successful_payment);
+      const telegramUserId = message.from?.id;
+      if (!Number.isSafeInteger(telegramUserId) || !telegramUserId || telegramUserId <= 0) {
+        throw new Error("Successful payment is missing a valid Telegram payer identity");
+      }
+      await fulfillStarsPayment(message.successful_payment, telegramUserId);
       return "OK";
     }
 
