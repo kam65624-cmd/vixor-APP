@@ -58,11 +58,13 @@ jobs:
             '@tanstack/start-plugin-core@1.171.50',
             '@tanstack/router-core@1.171.35',
             '@tanstack/history@1.162.5',
+            '@tanstack/router-generator@1.167.41',
+            '@tanstack/router-plugin@1.168.43',
           ];
           for (const item of required) {
             if (!lock.includes(item)) throw new Error('Missing required resolved package: ' + item);
           }
-          for (const old of ['@tanstack/react-start@1.168.60', '@tanstack/start-server-core@1.169.39', '@tanstack/react-router@1.170.15', '@tanstack/router-core@1.171.13', '@tanstack/history@1.162.4']) {
+          for (const old of ['@tanstack/react-start@1.168.60', '@tanstack/start-server-core@1.169.39', '@tanstack/react-router@1.170.15', '@tanstack/router-core@1.171.13', '@tanstack/history@1.162.4', '@tanstack/router-core@1.171.21', '@tanstack/router-generator@1.167.27', '@tanstack/router-plugin@1.168.29']) {
             if (lock.includes(old)) throw new Error('Unexpected old package remains: ' + old);
           }
           console.log('Required TanStack versions are present; previous Start/server-core versions absent.');
