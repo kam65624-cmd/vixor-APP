@@ -16,7 +16,7 @@
 
 import type { OHLCVBar } from "@/domains/analysis/engine/core/types";
 
-export const BINANCE_REST_URL = "https://api.binance.com";
+export const BINANCE_REST_URL = "https://data-api.binance.vision";
 export const BINANCE_TESTNET_URL = "https://testnet.binance.vision";
 
 export type KlineInterval =
