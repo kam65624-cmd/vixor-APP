@@ -59,6 +59,9 @@ CREATE TRIGGER profiles_guard_telegram_identity
 
 
 -- Payer identity is a required input to the canonical fulfillment RPC.
+-- Remove the legacy signature so old webhook code fails closed after this migration.
+DROP FUNCTION IF EXISTS public.process_telegram_stars_payment(text, text, text, integer, bigint);
+
 CREATE OR REPLACE FUNCTION public.process_telegram_stars_payment(
   _payload text,
   _charge_id text,
