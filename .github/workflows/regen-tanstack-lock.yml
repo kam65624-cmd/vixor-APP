@@ -92,7 +92,7 @@ jobs:
         run: pnpm build
       - name: Verify dynamic imports are statically traceable
         run: |
-          if grep -R -E 'Function\\(.*@upstash/redis' .vercel/output/functions/__server.func --include='*.mjs'; then
+          if grep -R -E 'Function\(.*@upstash/redis' .vercel/output/functions/__server.func --include='*.mjs'; then
             echo "Opaque Function-based Upstash import remains in the Vercel bundle"
             exit 1
           fi
