@@ -74,6 +74,8 @@ export async function fulfillStarsPayment(
     payment.currency !== "XTR" ||
     !Number.isSafeInteger(payment.total_amount) ||
     payment.total_amount <= 0 ||
+    !Number.isSafeInteger(telegramUserId) ||
+    telegramUserId <= 0 ||
     typeof payment.telegram_payment_charge_id !== "string" ||
     payment.telegram_payment_charge_id.length === 0
   ) {
