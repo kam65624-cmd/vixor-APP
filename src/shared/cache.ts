@@ -243,7 +243,7 @@ async function createCache(): Promise<HybridCache> {
 
     if (redisUrl && redisToken) {
       try {
-        const upstash = await Function('return import("@upstash/redis")')();
+        const upstash = await import("@upstash/redis");
         const Redis = upstash.Redis || upstash.default?.Redis;
         const redis = new Redis({ url: redisUrl, token: redisToken });
         primary = new RedisCache(redis);
