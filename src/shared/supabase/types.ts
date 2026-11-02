@@ -1270,6 +1270,7 @@ export type Database = {
         Row: {
           id: string;
           user_id: string;
+          telegram_user_id: number | null;
           telegram_charge_id: string | null;
           payload: string;
           amount_stars: number | null;
@@ -1283,6 +1284,7 @@ export type Database = {
         Insert: {
           id?: string;
           user_id: string;
+          telegram_user_id?: number | null;
           telegram_charge_id?: string | null;
           payload: string;
           amount_stars?: number | null;
@@ -1296,6 +1298,7 @@ export type Database = {
         Update: {
           id?: string;
           user_id?: string;
+          telegram_user_id?: number | null;
           telegram_charge_id?: string | null;
           payload?: string;
           amount_stars?: number | null;
