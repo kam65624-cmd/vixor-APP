@@ -37,7 +37,7 @@ CREATE OR REPLACE FUNCTION execute_signal_transition(
 )
 RETURNS JSONB
 LANGUAGE plpgsql
-AS $
+AS $gate5$
 DECLARE
   v_rows_updated BIGINT;
   v_transition_id UUID;
@@ -94,7 +94,7 @@ BEGIN
 
   RETURN v_result;
 END;
-$;
+$gate5$;
 
 -- RLS: service_role can execute; users cannot call RPC directly
 -- (the application layer calls this via admin client)
