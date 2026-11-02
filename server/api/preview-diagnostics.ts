@@ -164,13 +164,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
 
-  const [redis, redisDns, binance, binanceMarketData, dexscreener] = await Promise.all([
+  const [redis, redisDns, binancePrimary, binanceMarketDataTicker, binanceMarketData24h, dexscreener] = await Promise.all([
     probeRedis(),
     process.env.UPSTASH_REDIS_REST_URL
       ? probePublicDns(new URL(process.env.UPSTASH_REDIS_REST_URL).hostname)
       : Promise.resolve({ status: "unavailable" as const, answerCount: 0 }),
-    probePublicProvider("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"),
-    probePublicProvider("https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT"),
+    probePublicProvider("https://api.binance.com/api/v3/ticker/24hr?symbol=SOLUSDT"),
+    probePublicProvider("https://data-api.binance.vision/api/v3/ticker/price?symbol=SOLUSDT"),
+    probePublicProvider("https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SOLUSDT"),
     probePublicProvider("https://api.dexscreener.com/latest/dex/search?q=SOL"),
   ]);
 
@@ -180,6 +181,6 @@ export default defineEventHandler(async (event) => {
     region: process.env.VERCEL_REGION || "unknown",
     redis,
     redisDns,
-    providers: { binance, binanceMarketData, dexscreener },
+    providers: { binancePrimary, binanceMarketDataTicker, binanceMarketData24h, dexscreener },
   };
 });
