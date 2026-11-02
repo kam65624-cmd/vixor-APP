@@ -9,6 +9,7 @@ on:
       - scripts/fix-vercel-bundle.mjs
       - src/server.ts
       - src/start.ts
+      - src/shared/cache.ts
 
 permissions:
   contents: write
