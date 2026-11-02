@@ -1,0 +1,78 @@
+name: Regenerate TanStack lockfile
+on:
+  push:
+    branches:
+      - fix/production-ssr-handle-server-routes-20261102
+    paths:
+      - package.json
+      - packages/vixor-auth/package.json
+      - .github/workflows/regen-tanstack-lock.yml
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/production-ssr-handle-server-routes-20261102
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - name: Regenerate lockfile with pinned pnpm
+        run: pnpm install --lockfile-only --ignore-scripts
+      - name: Verify resolved TanStack dependency tree
+        run: |
+          pnpm list @tanstack/react-start @tanstack/react-router @tanstack/router-generator @tanstack/router-plugin @tanstack/start-plugin-core @tanstack/start-server-core --depth 100
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const lock = fs.readFileSync('pnpm-lock.yaml', 'utf8');
+          const required = [
+            '@tanstack/react-start@1.168.61',
+            '@tanstack/react-router@1.170.42',
+            '@tanstack/start-server-core@1.169.40',
+            '@tanstack/start-plugin-core@1.171.50',
+          ];
+          for (const item of required) {
+            if (!lock.includes(item)) throw new Error('Missing required resolved package: ' + item);
+          }
+          for (const old of ['@tanstack/react-start@1.168.60', '@tanstack/start-server-core@1.169.39']) {
+            if (lock.includes(old)) throw new Error('Unexpected old package remains: ' + old);
+          }
+          console.log('Required TanStack versions are present; previous Start/server-core versions absent.');
+          NODE
+      - name: Install exact lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Unit tests
+        run: pnpm vitest run
+      - name: Build and Vercel trace patch
+        run: pnpm build
+      - name: Upload built Vercel function for forensic inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: vixor-vercel-ssr-preview-build
+          path: .vercel/output/functions/__server.func/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Commit generated lockfile
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo "Lockfile already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git commit -m "chore(deps): regenerate TanStack lockfile with pnpm 9.15.0"
+          git push origin HEAD:fix/production-ssr-handle-server-routes-20261102
