@@ -90,6 +90,13 @@ jobs:
           PGPASSWORD=postgres psql -h localhost -U postgres -d vixor_test -v ON_ERROR_STOP=1 -f supabase/tests/telegram_stars_atomic.sql
       - name: Build and Vercel trace patch
         run: pnpm build
+      - name: Verify dynamic imports are statically traceable
+        run: |
+          if grep -R -E 'Function\\(.*@upstash/redis' .vercel/output/functions/__server.func --include='*.mjs'; then
+            echo "Opaque Function-based Upstash import remains in the Vercel bundle"
+            exit 1
+          fi
+          test -n "$(find .vercel/output/functions/__server.func -type f -iname '*upstash*' -print -quit)"
       - name: Upload built Vercel function for forensic inspection
         uses: actions/upload-artifact@v4
         with:
