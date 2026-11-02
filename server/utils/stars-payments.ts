@@ -7,6 +7,7 @@ export type StarsOrderCheck = {
 
 type PreCheckoutQuery = {
   id: string;
+  from: { id: number };
   currency: string;
   total_amount: number;
   invoice_payload: string;
@@ -29,24 +30,30 @@ export async function validateStarsOrder(
   payload: unknown,
   currency: unknown,
   amount: unknown,
+  telegramUserId: unknown,
 ): Promise<StarsOrderCheck> {
   if (
     !validPayload(payload) ||
     currency !== "XTR" ||
     !Number.isSafeInteger(amount) ||
-    (amount as number) <= 0
+    (amount as number) <= 0 ||
+    !Number.isSafeInteger(telegramUserId) ||
+    (telegramUserId as number) <= 0
   ) {
     return { ok: false, errorMessage: "Invalid payment details." };
   }
 
   const { data: order, error } = await supabaseAdmin
     .from("payments")
-    .select("id, amount_stars, status, pack_id, plan_id")
+    .select("id, amount_stars, status, pack_id, plan_id, telegram_user_id")
     .eq("payload", payload)
     .eq("status", "pending")
     .maybeSingle();
 
   if (error || !order) return { ok: false, errorMessage: "Order not found or no longer pending." };
+  if (order.telegram_user_id == null || Number(order.telegram_user_id) !== telegramUserId) {
+    return { ok: false, errorMessage: "Telegram account does not match this order." };
+  }
   if (order.amount_stars == null || order.amount_stars !== amount) {
     return { ok: false, errorMessage: "Payment amount does not match the order." };
   }
@@ -60,6 +67,7 @@ export async function validateStarsOrder(
 /** Atomically confirms the payment and grants its purchased entitlement in PostgreSQL. */
 export async function fulfillStarsPayment(
   payment: SuccessfulPayment,
+  telegramUserId: number,
 ): Promise<"confirmed" | "duplicate"> {
   if (
     !validPayload(payment.invoice_payload) ||
@@ -77,6 +85,7 @@ export async function fulfillStarsPayment(
     _charge_id: payment.telegram_payment_charge_id,
     _currency: payment.currency,
     _amount: payment.total_amount,
+    _telegram_user_id: telegramUserId,
     _subscription_expiration: payment.subscription_expiration_date ?? null,
   });
 
@@ -101,6 +110,7 @@ export async function answerStarsPreCheckout(query: PreCheckoutQuery): Promise<v
       query.invoice_payload,
       query.currency,
       query.total_amount,
+      query.from?.id,
     );
   } catch {
     validation = { ok: false, errorMessage: "Payment validation is temporarily unavailable." };
