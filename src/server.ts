@@ -40,7 +40,7 @@ async function normalizeCatastrophicSsrResponse(
     contentType: response.headers.get("content-type") ?? "unknown",
   });
 
-  return new Response(renderErrorPage(), {
+  return new Response(request.method === "HEAD" ? null : renderErrorPage(), {
     status: response.status,
     headers: {
       "content-type": "text/html; charset=utf-8",
@@ -97,7 +97,7 @@ export default {
         durationMs: Date.now() - startedAt,
       });
 
-      return new Response(renderErrorPage(), {
+      return new Response(request.method === "HEAD" ? null : renderErrorPage(), {
         status: 500,
         headers: {
           "content-type": "text/html; charset=utf-8",
