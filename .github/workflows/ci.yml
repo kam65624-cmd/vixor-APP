@@ -117,4 +117,4 @@ jobs:
       - name: Apply Gate 5 security and payer-binding regression suite in disposable PostgreSQL
         env:
           PGPASSWORD: postgres
-        run: psql -h localhost -U postgres -d vixor_test -v ON_ERROR_STOP=1 -f supabase/tests/gate5_security_stars_payer.sql
+        run: createdb -h localhost -U postgres vixor_gate5_test && psql -h localhost -U postgres -d vixor_gate5_test -v ON_ERROR_STOP=1 -f supabase/tests/gate5_security_stars_payer.sql
