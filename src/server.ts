@@ -105,6 +105,21 @@ export default {
         durationMs: Date.now() - startedAt,
       });
 
+      const isApiRequest = url.pathname === "/api" || url.pathname.startsWith("/api/");
+      const acceptsHtml = request.headers.get("accept")?.includes("text/html") ?? false;
+      if (isApiRequest || !acceptsHtml) {
+        return new Response(
+          request.method === "HEAD" ? null : JSON.stringify({ error: "Internal Server Error" }),
+          {
+            status: 500,
+            headers: {
+              "content-type": "application/json; charset=utf-8",
+              "x-vixor-request-id": requestId,
+            },
+          },
+        );
+      }
+
       return new Response(request.method === "HEAD" ? null : renderErrorPage(), {
         status: 500,
         headers: {
