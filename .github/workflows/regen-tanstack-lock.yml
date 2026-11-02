@@ -17,7 +17,20 @@ permissions:
 jobs:
   regenerate-and-validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: vixor_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d vixor_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -60,8 +73,15 @@ jobs:
         run: pnpm typecheck
       - name: Lint
         run: pnpm lint
+      - name: Format check
+        run: pnpm prettier --check "src/**/*.{ts,tsx}" "server/**/*.{ts,tsx}"
       - name: Unit tests
         run: pnpm vitest run
+      - name: PostgreSQL integration (disposable CI database)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          PGPASSWORD=postgres psql -h localhost -U postgres -d vixor_test -v ON_ERROR_STOP=1 -f supabase/tests/telegram_stars_atomic.sql
       - name: Build and Vercel trace patch
         run: pnpm build
       - name: Upload built Vercel function for forensic inspection
