@@ -2416,6 +2416,7 @@ export type Database = {
           _charge_id: string;
           _currency: string;
           _amount: number;
+          _telegram_user_id: number;
           _subscription_expiration?: number | null;
         };
         Returns: Json;
