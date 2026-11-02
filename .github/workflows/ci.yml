@@ -35,7 +35,7 @@ jobs:
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const lock = fs.readFileSync('pnpm-lock.yaml', 'utf8');
-          const versions = (name) => [...lock.matchAll(new RegExp("'" + name.replace('/', '\\\\/') + "@(\\\\d+\\\\.\\\\d+\\\\.\\\\d+)", 'g'))].map((m) => m[1]);
+          const versions = (name) => [...lock.matchAll(new RegExp("'" + name.replace('/', '\\\/') + "@(\\d+\\.\\d+\\.\\d+)", 'g'))].map((m) => m[1]);
           const cmp = (a, b) => a.split('.').map(Number).reduce((n, v, i) => n || (v - Number(b.split('.')[i])), 0);
           const starts = versions('@tanstack/react-start');
           const cores = versions('@tanstack/start-server-core');
