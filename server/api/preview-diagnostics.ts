@@ -164,7 +164,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
 
-  const [redis, redisDns, binancePrimary, binanceMarketDataTicker, binanceMarketData24h, dexscreener] = await Promise.all([
+  const [
+    redis,
+    redisDns,
+    binancePrimary,
+    binanceMarketDataTicker,
+    binanceMarketData24h,
+    dexscreener,
+  ] = await Promise.all([
     probeRedis(),
     process.env.UPSTASH_REDIS_REST_URL
       ? probePublicDns(new URL(process.env.UPSTASH_REDIS_REST_URL).hostname)
