@@ -6,6 +6,7 @@ on:
     paths:
       - package.json
       - packages/vixor-auth/package.json
+      - scripts/fix-vercel-bundle.mjs
       - .github/workflows/regen-tanstack-lock.yml
 
 permissions:
@@ -30,7 +31,8 @@ jobs:
         run: pnpm install --lockfile-only --ignore-scripts
       - name: Verify resolved TanStack dependency tree
         run: |
-          pnpm list @tanstack/react-start @tanstack/react-router @tanstack/router-generator @tanstack/router-plugin @tanstack/start-plugin-core @tanstack/start-server-core --depth 100
+          pnpm list @tanstack/react-start @tanstack/react-router @tanstack/router-generator @tanstack/router-plugin @tanstack/start-plugin-core @tanstack/start-server-core @tanstack/router-core @tanstack/history --depth 100
+          pnpm why @tanstack/router-core
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const lock = fs.readFileSync('pnpm-lock.yaml', 'utf8');
@@ -39,11 +41,13 @@ jobs:
             '@tanstack/react-router@1.170.42',
             '@tanstack/start-server-core@1.169.40',
             '@tanstack/start-plugin-core@1.171.50',
+            '@tanstack/router-core@1.171.35',
+            '@tanstack/history@1.162.5',
           ];
           for (const item of required) {
             if (!lock.includes(item)) throw new Error('Missing required resolved package: ' + item);
           }
-          for (const old of ['@tanstack/react-start@1.168.60', '@tanstack/start-server-core@1.169.39']) {
+          for (const old of ['@tanstack/react-start@1.168.60', '@tanstack/start-server-core@1.169.39', '@tanstack/react-router@1.170.15', '@tanstack/router-core@1.171.13', '@tanstack/history@1.162.4']) {
             if (lock.includes(old)) throw new Error('Unexpected old package remains: ' + old);
           }
           console.log('Required TanStack versions are present; previous Start/server-core versions absent.');
