@@ -86,12 +86,13 @@ describe("Telegram Stars payment contract", () => {
 
   it("rejects invalid payer IDs before calling the fulfillment RPC", async () => {
     await expect(
-      fulfillStarsPayment({
-        currency: "XTR",
-        total_amount: 50,
-        invoice_payload: "order-payload-123",
-        telegram_payment_charge_id: "charge-123",
-      },
+      fulfillStarsPayment(
+        {
+          currency: "XTR",
+          total_amount: 50,
+          invoice_payload: "order-payload-123",
+          telegram_payment_charge_id: "charge-123",
+        },
         0,
       ),
     ).rejects.toThrow("Invalid Telegram Stars successful_payment fields");
@@ -101,12 +102,13 @@ describe("Telegram Stars payment contract", () => {
   it("never treats a database fulfillment error as success", async () => {
     admin.rpc.mockResolvedValue({ data: null, error: { message: "database unavailable" } });
     await expect(
-      fulfillStarsPayment({
-        currency: "XTR",
-        total_amount: 50,
-        invoice_payload: "order-payload-123",
-        telegram_payment_charge_id: "charge-123",
-      },
+      fulfillStarsPayment(
+        {
+          currency: "XTR",
+          total_amount: 50,
+          invoice_payload: "order-payload-123",
+          telegram_payment_charge_id: "charge-123",
+        },
         12345,
       ),
     ).rejects.toThrow("Atomic Stars fulfillment failed");
@@ -115,12 +117,15 @@ describe("Telegram Stars payment contract", () => {
   it("returns duplicate only when the atomic database RPC reports a duplicate", async () => {
     admin.rpc.mockResolvedValue({ data: { status: "duplicate" }, error: null });
     await expect(
-      fulfillStarsPayment({
-        currency: "XTR",
-        total_amount: 50,
-        invoice_payload: "order-payload-123",
-        telegram_payment_charge_id: "charge-123",
-      }, 12345),
+      fulfillStarsPayment(
+        {
+          currency: "XTR",
+          total_amount: 50,
+          invoice_payload: "order-payload-123",
+          telegram_payment_charge_id: "charge-123",
+        },
+        12345,
+      ),
     ).resolves.toBe("duplicate");
     expect(admin.rpc).toHaveBeenCalledWith("process_telegram_stars_payment", {
       _payload: "order-payload-123",
