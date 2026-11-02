@@ -85,11 +85,12 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
     const isApiRequest = url.pathname === "/api" || url.pathname.startsWith("/api/");
     const acceptsHtml = request.headers.get("accept")?.includes("text/html") ?? false;
     const wantsJson = isApiRequest || !acceptsHtml;
-    const body = request.method === "HEAD"
-      ? null
-      : wantsJson
-        ? JSON.stringify({ error: "Internal Server Error" })
-        : renderErrorPage();
+    const body =
+      request.method === "HEAD"
+        ? null
+        : wantsJson
+          ? JSON.stringify({ error: "Internal Server Error" })
+          : renderErrorPage();
 
     return new Response(body, {
       status: 500,
