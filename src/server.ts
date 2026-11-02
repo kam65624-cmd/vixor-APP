@@ -97,11 +97,16 @@ export default {
       return withRequestId(normalized, requestId);
     } catch (error) {
       // Error message/stack may contain user data or secrets; log only the class.
+      const errorCode =
+        error instanceof TypeError && error.message.startsWith("object is not iterable")
+          ? "OBJECT_NOT_ITERABLE"
+          : "UNCLASSIFIED";
       console.error("[vixor.ssr] handleServerRoutes_boundary_throw", {
         requestId,
         method: request.method,
         path: routeGroup,
         errorName: error instanceof Error ? error.name : typeof error,
+        errorCode,
         durationMs: Date.now() - startedAt,
       });
 
