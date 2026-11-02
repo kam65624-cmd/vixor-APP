@@ -112,7 +112,7 @@ export const getCandles = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<BinanceCandle[]> => {
     const symbol = data.symbol.toUpperCase().replace("/", "");
     const res = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${data.interval}&limit=${data.limit}`,
+      `https://data-api.binance.vision/api/v3/klines?symbol=${symbol}&interval=${data.interval}&limit=${data.limit}`,
     );
 
     if (!res.ok) {
@@ -148,7 +148,7 @@ export const getTicker = createServerFn({ method: "GET" })
   .validator(z.object({ symbol: z.string().default("BTCUSDT") }))
   .handler(async ({ data }): Promise<BinanceTicker> => {
     const symbol = data.symbol.toUpperCase().replace("/", "");
-    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`);
+    const res = await fetch(`https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${symbol}`);
     if (!res.ok) {
       throw new Error(`Failed to fetch ticker for ${symbol}`);
     }
@@ -166,7 +166,7 @@ export const getTechnicalSignals = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const symbol = data.symbol.toUpperCase().replace("/", "");
     const res = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${data.interval}&limit=100`,
+      `https://data-api.binance.vision/api/v3/klines?symbol=${symbol}&interval=${data.interval}&limit=100`,
     );
 
     if (!res.ok) return { patterns: [], symbol };
