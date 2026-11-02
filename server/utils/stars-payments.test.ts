@@ -91,7 +91,9 @@ describe("Telegram Stars payment contract", () => {
         total_amount: 50,
         invoice_payload: "order-payload-123",
         telegram_payment_charge_id: "charge-123",
-      }, 0),
+      },
+        0,
+      ),
     ).rejects.toThrow("Invalid Telegram Stars successful_payment fields");
     expect(admin.rpc).not.toHaveBeenCalled();
   });
@@ -104,7 +106,9 @@ describe("Telegram Stars payment contract", () => {
         total_amount: 50,
         invoice_payload: "order-payload-123",
         telegram_payment_charge_id: "charge-123",
-      }, 12345),
+      },
+        12345,
+      ),
     ).rejects.toThrow("Atomic Stars fulfillment failed");
   });
 
