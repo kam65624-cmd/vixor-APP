@@ -179,7 +179,7 @@ async function checkDexScreener(): Promise<ProviderHealth> {
 async function checkBinanceTicker(): Promise<ProviderHealth> {
   const start = Date.now();
   try {
-    const res = await fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT", {
+    const res = await fetch("https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTCUSDT", {
       signal: AbortSignal.timeout(5_000),
     });
     const latencyMs = Date.now() - start;
