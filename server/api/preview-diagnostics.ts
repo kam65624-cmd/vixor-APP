@@ -127,7 +127,12 @@ async function probePublicProvider(url: string): Promise<SafeProbe> {
  * Never returns URLs, tokens, API keys, response bodies, or environment values.
  */
 export default defineEventHandler(async (event) => {
-  if (process.env.VERCEL_ENV !== "preview") {
+  console.info("[PreviewDiagnostics] deployment gate", {
+    vercelEnv: process.env.VERCEL_ENV ?? "unset",
+    gitRef: process.env.VERCEL_GIT_COMMIT_REF ?? "unset",
+  });
+
+  if (process.env.VERCEL_GIT_COMMIT_REF !== "diagnostics/redis-market-api-20261102") {
     throw createError({ statusCode: 404, statusMessage: "Not found" });
   }
 
@@ -136,9 +141,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
 
-  const [redis, binance, dexscreener] = await Promise.all([
+  const [redis, binance, binanceMarketData, dexscreener] = await Promise.all([
     probeRedis(),
     probePublicProvider("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"),
+    probePublicProvider("https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT"),
     probePublicProvider("https://api.dexscreener.com/latest/dex/search?q=SOL"),
   ]);
 
@@ -147,6 +153,6 @@ export default defineEventHandler(async (event) => {
     checkedAt: new Date().toISOString(),
     region: process.env.VERCEL_REGION || "unknown",
     redis,
-    providers: { binance, dexscreener },
+    providers: { binance, binanceMarketData, dexscreener },
   };
 });
