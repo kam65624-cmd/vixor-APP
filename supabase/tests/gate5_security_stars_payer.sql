@@ -144,6 +144,8 @@ BEGIN
     RAISE EXCEPTION 'G5-05: authenticated telegram_id update unexpectedly succeeded';
   EXCEPTION WHEN insufficient_privilege THEN NULL;
   END;
+  UPDATE public.profiles SET display_name='Updated by owner'
+   WHERE id='00000000-0000-0000-0000-000000000001';
 END $$;
 RESET ROLE;
 RESET request.jwt.claim.sub;
