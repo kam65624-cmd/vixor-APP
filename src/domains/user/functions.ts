@@ -292,6 +292,19 @@ export const linkTelegramAccount = createServerFn({ method: "POST" })
       throw new Error("This Telegram account is already linked to another VIXOR account");
     }
 
+    const { data: currentProfile, error: currentProfileError } = await supabaseAdmin
+      .from("profiles")
+      .select("telegram_id")
+      .eq("id", userId)
+      .maybeSingle();
+    if (currentProfileError) throw new Error("Could not verify the current Telegram link");
+    if (
+      currentProfile?.telegram_id != null &&
+      String(currentProfile.telegram_id) !== String(user.id)
+    ) {
+      throw new Error("Unlink the existing Telegram account before linking a different one");
+    }
+
     const { error } = await supabaseAdmin
       .from("profiles")
       .update({
