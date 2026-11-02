@@ -5,23 +5,32 @@ import { attachSupabaseAuth } from "@/shared/supabase/auth-attacher";
 import { log } from "@/shared/structured-logger";
 import { metrics } from "@/shared/metrics-store";
 
-// ── P1 Bootstrap: Register event consumers + configure event persistence ──
-// Must run BEFORE createStart() so all event handlers are active when
-// the first server function executes.
 import "@/shared/p1-bootstrap";
 
-// Structured request logging + metrics recording.
-// Logs every request as a single JSON line for downstream ingestion (Loki/ELK/Datadog).
+function safeRouteGroup(pathname: string): string {
+  if (pathname === "/") return "/";
+  const firstSegment = pathname.split("/").filter(Boolean)[0];
+  return firstSegment ? `/${firstSegment}` : "/";
+}
+
+function safeErrorCode(error: unknown): string {
+  if (error instanceof TypeError && error.message.startsWith("object is not iterable")) {
+    return "OBJECT_NOT_ITERABLE";
+  }
+  return "UNCLASSIFIED";
+}
+
+function safeErrorClass(error: unknown): string {
+  return error instanceof Error ? error.name : typeof error;
+}
+
+// Structured request logging + metrics. Do not record IPs, user agents,
+// query strings, request bodies, auth headers, raw messages, or stack traces.
 const loggingMiddleware = createMiddleware().server(async ({ next, request }) => {
   const startedAt = Date.now();
   const url = new URL(request.url);
   const method = request.method;
-  const route = url.pathname;
-  const userAgent = request.headers.get("user-agent") || "";
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "unknown";
+  const route = safeRouteGroup(url.pathname);
 
   try {
     const res = await next();
@@ -30,18 +39,17 @@ const loggingMiddleware = createMiddleware().server(async ({ next, request }) =>
     metrics.recordHttpRequest(method, route, status);
     metrics.recordDurationMs(durationMs);
     const fn = status >= 500 ? log.error : status >= 400 ? log.warn : log.info;
-    fn("http", { method, route, status, durationMs, ip, ua: userAgent.slice(0, 120) });
-    // Alert hooks (logged, not blocked — alerting consumes these lines)
-    if (status === 404) {
-      log.warn("404", { method, route, ip, ua: userAgent.slice(0, 80) });
-    }
+    fn("http", { method, route, status, durationMs });
+    if (status === 404) log.warn("404", { method, route });
     if (status >= 500) {
-      log.error("5xx", { status, method, route, ip, ua: userAgent.slice(0, 80) });
+      log.error("5xx", { status, method, route });
       metrics.recordError(`http_${status}`);
     }
     return res;
-  } catch (err: any) {
+  } catch (error) {
     const durationMs = Date.now() - startedAt;
+    const errorClass = safeErrorClass(error);
+    const errorCode = safeErrorCode(error);
     metrics.recordHttpRequest(method, route, 500);
     metrics.recordDurationMs(durationMs);
     metrics.recordError("uncaught");
@@ -50,34 +58,45 @@ const loggingMiddleware = createMiddleware().server(async ({ next, request }) =>
       route,
       status: 500,
       durationMs,
-      ip,
-      error: String(err?.message || err).slice(0, 500),
+      errorClass,
+      errorCode,
     });
-    log.error("500_alert", {
-      method,
-      route,
-      ip,
-      error: String(err?.message || err).slice(0, 200),
-    });
-    throw err;
+    log.error("500_alert", { status: 500, method, route, errorClass, errorCode });
+    throw error;
   }
 });
 
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
+const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
   try {
     return await next();
   } catch (error) {
+    if (error instanceof Response) throw error;
     if (error != null && typeof error === "object" && "statusCode" in error) {
       throw error;
     }
+
     log.error("unhandled", {
-      message: String((error as Error)?.message || error).slice(0, 500),
-      stack: String((error as Error)?.stack || "").slice(0, 2000),
+      errorClass: safeErrorClass(error),
+      errorCode: safeErrorCode(error),
     });
     metrics.recordError("unhandled");
-    return new Response(renderErrorPage(), {
+
+    const url = new URL(request.url);
+    const isApiRequest = url.pathname === "/api" || url.pathname.startsWith("/api/");
+    const acceptsHtml = request.headers.get("accept")?.includes("text/html") ?? false;
+    const wantsJson = isApiRequest || !acceptsHtml;
+    const body =
+      request.method === "HEAD"
+        ? null
+        : wantsJson
+          ? JSON.stringify({ error: "Internal Server Error" })
+          : renderErrorPage();
+
+    return new Response(body, {
       status: 500,
-      headers: { "content-type": "text/html; charset=utf-8" },
+      headers: {
+        "content-type": wantsJson ? "application/json; charset=utf-8" : "text/html; charset=utf-8",
+      },
     });
   }
 });
@@ -85,7 +104,5 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 export const startInstance = createStart(() => ({
   functionMiddleware: [attachSupabaseAuth],
   requestMiddleware: [loggingMiddleware, errorMiddleware],
-  serverFns: {
-    // CSRF protection enabled — VIXOR MASTER V2 Phase 0
-  },
+  serverFns: {},
 }));
