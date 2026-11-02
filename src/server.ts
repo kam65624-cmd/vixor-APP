@@ -78,7 +78,7 @@ export default {
     console.info("[vixor.ssr] handleServerRoutes_boundary_start", {
       requestId,
       method: request.method,
-      path: url.pathname,
+      path: routeGroup,
     });
 
     try {
@@ -89,7 +89,7 @@ export default {
       console.info("[vixor.ssr] handleServerRoutes_boundary_complete", {
         requestId,
         method: request.method,
-        path: url.pathname,
+        path: routeGroup,
         status: normalized.status,
         durationMs: Date.now() - startedAt,
       });
@@ -100,7 +100,7 @@ export default {
       console.error("[vixor.ssr] handleServerRoutes_boundary_throw", {
         requestId,
         method: request.method,
-        path: url.pathname,
+        path: routeGroup,
         errorName: error instanceof Error ? error.name : typeof error,
         durationMs: Date.now() - startedAt,
       });
