@@ -243,7 +243,7 @@ async function createCache(): Promise<HybridCache> {
 
     if (redisUrl && redisToken) {
       try {
-        // Keep this import statically analyzable so Vercel NFT includes the Redis client.
+        // Keep this literal import statically analyzable so Vercel NFT can trace the Redis client.
         const upstash = await import("@upstash/redis");
         const Redis = upstash.Redis || upstash.default?.Redis;
         const redis = new Redis({ url: redisUrl, token: redisToken });
