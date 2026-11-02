@@ -10,55 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  refresh-tanstack-security-lockfile:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'fix/tanstack-start-cve-2026-102989'
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-node@v4
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'fix/tanstack-start-cve-2026-102989'
-        with:
-          node-version: 22
-      - uses: pnpm/action-setup@v4
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'fix/tanstack-start-cve-2026-102989'
-        with:
-          version: 9.15.0
-      - name: Regenerate and validate pnpm lockfile
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'fix/tanstack-start-cve-2026-102989'
-        run: |
-          pnpm install --lockfile-only --no-frozen-lockfile
-          node --input-type=module <<'NODE'
-          import fs from 'node:fs';
-          const lock = fs.readFileSync('pnpm-lock.yaml', 'utf8');
-          const versions = (name) => [...lock.matchAll(new RegExp("'" + name.replace('/', '\\\/') + "@(\\d+\\.\\d+\\.\\d+)", 'g'))].map((m) => m[1]);
-          const cmp = (a, b) => a.split('.').map(Number).reduce((n, v, i) => n || (v - Number(b.split('.')[i])), 0);
-          const starts = versions('@tanstack/react-start');
-          const cores = versions('@tanstack/start-server-core');
-          if (!starts.length || starts.some((v) => cmp(v, '1.168.60') < 0)) throw new Error('Unsafe @tanstack/react-start resolution: ' + starts.join(', '));
-          if (!cores.length || cores.some((v) => cmp(v, '1.169.39') < 0)) throw new Error('Unsafe @tanstack/start-server-core resolution: ' + cores.join(', '));
-          console.log('Verified react-start:', [...new Set(starts)].join(', '));
-          console.log('Verified start-server-core:', [...new Set(cores)].join(', '));
-          NODE
-      - name: Commit regenerated lockfile to this draft branch
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'fix/tanstack-start-cve-2026-102989'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add pnpm-lock.yaml
-          if ! git diff --cached --quiet; then
-            git commit -m 'chore(deps): regenerate patched TanStack lockfile'
-            git push origin "HEAD:${GITHUB_HEAD_REF}"
-          else
-            echo 'Lockfile already current; no commit required.'
-          fi
-
   lint-and-typecheck:
-    needs: [refresh-tanstack-security-lockfile]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -88,7 +40,6 @@ jobs:
         run: pnpm prettier --check "src/**/*.{ts,tsx}" "server/**/*.{ts,tsx}"
 
   test:
-    needs: [refresh-tanstack-security-lockfile]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
