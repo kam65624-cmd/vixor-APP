@@ -59,6 +59,43 @@ describe("Telegram Stars payment contract", () => {
     expect(query.eq).toHaveBeenCalledWith("status", "pending");
   });
 
+  it("rejects a payer that does not own the pending order", async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: {
+        id: "order-id",
+        amount_stars: 50,
+        status: "pending",
+        pack_id: "pack-id",
+        plan_id: null,
+        telegram_user_id: 12345,
+      },
+      error: null,
+    });
+    const query = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle,
+    };
+    admin.from.mockReturnValue(query);
+
+    await expect(validateStarsOrder("order-payload-123", "XTR", 50, 99999)).resolves.toEqual({
+      ok: false,
+      errorMessage: "Telegram account does not match this order.",
+    });
+  });
+
+  it("rejects invalid payer IDs before calling the fulfillment RPC", async () => {
+    await expect(
+      fulfillStarsPayment({
+        currency: "XTR",
+        total_amount: 50,
+        invoice_payload: "order-payload-123",
+        telegram_payment_charge_id: "charge-123",
+      }, 0),
+    ).rejects.toThrow("Invalid Telegram Stars successful_payment fields");
+    expect(admin.rpc).not.toHaveBeenCalled();
+  });
+
   it("never treats a database fulfillment error as success", async () => {
     admin.rpc.mockResolvedValue({ data: null, error: { message: "database unavailable" } });
     await expect(
