@@ -78,7 +78,7 @@ interface Binance24hrTicker {
 
 async function fetchBinance24hrTickers(): Promise<Binance24hrTicker[]> {
   try {
-    const res = await fetch("https://api.binance.com/api/v3/ticker/24hr");
+    const res = await fetch("https://data-api.binance.vision/api/v3/ticker/24hr");
     if (!res.ok) return [];
     const data = await res.json();
     if (!Array.isArray(data)) return [];
@@ -164,7 +164,7 @@ async function fetchVolumeAnomalies(tickers: Binance24hrTicker[]): Promise<Radar
   for (const t of topVolume) {
     try {
       const res = await fetch(
-        `https://api.binance.com/api/v3/klines?symbol=${t.symbol}&interval=1h&limit=24`,
+        `https://data-api.binance.vision/api/v3/klines?symbol=${t.symbol}&interval=1h&limit=24`,
       );
       if (!res.ok) continue;
       const klines: string[][] = await res.json();
