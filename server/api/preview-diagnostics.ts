@@ -9,7 +9,9 @@ type SafeProbe = {
   causeCode?: string;
 };
 
-function safeError(error: unknown): Pick<SafeProbe, "errorName" | "causeName" | "causeCode"> {
+function safeError(
+  error: unknown,
+): Pick<SafeProbe, "errorName" | "causeName" | "causeCode"> {
   const err = error instanceof Error ? error : new Error("Unknown error");
   const cause = (err as Error & { cause?: unknown }).cause;
   const causeRecord =
@@ -22,12 +24,14 @@ function safeError(error: unknown): Pick<SafeProbe, "errorName" | "causeName" | 
   };
 }
 
-async function probeRedis(): Promise<SafeProbe & {
+type RedisProbe = SafeProbe & {
   configured: boolean;
   urlValid: boolean;
   https: boolean;
   upstashHost: boolean;
-}> {
+};
+
+async function probeRedis(): Promise<RedisProbe> {
   const urlValue = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!urlValue || !token) {
