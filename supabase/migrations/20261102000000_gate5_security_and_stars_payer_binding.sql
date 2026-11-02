@@ -121,16 +121,14 @@ RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = pg_catalog, public, pg_temp
 AS $$
-DECLARE
-  v_role text := COALESCE(current_setting('request.jwt.claim.role', true), '');
 BEGIN
   IF TG_OP = 'INSERT' AND NEW.telegram_id IS NOT NULL
-     AND v_role <> 'service_role' AND current_user <> 'service_role' THEN
+     AND current_user <> 'service_role' THEN
     RAISE EXCEPTION 'telegram_id must be set through verified Telegram linking'
       USING ERRCODE = '42501';
   END IF;
   IF TG_OP = 'UPDATE' AND OLD.telegram_id IS DISTINCT FROM NEW.telegram_id
-     AND v_role <> 'service_role' AND current_user <> 'service_role' THEN
+     AND current_user <> 'service_role' THEN
     RAISE EXCEPTION 'telegram_id must be changed through verified Telegram linking'
       USING ERRCODE = '42501';
   END IF;
