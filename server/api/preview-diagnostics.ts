@@ -9,9 +9,7 @@ type SafeProbe = {
   causeCode?: string;
 };
 
-function safeError(
-  error: unknown,
-): Pick<SafeProbe, "errorName" | "causeName" | "causeCode"> {
+function safeError(error: unknown): Pick<SafeProbe, "errorName" | "causeName" | "causeCode"> {
   const err = error instanceof Error ? error : new Error("Unknown error");
   const cause = (err as Error & { cause?: unknown }).cause;
   const causeRecord =
@@ -19,8 +17,7 @@ function safeError(
   return {
     errorName: err.name,
     causeName: cause instanceof Error ? cause.name : undefined,
-    causeCode:
-      typeof causeRecord?.code === "string" ? causeRecord.code : undefined,
+    causeCode: typeof causeRecord?.code === "string" ? causeRecord.code : undefined,
   };
 }
 
