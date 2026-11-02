@@ -100,6 +100,29 @@ async function probeRedis(): Promise<RedisProbe> {
   }
 }
 
+async function probePublicDns(hostname: string): Promise<{
+  status: "resolved" | "nxdomain" | "no_answer" | "unavailable";
+  answerCount: number;
+}> {
+  try {
+    const url = new URL("https://dns.google/resolve");
+    url.searchParams.set("name", hostname);
+    url.searchParams.set("type", "A");
+    const response = await fetch(url, {
+      headers: { Accept: "application/dns-json" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) return { status: "unavailable", answerCount: 0 };
+    const data = (await response.json()) as { Status?: number; Answer?: unknown[] };
+    const answerCount = Array.isArray(data.Answer) ? data.Answer.length : 0;
+    if (data.Status === 3) return { status: "nxdomain", answerCount };
+    if (data.Status === 0 && answerCount > 0) return { status: "resolved", answerCount };
+    return { status: "no_answer", answerCount };
+  } catch {
+    return { status: "unavailable", answerCount: 0 };
+  }
+}
+
 async function probePublicProvider(url: string): Promise<SafeProbe> {
   const started = Date.now();
   try {
@@ -141,8 +164,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 405, statusMessage: "Method not allowed" });
   }
 
-  const [redis, binance, binanceMarketData, dexscreener] = await Promise.all([
+  const [redis, redisDns, binance, binanceMarketData, dexscreener] = await Promise.all([
     probeRedis(),
+    process.env.UPSTASH_REDIS_REST_URL
+      ? probePublicDns(new URL(process.env.UPSTASH_REDIS_REST_URL).hostname)
+      : Promise.resolve({ status: "unavailable" as const, answerCount: 0 }),
     probePublicProvider("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"),
     probePublicProvider("https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT"),
     probePublicProvider("https://api.dexscreener.com/latest/dex/search?q=SOL"),
@@ -153,6 +179,7 @@ export default defineEventHandler(async (event) => {
     checkedAt: new Date().toISOString(),
     region: process.env.VERCEL_REGION || "unknown",
     redis,
+    redisDns,
     providers: { binance, binanceMarketData, dexscreener },
   };
 });
