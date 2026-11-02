@@ -71,7 +71,7 @@ async function fetchBinancePrice(pair: string): Promise<PriceResult | null> {
     try {
       // Get current price + 24h stats in one request
       const statsRes = await fetch(
-        `https://api.binance.com/api/v3/ticker/24hr?symbol=${binanceSymbol}`,
+        `https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${binanceSymbol}`,
         { signal: AbortSignal.timeout(12000) },
       );
       if (!statsRes.ok) {
@@ -497,7 +497,7 @@ export async function fetchBinanceKlines(
 
   try {
     const res = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=${binanceInterval}&limit=${limit}`,
+      `https://data-api.binance.vision/api/v3/klines?symbol=${binanceSymbol}&interval=${binanceInterval}&limit=${limit}`,
       { signal: AbortSignal.timeout(25000) },
     );
     if (!res.ok) {
