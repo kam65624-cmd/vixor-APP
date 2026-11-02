@@ -43,7 +43,8 @@ const handler = defineEventHandler(async (event) => {
       return "OK";
     }
 
-    const message = body.message as { from?: { id?: number }; successful_payment?: SuccessfulPayment } | undefined;
+    const message = body.message as
+      { from?: { id?: number }; successful_payment?: SuccessfulPayment } | undefined;
     if (message?.successful_payment) {
       const telegramUserId = message.from?.id;
       if (!Number.isSafeInteger(telegramUserId) || !telegramUserId || telegramUserId <= 0) {
