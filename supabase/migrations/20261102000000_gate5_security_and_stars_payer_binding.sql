@@ -140,6 +140,28 @@ CREATE TRIGGER profiles_guard_telegram_identity
   BEFORE INSERT OR UPDATE OF telegram_id ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.guard_profile_telegram_identity();
 
+-- Column-level grants provide a hard boundary even if an RLS policy is later broadened.
+-- Preserve ordinary profile editing while withholding INSERT/UPDATE on telegram_id.
+REVOKE INSERT, UPDATE ON public.profiles FROM anon, authenticated;
+DO $profile_column_grants$
+DECLARE
+  v_columns text;
+BEGIN
+  SELECT string_agg(format('%I', attname), ', ' ORDER BY attnum)
+    INTO v_columns
+    FROM pg_attribute
+   WHERE attrelid = 'public.profiles'::regclass
+     AND attnum > 0
+     AND NOT attisdropped
+     AND attname <> 'telegram_id'
+     AND attgenerated = '';
+  IF v_columns IS NOT NULL THEN
+    EXECUTE format('GRANT INSERT (%s) ON public.profiles TO authenticated', v_columns);
+    EXECUTE format('GRANT UPDATE (%s) ON public.profiles TO authenticated', v_columns);
+  END IF;
+END;
+$profile_column_grants$;
+
 
 -- Payer identity is a required input to the canonical fulfillment RPC.
 -- Remove the legacy signature so old webhook code fails closed after this migration.
