@@ -28,7 +28,6 @@ function safeRedisError(error: unknown): Record<string, string> {
     message: err.message === "fetch failed" ? "fetch failed" : "Redis request failed",
     ...(cause instanceof Error ? { causeName: cause.name } : {}),
     ...(typeof causeRecord?.code === "string" ? { causeCode: causeRecord.code } : {}),
-    ...(typeof causeRecord?.hostname === "string" ? { hostname: causeRecord.hostname } : {}),
     ...(typeof causeRecord?.syscall === "string" ? { syscall: causeRecord.syscall } : {}),
   };
 }
