@@ -17,7 +17,7 @@ BEGIN;
 -- 1. wallet_sessions — stores wallet connection sessions
 CREATE TABLE IF NOT EXISTS public.wallet_sessions (
     id              TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         TEXT NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     wallet_address  TEXT NOT NULL,
     chain           TEXT NOT NULL CHECK (chain IN ('solana', 'evm')),
     session_token   TEXT NOT NULL,
@@ -44,7 +44,7 @@ CREATE INDEX IF NOT EXISTS idx_wallet_sessions_expires ON public.wallet_sessions
 -- 2. web3_transactions — stores Web3 transaction history (for B.3/B.4)
 CREATE TABLE IF NOT EXISTS public.web3_transactions (
     id              TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         TEXT NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     wallet_address  TEXT NOT NULL,
     chain           TEXT NOT NULL CHECK (chain IN ('solana', 'evm')),
     type            TEXT NOT NULL CHECK (type IN ('swap', 'transfer', 'nft_buy', 'nft_sell', 'stake', 'unstake')),
@@ -70,7 +70,7 @@ CREATE INDEX IF NOT EXISTS idx_web3_tx_status ON public.web3_transactions(user_i
 -- 3. nft_badges — stores NFT badge states for users
 CREATE TABLE IF NOT EXISTS public.nft_badges (
     id              TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         TEXT NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     badge_type      TEXT NOT NULL CHECK (badge_type IN ('none', 'nft', 'collection', 'verified')),
     chain           TEXT NOT NULL CHECK (chain IN ('solana', 'evm')),
     nft_mint        TEXT,

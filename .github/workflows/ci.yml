@@ -118,3 +118,10 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: createdb -h localhost -U postgres vixor_gate5_test && psql -h localhost -U postgres -d vixor_gate5_test -v ON_ERROR_STOP=1 -f supabase/tests/gate5_security_stars_payer.sql
+      - name: Replay the complete APP migration chain from the recovered historical baseline
+        env:
+          PGPASSWORD: postgres
+          PGHOST: localhost
+          PGUSER: postgres
+          PGDATABASE: vixor_bootstrap_test
+        run: createdb -h localhost -U postgres vixor_bootstrap_test && bash supabase/tests/replay-migrations.sh
