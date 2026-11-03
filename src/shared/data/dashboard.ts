@@ -165,7 +165,7 @@ export const getHomeMarketData = createServerFn({ method: "GET" }).handler(async
     const timeout = setTimeout(() => controller.abort(), 8000);
 
     const res = await fetch(
-      "https://api.binance.com/api/v3/ticker/24hr?symbols=" + JSON.stringify(symbols),
+      "https://data-api.binance.vision/api/v3/ticker/24hr?symbols=" + JSON.stringify(symbols),
       { signal: controller.signal, headers: { Accept: "application/json" } },
     );
     clearTimeout(timeout);

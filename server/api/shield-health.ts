@@ -161,7 +161,7 @@ async function checkBinance(): Promise<ProviderHealth> {
   try {
     // Test public klines endpoint
     const res = await fetch(
-      "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=1",
+      "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=1",
       { signal: AbortSignal.timeout(5_000) },
     );
     const latencyMs = Date.now() - start;

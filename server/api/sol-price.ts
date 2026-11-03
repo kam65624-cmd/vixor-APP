@@ -12,7 +12,7 @@ const handler = defineEventHandler(async (event) => {
   if (cached) return { ...cached, cached: true };
 
   try {
-    const res = await fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=SOLUSDT", {
+    const res = await fetch("https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SOLUSDT", {
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) throw new Error(`Binance ${res.status}`);

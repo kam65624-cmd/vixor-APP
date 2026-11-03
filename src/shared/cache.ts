@@ -17,6 +17,21 @@
 
 const KEY_PREFIX = "vixor:";
 
+// Emit network diagnostics without logging Redis URLs, credentials, or cache keys.
+function safeRedisError(error: unknown): Record<string, string> {
+  const err = error instanceof Error ? error : new Error("Unknown error");
+  const cause = (err as Error & { cause?: unknown }).cause;
+  const causeRecord =
+    cause && typeof cause === "object" ? (cause as Record<string, unknown>) : undefined;
+  return {
+    name: err.name,
+    message: err.message === "fetch failed" ? "fetch failed" : "Redis request failed",
+    ...(cause instanceof Error ? { causeName: cause.name } : {}),
+    ...(typeof causeRecord?.code === "string" ? { causeCode: causeRecord.code } : {}),
+    ...(typeof causeRecord?.syscall === "string" ? { syscall: causeRecord.syscall } : {}),
+  };
+}
+
 // ── Cache Provider Interface ──
 
 export interface CacheProvider {
@@ -109,10 +124,7 @@ class RedisCache implements CacheProvider {
       if (result === null) return null;
       return typeof result === "string" ? JSON.parse(result) : (result as T);
     } catch (err) {
-      console.warn(
-        `[Cache] Redis GET failed for key "${key}":`,
-        err instanceof Error ? err.message : String(err),
-      );
+      console.warn("[Cache] Redis GET failed", safeRedisError(err));
       return null;
     }
   }
@@ -128,10 +140,7 @@ class RedisCache implements CacheProvider {
         await this.redis.set(key, serialized);
       }
     } catch (err) {
-      console.warn(
-        `[Cache] Redis SET failed for key "${key}":`,
-        err instanceof Error ? err.message : String(err),
-      );
+      console.warn("[Cache] Redis SET failed", safeRedisError(err));
     }
   }
 
@@ -139,10 +148,7 @@ class RedisCache implements CacheProvider {
     try {
       await this.redis.del(key);
     } catch (err) {
-      console.warn(
-        `[Cache] Redis DELETE failed for key "${key}":`,
-        err instanceof Error ? err.message : String(err),
-      );
+      console.warn("[Cache] Redis DELETE failed", safeRedisError(err));
     }
   }
 
@@ -151,10 +157,7 @@ class RedisCache implements CacheProvider {
       const result = await this.redis.exists(key);
       return result === 1;
     } catch (err) {
-      console.warn(
-        `[Cache] Redis EXISTS failed for key "${key}":`,
-        err instanceof Error ? err.message : String(err),
-      );
+      console.warn("[Cache] Redis EXISTS failed", safeRedisError(err));
       return false;
     }
   }

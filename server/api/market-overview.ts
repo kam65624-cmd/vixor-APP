@@ -30,7 +30,7 @@ async function fetchFromBinance() {
   const timeout = setTimeout(() => controller.abort(), 6_000);
 
   const response = await fetch(
-    "https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22,%22BNBUSDT%22,%22XRPUSDT%22,%22DOGEUSDT%22,%22ADAUSDT%22,%22AVAXUSDT%22%5D",
+    "https://data-api.binance.vision/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22,%22BNBUSDT%22,%22XRPUSDT%22,%22DOGEUSDT%22,%22ADAUSDT%22,%22AVAXUSDT%22%5D",
     { signal: controller.signal, headers: { Accept: "application/json" } },
   );
   clearTimeout(timeout);
