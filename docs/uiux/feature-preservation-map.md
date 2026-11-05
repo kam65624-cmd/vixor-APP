@@ -19,7 +19,7 @@
 | Page transition / route loading / error boundaries / 404 | `__root.tsx`, `RouteLoading`, `RouteErrorBoundary` | Preserved | ✅ |
 | Offline banner + `useOnline` | AppShell | Preserved | ✅ |
 | Onboarding modal (first run, localStorage `vixor-onboarded`) | `OnboardingModal.tsx` | Preserved; copy/visual polish only | ✅ |
-| Telegram profile auto-sync + account linking | AppShell effects (`syncTelegramProfile`, `linkTelegramAccount`) | Preserved untouched (behavioral — no visual change permitted) | ✅ ⏳ |
+| Telegram account linking | AppShell signed `initData` → `linkTelegramAccount`; client `initDataUnsafe` sync removed for security | Verified signed linking preserved; silent relinking blocked | 🔒 |
 | Language toggle EN/AR (+ RTL) | `LanguageToggle.tsx`, i18n provider, nav-strings | Preserved; **full-coverage AR audit** is a Phase 4 task | ✅ ⏳ |
 
 ## 2. Auth & account
