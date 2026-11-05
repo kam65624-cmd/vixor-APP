@@ -86,55 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
   }, [signedIn]);
 
-  // ── Telegram Profile Auto-Sync ──
-  // On every app open inside Telegram, sync the user's name, photo, and ID
-  // from the WebApp API to the server profile. This ensures the profile
-  // always reflects the latest Telegram data without requiring manual action.
-  const tgSyncRef = useRef(false);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!signedIn || tgSyncRef.current) return;
-    tgSyncRef.current = true;
-
-    const tg = (
-      window as unknown as {
-        Telegram?: {
-          WebApp?: {
-            initDataUnsafe?: {
-              user?: {
-                id: number;
-                first_name: string;
-                last_name?: string;
-                username?: string;
-                photo_url?: string;
-              };
-            };
-          };
-        };
-      }
-    ).Telegram?.WebApp;
-    const tgUser = tg?.initDataUnsafe?.user;
-    if (!tgUser?.id) return;
-
-    // Delay to let auth session be established first
-    const timer = setTimeout(() => {
-      import("@/domains/user/functions").then(({ syncTelegramProfile }) =>
-        syncTelegramProfile({
-          data: {
-            telegramId: tgUser.id,
-            firstName: tgUser.first_name,
-            lastName: tgUser.last_name,
-            username: tgUser.username,
-            photoUrl: tgUser.photo_url,
-          },
-        }).catch((err) => {
-          console.warn("[AppShell] Telegram profile sync failed:", err?.message);
-        }),
-      );
-    }, 3000); // 3s delay to ensure auth session is ready
-    return () => clearTimeout(timer);
-  }, [signedIn]);
-
+  // Telegram identity is linked only through signed initData below.
   const telegramLinkedRef = useRef(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
