@@ -3,6 +3,9 @@
 -- role code owns payment state transitions.
 BEGIN;
 
+-- Keep the table protected even if an earlier schema drift disabled RLS.
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS "users access own payments" ON public.payments;
 DROP POLICY IF EXISTS "users can read own payments" ON public.payments;
 
