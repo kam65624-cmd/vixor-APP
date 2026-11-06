@@ -17,7 +17,7 @@ $$;
 
 CREATE TYPE public.points_reason AS ENUM (
   'signup_bonus','analysis_cost','pack_purchase','referral_bonus',
-  'daily_streak','premium_grant','admin_adjust','telegram_stars_purchase'
+  'daily_streak','premium_grant','admin_adjust'
 );
 CREATE TABLE public.profiles (
   id uuid PRIMARY KEY,
@@ -55,10 +55,8 @@ CREATE TABLE public.premium_plans (
 CREATE TABLE public.premium_subscriptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL,
   plan_id uuid NOT NULL, status text NOT NULL DEFAULT 'active',
-  current_period_start timestamptz NOT NULL DEFAULT now(),
   current_period_end timestamptz NOT NULL,
-  payment_provider text, payment_id text,
-  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE TABLE public.points_transactions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL,
@@ -116,6 +114,21 @@ END $$;
 \ir ../migrations/20260811000001_execute_signal_transition_rpc.sql
 \ir ../migrations/20261028000000_atomic_telegram_stars_fulfillment.sql
 \ir ../migrations/20261102000000_gate5_security_and_stars_payer_binding.sql
+
+-- Recreate the exact Production drift before applying the corrective Stars migration.
+ALTER TABLE public.payments DROP COLUMN telegram_user_id;
+ALTER TABLE public.point_packs DROP COLUMN stars_price;
+ALTER TABLE public.premium_plans DROP COLUMN stars_price;
+ALTER TABLE public.payments DROP CONSTRAINT IF EXISTS payments_stars_price_positive;
+DROP INDEX IF EXISTS public.payments_payload_unique;
+\ir ../migrations/20261106005000_add_telegram_stars_points_reason.sql
+\ir ../migrations/20261106000000_reconcile_payments_rls.sql
+\ir ../migrations/20261106010000_reconcile_telegram_stars_production_schema.sql
+
+-- Mirror the live commerce schema: catalog and subscription plan IDs are text.
+ALTER TABLE public.point_packs ALTER COLUMN id TYPE text USING id::text;
+ALTER TABLE public.premium_plans ALTER COLUMN id TYPE text USING id::text;
+ALTER TABLE public.premium_subscriptions ALTER COLUMN plan_id TYPE text USING plan_id::text;
 
 -- G5-01: authenticated users cannot forge or mutate point balances.
 SET ROLE service_role;
@@ -182,10 +195,10 @@ END $$;
 
 -- Payer binding: wrong Telegram account cannot confirm the order; correct payer is idempotent.
 INSERT INTO public.point_packs(id,name,points) VALUES
- ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb','Test pack',100);
+ ('pack_test','Test pack',100);
 INSERT INTO public.payments(user_id,telegram_user_id,payload,amount_stars,pack_id)
 VALUES ('00000000-0000-0000-0000-000000000001',12345,
- 'cccccccc-cccc-cccc-cccc-cccccccccccc',50,'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+ 'cccccccc-cccc-cccc-cccc-cccccccccccc',50,'pack_test');
 DO $$
 BEGIN
   BEGIN
@@ -218,7 +231,7 @@ END $$;
 -- Rollback: a failed points grant must leave the order pending and grant no entitlement.
 INSERT INTO public.payments(user_id,telegram_user_id,payload,amount_stars,pack_id)
 VALUES ('00000000-0000-0000-0000-000000000099',99999,
- 'dddddddd-dddd-dddd-dddd-dddddddddddd',70,'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+ 'dddddddd-dddd-dddd-dddd-dddddddddddd',70,'pack_test');
 DO $$
 BEGIN
   BEGIN
@@ -235,5 +248,41 @@ BEGIN
   END IF;
   IF EXISTS (SELECT 1 FROM public.points_balances WHERE user_id='00000000-0000-0000-0000-000000000099') THEN
     RAISE EXCEPTION 'failed grant changed point balance';
+  END IF;
+END $$;
+
+-- Premium fulfillment must also work with the Production text plan_id schema.
+INSERT INTO public.premium_plans(id,name,interval,is_active)
+VALUES ('pro_monthly','Test Pro','month',true);
+INSERT INTO public.payments(user_id,telegram_user_id,payload,amount_stars,plan_id)
+VALUES ('00000000-0000-0000-0000-000000000002',23456,
+ 'ffffffff-ffff-ffff-ffff-ffffffffffff',250,'pro_monthly');
+SELECT public.process_telegram_stars_payment(
+ 'ffffffff-ffff-ffff-ffff-ffffffffffff','charge-premium-text-plan','XTR',250,23456,
+ (extract(epoch FROM now() + interval '5 days'))::bigint
+);
+SELECT public.process_telegram_stars_payment(
+ 'ffffffff-ffff-ffff-ffff-ffffffffffff','charge-premium-text-plan','XTR',250,23456,NULL
+);
+DO $$
+BEGIN
+  IF (SELECT status FROM public.payments WHERE payload='ffffffff-ffff-ffff-ffff-ffffffffffff') <> 'confirmed' THEN
+    RAISE EXCEPTION 'text-plan Premium payment was not confirmed';
+  END IF;
+  IF (SELECT count(*) FROM public.premium_subscriptions
+       WHERE user_id='00000000-0000-0000-0000-000000000002' AND status='active') <> 1 THEN
+    RAISE EXCEPTION 'text-plan Premium subscription missing or duplicated';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.premium_subscriptions
+     WHERE user_id='00000000-0000-0000-0000-000000000002'
+       AND plan_id='pro_monthly'
+       AND payment_provider='telegram_stars'
+       AND payment_id='charge-premium-text-plan'
+       AND current_period_start IS NOT NULL
+       AND current_period_end >= current_period_start + interval '29 days'
+       AND updated_at IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'text-plan Premium fulfillment metadata is incomplete';
   END IF;
 END $$;

@@ -18,3 +18,143 @@ BEGIN
     RAISE EXCEPTION 'RLS is not enabled on wallet_sessions';
   END IF;
 END $$;
+
+
+-- Final migration-chain invariant: clients can read only their own payments and cannot write.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = 'payments' AND c.relrowsecurity
+  ) THEN
+    RAISE EXCEPTION 'RLS is not enabled on payments after full migration replay';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND (roles @> ARRAY['public']::name[] OR roles @> ARRAY['authenticated']::name[])
+       AND cmd IN ('INSERT', 'UPDATE', 'DELETE', 'ALL')
+  ) THEN
+    RAISE EXCEPTION 'client write policy remains after full migration replay';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND roles @> ARRAY['public']::name[]
+  ) THEN
+    RAISE EXCEPTION 'PUBLIC payment policy remains after full migration replay';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND policyname = 'users read own payments'
+       AND cmd = 'SELECT'
+       AND roles = ARRAY['authenticated']::name[]
+  ) THEN
+    RAISE EXCEPTION 'canonical authenticated read-own payment policy missing after replay';
+  END IF;
+END $$;
+
+-- Telegram Stars production-reconciliation invariants.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='point_packs' AND column_name='stars_price'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='premium_plans' AND column_name='stars_price'
+  ) THEN
+    RAISE EXCEPTION 'Stars catalog pricing columns are missing';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='payments' AND column_name='telegram_user_id'
+  ) THEN
+    RAISE EXCEPTION 'payments.telegram_user_id is missing';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='premium_subscriptions' AND column_name='current_period_start'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='premium_subscriptions' AND column_name='payment_provider'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='premium_subscriptions' AND column_name='payment_id'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='premium_subscriptions' AND column_name='updated_at'
+  ) THEN
+    RAISE EXCEPTION 'Premium subscription fulfillment metadata is incomplete';
+  END IF;
+
+  IF to_regprocedure('public.process_telegram_stars_payment(text,text,text,integer,bigint,bigint)') IS NULL THEN
+    RAISE EXCEPTION 'Payer-bound Telegram Stars fulfillment RPC is missing';
+  END IF;
+  IF to_regclass('public.payments_payload_unique') IS NULL THEN
+    RAISE EXCEPTION 'Unique payment payload index is missing';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_enum e
+    JOIN pg_type t ON t.oid=e.enumtypid
+    JOIN pg_namespace n ON n.oid=t.typnamespace
+    WHERE n.nspname='public' AND t.typname='points_reason'
+      AND e.enumlabel='telegram_stars_purchase'
+  ) THEN
+    RAISE EXCEPTION 'telegram_stars_purchase points reason is missing';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conrelid='public.point_packs'::regclass
+       AND conname='point_packs_stars_price_positive' AND convalidated
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conrelid='public.premium_plans'::regclass
+       AND conname='premium_plans_stars_price_positive' AND convalidated
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conrelid='public.payments'::regclass
+       AND conname='payments_stars_price_positive' AND convalidated
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conrelid='public.payments'::regclass
+       AND conname='payments_telegram_user_id_positive' AND convalidated
+  ) THEN
+    RAISE EXCEPTION 'Stars catalog/payer positive-value constraints are missing or unvalidated';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_index i
+    JOIN pg_attribute a ON a.attrelid=i.indrelid AND a.attnum=i.indkey[0]
+    WHERE i.indrelid='public.payments'::regclass
+      AND i.indisunique AND i.indisvalid AND i.indnkeyatts=1
+      AND a.attname='telegram_charge_id'
+  ) THEN
+    RAISE EXCEPTION 'Unique Telegram charge index is missing';
+  END IF;
+
+  IF has_function_privilege('anon',
+       'public.process_telegram_stars_payment(text,text,text,integer,bigint,bigint)'::regprocedure,
+       'EXECUTE')
+     OR has_function_privilege('authenticated',
+       'public.process_telegram_stars_payment(text,text,text,integer,bigint,bigint)'::regprocedure,
+       'EXECUTE')
+     OR NOT has_function_privilege('service_role',
+       'public.process_telegram_stars_payment(text,text,text,integer,bigint,bigint)'::regprocedure,
+       'EXECUTE') THEN
+    RAISE EXCEPTION 'Stars fulfillment RPC grants are not service-role-only';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_proc p
+    WHERE p.oid='public.process_telegram_stars_payment(text,text,text,integer,bigint,bigint)'::regprocedure
+      AND p.proconfig @> ARRAY['search_path=pg_catalog, pg_temp']
+  ) THEN
+    RAISE EXCEPTION 'Stars fulfillment RPC search_path is not pinned';
+  END IF;
+
+END $$;
