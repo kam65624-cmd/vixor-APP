@@ -29,6 +29,15 @@ CREATE POLICY "users access own payments"
   ON public.payments FOR ALL TO authenticated
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
+-- Reproduce the additional legacy policies observed in Production.
+CREATE POLICY "Read own" ON public.payments FOR SELECT TO public
+  USING (auth.uid() = user_id OR user_id IS NULL);
+CREATE POLICY "Insert own" ON public.payments FOR INSERT TO public
+  WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Update own" ON public.payments FOR UPDATE TO public
+  USING (auth.uid() = user_id);
+CREATE POLICY "Delete own" ON public.payments FOR DELETE TO public
+  USING (auth.uid() = user_id);
 CREATE POLICY "service role can insert payments"
   ON public.payments FOR INSERT TO service_role WITH CHECK (true);
 CREATE POLICY "service role can update payments"
