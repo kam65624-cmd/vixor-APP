@@ -328,7 +328,12 @@ export const linkTelegramAccount = createServerFn({ method: "POST" })
 export const createStarsInvoice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
-    z.object({ kind: z.enum(["pack", "premium"]), resourceId: z.string().trim().min(1).max(64) }).parse(d),
+    z
+      .object({
+        kind: z.enum(["pack", "premium"]),
+        resourceId: z.string().trim().min(1).max(64),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/shared/supabase/client.server");
