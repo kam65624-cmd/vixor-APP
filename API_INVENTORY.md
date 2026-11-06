@@ -165,7 +165,6 @@
 | purchasePack | domains/user/functions.ts |
 | redeemReward | domains/user/functions.ts |
 | subscribePremium | domains/user/functions.ts |
-| syncTelegramProfile | domains/user/functions.ts |
 | telegramSignIn | domains/user/auth.functions.ts |
 
 ### domains/watchlist

@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS public.price_history (
 );
 
 CREATE INDEX IF NOT EXISTS idx_price_lookup ON public.price_history(pair, timeframe, timestamp DESC);
-CREATE INDEX IF NOT EXISTS idx_price_recent ON public.price_history(pair, timeframe) WHERE timestamp > now() - interval '7 days';
+CREATE INDEX IF NOT EXISTS idx_price_recent ON public.price_history(timestamp DESC);
 
 -- 4. strategies — user trading strategies
 CREATE TABLE IF NOT EXISTS public.strategies (

@@ -15,6 +15,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- CREATE TABLE IF NOT EXISTS does not extend profiles created by the original bootstrap.
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS xp INT NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS connected_brokers JSONB NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS preferences JSONB NOT NULL DEFAULT '{}'::jsonb;
+
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can read own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);

@@ -64,8 +64,35 @@ jobs:
       - name: Test
         run: pnpm vitest run
 
+  payments-rls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Verify payment RLS prevents client-side state changes
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1 -f .github/scripts/payments-rls-setup.sql
+          psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1 -f supabase/migrations/20261028000000_lock_down_payment_client_writes.sql
+          psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1 -f .github/scripts/payments-rls-assertions.sql
+
   build:
-    needs: [lint-and-typecheck, test]
+    needs: [lint-and-typecheck, test, payments-rls]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -114,3 +141,14 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -h localhost -U postgres -d vixor_test -v ON_ERROR_STOP=1 -f supabase/tests/telegram_stars_atomic.sql
+      - name: Apply Gate 5 security and payer-binding regression suite in disposable PostgreSQL
+        env:
+          PGPASSWORD: postgres
+        run: createdb -h localhost -U postgres vixor_gate5_test && psql -h localhost -U postgres -d vixor_gate5_test -v ON_ERROR_STOP=1 -f supabase/tests/gate5_security_stars_payer.sql
+      - name: Replay the complete APP migration chain from the recovered historical baseline
+        env:
+          PGPASSWORD: postgres
+          PGHOST: localhost
+          PGUSER: postgres
+          PGDATABASE: vixor_bootstrap_test
+        run: createdb -h localhost -U postgres vixor_bootstrap_test && bash supabase/tests/replay-migrations.sh

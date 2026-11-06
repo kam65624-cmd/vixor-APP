@@ -7,7 +7,7 @@
 
 CREATE TABLE IF NOT EXISTS vixor_decisions (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  user_id TEXT NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   agent_id TEXT NOT NULL CHECK (agent_id IN ('coach', 'analyst', 'governor', 'hunter')),
   decision_type TEXT NOT NULL CHECK (decision_type IN ('suggestion', 'warning', 'block', 'alert', 'report')),
   title TEXT NOT NULL,

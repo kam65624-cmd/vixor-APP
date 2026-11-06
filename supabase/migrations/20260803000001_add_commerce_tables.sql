@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS public.points_transactions (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_points_tx_user ON public.points_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_points_tx_user ON public.points_transactions(user_id);
 
 ALTER TABLE public.points_transactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can read own transactions" ON public.points_transactions FOR SELECT USING (auth.uid() = user_id);
