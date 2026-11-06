@@ -117,6 +117,10 @@ END $$;
 
 -- Recreate the exact Production drift before applying the corrective Stars migration.
 ALTER TABLE public.payments DROP COLUMN telegram_user_id;
+ALTER TABLE public.point_packs DROP COLUMN stars_price;
+ALTER TABLE public.premium_plans DROP COLUMN stars_price;
+ALTER TABLE public.payments DROP CONSTRAINT IF EXISTS payments_stars_price_positive;
+DROP INDEX IF EXISTS public.payments_payload_unique;
 \ir ../migrations/20261106005000_add_telegram_stars_points_reason.sql
 \ir ../migrations/20261106000000_reconcile_payments_rls.sql
 \ir ../migrations/20261106010000_reconcile_telegram_stars_production_schema.sql
