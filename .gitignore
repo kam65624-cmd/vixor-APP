@@ -36,6 +36,9 @@ dist-ssr
 !.env.example
 .vercel/
 
+# Supabase CLI local state — never commit project links or local metadata
+supabase/.temp/
+
 # Phantom submodule — QuantDinger reference repo (62MB, kept locally for audit only)
 # Was committed as gitlink (mode 160000) by mistake; breaks Vercel/GitHub Actions
 # checkout because no .gitmodules entry exists. Files stay on disk locally.
