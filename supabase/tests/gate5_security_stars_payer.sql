@@ -17,7 +17,7 @@ $$;
 
 CREATE TYPE public.points_reason AS ENUM (
   'signup_bonus','analysis_cost','pack_purchase','referral_bonus',
-  'daily_streak','premium_grant','admin_adjust','telegram_stars_purchase'
+  'daily_streak','premium_grant','admin_adjust'
 );
 CREATE TABLE public.profiles (
   id uuid PRIMARY KEY,
@@ -55,10 +55,8 @@ CREATE TABLE public.premium_plans (
 CREATE TABLE public.premium_subscriptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL,
   plan_id uuid NOT NULL, status text NOT NULL DEFAULT 'active',
-  current_period_start timestamptz NOT NULL DEFAULT now(),
   current_period_end timestamptz NOT NULL,
-  payment_provider text, payment_id text,
-  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE TABLE public.points_transactions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL,
@@ -116,6 +114,9 @@ END $$;
 \ir ../migrations/20260811000001_execute_signal_transition_rpc.sql
 \ir ../migrations/20261028000000_atomic_telegram_stars_fulfillment.sql
 \ir ../migrations/20261102000000_gate5_security_and_stars_payer_binding.sql
+
+-- Recreate the exact Production drift before applying the corrective Stars migration.
+ALTER TABLE public.payments DROP COLUMN telegram_user_id;
 \ir ../migrations/20261106000000_reconcile_payments_rls.sql
 \ir ../migrations/20261106010000_reconcile_telegram_stars_production_schema.sql
 
