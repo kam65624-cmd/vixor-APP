@@ -272,6 +272,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
       wickUpColor: "#22D3A6",
       lastValueVisible: true,
       priceLineVisible: false,
+      priceFormat: { type: "price", precision: 8, minMove: 0.00000001 },
     });
 
     const volumeSeries = chart.addSeries(HistogramSeries, {
@@ -345,59 +346,6 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
         bbLower: null,
       };
     };
-  }, []);
-
-  // ── Apply OHLCV data to chart ──
-  const applyData = useCallback((bars: KlineBar[]) => {
-    if (!candleRef.current || bars.length === 0) return;
-
-    // Deduplicate by time, sort ascending
-    const deduped = new Map<number, KlineBar>();
-    for (const bar of bars) deduped.set(bar.time, bar);
-    const sorted = Array.from(deduped.values()).sort((a, b) => a.time - b.time);
-
-    allBarsRef.current = sorted;
-
-    const candles: CandlestickData[] = sorted.map((k) => ({
-      time: k.time as unknown as Time,
-      open: k.open,
-      high: k.high,
-      low: k.low,
-      close: k.close,
-    }));
-
-    const volumes: HistogramData[] = sorted.map((k) => ({
-      time: k.time as unknown as Time,
-      value: k.volume,
-      color: k.close >= k.open ? "rgba(34,211,166,0.3)" : "rgba(251,70,103,0.3)",
-    }));
-
-    candleRef.current?.setData(candles);
-    volRef.current?.setData(volumes);
-    chartRef.current?.timeScale().fitContent();
-
-    // Store last bar
-    lastBarRef.current = sorted[sorted.length - 1];
-
-    // Price line
-    const lastClose = sorted[sorted.length - 1].close;
-    const prevClose = sorted.length > 1 ? sorted[sorted.length - 2].close : lastClose;
-    if (priceLineRef.current && candleRef.current) {
-      candleRef.current.removePriceLine(priceLineRef.current);
-    }
-    if (candleRef.current) {
-      priceLineRef.current = candleRef.current.createPriceLine({
-        price: lastClose,
-        color: lastClose >= prevClose ? "#22D3A6" : "#FB4667",
-        lineWidth: 1,
-        lineStyle: 2,
-        axisLabelVisible: true,
-        title: "",
-      });
-    }
-
-    // Apply indicators
-    applyIndicators(sorted);
   }, []);
 
   // ── Calculate & apply indicators ──
@@ -479,6 +427,62 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     }
   }, []);
 
+  // ── Apply OHLCV data to chart ──
+  const applyData = useCallback(
+    (bars: KlineBar[]) => {
+      if (!candleRef.current || bars.length === 0) return;
+
+      // Deduplicate by time, sort ascending
+      const deduped = new Map<number, KlineBar>();
+      for (const bar of bars) deduped.set(bar.time, bar);
+      const sorted = Array.from(deduped.values()).sort((a, b) => a.time - b.time);
+
+      allBarsRef.current = sorted;
+
+      const candles: CandlestickData[] = sorted.map((k) => ({
+        time: k.time as unknown as Time,
+        open: k.open,
+        high: k.high,
+        low: k.low,
+        close: k.close,
+      }));
+
+      const volumes: HistogramData[] = sorted.map((k) => ({
+        time: k.time as unknown as Time,
+        value: k.volume,
+        color: k.close >= k.open ? "rgba(34,211,166,0.3)" : "rgba(251,70,103,0.3)",
+      }));
+
+      candleRef.current?.setData(candles);
+      volRef.current?.setData(volumes);
+      chartRef.current?.timeScale().fitContent();
+
+      // Store last bar
+      lastBarRef.current = sorted[sorted.length - 1];
+
+      // Price line
+      const lastClose = sorted[sorted.length - 1].close;
+      const prevClose = sorted.length > 1 ? sorted[sorted.length - 2].close : lastClose;
+      if (priceLineRef.current && candleRef.current) {
+        candleRef.current.removePriceLine(priceLineRef.current);
+      }
+      if (candleRef.current) {
+        priceLineRef.current = candleRef.current.createPriceLine({
+          price: lastClose,
+          color: lastClose >= prevClose ? "#22D3A6" : "#FB4667",
+          lineWidth: 1,
+          lineStyle: 2,
+          axisLabelVisible: true,
+          title: "",
+        });
+      }
+
+      // Apply indicators
+      applyIndicators(sorted);
+    },
+    [applyIndicators],
+  );
+
   // ── Live price update ──
   useEffect(() => {
     if (!livePrice || livePrice <= 0 || !candleRef.current || !lastBarRef.current) return;
@@ -487,6 +491,28 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
     const windowSecs = TF_WINDOW_SECS[activeInterval] || 3600;
     const now = Math.floor(Date.now() / 1000);
     const currentCandleStart = Math.floor(now / windowSecs) * windowSecs;
+
+    // Once the timeframe rolls over, start the live candle at the new bucket
+    // instead of continuing to mutate the previous candle forever.
+    if (currentCandleStart > lastBar.time) {
+      const nextBar: KlineBar = {
+        time: currentCandleStart,
+        open: livePrice,
+        high: livePrice,
+        low: livePrice,
+        close: livePrice,
+        volume: 0,
+      };
+      candleRef.current.update({
+        time: nextBar.time as unknown as Time,
+        open: nextBar.open,
+        high: nextBar.high,
+        low: nextBar.low,
+        close: nextBar.close,
+      });
+      lastBarRef.current = nextBar;
+      return;
+    }
 
     const updated: CandlestickData = {
       time: lastBar.time as unknown as Time,

@@ -15,8 +15,8 @@ export const getRouter = () => {
     defaultOptions: {
       queries: {
         refetchOnWindowFocus: false,
-        refetchOnReconnect: false,
-        refetchOnMount: false,
+        refetchOnReconnect: true,
+        refetchOnMount: true,
         staleTime: 30_000,
         retry: 1,
         structuralSharing: true,

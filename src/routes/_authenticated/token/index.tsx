@@ -80,40 +80,61 @@ export function TokenPage() {
     queryKey: ["token-discovery", symbol],
     queryFn: async () => {
       if (!symbol?.trim()) return [];
-      try {
-        const res = await fetch(
-          `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(symbol.trim())}`,
-        );
-        if (!res.ok) return [];
-        const data = await res.json();
-        if (!data.pairs || !Array.isArray(data.pairs)) return [];
-        return data.pairs.slice(0, 10).map((p: any) => ({
-          symbol: p.baseToken?.symbol || "UNKNOWN",
-          name: p.baseToken?.name || p.baseToken?.symbol || "Unknown Token",
-          priceUsd: p.priceUsd ? parseFloat(p.priceUsd) : null,
-          change24h: p.priceChange?.h24 ?? null,
-          volume24h: p.volume?.h24 ?? 0,
-          liquidityUsd: p.liquidity?.usd ?? 0,
-          chainId: p.chainId || "solana",
-          tokenAddress: p.baseToken?.address || "",
-          pairAddress: p.pairAddress || null,
-          url: p.url || `https://dexscreener.com/${p.chainId}/${p.pairAddress}`,
-          icon: p.info?.imageUrl || null,
-          marketCap: p.marketCap ?? 0,
-          price: p.priceUsd ? parseFloat(p.priceUsd) : null,
-          chain: p.chainId || "solana",
-          liquidity: p.liquidity?.usd ?? 0,
-        }));
-      } catch {
-        return [];
-      }
+      const res = await fetch(
+        `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(symbol.trim())}`,
+      );
+      if (!res.ok) throw new Error(`DexScreener ${res.status}`);
+      const data = await res.json();
+      if (!data.pairs || !Array.isArray(data.pairs)) return [];
+      return data.pairs.slice(0, 10).map((p: any) => ({
+        symbol: p.baseToken?.symbol || "UNKNOWN",
+        name: p.baseToken?.name || p.baseToken?.symbol || "Unknown Token",
+        priceUsd: p.priceUsd ? parseFloat(p.priceUsd) : null,
+        change24h: p.priceChange?.h24 ?? null,
+        volume24h: p.volume?.h24 ?? 0,
+        liquidityUsd: p.liquidity?.usd ?? 0,
+        chainId: p.chainId || "solana",
+        tokenAddress: p.baseToken?.address || "",
+        pairAddress: p.pairAddress || null,
+        url: p.url || `https://dexscreener.com/${p.chainId}/${p.pairAddress}`,
+        icon: p.info?.imageUrl || null,
+        marketCap: p.marketCap ?? 0,
+        price: p.priceUsd ? parseFloat(p.priceUsd) : null,
+        chain: p.chainId || "solana",
+        liquidity: p.liquidity?.usd ?? 0,
+      }));
     },
-    staleTime: 60_000,
+    staleTime: 3_000,
+    refetchInterval: 3_000,
+    refetchOnMount: true,
+    placeholderData: (previous) => previous,
   });
 
   // Find matching discovery token
   const tokenData = useMemo(() => {
-    if (!discoveryQuery.data?.length) return null;
+    if (!discoveryQuery.data?.length) {
+      const price = search.price ? Number(search.price) : null;
+      const change24h = search.change24h ? Number(search.change24h) : null;
+      if (price !== null || change24h !== null || search.name) {
+        return {
+          symbol: symbol.toUpperCase(),
+          name: search.name || symbol.toUpperCase(),
+          priceUsd: price,
+          price,
+          change24h,
+          volume24h: 0,
+          liquidityUsd: 0,
+          marketCap: 0,
+          chainId: search.chain || "solana",
+          chain: search.chain || "solana",
+          tokenAddress: "",
+          pairAddress: search.pairAddress || null,
+          url: search.dexUrl || "",
+          liquidity: 0,
+        };
+      }
+      return null;
+    }
     const upper = symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
     return (
       discoveryQuery.data.find(
@@ -122,7 +143,16 @@ export function TokenPage() {
       discoveryQuery.data[0] ||
       null
     );
-  }, [discoveryQuery.data, symbol]);
+  }, [
+    discoveryQuery.data,
+    search.change24h,
+    search.chain,
+    search.dexUrl,
+    search.name,
+    search.pairAddress,
+    search.price,
+    symbol,
+  ]);
 
   // Detect asset type
   const assetType = useMemo(
@@ -180,8 +210,9 @@ export function TokenPage() {
     // S1-3 (TASK 38): live crypto price paths only — out-of-scope and
     // unverifiable asset types never enter the price pipeline
     if (assetType !== "crypto" && assetType !== "meme") return null;
+    if (isDexToken && pairAddress) return null;
     return `${clean}USDT`;
-  }, [symbol, assetType]);
+  }, [assetType, isDexToken, pairAddress, symbol]);
 
   const [liveBinancePrice, setLiveBinancePrice] = useState<LivePrice | null>(null);
   const [liveDexPrice, setLiveDexPrice] = useState<{ price: number; change24h: number } | null>(
@@ -236,7 +267,8 @@ export function TokenPage() {
 
   // ── Loading state ──
 
-  const isInitialLoading = tradesQuery.isLoading || discoveryQuery.isLoading;
+  // Trade history is secondary content and must never blank the market header.
+  const isInitialLoading = discoveryQuery.isLoading && !tokenData;
 
   // ── S1-3 (TASK 38): out-of-scope & unverifiable assets fail closed ──
   // Forex/commodity/stock/index deep links (direct URL, stale watchlist data,

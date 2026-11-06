@@ -6,7 +6,10 @@ import { CharacterGuide } from "@/components/characters/CharacterGuide";
 import { RefreshCw, X } from "lucide-react";
 import { usePullToRefresh } from "@/shared/hooks/use-pull-to-refresh";
 import { PullIndicator } from "@/components/vixor/PullIndicator";
-import { useDiscoverLivePrices } from "@/shared/market-data/use-discover-live-prices";
+import {
+  getLivePriceKey,
+  useDiscoverLivePrices,
+} from "@/shared/market-data/use-discover-live-prices";
 import {
   CATEGORY_TABS,
   SORT_OPTIONS,
@@ -228,6 +231,7 @@ export function DiscoverPage() {
         symbol: t.symbol,
         chainId: t.chainId,
         chain: t.chain,
+        address: t.address,
         pairAddress: t.pairAddress,
       })),
     [tokens],
@@ -912,7 +916,7 @@ export function DiscoverPage() {
                       key={token.symbol + token.chain}
                       token={token}
                       onClick={() => handleTokenClick(token)}
-                      livePrice={liveOverlay[token.symbol]}
+                      livePrice={liveOverlay[getLivePriceKey(token)]}
                     />
                   ))
                 : !effectiveError &&

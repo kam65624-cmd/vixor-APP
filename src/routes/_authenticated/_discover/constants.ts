@@ -68,7 +68,8 @@ export function fmtPrice(p: number | null): string {
   if (p >= 1000) return `$${p.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
   if (p >= 1) return `$${p.toFixed(4)}`;
   if (p >= 0.0001) return `$${p.toFixed(6)}`;
-  return `$${p.toFixed(8)}`;
+  if (p >= 0.000001) return `$${p.toFixed(8)}`;
+  return `$${p.toExponential(2)}`;
 }
 
 export function fmtCompact(p: number): string {
@@ -81,7 +82,7 @@ export function fmtCompact(p: number): string {
 export function fmtPct(p: number | null): string {
   if (p === null || p === undefined) return "—";
   const sign = p >= 0 ? "+" : "";
-  return `${sign}${p.toFixed(1)}%`;
+  return `${sign}${Math.abs(p) < 0.1 ? p.toFixed(2) : p.toFixed(1)}%`;
 }
 
 export function fmtTimeAgo(seconds: number): string {

@@ -18,9 +18,11 @@ export function TokenRow({
   onClick: () => void;
   livePrice?: LivePriceOverlay[string];
 }) {
-  // Use live price if available, otherwise fall back to API price
+  // Use the same live snapshot for every metric, otherwise fall back to API data.
   const displayPrice = livePrice?.price ?? token.price;
   const displayChange = livePrice?.change24h ?? token.change24h;
+  const displayVolume = livePrice?.volume24h ?? token.volume24h;
+  const displayMarketCap = livePrice?.marketCap ?? token.marketCap;
   const isUp = (displayChange ?? 0) >= 0;
   const color = isUp ? "var(--color-bullish)" : "var(--color-bearish)";
   const [imgError, setImgError] = useState(false);
@@ -29,13 +31,16 @@ export function TokenRow({
 
   // Flash effect when live price changes
   useEffect(() => {
-    if (livePrice && prevPriceRef.current !== null && livePrice.price !== prevPriceRef.current) {
-      const flash = livePrice.price > prevPriceRef.current ? "up" : "down";
-      setPriceFlash(flash);
-      const timer = setTimeout(() => setPriceFlash(null), 400);
-      return () => clearTimeout(timer);
+    if (livePrice) {
+      if (prevPriceRef.current !== null && livePrice.price !== prevPriceRef.current) {
+        const flash = livePrice.price > prevPriceRef.current ? "up" : "down";
+        setPriceFlash(flash);
+        const timer = setTimeout(() => setPriceFlash(null), 400);
+        prevPriceRef.current = livePrice.price;
+        return () => clearTimeout(timer);
+      }
+      prevPriceRef.current = livePrice.price;
     }
-    if (livePrice) prevPriceRef.current = livePrice.price;
   }, [livePrice]);
   const hasLogo = token.logoUrl && !imgError;
   const isNew = token.discoveryScore > 80;
@@ -210,7 +215,7 @@ export function TokenRow({
               fontWeight: 700,
               fontFamily: "var(--font-mono)",
               color,
-              background: `${color}18`,
+              background: isUp ? "var(--color-bullish-bg)" : "var(--color-bearish-bg)",
               padding: "1px 6px",
               borderRadius: "4px",
             }}
@@ -228,11 +233,11 @@ export function TokenRow({
           }}
         >
           <span style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
-            Vol {fmtCompact(token.volume24h)}
+            Vol {fmtCompact(displayVolume)}
           </span>
-          {token.marketCap > 0 && (
+          {displayMarketCap > 0 && (
             <span style={{ fontSize: "11px", color: "var(--color-muted-foreground)" }}>
-              MC {fmtCompact(token.marketCap)}
+              MC {fmtCompact(displayMarketCap)}
             </span>
           )}
         </div>

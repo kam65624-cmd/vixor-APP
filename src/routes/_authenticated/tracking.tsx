@@ -53,7 +53,7 @@ const STATUS_GROUPS: StatusGroup[] = [
 function TrackingPage() {
   const navigate = useNavigate();
   const { data: res, isLoading } = useSignalTrackings();
-  const trackings = (res as any)?.trackings ?? [];
+  const trackings = useMemo(() => (res as any)?.trackings ?? [], [res]);
 
   const [activeGroup, setActiveGroup] = useState<string>("active");
 
