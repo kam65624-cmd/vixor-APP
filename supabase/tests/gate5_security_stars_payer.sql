@@ -116,6 +116,13 @@ END $$;
 \ir ../migrations/20260811000001_execute_signal_transition_rpc.sql
 \ir ../migrations/20261028000000_atomic_telegram_stars_fulfillment.sql
 \ir ../migrations/20261102000000_gate5_security_and_stars_payer_binding.sql
+\ir ../migrations/20261106000000_reconcile_payments_rls.sql
+\ir ../migrations/20261106010000_reconcile_telegram_stars_production_schema.sql
+
+-- Mirror the live commerce schema: catalog and subscription plan IDs are text.
+ALTER TABLE public.point_packs ALTER COLUMN id TYPE text USING id::text;
+ALTER TABLE public.premium_plans ALTER COLUMN id TYPE text USING id::text;
+ALTER TABLE public.premium_subscriptions ALTER COLUMN plan_id TYPE text USING plan_id::text;
 
 -- G5-01: authenticated users cannot forge or mutate point balances.
 SET ROLE service_role;
@@ -235,5 +242,40 @@ BEGIN
   END IF;
   IF EXISTS (SELECT 1 FROM public.points_balances WHERE user_id='00000000-0000-0000-0000-000000000099') THEN
     RAISE EXCEPTION 'failed grant changed point balance';
+  END IF;
+END $$;
+
+-- Premium fulfillment must also work with the Production text plan_id schema.
+INSERT INTO public.premium_plans(id,name,interval,is_active)
+VALUES ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee','Test Pro','month',true);
+INSERT INTO public.payments(user_id,telegram_user_id,payload,amount_stars,plan_id)
+VALUES ('00000000-0000-0000-0000-000000000002',23456,
+ 'ffffffff-ffff-ffff-ffff-ffffffffffff',250,'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee');
+SELECT public.process_telegram_stars_payment(
+ 'ffffffff-ffff-ffff-ffff-ffffffffffff','charge-premium-text-plan','XTR',250,23456,NULL
+);
+SELECT public.process_telegram_stars_payment(
+ 'ffffffff-ffff-ffff-ffff-ffffffffffff','charge-premium-text-plan','XTR',250,23456,NULL
+);
+DO $$
+BEGIN
+  IF (SELECT status FROM public.payments WHERE payload='ffffffff-ffff-ffff-ffff-ffffffffffff') <> 'confirmed' THEN
+    RAISE EXCEPTION 'text-plan Premium payment was not confirmed';
+  END IF;
+  IF (SELECT count(*) FROM public.premium_subscriptions
+       WHERE user_id='00000000-0000-0000-0000-000000000002' AND status='active') <> 1 THEN
+    RAISE EXCEPTION 'text-plan Premium subscription missing or duplicated';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.premium_subscriptions
+     WHERE user_id='00000000-0000-0000-0000-000000000002'
+       AND plan_id='eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'
+       AND payment_provider='telegram_stars'
+       AND payment_id='charge-premium-text-plan'
+       AND current_period_start IS NOT NULL
+       AND current_period_end > current_period_start
+       AND updated_at IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'text-plan Premium fulfillment metadata is incomplete';
   END IF;
 END $$;
