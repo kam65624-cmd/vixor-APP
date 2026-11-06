@@ -13,6 +13,7 @@ interface Options {
   addresses: string[];
   enabled?: boolean;
   onSnapshot: (snapshot: CentralMarketSnapshot) => void;
+  onStale?: (address: string) => void;
   onStatusChange?: (status: "connecting" | "open" | "reconnecting" | "closed") => void;
 }
 
@@ -24,11 +25,14 @@ export function useCentralMarketStream({
   addresses,
   enabled = true,
   onSnapshot,
+  onStale,
   onStatusChange,
 }: Options) {
   const onSnapshotRef = useRef(onSnapshot);
+  const onStaleRef = useRef(onStale);
   const onStatusRef = useRef(onStatusChange);
   onSnapshotRef.current = onSnapshot;
+  onStaleRef.current = onStale;
   onStatusRef.current = onStatusChange;
 
   const tokenKey = [...new Set(addresses)].sort().join(",");
@@ -53,6 +57,14 @@ export function useCentralMarketStream({
         );
       } catch {
         // Ignore malformed events; the connection remains usable.
+      }
+    });
+    source.addEventListener("stale", (event) => {
+      try {
+        const payload = JSON.parse((event as MessageEvent<string>).data) as { address?: string };
+        if (payload.address) onStaleRef.current?.(payload.address);
+      } catch {
+        // Ignore malformed status events; the connection remains usable.
       }
     });
     source.onerror = () => {
