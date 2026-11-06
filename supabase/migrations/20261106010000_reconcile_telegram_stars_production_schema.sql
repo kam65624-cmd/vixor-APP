@@ -83,12 +83,6 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Duplicate payment payloads exist; reconcile them before creating the unique index';
   END IF;
-
-  IF EXISTS (
-    SELECT payload FROM public.payments GROUP BY payload HAVING count(*) > 1
-  ) THEN
-    RAISE EXCEPTION 'Duplicate payment payloads exist; reconcile them before creating the unique index';
-  END IF;
 END;
 $$;
 
