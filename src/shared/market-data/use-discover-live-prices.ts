@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { BinanceWS, type LivePrice } from "./binance-ws";
+import { useCentralMarketStream } from "./use-central-market-stream";
 
 // Tokens that trade on Binance — they get real-time WebSocket prices
 const BINANCE_SYMBOLS = new Set([
@@ -124,12 +125,42 @@ interface UseDiscoverLivePricesOptions {
  */
 export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
   const { tokens, enabled = true } = options;
+  const centralCollectorEnabled = Boolean(import.meta.env.VITE_MARKET_COLLECTOR_URL);
 
   const [overlay, setOverlay] = useState<LivePriceOverlay>({});
   const [lastUpdate, setLastUpdate] = useState<number | null>(null);
   const [pollingError, setPollingError] = useState<unknown>(null);
   const overlayRef = useRef(overlay);
   overlayRef.current = overlay;
+
+  const centralTokenMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const token of tokens) {
+      if (token.chainId === "solana" && token.address) {
+        map.set(token.address, getLivePriceKey(token));
+      }
+    }
+    return map;
+  }, [tokens]);
+
+  useCentralMarketStream({
+    addresses: [...centralTokenMap.keys()],
+    enabled: enabled && centralCollectorEnabled,
+    onSnapshot: (snapshot) => {
+      const tokenKey = centralTokenMap.get(snapshot.address);
+      if (!tokenKey || snapshot.price <= 0) return;
+      setOverlay((prev) => ({
+        ...prev,
+        [tokenKey]: {
+          price: snapshot.price,
+          change24h: snapshot.change24h,
+          timestamp: snapshot.updatedAt,
+        },
+      }));
+      setLastUpdate(snapshot.updatedAt);
+      setPollingError(null);
+    },
+  });
 
   // Separate tokens into Binance WS and DEX WS
   const { wsSymbols, wsSymbolMap, dexPairs, dexSymbolMap } = useMemo(() => {
@@ -144,7 +175,11 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
       if (binanceSym && !token.pairAddress) {
         wsSymbols.push(binanceSym);
         wsSymbolMap.set(binanceSym, liveKey);
-      } else if (token.chainId && token.pairAddress) {
+      } else if (
+        token.chainId &&
+        token.pairAddress &&
+        !(token.chainId === "solana" && token.address)
+      ) {
         const key = `${token.chainId}:${token.pairAddress}`;
         dexPairs.push({ chainId: token.chainId, pairAddress: token.pairAddress });
         dexSymbolMap.set(key, liveKey);
@@ -260,7 +295,7 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [enabled, dexPairs, dexSymbolMap]);
+  }, [centralCollectorEnabled, enabled, dexPairs, dexSymbolMap]);
 
   const getLivePrice = useCallback(
     (symbol: string): { price: number; change24h: number; timestamp: number } | undefined => {

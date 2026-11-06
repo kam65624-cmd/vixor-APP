@@ -15,3 +15,5 @@ export {
   type FinnhubQuote,
 } from "./finnhub-quotes";
 export { MarketDataGateway } from "./market-data-gateway";
+export { useCentralMarketStream } from "./use-central-market-stream";
+export type { CentralMarketSnapshot } from "./use-central-market-stream";
