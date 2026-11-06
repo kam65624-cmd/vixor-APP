@@ -162,7 +162,6 @@ jobs:
         run: |
           printf 'project_id = "vixor-app-ci"\n' > supabase/config.toml
           psql -h localhost -U postgres -d vixor_bootstrap_test -v ON_ERROR_STOP=1 -c "CREATE SCHEMA IF NOT EXISTS supabase_migrations; CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (version text PRIMARY KEY, statements text[]);"
-          psql -h localhost -U postgres -d vixor_bootstrap_test -v ON_ERROR_STOP=1 -c "CREATE SCHEMA IF NOT EXISTS supabase_migrations; CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (version text PRIMARY KEY, statements text[]);"
           # Supabase CLI requires TLS for its remote-style connection path.
           PG_CONTAINER_ID="$(docker ps --filter ancestor=postgres:16 --format '{{.ID}}' | head -n 1)"
           test -n "$PG_CONTAINER_ID"
