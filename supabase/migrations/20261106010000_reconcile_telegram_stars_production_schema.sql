@@ -23,10 +23,6 @@ ALTER TABLE public.premium_subscriptions
   ADD COLUMN IF NOT EXISTS payment_id text,
   ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
--- The live points_reason enum predates Stars fulfillment.
-ALTER TYPE public.points_reason
-  ADD VALUE IF NOT EXISTS 'telegram_stars_purchase';
-
 DO $$
 BEGIN
   IF NOT EXISTS (
