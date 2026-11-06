@@ -117,6 +117,7 @@ END $$;
 
 -- Recreate the exact Production drift before applying the corrective Stars migration.
 ALTER TABLE public.payments DROP COLUMN telegram_user_id;
+\ir ../migrations/20261106005000_add_telegram_stars_points_reason.sql
 \ir ../migrations/20261106000000_reconcile_payments_rls.sql
 \ir ../migrations/20261106010000_reconcile_telegram_stars_production_schema.sql
 
