@@ -25,6 +25,7 @@ for migration in "${migrations[@]}"; do
   fi
   seen_versions[$version]="$filename"
 done
+echo "Validated ${#seen_versions[@]} unique Supabase migration versions."
 for migration in "${migrations[@]}"; do echo "Applying ${migration}"; "${psql_cmd[@]}" -f "$migration"; done
 "${psql_cmd[@]}" -f supabase/tests/verify-clean-migration-bootstrap.sql
 echo "Clean PostgreSQL bootstrap passed: ${#migrations[@]} migrations applied."
