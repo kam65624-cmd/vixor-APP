@@ -83,11 +83,24 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Duplicate payment payloads exist; reconcile them before creating the unique index';
   END IF;
+
+  IF EXISTS (
+    SELECT telegram_charge_id
+      FROM public.payments
+     WHERE telegram_charge_id IS NOT NULL
+     GROUP BY telegram_charge_id
+    HAVING count(*) > 1
+  ) THEN
+    RAISE EXCEPTION 'Duplicate Telegram charge IDs exist; reconcile them before creating the unique index';
+  END IF;
 END;
-$$;
+$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS payments_payload_unique
   ON public.payments(payload);
+CREATE UNIQUE INDEX IF NOT EXISTS payments_telegram_charge_id_unique
+  ON public.payments(telegram_charge_id)
+  WHERE telegram_charge_id IS NOT NULL;
 
 -- The production schema stores catalog/subscription plan IDs as text, while the
 -- clean historical bootstrap uses UUIDs. Resolve the destination type from the
@@ -103,7 +116,7 @@ CREATE OR REPLACE FUNCTION public.process_telegram_stars_payment(
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = pg_catalog, public, pg_temp
+SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE
   p public.payments%ROWTYPE;
@@ -212,7 +225,10 @@ BEGIN
   v_period_start := GREATEST(COALESCE(v_existing_period_end, now()), now());
   IF _subscription_expiration IS NOT NULL
      AND _subscription_expiration > extract(epoch FROM now())::bigint THEN
-    v_period_end := to_timestamp(_subscription_expiration);
+    v_period_end := GREATEST(
+      to_timestamp(_subscription_expiration),
+      v_period_start + CASE WHEN v_plan_interval = 'year' THEN interval '365 days' ELSE interval '30 days' END
+    );
   ELSE
     v_period_end := v_period_start
       + CASE WHEN v_plan_interval = 'year' THEN interval '365 days' ELSE interval '30 days' END;
