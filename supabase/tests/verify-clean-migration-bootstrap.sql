@@ -118,6 +118,10 @@ BEGIN
   ) OR NOT EXISTS (
     SELECT 1 FROM pg_constraint
      WHERE conrelid='public.payments'::regclass
+       AND conname='payments_stars_price_positive' AND convalidated
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conrelid='public.payments'::regclass
        AND conname='payments_telegram_user_id_positive' AND convalidated
   ) THEN
     RAISE EXCEPTION 'Stars catalog/payer positive-value constraints are missing or unvalidated';
