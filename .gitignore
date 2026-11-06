@@ -106,3 +106,6 @@ worklog.md
 # scripts/ — ignore all except build-required files
 scripts/*
 !scripts/fix-vercel-bundle.mjs
+
+# Supabase CLI local link state (machine-specific; never commit)
+supabase/.temp/
