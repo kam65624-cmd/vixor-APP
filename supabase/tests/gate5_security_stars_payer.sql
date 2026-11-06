@@ -258,7 +258,8 @@ INSERT INTO public.payments(user_id,telegram_user_id,payload,amount_stars,plan_i
 VALUES ('00000000-0000-0000-0000-000000000002',23456,
  'ffffffff-ffff-ffff-ffff-ffffffffffff',250,'pro_monthly');
 SELECT public.process_telegram_stars_payment(
- 'ffffffff-ffff-ffff-ffff-ffffffffffff','charge-premium-text-plan','XTR',250,23456,NULL
+ 'ffffffff-ffff-ffff-ffff-ffffffffffff','charge-premium-text-plan','XTR',250,23456,
+ (extract(epoch FROM now() + interval '5 days'))::bigint
 );
 SELECT public.process_telegram_stars_payment(
  'ffffffff-ffff-ffff-ffff-ffffffffffff','charge-premium-text-plan','XTR',250,23456,NULL
@@ -279,7 +280,7 @@ BEGIN
        AND payment_provider='telegram_stars'
        AND payment_id='charge-premium-text-plan'
        AND current_period_start IS NOT NULL
-       AND current_period_end > current_period_start
+       AND current_period_end >= current_period_start + interval '29 days'
        AND updated_at IS NOT NULL
   ) THEN
     RAISE EXCEPTION 'text-plan Premium fulfillment metadata is incomplete';
