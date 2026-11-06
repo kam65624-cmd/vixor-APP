@@ -46,3 +46,47 @@ BEGIN
   END IF;
 END $$;
 RESET ROLE;
+
+-- The reconciliation must leave exactly one client policy: authenticated SELECT own.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND (roles @> ARRAY['public']::name[] OR roles @> ARRAY['authenticated']::name[])
+       AND cmd IN ('INSERT', 'UPDATE', 'DELETE', 'ALL')
+  ) THEN
+    RAISE EXCEPTION 'legacy client write policy remains on public.payments';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND roles @> ARRAY['public']::name[]
+  ) THEN
+    RAISE EXCEPTION 'legacy PUBLIC payment policy remains';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND policyname = 'users read own payments'
+       AND cmd = 'SELECT'
+       AND roles = ARRAY['authenticated']::name[]
+  ) THEN
+    RAISE EXCEPTION 'canonical authenticated read-own policy is missing';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND policyname = 'service role can insert payments'
+       AND cmd = 'INSERT'
+       AND roles = ARRAY['service_role']::name[]
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND policyname = 'service role can update payments'
+       AND cmd = 'UPDATE'
+       AND roles = ARRAY['service_role']::name[]
+  ) THEN
+    RAISE EXCEPTION 'trusted service_role payment policies were not preserved';
+  END IF;
+END $$;
