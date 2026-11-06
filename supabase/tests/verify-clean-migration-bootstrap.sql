@@ -107,4 +107,50 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'telegram_stars_purchase points reason is missing';
   END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conrelid='public.point_packs'::regclass
+       AND conname='point_packs_stars_price_positive' AND convalidated
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conrelid='public.premium_plans'::regclass
+       AND conname='premium_plans_stars_price_positive' AND convalidated
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conrelid='public.payments'::regclass
+       AND conname='payments_telegram_user_id_positive' AND convalidated
+  ) THEN
+    RAISE EXCEPTION 'Stars catalog/payer positive-value constraints are missing or unvalidated';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_index i
+    JOIN pg_attribute a ON a.attrelid=i.indrelid AND a.attnum=i.indkey[0]
+    WHERE i.indrelid='public.payments'::regclass
+      AND i.indisunique AND i.indisvalid AND i.indnkeyatts=1
+      AND a.attname='telegram_charge_id'
+  ) THEN
+    RAISE EXCEPTION 'Unique Telegram charge index is missing';
+  END IF;
+
+  IF has_function_privilege('anon',
+       'public.process_telegram_stars_payment(text,text,text,integer,bigint,bigint)'::regprocedure,
+       'EXECUTE')
+     OR has_function_privilege('authenticated',
+       'public.process_telegram_stars_payment(text,text,text,integer,bigint,bigint)'::regprocedure,
+       'EXECUTE')
+     OR NOT has_function_privilege('service_role',
+       'public.process_telegram_stars_payment(text,text,text,integer,bigint,bigint)'::regprocedure,
+       'EXECUTE') THEN
+    RAISE EXCEPTION 'Stars fulfillment RPC grants are not service-role-only';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_proc p
+    WHERE p.oid='public.process_telegram_stars_payment(text,text,text,integer,bigint,bigint)'::regprocedure
+      AND p.proconfig @> ARRAY['search_path=pg_catalog, pg_temp']
+  ) THEN
+    RAISE EXCEPTION 'Stars fulfillment RPC search_path is not pinned';
+  END IF;
+
 END $$;
