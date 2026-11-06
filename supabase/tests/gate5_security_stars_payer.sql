@@ -190,10 +190,10 @@ END $$;
 
 -- Payer binding: wrong Telegram account cannot confirm the order; correct payer is idempotent.
 INSERT INTO public.point_packs(id,name,points) VALUES
- ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb','Test pack',100);
+ ('pack_test','Test pack',100);
 INSERT INTO public.payments(user_id,telegram_user_id,payload,amount_stars,pack_id)
 VALUES ('00000000-0000-0000-0000-000000000001',12345,
- 'cccccccc-cccc-cccc-cccc-cccccccccccc',50,'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+ 'cccccccc-cccc-cccc-cccc-cccccccccccc',50,'pack_test');
 DO $$
 BEGIN
   BEGIN
@@ -226,7 +226,7 @@ END $$;
 -- Rollback: a failed points grant must leave the order pending and grant no entitlement.
 INSERT INTO public.payments(user_id,telegram_user_id,payload,amount_stars,pack_id)
 VALUES ('00000000-0000-0000-0000-000000000099',99999,
- 'dddddddd-dddd-dddd-dddd-dddddddddddd',70,'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+ 'dddddddd-dddd-dddd-dddd-dddddddddddd',70,'pack_test');
 DO $$
 BEGIN
   BEGIN
@@ -248,10 +248,10 @@ END $$;
 
 -- Premium fulfillment must also work with the Production text plan_id schema.
 INSERT INTO public.premium_plans(id,name,interval,is_active)
-VALUES ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee','Test Pro','month',true);
+VALUES ('pro_monthly','Test Pro','month',true);
 INSERT INTO public.payments(user_id,telegram_user_id,payload,amount_stars,plan_id)
 VALUES ('00000000-0000-0000-0000-000000000002',23456,
- 'ffffffff-ffff-ffff-ffff-ffffffffffff',250,'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee');
+ 'ffffffff-ffff-ffff-ffff-ffffffffffff',250,'pro_monthly');
 SELECT public.process_telegram_stars_payment(
  'ffffffff-ffff-ffff-ffff-ffffffffffff','charge-premium-text-plan','XTR',250,23456,NULL
 );
@@ -270,7 +270,7 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM public.premium_subscriptions
      WHERE user_id='00000000-0000-0000-0000-000000000002'
-       AND plan_id='eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'
+       AND plan_id='pro_monthly'
        AND payment_provider='telegram_stars'
        AND payment_id='charge-premium-text-plan'
        AND current_period_start IS NOT NULL
