@@ -152,3 +152,14 @@ jobs:
           PGUSER: postgres
           PGDATABASE: vixor_bootstrap_test
         run: createdb -h localhost -U postgres vixor_bootstrap_test && bash supabase/tests/replay-migrations.sh
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.81.3
+      - name: Verify migration history is readable by Supabase CLI
+        env:
+          PGPASSWORD: postgres
+        run: |
+          printf 'project_id = "vixor-app-ci"\n' > supabase/config.toml
+          psql -h localhost -U postgres -d vixor_bootstrap_test -v ON_ERROR_STOP=1 -c "CREATE SCHEMA IF NOT EXISTS supabase_migrations; CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (version text PRIMARY KEY, statements text[]);"
+          supabase migration list --db-url "postgresql://postgres:postgres@localhost:5432/vixor_bootstrap_test?sslmode=disable"
