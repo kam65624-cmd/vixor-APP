@@ -162,4 +162,5 @@ jobs:
         run: |
           printf 'project_id = "vixor-app-ci"\n' > supabase/config.toml
           psql -h localhost -U postgres -d vixor_bootstrap_test -v ON_ERROR_STOP=1 -c "CREATE SCHEMA IF NOT EXISTS supabase_migrations; CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (version text PRIMARY KEY, statements text[]);"
-          supabase migration list --db-url "postgresql://postgres:postgres@localhost:5432/vixor_bootstrap_test?sslmode=disable"
+          # Work around the current Supabase CLI TLS negotiation regression for plain local PostgreSQL.
+supabase migration list --db-url "postgresql://postgres:postgres@localhost:5432/vixor_bootstrap_test?sslmode=disable" --debug
