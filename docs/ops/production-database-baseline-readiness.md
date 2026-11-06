@@ -53,6 +53,8 @@ These findings need separate scope and remediation review. This payments PR does
 
 ## Read-only baseline capture (separate scratch directory)
 
+**CLI version note:** Supabase CLI v3 became the default on 2026-11-02 and changes database command targets to local by default; v2 remains pinned in CI and in this capture procedure until the project deliberately completes the v3 migration. Do not run an unpinned `npx supabase` command for this operation.
+
 Use a new empty folder outside the existing APP checkout so the 44 historical migrations and any local work are not touched. The commands below use the CI-pinned CLI version and link only the known Production project:
 
 ```powershell
@@ -64,13 +66,13 @@ if (Test-Path $Scratch) {
 New-Item -ItemType Directory -Path $Scratch | Out-Null
 Push-Location $Scratch
 try {
-  npx --yes supabase@2.81.3 init
+  npx --yes supabase@2.122.1 init
   if ($LASTEXITCODE -ne 0) { throw "Supabase init failed" }
 
-  npx --yes supabase@2.81.3 link --project-ref crscocazckmjeekivojd
+  npx --yes supabase@2.122.1 link --project-ref crscocazckmjeekivojd
   if ($LASTEXITCODE -ne 0) { throw "Supabase link failed" }
 
-  npx --yes supabase@2.81.3 db pull production_baseline --linked --diff-engine migra
+  npx --yes supabase@2.122.1 db pull production_baseline --linked --diff-engine migra
   if ($LASTEXITCODE -ne 0) { throw "Production schema pull failed" }
 
   Get-ChildItem .\supabase\migrations
