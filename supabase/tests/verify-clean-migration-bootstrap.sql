@@ -55,3 +55,56 @@ BEGIN
     RAISE EXCEPTION 'canonical authenticated read-own payment policy missing after replay';
   END IF;
 END $$;
+
+-- Telegram Stars production-reconciliation invariants.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='point_packs' AND column_name='stars_price'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='premium_plans' AND column_name='stars_price'
+  ) THEN
+    RAISE EXCEPTION 'Stars catalog pricing columns are missing';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='payments' AND column_name='telegram_user_id'
+  ) THEN
+    RAISE EXCEPTION 'payments.telegram_user_id is missing';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='premium_subscriptions' AND column_name='current_period_start'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='premium_subscriptions' AND column_name='payment_provider'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='premium_subscriptions' AND column_name='payment_id'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema='public' AND table_name='premium_subscriptions' AND column_name='updated_at'
+  ) THEN
+    RAISE EXCEPTION 'Premium subscription fulfillment metadata is incomplete';
+  END IF;
+
+  IF to_regprocedure('public.process_telegram_stars_payment(text,text,text,integer,bigint,bigint)') IS NULL THEN
+    RAISE EXCEPTION 'Payer-bound Telegram Stars fulfillment RPC is missing';
+  END IF;
+  IF to_regclass('public.payments_payload_unique') IS NULL THEN
+    RAISE EXCEPTION 'Unique payment payload index is missing';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_enum e
+    JOIN pg_type t ON t.oid=e.enumtypid
+    JOIN pg_namespace n ON n.oid=t.typnamespace
+    WHERE n.nspname='public' AND t.typname='points_reason'
+      AND e.enumlabel='telegram_stars_purchase'
+  ) THEN
+    RAISE EXCEPTION 'telegram_stars_purchase points reason is missing';
+  END IF;
+END $$;
