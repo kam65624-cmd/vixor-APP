@@ -10,6 +10,7 @@ import {
   getLivePriceKey,
   useDiscoverLivePrices,
 } from "@/shared/market-data/use-discover-live-prices";
+import { useMarketDataStatus } from "@/shared/market-data/use-market-data-status";
 import {
   CATEGORY_TABS,
   SORT_OPTIONS,
@@ -236,8 +237,18 @@ export function DiscoverPage() {
       })),
     [tokens],
   );
-  const { overlay: liveOverlay } = useDiscoverLivePrices({
+  const {
+    overlay: liveOverlay,
+    lastUpdate,
+    error: liveError,
+  } = useDiscoverLivePrices({
     tokens: liveTokens,
+    enabled: tokens.length > 0,
+  });
+  const marketStatus = useMarketDataStatus({
+    lastUpdate,
+    isLoading: effectiveLoading,
+    error: liveError || effectiveError,
     enabled: tokens.length > 0,
   });
 
@@ -585,10 +596,10 @@ export function DiscoverPage() {
                 width: "6px",
                 height: "6px",
                 borderRadius: "50%",
-                background: "var(--color-bullish)",
+                background: marketStatus.color,
                 display: "inline-block",
-                animation: "vixor-pulse 1.8s ease-in-out infinite",
-                boxShadow: "0 0 6px var(--color-bullish)",
+                animation: marketStatus.pulse ? "vixor-pulse 1.8s ease-in-out infinite" : undefined,
+                boxShadow: `0 0 6px ${marketStatus.color}`,
                 flexShrink: 0,
               }}
               aria-label="Live data"
@@ -596,12 +607,12 @@ export function DiscoverPage() {
             <span
               style={{
                 fontSize: "9px",
-                color: "var(--color-bullish)",
+                color: marketStatus.color,
                 fontFamily: "var(--font-mono)",
                 whiteSpace: "nowrap",
               }}
             >
-              LIVE
+              {marketStatus.label}
             </span>
             <button
               onClick={handleManualRefresh}

@@ -250,6 +250,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
 
   const [activeInterval, setActiveInterval] = useState("hour");
   const [loading, setLoading] = useState(true);
+  const [hasData, setHasData] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fetchDexOHLCV = useStableServerFn(getDexOHLCV);
 
@@ -459,6 +460,7 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
 
       // Store last bar
       lastBarRef.current = sorted[sorted.length - 1];
+      setHasData(true);
 
       // Price line
       const lastClose = sorted[sorted.length - 1].close;
@@ -685,15 +687,59 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
             position: "absolute",
             inset: 0,
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(11,13,16,0.7)",
+            alignItems: hasData ? "flex-start" : "center",
+            justifyContent: hasData ? "flex-start" : "center",
+            background: hasData ? "rgba(11,13,16,0.18)" : "#0B0D10",
+            backdropFilter: hasData ? "blur(1px)" : undefined,
             zIndex: 5,
           }}
         >
-          <span style={{ fontSize: "12px", color: "#9CA3AF", fontFamily: "system-ui" }}>
-            Loading chart...
-          </span>
+          {hasData ? (
+            <div
+              style={{
+                margin: "42px auto 0",
+                padding: "6px 10px",
+                borderRadius: "6px",
+                background: "rgba(11,13,16,0.88)",
+                color: "#CBD5E1",
+                fontSize: "11px",
+                fontFamily: "system-ui",
+                boxShadow: "0 4px 18px rgba(0,0,0,0.25)",
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-block",
+                  width: "8px",
+                  height: "8px",
+                  marginRight: "6px",
+                  borderRadius: "50%",
+                  background: "#6366F1",
+                  animation: "vixor-pulse 1.2s ease-in-out infinite",
+                }}
+              />
+              Updating chart…
+            </div>
+          ) : (
+            <div style={{ width: "72%", display: "grid", gap: "10px" }} aria-label="Loading chart">
+              {["68%", "42%", "84%", "56%", "76%"].map((width, index) => (
+                <div
+                  key={index}
+                  style={{
+                    width,
+                    height: "8px",
+                    borderRadius: "4px",
+                    background: "linear-gradient(90deg, #171A22 25%, #252A38 50%, #171A22 75%)",
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer 1.4s linear infinite",
+                  }}
+                />
+              ))}
+              <span style={{ fontSize: "11px", color: "#9CA3AF", fontFamily: "system-ui" }}>
+                Loading chart…
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -747,7 +793,15 @@ function DexChartInner({ chainId, pairAddress, height = "400px", livePrice }: De
       )}
 
       {/* Main chart container */}
-      <div ref={mainContainerRef} style={{ width: "100%", height: "100%" }} />
+      <div
+        ref={mainContainerRef}
+        style={{
+          width: "100%",
+          height: "100%",
+          opacity: loading && hasData ? 0.48 : 1,
+          transition: "opacity 180ms ease",
+        }}
+      />
     </div>
   );
 }

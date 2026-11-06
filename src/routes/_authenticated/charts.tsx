@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { PageLayout, PageScrollArea } from "@/components/vixor/PageLayout";
 import { CandlestickChart } from "@/components/vixor/CandlestickChart";
 import { TradingViewChart, SYMBOL_MAP } from "@/components/vixor/TradingViewChart";
-import { useLivePrices } from "@/shared/market-data";
+import { useMarketDataStatus } from "@/shared/market-data/use-market-data-status";
 import { useQuery } from "@tanstack/react-query";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getCandles, getTicker } from "@/domains/trade/functions";
@@ -77,13 +77,19 @@ function ChartsPage() {
     data: candles,
     isLoading: candlesLoading,
     isError: candlesError,
+    dataUpdatedAt: candlesUpdatedAt,
   } = useQuery({
     queryKey: ["candles", symbol, interval],
     queryFn: () => stableCandles({ data: { symbol, interval, limit: 200 } }),
     staleTime: 60_000,
   });
 
-  const { data: ticker } = useQuery({
+  const {
+    data: ticker,
+    isFetching: tickerFetching,
+    isError: tickerError,
+    dataUpdatedAt: tickerUpdatedAt,
+  } = useQuery({
     queryKey: ["ticker", symbol],
     queryFn: () => stableTicker({ data: { symbol } }),
     staleTime: 30_000,
@@ -100,9 +106,15 @@ function ChartsPage() {
 
   const priceChange = ticker ? parseFloat(ticker.priceChangePercent) : 0;
   const isUp = priceChange >= 0;
+  const marketStatus = useMarketDataStatus({
+    lastUpdate: Math.max(candlesUpdatedAt, tickerUpdatedAt) || null,
+    isLoading: candlesLoading || tickerFetching,
+    error: candlesError || tickerError,
+    enabled: isCrypto,
+  });
 
   return (
-    <PageLayout title="Charts" badge="LIVE" badgeColor="var(--color-bullish)">
+    <PageLayout title="Charts" badge={marketStatus.label} badgeColor={marketStatus.color}>
       {/* Live Price Bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
         <div className="flex items-center gap-3">

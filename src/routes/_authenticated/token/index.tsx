@@ -5,6 +5,7 @@ import { getTradeHistory, getRecentAnalyses, getWatchlistData } from "@/shared/d
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { BinanceWS, type LivePrice } from "@/shared/market-data/binance-ws";
 import { DexScreenerWS } from "@/shared/market-data/dexscreener-ws";
+import { useMarketDataStatus } from "@/shared/market-data/use-market-data-status";
 import { DexChart } from "@/components/vixor/DexChart";
 import { DexToolsButton } from "@/components/vixor/DexToolsChart";
 import { TradingViewChart } from "@/components/vixor/TradingViewChart";
@@ -215,9 +216,11 @@ export function TokenPage() {
   }, [assetType, isDexToken, pairAddress, symbol]);
 
   const [liveBinancePrice, setLiveBinancePrice] = useState<LivePrice | null>(null);
-  const [liveDexPrice, setLiveDexPrice] = useState<{ price: number; change24h: number } | null>(
-    null,
-  );
+  const [liveDexPrice, setLiveDexPrice] = useState<{
+    price: number;
+    change24h: number;
+    timestamp: number;
+  } | null>(null);
 
   // Binance WS for CEX tokens
   useEffect(() => {
@@ -241,7 +244,9 @@ export function TokenPage() {
     const key = `${chainFromDiscover}:${pairAddress}`;
     const unsub = ws.subscribe([{ chainId: chainFromDiscover, pairAddress }], (prices) => {
       const p = prices.get(key);
-      if (p && p.price > 0) setLiveDexPrice({ price: p.price, change24h: p.change24h });
+      if (p && p.price > 0) {
+        setLiveDexPrice({ price: p.price, change24h: p.change24h, timestamp: Date.now() });
+      }
     });
     return () => unsub();
   }, [isDexToken, chainFromDiscover, pairAddress]);
@@ -251,6 +256,12 @@ export function TokenPage() {
   const displayChange =
     liveBinancePrice?.change24h ?? liveDexPrice?.change24h ?? tokenData?.change24h ?? null;
   const isPriceLive = !!(liveBinancePrice || liveDexPrice);
+  const marketStatus = useMarketDataStatus({
+    lastUpdate: liveBinancePrice?.timestamp ?? liveDexPrice?.timestamp,
+    isLoading: discoveryQuery.isLoading,
+    error: discoveryQuery.error,
+    enabled: !!tokenData,
+  });
 
   // ── Quick Trade State ──
 
@@ -730,22 +741,22 @@ export function TokenPage() {
 
               {/* Price + 24h change */}
               <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
-                {isPriceLive && (
+                {isPriceLive || marketStatus.status !== "idle" ? (
                   <span
                     style={{
                       fontSize: "8px",
                       fontWeight: 700,
                       padding: "2px 5px",
                       borderRadius: "3px",
-                      background: "color-mix(in srgb, var(--color-bullish) 15%, transparent)",
-                      color: "var(--color-bullish)",
+                      background: `color-mix(in srgb, ${marketStatus.color} 15%, transparent)`,
+                      color: marketStatus.color,
                       letterSpacing: "0.04em",
                       lineHeight: 1,
                     }}
                   >
-                    LIVE
+                    {marketStatus.label}
                   </span>
-                )}
+                ) : null}
                 <span
                   style={{
                     fontSize: "24px",

@@ -12,6 +12,7 @@ import {
 import { formatTimeAgo, formatPrice, formatQuantity } from "@/shared/utils/formatters";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getPulseData } from "@/shared/data";
+import { useMarketDataStatus } from "@/shared/market-data/use-market-data-status";
 
 export const Route = createFileRoute("/_authenticated/pulse")({
   head: () => ({ meta: [{ title: "Pulse \u2014 Vixor" }] }),
@@ -162,10 +163,15 @@ function PulsePage() {
   const [tab, setTab] = useState<Tab>("All");
   const getStableData = useStableServerFn(getPulseData);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching, isError, dataUpdatedAt } = useQuery({
     queryKey: ["pulse"],
     queryFn: () => getStableData(),
     staleTime: 30_000,
+  });
+  const marketStatus = useMarketDataStatus({
+    lastUpdate: dataUpdatedAt || null,
+    isLoading: isLoading || isFetching,
+    error: isError,
   });
 
   const feed = useMemo(() => data?.feed ?? [], [data?.feed]);
@@ -180,8 +186,8 @@ function PulsePage() {
   return (
     <PageLayout
       title="Pulse"
-      badge="LIVE"
-      badgeColor={"var(--color-bullish)"}
+      badge={marketStatus.label}
+      badgeColor={marketStatus.color}
       tabs={TABS as unknown as string[]}
       activeTab={tab}
       onTabChange={(t: string) => setTab(t as Tab)}

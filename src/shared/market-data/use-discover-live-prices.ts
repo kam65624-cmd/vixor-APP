@@ -1,9 +1,7 @@
 // ============================================================================
 // VIXOR useDiscoverLivePrices — REAL-TIME price overlay for Discover
 // ============================================================================
-// ALL prices are live via WebSocket — zero polling, zero API calls.
-//   - Binance-listed tokens: Binance WebSocket (instant)
-//   - DEX/meme tokens: DexScreener WebSocket (instant)
+// Binance-listed tokens use WebSocket; DEX/meme tokens use batched polling.
 // Prices update in-place with no visible refresh for the user.
 // ============================================================================
 
@@ -128,6 +126,8 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
   const { tokens, enabled = true } = options;
 
   const [overlay, setOverlay] = useState<LivePriceOverlay>({});
+  const [lastUpdate, setLastUpdate] = useState<number | null>(null);
+  const [pollingError, setPollingError] = useState<unknown>(null);
   const overlayRef = useRef(overlay);
   overlayRef.current = overlay;
 
@@ -171,6 +171,7 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
               timestamp: livePrice.timestamp,
               volume24h: livePrice.quoteVolume24h,
             };
+            setLastUpdate(livePrice.timestamp);
           }
         }
         return next;
@@ -188,24 +189,45 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
   useEffect(() => {
     if (!enabled || dexPairs.length === 0) return;
     let cancelled = false;
+    let requestInFlight = false;
+    let controller: AbortController | null = null;
     const update = async () => {
+      if (cancelled || document.hidden || requestInFlight) return;
+      requestInFlight = true;
+      controller?.abort();
+      const requestController = new AbortController();
+      controller = requestController;
       const byChain = new Map<string, string[]>();
       for (const pair of dexPairs) {
         const list = byChain.get(pair.chainId) ?? [];
         list.push(pair.pairAddress);
         byChain.set(pair.chainId, list);
       }
+      let requestError: unknown = null;
       const results = await Promise.all(
         [...byChain.entries()].map(async ([chainId, pairAddresses]) => {
           const response = await fetch(
             `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddresses.join(",")}`,
+            { signal: requestController.signal },
           );
           if (!response.ok) throw new Error(`DexScreener ${response.status}`);
           const json = await response.json();
           return Array.isArray(json.pairs) ? json.pairs : [];
         }),
-      ).catch(() => [] as any[]);
+      ).catch((error) => {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          requestError = error;
+        }
+        return [] as any[];
+      });
       if (cancelled) return;
+      if (requestError) {
+        setPollingError(requestError);
+        requestInFlight = false;
+        return;
+      }
+      setPollingError(null);
+      setLastUpdate(Date.now());
       setOverlay((prev) => {
         const next = { ...prev };
         for (const pair of results.flat()) {
@@ -223,12 +245,20 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
         }
         return next;
       });
+      requestInFlight = false;
     };
     void update();
     const timer = window.setInterval(update, 3000);
+    const onVisibility = () => {
+      if (!document.hidden) void update();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       cancelled = true;
+      controller?.abort();
+      requestInFlight = false;
       window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [enabled, dexPairs, dexSymbolMap]);
 
@@ -239,5 +269,5 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
     [],
   );
 
-  return { overlay, getLivePrice };
+  return { overlay, getLivePrice, lastUpdate, error: pollingError };
 }

@@ -12,6 +12,7 @@ import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getDailySignals } from "@/shared/data";
 import { PageLayout, StatsRow, SectionTitle, PageScrollArea } from "@/components/vixor/PageLayout";
 import { getRadarBlips } from "./server-fn";
+import { useMarketDataStatus } from "@/shared/market-data/use-market-data-status";
 
 import type { MarketToken, MarketOverview, DiscoverToken, SignalRow, RadarBlip } from "./server-fn";
 import {
@@ -81,6 +82,17 @@ export function RadarPage() {
     refetchInterval: 30_000,
     retry: 1,
     staleTime: 15_000,
+  });
+
+  const marketStatus = useMarketDataStatus({
+    lastUpdate: Math.max(
+      marketQuery.dataUpdatedAt,
+      discoverQuery.dataUpdatedAt,
+      signalsQuery.dataUpdatedAt,
+      radarBlipsQuery.dataUpdatedAt,
+    ),
+    isLoading: marketQuery.isLoading || discoverQuery.isLoading,
+    error: marketQuery.error || discoverQuery.error || radarBlipsQuery.error,
   });
 
   // ── Determine demo mode ──
@@ -213,8 +225,8 @@ export function RadarPage() {
   return (
     <PageLayout
       title="Trade Radar"
-      badge="LIVE"
-      badgeColor="var(--color-bullish)"
+      badge={marketStatus.label}
+      badgeColor={marketStatus.color}
       loading={isLoading}
       loadingColor="var(--color-bullish)"
     >

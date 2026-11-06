@@ -7,6 +7,7 @@ import { getDashboardData } from "@/domains/trade/functions";
 import { useStableServerFn } from "@/shared/hooks/use-stable-server-fn";
 import { getMe } from "@/domains/user/functions";
 import { useLivePrices } from "@/shared/market-data";
+import { useMarketDataStatus } from "@/shared/market-data/use-market-data-status";
 import { LiveDot } from "@/components/vixor/LiveDot";
 import { EnergyOrb } from "@/components/vixor/fx/EnergyOrb";
 import { CharacterGuide } from "@/components/characters/CharacterGuide";
@@ -459,6 +460,11 @@ function HomePageV3() {
   });
 
   const marketData = marketQuery.data;
+  const marketStatus = useMarketDataStatus({
+    lastUpdate: marketQuery.dataUpdatedAt || null,
+    isLoading: marketQuery.isLoading || marketQuery.isFetching,
+    error: marketQuery.error,
+  });
   const user = meQuery.data;
   const overview = marketData?.marketOverview ?? undefined;
   const tickers = marketData?.tickers ?? [];
@@ -654,7 +660,7 @@ function HomePageV3() {
               desc="Trending tokens"
               to="/discover"
               accent="var(--color-primary)"
-              badge="LIVE"
+              badge={marketStatus.label}
             />
             <FeatureCard
               icon={Search}
@@ -707,7 +713,7 @@ function HomePageV3() {
               desc="Live trading"
               to="/charts"
               accent="var(--color-bullish)"
-              badge="LIVE"
+              badge={marketStatus.label}
             />
             <FeatureCard
               icon={Radio}
@@ -715,7 +721,7 @@ function HomePageV3() {
               desc="Market scanner"
               to="/radar"
               accent="var(--color-bullish)"
-              badge="LIVE"
+              badge={marketStatus.label}
             />
             <FeatureCard
               icon={PieChart}
