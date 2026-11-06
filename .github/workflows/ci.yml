@@ -155,7 +155,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.81.3
+          version: 2.122.1
       - name: Verify migration history is readable by Supabase CLI
         env:
           PGPASSWORD: postgres
