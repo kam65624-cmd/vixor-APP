@@ -18,3 +18,40 @@ BEGIN
     RAISE EXCEPTION 'RLS is not enabled on wallet_sessions';
   END IF;
 END $$;
+
+
+-- Final migration-chain invariant: clients can read only their own payments and cannot write.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = 'payments' AND c.relrowsecurity
+  ) THEN
+    RAISE EXCEPTION 'RLS is not enabled on payments after full migration replay';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND (roles @> ARRAY['public']::name[] OR roles @> ARRAY['authenticated']::name[])
+       AND cmd IN ('INSERT', 'UPDATE', 'DELETE', 'ALL')
+  ) THEN
+    RAISE EXCEPTION 'client write policy remains after full migration replay';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND roles @> ARRAY['public']::name[]
+  ) THEN
+    RAISE EXCEPTION 'PUBLIC payment policy remains after full migration replay';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname = 'public' AND tablename = 'payments'
+       AND policyname = 'users read own payments'
+       AND cmd = 'SELECT'
+       AND roles = ARRAY['authenticated']::name[]
+  ) THEN
+    RAISE EXCEPTION 'canonical authenticated read-own payment policy missing after replay';
+  END IF;
+END $$;
