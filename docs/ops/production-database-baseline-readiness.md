@@ -51,6 +51,43 @@ These findings need separate scope and remediation review. This payments PR does
 6. Only after that comparison, choose the migration-history strategy. A `db pull` may create a local migration and can optionally insert a history row remotely; that remote history write requires explicit owner approval. Do not use `migration repair` to mark the existing chain applied until every version has been reconciled against the live schema.
 7. Once a baseline strategy is approved, verify it on disposable PostgreSQL and run `supabase migration list` against Production in read-only mode before any deployment step.
 
+## Read-only baseline capture (separate scratch directory)
+
+Use a new empty folder outside the existing APP checkout so the 44 historical migrations and any local work are not touched. The commands below use the CI-pinned CLI version and link only the known Production project:
+
+```powershell
+$ErrorActionPreference = "Stop"
+$Scratch = Join-Path $env:TEMP "vixor-production-baseline-20261106"
+if (Test-Path $Scratch) {
+  throw "Scratch folder already exists. Choose a new empty folder; do not overwrite it."
+}
+New-Item -ItemType Directory -Path $Scratch | Out-Null
+Push-Location $Scratch
+try {
+  npx --yes supabase@2.81.3 init
+  if ($LASTEXITCODE -ne 0) { throw "Supabase init failed" }
+
+  npx --yes supabase@2.81.3 link --project-ref crscocazckmjeekivojd
+  if ($LASTEXITCODE -ne 0) { throw "Supabase link failed" }
+
+  npx --yes supabase@2.81.3 db pull production_baseline --linked --diff-engine migra
+  if ($LASTEXITCODE -ne 0) { throw "Production schema pull failed" }
+
+  Get-ChildItem .\supabase\migrations
+}
+finally {
+  Pop-Location
+}
+```
+
+- The CLI will prompt for the database password locally; do not paste it into chat or put it in the command line.
+- When `db pull` asks **“Update remote migration history table?”**, answer **N**. This captures the schema locally without registering a migration version in Production.
+- Do not run `db push`, `migration repair`, or `db reset --linked`.
+- The generated file should contain schema DDL, not table data. Inspect it for unexpected drops, role changes, extension changes, or secrets before sharing it.
+- Upload only the generated `*_production_baseline.sql` file here. We will compare it against the APP migration chain and review any managed-schema customizations before deciding how to establish history.
+
+Supabase CLI documents that the legacy `migra` path uses `pg_dump` when remote migration history is empty, and that `db pull` asks whether to update remote history. This is why the capture is performed in an empty scratch checkout and the prompt must be declined.
+
 ## Current decision
 
 **Baseline status: Not established.** The inventory above is not a schema dump and cannot be used as a baseline migration. Production remains unchanged. The next required evidence is a schema-only export from the actual Production database, followed by a reviewed diff against the repository chain.
