@@ -7,6 +7,7 @@
 - `BIRDEYE_API_KEY`: يوضع في Secret/Environment Variables على منصة تشغيل الـ Collector فقط. لا تستخدم `VITE_` ولا تضعه في React أو Git.
 - `REDIS_URL`: اتصال Redis الخاص بالخدمة.
 - `ALLOWED_ORIGINS`: نطاق VIXOR المسموح له بفتح SSE.
+- `STALE_AFTER_MS`: بعد هذه المدة من آخر سعر ناجح (افتراضيًا 15 ثانية)، يرسل الجامع حدث `stale` كي لا يبقى السعر القديم ظاهرًا على أنه حي.
 
 انسخ `.env.example` إلى `.env` محليًا فقط، وأضف `.env` إلى ignore. في الإنتاج أضف القيم من Secret Manager في Railway/Fly/Cloud Run أو WebDev Reserved Hosting.
 
@@ -42,6 +43,8 @@ source.addEventListener("price", (event) => {
 ```
 
 `VITE_MARKET_COLLECTOR_URL` عام وليس سرًا. مفتاح Birdeye لا يصل إلى المتصفح.
+
+تُسجَّل اشتراكات SSE النشطة في Redis مع مهلة انتهاء، لا في ذاكرة نسخة واحدة؛ لذلك يستطيع القائد المركزي جمع عناوين العملاء المتصلين بأي نسخة من الخدمة. تُزال الاشتراكات عند إغلاق استجابة SSE، وتنتهي تلقائيًا إن انقطعت النسخة دون تنظيف. أحداث `stale` تزيل السعر القديم من overlay الواجهة.
 
 ## الإنتاج
 

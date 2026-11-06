@@ -160,6 +160,16 @@ export function useDiscoverLivePrices(options: UseDiscoverLivePricesOptions) {
       setLastUpdate(snapshot.updatedAt);
       setPollingError(null);
     },
+    onStale: (address) => {
+      const tokenKey = centralTokenMap.get(address);
+      if (!tokenKey) return;
+      setOverlay((prev) => {
+        if (!(tokenKey in prev)) return prev;
+        const next = { ...prev };
+        delete next[tokenKey];
+        return next;
+      });
+    },
   });
 
   // Separate tokens into Binance WS and DEX WS
