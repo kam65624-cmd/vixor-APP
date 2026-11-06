@@ -85,22 +85,47 @@ BEGIN
   END IF;
 
   IF EXISTS (
-    SELECT telegram_charge_id
-      FROM public.payments
-     WHERE telegram_charge_id IS NOT NULL
-     GROUP BY telegram_charge_id
-    HAVING count(*) > 1
+    SELECT payload FROM public.payments GROUP BY payload HAVING count(*) > 1
   ) THEN
-    RAISE EXCEPTION 'Duplicate Telegram charge IDs exist; reconcile them before creating the unique index';
+    RAISE EXCEPTION 'Duplicate payment payloads exist; reconcile them before creating the unique index';
   END IF;
 END;
-$;
+$$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS payments_payload_unique
   ON public.payments(payload);
-CREATE UNIQUE INDEX IF NOT EXISTS payments_telegram_charge_id_unique
-  ON public.payments(telegram_charge_id)
-  WHERE telegram_charge_id IS NOT NULL;
+
+-- Production already has a unique Telegram charge index. Add one only if the
+-- target schema lacks any valid single-column unique index on that field.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+      FROM pg_index i
+      JOIN pg_attribute a
+        ON a.attrelid = i.indrelid
+       AND a.attnum = i.indkey[0]
+     WHERE i.indrelid = 'public.payments'::regclass
+       AND i.indisunique
+       AND i.indisvalid
+       AND i.indnkeyatts = 1
+       AND a.attname = 'telegram_charge_id'
+  ) THEN
+    IF EXISTS (
+      SELECT telegram_charge_id
+        FROM public.payments
+       WHERE telegram_charge_id IS NOT NULL
+       GROUP BY telegram_charge_id
+      HAVING count(*) > 1
+    ) THEN
+      RAISE EXCEPTION 'Duplicate Telegram charge IDs exist; reconcile them before creating the unique index';
+    END IF;
+    CREATE UNIQUE INDEX payments_telegram_charge_id_unique
+      ON public.payments(telegram_charge_id)
+      WHERE telegram_charge_id IS NOT NULL;
+  END IF;
+END;
+$$;
 
 -- The production schema stores catalog/subscription plan IDs as text, while the
 -- clean historical bootstrap uses UUIDs. Resolve the destination type from the
